@@ -150,7 +150,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 1073741824
   data:
-    dataString: UEsDBBQAAAgIAACAn+vO6wPrzQIAABMGAAALACQAZ3JhcGgwLmpzb24KACAAAAAAAAEAGAAAgD7V3rGdAQCAPtXesZ0BAIA+1d6xnQF1VE1v4jAQ/SvI5wUltNCyt12gdA9tUemqh6UHE0+IhbEj2ynQiv/eGceQFGmrSglvvt68mcknk9qVkHljZ1aKByOA/ewwemc/Oo3xHvZ8bfRCfsDJ51UKX5ATDz7P3EuDeEphzmzBW5n90mtFzgmClZa5sdupWMPYOO8QzrlygCZrPEVrhD47bI+P/g2FHGLoBz07R3zLQHuwjV836aWDEf3d9mNAAw1vYmx31BtcDW+u+9NuMgp5Kp0pvi1BUEdNuvRUNa3Laew1eiS9K6qQGaWki1yZP5RBi0VZgAUSQ0iOrQeKSW+AQAFyXXhqqR39lOcOfGzP8sNEWtSwTst+m1rYLXebmts7VxUV6qaBVp3z4X/m3Jrt/alsmlAJX8hs88wPGXe+JXwbnjTM06DQjqsNXyl4LUA/mpk1lRZo9Lai0MpBf9L8PHc2LiDbNHhN9QKsykbyyzlTD8fQ/H7hoTz3kfSuG/SvA7dQJogfc5IlIiPKBRZn9wf7CZvlYgVEiSTGv/B1ewWj4U5a59EURYgo+c5xQCBAZxB175KDJnorU1nKxaaBK6lR+bGxGgIcCZagufKHOWb0lxtwYWvxurDccbrGyC7aTkd2ERLgxj9JLkxzszsP21YKXNjo09u/NxqCK8zuAVzxVHkldUttMjyiwGOjdb24bTFPYYvK5jxrhXnY+8rChHseqiEdXDDRDkUtQ4SulKJdDg0ERtgA/b+RvgXHuirA7NHocHrfnoH+upLi+4WwVZ7y6yEXqRgkA8FFN02Gw1Tc9gc5T/hqlLNwQlKj3FzNa73ilHC7dNOLxnM5fSs7M8vLcLPC8t1MfmxNa/JS52aRWQD9VGc4NwsWi+D3RUyFxDYX4L3UYS/Z55Ipk21ALM+JlkHY6d5bvmyyLFkp340nZMnG4fu4ZASfTxJX913Cjop/SwYKRwfiRSrY8pJM/SM7fgFQSwMEFAAACAgAAICf6284FbBsAAAAdwAAAAkAJABtZXRhLmpzb24KACAAAAAAAAEAGAAAgD7V3rGdAQCAPtXesZ0BAIA+1d6xnQGrVipLLSrOzM9TslIw1TPWs9BRUEovSizIKAYKGII4pZkpIHa0UlKaYaKJWWKKYYqpgWlKYoquoYGZmWGKhZFpWqJBYpJlmlIsUH1JZUGqX2JuKkRPQGJJRlpmXkpmXrqee1FmijvIaKXYWgBQSwECLQAUAAAICAAAgJ/rzusD680CAAATBgAACwAkAAAAAAAAAAAAAAAAAAAAZ3JhcGgwLmpzb24KACAAAAAAAAEAGAAAgD7V3rGdAQCAPtXesZ0BAIA+1d6xnQFQSwECLQAUAAAICAAAgJ/rbzgVsGwAAAB3AAAACQAkAAAAAAAAAAAAAAAaAwAAbWV0YS5qc29uCgAgAAAAAAABABgAAIA+1d6xnQEAgD7V3rGdAQCAPtXesZ0BUEsFBgAAAAACAAIAuAAAANEDAAAAAA==
+    dataString: UEsDBBQAAAgIAACAn+t95c0bygIAABEGAAALACQAZ3JhcGgwLmpzb24KACAAAAAAAAEAGAAAgD7V3rGdAQCAPtXesZ0BAIA+1d6xnQF1VE1v4jAQ/SvI5wUltNCyt12gdA9t0dJVD0sPJp4QC2NHtlOgFf99ZxxDAtJWlRLefL15M5MvJrUrIfPGzqwUT0YA+95h9M6+dRrjI+z52uiF/ISTz5sUviAnHnx+cy8N4imFObMFb2X2Q68VOScIVlrmxm6nYg1j47xDOOfKAZqs8RStEfrqsD0++ncUcoihn/TsHPEtA+3BNn7dpJcORvR3348BDTS8i7HdUW9wM7y77U+7ySjkqXSm+LYEQR016dJT1bQup7HX6JH0bqhCZpSSLnJl/lAGLRZlARZIDCE5th4okhIFyHXhqaF27EueO/CxOcsPE2lRwTop+2lqWbfcbWpmH1xVVKabBlJ1zqf/mXNrto+nsmlCJXwhs81vfsi48y3Z2/Dkkneld1xt+ErBWwH62cysqbRAo7cVhVYO+pPm57mzcQHZpsFrqldgVTaCX0+ZejiG5vcLD+W5j6R326B/HLiFMkH6mJMsERlRLrA4uV/YT9grFysgSiQx/pWv2wsYDQ/SOo+mKEJEyXeOAwIBOoOoe5ccNNFbmcpSLjYNXEmNyo+N1RDgSLAEzZU/zDGjv96AK1uL15XlgdMtRnbRdjqxq5AAN/5JcmWam9152LZS4MI+n97+vtMQXGF2T+CKl8orqVtqk+EZBR4brevFbYt5CltUNudZK8zD3lcWJtzzUA3p4IKJdihqGSJ0pRTtcmggMMIG6P+d9C041lUBZs9Gh8O7eAb660qKywthqzzlt0MuUjFIBoKLbpoMh6m47w9ynvDVKGfhhKRGubma13rFKeF26aYXjedy+lJ2ZpaX4WaF5buZ/Nya1uSlzs0iswD6pc5wbhYsFsGvi5gKiW0uwHupw16yryVTJtuAWJ4TLYOw0723fNlkWbJSfhhPyJKNw9dxyQg+nySu7oeEHRW/SAYKRwfiVSrY8pJM/SM7/gNQSwMEFAAACAgAAICf6284FbBsAAAAdwAAAAkAJABtZXRhLmpzb24KACAAAAAAAAEAGAAAgD7V3rGdAQCAPtXesZ0BAIA+1d6xnQGrVipLLSrOzM9TslIw1TPWs9BRUEovSizIKAYKGII4pZkpIHa0UlKaYaKJWWKKYYqpgWlKYoquoYGZmWGKhZFpWqJBYpJlmlIsUH1JZUGqX2JuKkRPQGJJRlpmXkpmXrqee1FmijvIaKXYWgBQSwECLQAUAAAICAAAgJ/rfeXNG8oCAAARBgAACwAkAAAAAAAAAAAAAAAAAAAAZ3JhcGgwLmpzb24KACAAAAAAAAEAGAAAgD7V3rGdAQCAPtXesZ0BAIA+1d6xnQFQSwECLQAUAAAICAAAgJ/rbzgVsGwAAAB3AAAACQAkAAAAAAAAAAAAAAAXAwAAbWV0YS5qc29uCgAgAAAAAAABABgAAIA+1d6xnQEAgD7V3rGdAQCAPtXesZ0BUEsFBgAAAAACAAIAuAAAAM4DAAAAAA==
     file_cachedStartup: {fileID: 4900000, guid: 7a45d30c235562648aede2807dbf38c9, type: 3}
     cacheStartup: 1
   showNavGraphs: 1
@@ -159,10 +159,10 @@ MonoBehaviour:
   debugFloor: 0
   debugRoof: 1
   manualDebugFloorRoof: 0
-  showSearchTree: 0
+  showSearchTree: 1
   unwalkableNodeDebugSize: 0.3
   logPathResults: 1
-  maxNearestNodeDistance: 100
+  maxNearestNodeDistance: 5
   scanOnStartup: 1
   fullGetNearestSearch: 0
   prioritizeGraphs: 0
@@ -210,7 +210,7 @@ MonoBehaviour:
   - 31
   heuristic: 2
   heuristicScale: 1
-  threadCount: 1
+  threadCount: -2
   maxFrameTime: 10
   batchGraphUpdates: 0
   graphUpdateBatchingInterval: 0.2
@@ -835,7 +835,7 @@ Transform:
   m_GameObject: {fileID: 790693106}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.64, y: -4.19, z: 0}
+  m_LocalPosition: {x: -3.31, y: -2.3, z: 0}
   m_LocalScale: {x: 0.2, y: 0.2, z: 0.2}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -2252,7 +2252,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 997770960}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 

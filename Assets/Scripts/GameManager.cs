@@ -18,7 +18,7 @@ public class GameManager : MonoBehaviour {
     public GameObject projectilePrefab; 
     [NonSerialized] public List<Projectile> projectiles = new();
     
-    [NonSerialized] public List<EnemyPath> enemyPaths = new();
+    [NonSerialized] public List<Enemy> enemies = new();
     
     private void Start() {
         Cursor.visible = false;
@@ -27,11 +27,7 @@ public class GameManager : MonoBehaviour {
         attackInputAction = InputSystem.actions.FindAction("Attack");
         
         Player.Init(this);
-        
-        ABPath abPath = ABPath.Construct(tempEnemy.position, new(4, 4, 0), path => {
-            enemyPaths.Add(new() {path = path.vectorPath, trans = tempEnemy});
-        });
-        AstarPath.StartPath(abPath);
+        enemies.Add(new() {trans = tempEnemy});
     }
 
     private void Update() {
@@ -62,32 +58,57 @@ public class GameManager : MonoBehaviour {
         }
     }
 
-    public struct EnemyPath {
+    public class Enemy {
         public Transform trans;
-        public List<Vector3> path;
-        public int curPathIndex;
-        public float curSegComp;
+        public PathData pathData = new();
+        
+        public Vector3 position {
+            get => trans.position;
+            set => trans.position = value;
+        }
+    }
+    
+    public class PathData {
+        public ABPath abPath;
+        public int waypointIndex;
+        public bool isBeingCalculated;
+        public float lastUpdateTime;
+        
+        public bool HasPath => abPath != null;
     }
     
     private void UpdateEnemies() {
-        for (int i = 0; i < enemyPaths.Count; i++) {
-            EnemyPath enemyPath = enemyPaths[i];
-            enemyPath.curSegComp += Time.deltaTime;
-
-            if (enemyPath.curSegComp >= 1f) {
-                enemyPath.curSegComp -= 1f;
-                enemyPath.curPathIndex++;
-            }
-
-            if (enemyPath.curPathIndex >= enemyPath.path.Count - 1) continue;
-
-            Vector2 startSeg = enemyPath.path[enemyPath.curPathIndex];
-            Vector2 endSeg = enemyPath.path[enemyPath.curPathIndex + 1];
-
-            Vector2 pos = Vector2.Lerp(startSeg, endSeg, enemyPath.curSegComp);
-            enemyPath.trans.position = pos;
+        foreach (Enemy enemy in enemies) {
+            if ((enemy.pathData.HasPath && Time.time - enemy.pathData.lastUpdateTime <= 0.5f) || enemy.pathData.isBeingCalculated) continue;
             
-            enemyPaths[i] = enemyPath;
+            ABPath abPath = ABPath.Construct(enemy.position, player.position, path => {
+                path.Claim(this);
+                enemy.pathData.abPath?.Release(this);
+                enemy.pathData.abPath = path as ABPath;
+                enemy.pathData.waypointIndex = 1;
+                enemy.pathData.isBeingCalculated = false;
+                enemy.pathData.lastUpdateTime = Time.time;
+            });
+            
+            AstarPath.StartPath(abPath);
+            enemy.pathData.isBeingCalculated = true;
+        }
+        
+        foreach (Enemy enemy in enemies) {
+            if (enemy.pathData.abPath == null) continue;
+            
+            PathData pathData = enemy.pathData;
+            
+            bool usingPath = enemy.pathData.abPath.vectorPath.Count >= 2 && pathData.waypointIndex < pathData.abPath.vectorPath.Count;
+            
+            if (usingPath && Vector2.Distance(enemy.position, pathData.abPath.vectorPath[pathData.waypointIndex].ToVector2()) < 0.5f) {
+                pathData.waypointIndex++;
+            }
+            
+            usingPath = usingPath && pathData.waypointIndex < pathData.abPath.vectorPath.Count;
+
+            Vector2 targetPos = usingPath ? pathData.abPath.vectorPath[pathData.waypointIndex] : player.position;
+            enemy.position = Vector2.MoveTowards(enemy.position, targetPos, 0.3f * Time.deltaTime);
         }
     }
     
