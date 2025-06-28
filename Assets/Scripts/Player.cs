@@ -3,19 +3,35 @@ using UnityEngine.InputSystem;
 
 public static class Player {
 
-    private static Transform playerTransform;
-    private static InputAction moveInputAction;
+    private static GameManager gm;
+    private const float playerSpeed = 0.5f;
 
-    private static float playerSpeed = 0.5f;
-
-    public static void Init(Transform _playerTransform) {
-        playerTransform = _playerTransform;
-        moveInputAction = InputSystem.actions.FindAction("Move");
+    public static void Init(GameManager gameManager) {
+        gm = gameManager;
     }
     
     public static void Update() {
-        Vector2 moveInput = moveInputAction.ReadValue<Vector2>();
-        playerTransform.position += new Vector3(moveInput.x, moveInput.y, 0f) * playerSpeed * Time.deltaTime;
+        Vector2 moveInput = gm.moveInputAction.ReadValue<Vector2>();
+        gm.player.position += new Vector3(moveInput.x, moveInput.y, 0f) * (playerSpeed * Time.deltaTime);
+
+        Vector2 mousePos = Mouse.current.position.ReadValue();
+        gm.crosshairTrans.position = mousePos;
+
+        if (gm.attackInputAction.WasPressedThisFrame()) {
+            Vector2 mouseWorldPos = gm.mainCamera.ScreenToWorldPoint(mousePos);
+
+            Vector2 velocity = (mouseWorldPos - gm.player.PositionV2()).normalized * 2.1f;
+            float angle = Vector2.SignedAngle(Vector2.right, velocity.normalized);
+            
+            Quaternion projectileRotation = Quaternion.AngleAxis(angle, Vector3.forward);
+            GameObject projectile = GameObject.Instantiate(gm.projectilePrefab, gm.player.position, projectileRotation);
+            
+            gm.projectiles.Add(new() {
+                timeAlive = 0f,
+                trans = projectile.transform,
+                velocity = velocity 
+            });
+        }
     }
     
 }
