@@ -5,6 +5,9 @@ public static class Player {
 
     private static GameManager gm;
     private const float playerSpeed = 0.5f;
+    private const float attackCooldown = 0.1f;
+
+    private static Limitter attackLimiter;
 
     public static void Init(GameManager gameManager) {
         gm = gameManager;
@@ -17,7 +20,7 @@ public static class Player {
         Vector2 mousePos = Mouse.current.position.ReadValue();
         gm.crosshairTrans.position = mousePos;
 
-        if (gm.attackInputAction.WasPressedThisFrame()) {
+        if (gm.attackInputAction.IsPressed() && attackLimiter.TimeHasPassed(attackCooldown)) {
             Vector2 mouseWorldPos = gm.mainCamera.ScreenToWorldPoint(mousePos);
 
             Vector2 velocity = (mouseWorldPos - gm.player.PositionV2()).normalized * 2.1f;

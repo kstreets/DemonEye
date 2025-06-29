@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Pathfinding;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Random = UnityEngine.Random;
 
 public class GameManager : MonoBehaviour {
 
@@ -13,13 +14,14 @@ public class GameManager : MonoBehaviour {
     public InputAction moveInputAction;
     public InputAction attackInputAction;
 
-    public Transform tempEnemy;
+    public GameObject projectilePrefab;
+    public GameObject enemyPrefab;
     
-    public GameObject projectilePrefab; 
     [NonSerialized] public List<Projectile> projectiles = new();
     
     [NonSerialized] public List<Enemy> enemies = new();
-    
+    [NonSerialized] public Dictionary<GameObject, Enemy> enemyLookup = new();
+
     private void Start() {
         Cursor.visible = false;
         
@@ -27,13 +29,17 @@ public class GameManager : MonoBehaviour {
         attackInputAction = InputSystem.actions.FindAction("Attack");
         
         Player.Init(this);
-        enemies.Add(new() {trans = tempEnemy});
     }
 
     private void Update() {
         Player.Update();
         UpdateProjectiles();
+        SpawnEnemies();
         UpdateEnemies();
+    }
+
+    private void FixedUpdate() {
+        FixedUpdateEnemies();
     }
 
     public struct Projectile {
@@ -43,11 +49,19 @@ public class GameManager : MonoBehaviour {
     }
     
     private void UpdateProjectiles() {
-        for (int i = 0; i < projectiles.Count; i++) {
+        for (int i = projectiles.Count - 1; i >= 0; i--) {
             Projectile proj = projectiles[i];
             proj.timeAlive += Time.deltaTime;
             proj.trans.position += proj.velocity.ToVector3() * Time.deltaTime;
             projectiles[i] = proj;
+            
+            Collider2D col = Physics2D.OverlapCircle(proj.trans.position, 0.1f, Masks.EnemyMask);
+            if (col != null) {
+                Destroy(projectiles[i].trans.gameObject);
+                projectiles.RemoveAt(i);
+                Enemy enemy = enemyLookup[col.gameObject];
+                enemy.health -= 50;
+            }
         }
 
         for (int i = projectiles.Count - 1; i >= 0; i--) {
@@ -60,7 +74,9 @@ public class GameManager : MonoBehaviour {
 
     public class Enemy {
         public Transform trans;
+        public Rigidbody2D rigidbody;
         public PathData pathData = new();
+        public int health;
         
         public Vector3 position {
             get => trans.position;
@@ -76,8 +92,29 @@ public class GameManager : MonoBehaviour {
         
         public bool HasPath => abPath != null;
     }
+
+    private void SpawnEnemies() {
+        if (enemies.Count >= 100) return;
+        
+        Vector2 randomSpawnPos = Quaternion.AngleAxis(Random.Range(0, 360), Vector3.forward) * Vector3.right * 5f;
+        GameObject enemy = Instantiate(enemyPrefab, randomSpawnPos, Quaternion.identity);
+        enemies.Add(new() {
+            trans = enemy.transform,
+            rigidbody = enemy.GetComponent<Rigidbody2D>(),
+            health = 100,
+        });
+        enemyLookup.Add(enemy, enemies[^1]);
+    }
     
     private void UpdateEnemies() {
+        for (int i = enemies.Count - 1; i >= 0; i--) {
+            if (enemies[i].health <= 0) {
+                enemyLookup.Remove(enemies[i].trans.gameObject);
+                Destroy(enemies[i].trans.gameObject);
+                enemies.RemoveAt(i);
+            }
+        }
+
         foreach (Enemy enemy in enemies) {
             if ((enemy.pathData.HasPath && Time.time - enemy.pathData.lastUpdateTime <= 0.5f) || enemy.pathData.isBeingCalculated) continue;
             
@@ -93,7 +130,9 @@ public class GameManager : MonoBehaviour {
             AstarPath.StartPath(abPath);
             enemy.pathData.isBeingCalculated = true;
         }
-        
+    }
+
+    private void FixedUpdateEnemies() {
         foreach (Enemy enemy in enemies) {
             if (enemy.pathData.abPath == null) continue;
             
@@ -108,7 +147,8 @@ public class GameManager : MonoBehaviour {
             usingPath = usingPath && pathData.waypointIndex < pathData.abPath.vectorPath.Count;
 
             Vector2 targetPos = usingPath ? pathData.abPath.vectorPath[pathData.waypointIndex] : player.position;
-            enemy.position = Vector2.MoveTowards(enemy.position, targetPos, 0.3f * Time.deltaTime);
+            Vector2 movePos = Vector2.MoveTowards(enemy.position, targetPos, 0.3f * Time.fixedDeltaTime);
+            enemy.rigidbody.MovePosition(movePos);
         }
     }
     
