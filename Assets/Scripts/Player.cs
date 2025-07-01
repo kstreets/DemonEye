@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 public static class Player {
 
     private static GameManager gm;
-    private const float playerSpeed = 0.5f;
+    private const float playerSpeed = 0.55f;
     private const float attackCooldown = 0.1f;
 
     private static Limitter attackLimiter;
