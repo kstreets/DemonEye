@@ -39,7 +39,7 @@ public static class Player {
             float angle = Vector2.SignedAngle(Vector2.right, velocity.normalized);
             
             Quaternion projectileRotation = Quaternion.AngleAxis(angle, Vector3.forward);
-            GameObject projectile = GameObject.Instantiate(gm.projectilePrefab, gm.player.position, projectileRotation);
+            GameObject projectile = GameObject.Instantiate(gm.projectilePrefab, gm.player.position + new Vector3(0f, 0.1f, 0f), projectileRotation);
             
             gm.projectiles.Add(new() {
                 timeAlive = 0f,

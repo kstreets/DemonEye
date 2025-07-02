@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Pathfinding;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -10,6 +11,7 @@ public class GameManager : MonoBehaviour {
     public Transform player;
     public Camera mainCamera;
     public RectTransform crosshairTrans;
+    public Transform resourceSpawnParent;
     
     public InputAction moveInputAction;
     public InputAction attackInputAction;
@@ -18,6 +20,7 @@ public class GameManager : MonoBehaviour {
 
     public GameObject projectilePrefab;
     public GameObject enemyPrefab;
+    public GameObject gemRockPrefab;
     
     public EnemyWaveManager waveManager;
 
@@ -42,13 +45,15 @@ public class GameManager : MonoBehaviour {
         interactInputAction = InputSystem.actions.FindAction("Interact");
         inventoryInputAction = InputSystem.actions.FindAction("Inventory");
         
+        InitWave();
+        SpawnResources();
         Player.Init(this);
     }
 
     private void Update() {
         Player.Update();
         UpdateProjectiles();
-        // SpawnEnemies();
+        SpawnEnemies();
         UpdateEnemies();
         UpdateWave();
     }
@@ -70,14 +75,29 @@ public class GameManager : MonoBehaviour {
             proj.trans.position += proj.velocity.ToVector3() * Time.deltaTime;
             projectiles[i] = proj;
             
-            Collider2D col = Physics2D.OverlapCircle(proj.trans.position, 0.1f, Masks.EnemyMask);
+            Collider2D col = Physics2D.OverlapCircle(proj.trans.position, 0.1f, Masks.DamagableMask);
             if (col != null) {
-                // We damage all very close enemies to elimate long trains
-                Collider2D[] cols = Physics2D.OverlapCircleAll(proj.trans.position, 0.12f, Masks.EnemyMask);
-                foreach (Collider2D eCol in cols) {
-                    Enemy enemy = enemyLookup[eCol.gameObject];
-                    enemy.health -= 50;
+
+                if (col.CompareTag("Enemy")) {
+                    // We damage all very close enemies to elimate long trains
+                    Collider2D[] cols = Physics2D.OverlapCircleAll(proj.trans.position, 0.12f, Masks.EnemyMask);
+                    foreach (Collider2D eCol in cols) {
+                        Enemy enemy = enemyLookup[eCol.gameObject];
+                        enemy.health -= 50;
+                    }
                 }
+                else {
+                    Mineable mineable = col.GetComponent<Mineable>();
+                    mineable.health -= 50;
+
+                    Vector3 spawnPos = col.transform.position + RandomOffset360(0.25f, 0.5f);
+                    Instantiate(mineable.dropPrefab, spawnPos, Quaternion.identity);
+
+                    if (mineable.health <= 0) {
+                        Destroy(mineable.gameObject);
+                    }
+                }
+                
                 Destroy(projectiles[i].trans.gameObject);
                 projectiles.RemoveAt(i);
             }
@@ -113,9 +133,9 @@ public class GameManager : MonoBehaviour {
     }
 
     private void SpawnEnemies() {
-        if (waveManager.enemiesLeftToSpawn <= 0) return;
-        
-        Vector2 randomSpawnPos = player.position + Quaternion.AngleAxis(Random.Range(0, 360), Vector3.forward) * Vector3.right * Random.Range(3f, 4f);
+        if (waveManager.enemiesLeftToSpawn <= 0 || enemies.Count > waveManager.enemySpawnLimit) return;
+
+        Vector2 randomSpawnPos = player.position + RandomOffset360(3f, 4f);
         
         NNInfo info = AstarPath.active.graphs[0].GetNearest(randomSpawnPos, NNConstraint.Walkable);
         GameObject enemy = Instantiate(enemyPrefab, info.position, Quaternion.identity);
@@ -182,21 +202,28 @@ public class GameManager : MonoBehaviour {
         public float minTimeBetweenWaves;
         public float maxTimeBetweenWaves;
         public int startingWaveSize;
+        public int startingSpawnLimit;
         public int waveSizeIncrement;
 
         public float curTimeBetweenWave;
         public int curWaveCount;
         public int enemiesLeftToSpawn;
+        public int enemySpawnLimit;
+    }
+
+    private void InitWave() {
+        waveManager.curTimeBetweenWave = Random.Range(waveManager.minTimeBetweenWaves, waveManager.maxTimeBetweenWaves);
     }
     
     private void UpdateWave() {
         EnemyWaveManager wm = waveManager;
-
+        
         wm.curTimeBetweenWave -= Time.deltaTime;
         if (wm.curTimeBetweenWave > 0f) return;
 
         wm.curTimeBetweenWave = Random.Range(wm.minTimeBetweenWaves, wm.maxTimeBetweenWaves);
         wm.enemiesLeftToSpawn = wm.startingWaveSize + wm.waveSizeIncrement * wm.curWaveCount;
+        wm.enemySpawnLimit = wm.startingSpawnLimit + wm.waveSizeIncrement * wm.curWaveCount;
         wm.curWaveCount++;
     }
 
@@ -220,4 +247,21 @@ public class GameManager : MonoBehaviour {
         playerInventory.Add(new() { itemData = itemData, count = 1 });
     }
 
+    public Vector3 RandomOffset360(float minDist, float maxDist) {
+        return Quaternion.AngleAxis(Random.Range(0, 360), Vector3.forward) * Vector3.right * Random.Range(minDist, maxDist);
+    }
+
+    private void SpawnResources() {
+        List<Transform> spawnPoints = resourceSpawnParent.GetComponentsInChildren<Transform>().ToList();
+        spawnPoints.RemoveAt(0); // Remove resourceSpawnParent
+        
+        int gemRocksToSpawn = Random.Range(15, 23);
+        for (int i = 0; i < gemRocksToSpawn; i++) {
+            int randomIndex = Random.Range(0, spawnPoints.Count);
+            Transform spawnTrans = spawnPoints[randomIndex];
+            Instantiate(gemRockPrefab, spawnTrans.position, Quaternion.identity);
+            spawnPoints.RemoveAt(randomIndex);
+        }
+        
+    }
 }
