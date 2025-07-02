@@ -17,6 +17,8 @@ public class GameManager : MonoBehaviour {
     public GameObject projectilePrefab;
     public GameObject enemyPrefab;
     
+    public EnemyWaveManager waveManager;
+
     [NonSerialized] public List<Projectile> projectiles = new();
     
     [NonSerialized] public List<Enemy> enemies = new();
@@ -36,6 +38,7 @@ public class GameManager : MonoBehaviour {
         UpdateProjectiles();
         SpawnEnemies();
         UpdateEnemies();
+        UpdateWave();
     }
 
     private void FixedUpdate() {
@@ -57,10 +60,14 @@ public class GameManager : MonoBehaviour {
             
             Collider2D col = Physics2D.OverlapCircle(proj.trans.position, 0.1f, Masks.EnemyMask);
             if (col != null) {
+                // We damage all very close enemies to elimate long trains
+                Collider2D[] cols = Physics2D.OverlapCircleAll(proj.trans.position, 0.12f, Masks.EnemyMask);
+                foreach (Collider2D eCol in cols) {
+                    Enemy enemy = enemyLookup[eCol.gameObject];
+                    enemy.health -= 50;
+                }
                 Destroy(projectiles[i].trans.gameObject);
                 projectiles.RemoveAt(i);
-                Enemy enemy = enemyLookup[col.gameObject];
-                enemy.health -= 50;
             }
         }
 
@@ -94,16 +101,21 @@ public class GameManager : MonoBehaviour {
     }
 
     private void SpawnEnemies() {
-        if (enemies.Count >= 100) return;
+        if (waveManager.enemiesLeftToSpawn <= 0) return;
         
-        Vector2 randomSpawnPos = Quaternion.AngleAxis(Random.Range(0, 360), Vector3.forward) * Vector3.right * 5f;
-        GameObject enemy = Instantiate(enemyPrefab, randomSpawnPos, Quaternion.identity);
+        Vector2 randomSpawnPos = player.position + Quaternion.AngleAxis(Random.Range(0, 360), Vector3.forward) * Vector3.right * Random.Range(3f, 4f);
+        
+        NNInfo info = AstarPath.active.graphs[0].GetNearest(randomSpawnPos, NNConstraint.Walkable);
+        GameObject enemy = Instantiate(enemyPrefab, info.position, Quaternion.identity);
+        
         enemies.Add(new() {
             trans = enemy.transform,
             rigidbody = enemy.GetComponent<Rigidbody2D>(),
             health = 100,
         });
         enemyLookup.Add(enemy, enemies[^1]);
+
+        waveManager.enemiesLeftToSpawn--;
     }
     
     private void UpdateEnemies() {
@@ -147,9 +159,33 @@ public class GameManager : MonoBehaviour {
             usingPath = usingPath && pathData.waypointIndex < pathData.abPath.vectorPath.Count;
 
             Vector2 targetPos = usingPath ? pathData.abPath.vectorPath[pathData.waypointIndex] : player.position;
-            Vector2 movePos = Vector2.MoveTowards(enemy.position, targetPos, 0.3f * Time.fixedDeltaTime);
+            Vector2 movePos = Vector2.MoveTowards(enemy.position, targetPos, 0.4f * Time.fixedDeltaTime);
             enemy.rigidbody.MovePosition(movePos);
         }
+    }
+
+
+    [Serializable]
+    public class EnemyWaveManager {
+        public float minTimeBetweenWaves;
+        public float maxTimeBetweenWaves;
+        public int startingWaveSize;
+        public int waveSizeIncrement;
+
+        public float curTimeBetweenWave;
+        public int curWaveCount;
+        public int enemiesLeftToSpawn;
+    }
+    
+    private void UpdateWave() {
+        EnemyWaveManager wm = waveManager;
+
+        wm.curTimeBetweenWave -= Time.deltaTime;
+        if (wm.curTimeBetweenWave > 0f) return;
+
+        wm.curTimeBetweenWave = Random.Range(wm.minTimeBetweenWaves, wm.maxTimeBetweenWaves);
+        wm.enemiesLeftToSpawn = wm.startingWaveSize + wm.waveSizeIncrement * wm.curWaveCount;
+        wm.curWaveCount++;
     }
     
 }

@@ -93578,6 +93578,14 @@ MonoBehaviour:
     m_Flags: 0
   projectilePrefab: {fileID: 4682860730991365088, guid: 5fa01c7df64854b40996c60725181067, type: 3}
   enemyPrefab: {fileID: 7814119993517076521, guid: 833b76e47459c3f42b84396473e92372, type: 3}
+  waveManager:
+    minTimeBetweenWaves: 18
+    maxTimeBetweenWaves: 120
+    startingWaveSize: 50
+    waveSizeIncrement: 30
+    curTimeBetweenWave: 0
+    curWaveCount: 0
+    enemiesLeftToSpawn: 0
 --- !u!114 &2018473790
 MonoBehaviour:
   m_ObjectHideFlags: 0
