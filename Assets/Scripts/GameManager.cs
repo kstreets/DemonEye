@@ -13,6 +13,7 @@ public class GameManager : MonoBehaviour {
     
     public InputAction moveInputAction;
     public InputAction attackInputAction;
+    public InputAction interactInputAction;
     public InputAction inventoryInputAction;
 
     public GameObject projectilePrefab;
@@ -22,7 +23,10 @@ public class GameManager : MonoBehaviour {
 
     [Header("UI")]
     public RectTransform inventoryParent;
+    public RectTransform lootInventoryParent;
     public GameObject inventorySlotPrefab;
+    public GameObject inventoryItemPrefab;
+    public GameObject interactPrompt;
 
     [NonSerialized] public List<Projectile> projectiles = new();
     
@@ -35,6 +39,7 @@ public class GameManager : MonoBehaviour {
     private void Start() {
         moveInputAction = InputSystem.actions.FindAction("Move");
         attackInputAction = InputSystem.actions.FindAction("Attack");
+        interactInputAction = InputSystem.actions.FindAction("Interact");
         inventoryInputAction = InputSystem.actions.FindAction("Inventory");
         
         Player.Init(this);
@@ -195,5 +200,24 @@ public class GameManager : MonoBehaviour {
         wm.curWaveCount++;
     }
 
+
+    [Serializable]
+    public class InventoryItem {
+        public ItemData itemData;
+        public int count;
+    }
+
+    [NonSerialized] public List<InventoryItem> playerInventory = new();
+
+    public void AddItemToPlayerInventory(ItemData itemData) {
+        foreach (InventoryItem item in playerInventory) {
+            if (item.itemData == itemData) {
+                item.count += 1;
+                return;
+            }
+        }
+
+        playerInventory.Add(new() { itemData = itemData, count = 1 });
+    }
 
 }
