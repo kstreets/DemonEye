@@ -13,22 +13,29 @@ public class GameManager : MonoBehaviour {
     
     public InputAction moveInputAction;
     public InputAction attackInputAction;
+    public InputAction inventoryInputAction;
 
     public GameObject projectilePrefab;
     public GameObject enemyPrefab;
     
     public EnemyWaveManager waveManager;
 
+    [Header("UI")]
+    public RectTransform inventoryParent;
+    public GameObject inventorySlotPrefab;
+
     [NonSerialized] public List<Projectile> projectiles = new();
     
     [NonSerialized] public List<Enemy> enemies = new();
     [NonSerialized] public Dictionary<GameObject, Enemy> enemyLookup = new();
 
+    [NonSerialized] public bool inventoryIsOpen;
+    
+
     private void Start() {
-        Cursor.visible = false;
-        
         moveInputAction = InputSystem.actions.FindAction("Move");
         attackInputAction = InputSystem.actions.FindAction("Attack");
+        inventoryInputAction = InputSystem.actions.FindAction("Inventory");
         
         Player.Init(this);
     }
@@ -36,7 +43,7 @@ public class GameManager : MonoBehaviour {
     private void Update() {
         Player.Update();
         UpdateProjectiles();
-        SpawnEnemies();
+        // SpawnEnemies();
         UpdateEnemies();
         UpdateWave();
     }
@@ -187,5 +194,6 @@ public class GameManager : MonoBehaviour {
         wm.enemiesLeftToSpawn = wm.startingWaveSize + wm.waveSizeIncrement * wm.curWaveCount;
         wm.curWaveCount++;
     }
-    
+
+
 }
