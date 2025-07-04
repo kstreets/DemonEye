@@ -10,6 +10,7 @@ TagManager:
   - Crucible
   - Pickup
   - Stash
+  - HellPortal
   layers:
   - Default
   - TransparentFX

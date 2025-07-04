@@ -36,28 +36,14 @@ public class StateMachine {
     }
 
     public void SetState(State state) {
-        PrevState = CurState;
-        CurState = state;
-        nextStateAfterDelay = null;
-        PrevState.OnStateExitAction?.Invoke();
-        CurState.OnStateEnterAction?.Invoke();
-        timeSinceStateStart = 0f;
-        curNextStateDelay = 0f;
-    }
-
-    public void SetState(State state, float delay) {
-        if (delay <= 0f) {
-            SetState(state);
-            return;
-        }
-
-        nextStateDelay = delay;
+        nextStateDelay = 0f;
         nextStateAfterDelay = state;
     }
 
     public bool SetStateIfNotCurrent(State state) {
         if (CurState == state) return false;
-        SetState(state);
+        nextStateDelay = 0f;
+        nextStateAfterDelay = state;
         return true;
     }
 
@@ -86,16 +72,36 @@ public class StateMachine {
             CurState.WhileExiting?.Invoke();
             return;
         }
-        SetState(nextStateAfterDelay);    
+        SetStateImediate(nextStateAfterDelay);
     }
 
     private void UpdateState(List<Transition> transitions) {
         foreach (Transition transition in transitions) {
             if (timeSinceStateStart >= transition.Seconds && transition.EvaluateTransition()) {
-                SetState(transition.NextState, transition.Delay);
+                SetStateImediate(transition.NextState, transition.Delay);
                 break;
             }
         }
+    }
+    
+    private void SetStateImediate(State state) {
+        PrevState = CurState;
+        CurState = state;
+        nextStateAfterDelay = null;
+        PrevState.OnStateExitAction?.Invoke();
+        CurState.OnStateEnterAction?.Invoke();
+        timeSinceStateStart = 0f;
+        curNextStateDelay = 0f;
+    }
+
+    private void SetStateImediate(State state, float delay) {
+        if (delay <= 0f) {
+            SetStateImediate(state);
+            return;
+        }
+
+        nextStateDelay = delay;
+        nextStateAfterDelay = state;
     }
     
 }

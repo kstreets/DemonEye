@@ -5,7 +5,6 @@ using Pathfinding;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
@@ -16,6 +15,9 @@ public class GameManager : MonoBehaviour {
     public RectTransform crosshairTrans;
     public Transform resourceSpawnParent;
     public Transform exitPortalSpawnParent;
+
+    public Transform hideoutParent;
+    public Transform hellRaidParent;
     
     public GameObject projectilePrefab;
     public GameObject enemyPrefab;
@@ -23,6 +25,10 @@ public class GameManager : MonoBehaviour {
     public GameObject exitPortalPrefab;
     
     public EnemyWaveManager waveManager;
+
+    [Header("Spawn Positions")]
+    public Vector3 hideoutSpawnPosition;
+    public Vector3 hellSpawnPosition;
 
     [Header("UI")]
     public RectTransform inventoryParent;
@@ -40,11 +46,16 @@ public class GameManager : MonoBehaviour {
     public InputAction inventoryInputAction;
 
     [NonSerialized] public List<Projectile> projectiles = new();
+    [NonSerialized] public List<GameObject> spawnedResources = new();
     
     [NonSerialized] public List<Enemy> enemies = new();
     [NonSerialized] public Dictionary<GameObject, Enemy> enemyLookup = new();
 
     private Timer exitPortalTimer;
+
+    private State hideoutState;
+    private State raidState;
+    private StateMachine gameStateMachine = new();
 
     private void Start() {
         moveInputAction = InputSystem.actions.FindAction("Move");
@@ -52,21 +63,14 @@ public class GameManager : MonoBehaviour {
         interactInputAction = InputSystem.actions.FindAction("Interact");
         inventoryInputAction = InputSystem.actions.FindAction("Inventory");
 
-        InitExitPortal();
-        InitWave();
-        SpawnResources();
-        InitPlayer();
+        hideoutState = gameStateMachine.CreateState(OnHideoutStateUpdate, OnHideoutStateEnter, OnHideoutStateExit);
+        raidState = gameStateMachine.CreateState(OnRaidStateUpdate, OnRaidStateEndter, OnRaidStateExit);
+        
+        InitInventory();
     }
 
     private void Update() {
-        UpdateTimers();
-        CheckForInteractions();
-        UpdateInventory();
-        UpdatePlayer();
-        UpdateProjectiles();
-        SpawnEnemies();
-        UpdateEnemies();
-        UpdateWave();
+        gameStateMachine.Tick();
     }
 
     private void FixedUpdate() {
@@ -76,18 +80,58 @@ public class GameManager : MonoBehaviour {
     private void UpdateTimers() {
         exitPortalTimer.Tick();
     }
+
+
+    private void OnHideoutStateEnter() {
+        hideoutParent.gameObject.SetActive(true);
+        player.transform.position = hideoutSpawnPosition;
+    }
+
+    private void OnHideoutStateExit() {
+        hideoutParent.gameObject.SetActive(false);
+    }
+
+    private void OnHideoutStateUpdate() {
+        UpdateTimers();
+        CheckForInteractions();
+        UpdateInventory();
+        UpdatePlayer();
+        UpdateProjectiles();
+    }
+
+    private void OnRaidStateEndter() {
+        hellRaidParent.gameObject.SetActive(true);
+        player.transform.position = hellSpawnPosition;
+        InitExitPortal();
+        InitWave();
+        SpawnResources();
+    }
+
+    private void OnRaidStateExit() {
+        ClearResources();
+        ClearEnemies();
+        ClearProjectiles();
+        hellRaidParent.gameObject.SetActive(false);
+    }
+
+    private void OnRaidStateUpdate() {
+        UpdateTimers();
+        CheckForInteractions();
+        UpdateInventory();
+        UpdatePlayer();
+        UpdateProjectiles();
+        SpawnEnemies();
+        UpdateEnemies();
+        UpdateWave();
+    }
     
     
-    private const float playerSpeed = 0.55f;
+    private const float playerSpeed = 1.55f;
     private const float attackCooldown = 0.1f;
     private const float interactionRadius = 0.1f;
     private Limitter attackLimiter;
     private List<Collider2D> playerContacts = new(10);
     
-    private void InitPlayer() {
-        InitInventory();
-    }
-
     private void UpdatePlayer() {
         if (InventoryIsOpen) return;
         
@@ -104,7 +148,7 @@ public class GameManager : MonoBehaviour {
             float angle = Vector2.SignedAngle(Vector2.right, velocity.normalized);
             
             Quaternion projectileRotation = Quaternion.AngleAxis(angle, Vector3.forward);
-            GameObject projectile = GameObject.Instantiate(projectilePrefab, player.position + new Vector3(0f, 0.1f, 0f), projectileRotation);
+            GameObject projectile = Instantiate(projectilePrefab, player.position + new Vector3(0f, 0.1f, 0f), projectileRotation);
             
             projectiles.Add(new() {
                 timeAlive = 0f,
@@ -147,7 +191,11 @@ public class GameManager : MonoBehaviour {
             }
 
             if (col.CompareTag(Tags.ExitPortal)) {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+                gameStateMachine.SetStateIfNotCurrent(hideoutState);
+            }
+
+            if (col.CompareTag(Tags.HellPortal)) {
+                gameStateMachine.SetStateIfNotCurrent(raidState);
             }
         } 
     }
@@ -392,7 +440,7 @@ public class GameManager : MonoBehaviour {
                     mineable.health -= 50;
 
                     Vector3 spawnPos = col.transform.position + RandomOffset360(0.25f, 0.5f);
-                    Instantiate(mineable.dropPrefab, spawnPos, Quaternion.identity);
+                    spawnedResources.Add(Instantiate(mineable.dropPrefab, spawnPos, Quaternion.identity));
 
                     if (mineable.health <= 0) {
                         Destroy(mineable.gameObject);
@@ -411,6 +459,14 @@ public class GameManager : MonoBehaviour {
             }
         }
     }
+
+    private void ClearProjectiles() {
+        foreach (Projectile projectile in projectiles) {
+            Destroy(projectile.trans.gameObject);
+        }
+        projectiles.Clear();
+    }
+    
 
     public class Enemy {
         public Transform trans;
@@ -497,6 +553,14 @@ public class GameManager : MonoBehaviour {
         }
     }
 
+    private void ClearEnemies() {
+        foreach (Enemy enemy in enemies) {
+            Destroy(enemy.trans.gameObject);
+        }
+        enemies.Clear();
+        enemyLookup.Clear();
+    }
+
 
     [Serializable]
     public class EnemyWaveManager {
@@ -552,6 +616,7 @@ public class GameManager : MonoBehaviour {
         return Quaternion.AngleAxis(Random.Range(0, 360), Vector3.forward) * Vector3.right * Random.Range(minDist, maxDist);
     }
 
+    
     private void SpawnResources() {
         List<Transform> spawnPoints = resourceSpawnParent.GetComponentsInChildren<Transform>().ToList();
         spawnPoints.RemoveAt(0); // Remove resourceSpawnParent
@@ -560,9 +625,16 @@ public class GameManager : MonoBehaviour {
         for (int i = 0; i < gemRocksToSpawn; i++) {
             int randomIndex = Random.Range(0, spawnPoints.Count);
             Transform spawnTrans = spawnPoints[randomIndex];
-            Instantiate(gemRockPrefab, spawnTrans.position, Quaternion.identity);
+            spawnedResources.Add(Instantiate(gemRockPrefab, spawnTrans.position, Quaternion.identity));
             spawnPoints.RemoveAt(randomIndex);
         }
+    }
+
+    private void ClearResources() {
+        foreach (GameObject resource in spawnedResources) {
+            Destroy(resource);
+        }
+        spawnedResources.Clear();
     }
     
 }
