@@ -1,7 +1,8 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using Pathfinding;
 using TMPro;
 using UnityEngine;
@@ -11,6 +12,7 @@ using Random = UnityEngine.Random;
 
 public class GameManager : MonoBehaviour {
 
+    public List<ItemData> allItems;
     public Transform player;
     public Camera mainCamera;
     public RectTransform crosshairTrans;
@@ -19,7 +21,6 @@ public class GameManager : MonoBehaviour {
 
     public Transform hideoutParent;
     public Transform hellRaidParent;
-    public AstarPath hellAstarPath;
     
     public GameObject projectilePrefab;
     public GameObject enemyPrefab;
@@ -27,7 +28,7 @@ public class GameManager : MonoBehaviour {
     public GameObject exitPortalPrefab;
     
     public EnemyWaveManager waveManager;
-
+    
     [Header("Spawn Positions")]
     public Vector3 hideoutSpawnPosition;
     public Vector3 hellSpawnPosition;
@@ -46,12 +47,18 @@ public class GameManager : MonoBehaviour {
     public InputAction attackInputAction;
     public InputAction interactInputAction;
     public InputAction inventoryInputAction;
+    
+    [Header("Testing")]
+    public TestingInventory testingInventory;
 
     [NonSerialized] public List<Projectile> projectiles = new();
     [NonSerialized] public List<GameObject> spawnedResources = new();
     
     [NonSerialized] public List<Enemy> enemies = new();
     [NonSerialized] public Dictionary<GameObject, Enemy> enemyLookup = new();
+    
+    
+    private static Dictionary<string, ItemData> itemDataLookup = new();
 
     private Timer exitPortalTimer;
 
@@ -60,6 +67,14 @@ public class GameManager : MonoBehaviour {
     private StateMachine gameStateMachine = new();
 
     private void Start() {
+        foreach (ItemData itemData in allItems) {
+            itemDataLookup.Add(itemData.uuid, itemData);
+        }
+        
+        BuildSavePaths();
+        LoadInventory();
+        LoadStash();
+        
         moveInputAction = InputSystem.actions.FindAction("Move");
         attackInputAction = InputSystem.actions.FindAction("Attack");
         interactInputAction = InputSystem.actions.FindAction("Interact");
@@ -69,6 +84,12 @@ public class GameManager : MonoBehaviour {
         raidState = gameStateMachine.CreateState(OnRaidStateUpdate, OnRaidStateEndter, OnRaidStateExit);
         
         InitInventory();
+
+        if (testingInventory != null) {
+            foreach (TestingInventory.TestInventoryItem inventoryItem in testingInventory.items) {
+                AddItemToPlayerInventory(inventoryItem.itemData, inventoryItem.count);
+            }
+        }
     }
 
     private void Update() {
@@ -77,6 +98,11 @@ public class GameManager : MonoBehaviour {
 
     private void FixedUpdate() {
         FixedUpdateEnemies();
+    }
+
+    private void OnApplicationQuit() {
+        SaveInventory();
+        SaveStash();
     }
 
     private void UpdateTimers() {
@@ -206,8 +232,10 @@ public class GameManager : MonoBehaviour {
     
     [Serializable]
     public class InventoryItem {
-        public ItemData itemData;
+        public string itemDataUuid; // Store uuid for serialization purposes
         public int count;
+
+        public ItemData itemData => itemDataLookup[itemDataUuid];
     }
 
     private List<InventoryItem> playerInventory = new();
@@ -324,12 +352,12 @@ public class GameManager : MonoBehaviour {
     public void AddItemToPlayerInventory(ItemData itemData, int count = 1) {
         foreach (InventoryItem item in playerInventory) {
             if (item.itemData == itemData) {
-                item.count += 1;
+                item.count += count;
                 return;
             }
         }
 
-        playerInventory.Add(new() { itemData = itemData, count = count });
+        playerInventory.Add(new() { itemDataUuid = itemData.uuid, count = count });
         RefreshPlayerInventoryDisplay();
     }
 
@@ -348,12 +376,12 @@ public class GameManager : MonoBehaviour {
     public void AddItemToStashInventory(ItemData itemData, int count = 1) {
         foreach (InventoryItem item in stashInventory) {
             if (item.itemData == itemData) {
-                item.count += 1;
+                item.count += count;
                 return;
             }
         }
 
-        stashInventory.Add(new() { itemData = itemData, count = count });
+        stashInventory.Add(new() { itemDataUuid = itemData.uuid, count = count });
         RefreshStashInventoryDisplay();
     }
     
@@ -643,6 +671,52 @@ public class GameManager : MonoBehaviour {
             Destroy(resource);
         }
         spawnedResources.Clear();
+    }
+
+
+    private string inventorySavePath;
+    private string stashSavePath;
+
+    private void BuildSavePaths() {
+        inventorySavePath = $"{Application.persistentDataPath}/inventory";
+        stashSavePath = $"{Application.persistentDataPath}/stash";
+    }
+    
+    private void SaveInventory() {
+        SaveToFile(inventorySavePath, playerInventory);
+    }
+
+    private void LoadInventory() {
+        List<InventoryItem> loadedItems = LoadFromFile<List<InventoryItem>>(inventorySavePath);
+        if (loadedItems != null) {
+            playerInventory = loadedItems;
+        }
+    }
+
+    private void SaveStash() {
+        SaveToFile(stashSavePath, stashInventory);
+    }
+
+    private void LoadStash() {
+        List<InventoryItem> loadedItems = LoadFromFile<List<InventoryItem>>(stashSavePath);
+        if (loadedItems != null) {
+            stashInventory = loadedItems;
+        }
+    }
+
+    private void SaveToFile(string path, object obj) {
+        BinaryFormatter bf = new();
+        using FileStream file = File.Create(path);
+        bf.Serialize(file, obj);
+    }
+
+    private T LoadFromFile<T>(string path) where T : class {
+        if (File.Exists(path)) {
+            BinaryFormatter bf = new();
+            using FileStream file = File.Open(path, FileMode.Open);
+            return (T)bf.Deserialize(file);
+        }
+        return null;
     }
     
 }

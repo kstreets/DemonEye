@@ -97238,6 +97238,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe0d147fa5ac6ad488d161e946b96d11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  allItems:
+  - {fileID: 11400000, guid: 2bd24092f02cb4b43973f1026b5c2133, type: 2}
+  - {fileID: 11400000, guid: 3221e45827671e44eba996e95660ee2b, type: 2}
   player: {fileID: 1370272340}
   mainCamera: {fileID: 519420031}
   crosshairTrans: {fileID: 997770961}
@@ -97245,7 +97248,6 @@ MonoBehaviour:
   exitPortalSpawnParent: {fileID: 201188077}
   hideoutParent: {fileID: 1996054087}
   hellRaidParent: {fileID: 1506332736}
-  hellAstarPath: {fileID: 0}
   projectilePrefab: {fileID: 4682860730991365088, guid: 5fa01c7df64854b40996c60725181067, type: 3}
   enemyPrefab: {fileID: 7814119993517076521, guid: 833b76e47459c3f42b84396473e92372, type: 3}
   gemRockPrefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
@@ -97305,6 +97307,7 @@ MonoBehaviour:
     m_Interactions: 
     m_SingletonActionBindings: []
     m_Flags: 0
+  testingInventory: {fileID: 0}
 --- !u!114 &2018473790
 MonoBehaviour:
   m_ObjectHideFlags: 0
