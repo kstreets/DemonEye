@@ -5,6 +5,8 @@ using Pathfinding;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 public class GameManager : MonoBehaviour {
@@ -53,12 +55,14 @@ public class GameManager : MonoBehaviour {
         InitExitPortal();
         InitWave();
         SpawnResources();
-        Player.Init(this);
+        InitPlayer();
     }
 
     private void Update() {
         UpdateTimers();
-        Player.Update();
+        CheckForInteractions();
+        UpdateInventory();
+        UpdatePlayer();
         UpdateProjectiles();
         SpawnEnemies();
         UpdateEnemies();
@@ -72,7 +76,293 @@ public class GameManager : MonoBehaviour {
     private void UpdateTimers() {
         exitPortalTimer.Tick();
     }
+    
+    
+    private const float playerSpeed = 0.55f;
+    private const float attackCooldown = 0.1f;
+    private const float interactionRadius = 0.1f;
+    private Limitter attackLimiter;
+    private List<Collider2D> playerContacts = new(10);
+    
+    private void InitPlayer() {
+        InitInventory();
+    }
 
+    private void UpdatePlayer() {
+        if (InventoryIsOpen) return;
+        
+        Vector2 moveInput = moveInputAction.ReadValue<Vector2>();
+        player.position += new Vector3(moveInput.x, moveInput.y, 0f) * (playerSpeed * Time.deltaTime);
+
+        Vector2 mousePos = Mouse.current.position.ReadValue();
+        crosshairTrans.position = mousePos;
+
+        if (attackInputAction.IsPressed() && attackLimiter.TimeHasPassed(attackCooldown)) {
+            Vector2 mouseWorldPos = mainCamera.ScreenToWorldPoint(mousePos);
+
+            Vector2 velocity = (mouseWorldPos - player.PositionV2()).normalized * 2.1f;
+            float angle = Vector2.SignedAngle(Vector2.right, velocity.normalized);
+            
+            Quaternion projectileRotation = Quaternion.AngleAxis(angle, Vector3.forward);
+            GameObject projectile = GameObject.Instantiate(projectilePrefab, player.position + new Vector3(0f, 0.1f, 0f), projectileRotation);
+            
+            projectiles.Add(new() {
+                timeAlive = 0f,
+                trans = projectile.transform,
+                velocity = velocity 
+            });
+        }
+    }
+    
+    private void CheckForInteractions() { 
+        interactPrompt.SetActive(false);
+        
+        Collider2D playerCol = player.GetComponent<Collider2D>();
+        int size = playerCol.GetContacts(playerContacts);
+        
+        for (int i = 0; i < size; i++) {
+            Collider2D col = playerContacts[i];
+            
+            if (col.CompareTag(Tags.Pickup)) {
+                interactPrompt.SetActive(true);
+                interactPrompt.transform.position = mainCamera.WorldToScreenPoint(col.transform.position + new Vector3(0f, 0.1f, 0f));
+                if (interactInputAction.WasPressedThisFrame()) {
+                    AddItemToPlayerInventory(col.GetComponent<Item>().itemData); 
+                    Destroy(col.gameObject);
+                }
+            }
+
+            if (col.CompareTag(Tags.Crucible)) {
+                interactPrompt.SetActive(true);
+                interactPrompt.transform.position = mainCamera.WorldToScreenPoint(col.transform.position + new Vector3(0f, 0.1f, 0f));
+            }
+            
+            if (col.CompareTag(Tags.Stash)) {
+                interactPrompt.SetActive(true);
+                interactPrompt.transform.position = mainCamera.WorldToScreenPoint(col.transform.position + new Vector3(0f, 0.1f, 0f));
+                if (interactInputAction.WasPressedThisFrame()) {
+                    OpenPlayerInventory();
+                    OpenStashInventory();
+                }
+            }
+
+            if (col.CompareTag(Tags.ExitPortal)) {
+                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            }
+        } 
+    }
+    
+    
+    [Serializable]
+    public class InventoryItem {
+        public ItemData itemData;
+        public int count;
+    }
+
+    private List<InventoryItem> playerInventory = new();
+    private List<InventoryItem> stashInventory = new();
+    
+    private bool InventoryIsOpen => inventoryParent.gameObject.activeSelf;
+    private bool StashIsOpen => stashInventoryParent.gameObject.activeSelf;
+    
+    private void InitInventory() {
+        const int inventorySlotSizeWithPadding = 110;
+        
+        const int playerInventoryWidth = 3;
+        const int playerInventoryHeight = 4;
+        InitInventoryWithSlots(inventoryParent, playerInventoryWidth, playerInventoryHeight); 
+        
+        const int cachedLootInventoryWidth = 3;
+        const int cachedLootInventoryHeight = 4;
+        InitInventoryWithSlots(lootInventoryParent, cachedLootInventoryWidth, cachedLootInventoryHeight); 
+        
+        const int stashInventoryWidth = 3;
+        const int stashInventoryHeight = 4;
+        InitInventoryWithSlots(stashInventoryParent, stashInventoryWidth, stashInventoryHeight); 
+
+        void InitInventoryWithSlots(RectTransform parent, int width, int height) {
+            for (int j = 0; j < height; j++) {
+                for (int i = 0; i < width; i++) {
+                    Vector3 pos = new(parent.position.x, parent.position.y, 0f);
+                    Vector3 offset = new(inventorySlotSizeWithPadding * i, -(inventorySlotSizeWithPadding * j), 0f);
+                    GameObject slot = Instantiate(inventorySlotPrefab, pos + offset, Quaternion.identity, parent);
+                    Instantiate(inventoryItemPrefab, pos + offset, Quaternion.identity, slot.transform);
+                }
+            }
+            parent.gameObject.SetActive(false);
+        }
+    }
+    
+    private void UpdateInventory() {
+        if (inventoryInputAction.WasPressedThisFrame()) {
+            if (!InventoryIsOpen) {
+                OpenPlayerInventory();
+            }
+            else {
+                ClosePlayerInventory();
+            }
+
+            if (StashIsOpen) {
+                CloseStashInventory();
+            }
+
+            if (!InventoryIsOpen) {
+                // Disable loot inventory in case it is active, it won't always be
+                lootInventoryParent.gameObject.SetActive(false);
+                return;
+            }
+
+            // Add nearby items to loot inventory
+            {
+                Collider2D[] cols = Physics2D.OverlapCircleAll(player.position, interactionRadius, Masks.ItemMask);
+                if (cols.Length <= 0) return;
+                
+                lootInventoryParent.gameObject.SetActive(true);
+
+                for (int i = 0; i < cols.Length; i++) {
+                    Collider2D col = cols[i];
+                    ItemData itemData = col.GetComponent<Item>().itemData;
+                    lootInventoryParent.GetChild(i).GetChild(0).GetComponent<Image>().sprite = itemData.inventorySprite;
+                }
+            }
+        }
+
+        if (!InventoryIsOpen || !StashIsOpen) return;
+
+        Vector2 mousePos = Mouse.current.position.ReadValue();
+        int hoveredSlotIndex = -1;
+        bool inventoryHovered = true;
+        
+        for (int i = 0; i < inventoryParent.childCount; i++) {
+            RectTransform rectTrans = inventoryParent.GetChild(i).GetComponent<RectTransform>();
+            bool mouseInRect = RectTransformUtility.RectangleContainsScreenPoint(rectTrans, mousePos);
+            if (mouseInRect) {
+                hoveredSlotIndex = i;
+                break;
+            }
+        }
+        
+        for (int i = 0; i < stashInventoryParent.childCount; i++) {
+            RectTransform rectTrans = stashInventoryParent.GetChild(i).GetComponent<RectTransform>();
+            bool mouseInRect = RectTransformUtility.RectangleContainsScreenPoint(rectTrans, mousePos);
+            if (mouseInRect) {
+                hoveredSlotIndex = i;
+                inventoryHovered = false;
+                break;
+            }
+        }
+
+        if (hoveredSlotIndex < 0) return;
+        
+        if (attackInputAction.WasPressedThisFrame()) {
+            if (inventoryHovered) {
+                InventoryItem inventoryItem = GetPlayerInventoryItem(hoveredSlotIndex);
+                if (inventoryItem == null) return;
+                AddItemToStashInventory(inventoryItem.itemData, inventoryItem.count);
+                RemoveItemFromPlayerInventory(hoveredSlotIndex);
+            }
+            else {
+                InventoryItem inventoryItem = GetStashInventoryItem(hoveredSlotIndex);
+                if (inventoryItem == null) return;
+                AddItemToPlayerInventory(inventoryItem.itemData, inventoryItem.count);
+                RemoveItemFromStashInventory(hoveredSlotIndex);
+            }
+        }
+    }
+    
+    public void AddItemToPlayerInventory(ItemData itemData, int count = 1) {
+        foreach (InventoryItem item in playerInventory) {
+            if (item.itemData == itemData) {
+                item.count += 1;
+                return;
+            }
+        }
+
+        playerInventory.Add(new() { itemData = itemData, count = count });
+        RefreshPlayerInventoryDisplay();
+    }
+
+    public InventoryItem GetPlayerInventoryItem(int slotIndex) {
+        if (slotIndex < 0 || slotIndex >= playerInventory.Count) {
+            return null;
+        }
+        return playerInventory[slotIndex];
+    }
+
+    public void RemoveItemFromPlayerInventory(int slotIndex) {
+        playerInventory.RemoveAt(slotIndex);
+        RefreshPlayerInventoryDisplay();
+    }
+
+    public void AddItemToStashInventory(ItemData itemData, int count = 1) {
+        foreach (InventoryItem item in stashInventory) {
+            if (item.itemData == itemData) {
+                item.count += 1;
+                return;
+            }
+        }
+
+        stashInventory.Add(new() { itemData = itemData, count = count });
+        RefreshStashInventoryDisplay();
+    }
+    
+    public InventoryItem GetStashInventoryItem(int slotIndex) {
+        if (slotIndex < 0 || slotIndex >= stashInventory.Count) {
+            return null;
+        }
+        return stashInventory[slotIndex];
+    }
+
+    public void RemoveItemFromStashInventory(int slotIndex) {
+        stashInventory.RemoveAt(slotIndex);
+        RefreshStashInventoryDisplay();
+    }
+    
+    public void RefreshPlayerInventoryDisplay() {
+        foreach (Transform child in inventoryParent.transform) {
+            child.GetComponentInChildren<InvetoryItemUI>().Clear();
+        }
+
+        for (int i = 0; i < playerInventory.Count; i++) {
+            InventoryItem item = playerInventory[i];
+            inventoryParent.GetChild(i).GetComponentInChildren<InvetoryItemUI>().Set(item.itemData, item.count);
+        }
+    }
+
+    public void RefreshStashInventoryDisplay() {
+        foreach (Transform child in stashInventoryParent.transform) {
+            child.GetComponentInChildren<InvetoryItemUI>().Clear();
+        }
+
+        for (int i = 0; i < stashInventory.Count; i++) {
+            InventoryItem item = stashInventory[i];
+            stashInventoryParent.GetChild(i).GetComponentInChildren<InvetoryItemUI>().Set(item.itemData, item.count);
+        }
+    }
+    
+    private void OpenPlayerInventory() {
+        inventoryParent.gameObject.SetActive(true);
+        crosshairTrans.gameObject.SetActive(false);
+        Cursor.visible = true;
+        RefreshPlayerInventoryDisplay();
+    }
+
+    private void ClosePlayerInventory() {
+        inventoryParent.gameObject.SetActive(false);
+        crosshairTrans.gameObject.SetActive(true);
+        Cursor.visible = false;
+    }
+
+    private void OpenStashInventory() {
+        stashInventoryParent.gameObject.SetActive(true);
+        RefreshStashInventoryDisplay();
+    }
+
+    private void CloseStashInventory() {
+        stashInventoryParent.gameObject.SetActive(false);
+    }
+    
+    
     public struct Projectile {
         public Transform trans;
         public float timeAlive;
@@ -255,86 +545,6 @@ public class GameManager : MonoBehaviour {
         wm.enemiesLeftToSpawn = wm.startingWaveSize + wm.waveSizeIncrement * wm.curWaveCount;
         wm.enemySpawnLimit = wm.startingSpawnLimit + wm.waveSizeIncrement * wm.curWaveCount;
         wm.curWaveCount++;
-    }
-    
-
-    [Serializable]
-    public class InventoryItem {
-        public ItemData itemData;
-        public int count;
-    }
-
-    [NonSerialized] public List<InventoryItem> playerInventory = new();
-    [NonSerialized] public List<InventoryItem> stashInventory = new();
-
-    public void AddItemToPlayerInventory(ItemData itemData, int count = 1) {
-        foreach (InventoryItem item in playerInventory) {
-            if (item.itemData == itemData) {
-                item.count += 1;
-                return;
-            }
-        }
-
-        playerInventory.Add(new() { itemData = itemData, count = count });
-        RefreshPlayerInventoryDisplay();
-    }
-
-    public InventoryItem GetPlayerInventoryItem(int slotIndex) {
-        if (slotIndex < 0 || slotIndex >= playerInventory.Count) {
-            return null;
-        }
-        return playerInventory[slotIndex];
-    }
-
-    public void RemoveItemFromPlayerInventory(int slotIndex) {
-        playerInventory.RemoveAt(slotIndex);
-        RefreshPlayerInventoryDisplay();
-    }
-
-    public void AddItemToStashInventory(ItemData itemData, int count = 1) {
-        foreach (InventoryItem item in stashInventory) {
-            if (item.itemData == itemData) {
-                item.count += 1;
-                return;
-            }
-        }
-
-        stashInventory.Add(new() { itemData = itemData, count = count });
-        RefreshStashInventoryDisplay();
-    }
-    
-    public InventoryItem GetStashInventoryItem(int slotIndex) {
-        if (slotIndex < 0 || slotIndex >= stashInventory.Count) {
-            return null;
-        }
-        return stashInventory[slotIndex];
-    }
-
-    public void RemoveItemFromStashInventory(int slotIndex) {
-        stashInventory.RemoveAt(slotIndex);
-        RefreshStashInventoryDisplay();
-    }
-    
-    public void RefreshPlayerInventoryDisplay() {
-        foreach (Transform child in inventoryParent.transform) {
-            child.GetComponentInChildren<InvetoryItemUI>().Clear();
-        }
-
-        for (int i = 0; i < playerInventory.Count; i++) {
-            InventoryItem item = playerInventory[i];
-            inventoryParent.GetChild(i).GetComponentInChildren<InvetoryItemUI>().Set(item.itemData, item.count);
-        }
-    }
-
-    public void RefreshStashInventoryDisplay() {
-        foreach (Transform child in stashInventoryParent.transform) {
-            child.GetComponentInChildren<InvetoryItemUI>().Clear();
-        }
-
-        for (int i = 0; i < stashInventory.Count; i++) {
-            InventoryItem item = stashInventory[i];
-            stashInventoryParent.GetChild(i).GetComponentInChildren<InvetoryItemUI>().Set(item.itemData, item.count);
-        }
     }
     
 
