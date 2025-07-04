@@ -6,6 +6,10 @@ TagManager:
   tags:
   - GemRock
   - Enemy
+  - ExitPortal
+  - Crucible
+  - Pickup
+  - Stash
   layers:
   - Default
   - TransparentFX
@@ -17,7 +21,7 @@ TagManager:
   - Player
   - Item
   - Mineable
-  - 
+  - Portal
   - 
   - 
   - 

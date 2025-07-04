@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Pathfinding;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Random = UnityEngine.Random;
@@ -12,45 +13,51 @@ public class GameManager : MonoBehaviour {
     public Camera mainCamera;
     public RectTransform crosshairTrans;
     public Transform resourceSpawnParent;
+    public Transform exitPortalSpawnParent;
     
-    public InputAction moveInputAction;
-    public InputAction attackInputAction;
-    public InputAction interactInputAction;
-    public InputAction inventoryInputAction;
-
     public GameObject projectilePrefab;
     public GameObject enemyPrefab;
     public GameObject gemRockPrefab;
+    public GameObject exitPortalPrefab;
     
     public EnemyWaveManager waveManager;
 
     [Header("UI")]
     public RectTransform inventoryParent;
     public RectTransform lootInventoryParent;
+    public RectTransform stashInventoryParent;
     public GameObject inventorySlotPrefab;
     public GameObject inventoryItemPrefab;
     public GameObject interactPrompt;
+    public TextMeshProUGUI exitPortalStatusText;
+    
+    [Header("Controls")]
+    public InputAction moveInputAction;
+    public InputAction attackInputAction;
+    public InputAction interactInputAction;
+    public InputAction inventoryInputAction;
 
     [NonSerialized] public List<Projectile> projectiles = new();
     
     [NonSerialized] public List<Enemy> enemies = new();
     [NonSerialized] public Dictionary<GameObject, Enemy> enemyLookup = new();
 
-    [NonSerialized] public bool inventoryIsOpen;
-    
+    private Timer exitPortalTimer;
 
     private void Start() {
         moveInputAction = InputSystem.actions.FindAction("Move");
         attackInputAction = InputSystem.actions.FindAction("Attack");
         interactInputAction = InputSystem.actions.FindAction("Interact");
         inventoryInputAction = InputSystem.actions.FindAction("Inventory");
-        
+
+        InitExitPortal();
         InitWave();
         SpawnResources();
         Player.Init(this);
     }
 
     private void Update() {
+        UpdateTimers();
         Player.Update();
         UpdateProjectiles();
         SpawnEnemies();
@@ -60,6 +67,10 @@ public class GameManager : MonoBehaviour {
 
     private void FixedUpdate() {
         FixedUpdateEnemies();
+    }
+
+    private void UpdateTimers() {
+        exitPortalTimer.Tick();
     }
 
     public struct Projectile {
@@ -78,7 +89,7 @@ public class GameManager : MonoBehaviour {
             Collider2D col = Physics2D.OverlapCircle(proj.trans.position, 0.1f, Masks.DamagableMask);
             if (col != null) {
 
-                if (col.CompareTag("Enemy")) {
+                if (col.CompareTag(Tags.Enemy)) {
                     // We damage all very close enemies to elimate long trains
                     Collider2D[] cols = Physics2D.OverlapCircleAll(proj.trans.position, 0.12f, Masks.EnemyMask);
                     foreach (Collider2D eCol in cols) {
@@ -211,6 +222,25 @@ public class GameManager : MonoBehaviour {
         public int enemySpawnLimit;
     }
 
+    private void InitExitPortal() {
+        exitPortalTimer.SetTime(Random.Range(35f, 45f));
+        
+        exitPortalTimer.UpdateAction ??= () => {
+            int totalSeconds = (int)exitPortalTimer.CurTime;
+            int minutes = totalSeconds / 60;
+            int seconds = totalSeconds % 60;
+            string formattedTime = $"{minutes}:{seconds:D2}";
+            exitPortalStatusText.text = $"Exit Portal Countdown: {formattedTime}";
+        };
+        
+        exitPortalTimer.EndAction ??= () => {
+            int randomSpawnIndex = Random.Range(0, exitPortalSpawnParent.childCount);
+            Transform exitPortalParent = exitPortalSpawnParent.GetChild(randomSpawnIndex);
+            Instantiate(exitPortalPrefab, exitPortalParent.position, Quaternion.identity, exitPortalParent);
+            exitPortalStatusText.text = $"Exit Portal: { exitPortalParent.name }";
+        };
+    }
+    
     private void InitWave() {
         waveManager.curTimeBetweenWave = Random.Range(waveManager.minTimeBetweenWaves, waveManager.maxTimeBetweenWaves);
     }
@@ -226,7 +256,7 @@ public class GameManager : MonoBehaviour {
         wm.enemySpawnLimit = wm.startingSpawnLimit + wm.waveSizeIncrement * wm.curWaveCount;
         wm.curWaveCount++;
     }
-
+    
 
     [Serializable]
     public class InventoryItem {
@@ -235,8 +265,9 @@ public class GameManager : MonoBehaviour {
     }
 
     [NonSerialized] public List<InventoryItem> playerInventory = new();
+    [NonSerialized] public List<InventoryItem> stashInventory = new();
 
-    public void AddItemToPlayerInventory(ItemData itemData) {
+    public void AddItemToPlayerInventory(ItemData itemData, int count = 1) {
         foreach (InventoryItem item in playerInventory) {
             if (item.itemData == itemData) {
                 item.count += 1;
@@ -244,8 +275,68 @@ public class GameManager : MonoBehaviour {
             }
         }
 
-        playerInventory.Add(new() { itemData = itemData, count = 1 });
+        playerInventory.Add(new() { itemData = itemData, count = count });
+        RefreshPlayerInventoryDisplay();
     }
+
+    public InventoryItem GetPlayerInventoryItem(int slotIndex) {
+        if (slotIndex < 0 || slotIndex >= playerInventory.Count) {
+            return null;
+        }
+        return playerInventory[slotIndex];
+    }
+
+    public void RemoveItemFromPlayerInventory(int slotIndex) {
+        playerInventory.RemoveAt(slotIndex);
+        RefreshPlayerInventoryDisplay();
+    }
+
+    public void AddItemToStashInventory(ItemData itemData, int count = 1) {
+        foreach (InventoryItem item in stashInventory) {
+            if (item.itemData == itemData) {
+                item.count += 1;
+                return;
+            }
+        }
+
+        stashInventory.Add(new() { itemData = itemData, count = count });
+        RefreshStashInventoryDisplay();
+    }
+    
+    public InventoryItem GetStashInventoryItem(int slotIndex) {
+        if (slotIndex < 0 || slotIndex >= stashInventory.Count) {
+            return null;
+        }
+        return stashInventory[slotIndex];
+    }
+
+    public void RemoveItemFromStashInventory(int slotIndex) {
+        stashInventory.RemoveAt(slotIndex);
+        RefreshStashInventoryDisplay();
+    }
+    
+    public void RefreshPlayerInventoryDisplay() {
+        foreach (Transform child in inventoryParent.transform) {
+            child.GetComponentInChildren<InvetoryItemUI>().Clear();
+        }
+
+        for (int i = 0; i < playerInventory.Count; i++) {
+            InventoryItem item = playerInventory[i];
+            inventoryParent.GetChild(i).GetComponentInChildren<InvetoryItemUI>().Set(item.itemData, item.count);
+        }
+    }
+
+    public void RefreshStashInventoryDisplay() {
+        foreach (Transform child in stashInventoryParent.transform) {
+            child.GetComponentInChildren<InvetoryItemUI>().Clear();
+        }
+
+        for (int i = 0; i < stashInventory.Count; i++) {
+            InventoryItem item = stashInventory[i];
+            stashInventoryParent.GetChild(i).GetComponentInChildren<InvetoryItemUI>().Set(item.itemData, item.count);
+        }
+    }
+    
 
     public Vector3 RandomOffset360(float minDist, float maxDist) {
         return Quaternion.AngleAxis(Random.Range(0, 360), Vector3.forward) * Vector3.right * Random.Range(minDist, maxDist);
@@ -262,6 +353,6 @@ public class GameManager : MonoBehaviour {
             Instantiate(gemRockPrefab, spawnTrans.position, Quaternion.identity);
             spawnPoints.RemoveAt(randomIndex);
         }
-        
     }
+    
 }
