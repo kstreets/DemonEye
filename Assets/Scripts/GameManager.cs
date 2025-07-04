@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Pathfinding;
@@ -18,6 +19,7 @@ public class GameManager : MonoBehaviour {
 
     public Transform hideoutParent;
     public Transform hellRaidParent;
+    public AstarPath hellAstarPath;
     
     public GameObject projectilePrefab;
     public GameObject enemyPrefab;
@@ -105,6 +107,7 @@ public class GameManager : MonoBehaviour {
         InitExitPortal();
         InitWave();
         SpawnResources();
+        AstarPath.active.Scan();
     }
 
     private void OnRaidStateExit() {
@@ -445,6 +448,8 @@ public class GameManager : MonoBehaviour {
                     if (mineable.health <= 0) {
                         Destroy(mineable.gameObject);
                     }
+                    
+                    AstarPath.active.UpdateGraphs(mineable.GetComponent<Collider2D>().bounds);
                 }
                 
                 Destroy(projectiles[i].trans.gameObject);
@@ -625,7 +630,10 @@ public class GameManager : MonoBehaviour {
         for (int i = 0; i < gemRocksToSpawn; i++) {
             int randomIndex = Random.Range(0, spawnPoints.Count);
             Transform spawnTrans = spawnPoints[randomIndex];
-            spawnedResources.Add(Instantiate(gemRockPrefab, spawnTrans.position, Quaternion.identity));
+            GameObject resource = Instantiate(gemRockPrefab, spawnTrans.position, Quaternion.identity);
+            spawnedResources.Add(resource);
+            
+            AstarPath.active.UpdateGraphs(resource.GetComponent<Collider2D>().bounds);
             spawnPoints.RemoveAt(randomIndex);
         }
     }

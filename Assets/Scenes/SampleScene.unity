@@ -470,7 +470,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 1073741824
   data:
-    dataString: UEsDBBQAAAgIAACAn+uWR+ARwgIAAAgGAAALACQAZ3JhcGgwLmpzb24KACAAAAAAAAEAGAAAgD7V3rGdAQCAPtXesZ0BAIA+1d6xnQFlVNtu4jAQ/RXk5wUFCr3s2y5Qug9t0dJVH5Y+mHhCLIwd+VKgVf99ZxxDAltVSjhzPWdm8smkdhXk3tiZleLRCGDfO4ze2bdOY3yAPV8bvZAfcPR5lcKX5MSjz2/upUG8T2HObMFbmf/Qa0XOGYJBy8LY7VSsYWycdwgXXDlAkzWeojVCnx22x8fghkIOKfSDnp0vfMtBe7CNXzfrDW/u8O92mPy7V73RIMuywVlc0Lni2woEMWiX6Z0CB8Pe1SA6a2SY/DLEqKxRSrrUIfOHKiqwqEqwQBIIyZFwbIz4lyDXpaec7djnonDgEyXLDxNpUbc6KftpajG33G3q/t65ClSmH3uqUz7+Z+3W5sKa7cOxaj+jCr6U+eY3P+Tc+ZbWbXhy3nbQO642fKXgtQT9ZGbWBC3Q6G2g0OBgMGl+noiNS8g3DV63egGGqlH9crTE4Sty3y88VCceONsG/ePALZSJyqecZEnIHeUCi4P7hXziMrlUAVFqEuNf+Lq9dclwL63zaEoiJJR85zgfEKBzSLp3yUFTeysTLOVi09grqRH82FgNEU4NVqC58oc5ZvSXC3Bha/V1YbnndICpu2Q73tVFSIQb/yy7MM3N7jRsGxS4uM7Ht79vNARXmt0juPI5eCV1S20yPKHAY6N1vbdtMY9hi2ALnrfCPOx9sDDhnsdq2A4umGiHopYxQgelaJcjgdgREqD/N9K35FhXRZg9GR3v7uwZ218HKc4vhK2KPh9ec9EXo2wkuOj2s+vrvrgdjAqe8dVdweIJSY1yczWv9UpTwu3SDReN53L8PHZmllfxZIXlu5n82Jq2HlIXZpFbAP1cpzixBYtV8OsipkIizwV4L3VcTPa5ZMrkGxDLJmAZpZ3uveVnaCXfjSdkycbxo7hkBJ+OEpf3XcKOqi9PDDAZKBweiBepYMsrMvW/2Nc/UEsDBBQAAAgIAACAn+tvOBWwbAAAAHcAAAAJACQAbWV0YS5qc29uCgAgAAAAAAABABgAAIA+1d6xnQEAgD7V3rGdAQCAPtXesZ0Bq1YqSy0qzszPU7JSMNUz1rPQUVBKL0osyCgGChiCOKWZKSB2tFJSmmGiiVliimGKqYFpSmKKrqGBmZlhioWRaVqiQWKSZZpSLFB9SWVBql9ibipET0BiSUZaZl5KZl66nntRZoo7yGil2FoAUEsBAi0AFAAACAgAAICf65ZH4BHCAgAACAYAAAsAJAAAAAAAAAAAAAAAAAAAAGdyYXBoMC5qc29uCgAgAAAAAAABABgAAIA+1d6xnQEAgD7V3rGdAQCAPtXesZ0BUEsBAi0AFAAACAgAAICf6284FbBsAAAAdwAAAAkAJAAAAAAAAAAAAAAADwMAAG1ldGEuanNvbgoAIAAAAAAAAQAYAACAPtXesZ0BAIA+1d6xnQEAgD7V3rGdAVBLBQYAAAAAAgACALgAAADGAwAAAAA=
+    dataString: UEsDBBQAAAgIAACAn+vDl2RCwwIAAAoGAAALACQAZ3JhcGgwLmpzb24KACAAAAAAAAEAGAAAgD7V3rGdAQCAPtXesZ0BAIA+1d6xnQFlVNtu4jAQ/RXk5wUlFHrZt12gdB/aoqWrPix9MPGEWBg78qVAq/77zhhDAltVSjhzO3NmJp9MaldD4Y2dWikejQD2vcPonX3rNMYH2PGV0XP5AUefVyl8RU48+vzmXhrEcwpzZgPeyuKHXilyzhAMWpbGbiZiBSPjvEO45MoBmqzxFK0R+uywHT76NxSyT6Ef9Ox84VsB2oNt/LpZb3Bzh3+3g+TfveoN+1mW9c/igi4U39QgqIN2md4psD/oXfWjs8YOk1+GGJU1SkmXGDK/r6MC87oCCySBkBwbjsSo/wrkqvKUsx37XJYOfGrJ8v1YWtTtkJT9NAcxN9ytD/zeuQpUZphfRVaHpI//2bt5NJfWbB6OdfOMavhKFuvffF9w51tqt+HxOfGgt1yt+VLBawX6yUytCVqg0dtAocFBf9z8PLU2qqBYN/iB6gUY6kb3y+FSD1+x+93cQ33qA6fboH8cuLkyUfuUkywJuaNcYHF0v7CfuE4uVUCUSGL8C1+19y4Z7qV1Hk1JhISS7wwnBAJ0AUn3Ljloorc0wVIuNolcSY3gR8ZqiHAiWIPmyu9nmNFfrsCFrcXrwnLP6QQTu2Q7XtZFSIQb/yy7MM3M9jRsGxS4uNDHt79vNARXme0juOo5eCV1S20yPKHAI6P1YXPbYh7D5sGWvGiFedj5YGHMPY/VkA4umGiHopYxQgelaJdjA5ERNkD/b6RvxbGuijB7Mjpe3tkz0l8FKc4vhC3LnA+uucjFMBsKLrp5dn2di9v+sOQZX96VLJ6Q1Cg3V7ODXmlKuF266UXjuRw/kJ2p5XU8WmH5dio/NqY1ealLMy8sgH4+ZDg1CxaL4OdFTITENufgvdRxL9nngilTrEEsmoBFVHay85afobV8N56QBRvFr+KCEXy6Sdzddwlbqn6eDRQOD8SLVLDhNdnyL/b1D1BLAwQUAAAICAAAgJ/rbzgVsGwAAAB3AAAACQAkAG1ldGEuanNvbgoAIAAAAAAAAQAYAACAPtXesZ0BAIA+1d6xnQEAgD7V3rGdAatWKkstKs7Mz1OyUjDVM9az0FFQSi9KLMgoBgoYgjilmSkgdrRSUpphoolZYophiqmBaUpiiq6hgZmZYYqFkWlaokFikmWaUixQfUllQapfYm4qRE9AYklGWmZeSmZeup57UWaKO8hopdhaAFBLAQItABQAAAgIAACAn+vDl2RCwwIAAAoGAAALACQAAAAAAAAAAAAAAAAAAABncmFwaDAuanNvbgoAIAAAAAAAAQAYAACAPtXesZ0BAIA+1d6xnQEAgD7V3rGdAVBLAQItABQAAAgIAACAn+tvOBWwbAAAAHcAAAAJACQAAAAAAAAAAAAAABADAABtZXRhLmpzb24KACAAAAAAAAEAGAAAgD7V3rGdAQCAPtXesZ0BAIA+1d6xnQFQSwUGAAAAAAIAAgC4AAAAxwMAAAAA
     file_cachedStartup: {fileID: 0}
     cacheStartup: 0
   showNavGraphs: 1
@@ -483,7 +483,7 @@ MonoBehaviour:
   unwalkableNodeDebugSize: 0.3
   logPathResults: 4
   maxNearestNodeDistance: 5
-  scanOnStartup: 1
+  scanOnStartup: 0
   fullGetNearestSearch: 0
   prioritizeGraphs: 0
   prioritizeGraphsLimit: 1
@@ -550,12 +550,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 60331848}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1506332736}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &61688623
 GameObject:
@@ -28825,6 +28825,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 60331850}
   - {fileID: 1524225753}
   - {fileID: 791148041}
   - {fileID: 2001564821}
@@ -97244,6 +97245,7 @@ MonoBehaviour:
   exitPortalSpawnParent: {fileID: 201188077}
   hideoutParent: {fileID: 1996054087}
   hellRaidParent: {fileID: 1506332736}
+  hellAstarPath: {fileID: 0}
   projectilePrefab: {fileID: 4682860730991365088, guid: 5fa01c7df64854b40996c60725181067, type: 3}
   enemyPrefab: {fileID: 7814119993517076521, guid: 833b76e47459c3f42b84396473e92372, type: 3}
   gemRockPrefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
@@ -97303,7 +97305,6 @@ MonoBehaviour:
     m_Interactions: 
     m_SingletonActionBindings: []
     m_Flags: 0
-  spawnedResources: []
 --- !u!114 &2018473790
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -98720,7 +98721,6 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 2018473788}
-  - {fileID: 60331850}
   - {fileID: 519420032}
   - {fileID: 1370272340}
   - {fileID: 1996054087}
