@@ -12,4 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9bc23522601a56f4d89295cf565d360b, type: 3}
   m_Name: RuneData
   m_EditorClassIdentifier: 
+  uuid: 96668252-7ec8-4391-8555-18024d991c6d
   inventorySprite: {fileID: 1618780615, guid: 86fe82712ae145242aa4771121f95cc2, type: 3}

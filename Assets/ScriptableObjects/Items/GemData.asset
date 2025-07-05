@@ -12,4 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9bc23522601a56f4d89295cf565d360b, type: 3}
   m_Name: GemData
   m_EditorClassIdentifier: 
+  uuid: f175b694-f6d8-4bdf-9685-5dcf8c8f64e9
   inventorySprite: {fileID: -984138720, guid: 86fe82712ae145242aa4771121f95cc2, type: 3}
