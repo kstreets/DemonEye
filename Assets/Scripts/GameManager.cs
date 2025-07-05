@@ -25,6 +25,7 @@ public class GameManager : MonoBehaviour {
     public GameObject projectilePrefab;
     public GameObject enemyPrefab;
     public GameObject gemRockPrefab;
+    public GameObject deadBodyPrefab;
     public GameObject exitPortalPrefab;
     
     public EnemyWaveManager waveManager;
@@ -50,11 +51,7 @@ public class GameManager : MonoBehaviour {
     public InputAction selectItemInputAction;
     public InputAction splitStackInputAction;
     
-    [Header("Testing")]
-    public TestingInventory testingInventory;
-
     [NonSerialized] public List<Projectile> projectiles = new();
-    [NonSerialized] public List<GameObject> spawnedResources = new();
     
     [NonSerialized] public List<Enemy> enemies = new();
     [NonSerialized] public Dictionary<GameObject, Enemy> enemyLookup = new();
@@ -69,6 +66,8 @@ public class GameManager : MonoBehaviour {
     private StateMachine gameStateMachine = new();
 
     private void Start() {
+        Cursor.visible = false;
+        
         foreach (ItemData itemData in allItems) {
             itemDataLookup.Add(itemData.uuid, itemData);
         }
@@ -105,6 +104,7 @@ public class GameManager : MonoBehaviour {
 
     private void UpdateTimers() {
         exitPortalTimer.Tick();
+        discoverLootTimer.Tick();
     }
 
 
@@ -195,8 +195,7 @@ public class GameManager : MonoBehaviour {
             Collider2D col = playerContacts[i];
             
             if (col.CompareTag(Tags.Pickup)) {
-                interactPrompt.SetActive(true);
-                interactPrompt.transform.position = mainCamera.WorldToScreenPoint(col.transform.position + new Vector3(0f, 0.1f, 0f));
+                EnableInteractionPrompt(col.transform.position);
                 if (interactInputAction.WasPressedThisFrame()) {
                     AddItemToInventory(playerInventory, col.GetComponent<Item>().itemData); 
                     Destroy(col.gameObject);
@@ -204,16 +203,23 @@ public class GameManager : MonoBehaviour {
             }
 
             if (col.CompareTag(Tags.Crucible)) {
-                interactPrompt.SetActive(true);
-                interactPrompt.transform.position = mainCamera.WorldToScreenPoint(col.transform.position + new Vector3(0f, 0.1f, 0f));
+                EnableInteractionPrompt(col.transform.position);
             }
             
             if (col.CompareTag(Tags.Stash)) {
-                interactPrompt.SetActive(true);
-                interactPrompt.transform.position = mainCamera.WorldToScreenPoint(col.transform.position + new Vector3(0f, 0.1f, 0f));
+                EnableInteractionPrompt(col.transform.position);
                 if (interactInputAction.WasPressedThisFrame()) {
                     OpenPlayerInventory();
                     OpenStashInventory();
+                }
+            }
+
+            if (col.CompareTag(Tags.DeadBody)) {
+                EnableInteractionPrompt(col.transform.position);
+                if (interactInputAction.WasPressedThisFrame()) {
+                    curLootInvetory = deadBodyInventoriesLookup[col.gameObject].items;
+                    OpenPlayerInventory();
+                    OpenLootInventory();
                 }
             }
 
@@ -226,21 +232,36 @@ public class GameManager : MonoBehaviour {
             }
         } 
     }
+
+    private void EnableInteractionPrompt(Vector3 position) {
+        interactPrompt.SetActive(true);
+        interactPrompt.transform.position = mainCamera.WorldToScreenPoint(position + new Vector3(0f, 0.1f, 0f));
+    }
     
     
     [Serializable]
     public class InventoryItem {
         public string itemDataUuid; // Store uuid for serialization purposes
         public int count;
-
         public ItemData itemData => itemDataLookup[itemDataUuid];
     }
-
+    
     [NonSerialized] public List<InventoryItem> playerInventory = new();
     [NonSerialized] public List<InventoryItem> stashInventory = new();
     
+    public struct LootInventoryItem {
+        public InventoryItem inventoryItem;
+        public bool discovered;
+    }
+    
+    [NonSerialized] public List<LootInventoryItem> curLootInvetory;
+
+    private Timer discoverLootTimer;
+    private int discoverLootIndex = 0;
+    
     private bool InventoryIsOpen => playerInventoryParent.gameObject.activeSelf;
     private bool StashIsOpen => stashInventoryParent.gameObject.activeSelf;
+    private bool LootInventoryIsOpen => lootInventoryParent.gameObject.activeSelf;
     
     private void InitInventory() {
         const int inventorySlotSizeWithPadding = 110;
@@ -283,24 +304,22 @@ public class GameManager : MonoBehaviour {
                 CloseStashInventory();
             }
 
-            if (!InventoryIsOpen) {
-                // Disable loot inventory in case it is active, it won't always be
-                lootInventoryParent.gameObject.SetActive(false);
-                return;
+            if (LootInventoryIsOpen) {
+                CloseLootInventory();
             }
 
             // Add nearby items to loot inventory
             {
-                Collider2D[] cols = Physics2D.OverlapCircleAll(player.position, interactionRadius, Masks.ItemMask);
-                if (cols.Length <= 0) return;
-                
-                lootInventoryParent.gameObject.SetActive(true);
-
-                for (int i = 0; i < cols.Length; i++) {
-                    Collider2D col = cols[i];
-                    ItemData itemData = col.GetComponent<Item>().itemData;
-                    lootInventoryParent.GetChild(i).GetChild(0).GetComponent<Image>().sprite = itemData.inventorySprite;
-                }
+                // Collider2D[] cols = Physics2D.OverlapCircleAll(player.position, interactionRadius, Masks.ItemMask);
+                // if (cols.Length <= 0) return;
+                //
+                // lootInventoryParent.gameObject.SetActive(true);
+                //
+                // for (int i = 0; i < cols.Length; i++) {
+                //     Collider2D col = cols[i];
+                //     ItemData itemData = col.GetComponent<Item>().itemData;
+                //     lootInventoryParent.GetChild(i).GetChild(0).GetComponent<Image>().sprite = itemData.inventorySprite;
+                // }
             }
         }
 
@@ -430,6 +449,47 @@ public class GameManager : MonoBehaviour {
 
     private void CloseStashInventory() {
         stashInventoryParent.gameObject.SetActive(false);
+    }
+
+    private void OpenLootInventory() {
+        discoverLootIndex = -1;
+        lootInventoryParent.gameObject.SetActive(true);
+        
+        foreach (Transform child in lootInventoryParent.transform) {
+            child.GetComponentInChildren<InvetoryItemUI>().Clear();
+        }
+
+        for (int i = 0; i < curLootInvetory.Count; i++) {
+            if (curLootInvetory[i].discovered) {
+                LootInventoryItem item = curLootInvetory[i];
+                lootInventoryParent.GetChild(i).GetComponentInChildren<InvetoryItemUI>().Set(item.inventoryItem.itemData, item.inventoryItem.count);
+                continue;
+            }
+            discoverLootIndex = i;
+            break;
+        }
+
+        bool alreadyDiscoveredAll = discoverLootIndex == -1;
+        if (alreadyDiscoveredAll) return;
+        
+        discoverLootTimer.SetTime(1f);
+        discoverLootTimer.EndAction ??= () => {
+            LootInventoryItem item = curLootInvetory[discoverLootIndex];
+            item.discovered = true;
+            curLootInvetory[discoverLootIndex] = item;
+            
+            lootInventoryParent.GetChild(discoverLootIndex).GetComponentInChildren<InvetoryItemUI>().Set(item.inventoryItem.itemData, item.inventoryItem.count);
+            
+            discoverLootIndex++;
+            if (discoverLootIndex < curLootInvetory.Count) {
+                discoverLootTimer.SetTime(1f);
+            }
+        };
+    }
+
+    private void CloseLootInventory() {
+        lootInventoryParent.gameObject.SetActive(false);
+        discoverLootTimer.Stop();
     }
     
     
@@ -640,20 +700,52 @@ public class GameManager : MonoBehaviour {
         return Quaternion.AngleAxis(Random.Range(0, 360), Vector3.forward) * Vector3.right * Random.Range(minDist, maxDist);
     }
 
+
+    private List<GameObject> spawnedResources = new();
+    private Dictionary<GameObject, DeadBodyInventory> deadBodyInventoriesLookup = new();
+
+    public struct DeadBodyInventory {
+        public List<LootInventoryItem> items;
+    }
     
     private void SpawnResources() {
         List<Transform> spawnPoints = resourceSpawnParent.GetComponentsInChildren<Transform>().ToList();
         spawnPoints.RemoveAt(0); // Remove resourceSpawnParent
         
-        int gemRocksToSpawn = Random.Range(15, 23);
+        int gemRocksToSpawn = Random.Range(10, 13);
         for (int i = 0; i < gemRocksToSpawn; i++) {
+            SpawnResource(gemRockPrefab, true);
+        }
+        
+        int deadBodiesToSpawn = Random.Range(5, 10);
+        for (int i = 0; i < deadBodiesToSpawn; i++) {
+            DeadBodyInventory inventory = new() { items = new() };
+            
+            int randomInventorySize = Random.Range(2, 6);
+            for (int j = 0; j < randomInventorySize; j++) {
+                LootInventoryItem lootItem = new() {
+                    inventoryItem = new() { itemDataUuid = allItems[0].uuid, count = Random.Range(1, 10) }
+                };
+                inventory.items.Add(lootItem);
+            }
+            
+            GameObject body = SpawnResource(deadBodyPrefab, false);
+            deadBodyInventoriesLookup.Add(body, inventory);
+        }
+
+        GameObject SpawnResource(GameObject resourcePrefab, bool cutsNavmesh) {
             int randomIndex = Random.Range(0, spawnPoints.Count);
             Transform spawnTrans = spawnPoints[randomIndex];
-            GameObject resource = Instantiate(gemRockPrefab, spawnTrans.position, Quaternion.identity);
-            spawnedResources.Add(resource);
-            
-            AstarPath.active.UpdateGraphs(resource.GetComponent<Collider2D>().bounds);
             spawnPoints.RemoveAt(randomIndex);
+            
+            GameObject resource = Instantiate(resourcePrefab, spawnTrans.position, resourcePrefab.transform.rotation);
+            spawnedResources.Add(resource);
+
+            if (cutsNavmesh) {
+                AstarPath.active.UpdateGraphs(resource.GetComponent<Collider2D>().bounds);
+            }
+
+            return resource;
         }
     }
 
@@ -662,6 +754,7 @@ public class GameManager : MonoBehaviour {
             Destroy(resource);
         }
         spawnedResources.Clear();
+        deadBodyInventoriesLookup.Clear();
     }
 
 

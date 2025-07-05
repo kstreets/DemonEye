@@ -11,6 +11,7 @@ TagManager:
   - Pickup
   - Stash
   - HellPortal
+  - DeadBody
   layers:
   - Default
   - TransparentFX

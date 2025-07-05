@@ -7,5 +7,6 @@ public static class Tags {
     public const string Pickup = "Pickup";
     public const string Crucible = "Crucible";
     public const string Stash = "Stash";
+    public const string DeadBody = "DeadBody";
 
 }
