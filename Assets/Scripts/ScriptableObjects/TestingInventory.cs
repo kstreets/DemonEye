@@ -13,4 +13,17 @@ public class TestingInventory : ScriptableObject {
     
     public List<TestInventoryItem> items;
 
+    [VInspector.Button]
+    public void AddToPlayerInventory() {
+        if (!Application.isPlaying) {
+            Debug.Log("Can only add to player inventory when game is playing");
+            return;
+        }
+        
+        GameManager gameManager = FindAnyObjectByType(typeof(GameManager)) as GameManager;
+        foreach (TestInventoryItem inventoryItem in items) {
+            gameManager?.AddItemToInventory(gameManager.playerInventory, inventoryItem.itemData, inventoryItem.count);
+        }
+    }
+
 }

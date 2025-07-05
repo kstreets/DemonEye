@@ -97264,7 +97264,7 @@ MonoBehaviour:
     enemySpawnLimit: 0
   hideoutSpawnPosition: {x: -4.428, y: -1.215, z: 0}
   hellSpawnPosition: {x: -4.428, y: -1.215, z: 0}
-  inventoryParent: {fileID: 2080027615}
+  playerInventoryParent: {fileID: 2080027615}
   lootInventoryParent: {fileID: 2115388137}
   stashInventoryParent: {fileID: 404293792}
   inventorySlotPrefab: {fileID: 5872114115220716725, guid: 0412bcb04847baa4d920e89c3e52615d, type: 3}
@@ -97303,6 +97303,24 @@ MonoBehaviour:
     m_Type: 0
     m_ExpectedControlType: 
     m_Id: 09b4b688-7bd6-4ce8-aa3c-93d510add4f2
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
+  selectItemInputAction:
+    m_Name: Select Item Input
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 1a90ea9b-2106-46ec-8bcc-a1dc9dd3c797
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
+  splitStackInputAction:
+    m_Name: Split Stack Input
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 3f7ccd78-a560-4598-94bf-0008d362a285
     m_Processors: 
     m_Interactions: 
     m_SingletonActionBindings: []

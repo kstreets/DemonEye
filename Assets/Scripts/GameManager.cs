@@ -34,7 +34,7 @@ public class GameManager : MonoBehaviour {
     public Vector3 hellSpawnPosition;
 
     [Header("UI")]
-    public RectTransform inventoryParent;
+    public RectTransform playerInventoryParent;
     public RectTransform lootInventoryParent;
     public RectTransform stashInventoryParent;
     public GameObject inventorySlotPrefab;
@@ -47,6 +47,8 @@ public class GameManager : MonoBehaviour {
     public InputAction attackInputAction;
     public InputAction interactInputAction;
     public InputAction inventoryInputAction;
+    public InputAction selectItemInputAction;
+    public InputAction splitStackInputAction;
     
     [Header("Testing")]
     public TestingInventory testingInventory;
@@ -79,17 +81,13 @@ public class GameManager : MonoBehaviour {
         attackInputAction = InputSystem.actions.FindAction("Attack");
         interactInputAction = InputSystem.actions.FindAction("Interact");
         inventoryInputAction = InputSystem.actions.FindAction("Inventory");
+        selectItemInputAction = InputSystem.actions.FindAction("SelectItem");
+        splitStackInputAction = InputSystem.actions.FindAction("SplitStack");
 
         hideoutState = gameStateMachine.CreateState(OnHideoutStateUpdate, OnHideoutStateEnter, OnHideoutStateExit);
         raidState = gameStateMachine.CreateState(OnRaidStateUpdate, OnRaidStateEndter, OnRaidStateExit);
         
         InitInventory();
-
-        if (testingInventory != null) {
-            foreach (TestingInventory.TestInventoryItem inventoryItem in testingInventory.items) {
-                AddItemToPlayerInventory(inventoryItem.itemData, inventoryItem.count);
-            }
-        }
     }
 
     private void Update() {
@@ -200,7 +198,7 @@ public class GameManager : MonoBehaviour {
                 interactPrompt.SetActive(true);
                 interactPrompt.transform.position = mainCamera.WorldToScreenPoint(col.transform.position + new Vector3(0f, 0.1f, 0f));
                 if (interactInputAction.WasPressedThisFrame()) {
-                    AddItemToPlayerInventory(col.GetComponent<Item>().itemData); 
+                    AddItemToInventory(playerInventory, col.GetComponent<Item>().itemData); 
                     Destroy(col.gameObject);
                 }
             }
@@ -238,10 +236,10 @@ public class GameManager : MonoBehaviour {
         public ItemData itemData => itemDataLookup[itemDataUuid];
     }
 
-    private List<InventoryItem> playerInventory = new();
-    private List<InventoryItem> stashInventory = new();
+    [NonSerialized] public List<InventoryItem> playerInventory = new();
+    [NonSerialized] public List<InventoryItem> stashInventory = new();
     
-    private bool InventoryIsOpen => inventoryParent.gameObject.activeSelf;
+    private bool InventoryIsOpen => playerInventoryParent.gameObject.activeSelf;
     private bool StashIsOpen => stashInventoryParent.gameObject.activeSelf;
     
     private void InitInventory() {
@@ -249,7 +247,7 @@ public class GameManager : MonoBehaviour {
         
         const int playerInventoryWidth = 3;
         const int playerInventoryHeight = 4;
-        InitInventoryWithSlots(inventoryParent, playerInventoryWidth, playerInventoryHeight); 
+        InitInventoryWithSlots(playerInventoryParent, playerInventoryWidth, playerInventoryHeight); 
         
         const int cachedLootInventoryWidth = 3;
         const int cachedLootInventoryHeight = 4;
@@ -312,8 +310,8 @@ public class GameManager : MonoBehaviour {
         int hoveredSlotIndex = -1;
         bool inventoryHovered = true;
         
-        for (int i = 0; i < inventoryParent.childCount; i++) {
-            RectTransform rectTrans = inventoryParent.GetChild(i).GetComponent<RectTransform>();
+        for (int i = 0; i < playerInventoryParent.childCount; i++) {
+            RectTransform rectTrans = playerInventoryParent.GetChild(i).GetComponent<RectTransform>();
             bool mouseInRect = RectTransformUtility.RectangleContainsScreenPoint(rectTrans, mousePos);
             if (mouseInRect) {
                 hoveredSlotIndex = i;
@@ -333,108 +331,101 @@ public class GameManager : MonoBehaviour {
 
         if (hoveredSlotIndex < 0) return;
         
-        if (attackInputAction.WasPressedThisFrame()) {
+        if (selectItemInputAction.WasPressedThisFrame() || splitStackInputAction.WasPressedThisFrame()) {
             if (inventoryHovered) {
-                InventoryItem inventoryItem = GetPlayerInventoryItem(hoveredSlotIndex);
+                InventoryItem inventoryItem = GetInventoryItem(playerInventory, hoveredSlotIndex);
                 if (inventoryItem == null) return;
-                AddItemToStashInventory(inventoryItem.itemData, inventoryItem.count);
-                RemoveItemFromPlayerInventory(hoveredSlotIndex);
+
+                if (splitStackInputAction.WasPressedThisFrame()) {
+                    int firstHalf = inventoryItem.count / 2;
+                    int secondHalf = inventoryItem.count - firstHalf;
+                    AdjustItemCountInInventory(playerInventory, hoveredSlotIndex, firstHalf);
+                    AddItemToInventory(stashInventory, inventoryItem.itemData, secondHalf);
+                }
+                else {
+                    RemoveItemFromInventory(playerInventory, hoveredSlotIndex);
+                    AddItemToInventory(stashInventory, inventoryItem.itemData, inventoryItem.count);
+                }
             }
             else {
-                InventoryItem inventoryItem = GetStashInventoryItem(hoveredSlotIndex);
-                if (inventoryItem == null) return;
-                AddItemToPlayerInventory(inventoryItem.itemData, inventoryItem.count);
-                RemoveItemFromStashInventory(hoveredSlotIndex);
+                InventoryItem inventoryItem = GetInventoryItem(stashInventory, hoveredSlotIndex);
+                if (splitStackInputAction.WasPressedThisFrame()) {
+                    int firstHalf = inventoryItem.count / 2;
+                    int secondHalf = inventoryItem.count - firstHalf;
+                    AdjustItemCountInInventory(stashInventory, hoveredSlotIndex, firstHalf);
+                    AddItemToInventory(playerInventory, inventoryItem.itemData, secondHalf);
+                }
+                else {
+                    if (inventoryItem == null) return;
+                    AddItemToInventory(playerInventory, inventoryItem.itemData, inventoryItem.count);
+                    RemoveItemFromStashInventory(hoveredSlotIndex);
+                }
             }
+            
+            RefreshInventoryDisplay(playerInventory, playerInventoryParent);
+            RefreshInventoryDisplay(stashInventory, stashInventoryParent);
         }
     }
     
-    public void AddItemToPlayerInventory(ItemData itemData, int count = 1) {
-        foreach (InventoryItem item in playerInventory) {
+    public void AddItemToInventory(List<InventoryItem> inventory, ItemData itemData, int count = 1) {
+        foreach (InventoryItem item in inventory) {
             if (item.itemData == itemData) {
                 item.count += count;
                 return;
             }
         }
-
-        playerInventory.Add(new() { itemDataUuid = itemData.uuid, count = count });
-        RefreshPlayerInventoryDisplay();
-    }
-
-    public InventoryItem GetPlayerInventoryItem(int slotIndex) {
-        if (slotIndex < 0 || slotIndex >= playerInventory.Count) {
-            return null;
-        }
-        return playerInventory[slotIndex];
-    }
-
-    public void RemoveItemFromPlayerInventory(int slotIndex) {
-        playerInventory.RemoveAt(slotIndex);
-        RefreshPlayerInventoryDisplay();
-    }
-
-    public void AddItemToStashInventory(ItemData itemData, int count = 1) {
-        foreach (InventoryItem item in stashInventory) {
-            if (item.itemData == itemData) {
-                item.count += count;
-                return;
-            }
-        }
-
-        stashInventory.Add(new() { itemDataUuid = itemData.uuid, count = count });
-        RefreshStashInventoryDisplay();
+        inventory.Add(new() { itemDataUuid = itemData.uuid, count = count });
     }
     
-    public InventoryItem GetStashInventoryItem(int slotIndex) {
-        if (slotIndex < 0 || slotIndex >= stashInventory.Count) {
+    private void RemoveItemFromInventory(List<InventoryItem> inventory, int slotIndex) {
+        inventory.RemoveAt(slotIndex);
+    }
+    
+    private InventoryItem GetInventoryItem(List<InventoryItem> inventory, int slotIndex) {
+        if (slotIndex < 0 || slotIndex >= inventory.Count) {
             return null;
         }
-        return stashInventory[slotIndex];
+        return inventory[slotIndex];
+    }
+    
+    private void AdjustItemCountInInventory(List<InventoryItem> inventory, int slotIndex, int newCount) {
+        InventoryItem item = GetInventoryItem(inventory, slotIndex);
+        item.count = newCount;
     }
 
-    public void RemoveItemFromStashInventory(int slotIndex) {
+    private void RemoveItemFromStashInventory(int slotIndex) {
         stashInventory.RemoveAt(slotIndex);
-        RefreshStashInventoryDisplay();
     }
-    
-    public void RefreshPlayerInventoryDisplay() {
+
+    private void RefreshInventoryDisplay(List<InventoryItem> inventory, Transform inventoryParent) {
+        if (!inventoryParent.gameObject.activeSelf) return;
+        
         foreach (Transform child in inventoryParent.transform) {
             child.GetComponentInChildren<InvetoryItemUI>().Clear();
         }
 
-        for (int i = 0; i < playerInventory.Count; i++) {
-            InventoryItem item = playerInventory[i];
+        for (int i = 0; i < inventory.Count; i++) {
+            InventoryItem item = inventory[i];
             inventoryParent.GetChild(i).GetComponentInChildren<InvetoryItemUI>().Set(item.itemData, item.count);
         }
     }
 
-    public void RefreshStashInventoryDisplay() {
-        foreach (Transform child in stashInventoryParent.transform) {
-            child.GetComponentInChildren<InvetoryItemUI>().Clear();
-        }
-
-        for (int i = 0; i < stashInventory.Count; i++) {
-            InventoryItem item = stashInventory[i];
-            stashInventoryParent.GetChild(i).GetComponentInChildren<InvetoryItemUI>().Set(item.itemData, item.count);
-        }
-    }
-    
     private void OpenPlayerInventory() {
-        inventoryParent.gameObject.SetActive(true);
+        playerInventoryParent.gameObject.SetActive(true);
         crosshairTrans.gameObject.SetActive(false);
         Cursor.visible = true;
-        RefreshPlayerInventoryDisplay();
+        RefreshInventoryDisplay(playerInventory, playerInventoryParent);
     }
 
     private void ClosePlayerInventory() {
-        inventoryParent.gameObject.SetActive(false);
+        playerInventoryParent.gameObject.SetActive(false);
         crosshairTrans.gameObject.SetActive(true);
         Cursor.visible = false;
     }
 
     private void OpenStashInventory() {
         stashInventoryParent.gameObject.SetActive(true);
-        RefreshStashInventoryDisplay();
+        RefreshInventoryDisplay(stashInventory, stashInventoryParent);
     }
 
     private void CloseStashInventory() {
