@@ -97241,6 +97241,8 @@ MonoBehaviour:
   allItems:
   - {fileID: 11400000, guid: 2bd24092f02cb4b43973f1026b5c2133, type: 2}
   - {fileID: 11400000, guid: 3221e45827671e44eba996e95660ee2b, type: 2}
+  fireRateModifier: {fileID: 11400000, guid: 8f44ed38d888e9c43becf99e5b53b22c, type: 2}
+  triShotModifier: {fileID: 11400000, guid: 1f2ba35cf2f5c794ca51e893d681f7e0, type: 2}
   player: {fileID: 1370272340}
   mainCamera: {fileID: 519420031}
   crosshairTrans: {fileID: 997770961}
@@ -97249,10 +97251,13 @@ MonoBehaviour:
   hideoutParent: {fileID: 1996054087}
   hellRaidParent: {fileID: 1506332736}
   projectilePrefab: {fileID: 4682860730991365088, guid: 5fa01c7df64854b40996c60725181067, type: 3}
+  laserPrefab: {fileID: 3793226877012381215, guid: 518560ba50c31e146a41c8e950637601, type: 3}
   enemyPrefab: {fileID: 7814119993517076521, guid: 833b76e47459c3f42b84396473e92372, type: 3}
   gemRockPrefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
   deadBodyPrefab: {fileID: 7104348053268977879, guid: 155b87af078ab3d4790da6d5e29d1337, type: 3}
   exitPortalPrefab: {fileID: 1919934169009674015, guid: e878bf56970589c408c5be35c9a6c966, type: 3}
+  defaultAttack: {fileID: 11400000, guid: 6f7f20f8211114b4485e5e39f0547140, type: 2}
+  curBaseAttack: {fileID: 0}
   waveManager:
     minTimeBetweenWaves: 18
     maxTimeBetweenWaves: 60
@@ -97326,6 +97331,7 @@ MonoBehaviour:
     m_Interactions: 
     m_SingletonActionBindings: []
     m_Flags: 0
+  equipedModifiers: []
 --- !u!114 &2018473790
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -7,12 +7,14 @@ using Pathfinding;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 public class GameManager : MonoBehaviour {
 
     public List<ItemData> allItems;
+    public EyeModifier fireRateModifier;
+    public EyeModifier triShotModifier;
+    
     public Transform player;
     public Camera mainCamera;
     public RectTransform crosshairTrans;
@@ -23,10 +25,14 @@ public class GameManager : MonoBehaviour {
     public Transform hellRaidParent;
     
     public GameObject projectilePrefab;
+    public GameObject laserPrefab;
     public GameObject enemyPrefab;
     public GameObject gemRockPrefab;
     public GameObject deadBodyPrefab;
     public GameObject exitPortalPrefab;
+
+    public BaseAttack defaultAttack;
+    public BaseAttack curBaseAttack;
     
     public EnemyWaveManager waveManager;
     
@@ -52,10 +58,10 @@ public class GameManager : MonoBehaviour {
     public InputAction splitStackInputAction;
     
     [NonSerialized] public List<Projectile> projectiles = new();
-    
     [NonSerialized] public List<Enemy> enemies = new();
-    [NonSerialized] public Dictionary<GameObject, Enemy> enemyLookup = new();
+    public List<EyeModifier> equipedModifiers = new();
     
+    public Dictionary<GameObject, Enemy> enemyLookup = new();
     
     private static Dictionary<string, ItemData> itemDataLookup = new();
 
@@ -64,17 +70,20 @@ public class GameManager : MonoBehaviour {
     private State hideoutState;
     private State raidState;
     private StateMachine gameStateMachine = new();
-
+    
     private void Start() {
         Cursor.visible = false;
         
         foreach (ItemData itemData in allItems) {
             itemDataLookup.Add(itemData.uuid, itemData);
         }
-        
+
         BuildSavePaths();
         LoadInventory();
         LoadStash();
+
+        Eye.Init(this);
+        Eye.baseAttack = defaultAttack;
         
         moveInputAction = InputSystem.actions.FindAction("Move");
         attackInputAction = InputSystem.actions.FindAction("Attack");
@@ -154,12 +163,12 @@ public class GameManager : MonoBehaviour {
     
     
     private const float playerSpeed = 1.55f;
-    private const float attackCooldown = 0.1f;
-    private const float interactionRadius = 0.1f;
     private Limitter attackLimiter;
     private List<Collider2D> playerContacts = new(10);
     
     private void UpdatePlayer() {
+        Eye.modifers = equipedModifiers;
+        
         if (InventoryIsOpen) return;
         
         Vector2 moveInput = moveInputAction.ReadValue<Vector2>();
@@ -168,21 +177,10 @@ public class GameManager : MonoBehaviour {
         Vector2 mousePos = Mouse.current.position.ReadValue();
         crosshairTrans.position = mousePos;
 
-        if (attackInputAction.IsPressed() && attackLimiter.TimeHasPassed(attackCooldown)) {
-            Vector2 mouseWorldPos = mainCamera.ScreenToWorldPoint(mousePos);
-
-            Vector2 velocity = (mouseWorldPos - player.PositionV2()).normalized * 2.1f;
-            float angle = Vector2.SignedAngle(Vector2.right, velocity.normalized);
-            
-            Quaternion projectileRotation = Quaternion.AngleAxis(angle, Vector3.forward);
-            GameObject projectile = Instantiate(projectilePrefab, player.position + new Vector3(0f, 0.1f, 0f), projectileRotation);
-            
-            projectiles.Add(new() {
-                timeAlive = 0f,
-                trans = projectile.transform,
-                velocity = velocity 
-            });
+        if (attackInputAction.IsPressed() && Eye.CanShootPrimary()) {
+            Eye.ShootPrimary();
         }
+        Eye.Update();
     }
     
     private void CheckForInteractions() { 
@@ -517,30 +515,8 @@ public class GameManager : MonoBehaviour {
             projectiles[i] = proj;
             
             Collider2D col = Physics2D.OverlapCircle(proj.trans.position, 0.1f, Masks.DamagableMask);
-            if (col != null) {
-
-                if (col.CompareTag(Tags.Enemy)) {
-                    // We damage all very close enemies to elimate long trains
-                    Collider2D[] cols = Physics2D.OverlapCircleAll(proj.trans.position, 0.12f, Masks.EnemyMask);
-                    foreach (Collider2D eCol in cols) {
-                        Enemy enemy = enemyLookup[eCol.gameObject];
-                        enemy.health -= 50;
-                    }
-                }
-                else {
-                    Mineable mineable = col.GetComponent<Mineable>();
-                    mineable.health -= 50;
-
-                    Vector3 spawnPos = col.transform.position + RandomOffset360(0.25f, 0.5f);
-                    spawnedResources.Add(Instantiate(mineable.dropPrefab, spawnPos, Quaternion.identity));
-
-                    if (mineable.health <= 0) {
-                        Destroy(mineable.gameObject);
-                    }
-                    
-                    AstarPath.active.UpdateGraphs(mineable.GetComponent<Collider2D>().bounds);
-                }
-                
+            if (col) {
+                HandleDamage(col);
                 Destroy(projectiles[i].trans.gameObject);
                 projectiles.RemoveAt(i);
             }
@@ -559,6 +535,32 @@ public class GameManager : MonoBehaviour {
             Destroy(projectile.trans.gameObject);
         }
         projectiles.Clear();
+    }
+
+    public void HandleDamage(Collider2D col) {
+        if (!col) return;
+        
+        if (col.CompareTag(Tags.Enemy)) {
+            // We damage all very close enemies to elimate long trains
+            Collider2D[] cols = Physics2D.OverlapCircleAll(col.transform.position, 0.12f, Masks.EnemyMask);
+            foreach (Collider2D eCol in cols) {
+                Enemy enemy = enemyLookup[eCol.gameObject];
+                enemy.health -= 50;
+            }
+        }
+        else {
+            Mineable mineable = col.GetComponent<Mineable>();
+            mineable.health -= 50;
+
+            Vector3 spawnPos = col.transform.position + RandomOffset360(0.25f, 0.5f);
+            spawnedResources.Add(Instantiate(mineable.dropPrefab, spawnPos, Quaternion.identity));
+
+            if (mineable.health <= 0) {
+                Destroy(mineable.gameObject);
+            }
+            
+            AstarPath.active.UpdateGraphs(mineable.GetComponent<Collider2D>().bounds);
+        }
     }
     
 

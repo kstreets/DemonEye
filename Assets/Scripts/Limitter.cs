@@ -14,6 +14,10 @@ public struct Limitter {
         lastTime = 0f;
     }
 
+    public void MakeCurrent() {
+        lastTime = Time.time;
+    }
+
     public bool TimeHasPassed() {
         if (Time.time - lastTime < limitTime) return false;
         lastTime = Time.time;

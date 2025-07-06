@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public static class Extensions {
@@ -12,6 +15,21 @@ public static class Extensions {
     
     public static Vector3 ToVector3(this Vector2 vector) {
         return new Vector3(vector.x, vector.y, 0f);
+    }
+
+    public static bool ContainsCount<T>(this List<T> list, T item, out int count) {
+        count = 0;
+        
+        if (list == null) {
+            return false;
+        }
+        
+        foreach (T listItem in list) {
+            if (listItem.Equals(item)) {
+                count++;
+            }
+        }
+        return count > 0;
     }
     
 }
