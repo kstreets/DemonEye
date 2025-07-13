@@ -31,5 +31,11 @@ public static class Extensions {
         }
         return count > 0;
     }
-    
+
+    public static void InitalizeWithDefault<T>(this T[] array) where T : new() {
+        for (int i = 0; i < array.Length; i++) {
+            array[i] = new();
+        }
+    }
+
 }

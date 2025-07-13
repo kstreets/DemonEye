@@ -2,7 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class InvetoryItemUI : MonoBehaviour {
+public class InventoryItemUI : MonoBehaviour {
 
     public Image image;
     public TextMeshProUGUI countText;

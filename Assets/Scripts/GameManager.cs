@@ -7,11 +7,13 @@ using Pathfinding;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 public class GameManager : MonoBehaviour {
 
     public List<ItemData> allItems;
+    public ItemData demonEyeItem;
     public EyeModifier fireRateModifier;
     public EyeModifier triShotModifier;
     
@@ -26,10 +28,10 @@ public class GameManager : MonoBehaviour {
     
     public GameObject projectilePrefab;
     public GameObject laserPrefab;
-    public GameObject enemyPrefab;
     public GameObject gemRockPrefab;
     public GameObject deadBodyPrefab;
     public GameObject exitPortalPrefab;
+    public EnemyData defaultEnemy;
 
     public BaseAttack defaultAttack;
     public BaseAttack curBaseAttack;
@@ -44,10 +46,16 @@ public class GameManager : MonoBehaviour {
     public RectTransform playerInventoryParent;
     public RectTransform lootInventoryParent;
     public RectTransform stashInventoryParent;
+    public RectTransform crucibleParent;
     public GameObject inventorySlotPrefab;
     public GameObject inventoryItemPrefab;
     public GameObject interactPrompt;
     public TextMeshProUGUI exitPortalStatusText;
+    public Button crucibleForgeButton;
+    
+    public GameObject crucibleAttackSlot;
+    public GameObject crucibleEyeSlot;
+    public GameObject[] crucibleRuneSlots;
     
     [Header("Controls")]
     public InputAction moveInputAction;
@@ -78,9 +86,10 @@ public class GameManager : MonoBehaviour {
             itemDataLookup.Add(itemData.uuid, itemData);
         }
 
+        InitInventory();
         BuildSavePaths();
-        LoadInventory();
-        LoadStash();
+        LoadInventory(playerInventory);
+        LoadInventory(stashInventory);
 
         Eye.Init(this);
         Eye.baseAttack = defaultAttack;
@@ -95,7 +104,7 @@ public class GameManager : MonoBehaviour {
         hideoutState = gameStateMachine.CreateState(OnHideoutStateUpdate, OnHideoutStateEnter, OnHideoutStateExit);
         raidState = gameStateMachine.CreateState(OnRaidStateUpdate, OnRaidStateEndter, OnRaidStateExit);
         
-        InitInventory();
+        crucibleForgeButton.onClick.AddListener(() => OnButtonClick(crucibleForgeButton));
     }
 
     private void Update() {
@@ -107,8 +116,8 @@ public class GameManager : MonoBehaviour {
     }
 
     private void OnApplicationQuit() {
-        SaveInventory();
-        SaveStash();
+        SaveInventory(playerInventory);
+        SaveInventory(stashInventory);
     }
 
     private void UpdateTimers() {
@@ -129,6 +138,7 @@ public class GameManager : MonoBehaviour {
     private void OnHideoutStateUpdate() {
         UpdateTimers();
         CheckForInteractions();
+        UpdateCrucible();
         UpdateInventory();
         UpdatePlayer();
         UpdateProjectiles();
@@ -195,13 +205,17 @@ public class GameManager : MonoBehaviour {
             if (col.CompareTag(Tags.Pickup)) {
                 EnableInteractionPrompt(col.transform.position);
                 if (interactInputAction.WasPressedThisFrame()) {
-                    AddItemToInventory(playerInventory, col.GetComponent<Item>().itemData); 
+                    TryAddItemToInventory(playerInventory, col.GetComponent<Item>().itemData); 
                     Destroy(col.gameObject);
                 }
             }
 
             if (col.CompareTag(Tags.Crucible)) {
                 EnableInteractionPrompt(col.transform.position);
+                if (interactInputAction.WasPressedThisFrame()) {
+                    OpenPlayerInventory();
+                    OpenCrucibleInventory();
+                }
             }
             
             if (col.CompareTag(Tags.Stash)) {
@@ -215,7 +229,7 @@ public class GameManager : MonoBehaviour {
             if (col.CompareTag(Tags.DeadBody)) {
                 EnableInteractionPrompt(col.transform.position);
                 if (interactInputAction.WasPressedThisFrame()) {
-                    curLootInvetory = deadBodyInventoriesLookup[col.gameObject].items;
+                    lootInvetoryPtr = deadBodyInventoriesLookup[col.gameObject];
                     OpenPlayerInventory();
                     OpenLootInventory();
                 }
@@ -237,43 +251,102 @@ public class GameManager : MonoBehaviour {
     }
     
     
+    private void UpdateCrucible() {
+        if (ButtonIsPressed(crucibleForgeButton)) {
+            InventoryItem eyeItem = null;
+            foreach (InventorySlot slot in crucibleInventory) {
+                if (slot.acceptableItemType == ItemData.ItemType.Eye) {
+                    eyeItem = slot.item;
+                    break;
+                }
+            }
+
+            if (eyeItem == null) return;
+            
+            eyeItem.itemDataUuid = demonEyeItem.uuid;
+            eyeItem.modifierUuids = new();
+            
+            foreach (InventorySlot slot in crucibleInventory) {
+                if (slot.acceptableItemType == ItemData.ItemType.Eye || slot.item == null) continue;
+                
+                if (slot.acceptableItemType == ItemData.ItemType.Rune) {
+                    eyeItem.modifierUuids.Add(slot.item.itemDataUuid);
+                }
+                if (slot.acceptableItemType == ItemData.ItemType.BaseAttack) {
+                    eyeItem.baseAttackUuid = slot.item.itemDataUuid;
+                }
+                slot.item = null;
+            }
+            
+            RefreshInventoryDisplay(crucibleInventory, crucibleParent);
+        }
+    }
+
+    
     [Serializable]
     public class InventoryItem {
-        public string itemDataUuid; // Store uuid for serialization purposes
+        public string itemDataUuid;
+        public string baseAttackUuid;
+        public List<string> modifierUuids;
         public int count;
         
-        // Using NOT discovered because initializer values are ignored by deserialization, so this field will always be false
         [NonSerialized] public bool notDiscovered;
-        public ItemData itemData => itemDataLookup[itemDataUuid];
+        
+        public ItemData Data => itemDataLookup[itemDataUuid];
+        public bool IsFullStack => count == Data.maxStackCount;
+    }
+
+    public class InventorySlot {
+        public InventoryItem item;
+        public ItemData.ItemType? acceptableItemType;
+        public bool disallowItemStacking;
+        
+        public bool AcceptsAllItems => !acceptableItemType.HasValue;
     }
     
-    [NonSerialized] public List<InventoryItem> playerInventory = new();
-    [NonSerialized] public List<InventoryItem> stashInventory = new();
-    [NonSerialized] public List<InventoryItem> curLootInvetory;
+    [NonSerialized] public InventorySlot[] playerInventory;
+    [NonSerialized] public InventorySlot[] stashInventory;
+    [NonSerialized] public InventorySlot[] crucibleInventory;
+    [NonSerialized] public InventorySlot[] lootInvetoryPtr;
 
     private Timer discoverLootTimer;
     private int discoverLootIndex;
     
     private bool InventoryIsOpen => playerInventoryParent.gameObject.activeSelf;
     private bool StashIsOpen => stashInventoryParent.gameObject.activeSelf;
+    private bool CrucibleIsOpen => crucibleParent.gameObject.activeSelf;
     private bool LootInventoryIsOpen => lootInventoryParent.gameObject.activeSelf;
     
     private void InitInventory() {
+        crucibleParent.gameObject.SetActive(false);
+        
         const int inventorySlotSizeWithPadding = 110;
         
         const int playerInventoryWidth = 3;
         const int playerInventoryHeight = 4;
-        InitInventoryWithSlots(playerInventoryParent, playerInventoryWidth, playerInventoryHeight); 
+        InitInventoryUiWithSlots(playerInventoryParent, playerInventoryWidth, playerInventoryHeight);
+        playerInventory = new InventorySlot[playerInventoryWidth * playerInventoryHeight];
+        playerInventory.InitalizeWithDefault();
         
         const int cachedLootInventoryWidth = 3;
         const int cachedLootInventoryHeight = 4;
-        InitInventoryWithSlots(lootInventoryParent, cachedLootInventoryWidth, cachedLootInventoryHeight); 
+        InitInventoryUiWithSlots(lootInventoryParent, cachedLootInventoryWidth, cachedLootInventoryHeight); 
         
         const int stashInventoryWidth = 3;
         const int stashInventoryHeight = 4;
-        InitInventoryWithSlots(stashInventoryParent, stashInventoryWidth, stashInventoryHeight); 
+        InitInventoryUiWithSlots(stashInventoryParent, stashInventoryWidth, stashInventoryHeight); 
+        stashInventory = new InventorySlot[stashInventoryWidth * stashInventoryHeight];
+        stashInventory.InitalizeWithDefault();
 
-        void InitInventoryWithSlots(RectTransform parent, int width, int height) {
+        crucibleInventory = new InventorySlot[5];  // 5 will be the default for now
+        crucibleInventory.InitalizeWithDefault();
+        for (int i = 0; i < crucibleInventory.Length; i++) {
+            InventorySlotUI slotUi = crucibleParent.GetChild(i).GetComponent<InventorySlotUI>();
+            crucibleInventory[i].acceptableItemType = slotUi.onlyAcceptedItemType;
+            crucibleInventory[i].disallowItemStacking = slotUi.disallowItemStacking;
+        }
+
+        void InitInventoryUiWithSlots(RectTransform parent, int width, int height) {
             for (int j = 0; j < height; j++) {
                 for (int i = 0; i < width; i++) {
                     Vector3 pos = new(parent.position.x, parent.position.y, 0f);
@@ -295,13 +368,9 @@ public class GameManager : MonoBehaviour {
                 ClosePlayerInventory();
             }
 
-            if (StashIsOpen) {
-                CloseStashInventory();
-            }
-
-            if (LootInventoryIsOpen) {
-                CloseLootInventory();
-            }
+            if (StashIsOpen) CloseStashInventory();
+            if (LootInventoryIsOpen) CloseLootInventory();
+            if (CrucibleIsOpen) CloseCrucibleInventory();
 
             // Add nearby items to loot inventory
             {
@@ -340,26 +409,52 @@ public class GameManager : MonoBehaviour {
 
         if (InventoryIsOpen && LootInventoryIsOpen) {
             if (InventoryIsHovered(lootInventoryParent, out int lootSlotIndex)) {
-                MoveItemBetweenInventories(curLootInvetory, playerInventory, lootSlotIndex);
+                MoveItemBetweenInventories(lootInvetoryPtr, playerInventory, lootSlotIndex);
                 RefreshInventoryDisplay(playerInventory, playerInventoryParent);
-                RefreshInventoryDisplay(curLootInvetory, lootInventoryParent);
+                RefreshInventoryDisplay(lootInvetoryPtr, lootInventoryParent);
+            }
+            return;
+        }
+
+        if (InventoryIsOpen && CrucibleIsOpen) {
+            if (InventoryIsHovered(playerInventoryParent, out int playerSlotIndex)) {
+                MoveItemBetweenInventories(playerInventory, crucibleInventory, playerSlotIndex);
+                RefreshInventoryDisplay(playerInventory, playerInventoryParent);
+                RefreshInventoryDisplay(crucibleInventory, crucibleParent);
+            }
+            else if (InventoryIsHovered(crucibleParent, out int crucibleSlotIndex)) {
+                MoveItemBetweenInventories(crucibleInventory, playerInventory, crucibleSlotIndex);
+                RefreshInventoryDisplay(playerInventory, playerInventoryParent);
+                RefreshInventoryDisplay(crucibleInventory, crucibleParent);
             }
         }
 
-        void MoveItemBetweenInventories(List<InventoryItem> fromInventory, List<InventoryItem> toInventory, int hoveredSlotIndex) {
+        void MoveItemBetweenInventories(InventorySlot[] fromInventory, InventorySlot[] toInventory, int hoveredSlotIndex) {
             InventoryItem inventoryItem = GetInventoryItem(fromInventory, hoveredSlotIndex);
             if (inventoryItem == null || inventoryItem.notDiscovered) return;
 
             if (splitStackInputAction.WasPressedThisFrame() && inventoryItem.count > 1) {
                 int firstHalf = inventoryItem.count / 2;
                 int secondHalf = inventoryItem.count - firstHalf;
-                AdjustItemCountInInventory(fromInventory, hoveredSlotIndex, firstHalf);
-                AddItemToInventory(toInventory, inventoryItem.itemData, secondHalf);
+                InventoryAddResult splitResult = TryAddItemToInventory(toInventory, inventoryItem.Data, secondHalf);
+                if (splitResult.type == InventoryAddResult.ResultType.Success) {
+                    AdjustItemCountInInventory(fromInventory, hoveredSlotIndex, firstHalf);
+                }
+                else if (splitResult.type == InventoryAddResult.ResultType.FailureToAddAll) {
+                    int keepItemCount = inventoryItem.count - splitResult.addedCount;
+                    AdjustItemCountInInventory(fromInventory, hoveredSlotIndex, keepItemCount);
+                }
                 return;
             }
             
-            RemoveItemFromInventory(fromInventory, hoveredSlotIndex);
-            AddItemToInventory(toInventory, inventoryItem.itemData, inventoryItem.count);
+            InventoryAddResult addResult = TryAddItemToInventory(toInventory, inventoryItem.Data, inventoryItem.count);
+            if (addResult.type == InventoryAddResult.ResultType.Success) {
+                RemoveItemFromInventory(fromInventory, hoveredSlotIndex);
+            }
+            else if (addResult.type == InventoryAddResult.ResultType.FailureToAddAll) {
+                int keepItemCount = inventoryItem.count - addResult.addedCount;
+                AdjustItemCountInInventory(fromInventory, hoveredSlotIndex, keepItemCount);
+            }
         }
 
         bool InventoryIsHovered(Transform inventoryParent, out int hoveredSlotIndex) {
@@ -378,63 +473,89 @@ public class GameManager : MonoBehaviour {
             return -1;
         }
     }
-    
-    public void AddItemToInventory(List<InventoryItem> inventory, ItemData itemData, int count = 1) {
-        int possibleInsertIndex = int.MaxValue;
-        
-        for (int i = 0; i < inventory.Count; i++) {
-            InventoryItem item = inventory[i];
-            if (item == null) {
-                possibleInsertIndex = Mathf.Min(i, possibleInsertIndex);
+
+    public struct InventoryAddResult {
+        public enum ResultType { Success, Failure, FailureToAddAll };
+        public ResultType type;
+        public int addedCount;
+    }
+
+    public InventoryAddResult TryAddItemToInventory(InventorySlot[] inventory, ItemData itemData, int count = 1) {
+        InventoryAddResult result = new() {
+            type = InventoryAddResult.ResultType.Failure
+        };
+
+        // If we can stack the item then we just do that
+        foreach (InventorySlot slot in inventory) {
+            if (slot.item == null || slot.disallowItemStacking || slot.item.IsFullStack || slot.item.Data != itemData) continue;
+
+            int overflowAmount = (count + slot.item.count) - slot.item.Data.maxStackCount;
+            if (overflowAmount > 0) {
+                int addCount = slot.item.Data.maxStackCount - slot.item.count;
+                
+                slot.item.count += addCount;
+                count = overflowAmount;
+                
+                result.addedCount += addCount;
+                result.type = InventoryAddResult.ResultType.FailureToAddAll;
                 continue;
             }
-
-            if (item.itemData == itemData) {
-                item.count += count;
-                return;
-            }
+            
+            slot.item.count += count;
+            result.type = InventoryAddResult.ResultType.Success;
+            return result;
         }
 
-        InventoryItem newItem = new() {
-            itemDataUuid = itemData.uuid,
-            count = count,
-        };
-        
-        if (possibleInsertIndex < int.MaxValue) {
-            inventory.Insert(possibleInsertIndex, newItem);
-            return;
+        // Otherwise add to empty inventory slot
+        foreach (InventorySlot slot in inventory) {
+            if (slot.item != null) continue;
+            
+            bool slotCanAcceptItemType = slot.AcceptsAllItems || slot.acceptableItemType == itemData.itemType;
+            if (!slotCanAcceptItemType) continue;
+
+            int addCount = slot.disallowItemStacking ? 1 : Mathf.Clamp(count, 0, itemData.maxStackCount);
+            
+            InventoryItem newItem = new() {
+                itemDataUuid = itemData.uuid,
+                count = addCount,
+            };
+            slot.item = newItem;
+            
+            result.type = addCount == count ? InventoryAddResult.ResultType.Success : InventoryAddResult.ResultType.FailureToAddAll;
+            result.addedCount = addCount;
+            return result;
         }
         
-        inventory.Add(newItem);
+        return result;
     }
     
-    private void RemoveItemFromInventory(List<InventoryItem> inventory, int slotIndex) {
-        inventory[slotIndex] = null;
+    private void RemoveItemFromInventory(InventorySlot[] inventory, int slotIndex) {
+        inventory[slotIndex].item = null;
     }
     
-    private InventoryItem GetInventoryItem(List<InventoryItem> inventory, int slotIndex) {
-        if (slotIndex < 0 || slotIndex >= inventory.Count) {
+    private InventoryItem GetInventoryItem(InventorySlot[] inventory, int slotIndex) {
+        if (slotIndex < 0 || slotIndex >= inventory.Length) {
             return null;
         }
-        return inventory[slotIndex];
+        return inventory[slotIndex].item;
     }
     
-    private void AdjustItemCountInInventory(List<InventoryItem> inventory, int slotIndex, int newCount) {
+    private void AdjustItemCountInInventory(InventorySlot[] inventory, int slotIndex, int newCount) {
         InventoryItem item = GetInventoryItem(inventory, slotIndex);
         item.count = newCount;
     }
 
-    private void RefreshInventoryDisplay(List<InventoryItem> inventory, Transform inventoryParent) {
+    private void RefreshInventoryDisplay(InventorySlot[] inventory, Transform inventoryParent) {
         if (!inventoryParent.gameObject.activeSelf) return;
         
         foreach (Transform child in inventoryParent.transform) {
-            child.GetComponentInChildren<InvetoryItemUI>().Clear();
+            child.GetComponentInChildren<InventoryItemUI>()?.Clear();
         }
 
-        for (int i = 0; i < inventory.Count; i++) {
-            InventoryItem item = inventory[i];
+        for (int i = 0; i < inventory.Length; i++) {
+            InventoryItem item = inventory[i].item;
             if (item == null || item.notDiscovered) continue;
-            inventoryParent.GetChild(i).GetComponentInChildren<InvetoryItemUI>().Set(item.itemData, item.count);
+            inventoryParent.GetChild(i).GetComponentInChildren<InventoryItemUI>().Set(item.Data, item.count);
         }
     }
 
@@ -465,17 +586,17 @@ public class GameManager : MonoBehaviour {
         lootInventoryParent.gameObject.SetActive(true);
         
         foreach (Transform child in lootInventoryParent.transform) {
-            child.GetComponentInChildren<InvetoryItemUI>().Clear();
+            child.GetComponentInChildren<InventoryItemUI>().Clear();
         }
 
-        for (int i = 0; i < curLootInvetory.Count; i++) {
-            if (curLootInvetory[i] == null) continue;
-            if (curLootInvetory[i].notDiscovered) {
+        for (int i = 0; i < lootInvetoryPtr.Length; i++) {
+            if (lootInvetoryPtr[i].item == null) continue;
+            if (lootInvetoryPtr[i].item.notDiscovered) {
                 discoverLootIndex = i;
                 break;
             }
-            InventoryItem item = curLootInvetory[i];
-            lootInventoryParent.GetChild(i).GetComponentInChildren<InvetoryItemUI>().Set(item.itemData, item.count);
+            InventoryItem item = lootInvetoryPtr[i].item;
+            lootInventoryParent.GetChild(i).GetComponentInChildren<InventoryItemUI>().Set(item.Data, item.count);
         }
 
         bool alreadyDiscoveredAll = discoverLootIndex == -1;
@@ -483,13 +604,13 @@ public class GameManager : MonoBehaviour {
         
         discoverLootTimer.SetTime(1f);
         discoverLootTimer.EndAction ??= () => {
-            InventoryItem item = curLootInvetory[discoverLootIndex];
+            InventoryItem item = lootInvetoryPtr[discoverLootIndex].item;
             item.notDiscovered = false;
             
-            lootInventoryParent.GetChild(discoverLootIndex).GetComponentInChildren<InvetoryItemUI>().Set(item.itemData, item.count);
+            lootInventoryParent.GetChild(discoverLootIndex).GetComponentInChildren<InventoryItemUI>().Set(item.Data, item.count);
             
             discoverLootIndex++;
-            if (discoverLootIndex < curLootInvetory.Count) {
+            if (discoverLootIndex < lootInvetoryPtr.Length) {
                 discoverLootTimer.SetTime(1f);
             }
         };
@@ -498,6 +619,14 @@ public class GameManager : MonoBehaviour {
     private void CloseLootInventory() {
         lootInventoryParent.gameObject.SetActive(false);
         discoverLootTimer.Stop();
+    }
+
+    private void OpenCrucibleInventory() {
+        crucibleParent.gameObject.SetActive(true);
+    }
+
+    private void CloseCrucibleInventory() {
+        crucibleParent.gameObject.SetActive(false); 
     }
     
     
@@ -567,6 +696,7 @@ public class GameManager : MonoBehaviour {
     public class Enemy {
         public Transform trans;
         public Rigidbody2D rigidbody;
+        public EnemyData data;
         public PathData pathData = new();
         public int health;
         
@@ -591,10 +721,11 @@ public class GameManager : MonoBehaviour {
         Vector2 randomSpawnPos = player.position + RandomOffset360(3f, 4f);
         
         NNInfo info = AstarPath.active.graphs[0].GetNearest(randomSpawnPos, NNConstraint.Walkable);
-        GameObject enemy = Instantiate(enemyPrefab, info.position, Quaternion.identity);
+        GameObject enemy = Instantiate(defaultEnemy.enemyPrefab, info.position, Quaternion.identity);
         
         enemies.Add(new() {
             trans = enemy.transform,
+            data = defaultEnemy,
             rigidbody = enemy.GetComponent<Rigidbody2D>(),
             health = 100,
         });
@@ -606,6 +737,18 @@ public class GameManager : MonoBehaviour {
     private void UpdateEnemies() {
         for (int i = enemies.Count - 1; i >= 0; i--) {
             if (enemies[i].health <= 0) {
+                // Drop items from enemy 
+                {
+                    EnemyData.ItemDrop[] itemDrops = enemies[i].data.itemDrops;
+                    foreach (EnemyData.ItemDrop itemDrop in itemDrops) {
+                        float randomChance = Random.value;
+                        if (randomChance < itemDrop.dropChance) {
+                            GameObject drop = Instantiate(itemDrop.itemPrefab, enemies[i].trans.position, Quaternion.identity);
+                            spawnedResources.Add(drop);
+                        }
+                    }
+                }
+
                 enemyLookup.Remove(enemies[i].trans.gameObject);
                 Destroy(enemies[i].trans.gameObject);
                 enemies.RemoveAt(i);
@@ -714,12 +857,8 @@ public class GameManager : MonoBehaviour {
 
 
     private List<GameObject> spawnedResources = new();
-    private Dictionary<GameObject, DeadBodyInventory> deadBodyInventoriesLookup = new();
+    private Dictionary<GameObject, InventorySlot[]> deadBodyInventoriesLookup = new();
 
-    public struct DeadBodyInventory {
-        public List<InventoryItem> items;
-    }
-    
     private void SpawnResources() {
         List<Transform> spawnPoints = resourceSpawnParent.GetComponentsInChildren<Transform>().ToList();
         spawnPoints.RemoveAt(0); // Remove resourceSpawnParent
@@ -731,16 +870,16 @@ public class GameManager : MonoBehaviour {
         
         int deadBodiesToSpawn = Random.Range(5, 10);
         for (int i = 0; i < deadBodiesToSpawn; i++) {
-            DeadBodyInventory inventory = new() { items = new() };
-            
             int randomInventorySize = Random.Range(2, 6);
+            InventorySlot[] inventory = new InventorySlot[randomInventorySize];
+            
             for (int j = 0; j < randomInventorySize; j++) {
                 InventoryItem lootItem = new() {
                     itemDataUuid = allItems[0].uuid, 
                     count = Random.Range(1, 10),
                     notDiscovered = true,
                 };
-                inventory.items.Add(lootItem);
+                inventory[j].item = lootItem;
             }
             
             GameObject body = SpawnResource(deadBodyPrefab, false);
@@ -774,31 +913,40 @@ public class GameManager : MonoBehaviour {
 
     private string inventorySavePath;
     private string stashSavePath;
+    private string crucibleSavePath;
+    private List<InventoryItem> cachedInventoryForSaving = new(50);
 
     private void BuildSavePaths() {
         inventorySavePath = $"{Application.persistentDataPath}/inventory";
         stashSavePath = $"{Application.persistentDataPath}/stash";
+        crucibleSavePath = $"{Application.persistentDataPath}/crucible";
+    }
+
+    private string GetSavePath(InventorySlot[] inventory) {
+        if (inventory == playerInventory)   return inventorySavePath;
+        if (inventory == stashInventory)    return stashSavePath;
+        if (inventory == crucibleInventory) return crucibleSavePath;
+        return string.Empty;
     }
     
-    private void SaveInventory() {
-        SaveToFile(inventorySavePath, playerInventory);
-    }
-
-    private void LoadInventory() {
-        List<InventoryItem> loadedItems = LoadFromFile<List<InventoryItem>>(inventorySavePath);
-        if (loadedItems != null) {
-            playerInventory = loadedItems;
+    private void SaveInventory(InventorySlot[] inventory) {
+        cachedInventoryForSaving.Clear();
+        foreach (InventorySlot slot in inventory) {
+            cachedInventoryForSaving.Add(slot.item);     
         }
+        SaveToFile(GetSavePath(inventory), cachedInventoryForSaving);
     }
 
-    private void SaveStash() {
-        SaveToFile(stashSavePath, stashInventory);
+    private void LoadInventory(InventorySlot[] inventory) {
+        List<InventoryItem> items = LoadFromFile<List<InventoryItem>>(GetSavePath(inventory));
+        CopyItemsToInventory(items, inventory);
     }
 
-    private void LoadStash() {
-        List<InventoryItem> loadedItems = LoadFromFile<List<InventoryItem>>(stashSavePath);
-        if (loadedItems != null) {
-            stashInventory = loadedItems;
+    private void CopyItemsToInventory(List<InventoryItem> items, InventorySlot[] toInventory) {
+        if (items == null || toInventory == null) return;
+        
+        for (int i = 0; i < toInventory.Length; i++) {
+            toInventory[i].item = items[i];
         }
     }
 
@@ -815,6 +963,20 @@ public class GameManager : MonoBehaviour {
             return (T)bf.Deserialize(file);
         }
         return null;
+    }
+
+
+    private Dictionary<Button, float> clickedButtonLookup = new();
+    
+    private void OnButtonClick(Button clickedButton) {
+        clickedButtonLookup[clickedButton] = Time.time;
+    }
+
+    private bool ButtonIsPressed(Button button) {
+        if (clickedButtonLookup.TryGetValue(button, out float value)) {
+            return value == Time.time;
+        }
+        return false;
     }
     
 }
