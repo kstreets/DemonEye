@@ -1,4 +1,5 @@
 using UnityEngine;
+using VInspector;
 
 [CreateAssetMenu(fileName = "ItemSo", menuName = "Scriptable Objects/ItemData")]
 public class ItemData : UuidScriptableObject {
@@ -8,5 +9,8 @@ public class ItemData : UuidScriptableObject {
     public ItemType itemType;
     public Sprite inventorySprite;
     public int maxStackCount;
+
+    [ShowIf("itemType", ItemType.BaseAttack)]
+    public BaseAttack baseAttack;
 
 }

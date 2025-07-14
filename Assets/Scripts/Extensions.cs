@@ -37,5 +37,13 @@ public static class Extensions {
             array[i] = new();
         }
     }
+    
+    public static bool IndexInRange<T>(this T[] array, int index) {
+        return index >= 0 && index < array.Length;
+    }
+    
+    public static bool IndexInRange<T>(this List<T> list, int index) {
+        return index >= 0 && index < list.Count;
+    }
 
 }

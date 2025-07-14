@@ -13,7 +13,10 @@ using Random = UnityEngine.Random;
 public class GameManager : MonoBehaviour {
 
     public List<ItemData> allItems;
+    public List<EyeModifier> allModifiers;
+    public List<BaseAttack> allBaseAttacks;
     public ItemData demonEyeItem;
+
     public EyeModifier fireRateModifier;
     public EyeModifier triShotModifier;
     
@@ -72,6 +75,8 @@ public class GameManager : MonoBehaviour {
     public Dictionary<GameObject, Enemy> enemyLookup = new();
     
     private static Dictionary<string, ItemData> itemDataLookup = new();
+    private static Dictionary<string, EyeModifier> eyeModifierLookup = new();
+    private static Dictionary<string, BaseAttack> baseAttackLookup = new();
 
     private Timer exitPortalTimer;
 
@@ -84,6 +89,12 @@ public class GameManager : MonoBehaviour {
         
         foreach (ItemData itemData in allItems) {
             itemDataLookup.Add(itemData.uuid, itemData);
+        }
+        foreach (EyeModifier mod in allModifiers) {
+            eyeModifierLookup.Add(mod.uuid, mod);
+        }
+        foreach (BaseAttack attack in allBaseAttacks) {
+            baseAttackLookup.Add(attack.uuid, attack);
         }
 
         InitInventory();
@@ -138,6 +149,7 @@ public class GameManager : MonoBehaviour {
     private void OnHideoutStateUpdate() {
         UpdateTimers();
         CheckForInteractions();
+        CheckForEquipmentChange();
         UpdateCrucible();
         UpdateInventory();
         UpdatePlayer();
@@ -163,6 +175,7 @@ public class GameManager : MonoBehaviour {
     private void OnRaidStateUpdate() {
         UpdateTimers();
         CheckForInteractions();
+        CheckForEquipmentChange();
         UpdateInventory();
         UpdatePlayer();
         UpdateProjectiles();
@@ -177,9 +190,9 @@ public class GameManager : MonoBehaviour {
     private List<Collider2D> playerContacts = new(10);
     
     private void UpdatePlayer() {
-        Eye.modifers = equipedModifiers;
-        
-        if (InventoryIsOpen) return;
+        if (InventoryIsOpen) {
+            return;
+        }
         
         Vector2 moveInput = moveInputAction.ReadValue<Vector2>();
         player.position += new Vector3(moveInput.x, moveInput.y, 0f) * (playerSpeed * Time.deltaTime);
@@ -249,13 +262,27 @@ public class GameManager : MonoBehaviour {
         interactPrompt.SetActive(true);
         interactPrompt.transform.position = mainCamera.WorldToScreenPoint(position + new Vector3(0f, 0.1f, 0f));
     }
-    
+
+    private void CheckForEquipmentChange() {
+        InventoryItem item = playerInventory[0].item;
+        if (item == null) {
+            Eye.modifers.Clear();
+            Eye.baseAttack = defaultAttack;
+            return;
+        }
+        
+        Eye.baseAttack = baseAttackLookup[item.baseAttackUuid];
+        Eye.modifers.Clear();
+        foreach (string modUuid in item.modifierUuids) {
+            Eye.modifers.Add(eyeModifierLookup[modUuid]);
+        }
+    }
     
     private void UpdateCrucible() {
         if (ButtonIsPressed(crucibleForgeButton)) {
             InventoryItem eyeItem = null;
             foreach (InventorySlot slot in crucibleInventory) {
-                if (slot.acceptableItemType == ItemData.ItemType.Eye) {
+                if (slot.ui.onlyAcceptedItemType == ItemData.ItemType.Eye) {
                     eyeItem = slot.item;
                     break;
                 }
@@ -267,13 +294,13 @@ public class GameManager : MonoBehaviour {
             eyeItem.modifierUuids = new();
             
             foreach (InventorySlot slot in crucibleInventory) {
-                if (slot.acceptableItemType == ItemData.ItemType.Eye || slot.item == null) continue;
+                if (slot.ui.onlyAcceptedItemType == ItemData.ItemType.Eye || slot.item == null) continue;
                 
-                if (slot.acceptableItemType == ItemData.ItemType.Rune) {
+                if (slot.ui.onlyAcceptedItemType == ItemData.ItemType.Rune) {
                     eyeItem.modifierUuids.Add(slot.item.itemDataUuid);
                 }
-                if (slot.acceptableItemType == ItemData.ItemType.BaseAttack) {
-                    eyeItem.baseAttackUuid = slot.item.itemDataUuid;
+                if (slot.ui.onlyAcceptedItemType == ItemData.ItemType.BaseAttack) {
+                    eyeItem.baseAttackUuid = string.Copy(slot.item.Data.baseAttack.uuid);
                 }
                 slot.item = null;
             }
@@ -289,7 +316,7 @@ public class GameManager : MonoBehaviour {
         public string baseAttackUuid;
         public List<string> modifierUuids;
         public int count;
-        
+
         [NonSerialized] public bool notDiscovered;
         
         public ItemData Data => itemDataLookup[itemDataUuid];
@@ -298,10 +325,7 @@ public class GameManager : MonoBehaviour {
 
     public class InventorySlot {
         public InventoryItem item;
-        public ItemData.ItemType? acceptableItemType;
-        public bool disallowItemStacking;
-        
-        public bool AcceptsAllItems => !acceptableItemType.HasValue;
+        public InventorySlotUI ui;
     }
     
     [NonSerialized] public InventorySlot[] playerInventory;
@@ -324,9 +348,11 @@ public class GameManager : MonoBehaviour {
         
         const int playerInventoryWidth = 3;
         const int playerInventoryHeight = 4;
+        int playerEquipmentSlotCount = playerInventoryParent.childCount;
         InitInventoryUiWithSlots(playerInventoryParent, playerInventoryWidth, playerInventoryHeight);
-        playerInventory = new InventorySlot[playerInventoryWidth * playerInventoryHeight];
+        playerInventory = new InventorySlot[playerInventoryWidth * playerInventoryHeight + playerEquipmentSlotCount];
         playerInventory.InitalizeWithDefault();
+        AssignUi(playerInventory, playerInventoryParent);
         
         const int cachedLootInventoryWidth = 3;
         const int cachedLootInventoryHeight = 4;
@@ -337,14 +363,11 @@ public class GameManager : MonoBehaviour {
         InitInventoryUiWithSlots(stashInventoryParent, stashInventoryWidth, stashInventoryHeight); 
         stashInventory = new InventorySlot[stashInventoryWidth * stashInventoryHeight];
         stashInventory.InitalizeWithDefault();
+        AssignUi(stashInventory, stashInventoryParent);
 
         crucibleInventory = new InventorySlot[5];  // 5 will be the default for now
         crucibleInventory.InitalizeWithDefault();
-        for (int i = 0; i < crucibleInventory.Length; i++) {
-            InventorySlotUI slotUi = crucibleParent.GetChild(i).GetComponent<InventorySlotUI>();
-            crucibleInventory[i].acceptableItemType = slotUi.onlyAcceptedItemType;
-            crucibleInventory[i].disallowItemStacking = slotUi.disallowItemStacking;
-        }
+        AssignUi(crucibleInventory, crucibleParent);
 
         void InitInventoryUiWithSlots(RectTransform parent, int width, int height) {
             for (int j = 0; j < height; j++) {
@@ -356,6 +379,12 @@ public class GameManager : MonoBehaviour {
                 }
             }
             parent.gameObject.SetActive(false);
+        }
+
+        void AssignUi(InventorySlot[] inventory, RectTransform parent) {
+            for (int i = 0; i < inventory.Length; i++) {
+                inventory[i].ui = parent.GetChild(i).GetComponent<InventorySlotUI>();
+            }
         }
     }
     
@@ -447,12 +476,12 @@ public class GameManager : MonoBehaviour {
                 return;
             }
             
-            InventoryAddResult addResult = TryAddItemToInventory(toInventory, inventoryItem.Data, inventoryItem.count);
-            if (addResult.type == InventoryAddResult.ResultType.Success) {
+            InventoryAddResult moveResult = TryAddItemToInventory(toInventory, inventoryItem.Data, inventoryItem.count, inventoryItem.baseAttackUuid, inventoryItem.modifierUuids);
+            if (moveResult.type == InventoryAddResult.ResultType.Success) {
                 RemoveItemFromInventory(fromInventory, hoveredSlotIndex);
             }
-            else if (addResult.type == InventoryAddResult.ResultType.FailureToAddAll) {
-                int keepItemCount = inventoryItem.count - addResult.addedCount;
+            else if (moveResult.type == InventoryAddResult.ResultType.FailureToAddAll) {
+                int keepItemCount = inventoryItem.count - moveResult.addedCount;
                 AdjustItemCountInInventory(fromInventory, hoveredSlotIndex, keepItemCount);
             }
         }
@@ -480,14 +509,16 @@ public class GameManager : MonoBehaviour {
         public int addedCount;
     }
 
-    public InventoryAddResult TryAddItemToInventory(InventorySlot[] inventory, ItemData itemData, int count = 1) {
+    public InventoryAddResult TryAddItemToInventory(InventorySlot[] inventory, ItemData itemData, int count = 1, 
+        string baseAttackUuid = null, List<string> modifierUuids = null)  // This is a hacky fix for now when moving around the demon eyes
+    {
         InventoryAddResult result = new() {
             type = InventoryAddResult.ResultType.Failure
         };
 
         // If we can stack the item then we just do that
         foreach (InventorySlot slot in inventory) {
-            if (slot.item == null || slot.disallowItemStacking || slot.item.IsFullStack || slot.item.Data != itemData) continue;
+            if (slot.item == null || slot.ui.disallowItemStacking || slot.item.IsFullStack || slot.item.Data != itemData) continue;
 
             int overflowAmount = (count + slot.item.count) - slot.item.Data.maxStackCount;
             if (overflowAmount > 0) {
@@ -510,13 +541,15 @@ public class GameManager : MonoBehaviour {
         foreach (InventorySlot slot in inventory) {
             if (slot.item != null) continue;
             
-            bool slotCanAcceptItemType = slot.AcceptsAllItems || slot.acceptableItemType == itemData.itemType;
+            bool slotCanAcceptItemType = slot.ui.acceptsAllTypes || slot.ui.onlyAcceptedItemType == itemData.itemType;
             if (!slotCanAcceptItemType) continue;
 
-            int addCount = slot.disallowItemStacking ? 1 : Mathf.Clamp(count, 0, itemData.maxStackCount);
+            int addCount = slot.ui.disallowItemStacking ? 1 : Mathf.Clamp(count, 0, itemData.maxStackCount);
             
             InventoryItem newItem = new() {
                 itemDataUuid = itemData.uuid,
+                baseAttackUuid = baseAttackUuid,
+                modifierUuids = modifierUuids,
                 count = addCount,
             };
             slot.item = newItem;
@@ -872,6 +905,7 @@ public class GameManager : MonoBehaviour {
         for (int i = 0; i < deadBodiesToSpawn; i++) {
             int randomInventorySize = Random.Range(2, 6);
             InventorySlot[] inventory = new InventorySlot[randomInventorySize];
+            inventory.InitalizeWithDefault();
             
             for (int j = 0; j < randomInventorySize; j++) {
                 InventoryItem lootItem = new() {
@@ -946,6 +980,7 @@ public class GameManager : MonoBehaviour {
         if (items == null || toInventory == null) return;
         
         for (int i = 0; i < toInventory.Length; i++) {
+            if (!toInventory.IndexInRange(i) || !items.IndexInRange(i)) break;
             toInventory[i].item = items[i];
         }
     }

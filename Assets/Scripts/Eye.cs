@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 
 public static class Eye {
 
-    public static List<EyeModifier> modifers;
+    public static List<EyeModifier> modifers = new();
     public static BaseAttack baseAttack;
 
     private static GameManager gm;

@@ -17,6 +17,7 @@ MonoBehaviour:
   attackDelay: 0.25
   cappedMinAttackDelay: 0.05
   damage: 35
-  projectileSpeed: 0
+  range: 0
+  projectileSpeed: 2.1
   laserDuration: 0
   laserDamageTickDelay: 0
