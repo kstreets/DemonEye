@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 public static class Eye {
 
     public static List<EyeModifier> modifers = new();
-    public static BaseAttack baseAttack;
+    public static CoreAttack CoreAttack;
 
     private static GameManager gm;
     private static Limitter attackLimitter;
@@ -15,30 +15,30 @@ public static class Eye {
     }
 
     public static void Update() {
-        switch (baseAttack.attackType) {
-            case BaseAttack.AttackType.Laser:
+        switch (CoreAttack.attackType) {
+            case CoreAttack.AttackType.Laser:
                 UpdateLaser();
                 break;
         }
     }
 
     public static bool CanShootPrimary() {
-        float attackDelay = baseAttack.attackDelay;
+        float attackDelay = CoreAttack.attackDelay;
         if (modifers.ContainsCount(gm.fireRateModifier, out int fireRateCount)) {
             for (int i = 0; i < fireRateCount; i++) {
                 attackDelay -= 0.03f;
             }
-            attackDelay = Mathf.Clamp(attackDelay, baseAttack.cappedMinAttackDelay, baseAttack.attackDelay);
+            attackDelay = Mathf.Clamp(attackDelay, CoreAttack.cappedMinAttackDelay, CoreAttack.attackDelay);
         }
         return attackLimitter.TimeHasPassed(attackDelay);
     }
 
     public static void ShootPrimary() {
-        switch (baseAttack.attackType) {
-            case BaseAttack.AttackType.Projectile:
+        switch (CoreAttack.attackType) {
+            case CoreAttack.AttackType.Projectile:
                 ProjectilePrimaryShoot();
                 break;
-            case BaseAttack.AttackType.Laser:
+            case CoreAttack.AttackType.Laser:
                 LaserPrimaryShoot();
                 break;
         }
@@ -48,7 +48,7 @@ public static class Eye {
         Vector2 mousePos = Mouse.current.position.ReadValue();
         Vector2 mouseWorldPos = gm.mainCamera.ScreenToWorldPoint(mousePos);
         
-        Vector2 velocity = (mouseWorldPos - gm.player.PositionV2()).normalized * baseAttack.projectileSpeed;
+        Vector2 velocity = (mouseWorldPos - gm.player.PositionV2()).normalized * CoreAttack.projectileSpeed;
         SpawnProjectile(velocity);
 
         if (modifers.ContainsCount(gm.triShotModifier, out int triShotCount)) {
@@ -82,7 +82,7 @@ public static class Eye {
 
     private static void LaserPrimaryShoot() {
         if (!laserRenderer) {
-            laserTimer.SetTime(baseAttack.laserDuration);
+            laserTimer.SetTime(CoreAttack.laserDuration);
             laserRenderer = GameObject.Instantiate(gm.laserPrefab, gm.player.position, Quaternion.identity).GetComponent<LineRenderer>();
         }
     }
@@ -104,14 +104,14 @@ public static class Eye {
         }
         
         Vector3 startPos = gm.player.position + new Vector3(0f, 0.1f, 0f);
-        Vector3 endPos = startPos + (mouseWorldPos.ToVector3() - startPos).normalized * baseAttack.range;
+        Vector3 endPos = startPos + (mouseWorldPos.ToVector3() - startPos).normalized * CoreAttack.range;
         RaycastHit2D hit = Physics2D.Linecast(startPos, endPos, Masks.DamagableMask);
         
         laserRenderer.positionCount = 2;
         laserRenderer.SetPosition(0, startPos);
         laserRenderer.SetPosition(1, hit ? hit.point : endPos);
         
-        if (laserDamageLimitter.TimeHasPassed(baseAttack.laserDamageTickDelay)) {
+        if (laserDamageLimitter.TimeHasPassed(CoreAttack.laserDamageTickDelay)) {
             gm.HandleDamage(hit.collider);
         }
     }

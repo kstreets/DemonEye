@@ -14,7 +14,7 @@ public class GameManager : MonoBehaviour {
 
     public List<ItemData> allItems;
     public List<EyeModifier> allModifiers;
-    public List<BaseAttack> allBaseAttacks;
+    public List<CoreAttack> allBaseAttacks;
     public ItemData demonEyeItem;
 
     public EyeModifier fireRateModifier;
@@ -32,12 +32,17 @@ public class GameManager : MonoBehaviour {
     public GameObject projectilePrefab;
     public GameObject laserPrefab;
     public GameObject gemRockPrefab;
+    public GameObject altarPrefab;
     public GameObject deadBodyPrefab;
     public GameObject exitPortalPrefab;
     public EnemyData defaultEnemy;
 
-    public BaseAttack defaultAttack;
-    public BaseAttack curBaseAttack;
+    public CoreAttack defaultAttack;
+    public CoreAttack curCoreAttack;
+    
+    public ItemPool deadBodyPool;
+    public DropPool altarDropPool;
+    public DropPool rockDropPool;
     
     public EnemyWaveManager waveManager;
     
@@ -68,15 +73,15 @@ public class GameManager : MonoBehaviour {
     public InputAction selectItemInputAction;
     public InputAction splitStackInputAction;
     
+    [NonSerialized] public List<Entity> entities = new();
+    [NonSerialized] public Dictionary<GameObject, Entity> entityLookup = new();
     [NonSerialized] public List<Projectile> projectiles = new();
     [NonSerialized] public List<Enemy> enemies = new();
     public List<EyeModifier> equipedModifiers = new();
     
-    public Dictionary<GameObject, Enemy> enemyLookup = new();
-    
     private static Dictionary<string, ItemData> itemDataLookup = new();
     private static Dictionary<string, EyeModifier> eyeModifierLookup = new();
-    private static Dictionary<string, BaseAttack> baseAttackLookup = new();
+    private static Dictionary<string, CoreAttack> baseAttackLookup = new();
 
     private Timer exitPortalTimer;
 
@@ -93,7 +98,7 @@ public class GameManager : MonoBehaviour {
         foreach (EyeModifier mod in allModifiers) {
             eyeModifierLookup.Add(mod.uuid, mod);
         }
-        foreach (BaseAttack attack in allBaseAttacks) {
+        foreach (CoreAttack attack in allBaseAttacks) {
             baseAttackLookup.Add(attack.uuid, attack);
         }
 
@@ -103,7 +108,7 @@ public class GameManager : MonoBehaviour {
         LoadInventory(stashInventory);
 
         Eye.Init(this);
-        Eye.baseAttack = defaultAttack;
+        Eye.CoreAttack = defaultAttack;
         
         moveInputAction = InputSystem.actions.FindAction("Move");
         attackInputAction = InputSystem.actions.FindAction("Attack");
@@ -159,15 +164,14 @@ public class GameManager : MonoBehaviour {
     private void OnRaidStateEndter() {
         hellRaidParent.gameObject.SetActive(true);
         player.transform.position = hellSpawnPosition;
+        AstarPath.active.Scan();
         InitExitPortal();
         InitWave();
         SpawnResources();
-        AstarPath.active.Scan();
     }
 
     private void OnRaidStateExit() {
-        ClearResources();
-        ClearEnemies();
+        DestroyLevelEntities();
         ClearProjectiles();
         hellRaidParent.gameObject.SetActive(false);
     }
@@ -267,11 +271,11 @@ public class GameManager : MonoBehaviour {
         InventoryItem item = playerInventory[0].item;
         if (item == null) {
             Eye.modifers.Clear();
-            Eye.baseAttack = defaultAttack;
+            Eye.CoreAttack = defaultAttack;
             return;
         }
         
-        Eye.baseAttack = baseAttackLookup[item.baseAttackUuid];
+        Eye.CoreAttack = baseAttackLookup[item.baseAttackUuid];
         Eye.modifers.Clear();
         foreach (string modUuid in item.modifierUuids) {
             Eye.modifers.Add(eyeModifierLookup[modUuid]);
@@ -296,11 +300,11 @@ public class GameManager : MonoBehaviour {
             foreach (InventorySlot slot in crucibleInventory) {
                 if (slot.ui.onlyAcceptedItemType == ItemData.ItemType.Eye || slot.item == null) continue;
                 
-                if (slot.ui.onlyAcceptedItemType == ItemData.ItemType.Rune) {
-                    eyeItem.modifierUuids.Add(slot.item.itemDataUuid);
+                if (slot.ui.onlyAcceptedItemType == ItemData.ItemType.Vein) {
+                    eyeItem.modifierUuids.Add(slot.item.Data.eyeModifier.uuid);
                 }
-                if (slot.ui.onlyAcceptedItemType == ItemData.ItemType.BaseAttack) {
-                    eyeItem.baseAttackUuid = string.Copy(slot.item.Data.baseAttack.uuid);
+                if (slot.ui.onlyAcceptedItemType == ItemData.ItemType.Core) {
+                    eyeItem.baseAttackUuid = string.Copy(slot.item.Data.coreAttack.uuid);
                 }
                 slot.item = null;
             }
@@ -358,7 +362,7 @@ public class GameManager : MonoBehaviour {
         const int cachedLootInventoryHeight = 4;
         InitInventoryUiWithSlots(lootInventoryParent, cachedLootInventoryWidth, cachedLootInventoryHeight); 
         
-        const int stashInventoryWidth = 3;
+        const int stashInventoryWidth = 8;
         const int stashInventoryHeight = 4;
         InitInventoryUiWithSlots(stashInventoryParent, stashInventoryWidth, stashInventoryHeight); 
         stashInventory = new InventorySlot[stashInventoryWidth * stashInventoryHeight];
@@ -706,37 +710,30 @@ public class GameManager : MonoBehaviour {
             // We damage all very close enemies to elimate long trains
             Collider2D[] cols = Physics2D.OverlapCircleAll(col.transform.position, 0.12f, Masks.EnemyMask);
             foreach (Collider2D eCol in cols) {
-                Enemy enemy = enemyLookup[eCol.gameObject];
-                enemy.health -= 50;
+                Entity entity = entityLookup[eCol.gameObject];
+                entity.health -= 50;
             }
         }
         else {
-            Mineable mineable = col.GetComponent<Mineable>();
-            mineable.health -= 50;
+            Entity entity = entityLookup[col.gameObject];
+            entity.health -= 50;
 
-            Vector3 spawnPos = col.transform.position + RandomOffset360(0.25f, 0.5f);
-            spawnedResources.Add(Instantiate(mineable.dropPrefab, spawnPos, Quaternion.identity));
-
-            if (mineable.health <= 0) {
-                Destroy(mineable.gameObject);
+            if (Random.value <= 0.35f) { // Random chance to spawn drop on each hit
+                Vector3 spawnPos = col.transform.position + RandomOffset360(0.25f, 0.5f);
+                SpawnLevelEntity<Entity>(rockDropPool.GetDropFromPool(), spawnPos, Quaternion.identity);
             }
-            
-            AstarPath.active.UpdateGraphs(mineable.GetComponent<Collider2D>().bounds);
+
+            if (entity.health <= 0) {
+                AstarPath.active.UpdateGraphs(entity.collider.bounds);
+                DestroyEntity(entity);
+            }
         }
     }
-    
 
-    public class Enemy {
-        public Transform trans;
-        public Rigidbody2D rigidbody;
+    
+    public class Enemy : Entity {
         public EnemyData data;
         public PathData pathData = new();
-        public int health;
-        
-        public Vector3 position {
-            get => trans.position;
-            set => trans.position = value;
-        }
     }
     
     public class PathData {
@@ -752,18 +749,12 @@ public class GameManager : MonoBehaviour {
         if (waveManager.enemiesLeftToSpawn <= 0 || enemies.Count > waveManager.enemySpawnLimit) return;
 
         Vector2 randomSpawnPos = player.position + RandomOffset360(3f, 4f);
-        
         NNInfo info = AstarPath.active.graphs[0].GetNearest(randomSpawnPos, NNConstraint.Walkable);
-        GameObject enemy = Instantiate(defaultEnemy.enemyPrefab, info.position, Quaternion.identity);
         
-        enemies.Add(new() {
-            trans = enemy.transform,
-            data = defaultEnemy,
-            rigidbody = enemy.GetComponent<Rigidbody2D>(),
-            health = 100,
-        });
-        enemyLookup.Add(enemy, enemies[^1]);
-
+        Enemy enemy = SpawnLevelEntity<Enemy>(defaultEnemy.enemyPrefab, info.position, Quaternion.identity);
+        enemy.data = defaultEnemy;
+        
+        enemies.Add(enemy);
         waveManager.enemiesLeftToSpawn--;
     }
     
@@ -776,14 +767,35 @@ public class GameManager : MonoBehaviour {
                     foreach (EnemyData.ItemDrop itemDrop in itemDrops) {
                         float randomChance = Random.value;
                         if (randomChance < itemDrop.dropChance) {
-                            GameObject drop = Instantiate(itemDrop.itemPrefab, enemies[i].trans.position, Quaternion.identity);
-                            spawnedResources.Add(drop);
+                            SpawnLevelEntity<Entity>(itemDrop.itemPrefab, enemies[i].trans.position, Quaternion.identity);
                         }
                     }
                 }
 
-                enemyLookup.Remove(enemies[i].trans.gameObject);
-                Destroy(enemies[i].trans.gameObject);
+                // Add enemy soul to nearby altar
+                {
+                    Altar closestAltar = null;
+                    float closestDistance = float.MaxValue;
+                    foreach (Altar altar in activeAltars) {
+                        float dist = Vector2.Distance(altar.gameObject.transform.position, enemies[i].position);
+                        if (dist < closestDistance) {
+                            closestDistance = dist;
+                            closestAltar = altar;
+                        }
+                    }
+
+                    const float maxSoulDistFromAltar = 3f;
+                    if (closestAltar != null && closestDistance < maxSoulDistFromAltar) {
+                        closestAltar.soulCompletion += 0.025f;
+                        if (closestAltar.soulCompletion >= 1f) {
+                            SpawnLevelEntity<Entity>(altarDropPool.GetDropFromPool(), closestAltar.gameObject.transform.position + new Vector3(0f, 0.3f, 0f), Quaternion.identity);
+                            activeAltars.Remove(closestAltar);
+                        }
+                    }
+                    
+                }
+
+                DestroyEntity(enemies[i]);
                 enemies.RemoveAt(i);
             }
         }
@@ -825,14 +837,6 @@ public class GameManager : MonoBehaviour {
         }
     }
 
-    private void ClearEnemies() {
-        foreach (Enemy enemy in enemies) {
-            Destroy(enemy.trans.gameObject);
-        }
-        enemies.Clear();
-        enemyLookup.Clear();
-    }
-
 
     [Serializable]
     public class EnemyWaveManager {
@@ -849,7 +853,8 @@ public class GameManager : MonoBehaviour {
     }
 
     private void InitExitPortal() {
-        exitPortalTimer.SetTime(Random.Range(35f, 45f));
+        exitPortalTimer.SetTime(Random.Range(1f, 2f));
+        // exitPortalTimer.SetTime(Random.Range(35f, 45f));
         
         exitPortalTimer.UpdateAction ??= () => {
             int totalSeconds = (int)exitPortalTimer.CurTime;
@@ -862,7 +867,7 @@ public class GameManager : MonoBehaviour {
         exitPortalTimer.EndAction ??= () => {
             int randomSpawnIndex = Random.Range(0, exitPortalSpawnParent.childCount);
             Transform exitPortalParent = exitPortalSpawnParent.GetChild(randomSpawnIndex);
-            Instantiate(exitPortalPrefab, exitPortalParent.position, Quaternion.identity, exitPortalParent);
+            SpawnLevelEntity<Entity>(exitPortalPrefab, exitPortalParent.position, Quaternion.identity, exitPortalParent);
             exitPortalStatusText.text = $"Exit Portal: { exitPortalParent.name }";
         };
     }
@@ -882,14 +887,17 @@ public class GameManager : MonoBehaviour {
         wm.enemySpawnLimit = wm.startingSpawnLimit + wm.waveSizeIncrement * wm.curWaveCount;
         wm.curWaveCount++;
     }
-    
 
-    public Vector3 RandomOffset360(float minDist, float maxDist) {
+    private Vector3 RandomOffset360(float minDist, float maxDist) {
         return Quaternion.AngleAxis(Random.Range(0, 360), Vector3.forward) * Vector3.right * Random.Range(minDist, maxDist);
     }
 
 
-    private List<GameObject> spawnedResources = new();
+    private class Altar : Entity {
+        public float soulCompletion;
+    }
+   
+    private List<Altar> activeAltars = new();
     private Dictionary<GameObject, InventorySlot[]> deadBodyInventoriesLookup = new();
 
     private void SpawnResources() {
@@ -898,7 +906,7 @@ public class GameManager : MonoBehaviour {
         
         int gemRocksToSpawn = Random.Range(10, 13);
         for (int i = 0; i < gemRocksToSpawn; i++) {
-            SpawnResource(gemRockPrefab, true);
+            SpawnResource<Entity>(gemRockPrefab, true);
         }
         
         int deadBodiesToSpawn = Random.Range(5, 10);
@@ -908,40 +916,50 @@ public class GameManager : MonoBehaviour {
             inventory.InitalizeWithDefault();
             
             for (int j = 0; j < randomInventorySize; j++) {
+                ItemData spawnItem = deadBodyPool.GetItemFromPool();
                 InventoryItem lootItem = new() {
-                    itemDataUuid = allItems[0].uuid, 
-                    count = Random.Range(1, 10),
+                    itemDataUuid = spawnItem.uuid, 
+                    count = Random.Range(1, spawnItem.maxStackCount / 3),
                     notDiscovered = true,
                 };
                 inventory[j].item = lootItem;
             }
             
-            GameObject body = SpawnResource(deadBodyPrefab, false);
-            deadBodyInventoriesLookup.Add(body, inventory);
+            Entity body = SpawnResource<Entity>(deadBodyPrefab, false);
+            deadBodyInventoriesLookup.Add(body.gameObject, inventory);
+        }
+        
+        int altarsToSpawn = Random.Range(1, 2);
+        for (int i = 0; i < altarsToSpawn; i++) {
+            Altar altarEntity = SpawnResource<Altar>(altarPrefab, true);
+            activeAltars.Add(altarEntity);
         }
 
-        GameObject SpawnResource(GameObject resourcePrefab, bool cutsNavmesh) {
+        T SpawnResource<T>(GameObject resourcePrefab, bool cutsNavmesh) where T : Entity, new() {
             int randomIndex = Random.Range(0, spawnPoints.Count);
             Transform spawnTrans = spawnPoints[randomIndex];
             spawnPoints.RemoveAt(randomIndex);
             
-            GameObject resource = Instantiate(resourcePrefab, spawnTrans.position, resourcePrefab.transform.rotation);
-            spawnedResources.Add(resource);
+            T resource = SpawnLevelEntity<T>(resourcePrefab, spawnTrans.position, spawnTrans.rotation);
 
             if (cutsNavmesh) {
-                AstarPath.active.UpdateGraphs(resource.GetComponent<Collider2D>().bounds);
+                AstarPath.active.UpdateGraphs(resource.collider.bounds);
             }
 
             return resource;
         }
     }
 
-    private void ClearResources() {
-        foreach (GameObject resource in spawnedResources) {
-            Destroy(resource);
+    private void DestroyLevelEntities() {
+        for (int i = entities.Count - 1; i >= 0; i--) {
+            if (entities[i].lifeTime == EntityLifeTime.Level) {
+                DestroyEntityAtIndex(i);    
+            }
         }
-        spawnedResources.Clear();
+
         deadBodyInventoriesLookup.Clear();
+        activeAltars.Clear();
+        enemies.Clear();
     }
 
 
@@ -1012,6 +1030,61 @@ public class GameManager : MonoBehaviour {
             return value == Time.time;
         }
         return false;
+    }
+
+    
+    public enum EntityLifeTime { Global, Level }
+
+    public class Entity {
+        public Transform trans;
+        public Collider2D collider;
+        public Rigidbody2D rigidbody;
+        public SpriteRenderer spriteRenderer;
+        public int health;
+        public EntityLifeTime lifeTime;
+        
+        public Vector3 position {
+            get => trans.position;
+            set => trans.position = value;
+        }
+
+        public GameObject gameObject => trans.gameObject;
+    }
+    
+    private T SpawnGlobalEntity<T>(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null) where T : Entity, new() {
+        return SpawnEntity<T>(prefab, position, rotation, parent, EntityLifeTime.Global);
+    }
+    
+    private T SpawnLevelEntity<T>(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null) where T : Entity, new() {
+        return SpawnEntity<T>(prefab, position, rotation, parent, EntityLifeTime.Level);
+    }
+    
+    private T SpawnEntity<T>(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent, EntityLifeTime lifeTime) where T : Entity, new() {
+        GameObject obj = Instantiate(prefab, position, rotation, parent);
+        T newEntity = new() {
+            trans = obj.transform,
+            health = 100,
+            lifeTime = lifeTime,
+            collider = obj.TryGetComponent(out Collider2D col) ? col : null,
+            rigidbody = obj.TryGetComponent(out Rigidbody2D rbody) ? rbody : null,
+            spriteRenderer = obj.TryGetComponent(out SpriteRenderer spriteRenderer) ? spriteRenderer : null,
+        };
+        entities.Add(newEntity);
+        entityLookup.Add(obj, newEntity);
+        return newEntity;
+    }
+
+    private void DestroyEntityAtIndex(int entityIndex) {
+        Entity entity = entities[entityIndex];
+        entityLookup.Remove(entity.gameObject);
+        entities.RemoveAt(entityIndex);
+        Destroy(entity.gameObject);
+    }
+    
+    private void DestroyEntity(Entity entity) {
+        entityLookup.Remove(entity.gameObject);
+        entities.Remove(entity);
+        Destroy(entity.gameObject);
     }
     
 }

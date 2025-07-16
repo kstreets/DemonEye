@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83f6c2c17092402449e619ea7616aa05, type: 3}
+  m_Name: RockDropPool
+  m_EditorClassIdentifier: 
+  itemDrops:
+  - itemPrefab: {fileID: 5502475512659215005, guid: 76714e7171f7e024d88ac6d0dbf84842, type: 3}
+    dropChance: 0.01
+  - itemPrefab: {fileID: 6950097619826054733, guid: ec0b49b2f3feb194c868280c6fa57cc0, type: 3}
+    dropChance: 0.3

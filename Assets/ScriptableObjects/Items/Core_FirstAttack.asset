@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9bc23522601a56f4d89295cf565d360b, type: 3}
+  m_Name: Core_FirstAttack
+  m_EditorClassIdentifier: 
+  uuid: 96668252-7ec8-4391-8555-18024d991c6d
+  itemType: 2
+  inventorySprite: {fileID: 637263459462573385, guid: 628a350cfff931a4391f06d503b95db1, type: 3}
+  maxStackCount: 1
+  coreAttack: {fileID: 11400000, guid: 4657eb0c1f4fb404f918b49b86323991, type: 2}

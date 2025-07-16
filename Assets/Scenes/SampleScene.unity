@@ -1252,7 +1252,7 @@ TilemapRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 28490d0dad3dd6944bf986ff2073c1f9, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -29964,7 +29964,7 @@ TilemapRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: fedae72b5b265c04abc3c07e41271449, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -98876,6 +98876,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 3221e45827671e44eba996e95660ee2b, type: 2}
   - {fileID: 11400000, guid: e40bd991cff5cf042ad9c0cbb1ddcb72, type: 2}
   - {fileID: 11400000, guid: cd687a7e47b684f45b3fb8851a1e8edb, type: 2}
+  - {fileID: 11400000, guid: 00e9ea2fcbd8c5240abc74c2c3013a54, type: 2}
   allModifiers:
   - {fileID: 11400000, guid: 8f44ed38d888e9c43becf99e5b53b22c, type: 2}
   - {fileID: 11400000, guid: 1f2ba35cf2f5c794ca51e893d681f7e0, type: 2}
@@ -98895,11 +98896,15 @@ MonoBehaviour:
   projectilePrefab: {fileID: 4682860730991365088, guid: 5fa01c7df64854b40996c60725181067, type: 3}
   laserPrefab: {fileID: 3793226877012381215, guid: 518560ba50c31e146a41c8e950637601, type: 3}
   gemRockPrefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
+  altarPrefab: {fileID: 5684300478470835813, guid: 9a1d6fd835fa2474a9cdbed7d6ada3f8, type: 3}
   deadBodyPrefab: {fileID: 7104348053268977879, guid: 155b87af078ab3d4790da6d5e29d1337, type: 3}
   exitPortalPrefab: {fileID: 1919934169009674015, guid: e878bf56970589c408c5be35c9a6c966, type: 3}
   defaultEnemy: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
   defaultAttack: {fileID: 11400000, guid: 6f7f20f8211114b4485e5e39f0547140, type: 2}
-  curBaseAttack: {fileID: 0}
+  curCoreAttack: {fileID: 0}
+  deadBodyPool: {fileID: 11400000, guid: d1d5e1485b6925d4dbad1feaf3701fcc, type: 2}
+  altarDropPool: {fileID: 11400000, guid: 4af55f9ad1a35c646b1ba2be0e1f508b, type: 2}
+  rockDropPool: {fileID: 11400000, guid: f008cedd5a5342243b1c9b1064102461, type: 2}
   waveManager:
     minTimeBetweenWaves: 18
     maxTimeBetweenWaves: 60

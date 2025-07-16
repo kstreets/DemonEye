@@ -1,7 +1,7 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "BaseAttack", menuName = "Scriptable Objects/BaseAttack")]
-public class BaseAttack : UuidScriptableObject {
+[CreateAssetMenu(fileName = "CoreAttack", menuName = "Scriptable Objects/CoreAttack")]
+public class CoreAttack : UuidScriptableObject {
     
     public enum AttackType { Projectile, Laser }
 
