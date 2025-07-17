@@ -11,6 +11,7 @@ public class EnemyData : ScriptableObject {
     }
     
     public GameObject enemyPrefab;
-    public ItemDrop[] itemDrops; 
+    public ItemDrop[] itemDrops;
+    public float speed;
 
 }

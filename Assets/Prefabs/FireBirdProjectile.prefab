@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 8397466867077614629}
   - component: {fileID: 7580165706227117865}
   m_Layer: 0
-  m_Name: FireProjectile
+  m_Name: FireBirdProjectile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

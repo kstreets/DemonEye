@@ -2,11 +2,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public static class Eye {
+public class DemonEye {
+    public List<EyeModifier> modifers = new();
+    public CoreAttack coreAttack;
+}
 
-    public static List<EyeModifier> modifers = new();
-    public static CoreAttack CoreAttack;
+public static class EyeFunctions {
 
+    public static DemonEye equipedEye;
     private static GameManager gm;
     private static Limitter attackLimitter;
 
@@ -15,7 +18,7 @@ public static class Eye {
     }
 
     public static void Update() {
-        switch (CoreAttack.attackType) {
+        switch (equipedEye.coreAttack.attackType) {
             case CoreAttack.AttackType.Laser:
                 UpdateLaser();
                 break;
@@ -23,18 +26,18 @@ public static class Eye {
     }
 
     public static bool CanShootPrimary() {
-        float attackDelay = CoreAttack.attackDelay;
-        if (modifers.ContainsCount(gm.fireRateModifier, out int fireRateCount)) {
+        float attackDelay = equipedEye.coreAttack.attackDelay;
+        if (equipedEye.modifers.ContainsCount(gm.fireRateModifier, out int fireRateCount)) {
             for (int i = 0; i < fireRateCount; i++) {
                 attackDelay -= 0.03f;
             }
-            attackDelay = Mathf.Clamp(attackDelay, CoreAttack.cappedMinAttackDelay, CoreAttack.attackDelay);
+            attackDelay = Mathf.Clamp(attackDelay, equipedEye.coreAttack.cappedMinAttackDelay, equipedEye.coreAttack.attackDelay);
         }
         return attackLimitter.TimeHasPassed(attackDelay);
     }
 
     public static void ShootPrimary() {
-        switch (CoreAttack.attackType) {
+        switch (equipedEye.coreAttack.attackType) {
             case CoreAttack.AttackType.Projectile:
                 ProjectilePrimaryShoot();
                 break;
@@ -48,30 +51,28 @@ public static class Eye {
         Vector2 mousePos = Mouse.current.position.ReadValue();
         Vector2 mouseWorldPos = gm.mainCamera.ScreenToWorldPoint(mousePos);
         
-        Vector2 velocity = (mouseWorldPos - gm.player.PositionV2()).normalized * CoreAttack.projectileSpeed;
+        Vector2 velocity = (mouseWorldPos - gm.player.PositionV2()).normalized * equipedEye.coreAttack.projectileSpeed;
         SpawnProjectile(velocity);
 
-        if (modifers.ContainsCount(gm.triShotModifier, out int triShotCount)) {
+        if (UseModifier(gm.triShotModifier)) {
             const float baseTriShotAngle = 8f;
-            for (int i = 0; i < triShotCount; i++) {
-                float curAngle = baseTriShotAngle * (i + 1);
-                Vector2 secondShotVelocity = Quaternion.AngleAxis(curAngle, Vector3.forward) * velocity;
-                SpawnProjectile(secondShotVelocity);
-                Vector2 thirdShotVelocity = Quaternion.AngleAxis(-curAngle, Vector3.forward) * velocity;
-                SpawnProjectile(thirdShotVelocity);
-            }
+            Vector2 secondShotVelocity = Quaternion.AngleAxis(baseTriShotAngle, Vector3.forward) * velocity;
+            SpawnProjectile(secondShotVelocity);
+            Vector2 thirdShotVelocity = Quaternion.AngleAxis(-baseTriShotAngle, Vector3.forward) * velocity;
+            SpawnProjectile(thirdShotVelocity);
         }
     }
     
     private static void SpawnProjectile(Vector2 velocity) {
         float angle = Vector2.SignedAngle(Vector2.right, velocity.normalized);
         Quaternion projectileRotation = Quaternion.AngleAxis(angle, Vector3.forward);
-        GameObject projectile = GameObject.Instantiate(gm.projectilePrefab, gm.player.position + new Vector3(0f, 0.1f, 0f), projectileRotation);
+        GameObject projectile = GameObject.Instantiate(equipedEye.coreAttack.projectilePrefab, gm.player.position + new Vector3(0f, 0.1f, 0f), projectileRotation);
         
         gm.projectiles.Add(new() {
             timeAlive = 0f,
             trans = projectile.transform,
-            velocity = velocity 
+            velocity = velocity,
+            eyeSpawnedFrom = equipedEye,
         });
     }
 
@@ -82,7 +83,7 @@ public static class Eye {
 
     private static void LaserPrimaryShoot() {
         if (!laserRenderer) {
-            laserTimer.SetTime(CoreAttack.laserDuration);
+            laserTimer.SetTime(equipedEye.coreAttack.laserDuration);
             laserRenderer = GameObject.Instantiate(gm.laserPrefab, gm.player.position, Quaternion.identity).GetComponent<LineRenderer>();
         }
     }
@@ -104,16 +105,33 @@ public static class Eye {
         }
         
         Vector3 startPos = gm.player.position + new Vector3(0f, 0.1f, 0f);
-        Vector3 endPos = startPos + (mouseWorldPos.ToVector3() - startPos).normalized * CoreAttack.range;
+        Vector3 endPos = startPos + (mouseWorldPos.ToVector3() - startPos).normalized * equipedEye.coreAttack.range;
         RaycastHit2D hit = Physics2D.Linecast(startPos, endPos, Masks.DamagableMask);
         
         laserRenderer.positionCount = 2;
         laserRenderer.SetPosition(0, startPos);
         laserRenderer.SetPosition(1, hit ? hit.point : endPos);
         
-        if (laserDamageLimitter.TimeHasPassed(CoreAttack.laserDamageTickDelay)) {
-            gm.HandleDamage(hit.collider);
+        if (laserDamageLimitter.TimeHasPassed(equipedEye.coreAttack.laserDamageTickDelay)) {
+            gm.HandleDamage(equipedEye, hit.collider);
         }
+    }
+
+
+    private static bool UseModifier(EyeModifier modifier) {
+        if (!equipedEye.modifers.Contains(modifier)) {
+            return false;
+        }
+        
+        if (modifier.alwaysActive) {
+            return true;
+        }
+        
+        float probability = 0f;
+        foreach (EyeModifier mod in equipedEye.modifers) {
+            probability += mod.activationProbability;
+        }
+        return Random.value <= Mathf.Clamp01(probability);
     }
 
 }

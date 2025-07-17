@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   uuid: 6b64b0ae-8df4-4bb1-8689-a629ac2e060f
   itemType: 3
-  inventorySprite: {fileID: 1617987434, guid: f369ab1bdea8ea5418eaf0c3d16d2b84, type: 3}
+  inventorySprite: {fileID: -80230315, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
   maxStackCount: 10
   coreAttack: {fileID: 0}
   eyeModifier: {fileID: 11400000, guid: 8f44ed38d888e9c43becf99e5b53b22c, type: 2}

@@ -10,8 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 84fed5edb3bb9364cb2a09f0a2cb622f, type: 3}
-  m_Name: Firerate
+  m_Name: Bleed
   m_EditorClassIdentifier: 
-  uuid: d78ad492-cad8-4ef7-85d7-994b598422ea
+  uuid: 6dec8709-4738-4fba-adf1-7014cf8d02b5
   alwaysActive: 1
   activationProbability: 0

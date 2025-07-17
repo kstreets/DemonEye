@@ -13,6 +13,7 @@ public class CoreAttack : UuidScriptableObject {
     
     [VInspector.ShowIf("attackType", AttackType.Projectile)]
     public float projectileSpeed;
+    public GameObject projectilePrefab;
 
     [VInspector.ShowIf("attackType", AttackType.Laser)]
     public float laserDuration;

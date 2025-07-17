@@ -98877,15 +98877,22 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e40bd991cff5cf042ad9c0cbb1ddcb72, type: 2}
   - {fileID: 11400000, guid: cd687a7e47b684f45b3fb8851a1e8edb, type: 2}
   - {fileID: 11400000, guid: 00e9ea2fcbd8c5240abc74c2c3013a54, type: 2}
+  - {fileID: 11400000, guid: 2dec242eb40d766429279f9d62f6a99e, type: 2}
+  - {fileID: 11400000, guid: 0073e8fe4d87746408afda8f77d3b161, type: 2}
+  - {fileID: 11400000, guid: c1470d204db6c5f4b99824ca9decbf3e, type: 2}
   allModifiers:
   - {fileID: 11400000, guid: 8f44ed38d888e9c43becf99e5b53b22c, type: 2}
   - {fileID: 11400000, guid: 1f2ba35cf2f5c794ca51e893d681f7e0, type: 2}
+  - {fileID: 11400000, guid: ffe06eef77b96c84585bf5e5ac90424c, type: 2}
+  - {fileID: 11400000, guid: 12912bc2a97b1f648aab65980fc8f5ec, type: 2}
   allBaseAttacks:
   - {fileID: 11400000, guid: 6f7f20f8211114b4485e5e39f0547140, type: 2}
   - {fileID: 11400000, guid: 4657eb0c1f4fb404f918b49b86323991, type: 2}
   demonEyeItem: {fileID: 11400000, guid: cd687a7e47b684f45b3fb8851a1e8edb, type: 2}
   fireRateModifier: {fileID: 11400000, guid: 8f44ed38d888e9c43becf99e5b53b22c, type: 2}
   triShotModifier: {fileID: 11400000, guid: 1f2ba35cf2f5c794ca51e893d681f7e0, type: 2}
+  bleedModifier: {fileID: 11400000, guid: ffe06eef77b96c84585bf5e5ac90424c, type: 2}
+  slowModifier: {fileID: 11400000, guid: 12912bc2a97b1f648aab65980fc8f5ec, type: 2}
   player: {fileID: 1370272340}
   mainCamera: {fileID: 519420031}
   crosshairTrans: {fileID: 997770961}
@@ -98893,7 +98900,6 @@ MonoBehaviour:
   exitPortalSpawnParent: {fileID: 201188077}
   hideoutParent: {fileID: 1996054087}
   hellRaidParent: {fileID: 1506332736}
-  projectilePrefab: {fileID: 4682860730991365088, guid: 5fa01c7df64854b40996c60725181067, type: 3}
   laserPrefab: {fileID: 3793226877012381215, guid: 518560ba50c31e146a41c8e950637601, type: 3}
   gemRockPrefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
   altarPrefab: {fileID: 5684300478470835813, guid: 9a1d6fd835fa2474a9cdbed7d6ada3f8, type: 3}

@@ -19,6 +19,8 @@ public class GameManager : MonoBehaviour {
 
     public EyeModifier fireRateModifier;
     public EyeModifier triShotModifier;
+    public EyeModifier bleedModifier;
+    public EyeModifier slowModifier;
     
     public Transform player;
     public Camera mainCamera;
@@ -29,7 +31,6 @@ public class GameManager : MonoBehaviour {
     public Transform hideoutParent;
     public Transform hellRaidParent;
     
-    public GameObject projectilePrefab;
     public GameObject laserPrefab;
     public GameObject gemRockPrefab;
     public GameObject altarPrefab;
@@ -75,9 +76,11 @@ public class GameManager : MonoBehaviour {
     
     [NonSerialized] public List<Entity> entities = new();
     [NonSerialized] public Dictionary<GameObject, Entity> entityLookup = new();
+    
     [NonSerialized] public List<Projectile> projectiles = new();
+    
     [NonSerialized] public List<Enemy> enemies = new();
-    public List<EyeModifier> equipedModifiers = new();
+    [NonSerialized] public Dictionary<GameObject, Enemy> enemyLookup = new();
     
     private static Dictionary<string, ItemData> itemDataLookup = new();
     private static Dictionary<string, EyeModifier> eyeModifierLookup = new();
@@ -107,8 +110,8 @@ public class GameManager : MonoBehaviour {
         LoadInventory(playerInventory);
         LoadInventory(stashInventory);
 
-        Eye.Init(this);
-        Eye.CoreAttack = defaultAttack;
+        EyeFunctions.Init(this);
+        EyeFunctions.equipedEye = new() { coreAttack = defaultAttack };
         
         moveInputAction = InputSystem.actions.FindAction("Move");
         attackInputAction = InputSystem.actions.FindAction("Attack");
@@ -204,10 +207,10 @@ public class GameManager : MonoBehaviour {
         Vector2 mousePos = Mouse.current.position.ReadValue();
         crosshairTrans.position = mousePos;
 
-        if (attackInputAction.IsPressed() && Eye.CanShootPrimary()) {
-            Eye.ShootPrimary();
+        if (attackInputAction.IsPressed() && EyeFunctions.CanShootPrimary()) {
+            EyeFunctions.ShootPrimary();
         }
-        Eye.Update();
+        EyeFunctions.Update();
     }
     
     private void CheckForInteractions() { 
@@ -223,7 +226,7 @@ public class GameManager : MonoBehaviour {
                 EnableInteractionPrompt(col.transform.position);
                 if (interactInputAction.WasPressedThisFrame()) {
                     TryAddItemToInventory(playerInventory, col.GetComponent<Item>().itemData); 
-                    Destroy(col.gameObject);
+                    DestroyEntity(col.gameObject);
                 }
             }
 
@@ -267,32 +270,46 @@ public class GameManager : MonoBehaviour {
         interactPrompt.transform.position = mainCamera.WorldToScreenPoint(position + new Vector3(0f, 0.1f, 0f));
     }
 
+    private InventoryItem prevEquippedEyeItem;
+    
     private void CheckForEquipmentChange() {
-        InventoryItem item = playerInventory[0].item;
-        if (item == null) {
-            Eye.modifers.Clear();
-            Eye.CoreAttack = defaultAttack;
+        InventoryItem curItem = playerInventory[0].item;
+
+        if (prevEquippedEyeItem == curItem) return;
+        
+        prevEquippedEyeItem = curItem;
+        
+        if (curItem == null) {
+            EyeFunctions.equipedEye = new() { coreAttack = defaultAttack};
             return;
         }
-        
-        Eye.CoreAttack = baseAttackLookup[item.baseAttackUuid];
-        Eye.modifers.Clear();
-        foreach (string modUuid in item.modifierUuids) {
-            Eye.modifers.Add(eyeModifierLookup[modUuid]);
+
+        List<EyeModifier> eyeModifiers = new();
+        foreach (string modUuid in curItem.modifierUuids) {
+            eyeModifiers.Add(eyeModifierLookup[modUuid]);
         }
+        
+        EyeFunctions.equipedEye = new() {
+            coreAttack = baseAttackLookup[curItem.baseAttackUuid],
+            modifers = eyeModifiers,
+        };
     }
     
     private void UpdateCrucible() {
         if (ButtonIsPressed(crucibleForgeButton)) {
             InventoryItem eyeItem = null;
+            InventoryItem coreItem = null;
+            
             foreach (InventorySlot slot in crucibleInventory) {
                 if (slot.ui.onlyAcceptedItemType == ItemData.ItemType.Eye) {
                     eyeItem = slot.item;
-                    break;
+                }
+                if (slot.ui.onlyAcceptedItemType == ItemData.ItemType.Core) {
+                    coreItem = slot.item;
                 }
             }
 
-            if (eyeItem == null) return;
+            if (eyeItem == null || coreItem == null) return;
             
             eyeItem.itemDataUuid = demonEyeItem.uuid;
             eyeItem.modifierUuids = new();
@@ -671,6 +688,7 @@ public class GameManager : MonoBehaviour {
         public Transform trans;
         public float timeAlive;
         public Vector2 velocity;
+        public DemonEye eyeSpawnedFrom;
     }
     
     private void UpdateProjectiles() {
@@ -682,7 +700,7 @@ public class GameManager : MonoBehaviour {
             
             Collider2D col = Physics2D.OverlapCircle(proj.trans.position, 0.1f, Masks.DamagableMask);
             if (col) {
-                HandleDamage(col);
+                HandleDamage(proj.eyeSpawnedFrom, col);
                 Destroy(projectiles[i].trans.gameObject);
                 projectiles.RemoveAt(i);
             }
@@ -703,20 +721,23 @@ public class GameManager : MonoBehaviour {
         projectiles.Clear();
     }
 
-    public void HandleDamage(Collider2D col) {
+    public void HandleDamage(DemonEye eye, Collider2D col) {
         if (!col) return;
         
         if (col.CompareTag(Tags.Enemy)) {
+            Enemy enemy = enemyLookup[col.gameObject];
+            ApplyModifiersToEntity(enemy, eye);
+            
             // We damage all very close enemies to elimate long trains
             Collider2D[] cols = Physics2D.OverlapCircleAll(col.transform.position, 0.12f, Masks.EnemyMask);
             foreach (Collider2D eCol in cols) {
                 Entity entity = entityLookup[eCol.gameObject];
-                entity.health -= 50;
+                entity.health -= (int)eye.coreAttack.damage;
             }
         }
         else {
             Entity entity = entityLookup[col.gameObject];
-            entity.health -= 50;
+            entity.health -= (int)eye.coreAttack.damage;
 
             if (Random.value <= 0.35f) { // Random chance to spawn drop on each hit
                 Vector3 spawnPos = col.transform.position + RandomOffset360(0.25f, 0.5f);
@@ -730,10 +751,12 @@ public class GameManager : MonoBehaviour {
         }
     }
 
-    
+
     public class Enemy : Entity {
         public EnemyData data;
         public PathData pathData = new();
+        public BleedMod bleed;
+        public SlowMod slow;
     }
     
     public class PathData {
@@ -755,19 +778,30 @@ public class GameManager : MonoBehaviour {
         enemy.data = defaultEnemy;
         
         enemies.Add(enemy);
+        enemyLookup.Add(enemy.gameObject, enemy);
         waveManager.enemiesLeftToSpawn--;
     }
     
     private void UpdateEnemies() {
         for (int i = enemies.Count - 1; i >= 0; i--) {
-            if (enemies[i].health <= 0) {
+            Enemy enemy = enemies[i];
+
+            if (enemy.bleed != null) {
+                BleedMod bleed = enemy.bleed;
+                if (Time.time - bleed.lastBleedTime > bleed.bleedInterval) {
+                    enemy.health -= bleed.bleedDamage;
+                    bleed.lastBleedTime = Time.time;
+                }
+            }
+            
+            if (enemy.health <= 0) {
                 // Drop items from enemy 
                 {
-                    EnemyData.ItemDrop[] itemDrops = enemies[i].data.itemDrops;
+                    EnemyData.ItemDrop[] itemDrops = enemy.data.itemDrops;
                     foreach (EnemyData.ItemDrop itemDrop in itemDrops) {
                         float randomChance = Random.value;
                         if (randomChance < itemDrop.dropChance) {
-                            SpawnLevelEntity<Entity>(itemDrop.itemPrefab, enemies[i].trans.position, Quaternion.identity);
+                            SpawnLevelEntity<Entity>(itemDrop.itemPrefab, enemy.position, Quaternion.identity);
                         }
                     }
                 }
@@ -777,7 +811,7 @@ public class GameManager : MonoBehaviour {
                     Altar closestAltar = null;
                     float closestDistance = float.MaxValue;
                     foreach (Altar altar in activeAltars) {
-                        float dist = Vector2.Distance(altar.gameObject.transform.position, enemies[i].position);
+                        float dist = Vector2.Distance(altar.gameObject.transform.position, enemy.position);
                         if (dist < closestDistance) {
                             closestDistance = dist;
                             closestAltar = altar;
@@ -831,8 +865,16 @@ public class GameManager : MonoBehaviour {
             
             usingPath = usingPath && pathData.waypointIndex < pathData.abPath.vectorPath.Count;
 
+            float speed = enemy.data.speed;
+            if (enemy.slow != null) {
+                speed = Mathf.Clamp(speed - enemy.slow.speedReduction, 0.05f, enemy.data.speed);
+                if (Time.time > enemy.slow.activationTime + enemy.slow.duration) {
+                    enemy.slow = null;
+                }
+            }
+
             Vector2 targetPos = usingPath ? pathData.abPath.vectorPath[pathData.waypointIndex] : player.position;
-            Vector2 movePos = Vector2.MoveTowards(enemy.position, targetPos, 0.4f * Time.fixedDeltaTime);
+            Vector2 movePos = Vector2.MoveTowards(enemy.position, targetPos, speed * Time.fixedDeltaTime);
             enemy.rigidbody.MovePosition(movePos);
         }
     }
@@ -1042,6 +1084,7 @@ public class GameManager : MonoBehaviour {
         public SpriteRenderer spriteRenderer;
         public int health;
         public EntityLifeTime lifeTime;
+        public int modFlags;
         
         public Vector3 position {
             get => trans.position;
@@ -1080,11 +1123,57 @@ public class GameManager : MonoBehaviour {
         entities.RemoveAt(entityIndex);
         Destroy(entity.gameObject);
     }
+
+    private void DestroyEntity(GameObject gameObj) {
+        DestroyEntity(entityLookup[gameObj]);
+    }
     
     private void DestroyEntity(Entity entity) {
         entityLookup.Remove(entity.gameObject);
         entities.Remove(entity);
         Destroy(entity.gameObject);
+    }
+
+
+    private void ApplyModifiersToEntity(Enemy entity, DemonEye eye) {
+        if (eye.modifers.Contains(bleedModifier)) {
+            AddBleed(entity, eye);
+        }
+        if (eye.modifers.Contains(slowModifier)) {
+            AddSlow(entity, eye);
+        }
+    }
+
+    public class BleedMod {
+        public int bleedDamage;
+        public float bleedInterval;
+        public float lastBleedTime;
+    }
+
+    private void AddBleed(Enemy entity, DemonEye eye) {
+        int count = eye.modifers.GetCount(bleedModifier);
+        BleedMod bleed = new() {
+            bleedDamage = 5 * count,
+            bleedInterval = 1.5f,
+            lastBleedTime = Time.time
+        };
+        entity.bleed = bleed;
+    }
+
+    public class SlowMod {
+        public float speedReduction;
+        public float activationTime;
+        public float duration;
+    }
+
+    private void AddSlow(Enemy enemy, DemonEye eye) {
+        int count = eye.modifers.GetCount(slowModifier);
+        SlowMod slow = new() {
+            speedReduction = 0.08f * count,
+            duration = 2f,
+            activationTime = Time.time,
+        };
+        enemy.slow = slow;
     }
     
 }

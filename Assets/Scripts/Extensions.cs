@@ -32,6 +32,16 @@ public static class Extensions {
         return count > 0;
     }
 
+    public static int GetCount<T>(this List<T> list, T item) {
+        int count = 0; 
+        foreach (T listItem in list) {
+            if (listItem.Equals(item)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     public static void InitalizeWithDefault<T>(this T[] array) where T : new() {
         for (int i = 0; i < array.Length; i++) {
             array[i] = new();

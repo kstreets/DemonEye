@@ -19,5 +19,6 @@ MonoBehaviour:
   damage: 35
   range: 0
   projectileSpeed: 2.1
+  projectilePrefab: {fileID: 4682860730991365088, guid: 5fa01c7df64854b40996c60725181067, type: 3}
   laserDuration: 0
   laserDamageTickDelay: 0

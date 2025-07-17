@@ -13,3 +13,5 @@ MonoBehaviour:
   m_Name: TriShot
   m_EditorClassIdentifier: 
   uuid: 4b881c99-2033-4212-acac-2c52c21e4932
+  alwaysActive: 0
+  activationProbability: 0.1
