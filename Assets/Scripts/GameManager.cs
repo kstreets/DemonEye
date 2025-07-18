@@ -12,16 +12,8 @@ using Random = UnityEngine.Random;
 
 public class GameManager : MonoBehaviour {
 
-    public List<ItemData> allItems;
-    public List<EyeModifier> allModifiers;
-    public List<CoreAttack> allBaseAttacks;
-    public ItemData demonEyeItem;
+    public List<Item> allItems;
 
-    public EyeModifier fireRateModifier;
-    public EyeModifier triShotModifier;
-    public EyeModifier bleedModifier;
-    public EyeModifier slowModifier;
-    
     public Transform player;
     public Camera mainCamera;
     public RectTransform crosshairTrans;
@@ -39,7 +31,7 @@ public class GameManager : MonoBehaviour {
     public EnemyData defaultEnemy;
 
     public CoreAttack defaultAttack;
-    public CoreAttack curCoreAttack;
+    public Item demonEyeItem;
     
     public ItemPool deadBodyPool;
     public DropPool altarDropPool;
@@ -82,7 +74,7 @@ public class GameManager : MonoBehaviour {
     [NonSerialized] public List<Enemy> enemies = new();
     [NonSerialized] public Dictionary<GameObject, Enemy> enemyLookup = new();
     
-    private static Dictionary<string, ItemData> itemDataLookup = new();
+    private static Dictionary<string, Item> itemDataLookup = new();
     private static Dictionary<string, EyeModifier> eyeModifierLookup = new();
     private static Dictionary<string, CoreAttack> baseAttackLookup = new();
 
@@ -95,14 +87,14 @@ public class GameManager : MonoBehaviour {
     private void Start() {
         Cursor.visible = false;
         
-        foreach (ItemData itemData in allItems) {
+        foreach (Item itemData in allItems) {
+            if (itemData is EyeModifier mod) {
+                eyeModifierLookup.Add(mod.uuid, mod);
+            }
+            else if (itemData is CoreAttack core) {
+                baseAttackLookup.Add(core.uuid, core);
+            }
             itemDataLookup.Add(itemData.uuid, itemData);
-        }
-        foreach (EyeModifier mod in allModifiers) {
-            eyeModifierLookup.Add(mod.uuid, mod);
-        }
-        foreach (CoreAttack attack in allBaseAttacks) {
-            baseAttackLookup.Add(attack.uuid, attack);
         }
 
         InitInventory();
@@ -225,7 +217,7 @@ public class GameManager : MonoBehaviour {
             if (col.CompareTag(Tags.Pickup)) {
                 EnableInteractionPrompt(col.transform.position);
                 if (interactInputAction.WasPressedThisFrame()) {
-                    TryAddItemToInventory(playerInventory, col.GetComponent<Item>().itemData); 
+                    TryAddItemToInventory(playerInventory, col.GetComponent<ItemReference>().item); 
                     DestroyEntity(col.gameObject);
                 }
             }
@@ -284,48 +276,69 @@ public class GameManager : MonoBehaviour {
             return;
         }
 
-        List<EyeModifier> eyeModifiers = new();
+        Dictionary<string, int> eyeModCountFromId = new();
         foreach (string modUuid in curItem.modifierUuids) {
-            eyeModifiers.Add(eyeModifierLookup[modUuid]);
+            if (!eyeModCountFromId.TryAdd(modUuid, 1)) {
+                eyeModCountFromId[modUuid]++;
+            }
+        }
+        
+        List<DemonEyeInstance.EquipedModInstance> eyeModifiers = new();
+        foreach (KeyValuePair<string, int> pair in eyeModCountFromId) {
+            eyeModifiers.Add(new() {
+                modId = pair.Key,
+                stackCount = pair.Value,
+            });
         }
         
         EyeFunctions.equipedEye = new() {
             coreAttack = baseAttackLookup[curItem.baseAttackUuid],
-            modifers = eyeModifiers,
+            modInstances = eyeModifiers,
         };
+        
+        foreach (DemonEyeInstance.EquipedModInstance modInstance in EyeFunctions.equipedEye.modInstances) { 
+            eyeModifierLookup[modInstance.modId].AddInstanceToEye(EyeFunctions.equipedEye, modInstance.stackCount); 
+        }
     }
     
     private void UpdateCrucible() {
         if (ButtonIsPressed(crucibleForgeButton)) {
+            int eyeSlotIndex = 0;
             InventoryItem eyeItem = null;
             InventoryItem coreItem = null;
-            
-            foreach (InventorySlot slot in crucibleInventory) {
-                if (slot.ui.onlyAcceptedItemType == ItemData.ItemType.Eye) {
+
+            for (int i = 0; i < crucibleInventory.Length; i++) {
+                InventorySlot slot = crucibleInventory[i];
+                if (slot.ui.onlyAcceptedItemType == Item.ItemType.Eye) {
                     eyeItem = slot.item;
+                    eyeSlotIndex = i;
                 }
-                if (slot.ui.onlyAcceptedItemType == ItemData.ItemType.Core) {
+
+                if (slot.ui.onlyAcceptedItemType == Item.ItemType.Core) {
                     coreItem = slot.item;
                 }
             }
 
             if (eyeItem == null || coreItem == null) return;
-            
-            eyeItem.itemDataUuid = demonEyeItem.uuid;
-            eyeItem.modifierUuids = new();
-            
+
+            InventoryItem newDemonEyeItem = new() {
+                itemDataUuid = demonEyeItem.uuid,
+                modifierUuids = new(),
+            };
+
             foreach (InventorySlot slot in crucibleInventory) {
-                if (slot.ui.onlyAcceptedItemType == ItemData.ItemType.Eye || slot.item == null) continue;
+                if (slot.item == null) continue;
                 
-                if (slot.ui.onlyAcceptedItemType == ItemData.ItemType.Vein) {
-                    eyeItem.modifierUuids.Add(slot.item.Data.eyeModifier.uuid);
+                if (slot.ui.onlyAcceptedItemType == Item.ItemType.Vein) {
+                    newDemonEyeItem.modifierUuids.Add(slot.item.itemRef.uuid);
                 }
-                if (slot.ui.onlyAcceptedItemType == ItemData.ItemType.Core) {
-                    eyeItem.baseAttackUuid = string.Copy(slot.item.Data.coreAttack.uuid);
+                if (slot.ui.onlyAcceptedItemType == Item.ItemType.Core) {
+                    newDemonEyeItem.baseAttackUuid = slot.item.itemRef.uuid;
                 }
                 slot.item = null;
             }
-            
+
+            crucibleInventory[eyeSlotIndex].item = newDemonEyeItem;
             RefreshInventoryDisplay(crucibleInventory, crucibleParent);
         }
     }
@@ -340,8 +353,8 @@ public class GameManager : MonoBehaviour {
 
         [NonSerialized] public bool notDiscovered;
         
-        public ItemData Data => itemDataLookup[itemDataUuid];
-        public bool IsFullStack => count == Data.maxStackCount;
+        public Item itemRef => itemDataLookup[itemDataUuid];
+        public bool IsFullStack => count == itemRef.maxStackCount;
     }
 
     public class InventorySlot {
@@ -439,10 +452,25 @@ public class GameManager : MonoBehaviour {
 
         if (!InventoryIsOpen && (!StashIsOpen || !LootInventoryIsOpen)) return;
         
-        if (!selectItemInputAction.WasPressedThisFrame() && !splitStackInputAction.WasPressedThisFrame()) return;
-
         Vector2 mousePos = Mouse.current.position.ReadValue();
         
+        if (InventoryIsHovered(playerInventoryParent, out int hoveredIndex)) {
+            InventorySlot hoveredSlot = playerInventory[hoveredIndex];
+            if (hoveredSlot.item != null) {
+                if (hoveredSlot.item.itemRef.type == Item.ItemType.DemonEye) {
+                    string eyeDescription = "";
+                    foreach (string modId in hoveredSlot.item.modifierUuids) {
+                        eyeDescription += eyeModifierLookup[modId].GetDescription() + "\n";
+                    }
+                }
+                else {
+                    hoveredSlot.item.itemRef.GetDescription();
+                }
+            }
+        }
+        
+        if (!selectItemInputAction.WasPressedThisFrame() && !splitStackInputAction.WasPressedThisFrame()) return;
+
         if (InventoryIsOpen && StashIsOpen) {
             if (InventoryIsHovered(playerInventoryParent, out int playerSlotIndex)) {
                 MoveItemBetweenInventories(playerInventory, stashInventory, playerSlotIndex);
@@ -486,7 +514,7 @@ public class GameManager : MonoBehaviour {
             if (splitStackInputAction.WasPressedThisFrame() && inventoryItem.count > 1) {
                 int firstHalf = inventoryItem.count / 2;
                 int secondHalf = inventoryItem.count - firstHalf;
-                InventoryAddResult splitResult = TryAddItemToInventory(toInventory, inventoryItem.Data, secondHalf);
+                InventoryAddResult splitResult = TryAddItemToInventory(toInventory, inventoryItem.itemRef, secondHalf);
                 if (splitResult.type == InventoryAddResult.ResultType.Success) {
                     AdjustItemCountInInventory(fromInventory, hoveredSlotIndex, firstHalf);
                 }
@@ -497,7 +525,7 @@ public class GameManager : MonoBehaviour {
                 return;
             }
             
-            InventoryAddResult moveResult = TryAddItemToInventory(toInventory, inventoryItem.Data, inventoryItem.count, inventoryItem.baseAttackUuid, inventoryItem.modifierUuids);
+            InventoryAddResult moveResult = TryAddItemToInventory(toInventory, inventoryItem.itemRef, inventoryItem.count, inventoryItem.baseAttackUuid, inventoryItem.modifierUuids);
             if (moveResult.type == InventoryAddResult.ResultType.Success) {
                 RemoveItemFromInventory(fromInventory, hoveredSlotIndex);
             }
@@ -530,7 +558,7 @@ public class GameManager : MonoBehaviour {
         public int addedCount;
     }
 
-    public InventoryAddResult TryAddItemToInventory(InventorySlot[] inventory, ItemData itemData, int count = 1, 
+    public InventoryAddResult TryAddItemToInventory(InventorySlot[] inventory, Item item, int count = 1, 
         string baseAttackUuid = null, List<string> modifierUuids = null)  // This is a hacky fix for now when moving around the demon eyes
     {
         InventoryAddResult result = new() {
@@ -539,11 +567,11 @@ public class GameManager : MonoBehaviour {
 
         // If we can stack the item then we just do that
         foreach (InventorySlot slot in inventory) {
-            if (slot.item == null || slot.ui.disallowItemStacking || slot.item.IsFullStack || slot.item.Data != itemData) continue;
+            if (slot.item == null || slot.ui.disallowItemStacking || slot.item.IsFullStack || slot.item.itemRef != item) continue;
 
-            int overflowAmount = (count + slot.item.count) - slot.item.Data.maxStackCount;
+            int overflowAmount = (count + slot.item.count) - slot.item.itemRef.maxStackCount;
             if (overflowAmount > 0) {
-                int addCount = slot.item.Data.maxStackCount - slot.item.count;
+                int addCount = slot.item.itemRef.maxStackCount - slot.item.count;
                 
                 slot.item.count += addCount;
                 count = overflowAmount;
@@ -562,13 +590,13 @@ public class GameManager : MonoBehaviour {
         foreach (InventorySlot slot in inventory) {
             if (slot.item != null) continue;
             
-            bool slotCanAcceptItemType = slot.ui.acceptsAllTypes || slot.ui.onlyAcceptedItemType == itemData.itemType;
+            bool slotCanAcceptItemType = slot.ui.acceptsAllTypes || slot.ui.onlyAcceptedItemType == item.type;
             if (!slotCanAcceptItemType) continue;
 
-            int addCount = slot.ui.disallowItemStacking ? 1 : Mathf.Clamp(count, 0, itemData.maxStackCount);
+            int addCount = slot.ui.disallowItemStacking ? 1 : Mathf.Clamp(count, 0, item.maxStackCount);
             
             InventoryItem newItem = new() {
-                itemDataUuid = itemData.uuid,
+                itemDataUuid = item.uuid,
                 baseAttackUuid = baseAttackUuid,
                 modifierUuids = modifierUuids,
                 count = addCount,
@@ -609,7 +637,7 @@ public class GameManager : MonoBehaviour {
         for (int i = 0; i < inventory.Length; i++) {
             InventoryItem item = inventory[i].item;
             if (item == null || item.notDiscovered) continue;
-            inventoryParent.GetChild(i).GetComponentInChildren<InventoryItemUI>().Set(item.Data, item.count);
+            inventoryParent.GetChild(i).GetComponentInChildren<InventoryItemUI>().Set(item.itemRef, item.count);
         }
     }
 
@@ -650,7 +678,7 @@ public class GameManager : MonoBehaviour {
                 break;
             }
             InventoryItem item = lootInvetoryPtr[i].item;
-            lootInventoryParent.GetChild(i).GetComponentInChildren<InventoryItemUI>().Set(item.Data, item.count);
+            lootInventoryParent.GetChild(i).GetComponentInChildren<InventoryItemUI>().Set(item.itemRef, item.count);
         }
 
         bool alreadyDiscoveredAll = discoverLootIndex == -1;
@@ -661,7 +689,7 @@ public class GameManager : MonoBehaviour {
             InventoryItem item = lootInvetoryPtr[discoverLootIndex].item;
             item.notDiscovered = false;
             
-            lootInventoryParent.GetChild(discoverLootIndex).GetComponentInChildren<InventoryItemUI>().Set(item.Data, item.count);
+            lootInventoryParent.GetChild(discoverLootIndex).GetComponentInChildren<InventoryItemUI>().Set(item.itemRef, item.count);
             
             discoverLootIndex++;
             if (discoverLootIndex < lootInvetoryPtr.Length) {
@@ -688,7 +716,7 @@ public class GameManager : MonoBehaviour {
         public Transform trans;
         public float timeAlive;
         public Vector2 velocity;
-        public DemonEye eyeSpawnedFrom;
+        public DemonEyeInstance EyeInstanceSpawnedFrom;
     }
     
     private void UpdateProjectiles() {
@@ -700,7 +728,7 @@ public class GameManager : MonoBehaviour {
             
             Collider2D col = Physics2D.OverlapCircle(proj.trans.position, 0.1f, Masks.DamagableMask);
             if (col) {
-                HandleDamage(proj.eyeSpawnedFrom, col);
+                HandleDamage(proj.EyeInstanceSpawnedFrom, col);
                 Destroy(projectiles[i].trans.gameObject);
                 projectiles.RemoveAt(i);
             }
@@ -721,23 +749,25 @@ public class GameManager : MonoBehaviour {
         projectiles.Clear();
     }
 
-    public void HandleDamage(DemonEye eye, Collider2D col) {
+    public void HandleDamage(DemonEyeInstance eyeInstance, Collider2D col) {
         if (!col) return;
         
         if (col.CompareTag(Tags.Enemy)) {
             Enemy enemy = enemyLookup[col.gameObject];
-            ApplyModifiersToEntity(enemy, eye);
-            
+            foreach (DemonEyeInstance.EquipedModInstance modInstance in eyeInstance.modInstances) {
+                eyeModifierLookup[modInstance.modId].AddInstanceToEnemy(enemy, modInstance.stackCount);
+            } 
+
             // We damage all very close enemies to elimate long trains
             Collider2D[] cols = Physics2D.OverlapCircleAll(col.transform.position, 0.12f, Masks.EnemyMask);
             foreach (Collider2D eCol in cols) {
                 Entity entity = entityLookup[eCol.gameObject];
-                entity.health -= (int)eye.coreAttack.damage;
+                entity.health -= (int)eyeInstance.coreAttack.damage;
             }
         }
         else {
             Entity entity = entityLookup[col.gameObject];
-            entity.health -= (int)eye.coreAttack.damage;
+            entity.health -= (int)eyeInstance.coreAttack.damage;
 
             if (Random.value <= 0.35f) { // Random chance to spawn drop on each hit
                 Vector3 spawnPos = col.transform.position + RandomOffset360(0.25f, 0.5f);
@@ -755,8 +785,8 @@ public class GameManager : MonoBehaviour {
     public class Enemy : Entity {
         public EnemyData data;
         public PathData pathData = new();
-        public BleedMod bleed;
-        public SlowMod slow;
+        public BleedModInstance bleed;
+        public SlowInstance slow;
     }
     
     public class PathData {
@@ -787,7 +817,7 @@ public class GameManager : MonoBehaviour {
             Enemy enemy = enemies[i];
 
             if (enemy.bleed != null) {
-                BleedMod bleed = enemy.bleed;
+                BleedModInstance bleed = enemy.bleed;
                 if (Time.time - bleed.lastBleedTime > bleed.bleedInterval) {
                     enemy.health -= bleed.bleedDamage;
                     bleed.lastBleedTime = Time.time;
@@ -958,7 +988,7 @@ public class GameManager : MonoBehaviour {
             inventory.InitalizeWithDefault();
             
             for (int j = 0; j < randomInventorySize; j++) {
-                ItemData spawnItem = deadBodyPool.GetItemFromPool();
+                Item spawnItem = deadBodyPool.GetItemFromPool();
                 InventoryItem lootItem = new() {
                     itemDataUuid = spawnItem.uuid, 
                     count = Random.Range(1, spawnItem.maxStackCount / 3),
@@ -1134,46 +1164,4 @@ public class GameManager : MonoBehaviour {
         Destroy(entity.gameObject);
     }
 
-
-    private void ApplyModifiersToEntity(Enemy entity, DemonEye eye) {
-        if (eye.modifers.Contains(bleedModifier)) {
-            AddBleed(entity, eye);
-        }
-        if (eye.modifers.Contains(slowModifier)) {
-            AddSlow(entity, eye);
-        }
-    }
-
-    public class BleedMod {
-        public int bleedDamage;
-        public float bleedInterval;
-        public float lastBleedTime;
-    }
-
-    private void AddBleed(Enemy entity, DemonEye eye) {
-        int count = eye.modifers.GetCount(bleedModifier);
-        BleedMod bleed = new() {
-            bleedDamage = 5 * count,
-            bleedInterval = 1.5f,
-            lastBleedTime = Time.time
-        };
-        entity.bleed = bleed;
-    }
-
-    public class SlowMod {
-        public float speedReduction;
-        public float activationTime;
-        public float duration;
-    }
-
-    private void AddSlow(Enemy enemy, DemonEye eye) {
-        int count = eye.modifers.GetCount(slowModifier);
-        SlowMod slow = new() {
-            speedReduction = 0.08f * count,
-            duration = 2f,
-            activationTime = Time.time,
-        };
-        enemy.slow = slow;
-    }
-    
 }

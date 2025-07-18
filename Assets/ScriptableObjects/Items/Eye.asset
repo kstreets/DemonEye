@@ -10,11 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9bc23522601a56f4d89295cf565d360b, type: 3}
-  m_Name: Vein_Slow
+  m_Name: Eye
   m_EditorClassIdentifier: 
-  uuid: aa40e323-523b-4a5b-82b6-e9d6c477e645
-  itemType: 3
-  inventorySprite: {fileID: -662992353, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
+  uuid: bb851969-3bd5-485c-9358-506748f1e246
+  type: 1
+  inventorySprite: {fileID: 637263459462573385, guid: 98709745cf0b1e24cb66e3fbbd64c60c, type: 3}
   maxStackCount: 10
-  coreAttack: {fileID: 0}
-  eyeModifier: {fileID: 11400000, guid: 12912bc2a97b1f648aab65980fc8f5ec, type: 2}

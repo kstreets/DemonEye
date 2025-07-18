@@ -8,13 +8,13 @@ public class ItemPool : ScriptableObject {
     
     [Serializable]
     public class ItemSpawn {
-        public ItemData itemData;
+        public Item item;
         public float dropChance;
     }
 
     public List<ItemSpawn> itemDrops;
 
-    public ItemData GetItemFromPool() {
+    public Item GetItemFromPool() {
         float dropTotal = 0f;
         foreach (ItemSpawn itemSpawn in itemDrops) {
             dropTotal += itemSpawn.dropChance;
@@ -26,11 +26,11 @@ public class ItemPool : ScriptableObject {
         foreach (ItemSpawn itemSpawn in itemDrops) {
             prefixSum += itemSpawn.dropChance;
             if (randomChance < prefixSum) {
-                return itemSpawn.itemData;
+                return itemSpawn.item;
             }
         }
         
-        return itemDrops[^1].itemData;
+        return itemDrops[^1].item;
     }
 
 }

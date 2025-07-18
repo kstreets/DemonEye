@@ -2,14 +2,24 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class DemonEye {
-    public List<EyeModifier> modifers = new();
+public class DemonEyeInstance {
+    
+    public struct EquipedModInstance {
+        public string modId;
+        public int stackCount;
+    }
+    
+    public List<EquipedModInstance> modInstances = new();
     public CoreAttack coreAttack;
+    
+    public FirerateModInstance firerateModInstance;
+    public TrishotModInstance trishotModModInstance;
 }
 
 public static class EyeFunctions {
 
-    public static DemonEye equipedEye;
+    public static List<DemonEyeInstance> eyeInstances = new();
+    public static DemonEyeInstance equipedEye;
     private static GameManager gm;
     private static Limitter attackLimitter;
 
@@ -27,10 +37,8 @@ public static class EyeFunctions {
 
     public static bool CanShootPrimary() {
         float attackDelay = equipedEye.coreAttack.attackDelay;
-        if (equipedEye.modifers.ContainsCount(gm.fireRateModifier, out int fireRateCount)) {
-            for (int i = 0; i < fireRateCount; i++) {
-                attackDelay -= 0.03f;
-            }
+        if (equipedEye.firerateModInstance != null) {
+            attackDelay -= equipedEye.firerateModInstance.reduction;
             attackDelay = Mathf.Clamp(attackDelay, equipedEye.coreAttack.cappedMinAttackDelay, equipedEye.coreAttack.attackDelay);
         }
         return attackLimitter.TimeHasPassed(attackDelay);
@@ -54,7 +62,7 @@ public static class EyeFunctions {
         Vector2 velocity = (mouseWorldPos - gm.player.PositionV2()).normalized * equipedEye.coreAttack.projectileSpeed;
         SpawnProjectile(velocity);
 
-        if (UseModifier(gm.triShotModifier)) {
+        if (equipedEye.trishotModModInstance != null) {
             const float baseTriShotAngle = 8f;
             Vector2 secondShotVelocity = Quaternion.AngleAxis(baseTriShotAngle, Vector3.forward) * velocity;
             SpawnProjectile(secondShotVelocity);
@@ -72,7 +80,7 @@ public static class EyeFunctions {
             timeAlive = 0f,
             trans = projectile.transform,
             velocity = velocity,
-            eyeSpawnedFrom = equipedEye,
+            EyeInstanceSpawnedFrom = equipedEye,
         });
     }
 
@@ -116,22 +124,4 @@ public static class EyeFunctions {
             gm.HandleDamage(equipedEye, hit.collider);
         }
     }
-
-
-    private static bool UseModifier(EyeModifier modifier) {
-        if (!equipedEye.modifers.Contains(modifier)) {
-            return false;
-        }
-        
-        if (modifier.alwaysActive) {
-            return true;
-        }
-        
-        float probability = 0f;
-        foreach (EyeModifier mod in equipedEye.modifers) {
-            probability += mod.activationProbability;
-        }
-        return Random.value <= Mathf.Clamp01(probability);
-    }
-
 }

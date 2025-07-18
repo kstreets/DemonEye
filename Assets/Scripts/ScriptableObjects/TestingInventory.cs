@@ -7,7 +7,7 @@ public class TestingInventory : ScriptableObject {
 
     [Serializable]
     public struct TestInventoryItem {
-        public ItemData itemData;
+        public Item item;
         public int count;
     }
     
@@ -22,7 +22,7 @@ public class TestingInventory : ScriptableObject {
         
         GameManager gameManager = FindAnyObjectByType(typeof(GameManager)) as GameManager;
         foreach (TestInventoryItem inventoryItem in items) {
-            gameManager?.TryAddItemToInventory(gameManager.playerInventory, inventoryItem.itemData, inventoryItem.count);
+            gameManager?.TryAddItemToInventory(gameManager.playerInventory, inventoryItem.item, inventoryItem.count);
         }
     }
 

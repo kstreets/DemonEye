@@ -10,11 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9bc23522601a56f4d89295cf565d360b, type: 3}
-  m_Name: Vein_Bleed
+  m_Name: Gem
   m_EditorClassIdentifier: 
-  uuid: a36e8c3d-95a5-4000-b97f-e649c3895e9b
-  itemType: 3
-  inventorySprite: {fileID: -252513017, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
-  maxStackCount: 10
-  coreAttack: {fileID: 0}
-  eyeModifier: {fileID: 11400000, guid: ffe06eef77b96c84585bf5e5ac90424c, type: 2}
+  uuid: f175b694-f6d8-4bdf-9685-5dcf8c8f64e9
+  itemType: 0
+  inventorySprite: {fileID: -984138720, guid: 86fe82712ae145242aa4771121f95cc2, type: 3}
+  maxStackCount: 15

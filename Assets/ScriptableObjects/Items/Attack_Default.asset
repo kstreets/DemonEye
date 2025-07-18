@@ -10,9 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2ddbfdc15501c354980f508215255cf2, type: 3}
-  m_Name: DefaultAttack
+  m_Name: Attack_Default
   m_EditorClassIdentifier: 
   uuid: 42bfd6a6-e5b7-486d-be34-2f798f1a1d7a
+  type: 2
+  inventorySprite: {fileID: 0}
+  maxStackCount: 0
   attackType: 0
   attackDelay: 0.5
   cappedMinAttackDelay: 0.1

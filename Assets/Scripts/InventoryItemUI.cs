@@ -7,7 +7,7 @@ public class InventoryItemUI : MonoBehaviour {
     public Image image;
     public TextMeshProUGUI countText;
 
-    public void Set(ItemData data, int count) {
+    public void Set(Item data, int count) {
         image.sprite = data.inventorySprite;
         countText.text = count.ToString();
     }

@@ -13,17 +13,15 @@ MonoBehaviour:
   m_Name: TestingInventory
   m_EditorClassIdentifier: 
   items:
-  - itemData: {fileID: 11400000, guid: 2bd24092f02cb4b43973f1026b5c2133, type: 2}
-    count: 20
-  - itemData: {fileID: 11400000, guid: e40bd991cff5cf042ad9c0cbb1ddcb72, type: 2}
+  - item: {fileID: 11400000, guid: e40bd991cff5cf042ad9c0cbb1ddcb72, type: 2}
+    count: 2
+  - item: {fileID: 11400000, guid: 4657eb0c1f4fb404f918b49b86323991, type: 2}
     count: 3
-  - itemData: {fileID: 11400000, guid: 3221e45827671e44eba996e95660ee2b, type: 2}
+  - item: {fileID: 11400000, guid: 879589b7002a56d4791affd28d5fb199, type: 2}
     count: 2
-  - itemData: {fileID: 11400000, guid: 00e9ea2fcbd8c5240abc74c2c3013a54, type: 2}
+  - item: {fileID: 11400000, guid: dd6594e1ebfbb334495ddd1d6a65f0a1, type: 2}
     count: 2
-  - itemData: {fileID: 11400000, guid: 2dec242eb40d766429279f9d62f6a99e, type: 2}
+  - item: {fileID: 11400000, guid: 9285ab41e291784449187596580ae02c, type: 2}
     count: 2
-  - itemData: {fileID: 11400000, guid: 0073e8fe4d87746408afda8f77d3b161, type: 2}
-    count: 2
-  - itemData: {fileID: 11400000, guid: c1470d204db6c5f4b99824ca9decbf3e, type: 2}
+  - item: {fileID: 11400000, guid: 80f19e812bb183b498023f74d3bbef97, type: 2}
     count: 2

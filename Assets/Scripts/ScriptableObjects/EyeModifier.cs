@@ -1,12 +1,17 @@
 using UnityEngine;
-using VInspector;
 
 [CreateAssetMenu(fileName = "EyeModifier", menuName = "Scriptable Objects/EyeModifier")]
-public class EyeModifier : UuidScriptableObject {
+public class EyeModifier : Item {
 
-    public bool alwaysActive;
+    public virtual void AddInstanceToEnemy(GameManager.Enemy enemy, int stackCount) { }
+    public virtual void AddInstanceToEye(DemonEyeInstance eyeInstance, int stackCount) { }
+
+    public override string GetDescription() {
+        return GetModifierDescription(1);
+    }
+
+    protected virtual string GetModifierDescription(int stackCount) {
+        return "Modifier has no description";
+    }
     
-    [ShowIf("alwaysActive", false)] [Range(0f, 1f)]
-    public float activationProbability;
-
 }
