@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: DeadBodyItemPool
   m_EditorClassIdentifier: 
   itemDrops:
-  - itemData: {fileID: 11400000, guid: 2bd24092f02cb4b43973f1026b5c2133, type: 2}
+  - item: {fileID: 11400000, guid: 4657eb0c1f4fb404f918b49b86323991, type: 2}
     dropChance: 0.5
-  - itemData: {fileID: 11400000, guid: 3221e45827671e44eba996e95660ee2b, type: 2}
+  - item: {fileID: 11400000, guid: 879589b7002a56d4791affd28d5fb199, type: 2}
     dropChance: 0.1
-  - itemData: {fileID: 11400000, guid: e40bd991cff5cf042ad9c0cbb1ddcb72, type: 2}
+  - item: {fileID: 11400000, guid: 080b4f634b61c1d49a235bcf9b6ae110, type: 2}
     dropChance: 0.25

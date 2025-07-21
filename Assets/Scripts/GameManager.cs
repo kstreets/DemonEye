@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
+using NUnit.Framework.Internal.Commands;
 using Pathfinding;
 using TMPro;
 using UnityEngine;
@@ -241,7 +242,7 @@ public partial class GameManager : MonoBehaviour {
             if (col.CompareTag(Tags.DeadBody)) {
                 EnableInteractionPrompt(col.transform.position);
                 if (interactInputAction.WasPressedThisFrame()) {
-                    lootInvetoryPtr = deadBodyInventoriesLookup[col.gameObject];
+                    lootInvetoryPtr.slots = deadBodySlotsLookup[col.gameObject];
                     OpenPlayerInventory();
                     OpenLootInventory();
                 }
@@ -366,7 +367,6 @@ public partial class GameManager : MonoBehaviour {
     public class InventorySlot {
         public InventoryItem item;
         public InventorySlotUI ui;
-        public float timeOfLastHoverStart;
     }
 
     public class Inventory {
@@ -402,6 +402,7 @@ public partial class GameManager : MonoBehaviour {
         const int cachedLootInventoryWidth = 3;
         const int cachedLootInventoryHeight = 4;
         SpawnUiSlots(lootInventoryParent, cachedLootInventoryWidth, cachedLootInventoryHeight); 
+        lootInvetoryPtr = CreateInventory(lootInventoryParent, cachedLootInventoryWidth * cachedLootInventoryHeight);
         
         const int stashInventoryWidth = 8;
         const int stashInventoryHeight = 4;
@@ -434,7 +435,6 @@ public partial class GameManager : MonoBehaviour {
             }
             
             allInventories.Add(inventory);
-            
             return inventory;
         }
     }
@@ -473,15 +473,21 @@ public partial class GameManager : MonoBehaviour {
         }
         
         InventoryHoverInfo invHoverInfo = UpdateInventoryHover();
+        UpdateItemtooltip();
+        HandleItemClicked();
 
-        // Handle showing item tooltip / description
-        {
+        void UpdateItemtooltip() {
+            int hoveredSlot = invHoverInfo.hoveredSlotIndex;
+            Inventory hoveredInventory = invHoverInfo.hoveredInventory;
+
+            if (hoveredInventory == null) return;
+            if (!hoveredInventory.slots.IndexInRange(hoveredSlot)) return;
+            if (hoveredInventory.slots[hoveredSlot].item == null) return;
+            if (hoveredInventory.slots[hoveredSlot].item.notDiscovered) return;
+            
             const float hoverTimeUntilTooltip = 0.32f;
-            bool hoveringOverItem = invHoverInfo.hoveredInventory != null && 
-                                    invHoverInfo.hoveredSlotIndex >= 0 && 
-                                    invHoverInfo.hoveredInventory.slots[invHoverInfo.hoveredSlotIndex].item != null;
             bool spentEnoughTimeHovering = invHoverInfo.timeSpentHovering >= hoverTimeUntilTooltip;
-            if (hoveringOverItem && spentEnoughTimeHovering) {
+            if (spentEnoughTimeHovering) {
                 ShowItemTooltip(invHoverInfo);
             }
             else {
@@ -489,24 +495,25 @@ public partial class GameManager : MonoBehaviour {
             }
         }
 
-        // Handle clicking on item
-        if (selectItemInputAction.WasPressedThisFrame() || splitStackInputAction.WasPressedThisFrame()) {
-            Inventory hoveredInventory = invHoverInfo.hoveredInventory;
-            if (hoveredInventory == null) return;
+        void HandleItemClicked() {
+            if (selectItemInputAction.WasPressedThisFrame() || splitStackInputAction.WasPressedThisFrame()) {
+                Inventory hoveredInventory = invHoverInfo.hoveredInventory;
+                if (hoveredInventory == null) return;
 
-            Inventory nonHoveredInventory = null;
-            foreach (Inventory inventory in allInventories) {
-                if (inventory.parent.gameObject.activeSelf && inventory != hoveredInventory) {
-                    nonHoveredInventory = inventory;
-                    break;
+                Inventory nonHoveredInventory = null;
+                foreach (Inventory inventory in allInventories) {
+                    if (inventory.parent.gameObject.activeSelf && inventory != hoveredInventory) {
+                        nonHoveredInventory = inventory;
+                        break;
+                    }
                 }
+
+                if (nonHoveredInventory == null) return;
+
+                MoveItemBetweenInventories(hoveredInventory, nonHoveredInventory, invHoverInfo.hoveredSlotIndex);
+                RefreshInventoryDisplay(hoveredInventory);
+                RefreshInventoryDisplay(nonHoveredInventory);
             }
-
-            if (nonHoveredInventory == null) return;
-
-            MoveItemBetweenInventories(hoveredInventory, nonHoveredInventory, invHoverInfo.hoveredSlotIndex);
-            RefreshInventoryDisplay(hoveredInventory);
-            RefreshInventoryDisplay(nonHoveredInventory);
         }
     }
 
@@ -1062,7 +1069,7 @@ public partial class GameManager : MonoBehaviour {
     }
    
     private List<Altar> activeAltars = new();
-    private Dictionary<GameObject, Inventory> deadBodyInventoriesLookup = new();
+    private Dictionary<GameObject, InventorySlot[]> deadBodySlotsLookup = new();
 
     private void SpawnResources() {
         List<Transform> spawnPoints = resourceSpawnParent.GetComponentsInChildren<Transform>().ToList();
@@ -1073,25 +1080,27 @@ public partial class GameManager : MonoBehaviour {
             SpawnResource<Entity>(gemRockPrefab, true);
         }
         
-        // int deadBodiesToSpawn = Random.Range(5, 10);
-        // for (int i = 0; i < deadBodiesToSpawn; i++) {
-        //     int randomInventorySize = Random.Range(2, 6);
-        //     InventorySlot[] inventory = new InventorySlot[randomInventorySize];
-        //     inventory.InitalizeWithDefault();
-        //     
-        //     for (int j = 0; j < randomInventorySize; j++) {
-        //         Item spawnItem = deadBodyPool.GetItemFromPool();
-        //         InventoryItem lootItem = new() {
-        //             itemDataUuid = spawnItem.uuid, 
-        //             count = Random.Range(1, spawnItem.maxStackCount / 3),
-        //             notDiscovered = true,
-        //         };
-        //         inventory[j].item = lootItem;
-        //     }
-        //     
-        //     Entity body = SpawnResource<Entity>(deadBodyPrefab, false);
-        //     deadBodyInventoriesLookup.Add(body.gameObject, inventory);
-        // }
+        int deadBodiesToSpawn = Random.Range(5, 10);
+        for (int i = 0; i < deadBodiesToSpawn; i++) {
+            int randomInventorySize = Random.Range(2, 6);
+            InventorySlot[] deadBodySlots = new InventorySlot[randomInventorySize];
+
+            for (int j = 0; j < randomInventorySize; j++) {
+                Item spawnItem = deadBodyPool.GetItemFromPool();
+                InventoryItem lootItem = new() {
+                    itemDataUuid = spawnItem.uuid, 
+                    count = Random.Range(1, spawnItem.maxStackCount / 3),
+                    notDiscovered = true,
+                };
+                deadBodySlots[j] = new() {
+                    item = lootItem,
+                    ui = lootInvetoryPtr.slots[j].ui // Use the already instantiated ui of lootInventoryPtr
+                };
+            }
+            
+            Entity body = SpawnResource<Entity>(deadBodyPrefab, false);
+            deadBodySlotsLookup.Add(body.gameObject, deadBodySlots);
+        }
         
         int altarsToSpawn = Random.Range(1, 2);
         for (int i = 0; i < altarsToSpawn; i++) {
@@ -1121,7 +1130,7 @@ public partial class GameManager : MonoBehaviour {
             }
         }
 
-        deadBodyInventoriesLookup.Clear();
+        deadBodySlotsLookup.Clear();
         activeAltars.Clear();
         enemies.Clear();
     }
