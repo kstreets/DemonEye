@@ -16,3 +16,4 @@ MonoBehaviour:
   type: 1
   inventorySprite: {fileID: 637263459462573385, guid: 98709745cf0b1e24cb66e3fbbd64c60c, type: 3}
   maxStackCount: 10
+  description: Used to craft demonic eyes.

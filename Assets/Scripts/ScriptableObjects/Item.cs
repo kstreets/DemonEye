@@ -8,9 +8,10 @@ public class Item : UuidScriptableObject {
     public ItemType type;
     public Sprite inventorySprite;
     public int maxStackCount;
+    [TextArea] public string description;
 
     public virtual string GetDescription() {
-        return "Item is missing description";
+        return !string.IsNullOrEmpty(description) ? description : "Item is missing description";
     }
 
 }

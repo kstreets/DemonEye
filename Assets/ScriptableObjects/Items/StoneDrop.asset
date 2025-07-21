@@ -10,9 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9bc23522601a56f4d89295cf565d360b, type: 3}
-  m_Name: Gem
+  m_Name: StoneDrop
   m_EditorClassIdentifier: 
-  uuid: f175b694-f6d8-4bdf-9685-5dcf8c8f64e9
-  itemType: 0
-  inventorySprite: {fileID: -984138720, guid: 86fe82712ae145242aa4771121f95cc2, type: 3}
+  uuid: 7ba12bf6-38c9-43f8-8176-7322ff1377b6
+  type: 0
+  inventorySprite: {fileID: 1172067732, guid: f5f130e61e73c674ba01af3a5a5f58ea, type: 3}
   maxStackCount: 15
+  description: Demonic stone, a powerful tool for building.

@@ -661,7 +661,6 @@ public partial class GameManager : MonoBehaviour {
         }
         else if (moveResult.type == InventoryAddResult.ResultType.FailureToAddAll) {
             int keepItemCount = inventoryItem.count - moveResult.addedCount;
-            print(keepItemCount);
             AdjustItemCountInInventory(fromInventory, hoveredSlotIndex, keepItemCount);
         }
     }
@@ -1216,7 +1215,6 @@ public partial class GameManager : MonoBehaviour {
         public SpriteRenderer spriteRenderer;
         public int health;
         public EntityLifeTime lifeTime;
-        public int modFlags;
         
         public Vector3 position {
             get => trans.position;

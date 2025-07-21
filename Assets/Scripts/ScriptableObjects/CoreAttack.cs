@@ -19,4 +19,10 @@ public class CoreAttack : Item {
     public float laserDuration;
     public float laserDamageTickDelay;
 
+    public override string GetDescription() {
+        string desc = base.GetDescription() + "\n";
+        desc += $"Damage: {damage}\nFirerate: {1.0f / attackDelay}\nSpeed: {projectileSpeed}";
+        return desc;
+    }
+
 }

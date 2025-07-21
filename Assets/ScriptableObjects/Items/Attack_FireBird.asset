@@ -16,6 +16,7 @@ MonoBehaviour:
   type: 2
   inventorySprite: {fileID: 541499864, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
   maxStackCount: 5
+  description: A core that servers as the base attack when crafting eyes.
   attackType: 0
   attackDelay: 0.25
   cappedMinAttackDelay: 0.05

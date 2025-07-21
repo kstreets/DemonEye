@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 1120642117877939548}
   - component: {fileID: -2803337059433089496}
   m_Layer: 8
-  m_Name: EyeItem
+  m_Name: StoneDrop
   m_TagString: Pickup
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -78,7 +78,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 1
-  m_Sprite: {fileID: 637263459462573385, guid: 0bce7fd82b73e4344ace48d1e6da00d2, type: 3}
+  m_Sprite: {fileID: 1172067732, guid: f5f130e61e73c674ba01af3a5a5f58ea, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -123,8 +123,8 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Radius: 0.08
+  m_Offset: {x: 0.005, y: 0}
+  m_Radius: 0.055
 --- !u!114 &-2803337059433089496
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -137,4 +137,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: adffe092b8278f4498fc8bf07c739956, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  item: {fileID: 11400000, guid: e40bd991cff5cf042ad9c0cbb1ddcb72, type: 2}
+  item: {fileID: 11400000, guid: 080b4f634b61c1d49a235bcf9b6ae110, type: 2}

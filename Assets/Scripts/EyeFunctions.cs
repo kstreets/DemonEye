@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Random = UnityEngine.Random;
 
 public class DemonEyeInstance {
     
@@ -90,7 +91,7 @@ public partial class GameManager {
         Vector2 velocity = (mouseWorldPos - player.PositionV2()).normalized * equipedEye.coreAttack.projectileSpeed;
         SpawnProjectile(velocity);
 
-        if (equipedEye.trishotModModInstance != null) {
+        if (equipedEye.trishotModModInstance != null && RollProbability(equipedEye.trishotModModInstance.probability)) {
             const float baseTriShotAngle = 8f;
             Vector2 secondShotVelocity = Quaternion.AngleAxis(baseTriShotAngle, Vector3.forward) * velocity;
             SpawnProjectile(secondShotVelocity);
@@ -102,7 +103,7 @@ public partial class GameManager {
     private void SpawnProjectile(Vector2 velocity) {
         float angle = Vector2.SignedAngle(Vector2.right, velocity.normalized);
         Quaternion projectileRotation = Quaternion.AngleAxis(angle, Vector3.forward);
-        GameObject projectile = GameObject.Instantiate(equipedEye.coreAttack.projectilePrefab, player.position + new Vector3(0f, 0.1f, 0f), projectileRotation);
+        GameObject projectile = Instantiate(equipedEye.coreAttack.projectilePrefab, player.position + new Vector3(0f, 0.1f, 0f), projectileRotation);
         
         projectiles.Add(new() {
             timeAlive = 0f,
@@ -110,6 +111,10 @@ public partial class GameManager {
             velocity = velocity,
             EyeInstanceSpawnedFrom = equipedEye,
         });
+    }
+
+    private bool RollProbability(float probability) {
+        return Random.value < probability;
     }
 
 
@@ -152,4 +157,5 @@ public partial class GameManager {
             HandleDamage(equipedEye, hit.collider);
         }
     }
+    
 }
