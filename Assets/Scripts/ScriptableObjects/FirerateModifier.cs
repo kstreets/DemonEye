@@ -15,8 +15,8 @@ public class FirerateModifier : EyeModifier {
         };
         eyeInstance.firerateModInstance = instance;
     }
-    
-    protected override string GetModifierDescription(int stackCount) {
+
+    public override string GetModifierDescription(int stackCount) {
         return $"Reduces attack cooldown by {GetReduction(stackCount)}s";
     }
 

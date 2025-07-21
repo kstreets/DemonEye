@@ -21,7 +21,7 @@ public class SlowModifier : EyeModifier {
         enemy.slow = slow;
     }
 
-    protected override string GetModifierDescription(int stackCount) {
+    public override string GetModifierDescription(int stackCount) {
         return $"Reduces speed by {GetSpeedReduction(stackCount)} for {slowDuration}s";
     }
 

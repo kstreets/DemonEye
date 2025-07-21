@@ -10,7 +10,7 @@ public class EyeModifier : Item {
         return GetModifierDescription(1);
     }
 
-    protected virtual string GetModifierDescription(int stackCount) {
+    public virtual string GetModifierDescription(int stackCount) {
         return "Modifier has no description";
     }
     

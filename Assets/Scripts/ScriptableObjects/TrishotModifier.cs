@@ -15,8 +15,8 @@ public class TrishotModifier : EyeModifier {
         };
         eyeInstance.trishotModModInstance = instance;
     }
-    
-    protected override string GetModifierDescription(int stackCount) {
+
+    public override string GetModifierDescription(int stackCount) {
         return $"{GetProbability(stackCount)}% chance that an attack splits into 3";
     }
 

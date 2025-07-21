@@ -20,8 +20,8 @@ public class BleedModifier : EyeModifier {
         };
         enemy.bleed = instance;
     }
-    
-    protected override string GetModifierDescription(int stackCount) {
+
+    public override string GetModifierDescription(int stackCount) {
         return $"Applies {GetBleedDamage(stackCount)} damage every {bleedInterval}s";
     }
 
