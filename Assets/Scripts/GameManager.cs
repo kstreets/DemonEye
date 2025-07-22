@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
-using NUnit.Framework.Internal.Commands;
 using Pathfinding;
 using TMPro;
 using UnityEngine;
@@ -37,7 +36,8 @@ public partial class GameManager : MonoBehaviour {
     public ItemPool deadBodyPool;
     public DropPool altarDropPool;
     public DropPool rockDropPool;
-    
+
+    public AnimationCurve enemySeparationFalloffCurve;
     public EnemyWaveManager waveManager;
     
     [Header("Spawn Positions")]
@@ -848,24 +848,20 @@ public partial class GameManager : MonoBehaviour {
         projectiles.Clear();
     }
 
-    public void HandleDamage(DemonEyeInstance eyeInstance, Collider2D col) {
+    private void HandleDamage(DemonEyeInstance eyeInstance, Collider2D col) {
         if (!col) return;
+        
+        Entity entity = entityLookup[col.gameObject];
+        entity.lastDamageTime = Time.time;
         
         if (col.CompareTag(Tags.Enemy)) {
             Enemy enemy = enemyLookup[col.gameObject];
             foreach (DemonEyeInstance.EquipedModInstance modInstance in eyeInstance.modInstances) {
                 eyeModifierLookup[modInstance.modId].AddInstanceToEnemy(enemy, modInstance.stackCount);
-            } 
-
-            // We damage all very close enemies to elimate long trains
-            Collider2D[] cols = Physics2D.OverlapCircleAll(col.transform.position, 0.12f, Masks.EnemyMask);
-            foreach (Collider2D eCol in cols) {
-                Entity entity = entityLookup[eCol.gameObject];
-                entity.health -= (int)eyeInstance.coreAttack.damage;
             }
+            enemy.health -= (int)eyeInstance.coreAttack.damage;
         }
         else {
-            Entity entity = entityLookup[col.gameObject];
             entity.health -= (int)eyeInstance.coreAttack.damage;
 
             if (Random.value <= 0.35f) { // Random chance to spawn drop on each hit
@@ -881,9 +877,12 @@ public partial class GameManager : MonoBehaviour {
     }
 
 
+    private int damageFlashTintPropertyId = Shader.PropertyToID("_DamageFlashTint");
+    
     public class Enemy : Entity {
         public EnemyData data;
         public PathData pathData = new();
+        public MaterialPropertyBlock matPropertyBlock = new();
         public BleedModInstance bleed;
         public SlowInstance slow;
     }
@@ -897,8 +896,13 @@ public partial class GameManager : MonoBehaviour {
         public bool HasPath => abPath != null;
     }
 
+
+    private Limitter enemySpawnLimitter;
+    
     private void SpawnEnemies() {
         if (waveManager.enemiesLeftToSpawn <= 0 || enemies.Count > waveManager.enemySpawnLimit) return;
+
+        if (!enemySpawnLimitter.TimeHasPassed(waveManager.individualSpawnDelay)) return;
 
         Vector2 randomSpawnPos = player.position + RandomOffset360(3f, 4f);
         NNInfo info = AstarPath.active.graphs[0].GetNearest(randomSpawnPos, NNConstraint.Walkable);
@@ -921,6 +925,17 @@ public partial class GameManager : MonoBehaviour {
                     enemy.health -= bleed.bleedDamage;
                     bleed.lastBleedTime = Time.time;
                 }
+            }
+
+            // Assign material properties like damage flash
+            {
+                if (Time.time - enemy.lastDamageTime < 0.08f) {
+                    enemy.matPropertyBlock.SetFloat(damageFlashTintPropertyId, 1f);
+                }
+                else {
+                    enemy.matPropertyBlock.SetFloat(damageFlashTintPropertyId, 0f);
+                }
+                enemy.spriteRenderer.SetPropertyBlock(enemy.matPropertyBlock);
             }
             
             if (enemy.health <= 0) {
@@ -1001,10 +1016,30 @@ public partial class GameManager : MonoBehaviour {
                     enemy.slow = null;
                 }
             }
+            
+            /*
+                The below separation method causes jitter in big pools of enemies because center enemies are bouncing back and forth
+                Todo: Make the separation logic start from the center of a crowd and work its way out to prevent this jitter
+            */
+
+            const float targetSeparationDist = 0.15f;
+            Vector2 separation = Vector2.zero;
+            foreach (Enemy avoidEnemy in enemies) {
+                if (avoidEnemy == enemy) continue;
+                
+                Vector2 diff = enemy.position - avoidEnemy.position;
+                float dist = diff.magnitude;
+
+                if (dist < targetSeparationDist)
+                    separation += diff.normalized / dist; // Stronger repulsion if closer
+            }
 
             Vector2 targetPos = usingPath ? pathData.abPath.vectorPath[pathData.waypointIndex] : player.position;
-            Vector2 movePos = Vector2.MoveTowards(enemy.position, targetPos, speed * Time.fixedDeltaTime);
-            enemy.rigidbody.MovePosition(movePos);
+            Vector2 dirToTarget = (targetPos - enemy.position.ToVector2()).normalized;
+            Vector2 finalDirection = (dirToTarget + separation.normalized * 0.5f).normalized;
+            enemy.rigidbody.linearVelocity = finalDirection * (speed * Time.fixedDeltaTime);
+
+            enemy.spriteRenderer.flipX = player.position.x < enemy.position.x;
         }
     }
 
@@ -1013,6 +1048,7 @@ public partial class GameManager : MonoBehaviour {
     public class EnemyWaveManager {
         public float minTimeBetweenWaves;
         public float maxTimeBetweenWaves;
+        public float individualSpawnDelay;
         public int startingWaveSize;
         public int startingSpawnLimit;
         public int waveSizeIncrement;
@@ -1223,6 +1259,7 @@ public partial class GameManager : MonoBehaviour {
         public Rigidbody2D rigidbody;
         public SpriteRenderer spriteRenderer;
         public int health;
+        public float lastDamageTime;
         public EntityLifeTime lifeTime;
         
         public Vector3 position {

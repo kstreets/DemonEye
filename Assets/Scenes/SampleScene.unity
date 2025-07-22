@@ -29249,7 +29249,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: -876546973899608171, guid: 3df949d920086fc49b513ade5f51b49f, type: 3}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -98976,9 +98976,43 @@ MonoBehaviour:
   deadBodyPool: {fileID: 11400000, guid: d1d5e1485b6925d4dbad1feaf3701fcc, type: 2}
   altarDropPool: {fileID: 11400000, guid: 4af55f9ad1a35c646b1ba2be0e1f508b, type: 2}
   rockDropPool: {fileID: 11400000, guid: f008cedd5a5342243b1c9b1064102461, type: 2}
+  enemySeparationFalloffCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: -1
+      value: 0.05
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.16508359
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0.05
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   waveManager:
-    minTimeBetweenWaves: 18
+    minTimeBetweenWaves: 20
     maxTimeBetweenWaves: 60
+    individualSpawnDelay: 0.05
     startingWaveSize: 100
     startingSpawnLimit: 50
     waveSizeIncrement: 30
