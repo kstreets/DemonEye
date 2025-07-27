@@ -29270,7 +29270,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 2
-  m_Sprite: {fileID: 928018276, guid: e80810e0fe965d0438c746407e97c98b, type: 3}
+  m_Sprite: {fileID: -1285320261, guid: 4ca59f2ad68c99c498810679dc27071f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -98959,6 +98959,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 9285ab41e291784449187596580ae02c, type: 2}
   - {fileID: 11400000, guid: 80f19e812bb183b498023f74d3bbef97, type: 2}
   player: {fileID: 1370272340}
+  playerAnim: {fileID: 1370272339}
   mainCamera: {fileID: 519420031}
   crosshairTrans: {fileID: 997770961}
   resourceSpawnParent: {fileID: 2122232081}

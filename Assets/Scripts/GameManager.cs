@@ -15,6 +15,7 @@ public partial class GameManager : MonoBehaviour {
     public List<Item> allItems;
 
     public Transform player;
+    public Animator playerAnim;
     public Camera mainCamera;
     public RectTransform crosshairTrans;
     public Transform resourceSpawnParent;
@@ -185,7 +186,7 @@ public partial class GameManager : MonoBehaviour {
     }
     
     
-    private const float playerSpeed = 1.55f;
+    private const float playerSpeed = .75f;
     private Limitter attackLimiter;
     private List<Collider2D> playerContacts = new(10);
     
@@ -197,6 +198,20 @@ public partial class GameManager : MonoBehaviour {
         Vector2 moveInput = moveInputAction.ReadValue<Vector2>();
         player.position += new Vector3(moveInput.x, moveInput.y, 0f) * (playerSpeed * Time.deltaTime);
 
+        if (moveInput.x < 0) {
+            player.GetComponent<SpriteRenderer>().flipX = true;
+        }
+        else if (moveInput.x > 0) {
+            player.GetComponent<SpriteRenderer>().flipX = false;
+        }
+        
+        if (moveInput != Vector2.zero) {
+            playerAnim.Play("PlayerRun");
+        }
+        else {
+            playerAnim.Play("PlayerIdle");
+        }
+        
         Vector2 mousePos = Mouse.current.position.ReadValue();
         crosshairTrans.position = mousePos;
 
