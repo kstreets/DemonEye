@@ -22,7 +22,7 @@ public partial class GameManager : MonoBehaviour {
     public Transform exitPortalSpawnParent;
 
     public Transform hideoutParent;
-    public Transform hellRaidParent;
+    public Transform smallMapParent;
     
     public GameObject laserPrefab;
     public GameObject gemRockPrefab;
@@ -39,7 +39,6 @@ public partial class GameManager : MonoBehaviour {
     public DropPool rockDropPool;
 
     public AnimationCurve enemySeparationFalloffCurve;
-    public EnemyWaveManager waveManager;
     
     [Header("Spawn Positions")]
     public Vector3 hideoutSpawnPosition;
@@ -159,18 +158,21 @@ public partial class GameManager : MonoBehaviour {
     }
 
     private void OnRaidStateEndter() {
-        hellRaidParent.gameObject.SetActive(true);
+        smallMapParent.gameObject.SetActive(true);
+
+        Map map = smallMapParent.GetComponent<Map>();
+        
         player.transform.position = hellSpawnPosition;
         AstarPath.active.Scan();
         InitExitPortal();
-        InitWave();
-        SpawnResources();
+        InitWave(map.waves);
+        SpawnResources(map.resourceParent);
     }
 
     private void OnRaidStateExit() {
         DestroyLevelEntities();
         ClearProjectiles();
-        hellRaidParent.gameObject.SetActive(false);
+        smallMapParent.gameObject.SetActive(false);
     }
 
     private void OnRaidStateUpdate() {
@@ -180,9 +182,8 @@ public partial class GameManager : MonoBehaviour {
         UpdateInventory();
         UpdatePlayer();
         UpdateProjectiles();
-        SpawnEnemies();
-        UpdateEnemies();
         UpdateWave();
+        UpdateEnemies();
     }
     
     
@@ -911,25 +912,6 @@ public partial class GameManager : MonoBehaviour {
         public bool HasPath => abPath != null;
     }
 
-
-    private Limitter enemySpawnLimitter;
-    
-    private void SpawnEnemies() {
-        if (waveManager.enemiesLeftToSpawn <= 0 || enemies.Count > waveManager.enemySpawnLimit) return;
-
-        if (!enemySpawnLimitter.TimeHasPassed(waveManager.individualSpawnDelay)) return;
-
-        Vector2 randomSpawnPos = player.position + RandomOffset360(3f, 4f);
-        NNInfo info = AstarPath.active.graphs[0].GetNearest(randomSpawnPos, NNConstraint.Walkable);
-        
-        Enemy enemy = SpawnLevelEntity<Enemy>(defaultEnemy.enemyPrefab, info.position, Quaternion.identity);
-        enemy.data = defaultEnemy;
-        
-        enemies.Add(enemy);
-        enemyLookup.Add(enemy.gameObject, enemy);
-        waveManager.enemiesLeftToSpawn--;
-    }
-    
     private void UpdateEnemies() {
         for (int i = enemies.Count - 1; i >= 0; i--) {
             Enemy enemy = enemies[i];
@@ -1058,22 +1040,6 @@ public partial class GameManager : MonoBehaviour {
         }
     }
 
-
-    [Serializable]
-    public class EnemyWaveManager {
-        public float minTimeBetweenWaves;
-        public float maxTimeBetweenWaves;
-        public float individualSpawnDelay;
-        public int startingWaveSize;
-        public int startingSpawnLimit;
-        public int waveSizeIncrement;
-
-        public float curTimeBetweenWave;
-        public int curWaveCount;
-        public int enemiesLeftToSpawn;
-        public int enemySpawnLimit;
-    }
-
     private void InitExitPortal() {
         exitPortalTimer.SetTime(Random.Range(1f, 2f));
         // exitPortalTimer.SetTime(Random.Range(35f, 45f));
@@ -1094,20 +1060,87 @@ public partial class GameManager : MonoBehaviour {
         };
     }
     
-    private void InitWave() {
-        waveManager.curTimeBetweenWave = Random.Range(waveManager.minTimeBetweenWaves, waveManager.maxTimeBetweenWaves);
+    
+    public class EnemyWaveManager {
+        public float timeInCurWave;
+        public int curWaveIndex;
+        public EnemyWaves waves;
+        public EnemyWaves.WaveData curWaveData;
+        
+        public const int prefixedSumResolution = 500;
+        public float[] prefixedSums = new float[prefixedSumResolution];
+
+        public List<float> spawnTimes = new();
+        public int spawnTimeIndex;
+    }
+
+    [NonSerialized] private EnemyWaveManager waveManager = new();
+    
+    private void InitWave(EnemyWaves waves) {
+        waveManager.waves = waves;
+        waveManager.curWaveIndex = -1;
     }
     
     private void UpdateWave() {
         EnemyWaveManager wm = waveManager;
+        if (wm.curWaveIndex >= wm.waves.waves.Count) return;
         
-        wm.curTimeBetweenWave -= Time.deltaTime;
-        if (wm.curTimeBetweenWave > 0f) return;
+        wm.timeInCurWave += Time.deltaTime;
+        float waveDuration = wm.curWaveIndex == -1 ? wm.waves.timeBeforeFirstWave : wm.curWaveData.waveDuration;
 
-        wm.curTimeBetweenWave = Random.Range(wm.minTimeBetweenWaves, wm.maxTimeBetweenWaves);
-        wm.enemiesLeftToSpawn = wm.startingWaveSize + wm.waveSizeIncrement * wm.curWaveCount;
-        wm.enemySpawnLimit = wm.startingSpawnLimit + wm.waveSizeIncrement * wm.curWaveCount;
-        wm.curWaveCount++;
+        if (wm.timeInCurWave >= waveDuration) {
+            wm.curWaveIndex++;
+            if (!wm.waves.waves.IndexInRange(wm.curWaveIndex)) return;
+
+            EnemyWaves.WaveData newWaveData = wm.waves.waves[wm.curWaveIndex];
+            wm.curWaveData = newWaveData;
+
+            if (newWaveData.enemyCount >= EnemyWaveManager.prefixedSumResolution) {
+                Debug.LogError($"Wave cannot have more enemies than {nameof(EnemyWaveManager.prefixedSumResolution)}");
+            }
+            
+            wm.timeInCurWave = 0f;
+            wm.spawnTimeIndex = 0;
+
+            float totalWeight = 0f;
+            for (int i = 0; i < EnemyWaveManager.prefixedSumResolution; i++) {
+                float sliceIndex = i / (float)(EnemyWaveManager.prefixedSumResolution - 1);
+                float weight = Mathf.Clamp01(newWaveData.spawnRateCurve.Evaluate(sliceIndex));
+                totalWeight += weight;
+                wm.prefixedSums[i] = totalWeight;
+            }
+
+            wm.spawnTimes.Clear();
+            int enemySpawnCount = newWaveData.enemyCount;
+            for (int i = 0; i < enemySpawnCount; i++) {
+                float targetWeight = (i / (float)(enemySpawnCount - 1)) * totalWeight;
+
+                // Find the corresponding time using linear search
+                int weightIndex = 0;
+                while (weightIndex < EnemyWaveManager.prefixedSumResolution && wm.prefixedSums[weightIndex] < targetWeight) {
+                    weightIndex++;
+                }
+
+                float normalizedTime = weightIndex / (float)(EnemyWaveManager.prefixedSumResolution - 1);
+                wm.spawnTimes.Add(normalizedTime * newWaveData.spawnDuration);
+            }
+        }
+
+        if (wm.spawnTimes.Count <= 0) return;
+        
+        while (wm.spawnTimes.IndexInRange(wm.spawnTimeIndex) && wm.spawnTimes[wm.spawnTimeIndex] <= wm.timeInCurWave) {
+            Vector2 randomSpawnPos = player.position + RandomOffset360(3f, 4f);
+            NNInfo info = AstarPath.active.graphs[0].GetNearest(randomSpawnPos, NNConstraint.Walkable);
+            
+            Enemy enemy = SpawnLevelEntity<Enemy>(defaultEnemy.enemyPrefab, info.position, Quaternion.identity);
+            enemy.data = defaultEnemy;
+            
+            enemies.Add(enemy);
+            enemyLookup.Add(enemy.gameObject, enemy);
+            
+            wm.spawnTimeIndex++;
+        }
+
     }
 
     private Vector3 RandomOffset360(float minDist, float maxDist) {
@@ -1122,16 +1155,16 @@ public partial class GameManager : MonoBehaviour {
     private List<Altar> activeAltars = new();
     private Dictionary<GameObject, InventorySlot[]> deadBodySlotsLookup = new();
 
-    private void SpawnResources() {
+    private void SpawnResources(Transform resourceSpawnParent) {
         List<Transform> spawnPoints = resourceSpawnParent.GetComponentsInChildren<Transform>().ToList();
         spawnPoints.RemoveAt(0); // Remove resourceSpawnParent
         
-        int gemRocksToSpawn = Random.Range(10, 13);
+        int gemRocksToSpawn = Random.Range(6, 10);
         for (int i = 0; i < gemRocksToSpawn; i++) {
             SpawnResource<Entity>(gemRockPrefab, true);
         }
         
-        int deadBodiesToSpawn = Random.Range(5, 10);
+        int deadBodiesToSpawn = Random.Range(3, 5);
         for (int i = 0; i < deadBodiesToSpawn; i++) {
             int randomInventorySize = Random.Range(2, 6);
             InventorySlot[] deadBodySlots = new InventorySlot[randomInventorySize];

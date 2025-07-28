@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 13312, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name: mainlevbuild_0
+  m_Name: decorative_props_-1
   m_EditorClassIdentifier: 
   m_Sprite: {fileID: -418600334569417129, guid: 267c086be2e19d64ca84bb3e3b36075c, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}

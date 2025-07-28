@@ -16,10 +16,11 @@ MonoBehaviour:
   type: 2
   inventorySprite: {fileID: 0}
   maxStackCount: 0
+  description: 
   attackType: 0
   attackDelay: 0.5
   cappedMinAttackDelay: 0.1
-  damage: 25
+  damage: 50
   range: 1.2
   projectileSpeed: 2
   projectilePrefab: {fileID: 2758590605051147821, guid: 490c322ccae8e8149a6dddb96650a50e, type: 3}
