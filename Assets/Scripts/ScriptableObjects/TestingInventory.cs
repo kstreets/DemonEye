@@ -25,5 +25,19 @@ public class TestingInventory : ScriptableObject {
             gameManager?.TryAddItemToInventory(gameManager.playerInventory, inventoryItem.item, inventoryItem.count);
         }
     }
+    
+    [VInspector.Button]
+    public void AddToStashInventory() {
+        if (!Application.isPlaying) {
+            Debug.Log("Can only add to stash inventory when game is playing");
+            return;
+        }
+        
+        GameManager gameManager = FindAnyObjectByType(typeof(GameManager)) as GameManager;
+        foreach (TestInventoryItem inventoryItem in items) {
+            gameManager?.TryAddItemToInventory(gameManager.stashInventory, inventoryItem.item, inventoryItem.count);
+            gameManager?.RefreshInventoryDisplay(gameManager.stashInventory);
+        }
+    }
 
 }

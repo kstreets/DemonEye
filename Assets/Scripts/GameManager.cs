@@ -14,16 +14,14 @@ public partial class GameManager : MonoBehaviour {
 
     public List<Item> allItems;
 
-    public Transform player;
     public Animator playerAnim;
     public Camera mainCamera;
     public RectTransform crosshairTrans;
-    public Transform resourceSpawnParent;
     public Transform exitPortalSpawnParent;
 
-    public Transform hideoutParent;
     public Transform smallMapParent;
-    
+
+    public GameObject playerPrefab;
     public GameObject laserPrefab;
     public GameObject gemRockPrefab;
     public GameObject altarPrefab;
@@ -139,22 +137,13 @@ public partial class GameManager : MonoBehaviour {
 
 
     private void OnHideoutStateEnter() {
-        hideoutParent.gameObject.SetActive(true);
-        player.transform.position = hideoutSpawnPosition;
+        RefreshInventoryDisplay(stashInventory);
     }
 
     private void OnHideoutStateExit() {
-        hideoutParent.gameObject.SetActive(false);
     }
 
     private void OnHideoutStateUpdate() {
-        UpdateTimers();
-        CheckForInteractions();
-        CheckForEquipmentChange();
-        UpdateCrucible();
-        UpdateInventory();
-        UpdatePlayer();
-        UpdateProjectiles();
     }
 
     private void OnRaidStateEndter() {
@@ -185,8 +174,9 @@ public partial class GameManager : MonoBehaviour {
         UpdateWave();
         UpdateEnemies();
     }
-    
-    
+
+
+    private Transform player;
     private const float playerSpeed = .75f;
     private Limitter attackLimiter;
     private List<Collider2D> playerContacts = new(10);
@@ -407,7 +397,7 @@ public partial class GameManager : MonoBehaviour {
     private void InitInventory() {
         crucibleParent.gameObject.SetActive(false);
         
-        const int inventorySlotSizeWithPadding = 110;
+        const int inventorySlotSizeWithPadding = 150;
         
         const int playerInventoryWidth = 3;
         const int playerInventoryHeight = 4;
@@ -420,8 +410,8 @@ public partial class GameManager : MonoBehaviour {
         SpawnUiSlots(lootInventoryParent, cachedLootInventoryWidth, cachedLootInventoryHeight); 
         lootInvetoryPtr = CreateInventory(lootInventoryParent, cachedLootInventoryWidth * cachedLootInventoryHeight);
         
-        const int stashInventoryWidth = 8;
-        const int stashInventoryHeight = 4;
+        const int stashInventoryWidth = 4;
+        const int stashInventoryHeight = 6;
         SpawnUiSlots(stashInventoryParent, stashInventoryWidth, stashInventoryHeight);
         stashInventory = CreateInventory(stashInventoryParent, stashInventoryWidth * stashInventoryHeight); 
 
@@ -436,7 +426,6 @@ public partial class GameManager : MonoBehaviour {
                     Instantiate(inventoryItemPrefab, pos + offset, Quaternion.identity, slot.transform);
                 }
             }
-            parent.gameObject.SetActive(false);
         }
         
         Inventory CreateInventory(RectTransform uiParent, int slotCount) {
@@ -741,7 +730,7 @@ public partial class GameManager : MonoBehaviour {
         item.count = newCount;
     }
 
-    private void RefreshInventoryDisplay(Inventory inventory) {
+    public void RefreshInventoryDisplay(Inventory inventory) {
         RectTransform inventoryParent = inventory.parent;
         if (!inventoryParent.gameObject.activeSelf) return;
         

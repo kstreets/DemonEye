@@ -6,6 +6,8 @@ using UnityEngine;
 public class UuidScriptableObject : ScriptableObject {
 
     [VInspector.ReadOnly] public string uuid;
+
+#if UNITY_EDITOR
     
     private void OnEnable() {
         TryCreateUuid();
@@ -21,5 +23,7 @@ public class UuidScriptableObject : ScriptableObject {
             EditorUtility.SetDirty(this);
         }
     }
-
+    
+#endif
+    
 }
