@@ -47,6 +47,7 @@ public partial class GameManager : MonoBehaviour {
     public RectTransform lootInventoryParent;
     public RectTransform stashInventoryParent;
     public RectTransform crucibleParent;
+    public RectTransform traderInventoryParent;
     public GameObject inventorySlotPrefab;
     public GameObject inventoryItemPrefab;
     public GameObject interactPrompt;
@@ -395,8 +396,6 @@ public partial class GameManager : MonoBehaviour {
     private bool LootInventoryIsOpen => lootInventoryParent.gameObject.activeSelf;
     
     private void InitInventory() {
-        crucibleParent.gameObject.SetActive(false);
-        
         const int inventorySlotSizeWithPadding = 150;
         
         const int playerInventoryWidth = 3;
@@ -413,10 +412,26 @@ public partial class GameManager : MonoBehaviour {
         const int stashInventoryWidth = 4;
         const int stashInventoryHeight = 6;
         SpawnUiSlots(stashInventoryParent, stashInventoryWidth, stashInventoryHeight);
-        stashInventory = CreateInventory(stashInventoryParent, stashInventoryWidth * stashInventoryHeight); 
+        stashInventory = CreateInventory(stashInventoryParent, stashInventoryWidth * stashInventoryHeight);
+        
+        SpawnUiSlots(traderInventoryParent, 5, 4);
 
-        crucibleInventory = CreateInventory(crucibleParent, 5);  // 5 will be the default for now
-
+        const int crucibleInventorySize = 9;
+        // Spawn crucible slots
+        { 
+            const int crucibleVeinSize = crucibleInventorySize - 1;
+            Vector2 crucibleCenter = crucibleParent.anchoredPosition;
+            GameObject centerSlot = Instantiate(inventorySlotPrefab, crucibleCenter, Quaternion.identity, crucibleParent);
+            Instantiate(inventoryItemPrefab, crucibleCenter, Quaternion.identity, centerSlot.transform);
+            for (int i = 0; i < crucibleVeinSize; i++) {
+                float deg = 360f / crucibleVeinSize * i;
+                Vector2 spawnDir = (Quaternion.AngleAxis(deg, Vector3.forward) * Vector2.up) * 150f;
+                GameObject slot = Instantiate(inventorySlotPrefab, crucibleCenter + spawnDir, Quaternion.identity, crucibleParent);
+                Instantiate(inventoryItemPrefab, crucibleCenter + spawnDir, Quaternion.identity, slot.transform);
+            }
+        }
+        crucibleInventory = CreateInventory(crucibleParent, crucibleInventorySize);
+        
         void SpawnUiSlots(RectTransform parent, int width, int height) {
             for (int j = 0; j < height; j++) {
                 for (int i = 0; i < width; i++) {
