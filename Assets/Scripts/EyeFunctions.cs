@@ -44,7 +44,7 @@ public partial class GameManager {
         }
         
         DemonEyeInstance newDemonEye = new() {
-            coreAttack = baseAttackLookup[item.baseAttackUuid],
+            coreAttack = defaultCoreAttack,
             modInstances = eyeModifiers,
         };
         

@@ -9,11 +9,13 @@ public class InventoryItemUI : MonoBehaviour {
 
     public void Set(Item data, int count) {
         image.sprite = data.inventorySprite;
+        image.enabled = true;
         countText.text = count.ToString();
     }
     
     public void Clear() {
         image.sprite = null;
+        image.enabled = false;
         countText.text = "";
     }
     

@@ -14,6 +14,7 @@ using VInspector;
 public partial class GameManager : MonoBehaviour {
 
     public List<Item> allItems;
+    public CoreAttack defaultCoreAttack;
 
     public Animator playerAnim;
     public Camera mainCamera;
@@ -63,9 +64,10 @@ public partial class GameManager : MonoBehaviour {
 
     [Foldout("UI/PlayerPanel")]
     public RectTransform playerPanel;
-    public RectTransform playerBackpackPanel;
     public RectTransform playerPocketParent;
     public RectTransform playerBackpackParent;
+    public RectTransform playerPocketsBackpackParent;
+    public RectTransform playerInventoryParent;
     [EndFoldout]
     
     [Foldout("UI/StashPanel")]
@@ -92,10 +94,6 @@ public partial class GameManager : MonoBehaviour {
     public GameObject interactPrompt;
     public TextMeshProUGUI exitPortalStatusText;
     [EndFoldout]
-    
-    public GameObject crucibleAttackSlot;
-    public GameObject crucibleEyeSlot;
-    public GameObject[] crucibleRuneSlots;
     
     [Header("Controls")]
     public InputAction moveInputAction;
@@ -174,7 +172,9 @@ public partial class GameManager : MonoBehaviour {
 
 
     private void OnHideoutStateEnter() {
+        RefreshInventoryDisplay(playerInventory);
         RefreshInventoryDisplay(stashInventory);
+        RefreshInventoryDisplay(crucibleInventory);
     }
 
     private void OnHideoutStateExit() {
@@ -324,14 +324,10 @@ public partial class GameManager : MonoBehaviour {
         equipedEye = eyeInstanceFromItemId[curItem.itemDataUuid];
     }
     
-    private void UpdateCrucible() {
-    }
-
     
     [Serializable]
     public class InventoryItem {
         public string itemDataUuid;
-        public string baseAttackUuid;
         public List<string> modifierUuids;
         public int count = 1;
 
@@ -350,7 +346,6 @@ public partial class GameManager : MonoBehaviour {
         public InventoryItem Clone() {
             InventoryItem clonedItem = new() {
                 itemDataUuid = itemDataUuid,
-                baseAttackUuid = baseAttackUuid,
                 count = count,
                 notDiscovered = notDiscovered,
                 _itemRef = ItemRef,
@@ -391,15 +386,21 @@ public partial class GameManager : MonoBehaviour {
     private bool StashIsOpen => stashPanel.gameObject.activeSelf;
     private bool CrucibleIsOpen => crucibleParent.gameObject.activeSelf;
     private bool LootInventoryIsOpen => lootInventoryParent.gameObject.activeSelf;
+
+    private bool OnCharacterTab => characterTabButton.image.sprite == tabSelectedSprite;
+    private bool OnEyeForgeTab => eyeForgeTabButton.image.sprite == tabSelectedSprite;
+    private bool OnTradingTab => traderTabButton.image.sprite == tabSelectedSprite;
     
     private void InitInventory() {
+        int playerEquipmentSlotCount = playerEquipmentParent.childCount;
+        // equipmentInventory = CreateInventory(playerEquipmentParent, playerEquipmentSlotCount);
+        
         const int pocketSize = 6;
         const int backpackSize = 9;
         const int playerInventorySize = pocketSize + backpackSize;
-        int playerEquipmentSlotCount = playerEquipmentParent.childCount;
         SpawnUiSlots(playerPocketParent, pocketSize);
         SpawnUiSlots(playerBackpackParent, backpackSize);
-        // playerInventory = CreateInventory(playerEquipmentParent, playerInventorySize + playerEquipmentSlotCount); 
+        playerInventory = CreateInventory(playerInventoryParent, playerInventorySize + 3); 
         
         const int cachedLootInventorySize = 12;
         SpawnUiSlots(lootInventoryParent, cachedLootInventorySize); 
@@ -419,11 +420,21 @@ public partial class GameManager : MonoBehaviour {
             Vector2 crucibleCenter = crucibleParent.position;
             GameObject centerSlot = Instantiate(inventorySlotPrefab, crucibleCenter, Quaternion.identity, crucibleParent);
             Instantiate(inventoryItemPrefab, crucibleCenter, Quaternion.identity, centerSlot.transform);
+
+            InventorySlotUI centerSlotUi = centerSlot.GetComponent<InventorySlotUI>();
+            centerSlotUi.disallowItemStacking = true;
+            centerSlotUi.acceptsAllTypes = false;
+            centerSlotUi.onlyAcceptedItemType = Item.ItemType.Eye;
+            
             for (int i = 0; i < crucibleVeinSize; i++) {
                 float deg = 360f / crucibleVeinSize * i;
                 Vector2 spawnDir = (Quaternion.AngleAxis(deg, Vector3.forward) * Vector2.up) * 150f;
                 GameObject slot = Instantiate(inventorySlotPrefab, crucibleCenter + spawnDir, Quaternion.identity, crucibleParent);
                 Instantiate(inventoryItemPrefab, crucibleCenter + spawnDir, Quaternion.identity, slot.transform);
+                InventorySlotUI veinSlot = slot.GetComponent<InventorySlotUI>();
+                veinSlot.disallowItemStacking = true;
+                veinSlot.acceptsAllTypes = false;
+                veinSlot.onlyAcceptedItemType = Item.ItemType.Vein;
             }
         }
         crucibleInventory = CreateInventory(crucibleParent, crucibleInventorySize);
@@ -441,9 +452,10 @@ public partial class GameManager : MonoBehaviour {
                 slots = new InventorySlot[slotCount]
             };
             inventory.slots.InitalizeWithDefault();
-            
+
+            InventorySlotUI[] slotUis = inventory.parent.GetComponentsInChildren<InventorySlotUI>(true);
             for (int i = 0; i < inventory.slots.Length; i++) {
-                inventory.slots[i].ui = inventory.parent.GetChild(i).GetComponent<InventorySlotUI>();
+                inventory.slots[i].ui = slotUis[i];
             }
             
             allInventories.Add(inventory);
@@ -454,29 +466,15 @@ public partial class GameManager : MonoBehaviour {
     private void UpdateInventory() {
         if (inventoryInputAction.WasPressedThisFrame()) {
             if (!InventoryIsOpen) {
-                OpenPlayerInventory();
+                // OpenPlayerInventory();
             }
             else {
-                ClosePlayerInventory();
+                // ClosePlayerInventory();
             }
 
-            if (StashIsOpen) CloseStashInventory();
-            if (LootInventoryIsOpen) CloseLootInventory();
-            if (CrucibleIsOpen) CloseCrucibleInventory();
-
-            // Add nearby items to loot inventory
-            {
-                // Collider2D[] cols = Physics2D.OverlapCircleAll(player.position, interactionRadius, Masks.ItemMask);
-                // if (cols.Length <= 0) return;
-                //
-                // lootInventoryParent.gameObject.SetActive(true);
-                //
-                // for (int i = 0; i < cols.Length; i++) {
-                //     Collider2D col = cols[i];
-                //     ItemData itemData = col.GetComponent<Item>().itemData;
-                //     lootInventoryParent.GetChild(i).GetChild(0).GetComponent<Image>().sprite = itemData.inventorySprite;
-                // }
-            }
+            // if (StashIsOpen) CloseStashInventory();
+            // if (LootInventoryIsOpen) CloseLootInventory();
+            // if (CrucibleIsOpen) CloseCrucibleInventory();
         }
 
         // if (!InventoryIsOpen && (!StashIsOpen || !LootInventoryIsOpen)) {
@@ -489,14 +487,11 @@ public partial class GameManager : MonoBehaviour {
         HandleItemClicked();
 
         void UpdateItemtooltip() {
-            int hoveredSlot = invHoverInfo.hoveredSlotIndex;
-            Inventory hoveredInventory = invHoverInfo.hoveredInventory;
-
-            if (hoveredInventory == null) return;
-            if (!hoveredInventory.slots.IndexInRange(hoveredSlot)) return;
-            if (hoveredInventory.slots[hoveredSlot].item == null) return;
-            if (hoveredInventory.slots[hoveredSlot].item.notDiscovered) return;
-            
+            if (!TryGetItemFromHoverInfo(out InventoryItem _)) {
+                HideItemTooltip();
+                return;
+            }
+             
             const float hoverTimeUntilTooltip = 0.32f;
             bool spentEnoughTimeHovering = invHoverInfo.timeSpentHovering >= hoverTimeUntilTooltip;
             if (spentEnoughTimeHovering) {
@@ -508,25 +503,56 @@ public partial class GameManager : MonoBehaviour {
         }
 
         void HandleItemClicked() {
-            if (selectItemInputAction.WasPressedThisFrame() || splitStackInputAction.WasPressedThisFrame()) {
-                Inventory hoveredInventory = invHoverInfo.hoveredInventory;
-                if (hoveredInventory == null) return;
+            if (!selectItemInputAction.WasPressedThisFrame() && !splitStackInputAction.WasPressedThisFrame()) return;
 
-                Inventory nonHoveredInventory = null;
-                foreach (Inventory inventory in allInventories) {
-                    if (inventory.parent.gameObject.activeInHierarchy && inventory != hoveredInventory) {
-                        nonHoveredInventory = inventory;
-                        break;
-                    }
+            Inventory hoveredInventory = invHoverInfo.hoveredInventory;
+            if (hoveredInventory == null) return;
+
+            bool hoveredItemIsEquipment = TryGetItemFromHoverInfo(out InventoryItem hoveredItem) ? hoveredItem.ItemRef.type == Item.ItemType.DemonEye : false;
+            
+            Inventory destinationInventory = null;
+            
+            if (OnCharacterTab) {
+                if (hoveredInventory == playerInventory) {
+                    destinationInventory = stashInventory;
                 }
-
-                if (nonHoveredInventory == null) return;
-
-                MoveItemBetweenInventories(hoveredInventory, nonHoveredInventory, invHoverInfo.hoveredSlotIndex);
-                RefreshInventoryDisplay(hoveredInventory);
-                RefreshInventoryDisplay(nonHoveredInventory);
+                else if (hoveredInventory == stashInventory) {
+                    destinationInventory = playerInventory;
+                }
             }
+            else if (OnEyeForgeTab) {
+                if (hoveredInventory == stashInventory) {
+                    destinationInventory = hoveredItemIsEquipment ? playerInventory : crucibleInventory;
+                }
+                else if (hoveredInventory == crucibleInventory) {
+                    destinationInventory = stashInventory;
+                }
+                else if (hoveredInventory == playerInventory) {
+                    destinationInventory = stashInventory;
+                }
+            }
+            
+            if (destinationInventory == null) return;
+
+            MoveItemBetweenInventories(hoveredInventory, destinationInventory, invHoverInfo.hoveredSlotIndex);
+            RefreshInventoryDisplay(hoveredInventory);
+            RefreshInventoryDisplay(destinationInventory);
         }
+
+        bool TryGetItemFromHoverInfo(out InventoryItem hoveredItem) {
+            hoveredItem = null;
+            
+            int hoveredSlot = invHoverInfo.hoveredSlotIndex;
+            Inventory hoveredInventory = invHoverInfo.hoveredInventory;
+            
+            if (hoveredInventory == null) return false;
+            if (!hoveredInventory.slots.IndexInRange(hoveredSlot)) return false;
+            if (hoveredInventory.slots[hoveredSlot].item == null) return false;
+            if (hoveredInventory.slots[hoveredSlot].item.notDiscovered) return false;
+            
+            hoveredItem = hoveredInventory.slots[hoveredSlot].item;
+            return true;
+        } 
     }
 
     public struct InventoryHoverInfo {
@@ -566,16 +592,9 @@ public partial class GameManager : MonoBehaviour {
     }
     
     private int GetHoveredInventorySlot(Inventory inventory) {
-        RectTransform inventoryParent = inventory.parent;
         Vector2 mousePos = Mouse.current.position.ReadValue();
-        
-        for (int i = 0; i < inventoryParent.childCount; i++) {
-            Transform child = inventoryParent.GetChild(i);
-            
-            // Inventory parents might have buttons or other UI elements that arn't inventory slots
-            if (!child.TryGetComponent(out InventorySlotUI _)) continue; 
-            
-            RectTransform rectTrans = child.GetComponent<RectTransform>();
+        for (int i = 0; i < inventory.slots.Length; i++) {
+            RectTransform rectTrans = inventory.slots[i].ui.GetComponent<RectTransform>();
             bool mouseInRect = RectTransformUtility.RectangleContainsScreenPoint(rectTrans, mousePos);
             if (mouseInRect) {
                 return i;
@@ -738,17 +757,14 @@ public partial class GameManager : MonoBehaviour {
     }
 
     public void RefreshInventoryDisplay(Inventory inventory) {
-        RectTransform inventoryParent = inventory.parent;
-        if (!inventoryParent.gameObject.activeInHierarchy) return;
-        
-        foreach (Transform child in inventoryParent.transform) {
-            child.GetComponentInChildren<InventoryItemUI>()?.Clear();
+        foreach (InventorySlot slot in inventory.slots) {
+            slot.ui.GetComponentInChildren<InventoryItemUI>()?.Clear();
         }
 
         for (int i = 0; i < inventory.slots.Length; i++) {
             InventoryItem item = inventory.slots[i].item;
             if (item == null || item.notDiscovered) continue;
-            inventoryParent.GetChild(i).GetComponentInChildren<InventoryItemUI>().Set(item.ItemRef, item.count);
+            inventory.slots[i].ui.GetComponentInChildren<InventoryItemUI>().Set(item.ItemRef, item.count);
         }
     }
 
@@ -1247,7 +1263,7 @@ public partial class GameManager : MonoBehaviour {
 
         // Items can be null because we save all inventory slots, including empty ones
         foreach (InventoryItem item in items) {
-            bool isDemonEye = item != null && item.baseAttackUuid != null;
+            bool isDemonEye = item != null && item.modifierUuids != null;
             if (isDemonEye) {
                 BuildAndRegisterEye(item);
             }
@@ -1355,7 +1371,7 @@ public partial class GameManager : MonoBehaviour {
         traderInventoryPanel.gameObject.SetActive(false);
         traderTransactionPanel.gameObject.SetActive(false);
         
-        float backpackPanelWidth = playerBackpackPanel.rect.width;
+        float backpackPanelWidth = playerPocketsBackpackParent.rect.width;
         playerPanelLargeWidth = playerPanel.rect.width;
         playerPanelSlimWidth = playerPanelLargeWidth - backpackPanelWidth;
     }
@@ -1375,7 +1391,6 @@ public partial class GameManager : MonoBehaviour {
         });
         
         eyeForgeTabButton.onClick.AddListener(() => {
-            if (eyeForgePanel.gameObject.activeSelf) return;
             characterTabButton.image.sprite = tabNonSelectedSprite;
             eyeForgeTabButton.image.sprite = tabSelectedSprite;
             traderTabButton.image.sprite = tabNonSelectedSprite;
@@ -1403,7 +1418,6 @@ public partial class GameManager : MonoBehaviour {
         crucibleForgeButton.onClick.AddListener(() => {
             int eyeSlotIndex = 0;
             InventoryItem eyeItem = null;
-            InventoryItem coreItem = null;
 
             for (int i = 0; i < crucibleInventory.slots.Length; i++) {
                 InventorySlot slot = crucibleInventory.slots[i];
@@ -1411,13 +1425,15 @@ public partial class GameManager : MonoBehaviour {
                     eyeItem = slot.item;
                     eyeSlotIndex = i;
                 }
-
-                if (slot.ui.onlyAcceptedItemType == Item.ItemType.Core) {
-                    coreItem = slot.item;
-                }
             }
 
-            if (eyeItem == null || coreItem == null) return;
+            if (eyeItem == null) return;
+
+            for (int i = 0; i < crucibleInventory.slots.Length; i++) {
+                if (i == eyeSlotIndex) continue;
+                if (crucibleInventory.slots[i].item != null) break;
+                if (i == crucibleInventory.slots.Length - 1) return;
+            }
 
             InventoryItem newDemonEyeItem = new() {
                 modifierUuids = new(),
@@ -1428,9 +1444,6 @@ public partial class GameManager : MonoBehaviour {
                 
                 if (slot.ui.onlyAcceptedItemType == Item.ItemType.Vein) {
                     newDemonEyeItem.modifierUuids.Add(slot.item.ItemRef.uuid);
-                }
-                if (slot.ui.onlyAcceptedItemType == Item.ItemType.Core) {
-                    newDemonEyeItem.baseAttackUuid = slot.item.ItemRef.uuid;
                 }
                 slot.item = null;
             }
@@ -1444,12 +1457,12 @@ public partial class GameManager : MonoBehaviour {
 
     private void ToggleSlimPlayerPanel(bool toggle) {
         if (toggle) {
-            playerBackpackPanel.gameObject.SetActive(false);
+            playerPocketsBackpackParent.gameObject.SetActive(false);
             playerPanel.GetComponent<LayoutElement>().preferredWidth = playerPanelSlimWidth;
             return;
         }
         
-        playerBackpackPanel.gameObject.SetActive(true);
+        playerPocketsBackpackParent.gameObject.SetActive(true);
         playerPanel.GetComponent<LayoutElement>().preferredWidth = playerPanelLargeWidth;
     }
 
