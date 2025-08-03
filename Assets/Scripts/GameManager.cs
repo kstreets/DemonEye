@@ -15,6 +15,7 @@ public partial class GameManager : MonoBehaviour {
 
     public List<Item> allItems;
     public CoreAttack defaultCoreAttack;
+    public List<ItemPool> traderLevelPools;
 
     public Animator playerAnim;
     public Camera mainCamera;
@@ -86,6 +87,7 @@ public partial class GameManager : MonoBehaviour {
     public RectTransform traderInventoryPanel;
     public RectTransform traderInventoryParent;
     public RectTransform traderTransactionInventoryParent;
+    public TextMeshProUGUI traderTransactionInfoText;
     [EndFoldout]
     
     [Foldout("UI/InRaid")]
@@ -138,6 +140,7 @@ public partial class GameManager : MonoBehaviour {
         LoadInventory(stashInventory);
         InitHideoutUI();
         InitButtonCallbacks();
+        AddItemsToTraderInventory(0);
 
         equipedEye = new() { coreAttack = defaultAttack };
         
@@ -175,6 +178,7 @@ public partial class GameManager : MonoBehaviour {
         RefreshInventoryDisplay(playerInventory);
         RefreshInventoryDisplay(stashInventory);
         RefreshInventoryDisplay(crucibleInventory);
+        RefreshInventoryDisplay(transactionInventory);
     }
 
     private void OnHideoutStateExit() {
@@ -376,11 +380,16 @@ public partial class GameManager : MonoBehaviour {
     [NonSerialized] public Inventory playerInventory;
     [NonSerialized] public Inventory stashInventory;
     [NonSerialized] public Inventory crucibleInventory;
+    [NonSerialized] public Inventory traderInventory;
+    [NonSerialized] public Inventory transactionInventory;
     [NonSerialized] public Inventory lootInvetoryPtr;
     [NonSerialized] public List<Inventory> allInventories = new();
 
     private Timer discoverLootTimer;
     private int discoverLootIndex;
+
+    private enum TransactionInvetoryState { Empty, Buying, Selling }
+    private TransactionInvetoryState transactionState;
     
     private bool InventoryIsOpen => playerEquipmentParent.gameObject.activeSelf;
     private bool StashIsOpen => stashPanel.gameObject.activeSelf;
@@ -410,8 +419,13 @@ public partial class GameManager : MonoBehaviour {
         SpawnUiSlots(stashInventoryParent, stashInventorySize);
         stashInventory = CreateInventory(stashInventoryParent, stashInventorySize);
         
-        SpawnUiSlots(traderInventoryParent, 12);
-        SpawnUiSlots(traderTransactionInventoryParent, 20);
+        const int traderInventorySize = 12;
+        SpawnUiSlots(traderInventoryParent, traderInventorySize);
+        traderInventory = CreateInventory(traderInventoryParent, traderInventorySize);
+        
+        const int transactionInventorySize = 20;
+        SpawnUiSlots(traderTransactionInventoryParent, transactionInventorySize);
+        transactionInventory = CreateInventory(traderTransactionInventoryParent, transactionInventorySize);
 
         const int crucibleInventorySize = 9;
         // Spawn crucible slots
@@ -481,7 +495,7 @@ public partial class GameManager : MonoBehaviour {
         //     HideItemTooltip();
         //     return;
         // }
-        
+
         InventoryHoverInfo invHoverInfo = UpdateInventoryHover();
         UpdateItemtooltip();
         HandleItemClicked();
@@ -531,12 +545,47 @@ public partial class GameManager : MonoBehaviour {
                     destinationInventory = stashInventory;
                 }
             }
+            else if (OnTradingTab) {
+                if (transactionState == TransactionInvetoryState.Buying) {
+                    if (hoveredInventory == traderInventory) {
+                        destinationInventory = transactionInventory;
+                    }
+                    else if (hoveredInventory == transactionInventory) {
+                        destinationInventory = traderInventory;
+                    }
+                }
+                else if (transactionState == TransactionInvetoryState.Selling) {
+                    if (hoveredInventory == stashInventory) {
+                        destinationInventory = transactionInventory;
+                    }
+                    else if (hoveredInventory == transactionInventory) {
+                        destinationInventory = stashInventory;
+                    }
+                }
+                else {
+                    if (hoveredInventory == traderInventory) {
+                        destinationInventory = transactionInventory;
+                        transactionState = TransactionInvetoryState.Buying;
+                    }
+                    else if (hoveredInventory == stashInventory) {
+                        destinationInventory = transactionInventory;
+                        transactionState = TransactionInvetoryState.Selling;
+                    }
+                }
+            }
             
             if (destinationInventory == null) return;
 
             MoveItemBetweenInventories(hoveredInventory, destinationInventory, invHoverInfo.hoveredSlotIndex);
             RefreshInventoryDisplay(hoveredInventory);
             RefreshInventoryDisplay(destinationInventory);
+
+            if (OnTradingTab) {
+                if (GetInventoryItemCount(transactionInventory) <= 0) {
+                    transactionState = TransactionInvetoryState.Empty;
+                }
+                RefreshTransactionUI();
+            }
         }
 
         bool TryGetItemFromHoverInfo(out InventoryItem hoveredItem) {
@@ -553,6 +602,13 @@ public partial class GameManager : MonoBehaviour {
             hoveredItem = hoveredInventory.slots[hoveredSlot].item;
             return true;
         } 
+    }
+
+    private void AddItemsToTraderInventory(int traderLevel) {
+        ItemPool itemPool = traderLevelPools[traderLevel];
+        Item traderItem = itemPool.GetItemFromPool();
+        TryAddItemToInventory(traderInventory, traderItem, traderItem.maxStackCount);
+        RefreshInventoryDisplay(traderInventory);
     }
 
     public struct InventoryHoverInfo {
@@ -638,6 +694,7 @@ public partial class GameManager : MonoBehaviour {
             }
             
             slot.item.count += count;
+            result.addedCount += count;
             result.type = InventoryAddResult.ResultType.Success;
             return result;
         }
@@ -674,6 +731,18 @@ public partial class GameManager : MonoBehaviour {
     private void MoveItemBetweenInventories(Inventory fromInventory, Inventory toInventory, int hoveredSlotIndex) {
         InventoryItem inventoryItem = GetInventoryItem(fromInventory, hoveredSlotIndex);
         if (inventoryItem == null || inventoryItem.notDiscovered) return;
+
+        if (OnTradingTab) {
+            InventoryItem newItem = inventoryItem.Clone();
+            newItem.count = 1;
+            
+            InventoryAddResult traderMoveResult = TryAddItemToInventory(toInventory, newItem);
+            if (traderMoveResult.type is InventoryAddResult.ResultType.Success or InventoryAddResult.ResultType.FailureToAddAll) {
+                int keepItemCount = inventoryItem.count - traderMoveResult.addedCount;
+                AdjustItemCountInInventory(fromInventory, hoveredSlotIndex, keepItemCount);
+            }
+            return;
+        }
 
         if (splitStackInputAction.WasPressedThisFrame() && inventoryItem.count > 1) {
             int firstHalf = inventoryItem.count / 2;
@@ -754,6 +823,9 @@ public partial class GameManager : MonoBehaviour {
     private void AdjustItemCountInInventory(Inventory inventory, int slotIndex, int newCount) {
         InventoryItem item = GetInventoryItem(inventory, slotIndex);
         item.count = newCount;
+        if (item.count <= 0) {
+            RemoveItemFromInventory(inventory, slotIndex);
+        }
     }
 
     public void RefreshInventoryDisplay(Inventory inventory) {
@@ -766,6 +838,15 @@ public partial class GameManager : MonoBehaviour {
             if (item == null || item.notDiscovered) continue;
             inventory.slots[i].ui.GetComponentInChildren<InventoryItemUI>().Set(item.ItemRef, item.count);
         }
+    }
+
+    public int GetInventoryItemCount(Inventory inventory) {
+        int count = 0;
+        foreach (InventorySlot slot in inventory.slots) {
+            if (slot.item == null) continue;
+            count++;
+        }
+        return count;
     }
 
     private void OpenPlayerInventory() {
@@ -1464,6 +1545,18 @@ public partial class GameManager : MonoBehaviour {
         
         playerPocketsBackpackParent.gameObject.SetActive(true);
         playerPanel.GetComponent<LayoutElement>().preferredWidth = playerPanelLargeWidth;
+    }
+
+    private void RefreshTransactionUI() {
+        if (transactionState == TransactionInvetoryState.Buying) {
+            traderTransactionInfoText.text = "Buying";
+            return;
+        }
+        if (transactionState == TransactionInvetoryState.Selling) {
+            traderTransactionInfoText.text = "Selling";
+            return;
+        }
+        traderTransactionInfoText.text = string.Empty;
     }
 
 }
