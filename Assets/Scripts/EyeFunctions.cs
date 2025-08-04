@@ -88,7 +88,7 @@ public partial class GameManager {
         Vector2 mousePos = Mouse.current.position.ReadValue();
         Vector2 mouseWorldPos = mainCamera.ScreenToWorldPoint(mousePos);
         
-        Vector2 velocity = (mouseWorldPos - player.PositionV2()).normalized * equipedEye.coreAttack.projectileSpeed;
+        Vector2 velocity = (mouseWorldPos - player.trans.PositionV2()).normalized * equipedEye.coreAttack.projectileSpeed;
         SpawnProjectile(velocity);
 
         if (equipedEye.trishotModModInstance != null && RollProbability(equipedEye.trishotModModInstance.probability)) {

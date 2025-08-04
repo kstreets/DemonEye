@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using Pathfinding;
 using TMPro;
+using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -17,8 +18,8 @@ public partial class GameManager : MonoBehaviour {
     public CoreAttack defaultCoreAttack;
     public List<ItemPool> traderLevelPools;
 
-    public Animator playerAnim;
     public Camera mainCamera;
+    public CinemachineCamera cinemachineCamera;
     public RectTransform crosshairTrans;
     public Transform exitPortalSpawnParent;
 
@@ -39,23 +40,22 @@ public partial class GameManager : MonoBehaviour {
     public DropPool altarDropPool;
     public DropPool rockDropPool;
 
-    public AnimationCurve enemySeparationFalloffCurve;
-    
     [Header("Spawn Positions")]
-    public Vector3 hideoutSpawnPosition;
     public Vector3 hellSpawnPosition;
-
     
     [Foldout("UI/Prefabs")]
     public GameObject inventorySlotPrefab;
     public GameObject inventoryItemPrefab;
     [EndFoldout]
-        
+
     [Foldout("UI/MiscRefs")]
     public GameObject itemDescPopup;
+    public Button enterNextRaidButton;
+    public RectTransform hideoutHeaderParent;
     [EndFoldout]
     
     [Foldout("UI/HideoutTabs")]
+    public RectTransform hideoutTabsParent;
     public Sprite tabNonSelectedSprite;
     public Sprite tabSelectedSprite;
     public Button characterTabButton;
@@ -91,9 +91,9 @@ public partial class GameManager : MonoBehaviour {
     public TextMeshProUGUI traderTransactionInfoText;
     public Button traderDealButton;
     [EndFoldout]
-    
+
     [Foldout("UI/InRaid")]
-    public RectTransform playerEquipmentParent;
+    public RectTransform lootInventoryPanel;
     public RectTransform lootInventoryParent;
     public GameObject interactPrompt;
     public TextMeshProUGUI exitPortalStatusText;
@@ -136,11 +136,11 @@ public partial class GameManager : MonoBehaviour {
             itemDataLookup.Add(itemData.uuid, itemData);
         }
 
+        InitHideoutUI();
         InitInventory();
         BuildSavePaths();
         LoadInventory(playerInventory);
         LoadInventory(stashInventory);
-        InitHideoutUI();
         InitButtonCallbacks();
         AddItemsToTraderInventory(0);
         SetStashValue(0);
@@ -155,7 +155,7 @@ public partial class GameManager : MonoBehaviour {
         splitStackInputAction = InputSystem.actions.FindAction("SplitStack");
 
         hideoutState = gameStateMachine.CreateState(OnHideoutStateUpdate, OnHideoutStateEnter, OnHideoutStateExit);
-        raidState = gameStateMachine.CreateState(OnRaidStateUpdate, OnRaidStateEndter, OnRaidStateExit);
+        raidState = gameStateMachine.CreateState(OnRaidStateUpdate, OnRaidStateEnter, OnRaidStateExit);
     }
 
     private void Update() {
@@ -178,6 +178,7 @@ public partial class GameManager : MonoBehaviour {
 
 
     private void OnHideoutStateEnter() {
+        
         RefreshInventoryDisplay(playerInventory);
         RefreshInventoryDisplay(stashInventory);
         RefreshInventoryDisplay(crucibleInventory);
@@ -191,12 +192,22 @@ public partial class GameManager : MonoBehaviour {
         UpdateInventory();
     }
 
-    private void OnRaidStateEndter() {
-        smallMapParent.gameObject.SetActive(true);
+    private void OnRaidStateEnter() {
+        playerPanel.gameObject.SetActive(false);
+        stashPanel.gameObject.SetActive(false);
+        eyeForgePanel.gameObject.SetActive(false);
+        traderInventoryPanel.gameObject.SetActive(false);
+        traderTransactionPanel.gameObject.SetActive(false);
+        lootInventoryPanel.gameObject.SetActive(false);
+        smallMapParent.gameObject.SetActive(false);
+        hideoutHeaderParent.gameObject.SetActive(false);
+        hideoutTabsParent.gameObject.SetActive(false);
 
+        smallMapParent.gameObject.SetActive(true);
         Map map = smallMapParent.GetComponent<Map>();
+        player = SpawnLevelEntity<Entity>(playerPrefab, hellSpawnPosition, Quaternion.identity);
+        cinemachineCamera.Follow = player.trans;
         
-        player.transform.position = hellSpawnPosition;
         AstarPath.active.Scan();
         InitExitPortal();
         InitWave(map.waves);
@@ -221,31 +232,29 @@ public partial class GameManager : MonoBehaviour {
     }
 
 
-    private Transform player;
+    private Entity player;
     private const float playerSpeed = .75f;
     private Limitter attackLimiter;
     private List<Collider2D> playerContacts = new(10);
     
     private void UpdatePlayer() {
-        if (InventoryIsOpen) {
-            return;
-        }
+        if (InventoryIsOpen) return;
         
         Vector2 moveInput = moveInputAction.ReadValue<Vector2>();
         player.position += new Vector3(moveInput.x, moveInput.y, 0f) * (playerSpeed * Time.deltaTime);
 
         if (moveInput.x < 0) {
-            player.GetComponent<SpriteRenderer>().flipX = true;
+            player.spriteRenderer.flipX = true;
         }
         else if (moveInput.x > 0) {
-            player.GetComponent<SpriteRenderer>().flipX = false;
+            player.spriteRenderer.flipX = false;
         }
         
         if (moveInput != Vector2.zero) {
-            playerAnim.Play("PlayerRun");
+            player.animator.Play("PlayerRun");
         }
         else {
-            playerAnim.Play("PlayerIdle");
+            player.animator.Play("PlayerIdle");
         }
         
         Vector2 mousePos = Mouse.current.position.ReadValue();
@@ -260,7 +269,7 @@ public partial class GameManager : MonoBehaviour {
     private void CheckForInteractions() { 
         interactPrompt.SetActive(false);
         
-        Collider2D playerCol = player.GetComponent<Collider2D>();
+        Collider2D playerCol = player.collider;
         int size = playerCol.GetContacts(playerContacts);
         
         for (int i = 0; i < size; i++) {
@@ -396,19 +405,14 @@ public partial class GameManager : MonoBehaviour {
     private enum TransactionInvetoryState { Empty, Buying, Selling }
     private TransactionInvetoryState transactionState;
     
-    private bool InventoryIsOpen => playerEquipmentParent.gameObject.activeSelf;
-    private bool StashIsOpen => stashPanel.gameObject.activeSelf;
-    private bool CrucibleIsOpen => crucibleParent.gameObject.activeSelf;
-    private bool LootInventoryIsOpen => lootInventoryParent.gameObject.activeSelf;
+    private bool InventoryIsOpen => playerPanel.gameObject.activeInHierarchy;
+    private bool LootInventoryIsOpen => lootInventoryPanel.gameObject.activeInHierarchy;
 
     private bool OnCharacterTab => characterTabButton.image.sprite == tabSelectedSprite;
     private bool OnEyeForgeTab => eyeForgeTabButton.image.sprite == tabSelectedSprite;
     private bool OnTradingTab => traderTabButton.image.sprite == tabSelectedSprite;
     
     private void InitInventory() {
-        int playerEquipmentSlotCount = playerEquipmentParent.childCount;
-        // equipmentInventory = CreateInventory(playerEquipmentParent, playerEquipmentSlotCount);
-        
         const int pocketSize = 6;
         const int backpackSize = 9;
         const int playerInventorySize = pocketSize + backpackSize;
@@ -483,23 +487,24 @@ public partial class GameManager : MonoBehaviour {
     }
     
     private void UpdateInventory() {
-        if (inventoryInputAction.WasPressedThisFrame()) {
-            if (!InventoryIsOpen) {
-                // OpenPlayerInventory();
+        if (gameStateMachine.CurState == raidState && inventoryInputAction.WasPressedThisFrame()) {
+            if (inventoryInputAction.WasPressedThisFrame()) {
+                if (!InventoryIsOpen) {
+                    OpenPlayerInventory();
+                }
+                else {
+                    ClosePlayerInventory();
+                }
+                if (LootInventoryIsOpen) {
+                    CloseLootInventory();
+                }
             }
-            else {
-                // ClosePlayerInventory();
+            
+            if (!InventoryIsOpen && !LootInventoryIsOpen) {
+                HideItemTooltip();
+                return;
             }
-
-            // if (StashIsOpen) CloseStashInventory();
-            // if (LootInventoryIsOpen) CloseLootInventory();
-            // if (CrucibleIsOpen) CloseCrucibleInventory();
         }
-
-        // if (!InventoryIsOpen && (!StashIsOpen || !LootInventoryIsOpen)) {
-        //     HideItemTooltip();
-        //     return;
-        // }
 
         InventoryHoverInfo invHoverInfo = UpdateInventoryHover();
         UpdateItemtooltip();
@@ -893,14 +898,14 @@ public partial class GameManager : MonoBehaviour {
     }
 
     private void OpenPlayerInventory() {
-        playerEquipmentParent.gameObject.SetActive(true);
+        playerPanel.gameObject.SetActive(true);
         crosshairTrans.gameObject.SetActive(false);
         Cursor.visible = true;
         RefreshInventoryDisplay(playerInventory);
     }
 
     private void ClosePlayerInventory() {
-        playerEquipmentParent.gameObject.SetActive(false);
+        playerPanel.gameObject.SetActive(false);
         crosshairTrans.gameObject.SetActive(true);
         Cursor.visible = false;
     }
@@ -1428,6 +1433,7 @@ public partial class GameManager : MonoBehaviour {
         public Collider2D collider;
         public Rigidbody2D rigidbody;
         public SpriteRenderer spriteRenderer;
+        public Animator animator;
         public int health;
         public float lastDamageTime;
         public EntityLifeTime lifeTime;
@@ -1457,6 +1463,7 @@ public partial class GameManager : MonoBehaviour {
             collider = obj.TryGetComponent(out Collider2D col) ? col : null,
             rigidbody = obj.TryGetComponent(out Rigidbody2D rbody) ? rbody : null,
             spriteRenderer = obj.TryGetComponent(out SpriteRenderer spriteRenderer) ? spriteRenderer : null,
+            animator = obj.TryGetComponent(out Animator anim) ? anim : null,
         };
         entities.Add(newEntity);
         entityLookup.Add(obj, newEntity);
@@ -1481,23 +1488,19 @@ public partial class GameManager : MonoBehaviour {
     }
 
 
-    private float playerPanelSlimWidth = 0f;
-    private float playerPanelLargeWidth = 0f;
-    
     private void InitHideoutUI() {
         characterTabButton.image.sprite = tabSelectedSprite;
         eyeForgeTabButton.image.sprite = tabNonSelectedSprite;
         traderTabButton.image.sprite = tabNonSelectedSprite;
         
+        hideoutHeaderParent.gameObject.SetActive(true);
+        hideoutTabsParent.gameObject.SetActive(true);
         playerPanel.gameObject.SetActive(true);
         stashPanel.gameObject.SetActive(true);
         eyeForgePanel.gameObject.SetActive(false);
         traderInventoryPanel.gameObject.SetActive(false);
         traderTransactionPanel.gameObject.SetActive(false);
-        
-        float backpackPanelWidth = playerPocketsBackpackParent.rect.width;
-        playerPanelLargeWidth = playerPanel.rect.width;
-        playerPanelSlimWidth = playerPanelLargeWidth - backpackPanelWidth;
+        lootInventoryPanel.gameObject.SetActive(false);
     }
 
     private void InitButtonCallbacks() {
@@ -1600,17 +1603,25 @@ public partial class GameManager : MonoBehaviour {
 
             RefreshTransactionUI();
         });
+        
+        enterNextRaidButton.onClick.AddListener(() => {
+            gameStateMachine.SetStateIfNotCurrent(raidState);
+        });
     }
 
+    // Its better just to have these as constants because the canvas layout recalculates in LateUpdate
+    private const float playerPanelWidth = 500f;
+    private const float playerPocketsBackpackWidth = 221.55f;
+    
     private void ToggleSlimPlayerPanel(bool toggle) {
         if (toggle) {
             playerPocketsBackpackParent.gameObject.SetActive(false);
-            playerPanel.GetComponent<LayoutElement>().preferredWidth = playerPanelSlimWidth;
+            playerPanel.GetComponent<LayoutElement>().preferredWidth = playerPanelWidth - playerPocketsBackpackWidth;
             return;
         }
         
         playerPocketsBackpackParent.gameObject.SetActive(true);
-        playerPanel.GetComponent<LayoutElement>().preferredWidth = playerPanelLargeWidth;
+        playerPanel.GetComponent<LayoutElement>().preferredWidth = playerPanelWidth;
     }
 
     private void RefreshTransactionUI() {
