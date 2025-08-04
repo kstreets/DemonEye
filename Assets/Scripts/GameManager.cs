@@ -178,7 +178,8 @@ public partial class GameManager : MonoBehaviour {
 
 
     private void OnHideoutStateEnter() {
-        
+        Cursor.visible = true;
+        InitHideoutUI(); 
         RefreshInventoryDisplay(playerInventory);
         RefreshInventoryDisplay(stashInventory);
         RefreshInventoryDisplay(crucibleInventory);
@@ -375,6 +376,7 @@ public partial class GameManager : MonoBehaviour {
     [NonSerialized] public Inventory traderInventory;
     [NonSerialized] public Inventory transactionInventory;
     [NonSerialized] public Inventory lootInvetoryPtr;
+    [NonSerialized] public InventorySlot[] cahcedLootInventoryPtrSlots;
     [NonSerialized] public List<Inventory> allInventories = new();
 
     private Timer discoverLootTimer;
@@ -402,7 +404,7 @@ public partial class GameManager : MonoBehaviour {
         
         const int cachedLootInventorySize = 12;
         SpawnUiSlots(lootInventoryParent, cachedLootInventorySize); 
-        lootInvetoryPtr = CreateInventory(lootInventoryParent, cachedLootInventorySize);
+        lootInvetoryPtr = CreateInventory(lootInventoryParent, 0);
         
         const int stashInventorySize = 12;
         SpawnUiSlots(stashInventoryParent, stashInventorySize);
@@ -924,8 +926,8 @@ public partial class GameManager : MonoBehaviour {
         discoverLootTimer.SetTime(1f);
         discoverLootTimer.EndAction ??= () => {
             InventoryItem item = lootInvetoryPtr.slots[discoverLootIndex].item;
-            item.notDiscovered = false;
             
+            item.notDiscovered = false;
             lootInventoryParent.GetChild(discoverLootIndex).GetComponentInChildren<InventoryItemUI>().Set(item.ItemRef, item.count);
             
             discoverLootIndex++;
@@ -1279,6 +1281,8 @@ public partial class GameManager : MonoBehaviour {
         }
         
         int deadBodiesToSpawn = Random.Range(3, 5);
+        InventorySlotUI[] lootInventorySlotUis = lootInventoryParent.GetComponentsInChildren<InventorySlotUI>(true);
+        
         for (int i = 0; i < deadBodiesToSpawn; i++) {
             int randomInventorySize = Random.Range(2, 6);
             InventorySlot[] deadBodySlots = new InventorySlot[randomInventorySize];
@@ -1292,7 +1296,7 @@ public partial class GameManager : MonoBehaviour {
                 };
                 deadBodySlots[j] = new() {
                     item = lootItem,
-                    ui = lootInvetoryPtr.slots[j].ui // Use the already instantiated ui of lootInventoryPtr
+                    ui = lootInventorySlotUis[j]
                 };
             }
             
