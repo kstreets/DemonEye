@@ -16,4 +16,8 @@ MonoBehaviour:
   type: 3
   inventorySprite: {fileID: -80230315, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
   maxStackCount: 10
+  buyPrice: 10
+  sellPrice: 6
+  traderXp: 5
+  description: 
   reduction: 0.1

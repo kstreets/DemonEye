@@ -74,6 +74,7 @@ public partial class GameManager : MonoBehaviour {
     [Foldout("UI/StashPanel")]
     public RectTransform stashPanel;
     public RectTransform stashInventoryParent;
+    public TextMeshProUGUI stashValueText;
     [EndFoldout]
     
     [Foldout("UI/EyeForgePanel")]
@@ -88,6 +89,7 @@ public partial class GameManager : MonoBehaviour {
     public RectTransform traderInventoryParent;
     public RectTransform traderTransactionInventoryParent;
     public TextMeshProUGUI traderTransactionInfoText;
+    public Button traderDealButton;
     [EndFoldout]
     
     [Foldout("UI/InRaid")]
@@ -141,6 +143,7 @@ public partial class GameManager : MonoBehaviour {
         InitHideoutUI();
         InitButtonCallbacks();
         AddItemsToTraderInventory(0);
+        SetStashValue(0);
 
         equipedEye = new() { coreAttack = defaultAttack };
         
@@ -387,6 +390,8 @@ public partial class GameManager : MonoBehaviour {
 
     private Timer discoverLootTimer;
     private int discoverLootIndex;
+
+    private int stashValue;
 
     private enum TransactionInvetoryState { Empty, Buying, Selling }
     private TransactionInvetoryState transactionState;
@@ -727,9 +732,9 @@ public partial class GameManager : MonoBehaviour {
         
         return result;
     }
-    
-    private void MoveItemBetweenInventories(Inventory fromInventory, Inventory toInventory, int hoveredSlotIndex) {
-        InventoryItem inventoryItem = GetInventoryItem(fromInventory, hoveredSlotIndex);
+
+    private void MoveItemBetweenInventories(Inventory fromInventory, Inventory toInventory, int slotIndex) {
+        InventoryItem inventoryItem = GetInventoryItem(fromInventory, slotIndex);
         if (inventoryItem == null || inventoryItem.notDiscovered) return;
 
         if (OnTradingTab) {
@@ -739,7 +744,7 @@ public partial class GameManager : MonoBehaviour {
             InventoryAddResult traderMoveResult = TryAddItemToInventory(toInventory, newItem);
             if (traderMoveResult.type is InventoryAddResult.ResultType.Success or InventoryAddResult.ResultType.FailureToAddAll) {
                 int keepItemCount = inventoryItem.count - traderMoveResult.addedCount;
-                AdjustItemCountInInventory(fromInventory, hoveredSlotIndex, keepItemCount);
+                AdjustItemCountInInventory(fromInventory, slotIndex, keepItemCount);
             }
             return;
         }
@@ -753,22 +758,39 @@ public partial class GameManager : MonoBehaviour {
             
             InventoryAddResult splitResult = TryAddItemToInventory(toInventory, newItem);
             if (splitResult.type == InventoryAddResult.ResultType.Success) {
-                AdjustItemCountInInventory(fromInventory, hoveredSlotIndex, firstHalf);
+                AdjustItemCountInInventory(fromInventory, slotIndex, firstHalf);
             }
             else if (splitResult.type == InventoryAddResult.ResultType.FailureToAddAll) {
                 int keepItemCount = inventoryItem.count - splitResult.addedCount;
-                AdjustItemCountInInventory(fromInventory, hoveredSlotIndex, keepItemCount);
+                AdjustItemCountInInventory(fromInventory, slotIndex, keepItemCount);
             }
             return;
+        }
+
+        MoveEntireItemStack(fromInventory, toInventory, slotIndex);
+    }
+
+    private bool MoveEntireItemStack(Inventory fromInventory, Inventory toInventory, int slotIndex) {
+        InventoryItem inventoryItem = GetInventoryItem(fromInventory, slotIndex);
+        if (inventoryItem == null) {
+            return false;
         }
         
         InventoryAddResult moveResult = TryAddItemToInventory(toInventory, inventoryItem);
         if (moveResult.type == InventoryAddResult.ResultType.Success) {
-            RemoveItemFromInventory(fromInventory, hoveredSlotIndex);
+            RemoveItemFromInventory(fromInventory, slotIndex);
         }
         else if (moveResult.type == InventoryAddResult.ResultType.FailureToAddAll) {
             int keepItemCount = inventoryItem.count - moveResult.addedCount;
-            AdjustItemCountInInventory(fromInventory, hoveredSlotIndex, keepItemCount);
+            AdjustItemCountInInventory(fromInventory, slotIndex, keepItemCount);
+        }
+        
+        return moveResult.type == InventoryAddResult.ResultType.Success;
+    }
+
+    private void ClearInventory(Inventory inventory) {
+        for (int i = 0; i < inventory.slots.Length; i++) {
+            RemoveItemFromInventory(inventory, i);
         }
     }
 
@@ -840,13 +862,34 @@ public partial class GameManager : MonoBehaviour {
         }
     }
 
-    public int GetInventoryItemCount(Inventory inventory) {
+    private int GetInventoryItemCount(Inventory inventory) {
         int count = 0;
         foreach (InventorySlot slot in inventory.slots) {
             if (slot.item == null) continue;
             count++;
         }
         return count;
+    }
+
+    private enum InventoryValueType { Buy, Sell, Xp }
+
+    private int GetInventoryValue(Inventory inventory, InventoryValueType valueType) {
+        int value = 0;
+        foreach (InventorySlot slot in inventory.slots) {
+            if (slot.item == null) continue;
+            switch (valueType) {
+                case InventoryValueType.Buy:
+                    value += slot.item.ItemRef.buyPrice * slot.item.count;
+                    break;
+                case InventoryValueType.Sell:
+                    value += slot.item.ItemRef.sellPrice * slot.item.count;
+                    break;
+                case InventoryValueType.Xp:
+                    value += slot.item.ItemRef.traderXp * slot.item.count;
+                    break;
+            }
+        }
+        return value;
     }
 
     private void OpenPlayerInventory() {
@@ -1534,6 +1577,29 @@ public partial class GameManager : MonoBehaviour {
             crucibleInventory.slots[eyeSlotIndex].item = newDemonEyeItem;
             RefreshInventoryDisplay(crucibleInventory);
         });
+        
+        traderDealButton.onClick.AddListener(() => {
+            InventoryValueType valueType = transactionState == TransactionInvetoryState.Buying ? InventoryValueType.Buy : InventoryValueType.Sell;
+            int price = GetInventoryValue(transactionInventory, valueType);
+            
+            if (transactionState == TransactionInvetoryState.Buying && stashValue >= price) {
+                SetStashValue(stashValue - price); 
+                for (int i = 0; i < transactionInventory.slots.Length; i++) { 
+                    MoveEntireItemStack(transactionInventory, stashInventory, i);
+                }
+                RefreshInventoryDisplay(transactionInventory);
+                RefreshInventoryDisplay(stashInventory);
+                transactionState = TransactionInvetoryState.Empty;
+            }
+            else if (transactionState == TransactionInvetoryState.Selling) {
+                SetStashValue(stashValue + price);
+                ClearInventory(transactionInventory);
+                RefreshInventoryDisplay(transactionInventory);
+                transactionState = TransactionInvetoryState.Empty;
+            }
+
+            RefreshTransactionUI();
+        });
     }
 
     private void ToggleSlimPlayerPanel(bool toggle) {
@@ -1548,15 +1614,25 @@ public partial class GameManager : MonoBehaviour {
     }
 
     private void RefreshTransactionUI() {
+        if (transactionState == TransactionInvetoryState.Empty) {
+            traderTransactionInfoText.text = string.Empty;
+            return;
+        }
+        
         if (transactionState == TransactionInvetoryState.Buying) {
-            traderTransactionInfoText.text = "Buying";
-            return;
+            int buyPrice = GetInventoryValue(transactionInventory, InventoryValueType.Buy);
+            traderTransactionInfoText.text = $"Purchase for {buyPrice}";
         }
-        if (transactionState == TransactionInvetoryState.Selling) {
-            traderTransactionInfoText.text = "Selling";
-            return;
+        else if (transactionState == TransactionInvetoryState.Selling) {
+            int sellPrice = GetInventoryValue(transactionInventory, InventoryValueType.Sell);
+            int xpGain = GetInventoryValue(transactionInventory, InventoryValueType.Xp);
+            traderTransactionInfoText.text = $"Sell for {sellPrice}\n Gain {xpGain} trader experience";
         }
-        traderTransactionInfoText.text = string.Empty;
+    }
+
+    private void SetStashValue(int value) {
+        stashValue = value;
+        stashValueText.text = stashValue.ToString();
     }
 
 }

@@ -16,4 +16,7 @@ MonoBehaviour:
   type: 0
   inventorySprite: {fileID: 1172067732, guid: f5f130e61e73c674ba01af3a5a5f58ea, type: 3}
   maxStackCount: 15
+  buyPrice: 5
+  sellPrice: 3
+  traderXp: 2
   description: Demonic stone, a powerful tool for building.

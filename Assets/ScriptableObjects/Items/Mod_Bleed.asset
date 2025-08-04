@@ -16,5 +16,9 @@ MonoBehaviour:
   type: 3
   inventorySprite: {fileID: -252513017, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
   maxStackCount: 10
+  buyPrice: 10
+  sellPrice: 6
+  traderXp: 5
+  description: 
   bleedDamage: 5
   bleedInterval: 0.5

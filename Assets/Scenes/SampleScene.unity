@@ -60218,6 +60218,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4000788040661944078, guid: 24c61231a7dd08d40b73014b9f007d4a, type: 3}
   m_PrefabInstance: {fileID: 424543272728042692}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &798107121 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 836575388746779971, guid: 589364522a9157847bf889d5ab87ae2b, type: 3}
+  m_PrefabInstance: {fileID: 7588606233392854319}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &805695908 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2774498877656955944, guid: 1b64893aba8ba9e479b26c9d9f8afd2b, type: 3}
@@ -63727,6 +63738,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1b64893aba8ba9e479b26c9d9f8afd2b, type: 3}
+--- !u!114 &1097623248 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8330235060371642767, guid: d61ee25e22e19554eb25e133c91f7b4c, type: 3}
+  m_PrefabInstance: {fileID: 3770209901336576701}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!213 &1114119943
 Sprite:
   m_ObjectHideFlags: 0
@@ -138134,6 +138156,7 @@ MonoBehaviour:
   playerInventoryParent: {fileID: 30304875}
   stashPanel: {fileID: 1084821941}
   stashInventoryParent: {fileID: 2117033147}
+  stashValueText: {fileID: 798107121}
   eyeForgePanel: {fileID: 998813997}
   crucibleParent: {fileID: 1518197283}
   crucibleForgeButton: {fileID: 257402658}
@@ -138142,6 +138165,7 @@ MonoBehaviour:
   traderInventoryParent: {fileID: 1052577513}
   traderTransactionInventoryParent: {fileID: 1956965706}
   traderTransactionInfoText: {fileID: 3770209901336576702}
+  traderDealButton: {fileID: 1097623248}
   playerEquipmentParent: {fileID: 30304876}
   lootInventoryParent: {fileID: 2115388137}
   interactPrompt: {fileID: 1296663431}
@@ -139774,6 +139798,10 @@ PrefabInstance:
     - target: {fileID: 805988953128671865, guid: 589364522a9157847bf889d5ab87ae2b, type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1228109786048925115, guid: 589364522a9157847bf889d5ab87ae2b, type: 3}
+      propertyPath: m_Name
+      value: ValueText
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

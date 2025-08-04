@@ -8,6 +8,9 @@ public class Item : UuidScriptableObject {
     public ItemType type;
     public Sprite inventorySprite;
     public int maxStackCount;
+    public int buyPrice;
+    public int sellPrice;
+    public int traderXp;
     [TextArea] public string description;
 
     public virtual string GetDescription() {
