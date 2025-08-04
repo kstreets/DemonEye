@@ -283,22 +283,6 @@ public partial class GameManager : MonoBehaviour {
                 }
             }
 
-            if (col.CompareTag(Tags.Crucible)) {
-                EnableInteractionPrompt(col.transform.position);
-                if (interactInputAction.WasPressedThisFrame()) {
-                    OpenPlayerInventory();
-                    OpenCrucibleInventory();
-                }
-            }
-            
-            if (col.CompareTag(Tags.Stash)) {
-                EnableInteractionPrompt(col.transform.position);
-                if (interactInputAction.WasPressedThisFrame()) {
-                    OpenPlayerInventory();
-                    OpenStashInventory();
-                }
-            }
-
             if (col.CompareTag(Tags.DeadBody)) {
                 EnableInteractionPrompt(col.transform.position);
                 if (interactInputAction.WasPressedThisFrame()) {
@@ -310,10 +294,6 @@ public partial class GameManager : MonoBehaviour {
 
             if (col.CompareTag(Tags.ExitPortal)) {
                 gameStateMachine.SetStateIfNotCurrent(hideoutState);
-            }
-
-            if (col.CompareTag(Tags.HellPortal)) {
-                gameStateMachine.SetStateIfNotCurrent(raidState);
             }
         } 
     }
@@ -487,7 +467,9 @@ public partial class GameManager : MonoBehaviour {
     }
     
     private void UpdateInventory() {
-        if (gameStateMachine.CurState == raidState && inventoryInputAction.WasPressedThisFrame()) {
+        bool inRaid = gameStateMachine.CurState == raidState;
+        
+        if (inRaid) {
             if (inventoryInputAction.WasPressedThisFrame()) {
                 if (!InventoryIsOpen) {
                     OpenPlayerInventory();
@@ -535,8 +517,16 @@ public partial class GameManager : MonoBehaviour {
             bool hoveredItemIsEquipment = TryGetItemFromHoverInfo(out InventoryItem hoveredItem) ? hoveredItem.ItemRef.type == Item.ItemType.DemonEye : false;
             
             Inventory destinationInventory = null;
-            
-            if (OnCharacterTab) {
+
+            if (inRaid) {
+                if (hoveredInventory == playerInventory && LootInventoryIsOpen) {
+                    destinationInventory = lootInvetoryPtr;
+                }
+                else if (hoveredInventory == lootInvetoryPtr) {
+                    destinationInventory = playerInventory;
+                }
+            }
+            else if (OnCharacterTab) {
                 if (hoveredInventory == playerInventory) {
                     destinationInventory = stashInventory;
                 }
@@ -910,18 +900,9 @@ public partial class GameManager : MonoBehaviour {
         Cursor.visible = false;
     }
 
-    private void OpenStashInventory() {
-        stashInventoryParent.gameObject.SetActive(true);
-        RefreshInventoryDisplay(stashInventory);
-    }
-
-    private void CloseStashInventory() {
-        stashInventoryParent.gameObject.SetActive(false);
-    }
-
     private void OpenLootInventory() {
         discoverLootIndex = -1;
-        lootInventoryParent.gameObject.SetActive(true);
+        lootInventoryPanel.gameObject.SetActive(true);
         
         foreach (Transform child in lootInventoryParent.transform) {
             child.GetComponentInChildren<InventoryItemUI>().Clear();
@@ -955,18 +936,10 @@ public partial class GameManager : MonoBehaviour {
     }
 
     private void CloseLootInventory() {
-        lootInventoryParent.gameObject.SetActive(false);
+        lootInventoryPanel.gameObject.SetActive(false);
         discoverLootTimer.Stop();
     }
 
-    private void OpenCrucibleInventory() {
-        crucibleParent.gameObject.SetActive(true);
-    }
-
-    private void CloseCrucibleInventory() {
-        crucibleParent.gameObject.SetActive(false); 
-    }
-    
     
     public struct Projectile {
         public Transform trans;

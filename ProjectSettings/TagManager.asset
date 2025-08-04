@@ -7,10 +7,7 @@ TagManager:
   - GemRock
   - Enemy
   - ExitPortal
-  - Crucible
   - Pickup
-  - Stash
-  - HellPortal
   - DeadBody
   layers:
   - Default
