@@ -14,12 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemDrops:
   - itemPrefab: {fileID: 6950097619826054733, guid: ec0b49b2f3feb194c868280c6fa57cc0, type: 3}
-    dropChance: 0.2
-  - itemPrefab: {fileID: 5502475512659215005, guid: 76714e7171f7e024d88ac6d0dbf84842, type: 3}
-    dropChance: 0.01
+    dropChance: 0.8
   - itemPrefab: {fileID: 5502475512659215005, guid: c4d89d2593f913f498cd2d990e14630d, type: 3}
-    dropChance: 0.01
+    dropChance: 0.3
+  - itemPrefab: {fileID: 5502475512659215005, guid: 76714e7171f7e024d88ac6d0dbf84842, type: 3}
+    dropChance: 0.1
   - itemPrefab: {fileID: 5502475512659215005, guid: 702f26ad8da7a1c45931ea6c71b8e649, type: 3}
-    dropChance: 0.01
+    dropChance: 0.03
   - itemPrefab: {fileID: 5502475512659215005, guid: b5e6553505a77b64eba85a8c8842e351, type: 3}
     dropChance: 0.01

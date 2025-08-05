@@ -9,16 +9,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ca59222e1840b6f4d9a632e2dc2bcfb1, type: 3}
-  m_Name: Mod_Bleed
+  m_Script: {fileID: 11500000, guid: 9bc23522601a56f4d89295cf565d360b, type: 3}
+  m_Name: StoneGemSuperRare
   m_EditorClassIdentifier: 
-  uuid: 9e2f280c-4df1-4f51-ad60-db56ef2c3f32
-  type: 3
+  uuid: 9eb9da29-588c-4e0e-b836-0327bded7849
+  type: 0
   inventorySprite: {fileID: -252513017, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
-  maxStackCount: 10
-  buyPrice: 10
-  sellPrice: 6
-  traderXp: 5
-  description: 
-  bleedDamage: 5
-  bleedInterval: 0.5
+  maxStackCount: 15
+  buyPrice: 5
+  sellPrice: 50
+  traderXp: 500
+  description: Demonic gem, traders buy this item to make their trinkets.

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 1905202761523698997}
   - component: {fileID: 8838330015509725356}
   m_Layer: 8
-  m_Name: Vein_SlowDrop
+  m_Name: StoneGemRare
   m_TagString: Pickup
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -78,7 +78,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 1
-  m_Sprite: {fileID: -662992353, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
+  m_Sprite: {fileID: -51953114, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -137,4 +137,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: adffe092b8278f4498fc8bf07c739956, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  item: {fileID: 11400000, guid: 9285ab41e291784449187596580ae02c, type: 2}
+  item: {fileID: 11400000, guid: dd59441e955a1cc49ba1c1e14f358d3f, type: 2}

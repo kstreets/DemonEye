@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "EyeModifier", menuName = "Scriptable Objects/EyeModifier")]
-public class EyeModifier : Item {
+public class Soulcard : Item {
 
     public virtual void AddInstanceToEnemy(GameManager.Enemy enemy, int stackCount) { }
     public virtual void AddInstanceToEye(DemonEyeInstance eyeInstance, int stackCount) { }

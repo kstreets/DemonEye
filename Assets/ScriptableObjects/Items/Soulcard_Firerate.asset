@@ -9,15 +9,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 54dcc99deb2df7d4caf9825aeeaf1694, type: 3}
-  m_Name: Mod_TriShot
+  m_Script: {fileID: 11500000, guid: cbd8e9f347e050a418bb9d7c47228c63, type: 3}
+  m_Name: Soulcard_Firerate
   m_EditorClassIdentifier: 
-  uuid: ff36fb89-1d00-4d0e-baf9-611796f14635
-  type: 3
-  inventorySprite: {fileID: -51953114, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
+  uuid: 8cfb7f7e-adb7-485e-a6b0-40f72b966d5f
+  type: 2
+  inventorySprite: {fileID: -159616602, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
   maxStackCount: 10
   buyPrice: 10
   sellPrice: 6
   traderXp: 5
   description: 
-  probability: 0.1
+  reduction: 0.1

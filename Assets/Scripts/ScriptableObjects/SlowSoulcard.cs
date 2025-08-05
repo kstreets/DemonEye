@@ -6,8 +6,8 @@ public class SlowInstance {
     public float duration;
 }
 
-[CreateAssetMenu(fileName = "SlowModifier", menuName = "Scriptable Objects/SlowModifier")]
-public class SlowModifier : EyeModifier {
+[CreateAssetMenu(fileName = "SlowSoulcard", menuName = "Scriptable Objects/SlowSoulcard")]
+public class SlowSoulcard : Soulcard {
     
     public float speedReduction;
     public float slowDuration;

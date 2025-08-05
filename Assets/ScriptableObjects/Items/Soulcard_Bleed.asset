@@ -9,16 +9,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9a987089865139440bcc81277dd2981c, type: 3}
-  m_Name: Mod_Slow
+  m_Script: {fileID: 11500000, guid: ca59222e1840b6f4d9a632e2dc2bcfb1, type: 3}
+  m_Name: Soulcard_Bleed
   m_EditorClassIdentifier: 
-  uuid: 973f1562-ed9f-416a-9bc8-0754f2bb0b40
-  type: 3
-  inventorySprite: {fileID: -662992353, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
+  uuid: 9e2f280c-4df1-4f51-ad60-db56ef2c3f32
+  type: 2
+  inventorySprite: {fileID: 619219371, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
   maxStackCount: 10
   buyPrice: 10
   sellPrice: 6
   traderXp: 5
   description: 
-  speedReduction: 0.12
-  slowDuration: 2
+  bleedDamage: 5
+  bleedInterval: 0.5

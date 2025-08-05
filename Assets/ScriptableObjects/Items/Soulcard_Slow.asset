@@ -9,15 +9,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cbd8e9f347e050a418bb9d7c47228c63, type: 3}
-  m_Name: Mod_Firerate
+  m_Script: {fileID: 11500000, guid: 9a987089865139440bcc81277dd2981c, type: 3}
+  m_Name: Soulcard_Slow
   m_EditorClassIdentifier: 
-  uuid: 8cfb7f7e-adb7-485e-a6b0-40f72b966d5f
-  type: 3
-  inventorySprite: {fileID: -80230315, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
+  uuid: 973f1562-ed9f-416a-9bc8-0754f2bb0b40
+  type: 2
+  inventorySprite: {fileID: -1427259993, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
   maxStackCount: 10
   buyPrice: 10
   sellPrice: 6
   traderXp: 5
   description: 
-  reduction: 0.1
+  speedReduction: 0.12
+  slowDuration: 2

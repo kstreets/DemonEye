@@ -116,7 +116,7 @@ public partial class GameManager : MonoBehaviour {
     [NonSerialized] public Dictionary<GameObject, Enemy> enemyLookup = new();
     
     public static Dictionary<string, Item> itemDataLookup = new();
-    public static Dictionary<string, EyeModifier> eyeModifierLookup = new();
+    public static Dictionary<string, Soulcard> eyeModifierLookup = new();
     public static Dictionary<string, CoreAttack> baseAttackLookup = new();
 
     private Timer exitPortalTimer;
@@ -127,7 +127,7 @@ public partial class GameManager : MonoBehaviour {
     
     private void Start() {
         foreach (Item itemData in allItems) {
-            if (itemData is EyeModifier mod) {
+            if (itemData is Soulcard mod) {
                 eyeModifierLookup.Add(mod.uuid, mod);
             }
             else if (itemData is CoreAttack core) {
@@ -235,10 +235,27 @@ public partial class GameManager : MonoBehaviour {
 
     private Entity player;
     private const float playerSpeed = .75f;
-    private Limitter attackLimiter;
+    private Limiter playerTakeDamageLimiter;
     private List<Collider2D> playerContacts = new(10);
     
     private void UpdatePlayer() {
+        if (playerTakeDamageLimiter.TimeHasPassed(0.1f)) {
+            foreach (Enemy enemy in enemies) {
+                if (enemy.health <= 0) continue;
+                float dist = Vector2.Distance(player.position, enemy.position);
+                if (dist < 0.08f) {
+                    player.health -= enemy.data.damage;
+                    break;
+                }
+            }
+        }
+
+        if (player.health <= 0f) {
+            ClearInventory(playerInventory);
+            gameStateMachine.SetState(hideoutState);
+            return;
+        }
+        
         if (InventoryIsOpen) return;
         
         Vector2 moveInput = moveInputAction.ReadValue<Vector2>();
@@ -376,7 +393,6 @@ public partial class GameManager : MonoBehaviour {
     [NonSerialized] public Inventory traderInventory;
     [NonSerialized] public Inventory transactionInventory;
     [NonSerialized] public Inventory lootInvetoryPtr;
-    [NonSerialized] public InventorySlot[] cahcedLootInventoryPtrSlots;
     [NonSerialized] public List<Inventory> allInventories = new();
 
     private Timer discoverLootTimer;
@@ -439,7 +455,7 @@ public partial class GameManager : MonoBehaviour {
                 InventorySlotUI veinSlot = slot.GetComponent<InventorySlotUI>();
                 veinSlot.disallowItemStacking = true;
                 veinSlot.acceptsAllTypes = false;
-                veinSlot.onlyAcceptedItemType = Item.ItemType.Vein;
+                veinSlot.onlyAcceptedItemType = Item.ItemType.Soulcard;
             }
         }
         crucibleInventory = CreateInventory(crucibleParent, crucibleInventorySize);
@@ -996,7 +1012,7 @@ public partial class GameManager : MonoBehaviour {
         else {
             entity.health -= (int)eyeInstance.coreAttack.damage;
 
-            if (Random.value <= 0.35f) { // Random chance to spawn drop on each hit
+            if (Random.value <= 0.6f) { // Random chance to spawn drop on each hit
                 Vector3 spawnPos = col.transform.position + RandomOffset360(0.25f, 0.5f);
                 SpawnLevelEntity<Entity>(rockDropPool.GetDropFromPool(), spawnPos, Quaternion.identity);
             }
@@ -1277,7 +1293,8 @@ public partial class GameManager : MonoBehaviour {
         
         int gemRocksToSpawn = Random.Range(6, 10);
         for (int i = 0; i < gemRocksToSpawn; i++) {
-            SpawnResource<Entity>(gemRockPrefab, true);
+            Entity mineableRockEntity = SpawnResource<Entity>(gemRockPrefab, true);
+            mineableRockEntity.health = 450;
         }
         
         int deadBodiesToSpawn = Random.Range(3, 5);
@@ -1546,7 +1563,7 @@ public partial class GameManager : MonoBehaviour {
             foreach (InventorySlot slot in crucibleInventory.slots) {
                 if (slot.item == null) continue;
                 
-                if (slot.ui.onlyAcceptedItemType == Item.ItemType.Vein) {
+                if (slot.ui.onlyAcceptedItemType == Item.ItemType.Soulcard) {
                     newDemonEyeItem.modifierUuids.Add(slot.item.ItemRef.uuid);
                 }
                 slot.item = null;

@@ -13,5 +13,6 @@ public class EnemyData : ScriptableObject {
     public GameObject enemyPrefab;
     public ItemDrop[] itemDrops;
     public float speed;
+    public int damage;
 
 }

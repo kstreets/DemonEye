@@ -12,6 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83f6c2c17092402449e619ea7616aa05, type: 3}
   m_Name: AltarDropPool
   m_EditorClassIdentifier: 
-  itemDrops:
-  - itemPrefab: {fileID: 1852621466214338085, guid: 2be2bcd6a03cb0844837744be5b5b86c, type: 3}
-    dropChance: 1
+  itemDrops: []

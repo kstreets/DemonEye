@@ -4,8 +4,8 @@ public class FirerateModInstance {
     public float reduction;
 }
 
-[CreateAssetMenu(fileName = "FirerateModifier", menuName = "Scriptable Objects/FirerateModifier")]
-public class FirerateModifier : EyeModifier {
+[CreateAssetMenu(fileName = "FirerateSoulcard", menuName = "Scriptable Objects/FirerateSoulcard")]
+public class FirerateSoulcard : Soulcard {
 
     public float reduction;
     

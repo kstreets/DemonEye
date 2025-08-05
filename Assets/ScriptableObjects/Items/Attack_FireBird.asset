@@ -13,9 +13,12 @@ MonoBehaviour:
   m_Name: Attack_FireBird
   m_EditorClassIdentifier: 
   uuid: a8e1d9fc-5196-48d1-9ef7-fa7a4caf3d07
-  type: 2
+  type: 0
   inventorySprite: {fileID: 541499864, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
   maxStackCount: 5
+  buyPrice: 0
+  sellPrice: 0
+  traderXp: 0
   description: A core that servers as the base attack when crafting eyes.
   attackType: 0
   attackDelay: 0.25

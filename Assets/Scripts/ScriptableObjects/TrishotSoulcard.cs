@@ -4,8 +4,8 @@ public class TrishotModInstance {
     public float probability;
 }
 
-[CreateAssetMenu(fileName = "TrishotModifier", menuName = "Scriptable Objects/TrishotModifier")]
-public class TrishotModifier : EyeModifier {
+[CreateAssetMenu(fileName = "TrishotSoulcard", menuName = "Scriptable Objects/TrishotSoulcard")]
+public class TrishotSoulcard : Soulcard {
 
     public float probability;
     

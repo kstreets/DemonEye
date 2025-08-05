@@ -13,9 +13,12 @@ MonoBehaviour:
   m_Name: Attack_Default
   m_EditorClassIdentifier: 
   uuid: 42bfd6a6-e5b7-486d-be34-2f798f1a1d7a
-  type: 2
+  type: 0
   inventorySprite: {fileID: 0}
   maxStackCount: 0
+  buyPrice: 0
+  sellPrice: 0
+  traderXp: 0
   description: 
   attackType: 0
   attackDelay: 0.5

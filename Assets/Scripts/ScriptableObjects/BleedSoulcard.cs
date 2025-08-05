@@ -6,8 +6,8 @@ public class BleedModInstance {
     public float lastBleedTime;
 }
 
-[CreateAssetMenu(fileName = "BleedModifier", menuName = "Scriptable Objects/BleedModifier")]
-public class BleedModifier : EyeModifier {
+[CreateAssetMenu(fileName = "BleedSoulcard", menuName = "Scriptable Objects/BleedSoulcard")]
+public class BleedSoulcard : Soulcard {
 
     public int bleedDamage;
     public float bleedInterval;

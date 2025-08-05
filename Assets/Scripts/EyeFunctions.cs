@@ -22,7 +22,7 @@ public partial class GameManager {
 
     public Dictionary<string, DemonEyeInstance> eyeInstanceFromItemId = new();
     public DemonEyeInstance equipedEye;
-    private Limitter attackLimitter;
+    private Limiter attackLimiter;
 
     public DemonEyeInstance BuildAndRegisterEye(InventoryItem item) {
         item.itemDataUuid = Guid.NewGuid().ToString();
@@ -70,7 +70,7 @@ public partial class GameManager {
             attackDelay -= equipedEye.firerateModInstance.reduction;
             attackDelay = Mathf.Clamp(attackDelay, equipedEye.coreAttack.cappedMinAttackDelay, equipedEye.coreAttack.attackDelay);
         }
-        return attackLimitter.TimeHasPassed(attackDelay);
+        return attackLimiter.TimeHasPassed(attackDelay);
     }
 
     public void ShootPrimary() {
@@ -119,7 +119,7 @@ public partial class GameManager {
 
 
     private Timer laserTimer;
-    private Limitter laserDamageLimitter;
+    private Limiter laserDamageLimiter;
     private LineRenderer laserRenderer;
 
     private void LaserPrimaryShoot() {
@@ -138,7 +138,7 @@ public partial class GameManager {
         bool laserIsFinished = !laserTimer.IsFinished && laserTimer.Tick();
         
         if (laserIsFinished) {
-            attackLimitter.MakeCurrent();
+            attackLimiter.MakeCurrent();
             if (laserRenderer) {
                 Destroy(laserRenderer.gameObject);
             }
@@ -153,7 +153,7 @@ public partial class GameManager {
         laserRenderer.SetPosition(0, startPos);
         laserRenderer.SetPosition(1, hit ? hit.point : endPos);
         
-        if (laserDamageLimitter.TimeHasPassed(equipedEye.coreAttack.laserDamageTickDelay)) {
+        if (laserDamageLimiter.TimeHasPassed(equipedEye.coreAttack.laserDamageTickDelay)) {
             HandleDamage(equipedEye, hit.collider);
         }
     }

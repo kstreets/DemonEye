@@ -1,11 +1,11 @@
 using UnityEngine;
 
-public struct Limitter {
+public struct Limiter {
 
     private float limitTime;
     private float lastTime;
 
-    public Limitter(float time) {
+    public Limiter(float time) {
         limitTime = time;
         lastTime = Mathf.NegativeInfinity;
     }
