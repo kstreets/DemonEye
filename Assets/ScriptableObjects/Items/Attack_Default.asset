@@ -21,10 +21,12 @@ MonoBehaviour:
   traderXp: 0
   description: 
   attackType: 0
-  attackDelay: 0.5
+  attackDelay: 0.2
   cappedMinAttackDelay: 0.1
-  damage: 50
-  range: 1.2
+  damage: 22
+  range: 0.6
+  accuracy: 0.3
+  enemySpeedReduction: 0.15
   projectileSpeed: 2
   projectilePrefab: {fileID: 2758590605051147821, guid: 490c322ccae8e8149a6dddb96650a50e, type: 3}
   laserDuration: 1

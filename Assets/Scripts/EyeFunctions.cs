@@ -14,8 +14,8 @@ public class DemonEyeInstance {
     public List<EquipedModInstance> modInstances = new();
     public CoreAttack coreAttack;
     
-    public FirerateModInstance firerateModInstance;
-    public TrishotModInstance trishotModModInstance;
+    public FirerateModInstance? firerateModInstance;
+    public TrishotModInstance? trishotModModInstance;
 }
 
 public partial class GameManager {
@@ -44,7 +44,7 @@ public partial class GameManager {
         }
         
         DemonEyeInstance newDemonEye = new() {
-            coreAttack = defaultCoreAttack,
+            coreAttack = defaultAttack,
             modInstances = eyeModifiers,
         };
         
@@ -66,8 +66,8 @@ public partial class GameManager {
 
     public bool CanShootPrimary() {
         float attackDelay = equipedEye.coreAttack.attackDelay;
-        if (equipedEye.firerateModInstance != null) {
-            attackDelay -= equipedEye.firerateModInstance.reduction;
+        if (equipedEye.firerateModInstance.TryGetValue(out FirerateModInstance firerate)) {
+            attackDelay -= firerate.reduction;
             attackDelay = Mathf.Clamp(attackDelay, equipedEye.coreAttack.cappedMinAttackDelay, equipedEye.coreAttack.attackDelay);
         }
         return attackLimiter.TimeHasPassed(attackDelay);
@@ -87,11 +87,17 @@ public partial class GameManager {
     private void ProjectilePrimaryShoot() {
         Vector2 mousePos = Mouse.current.position.ReadValue();
         Vector2 mouseWorldPos = mainCamera.ScreenToWorldPoint(mousePos);
+
+        const float maxInaccuracyAngle = 18f;
+        float maxAccuracyAngle = maxInaccuracyAngle * (1f - equipedEye.coreAttack.accuracy);
+        float accuracyAngle = Random.Range(-maxAccuracyAngle, maxAccuracyAngle);
         
-        Vector2 velocity = (mouseWorldPos - player.trans.PositionV2()).normalized * equipedEye.coreAttack.projectileSpeed;
+        Vector2 dir = (mouseWorldPos - player.trans.PositionV2()).normalized;
+        dir = Quaternion.AngleAxis(accuracyAngle, Vector3.forward) * dir;
+        Vector2 velocity = dir * equipedEye.coreAttack.projectileSpeed; 
         SpawnProjectile(velocity);
 
-        if (equipedEye.trishotModModInstance != null && RollProbability(equipedEye.trishotModModInstance.probability)) {
+        if (equipedEye.trishotModModInstance.TryGetValue(out TrishotModInstance trishot) && RollProbability(trishot.probability)) {
             const float baseTriShotAngle = 8f;
             Vector2 secondShotVelocity = Quaternion.AngleAxis(baseTriShotAngle, Vector3.forward) * velocity;
             SpawnProjectile(secondShotVelocity);
@@ -107,6 +113,7 @@ public partial class GameManager {
         
         projectiles.Add(new() {
             timeAlive = 0f,
+            range = equipedEye.coreAttack.range,
             trans = projectile.transform,
             velocity = velocity,
             EyeInstanceSpawnedFrom = equipedEye,

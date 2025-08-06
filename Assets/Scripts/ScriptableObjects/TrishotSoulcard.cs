@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class TrishotModInstance {
+public struct TrishotModInstance {
     public float probability;
 }
 

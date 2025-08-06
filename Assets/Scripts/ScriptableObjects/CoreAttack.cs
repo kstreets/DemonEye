@@ -10,6 +10,8 @@ public class CoreAttack : Item {
     public float cappedMinAttackDelay;
     public float damage;
     public float range;
+    public float accuracy;
+    public float enemySpeedReduction;
     
     [VInspector.ShowIf("attackType", AttackType.Projectile)]
     public float projectileSpeed;

@@ -14,72 +14,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   timeBeforeFirstWave: 15
   waves:
-  - enemyCount: 10
-    waveDuration: 30
-    spawnDuration: 10
+  - waveDuration: 80
+    spawnDuration: 20
     spawnRateCurve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0
-        inSlope: 1
-        outSlope: 1
-        tangentMode: 34
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      - serializedVersion: 3
-        time: 1
         value: 1
-        inSlope: 1
-        outSlope: 1
+        inSlope: 0
+        outSlope: 0
         tangentMode: 34
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 0
-  - enemyCount: 15
-    waveDuration: 30
-    spawnDuration: 9
-    spawnRateCurve:
-      serializedVersion: 2
-      m_Curve:
-      - serializedVersion: 3
-        time: 0
-        value: 0
-        inSlope: 1
-        outSlope: 1
-        tangentMode: 34
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      - serializedVersion: 3
-        time: 1
-        value: 1
-        inSlope: 1
-        outSlope: 1
-        tangentMode: 34
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 0
-  - enemyCount: 20
-    waveDuration: 40
-    spawnDuration: 9
-    spawnRateCurve:
-      serializedVersion: 2
-      m_Curve:
-      - serializedVersion: 3
-        time: 0
-        value: 0
-        inSlope: 2
-        outSlope: 2
-        tangentMode: 0
         weightedMode: 0
         inWeight: 0
         outWeight: 0
@@ -88,25 +33,27 @@ MonoBehaviour:
         value: 1
         inSlope: 0
         outSlope: 0
-        tangentMode: 0
+        tangentMode: 34
         weightedMode: 0
         inWeight: 0
         outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 0
-  - enemyCount: 30
-    waveDuration: 40
-    spawnDuration: 15
+    waveUnits:
+    - enemyCount: 10
+      enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
+  - waveDuration: 90
+    spawnDuration: 20
     spawnRateCurve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0
-        inSlope: 2
-        outSlope: 2
-        tangentMode: 0
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 34
         weightedMode: 0
         inWeight: 0
         outWeight: 0
@@ -115,10 +62,73 @@ MonoBehaviour:
         value: 1
         inSlope: 0
         outSlope: 0
-        tangentMode: 0
+        tangentMode: 34
         weightedMode: 0
         inWeight: 0
         outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 0
+    waveUnits:
+    - enemyCount: 40
+      enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
+  - waveDuration: 90
+    spawnDuration: 20
+    spawnRateCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 34
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 34
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 0
+    waveUnits:
+    - enemyCount: 80
+      enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
+  - waveDuration: 100
+    spawnDuration: 20
+    spawnRateCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 34
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 34
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 0
+    waveUnits:
+    - enemyCount: 100
+      enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
+    - enemyCount: 30
+      enemyData: {fileID: 11400000, guid: 93d1cb040d05e5c4499c666352c30bfe, type: 2}

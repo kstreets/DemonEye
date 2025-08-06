@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class SlowInstance {
+public struct SlowInstance {
     public float speedReduction;
     public float activationTime;
     public float duration;

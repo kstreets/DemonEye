@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4a5df0d022d54a7488a42b771db86189, type: 3}
-  m_Name: Enemy
+  m_Name: HeavyEnemy
   m_EditorClassIdentifier: 
-  enemyPrefab: {fileID: 7814119993517076521, guid: 833b76e47459c3f42b84396473e92372, type: 3}
+  enemyPrefab: {fileID: 7814119993517076521, guid: d6aa5c8f249306040866a894eb2bd5ee, type: 3}
   itemDrops:
   - itemPrefab: {fileID: 6950097619826054733, guid: 76c9a684a511a5c4a996987d87f8cd8d, type: 3}
     dropChance: 0.05
   speed: 0.35
-  health: 100
+  health: 200
   damage: 8

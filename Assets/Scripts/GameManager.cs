@@ -15,7 +15,6 @@ using VInspector;
 public partial class GameManager : MonoBehaviour {
 
     public List<Item> allItems;
-    public CoreAttack defaultCoreAttack;
     public List<ItemPool> traderLevelPools;
 
     public Camera mainCamera;
@@ -234,9 +233,10 @@ public partial class GameManager : MonoBehaviour {
 
 
     private Entity player;
-    private const float playerSpeed = .75f;
+    private const float playerSpeed = .55f;
     private Limiter playerTakeDamageLimiter;
     private List<Collider2D> playerContacts = new(10);
+    private Vector2 playerVelocity;
     
     private void UpdatePlayer() {
         if (playerTakeDamageLimiter.TimeHasPassed(0.1f)) {
@@ -260,6 +260,7 @@ public partial class GameManager : MonoBehaviour {
         
         Vector2 moveInput = moveInputAction.ReadValue<Vector2>();
         player.position += new Vector3(moveInput.x, moveInput.y, 0f) * (playerSpeed * Time.deltaTime);
+        playerVelocity = new Vector3(moveInput.x, moveInput.y, 0f) * playerSpeed;
 
         if (moveInput.x < 0) {
             player.spriteRenderer.flipX = true;
@@ -962,6 +963,7 @@ public partial class GameManager : MonoBehaviour {
     public struct Projectile {
         public Transform trans;
         public float timeAlive;
+        public float range;
         public Vector2 velocity;
         public DemonEyeInstance EyeInstanceSpawnedFrom;
     }
@@ -982,7 +984,7 @@ public partial class GameManager : MonoBehaviour {
         }
 
         for (int i = projectiles.Count - 1; i >= 0; i--) {
-            if (projectiles[i].timeAlive > 5f) {
+            if (projectiles[i].timeAlive > projectiles[i].range) {
                 Destroy(projectiles[i].trans.gameObject);
                 projectiles.RemoveAt(i);
             }
@@ -1008,6 +1010,7 @@ public partial class GameManager : MonoBehaviour {
                 eyeModifierLookup[modInstance.modId].AddInstanceToEnemy(enemy, modInstance.stackCount);
             }
             enemy.health -= (int)eyeInstance.coreAttack.damage;
+            enemy.defaultSlow = new() { activationTime = Time.time, duration = 0.15f, speedReduction = eyeInstance.coreAttack.enemySpeedReduction };
         }
         else {
             entity.health -= (int)eyeInstance.coreAttack.damage;
@@ -1031,8 +1034,9 @@ public partial class GameManager : MonoBehaviour {
         public EnemyData data;
         public PathData pathData = new();
         public MaterialPropertyBlock matPropertyBlock = new();
-        public BleedModInstance bleed;
-        public SlowInstance slow;
+        public BleedModInstance? bleed;
+        public SlowInstance? defaultSlow;
+        public SlowInstance? slow;
     }
     
     public class PathData {
@@ -1048,8 +1052,7 @@ public partial class GameManager : MonoBehaviour {
         for (int i = enemies.Count - 1; i >= 0; i--) {
             Enemy enemy = enemies[i];
 
-            if (enemy.bleed != null) {
-                BleedModInstance bleed = enemy.bleed;
+            if (enemy.bleed.TryGetValue(out BleedModInstance bleed)) {
                 if (Time.time - bleed.lastBleedTime > bleed.bleedInterval) {
                     enemy.health -= bleed.bleedDamage;
                     bleed.lastBleedTime = Time.time;
@@ -1109,8 +1112,13 @@ public partial class GameManager : MonoBehaviour {
 
         foreach (Enemy enemy in enemies) {
             if ((enemy.pathData.HasPath && Time.time - enemy.pathData.lastUpdateTime <= 0.5f) || enemy.pathData.isBeingCalculated) continue;
+
+            float dist = Vector2.Distance(enemy.position, player.position);
+            float time = dist / enemy.data.speed;
             
-            ABPath abPath = ABPath.Construct(enemy.position, player.position, path => {
+            Vector2 estimatedPlayerPos = player.position + playerVelocity.ToVector3() * time;
+            Vector2 conservativeEstimatedPlayerPos = Vector2.Lerp(player.position, estimatedPlayerPos, 0.5f);
+            ABPath abPath = ABPath.Construct(enemy.position, conservativeEstimatedPlayerPos, path => {
                 path.Claim(this);
                 enemy.pathData.abPath?.Release(this);
                 enemy.pathData.abPath = path as ABPath;
@@ -1139,9 +1147,15 @@ public partial class GameManager : MonoBehaviour {
             usingPath = usingPath && pathData.waypointIndex < pathData.abPath.vectorPath.Count;
 
             float speed = enemy.data.speed;
-            if (enemy.slow != null) {
-                speed = Mathf.Clamp(speed - enemy.slow.speedReduction, 0.05f, enemy.data.speed);
-                if (Time.time > enemy.slow.activationTime + enemy.slow.duration) {
+            if (enemy.defaultSlow.TryGetValue(out SlowInstance defaultSlow)) {
+                speed = Mathf.Clamp(speed - defaultSlow.speedReduction, 0.05f, enemy.data.speed);
+                if (Time.time > defaultSlow.activationTime + defaultSlow.duration) {
+                    enemy.defaultSlow = null;
+                }
+            }
+            if (enemy.slow.TryGetValue(out SlowInstance slow)) {
+                speed = Mathf.Clamp(speed - slow.speedReduction, 0.05f, enemy.data.speed);
+                if (Time.time > slow.activationTime + slow.duration) {
                     enemy.slow = null;
                 }
             }
@@ -1166,7 +1180,7 @@ public partial class GameManager : MonoBehaviour {
             Vector2 targetPos = usingPath ? pathData.abPath.vectorPath[pathData.waypointIndex] : player.position;
             Vector2 dirToTarget = (targetPos - enemy.position.ToVector2()).normalized;
             Vector2 finalDirection = (dirToTarget + separation.normalized * 0.5f).normalized;
-            enemy.rigidbody.linearVelocity = finalDirection * (speed * Time.fixedDeltaTime);
+            enemy.rigidbody.linearVelocity = finalDirection * speed;
 
             enemy.spriteRenderer.flipX = player.position.x < enemy.position.x;
         }
@@ -1197,12 +1211,12 @@ public partial class GameManager : MonoBehaviour {
         public float timeInCurWave;
         public int curWaveIndex;
         public EnemyWaves waves;
-        public EnemyWaves.WaveData curWaveData;
+        public EnemyWaves.WaveData CurWaveData;
         
         public const int prefixedSumResolution = 500;
         public float[] prefixedSums = new float[prefixedSumResolution];
 
-        public List<float> spawnTimes = new();
+        public List<(float time, EnemyData enemy)> spawnEvents = new();
         public int spawnTimeIndex;
     }
 
@@ -1218,17 +1232,20 @@ public partial class GameManager : MonoBehaviour {
         if (wm.curWaveIndex >= wm.waves.waves.Count) return;
         
         wm.timeInCurWave += Time.deltaTime;
-        float waveDuration = wm.curWaveIndex == -1 ? wm.waves.timeBeforeFirstWave : wm.curWaveData.waveDuration;
+        float waveDuration = wm.curWaveIndex == -1 ? wm.waves.timeBeforeFirstWave : wm.CurWaveData.waveDuration;
 
-        if (wm.timeInCurWave >= waveDuration) {
+        bool startNextWave = wm.timeInCurWave >= waveDuration;
+        if (startNextWave) {
             wm.curWaveIndex++;
             if (!wm.waves.waves.IndexInRange(wm.curWaveIndex)) return;
 
-            EnemyWaves.WaveData newWaveData = wm.waves.waves[wm.curWaveIndex];
-            wm.curWaveData = newWaveData;
+            EnemyWaves.WaveData newUnitWave = wm.waves.waves[wm.curWaveIndex];
+            wm.CurWaveData = newUnitWave;
 
-            if (newWaveData.enemyCount >= EnemyWaveManager.prefixedSumResolution) {
-                Debug.LogError($"Wave cannot have more enemies than {nameof(EnemyWaveManager.prefixedSumResolution)}");
+            foreach (EnemyWaves.UnitWave waveUnit in newUnitWave.waveUnits) {
+                if (waveUnit.enemyCount >= EnemyWaveManager.prefixedSumResolution) {
+                    Debug.LogError($"Wave cannot have more enemies than {nameof(EnemyWaveManager.prefixedSumResolution)}");
+                }
             }
             
             wm.timeInCurWave = 0f;
@@ -1237,35 +1254,46 @@ public partial class GameManager : MonoBehaviour {
             float totalWeight = 0f;
             for (int i = 0; i < EnemyWaveManager.prefixedSumResolution; i++) {
                 float sliceIndex = i / (float)(EnemyWaveManager.prefixedSumResolution - 1);
-                float weight = Mathf.Clamp01(newWaveData.spawnRateCurve.Evaluate(sliceIndex));
+                float weight = Mathf.Clamp01(newUnitWave.spawnRateCurve.Evaluate(sliceIndex));
                 totalWeight += weight;
                 wm.prefixedSums[i] = totalWeight;
             }
 
-            wm.spawnTimes.Clear();
-            int enemySpawnCount = newWaveData.enemyCount;
-            for (int i = 0; i < enemySpawnCount; i++) {
-                float targetWeight = (i / (float)(enemySpawnCount - 1)) * totalWeight;
+            // Build spawntimes for this next wave
+            {
+                wm.spawnEvents.Clear();
+                
+                foreach (EnemyWaves.UnitWave waveUnit in newUnitWave.waveUnits) {
+                    int enemySpawnCount = waveUnit.enemyCount;
+                    for (int i = 0; i < enemySpawnCount; i++) {
+                        float targetWeight = (i / (float)(enemySpawnCount - 1)) * totalWeight;
 
-                // Find the corresponding time using linear search
-                int weightIndex = 0;
-                while (weightIndex < EnemyWaveManager.prefixedSumResolution && wm.prefixedSums[weightIndex] < targetWeight) {
-                    weightIndex++;
+                        // Find the corresponding time using linear search
+                        int weightIndex = 0;
+                        while (weightIndex < EnemyWaveManager.prefixedSumResolution && wm.prefixedSums[weightIndex] < targetWeight) {
+                            weightIndex++;
+                        }
+
+                        float normalizedTime = weightIndex / (float)(EnemyWaveManager.prefixedSumResolution - 1);
+                        wm.spawnEvents.Add((normalizedTime * newUnitWave.spawnDuration, waveUnit.enemyData));
+                    }
                 }
-
-                float normalizedTime = weightIndex / (float)(EnemyWaveManager.prefixedSumResolution - 1);
-                wm.spawnTimes.Add(normalizedTime * newWaveData.spawnDuration);
+                
+                // Due to the way we add elements we need to sort by time so its chronologically ordered 
+                wm.spawnEvents.Sort((x, y) => x.time.CompareTo(y.time));
             }
         }
 
-        if (wm.spawnTimes.Count <= 0) return;
+        if (wm.spawnEvents.Count <= 0) return;
         
-        while (wm.spawnTimes.IndexInRange(wm.spawnTimeIndex) && wm.spawnTimes[wm.spawnTimeIndex] <= wm.timeInCurWave) {
+        while (wm.spawnEvents.IndexInRange(wm.spawnTimeIndex) && wm.spawnEvents[wm.spawnTimeIndex].time <= wm.timeInCurWave) {
             Vector2 randomSpawnPos = player.position + RandomOffset360(3f, 4f);
             NNInfo info = AstarPath.active.graphs[0].GetNearest(randomSpawnPos, NNConstraint.Walkable);
-            
-            Enemy enemy = SpawnLevelEntity<Enemy>(defaultEnemy.enemyPrefab, info.position, Quaternion.identity);
-            enemy.data = defaultEnemy;
+
+            EnemyData enemyToSpawn = wm.spawnEvents[wm.spawnTimeIndex].enemy;
+            Enemy enemy = SpawnLevelEntity<Enemy>(enemyToSpawn.enemyPrefab, info.position, Quaternion.identity);
+            enemy.health = enemyToSpawn.health;
+            enemy.data = enemyToSpawn;
             
             enemies.Add(enemy);
             enemyLookup.Add(enemy.gameObject, enemy);

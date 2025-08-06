@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class BleedModInstance {
+public struct BleedModInstance {
     public int bleedDamage;
     public float bleedInterval;
     public float lastBleedTime;

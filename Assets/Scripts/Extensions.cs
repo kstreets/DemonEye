@@ -56,4 +56,9 @@ public static class Extensions {
         return index >= 0 && index < list.Count;
     }
 
+    public static bool TryGetValue<T>(this T? nullableStruct, out T value) where T : struct {
+        value = nullableStruct.GetValueOrDefault();
+        return nullableStruct.HasValue;
+    }
+
 }

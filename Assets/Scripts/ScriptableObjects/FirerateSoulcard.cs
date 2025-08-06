@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class FirerateModInstance {
+public struct FirerateModInstance {
     public float reduction;
 }
 
