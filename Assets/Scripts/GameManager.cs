@@ -30,7 +30,6 @@ public partial class GameManager : MonoBehaviour {
     public GameObject altarPrefab;
     public GameObject deadBodyPrefab;
     public GameObject exitPortalPrefab;
-    public EnemyData defaultEnemy;
 
     public CoreAttack defaultAttack;
     public Item demonEyeItem;
@@ -44,7 +43,6 @@ public partial class GameManager : MonoBehaviour {
     
     [Foldout("UI/Prefabs")]
     public GameObject inventorySlotPrefab;
-    public GameObject inventoryItemPrefab;
     [EndFoldout]
 
     [Foldout("UI/MiscRefs")]
@@ -80,6 +78,7 @@ public partial class GameManager : MonoBehaviour {
     public RectTransform eyeForgePanel;
     public RectTransform crucibleParent;
     public Button crucibleForgeButton;
+    public Button crucibleUpgradeButton;
     [EndFoldout]
     
     [Foldout("UI/TraderPanel")]
@@ -96,6 +95,10 @@ public partial class GameManager : MonoBehaviour {
     public RectTransform lootInventoryParent;
     public GameObject interactPrompt;
     public TextMeshProUGUI exitPortalStatusText;
+    [EndFoldout]
+    
+    [Foldout("UpgradePaths")]
+    public UpgradePath crucibleUpgradePath; 
     [EndFoldout]
     
     [Header("Controls")]
@@ -190,6 +193,7 @@ public partial class GameManager : MonoBehaviour {
 
     private void OnHideoutStateUpdate() {
         UpdateInventory();
+        CheckForEquipmentChange();
     }
 
     private void OnRaidStateEnter() {
@@ -323,20 +327,34 @@ public partial class GameManager : MonoBehaviour {
     }
 
     private InventoryItem prevEquippedEyeItem;
+    private InventoryItem prevEquippedBackpackItem;
     
     private void CheckForEquipmentChange() {
-        InventoryItem curItem = playerInventory.slots[0].item;
+        InventoryItem curEyeItem = playerInventory.slots[0].item;
+        InventoryItem curBackpackItem = playerInventory.slots[2].item;
 
-        if (prevEquippedEyeItem == curItem) return;
+        if (prevEquippedEyeItem != curEyeItem) {
+            prevEquippedEyeItem = curEyeItem;
+            if (curEyeItem == null) {
+                equipedEye = new() { coreAttack = defaultAttack };
+            }
+            else {
+                equipedEye = eyeInstanceFromItemId[curEyeItem.itemDataUuid];
+            }
+        }
         
-        prevEquippedEyeItem = curItem;
-        
-        if (curItem == null) {
-            equipedEye = new() { coreAttack = defaultAttack };
-            return;
+        if (prevEquippedBackpackItem != curBackpackItem) {
+            prevEquippedBackpackItem = curBackpackItem;
+            if (curBackpackItem != null) {
+                ChangeInventorySize(playerInventory, DefaultPlayerInventorySize + 9);
+                RefreshInventoryDisplay(playerInventory);
+            }
+            else {
+                ChangeInventorySize(playerInventory, DefaultPlayerInventorySize);
+                RefreshInventoryDisplay(playerInventory);
+            }
         }
 
-        equipedEye = eyeInstanceFromItemId[curItem.itemDataUuid];
     }
     
     
@@ -396,6 +414,10 @@ public partial class GameManager : MonoBehaviour {
     [NonSerialized] public Inventory lootInvetoryPtr;
     [NonSerialized] public List<Inventory> allInventories = new();
 
+    private int playerPocketSize = 6;
+    private int playerEquipmentSize = 3;
+    private int DefaultPlayerInventorySize => playerPocketSize + playerEquipmentSize;
+    
     private Timer discoverLootTimer;
     private int discoverLootIndex;
 
@@ -412,12 +434,9 @@ public partial class GameManager : MonoBehaviour {
     private bool OnTradingTab => traderTabButton.image.sprite == tabSelectedSprite;
     
     private void InitInventory() {
-        const int pocketSize = 6;
-        const int backpackSize = 9;
-        const int playerInventorySize = pocketSize + backpackSize;
-        SpawnUiSlots(playerPocketParent, pocketSize);
-        SpawnUiSlots(playerBackpackParent, backpackSize);
-        playerInventory = CreateInventory(playerInventoryParent, playerInventorySize + 3); 
+        SpawnUiSlots(playerPocketParent, playerPocketSize);
+        SpawnUiSlots(playerBackpackParent, 20);
+        playerInventory = CreateInventory(playerInventoryParent, DefaultPlayerInventorySize); 
         
         const int cachedLootInventorySize = 12;
         SpawnUiSlots(lootInventoryParent, cachedLootInventorySize); 
@@ -441,7 +460,6 @@ public partial class GameManager : MonoBehaviour {
             const int crucibleVeinSize = crucibleInventorySize - 1;
             Vector2 crucibleCenter = crucibleParent.position;
             GameObject centerSlot = Instantiate(inventorySlotPrefab, crucibleCenter, Quaternion.identity, crucibleParent);
-            Instantiate(inventoryItemPrefab, crucibleCenter, Quaternion.identity, centerSlot.transform);
 
             InventorySlotUI centerSlotUi = centerSlot.GetComponent<InventorySlotUI>();
             centerSlotUi.disallowItemStacking = true;
@@ -452,39 +470,73 @@ public partial class GameManager : MonoBehaviour {
                 float deg = 360f / crucibleVeinSize * i;
                 Vector2 spawnDir = (Quaternion.AngleAxis(deg, Vector3.forward) * Vector2.up) * 150f;
                 GameObject slot = Instantiate(inventorySlotPrefab, crucibleCenter + spawnDir, Quaternion.identity, crucibleParent);
-                Instantiate(inventoryItemPrefab, crucibleCenter + spawnDir, Quaternion.identity, slot.transform);
                 InventorySlotUI veinSlot = slot.GetComponent<InventorySlotUI>();
+                
+                if (i != 0) {
+                    veinSlot.MakeSlotInactive();
+                }
+                
                 veinSlot.disallowItemStacking = true;
                 veinSlot.acceptsAllTypes = false;
                 veinSlot.onlyAcceptedItemType = Item.ItemType.Soulcard;
             }
         }
         crucibleInventory = CreateInventory(crucibleParent, crucibleInventorySize);
-        
-        void SpawnUiSlots(RectTransform parent, int numSlots) {
-            for (int i = 0; i < numSlots; i++) {
-                GameObject slot = Instantiate(inventorySlotPrefab, Vector3.zero, Quaternion.identity, parent);
-                Instantiate(inventoryItemPrefab, Vector3.zero, Quaternion.identity, slot.transform);
-            }
-        }
-        
-        Inventory CreateInventory(RectTransform uiParent, int slotCount) {
-            Inventory inventory = new() {
-                parent = uiParent,
-                slots = new InventorySlot[slotCount]
-            };
-            inventory.slots.InitalizeWithDefault();
-
-            InventorySlotUI[] slotUis = inventory.parent.GetComponentsInChildren<InventorySlotUI>(true);
-            for (int i = 0; i < inventory.slots.Length; i++) {
-                inventory.slots[i].ui = slotUis[i];
-            }
-            
-            allInventories.Add(inventory);
-            return inventory;
+    }
+    
+    private void SpawnUiSlots(RectTransform parent, int numSlots) {
+        for (int i = 0; i < numSlots; i++) {
+            Instantiate(inventorySlotPrefab, Vector3.zero, Quaternion.identity, parent);
         }
     }
     
+    private Inventory CreateInventory(RectTransform uiParent, int slotCount) {
+        Inventory inventory = new() {
+            parent = uiParent,
+            slots = new InventorySlot[slotCount]
+        };
+        inventory.slots.InitalizeWithDefault();
+        LinkInventoryWithUiSlots(inventory);
+        allInventories.Add(inventory);
+        return inventory;
+    }
+
+    private void LinkInventoryWithUiSlots(Inventory inventory) {
+        InventorySlotUI[] slotUis = inventory.parent.GetComponentsInChildren<InventorySlotUI>(true);
+        foreach (InventorySlotUI slotUi in slotUis) {
+            slotUi.gameObject.SetActive(false);
+        }
+        
+        for (int i = 0; i < inventory.slots.Length; i++) {
+            inventory.slots[i].ui = slotUis[i];
+            inventory.slots[i].ui.gameObject.SetActive(true);
+        }
+    }
+
+    private void ChangeInventorySize(Inventory inventory, int newSlotCount) {
+        bool expanding = newSlotCount > inventory.slots.Length;
+        
+        InventorySlot[] oldSlots = inventory.slots;
+        inventory.slots = new InventorySlot[newSlotCount];
+        inventory.slots.InitalizeWithDefault();
+        LinkInventoryWithUiSlots(inventory);
+
+        int copyLength = expanding ? oldSlots.Length : inventory.slots.Length;
+        for (int i = 0; i < copyLength; i++) {
+            inventory.slots[i] = oldSlots[i];
+        }
+    }
+
+    private bool EquipedBackpackHasItems() {
+        int startingIndex = DefaultPlayerInventorySize;
+        for (int i = startingIndex; i < playerInventory.slots.Length; i++) {
+            if (playerInventory.slots[i].item != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void UpdateInventory() {
         bool inRaid = gameStateMachine.CurState == raidState;
         
@@ -533,7 +585,12 @@ public partial class GameManager : MonoBehaviour {
             Inventory hoveredInventory = invHoverInfo.hoveredInventory;
             if (hoveredInventory == null) return;
 
-            bool hoveredItemIsEquipment = TryGetItemFromHoverInfo(out InventoryItem hoveredItem) ? hoveredItem.ItemRef.type == Item.ItemType.DemonEye : false;
+            if (!TryGetItemFromHoverInfo(out InventoryItem hoveredItem)) return;
+
+            bool clickedOnEquipedBackpack = hoveredInventory == playerInventory && hoveredItem.ItemRef.type == Item.ItemType.Backpack;
+            if (clickedOnEquipedBackpack && EquipedBackpackHasItems()) {
+                return;
+            }
             
             Inventory destinationInventory = null;
 
@@ -555,7 +612,8 @@ public partial class GameManager : MonoBehaviour {
             }
             else if (OnEyeForgeTab) {
                 if (hoveredInventory == stashInventory) {
-                    destinationInventory = hoveredItemIsEquipment ? playerInventory : crucibleInventory;
+                    bool hoveredItemIsDemonEye = hoveredItem.ItemRef.type == Item.ItemType.DemonEye;
+                    destinationInventory = hoveredItemIsDemonEye ? playerInventory : crucibleInventory;
                 }
                 else if (hoveredInventory == crucibleInventory) {
                     destinationInventory = stashInventory;
@@ -625,9 +683,11 @@ public partial class GameManager : MonoBehaviour {
 
     private void AddItemsToTraderInventory(int traderLevel) {
         ItemPool itemPool = traderLevelPools[traderLevel];
-        Item traderItem = itemPool.GetItemFromPool();
-        TryAddItemToInventory(traderInventory, traderItem, traderItem.maxStackCount);
-        RefreshInventoryDisplay(traderInventory);
+        for (int i = 0; i < 3; i++) {
+            Item traderItem = itemPool.GetItemFromPool();
+            TryAddItemToInventory(traderInventory, traderItem, traderItem.maxStackCount);
+            RefreshInventoryDisplay(traderInventory);
+        }
     }
 
     public struct InventoryHoverInfo {
@@ -720,7 +780,7 @@ public partial class GameManager : MonoBehaviour {
 
         // Otherwise add to empty inventory slot
         foreach (InventorySlot slot in inventory.slots) {
-            if (slot.item != null) continue;
+            if (slot.item != null || slot.ui.SlotIsInactive) continue;
             
             bool slotCanAcceptItemType = slot.ui.acceptsAllTypes || slot.ui.onlyAcceptedItemType == item.ItemRef.type;
             if (!slotCanAcceptItemType) continue;
@@ -848,6 +908,28 @@ public partial class GameManager : MonoBehaviour {
     private void RemoveItemFromInventory(Inventory inventory, int slotIndex) {
         inventory.slots[slotIndex].item = null;
     }
+
+    // Returns the count of items we removed
+    private int RemoveNumberOfItemsFromInventory(Inventory inventory, Item item, int count) {
+        int removedCount = 0;
+        
+        for (int i = 0; i < inventory.slots.Length; i++) {
+            InventorySlot slot = inventory.slots[i];
+            if (slot.item == null || slot.item.itemDataUuid != item.uuid) continue;
+            
+            if (slot.item.count >= count) {
+                removedCount += count;
+                AdjustItemCountInInventory(inventory, i, slot.item.count - count);
+                return removedCount;
+            }
+            
+            removedCount += slot.item.count;
+            count -= slot.item.count;
+            RemoveItemFromInventory(inventory, i);
+        }
+        
+        return removedCount;
+    }
     
     private InventoryItem GetInventoryItem(Inventory inventory, int slotIndex) {
         if (slotIndex < 0 || slotIndex >= inventory.slots.Length) {
@@ -866,13 +948,13 @@ public partial class GameManager : MonoBehaviour {
 
     public void RefreshInventoryDisplay(Inventory inventory) {
         foreach (InventorySlot slot in inventory.slots) {
-            slot.ui.GetComponentInChildren<InventoryItemUI>()?.Clear();
+            slot.ui.ClearItem();
         }
 
         for (int i = 0; i < inventory.slots.Length; i++) {
             InventoryItem item = inventory.slots[i].item;
             if (item == null || item.notDiscovered) continue;
-            inventory.slots[i].ui.GetComponentInChildren<InventoryItemUI>().Set(item.ItemRef, item.count);
+            inventory.slots[i].ui.SetItem(item.ItemRef, item.count);
         }
     }
 
@@ -885,6 +967,17 @@ public partial class GameManager : MonoBehaviour {
         return count;
     }
 
+    private int GetItemCountInInventory(Inventory inventory, Item item) {
+        int count = 0;
+        foreach (InventorySlot slot in inventory.slots) {
+            if (slot.item == null) continue;
+            if (slot.item.ItemRef.uuid == item.uuid) {
+                count += slot.item.count;
+            }
+        }
+        return count;
+    }
+    
     private enum InventoryValueType { Buy, Sell, Xp }
 
     private int GetInventoryValue(Inventory inventory, InventoryValueType valueType) {
@@ -924,9 +1017,9 @@ public partial class GameManager : MonoBehaviour {
         lootInventoryPanel.gameObject.SetActive(true);
         
         foreach (Transform child in lootInventoryParent.transform) {
-            child.GetComponentInChildren<InventoryItemUI>().Clear();
+            child.GetComponentInChildren<InventorySlotUI>()?.ClearItem();
         }
-
+        
         for (int i = 0; i < lootInvetoryPtr.slots.Length; i++) {
             if (lootInvetoryPtr.slots[i].item == null) continue;
             if (lootInvetoryPtr.slots[i].item.notDiscovered) {
@@ -934,7 +1027,7 @@ public partial class GameManager : MonoBehaviour {
                 break;
             }
             InventoryItem item = lootInvetoryPtr.slots[i].item;
-            lootInventoryParent.GetChild(i).GetComponentInChildren<InventoryItemUI>().Set(item.ItemRef, item.count);
+            lootInventoryParent.GetChild(i).GetComponentInChildren<InventorySlotUI>().SetItem(item.ItemRef, item.count);
         }
 
         bool alreadyDiscoveredAll = discoverLootIndex == -1;
@@ -945,7 +1038,7 @@ public partial class GameManager : MonoBehaviour {
             InventoryItem item = lootInvetoryPtr.slots[discoverLootIndex].item;
             
             item.notDiscovered = false;
-            lootInventoryParent.GetChild(discoverLootIndex).GetComponentInChildren<InventoryItemUI>().Set(item.ItemRef, item.count);
+            lootInventoryParent.GetChild(discoverLootIndex).GetComponentInChildren<InventorySlotUI>().SetItem(item.ItemRef, item.count);
             
             discoverLootIndex++;
             if (discoverLootIndex < lootInvetoryPtr.slots.Length) {
@@ -1010,12 +1103,14 @@ public partial class GameManager : MonoBehaviour {
                 eyeModifierLookup[modInstance.modId].AddInstanceToEnemy(enemy, modInstance.stackCount);
             }
             enemy.health -= (int)eyeInstance.coreAttack.damage;
-            enemy.defaultSlow = new() { activationTime = Time.time, duration = 0.15f, speedReduction = eyeInstance.coreAttack.enemySpeedReduction };
+            enemy.defaultSlow = new() { activationTime = Time.time, duration = 0.1f, speedReductionPercent = eyeInstance.coreAttack.enemySpeedReductionPercent };
         }
         else {
+            entity.damageAccumilation += (int)eyeInstance.coreAttack.damage;
             entity.health -= (int)eyeInstance.coreAttack.damage;
 
-            if (Random.value <= 0.6f) { // Random chance to spawn drop on each hit
+            if (entity.damageAccumilation > 50) {
+                entity.damageAccumilation = 0;
                 Vector3 spawnPos = col.transform.position + RandomOffset360(0.25f, 0.5f);
                 SpawnLevelEntity<Entity>(rockDropPool.GetDropFromPool(), spawnPos, Quaternion.identity);
             }
@@ -1098,7 +1193,7 @@ public partial class GameManager : MonoBehaviour {
                     if (closestAltar != null && closestDistance < maxSoulDistFromAltar) {
                         closestAltar.soulCompletion += 0.025f;
                         if (closestAltar.soulCompletion >= 1f) {
-                            SpawnLevelEntity<Entity>(altarDropPool.GetDropFromPool(), closestAltar.gameObject.transform.position + new Vector3(0f, 0.3f, 0f), Quaternion.identity);
+                            // SpawnLevelEntity<Entity>(altarDropPool.GetDropFromPool(), closestAltar.gameObject.transform.position + new Vector3(0f, 0.3f, 0f), Quaternion.identity);
                             activeAltars.Remove(closestAltar);
                         }
                     }
@@ -1147,18 +1242,20 @@ public partial class GameManager : MonoBehaviour {
             usingPath = usingPath && pathData.waypointIndex < pathData.abPath.vectorPath.Count;
 
             float speed = enemy.data.speed;
+            float totalSlowPercentage = 0f;
             if (enemy.defaultSlow.TryGetValue(out SlowInstance defaultSlow)) {
-                speed = Mathf.Clamp(speed - defaultSlow.speedReduction, 0.05f, enemy.data.speed);
+                totalSlowPercentage += defaultSlow.speedReductionPercent;
                 if (Time.time > defaultSlow.activationTime + defaultSlow.duration) {
                     enemy.defaultSlow = null;
                 }
             }
             if (enemy.slow.TryGetValue(out SlowInstance slow)) {
-                speed = Mathf.Clamp(speed - slow.speedReduction, 0.05f, enemy.data.speed);
+                totalSlowPercentage += slow.speedReductionPercent;
                 if (Time.time > slow.activationTime + slow.duration) {
                     enemy.slow = null;
                 }
             }
+            speed = Mathf.Clamp(speed * Mathf.Clamp01(1f - totalSlowPercentage), 0.05f, enemy.data.speed);
             
             /*
                 The below separation method causes jitter in big pools of enemies because center enemies are bouncing back and forth
@@ -1411,6 +1508,7 @@ public partial class GameManager : MonoBehaviour {
 
     private void LoadInventory(Inventory inventory) {
         List<InventoryItem> items = LoadFromFile<List<InventoryItem>>(GetSavePath(inventory));
+        if (items == null) return;
 
         // Items can be null because we save all inventory slots, including empty ones
         foreach (InventoryItem item in items) {
@@ -1457,6 +1555,7 @@ public partial class GameManager : MonoBehaviour {
         public SpriteRenderer spriteRenderer;
         public Animator animator;
         public int health;
+        public int damageAccumilation;
         public float lastDamageTime;
         public EntityLifeTime lifeTime;
         
@@ -1601,6 +1700,48 @@ public partial class GameManager : MonoBehaviour {
             
             crucibleInventory.slots[eyeSlotIndex].item = newDemonEyeItem;
             RefreshInventoryDisplay(crucibleInventory);
+        });
+        
+        crucibleUpgradeButton.onClick.AddListener(() => {
+            int nextUpgradeLevelIndex = 0;
+            const int firstLockedSlotIndex = 2;
+            for (int i = firstLockedSlotIndex; i < crucibleInventory.slots.Length; i++) {
+                if (crucibleInventory.slots[i].ui.SlotIsInactive) break;
+                nextUpgradeLevelIndex++;
+            }
+
+            UpgradePath.UpgradeRequirements requirements = crucibleUpgradePath.pathUpgrades[nextUpgradeLevelIndex];
+            
+            bool canUpgrade = true;
+            foreach (UpgradePath.Requirement requirement in requirements.requirements) {
+                int itemCount = 0;
+                itemCount += GetItemCountInInventory(stashInventory, requirement.item);
+                itemCount += GetItemCountInInventory(playerInventory, requirement.item);
+                print(itemCount);
+                
+                if (itemCount < requirement.count) {
+                    canUpgrade = false;
+                    break;
+                }
+            }
+
+            if (!canUpgrade) return;
+
+            foreach (UpgradePath.Requirement requirement in requirements.requirements) {
+                int stashRemoveCount = RemoveNumberOfItemsFromInventory(stashInventory, requirement.item, requirement.count);
+                if (stashRemoveCount == requirement.count) continue;
+                RemoveNumberOfItemsFromInventory(playerInventory, requirement.item, requirement.count - stashRemoveCount);
+            }
+            
+            RefreshInventoryDisplay(playerInventory);
+            RefreshInventoryDisplay(stashInventory);
+
+            foreach (InventorySlot slot in crucibleInventory.slots) {
+                if (slot.ui.SlotIsInactive) {
+                    slot.ui.MakeSlotActive();
+                    break;
+                }
+            }
         });
         
         traderDealButton.onClick.AddListener(() => {

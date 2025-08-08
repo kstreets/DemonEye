@@ -15,9 +15,9 @@ MonoBehaviour:
   uuid: ff36fb89-1d00-4d0e-baf9-611796f14635
   type: 2
   inventorySprite: {fileID: 541499864, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
-  maxStackCount: 10
-  buyPrice: 10
-  sellPrice: 6
+  maxStackCount: 3
+  buyPrice: 200
+  sellPrice: 66
   traderXp: 5
   description: 
   probability: 0.1

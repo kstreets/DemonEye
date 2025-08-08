@@ -11,7 +11,7 @@ public class CoreAttack : Item {
     public float damage;
     public float range;
     public float accuracy;
-    public float enemySpeedReduction;
+    public float enemySpeedReductionPercent;
     
     [VInspector.ShowIf("attackType", AttackType.Projectile)]
     public float projectileSpeed;

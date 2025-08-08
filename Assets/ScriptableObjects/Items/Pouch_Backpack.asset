@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9bc23522601a56f4d89295cf565d360b, type: 3}
-  m_Name: DemonEye
+  m_Name: Pouch_Backpack
   m_EditorClassIdentifier: 
-  uuid: d6d0e96c-4eb3-42eb-a6b6-6ca0a73cb84f
-  type: 3
-  inventorySprite: {fileID: -1083478326, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  uuid: ec09e090-40d0-47ce-b975-682b0f50c0ff
+  type: 4
+  inventorySprite: {fileID: 2107831646, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   maxStackCount: 1
   buyPrice: 0
   sellPrice: 0

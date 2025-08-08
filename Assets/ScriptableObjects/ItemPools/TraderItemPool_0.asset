@@ -13,11 +13,13 @@ MonoBehaviour:
   m_Name: TraderItemPool_0
   m_EditorClassIdentifier: 
   itemDrops:
-  - item: {fileID: 11400000, guid: dd6594e1ebfbb334495ddd1d6a65f0a1, type: 2}
+  - item: {fileID: 11400000, guid: e40bd991cff5cf042ad9c0cbb1ddcb72, type: 2}
     dropChance: 0.5
   - item: {fileID: 11400000, guid: 879589b7002a56d4791affd28d5fb199, type: 2}
-    dropChance: 0.1
+    dropChance: 0.5
   - item: {fileID: 11400000, guid: 9285ab41e291784449187596580ae02c, type: 2}
     dropChance: 0.25
   - item: {fileID: 11400000, guid: 80f19e812bb183b498023f74d3bbef97, type: 2}
     dropChance: 0.25
+  - item: {fileID: 11400000, guid: dd6594e1ebfbb334495ddd1d6a65f0a1, type: 2}
+    dropChance: 0.1
