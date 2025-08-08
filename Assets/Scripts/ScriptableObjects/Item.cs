@@ -3,7 +3,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Item", menuName = "Scriptable Objects/Item")]
 public class Item : UuidScriptableObject {
 
-    public enum ItemType { Standard, Eye, Soulcard, DemonEye, Backpack }
+    public enum ItemType { Standard, Eye, Soulcard, DemonEye, Backpack, Trinket }
     
     public ItemType type;
     public Sprite inventorySprite;

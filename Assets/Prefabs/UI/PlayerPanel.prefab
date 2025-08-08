@@ -628,6 +628,10 @@ PrefabInstance:
       propertyPath: onlyAcceptedItemType
       value: 4
       objectReference: {fileID: 0}
+    - target: {fileID: 4358201052061153767, guid: 329dac6abfc9a0145a705fc0851aac62, type: 3}
+      propertyPath: onlyAcceptedItemType
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 7602691122621085698, guid: 329dac6abfc9a0145a705fc0851aac62, type: 3}
       propertyPath: m_Name
       value: EquipmentPanel

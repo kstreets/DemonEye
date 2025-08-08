@@ -72,6 +72,7 @@ public partial class GameManager : MonoBehaviour {
     public RectTransform stashPanel;
     public RectTransform stashInventoryParent;
     public TextMeshProUGUI stashValueText;
+    public Button stashUpgradeButton;
     [EndFoldout]
     
     [Foldout("UI/EyeForgePanel")]
@@ -87,6 +88,7 @@ public partial class GameManager : MonoBehaviour {
     public RectTransform traderInventoryParent;
     public RectTransform traderTransactionInventoryParent;
     public TextMeshProUGUI traderTransactionInfoText;
+    public Image traderXpLevelFill;
     public Button traderDealButton;
     [EndFoldout]
 
@@ -99,6 +101,11 @@ public partial class GameManager : MonoBehaviour {
     
     [Foldout("UpgradePaths")]
     public UpgradePath crucibleUpgradePath; 
+    public UpgradePath stashUpgradePath; 
+    [EndFoldout]
+    
+    [Foldout("TraderLevels")]
+    public TraderLevels traderLevels;
     [EndFoldout]
     
     [Header("Controls")]
@@ -126,6 +133,16 @@ public partial class GameManager : MonoBehaviour {
     private State hideoutState;
     private State raidState;
     private StateMachine gameStateMachine = new();
+
+    [Serializable]
+    private class HideoutStateData {
+        public int crucibleLevel;
+        public int stashLevel;
+        public int traderLevel;
+        public int curTraderXpForLevel;
+    }
+    
+    private HideoutStateData hideoutStateData;
     
     private void Start() {
         foreach (Item itemData in allItems) {
@@ -139,12 +156,13 @@ public partial class GameManager : MonoBehaviour {
         }
 
         InitHideoutUI();
-        InitInventory();
         BuildSavePaths();
+        hideoutStateData = LoadFromFile<HideoutStateData>(hideoutDataSavePath) ?? new HideoutStateData();
+        InitInventory();
         LoadInventory(playerInventory);
         LoadInventory(stashInventory);
         InitButtonCallbacks();
-        AddItemsToTraderInventory(0);
+        AddItemsToTraderInventory(hideoutStateData.traderLevel);
         SetStashValue(0);
 
         equipedEye = new() { coreAttack = defaultAttack };
@@ -347,12 +365,11 @@ public partial class GameManager : MonoBehaviour {
             prevEquippedBackpackItem = curBackpackItem;
             if (curBackpackItem != null) {
                 ChangeInventorySize(playerInventory, DefaultPlayerInventorySize + 9);
-                RefreshInventoryDisplay(playerInventory);
             }
             else {
                 ChangeInventorySize(playerInventory, DefaultPlayerInventorySize);
-                RefreshInventoryDisplay(playerInventory);
             }
+            RefreshInventoryDisplay(playerInventory);
         }
 
     }
@@ -413,10 +430,12 @@ public partial class GameManager : MonoBehaviour {
     [NonSerialized] public Inventory transactionInventory;
     [NonSerialized] public Inventory lootInvetoryPtr;
     [NonSerialized] public List<Inventory> allInventories = new();
-
-    private int playerPocketSize = 6;
-    private int playerEquipmentSize = 3;
+    
+    private const int playerPocketSize = 6;
+    private const int playerEquipmentSize = 3;
     private int DefaultPlayerInventorySize => playerPocketSize + playerEquipmentSize;
+
+    private const int stashUpgradeSlotIncrease = 4;
     
     private Timer discoverLootTimer;
     private int discoverLootIndex;
@@ -441,12 +460,12 @@ public partial class GameManager : MonoBehaviour {
         const int cachedLootInventorySize = 12;
         SpawnUiSlots(lootInventoryParent, cachedLootInventorySize); 
         lootInvetoryPtr = CreateInventory(lootInventoryParent, 0);
-        
-        const int stashInventorySize = 12;
-        SpawnUiSlots(stashInventoryParent, stashInventorySize);
+
+        int stashInventorySize = 12 + hideoutStateData.stashLevel * stashUpgradeSlotIncrease;
+        SpawnUiSlots(stashInventoryParent, 40);
         stashInventory = CreateInventory(stashInventoryParent, stashInventorySize);
         
-        const int traderInventorySize = 12;
+        const int traderInventorySize = 15;
         SpawnUiSlots(traderInventoryParent, traderInventorySize);
         traderInventory = CreateInventory(traderInventoryParent, traderInventorySize);
         
@@ -472,7 +491,7 @@ public partial class GameManager : MonoBehaviour {
                 GameObject slot = Instantiate(inventorySlotPrefab, crucibleCenter + spawnDir, Quaternion.identity, crucibleParent);
                 InventorySlotUI veinSlot = slot.GetComponent<InventorySlotUI>();
                 
-                if (i != 0) {
+                if (i != 0 && i > hideoutStateData.crucibleLevel) {
                     veinSlot.MakeSlotInactive();
                 }
                 
@@ -683,7 +702,7 @@ public partial class GameManager : MonoBehaviour {
 
     private void AddItemsToTraderInventory(int traderLevel) {
         ItemPool itemPool = traderLevelPools[traderLevel];
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 5; i++) {
             Item traderItem = itemPool.GetItemFromPool();
             TryAddItemToInventory(traderInventory, traderItem, traderItem.maxStackCount);
             RefreshInventoryDisplay(traderInventory);
@@ -1483,12 +1502,14 @@ public partial class GameManager : MonoBehaviour {
     private string inventorySavePath;
     private string stashSavePath;
     private string crucibleSavePath;
+    private string hideoutDataSavePath;
     private List<InventoryItem> cachedInventoryForSaving = new(50);
 
     private void BuildSavePaths() {
         inventorySavePath = $"{Application.persistentDataPath}/inventory";
         stashSavePath = $"{Application.persistentDataPath}/stash";
         crucibleSavePath = $"{Application.persistentDataPath}/crucible";
+        hideoutDataSavePath = $"{Application.persistentDataPath}/hideoutData";
     }
 
     private string GetSavePath(Inventory inventory) {
@@ -1703,21 +1724,13 @@ public partial class GameManager : MonoBehaviour {
         });
         
         crucibleUpgradeButton.onClick.AddListener(() => {
-            int nextUpgradeLevelIndex = 0;
-            const int firstLockedSlotIndex = 2;
-            for (int i = firstLockedSlotIndex; i < crucibleInventory.slots.Length; i++) {
-                if (crucibleInventory.slots[i].ui.SlotIsInactive) break;
-                nextUpgradeLevelIndex++;
-            }
-
-            UpgradePath.UpgradeRequirements requirements = crucibleUpgradePath.pathUpgrades[nextUpgradeLevelIndex];
+            UpgradePath.UpgradeRequirements requirements = crucibleUpgradePath.pathUpgrades[hideoutStateData.crucibleLevel];
             
             bool canUpgrade = true;
             foreach (UpgradePath.Requirement requirement in requirements.requirements) {
                 int itemCount = 0;
                 itemCount += GetItemCountInInventory(stashInventory, requirement.item);
                 itemCount += GetItemCountInInventory(playerInventory, requirement.item);
-                print(itemCount);
                 
                 if (itemCount < requirement.count) {
                     canUpgrade = false;
@@ -1733,6 +1746,9 @@ public partial class GameManager : MonoBehaviour {
                 RemoveNumberOfItemsFromInventory(playerInventory, requirement.item, requirement.count - stashRemoveCount);
             }
             
+            hideoutStateData.crucibleLevel++;
+            SaveToFile(hideoutDataSavePath, hideoutStateData);
+            
             RefreshInventoryDisplay(playerInventory);
             RefreshInventoryDisplay(stashInventory);
 
@@ -1742,6 +1758,36 @@ public partial class GameManager : MonoBehaviour {
                     break;
                 }
             }
+        });
+        
+        stashUpgradeButton.onClick.AddListener(() => {
+            UpgradePath.UpgradeRequirements requirements = stashUpgradePath.pathUpgrades[hideoutStateData.stashLevel];
+            
+            bool canUpgrade = true;
+            foreach (UpgradePath.Requirement requirement in requirements.requirements) {
+                int itemCount = 0;
+                itemCount += GetItemCountInInventory(stashInventory, requirement.item);
+                itemCount += GetItemCountInInventory(playerInventory, requirement.item);
+                
+                if (itemCount < requirement.count) {
+                    canUpgrade = false;
+                    break;
+                }
+            }
+
+            if (!canUpgrade) return;
+            
+            foreach (UpgradePath.Requirement requirement in requirements.requirements) {
+                int stashRemoveCount = RemoveNumberOfItemsFromInventory(stashInventory, requirement.item, requirement.count);
+                if (stashRemoveCount == requirement.count) continue;
+                RemoveNumberOfItemsFromInventory(playerInventory, requirement.item, requirement.count - stashRemoveCount);
+            }
+            
+            hideoutStateData.stashLevel++;
+            SaveToFile(hideoutDataSavePath, hideoutStateData);
+            
+            ChangeInventorySize(stashInventory, stashInventory.slots.Length + stashUpgradeSlotIncrease);
+            RefreshInventoryDisplay(stashInventory);
         });
         
         traderDealButton.onClick.AddListener(() => {
@@ -1758,6 +1804,8 @@ public partial class GameManager : MonoBehaviour {
                 transactionState = TransactionInvetoryState.Empty;
             }
             else if (transactionState == TransactionInvetoryState.Selling) {
+                int xpGain = GetInventoryValue(transactionInventory, InventoryValueType.Xp);
+                IncreaseTraderLevel(xpGain);
                 SetStashValue(stashValue + price);
                 ClearInventory(transactionInventory);
                 RefreshInventoryDisplay(transactionInventory);
@@ -1802,6 +1850,12 @@ public partial class GameManager : MonoBehaviour {
             int xpGain = GetInventoryValue(transactionInventory, InventoryValueType.Xp);
             traderTransactionInfoText.text = $"Sell for {sellPrice}\n Gain {xpGain} trader experience";
         }
+    }
+
+    private void IncreaseTraderLevel(int xpGain) {
+        int totalXp = traderLevels.totalXpToNextLevel[hideoutStateData.traderLevel];
+        hideoutStateData.curTraderXpForLevel += xpGain;
+        traderXpLevelFill.fillAmount = hideoutStateData.curTraderXpForLevel / (float)totalXp;
     }
 
     private void SetStashValue(int value) {
