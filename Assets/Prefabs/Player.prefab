@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 480167778230848851}
   - component: {fileID: 5350956068322946345}
   - component: {fileID: 4957375774148464031}
-  - component: {fileID: 1005981447316371257}
-  m_Layer: 0
+  - component: {fileID: 2071423755257355188}
+  m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -125,9 +125,9 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 2
+  m_SortingLayerID: 1394232625
+  m_SortingLayer: 2
+  m_SortingOrder: 0
   m_Sprite: {fileID: -1285320261, guid: 4ca59f2ad68c99c498810679dc27071f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -139,8 +139,8 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 1
---- !u!58 &1005981447316371257
-CircleCollider2D:
+--- !u!70 &2071423755257355188
+CapsuleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -173,5 +173,6 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0.06}
-  m_Radius: 0.08
+  m_Offset: {x: 0, y: 0}
+  m_Size: {x: 0.1, y: 0.14}
+  m_Direction: 0

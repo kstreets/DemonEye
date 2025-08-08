@@ -46,5 +46,11 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Level
+    uniqueID: 4221791799
+    locked: 0
+  - name: Entity
+    uniqueID: 1394232625
+    locked: 0
   m_RenderingLayers:
   - Default

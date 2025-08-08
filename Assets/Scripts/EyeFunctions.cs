@@ -109,7 +109,7 @@ public partial class GameManager {
     private void SpawnProjectile(Vector2 velocity) {
         float angle = Vector2.SignedAngle(Vector2.right, velocity.normalized);
         Quaternion projectileRotation = Quaternion.AngleAxis(angle, Vector3.forward);
-        GameObject projectile = Instantiate(equipedEye.coreAttack.projectilePrefab, player.position + new Vector3(0f, 0.1f, 0f), projectileRotation);
+        GameObject projectile = Instantiate(equipedEye.coreAttack.projectilePrefab, player.position + new Vector3(0f, 0.13f, 0f), projectileRotation);
         
         projectiles.Add(new() {
             timeAlive = 0f,

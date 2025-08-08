@@ -310,8 +310,9 @@ public partial class GameManager : MonoBehaviour {
     private void CheckForInteractions() { 
         interactPrompt.SetActive(false);
         
-        Collider2D playerCol = player.collider;
-        int size = playerCol.GetContacts(playerContacts);
+        Vector2 checkCenter = player.position + new Vector3(0f, 0.05f, 0f);
+        ContactFilter2D contactFilter = new() { layerMask = Masks.ItemMask };
+        int size = Physics2D.OverlapCircle(checkCenter, 0.1f, contactFilter, playerContacts);
         
         for (int i = 0; i < size; i++) {
             Collider2D col = playerContacts[i];
@@ -459,7 +460,7 @@ public partial class GameManager : MonoBehaviour {
         
         const int cachedLootInventorySize = 12;
         SpawnUiSlots(lootInventoryParent, cachedLootInventorySize); 
-        lootInvetoryPtr = CreateInventory(lootInventoryParent, 0);
+        lootInvetoryPtr = CreateInventory(lootInventoryParent, cachedLootInventorySize);
 
         int stashInventorySize = 12 + hideoutStateData.stashLevel * stashUpgradeSlotIncrease;
         SpawnUiSlots(stashInventoryParent, 40);
