@@ -56,14 +56,6 @@ public partial class GameManager {
         return newDemonEye;
     }
 
-    public void UpdateEye() {
-        switch (equipedEye.coreAttack.attackType) {
-            case CoreAttack.AttackType.Laser:
-                UpdateLaser();
-                break;
-        }
-    }
-
     public bool CanShootPrimary() {
         float attackDelay = equipedEye.coreAttack.attackDelay;
         if (equipedEye.firerateModInstance.TryGetValue(out FirerateModInstance firerate)) {
@@ -74,14 +66,7 @@ public partial class GameManager {
     }
 
     public void ShootPrimary() {
-        switch (equipedEye.coreAttack.attackType) {
-            case CoreAttack.AttackType.Projectile:
-                ProjectilePrimaryShoot();
-                break;
-            case CoreAttack.AttackType.Laser:
-                LaserPrimaryShoot();
-                break;
-        }
+        ProjectilePrimaryShoot();
     }
 
     private void ProjectilePrimaryShoot() {
@@ -124,45 +109,4 @@ public partial class GameManager {
         return Random.value < probability;
     }
 
-
-    private Timer laserTimer;
-    private Limiter laserDamageLimiter;
-    private LineRenderer laserRenderer;
-
-    private void LaserPrimaryShoot() {
-        if (!laserRenderer) {
-            laserTimer.SetTime(equipedEye.coreAttack.laserDuration);
-            laserRenderer = Instantiate(laserPrefab, player.position, Quaternion.identity).GetComponent<LineRenderer>();
-        }
-    }
-
-    private void UpdateLaser() {
-        if (!laserRenderer) return;
-        
-        Vector2 mousePos = Mouse.current.position.ReadValue();
-        Vector2 mouseWorldPos = mainCamera.ScreenToWorldPoint(mousePos);
-
-        bool laserIsFinished = !laserTimer.IsFinished && laserTimer.Tick();
-        
-        if (laserIsFinished) {
-            attackLimiter.MakeCurrent();
-            if (laserRenderer) {
-                Destroy(laserRenderer.gameObject);
-            }
-            return;
-        }
-        
-        Vector3 startPos = player.position + new Vector3(0f, 0.1f, 0f);
-        Vector3 endPos = startPos + (mouseWorldPos.ToVector3() - startPos).normalized * equipedEye.coreAttack.range;
-        RaycastHit2D hit = Physics2D.Linecast(startPos, endPos, Masks.DamagableMask);
-        
-        laserRenderer.positionCount = 2;
-        laserRenderer.SetPosition(0, startPos);
-        laserRenderer.SetPosition(1, hit ? hit.point : endPos);
-        
-        if (laserDamageLimiter.TimeHasPassed(equipedEye.coreAttack.laserDamageTickDelay)) {
-            HandleDamage(equipedEye, hit.collider);
-        }
-    }
-    
 }

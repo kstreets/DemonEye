@@ -25,7 +25,6 @@ public partial class GameManager : MonoBehaviour {
     public Transform smallMapParent;
 
     public GameObject playerPrefab;
-    public GameObject laserPrefab;
     public GameObject gemRockPrefab;
     public GameObject altarPrefab;
     public GameObject deadBodyPrefab;
@@ -43,8 +42,14 @@ public partial class GameManager : MonoBehaviour {
     
     [Foldout("UI/Prefabs")]
     public GameObject inventorySlotPrefab;
+    public GameObject rockSmokePrefab;
     [EndFoldout]
 
+    [Foldout("Effects")]
+    public AnimationCurve hitFlashCurve;
+    public AnimationCurve bounceCurve;
+    [EndFoldout]
+    
     [Foldout("UI/MiscRefs")]
     public GameObject itemDescPopup;
     public Button enterNextRaidButton;
@@ -249,8 +254,11 @@ public partial class GameManager : MonoBehaviour {
         UpdateInventory();
         UpdatePlayer();
         UpdateProjectiles();
-        UpdateWave();
+        // UpdateWave();
         UpdateEnemies();
+        UpdateEntityEffects();
+        UpdateShakeEffect();
+        UpdateScaleEffect();
     }
 
 
@@ -304,7 +312,6 @@ public partial class GameManager : MonoBehaviour {
         if (attackInputAction.IsPressed() && CanShootPrimary()) {
             ShootPrimary();
         }
-        UpdateEye();
     }
     
     private void CheckForInteractions() { 
@@ -1090,7 +1097,7 @@ public partial class GameManager : MonoBehaviour {
             
             Collider2D col = Physics2D.OverlapCircle(proj.trans.position, 0.1f, Masks.DamagableMask);
             if (col) {
-                HandleDamage(proj.EyeInstanceSpawnedFrom, col);
+                HandleDamage(proj, col);
                 Destroy(projectiles[i].trans.gameObject);
                 projectiles.RemoveAt(i);
             }
@@ -1111,11 +1118,13 @@ public partial class GameManager : MonoBehaviour {
         projectiles.Clear();
     }
 
-    private void HandleDamage(DemonEyeInstance eyeInstance, Collider2D col) {
+    private void HandleDamage(Projectile projectile, Collider2D col) {
         if (!col) return;
         
         Entity entity = entityLookup[col.gameObject];
         entity.lastDamageTime = Time.time;
+        
+        DemonEyeInstance eyeInstance = projectile.EyeInstanceSpawnedFrom;
         
         if (col.CompareTag(Tags.Enemy)) {
             Enemy enemy = enemyLookup[col.gameObject];
@@ -1131,13 +1140,24 @@ public partial class GameManager : MonoBehaviour {
 
             if (entity.damageAccumilation > 50) {
                 entity.damageAccumilation = 0;
-                Vector3 spawnPos = col.transform.position + RandomOffset360(0.25f, 0.5f);
-                SpawnLevelEntity<Entity>(rockDropPool.GetDropFromPool(), spawnPos, Quaternion.identity);
             }
 
             if (entity.health <= 0) {
+                Entity smokeEntity = SpawnLevelEntity<Entity>(rockSmokePrefab, entity.position, Quaternion.identity);
+                Destroy(smokeEntity.gameObject, 0.417f);
                 AstarPath.active.UpdateGraphs(entity.collider.bounds);
                 DestroyEntity(entity);
+
+                for (int i = 0; i < 6; i++) {
+                    Vector3 spawnPos = col.transform.position + RandomOffset360(0.18f, 0.25f);
+                    Entity rockDrop = SpawnLevelEntity<Entity>(rockDropPool.GetDropFromPool(), col.transform.position, Quaternion.identity);
+                    AddBounceEffect(rockDrop, spawnPos, 0.8f);
+                }
+            }
+            else {
+                AddFlashHitEffect(entity);
+                AddEntityShakeEffect(entity, projectile.velocity);
+                AddScaleEffect(entity, 0.88f, 0.05f);
             }
         }
     }
@@ -1148,7 +1168,6 @@ public partial class GameManager : MonoBehaviour {
     public class Enemy : Entity {
         public EnemyData data;
         public PathData pathData = new();
-        public MaterialPropertyBlock matPropertyBlock = new();
         public BleedModInstance? bleed;
         public SlowInstance? defaultSlow;
         public SlowInstance? slow;
@@ -1176,13 +1195,13 @@ public partial class GameManager : MonoBehaviour {
 
             // Assign material properties like damage flash
             {
-                if (Time.time - enemy.lastDamageTime < 0.08f) {
-                    enemy.matPropertyBlock.SetFloat(damageFlashTintPropertyId, 1f);
-                }
-                else {
-                    enemy.matPropertyBlock.SetFloat(damageFlashTintPropertyId, 0f);
-                }
-                enemy.spriteRenderer.SetPropertyBlock(enemy.matPropertyBlock);
+                // if (Time.time - enemy.lastDamageTime < 0.08f) {
+                //     enemy.matPropertyBlock.SetFloat(damageFlashTintPropertyId, 1f);
+                // }
+                // else {
+                //     enemy.matPropertyBlock.SetFloat(damageFlashTintPropertyId, 0f);
+                // }
+                // enemy.spriteRenderer.SetPropertyBlock(enemy.matPropertyBlock);
             }
             
             if (enemy.health <= 0) {
@@ -1439,7 +1458,7 @@ public partial class GameManager : MonoBehaviour {
         int gemRocksToSpawn = Random.Range(6, 10);
         for (int i = 0; i < gemRocksToSpawn; i++) {
             Entity mineableRockEntity = SpawnResource<Entity>(gemRockPrefab, true);
-            mineableRockEntity.health = 450;
+            mineableRockEntity.health = 350;
         }
         
         int deadBodiesToSpawn = Random.Range(3, 5);
@@ -1576,10 +1595,13 @@ public partial class GameManager : MonoBehaviour {
         public Rigidbody2D rigidbody;
         public SpriteRenderer spriteRenderer;
         public Animator animator;
+        public MaterialPropertyBlock matPropertyBlock = new();
         public int health;
         public int damageAccumilation;
         public float lastDamageTime;
         public EntityLifeTime lifeTime;
+        public HitFlashEffect? hitFlashEffect;
+        public BounceEffect? bounceEffect;
         
         public Vector3 position {
             get => trans.position;
@@ -1864,4 +1886,138 @@ public partial class GameManager : MonoBehaviour {
         stashValueText.text = stashValue.ToString();
     }
 
+
+    private void UpdateEntityEffects() {
+        foreach (Entity entity in entities) {
+            UpdateHitFlashEffect(entity);
+            UpdateBounceEffect(entity);
+        }
+    }
+    
+    public class SpringShake2D {
+        public Entity entity;
+        
+        public float stiffness = 1000f;   // How strong the spring pulls back
+        public float damping = 15f;      // How quickly it settles
+
+        public Vector2 velocity;
+        public Vector2 offset;
+        public Vector2 targetPos;
+    }
+
+    private List<SpringShake2D> springShakes = new();
+    
+    private void AddEntityShakeEffect(Entity entity, Vector2 velocity) {
+        springShakes.Remove(springShakes.Find(x => x.entity == entity));
+        SpringShake2D shake = new() {
+            entity = entity,
+            targetPos = entity.trans.localPosition,
+        };
+        springShakes.Add(shake);
+
+        const float randomVelocityAngle = 15f;
+        const float shakeMagnitude = 0.017f;
+        shake.offset = (Quaternion.AngleAxis(Random.Range(-randomVelocityAngle, randomVelocityAngle), Vector3.forward) * velocity.normalized * shakeMagnitude).ToVector2();
+    }
+
+    private void UpdateShakeEffect() {
+        foreach (SpringShake2D shake in springShakes) {
+            if (shake.entity == null || shake.entity.trans == null) continue;
+            
+            Vector2 displacement = shake.offset;
+            Vector2 acceleration = -shake.stiffness * displacement - shake.damping * shake.velocity;
+            shake.velocity += acceleration * Time.deltaTime;
+            shake.offset += shake.velocity * Time.deltaTime;
+            shake.entity.trans.localPosition = shake.targetPos + shake.offset;
+        }
+    }
+
+    public class ScaleEffect {
+        public Entity entity;
+        public Vector3 targetScale;
+        public Timer timer;
+    }
+
+    private List<ScaleEffect> scaleEffects = new();
+    
+    private void AddScaleEffect(Entity entity, float scalePercent, float duration) {
+        ScaleEffect oldScale = scaleEffects.Find(x => x.entity == entity);
+        if (oldScale != null) {
+            oldScale.entity.trans.localScale = oldScale.targetScale;
+            scaleEffects.Remove(scaleEffects.Find(x => x.entity == entity));
+        }
+        
+        ScaleEffect scale = new() {
+            entity = entity,
+            targetScale = entity.trans.localScale,
+        };
+        scale.timer.SetTime(duration);
+        scaleEffects.Add(scale);
+        entity.trans.localScale *= scalePercent;
+    }
+
+    private void UpdateScaleEffect() {
+        foreach (ScaleEffect scale in scaleEffects) {
+            if (scale.entity == null || scale.entity.trans == null) continue;
+            scale.timer.Tick();
+            float comp = scale.timer.Comp();
+            scale.entity.trans.localScale = Vector3.Lerp(scale.entity.trans.localScale, scale.targetScale, comp);  
+        }
+    }
+
+    public struct HitFlashEffect {
+        public Timer timer;
+    }
+
+    private void AddFlashHitEffect(Entity entity) {
+        HitFlashEffect hitFlash = new();
+        float duration = hitFlashCurve.keys[^1].time;
+        hitFlash.timer.SetTime(duration);
+        entity.hitFlashEffect = hitFlash;
+    }
+
+    private void UpdateHitFlashEffect(Entity entity) {
+        if (!entity.hitFlashEffect.TryGetValue(out HitFlashEffect hitFlash)) return;
+        hitFlash.timer.Tick();
+        float comp = hitFlash.timer.Comp();
+        entity.matPropertyBlock.SetFloat(damageFlashTintPropertyId, hitFlashCurve.Evaluate(comp));
+        entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
+        entity.hitFlashEffect = hitFlash;
+    }
+
+    public struct BounceEffect {
+        public Vector2 targetPos;
+        public Vector2 initialPos;
+        public Timer timer;
+        public Vector2 initDir;
+        public float xDist;
+    }
+
+    private void AddBounceEffect(Entity entity, Vector3 pos, float duration) {
+        BounceEffect bounce = new();
+        bounce.targetPos = pos;
+        bounce.initialPos = entity.position;
+        bounce.initDir = (pos - entity.position).normalized;
+
+        Vector3 flatPos = pos;
+        flatPos.y = 0f;
+        
+        Vector3 flatEntityPos = entity.position;
+        flatEntityPos.y = 0f;
+        
+        bounce.xDist = Vector2.Distance(flatPos, flatEntityPos);
+        bounce.timer.SetTime(duration);
+        entity.bounceEffect = bounce;
+    }
+
+    private void UpdateBounceEffect(Entity entity) {
+        if (!entity.bounceEffect.TryGetValue(out BounceEffect bounce)) return;
+        bounce.timer.Tick();
+        float comp = bounce.timer.Comp();
+        float yPos = bounceCurve.Evaluate(comp);
+        entity.position = Vector2.Lerp(bounce.initialPos, bounce.targetPos, comp);
+        entity.position = new(entity.position.x, entity.position.y + yPos, entity.position.y);
+        entity.bounceEffect = bounce;
+    }
+    
 }

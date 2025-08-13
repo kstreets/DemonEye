@@ -144725,7 +144725,6 @@ MonoBehaviour:
   exitPortalSpawnParent: {fileID: 201188077}
   smallMapParent: {fileID: 280759610}
   playerPrefab: {fileID: 8860443116720004057, guid: 875c5190ef7b0da479d25cffb7b23ae3, type: 3}
-  laserPrefab: {fileID: 3793226877012381215, guid: 518560ba50c31e146a41c8e950637601, type: 3}
   gemRockPrefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
   altarPrefab: {fileID: 5684300478470835813, guid: 9a1d6fd835fa2474a9cdbed7d6ada3f8, type: 3}
   deadBodyPrefab: {fileID: 7104348053268977879, guid: 155b87af078ab3d4790da6d5e29d1337, type: 3}
@@ -144737,6 +144736,118 @@ MonoBehaviour:
   rockDropPool: {fileID: 11400000, guid: f008cedd5a5342243b1c9b1064102461, type: 2}
   hellSpawnPosition: {x: -4.428, y: -1.215, z: 0}
   inventorySlotPrefab: {fileID: 5872114115220716725, guid: 0412bcb04847baa4d920e89c3e52615d, type: 3}
+  rockSmokePrefab: {fileID: 5935938718941175970, guid: d08dafda554f85a4db705e94aa604f77, type: 3}
+  hitFlashCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.05776926
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.2533488
+      value: -0.022562882
+      inSlope: -8.515357
+      outSlope: -8.515357
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.087055966
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  bounceCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 1.157485
+      outSlope: 1.157485
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.12235061
+    - serializedVersion: 3
+      time: 0.21861184
+      value: 0.17990398
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.4148927
+      value: 0
+      inSlope: -2.0666153
+      outSlope: 0.74175394
+      tangentMode: 1
+      weightedMode: 0
+      inWeight: 0.107839346
+      outWeight: 0.3722839
+    - serializedVersion: 3
+      time: 0.60433805
+      value: 0.08086705
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.7767278
+      value: 0
+      inSlope: -0.85087955
+      outSlope: 0.69031626
+      tangentMode: 1
+      weightedMode: 0
+      inWeight: 0.2951816
+      outWeight: 0.2770129
+    - serializedVersion: 3
+      time: 0.87439245
+      value: 0.032275036
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.9773421
+      value: 0
+      inSlope: -0.85204023
+      outSlope: 0
+      tangentMode: 1
+      weightedMode: 0
+      inWeight: 0.5094103
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   itemDescPopup: {fileID: 570121176}
   enterNextRaidButton: {fileID: 2088084698}
   hideoutHeaderParent: {fileID: 877931931}
