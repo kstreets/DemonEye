@@ -100,6 +100,8 @@ public partial class GameManager : MonoBehaviour {
     [Foldout("UI/InRaid")]
     public RectTransform lootInventoryPanel;
     public RectTransform lootInventoryParent;
+    public RectTransform playerBarsPanel;
+    public Image healthBarFillImage;
     public GameObject interactPrompt;
     public TextMeshProUGUI exitPortalStatusText;
     [EndFoldout]
@@ -111,6 +113,13 @@ public partial class GameManager : MonoBehaviour {
     
     [Foldout("TraderLevels")]
     public TraderLevels traderLevels;
+    [EndFoldout]
+    
+    [Foldout("Sfx")]
+    public GameObject dynamicAudioSourcePrefab;
+    public DynamicClip shootClip;
+    public DynamicClip stoneBreakClip;
+    public DynamicClip stoneHitClip;
     [EndFoldout]
     
     [Header("Controls")]
@@ -160,6 +169,7 @@ public partial class GameManager : MonoBehaviour {
             itemDataLookup.Add(itemData.uuid, itemData);
         }
 
+        InitAudio();
         InitHideoutUI();
         BuildSavePaths();
         hideoutStateData = LoadFromFile<HideoutStateData>(hideoutDataSavePath) ?? new HideoutStateData();
@@ -184,6 +194,7 @@ public partial class GameManager : MonoBehaviour {
     }
 
     private void Update() {
+        UpdateDelayedEntitiesToDestroy();
         gameStateMachine.Tick();
     }
 
@@ -212,6 +223,7 @@ public partial class GameManager : MonoBehaviour {
     }
 
     private void OnHideoutStateExit() {
+        CloseHideoutUI();
     }
 
     private void OnHideoutStateUpdate() {
@@ -220,15 +232,7 @@ public partial class GameManager : MonoBehaviour {
     }
 
     private void OnRaidStateEnter() {
-        playerPanel.gameObject.SetActive(false);
-        stashPanel.gameObject.SetActive(false);
-        eyeForgePanel.gameObject.SetActive(false);
-        traderInventoryPanel.gameObject.SetActive(false);
-        traderTransactionPanel.gameObject.SetActive(false);
-        lootInventoryPanel.gameObject.SetActive(false);
-        smallMapParent.gameObject.SetActive(false);
-        hideoutHeaderParent.gameObject.SetActive(false);
-        hideoutTabsParent.gameObject.SetActive(false);
+        playerBarsPanel.gameObject.SetActive(true);
 
         smallMapParent.gameObject.SetActive(true);
         Map map = smallMapParent.GetComponent<Map>();
@@ -245,6 +249,7 @@ public partial class GameManager : MonoBehaviour {
         DestroyLevelEntities();
         ClearProjectiles();
         smallMapParent.gameObject.SetActive(false);
+        playerBarsPanel.gameObject.SetActive(false);
     }
 
     private void OnRaidStateUpdate() {
@@ -254,7 +259,7 @@ public partial class GameManager : MonoBehaviour {
         UpdateInventory();
         UpdatePlayer();
         UpdateProjectiles();
-        // UpdateWave();
+        UpdateWave();
         UpdateEnemies();
         UpdateEntityEffects();
         UpdateShakeEffect();
@@ -264,27 +269,17 @@ public partial class GameManager : MonoBehaviour {
 
     private Entity player;
     private const float playerSpeed = .55f;
-    private Limiter playerTakeDamageLimiter;
     private List<Collider2D> playerContacts = new(10);
     private Vector2 playerVelocity;
     
     private void UpdatePlayer() {
-        if (playerTakeDamageLimiter.TimeHasPassed(0.1f)) {
-            foreach (Enemy enemy in enemies) {
-                if (enemy.health <= 0) continue;
-                float dist = Vector2.Distance(player.position, enemy.position);
-                if (dist < 0.08f) {
-                    player.health -= enemy.data.damage;
-                    break;
-                }
-            }
-        }
-
         if (player.health <= 0f) {
             ClearInventory(playerInventory);
             gameStateMachine.SetState(hideoutState);
             return;
         }
+        
+        healthBarFillImage.fillAmount = player.health / 100f;
         
         if (InventoryIsOpen) return;
         
@@ -310,6 +305,7 @@ public partial class GameManager : MonoBehaviour {
         crosshairTrans.position = mousePos;
 
         if (attackInputAction.IsPressed() && CanShootPrimary()) {
+            PlayAudioClip(shootClip, player.position, 1f);
             ShootPrimary();
         }
     }
@@ -1118,11 +1114,15 @@ public partial class GameManager : MonoBehaviour {
         projectiles.Clear();
     }
 
+    private void DamagePlayer(int damage) { 
+        player.health -= damage;
+        AddFlashHitEffect(player);
+    }
+    
     private void HandleDamage(Projectile projectile, Collider2D col) {
         if (!col) return;
         
         Entity entity = entityLookup[col.gameObject];
-        entity.lastDamageTime = Time.time;
         
         DemonEyeInstance eyeInstance = projectile.EyeInstanceSpawnedFrom;
         
@@ -1133,6 +1133,7 @@ public partial class GameManager : MonoBehaviour {
             }
             enemy.health -= (int)eyeInstance.coreAttack.damage;
             enemy.defaultSlow = new() { activationTime = Time.time, duration = 0.1f, speedReductionPercent = eyeInstance.coreAttack.enemySpeedReductionPercent };
+            AddFlashHitEffect(entity);
         }
         else {
             entity.damageAccumilation += (int)eyeInstance.coreAttack.damage;
@@ -1142,11 +1143,15 @@ public partial class GameManager : MonoBehaviour {
                 entity.damageAccumilation = 0;
             }
 
+            PlayAudioClip(stoneHitClip, entity.position, 1f);
+                
             if (entity.health <= 0) {
                 Entity smokeEntity = SpawnLevelEntity<Entity>(rockSmokePrefab, entity.position, Quaternion.identity);
-                Destroy(smokeEntity.gameObject, 0.417f);
+                DestroyEntity(smokeEntity, 0.417f);
                 AstarPath.active.UpdateGraphs(entity.collider.bounds);
                 DestroyEntity(entity);
+                
+                PlayAudioClip(stoneBreakClip, entity.position, 1f);
 
                 for (int i = 0; i < 6; i++) {
                     Vector3 spawnPos = col.transform.position + RandomOffset360(0.18f, 0.25f);
@@ -1163,11 +1168,10 @@ public partial class GameManager : MonoBehaviour {
     }
 
 
-    private int damageFlashTintPropertyId = Shader.PropertyToID("_DamageFlashTint");
-    
     public class Enemy : Entity {
         public EnemyData data;
         public PathData pathData = new();
+        public Timer applyDamageTimer;
         public BleedModInstance? bleed;
         public SlowInstance? defaultSlow;
         public SlowInstance? slow;
@@ -1185,7 +1189,23 @@ public partial class GameManager : MonoBehaviour {
     private void UpdateEnemies() {
         for (int i = enemies.Count - 1; i >= 0; i--) {
             Enemy enemy = enemies[i];
+            enemy.applyDamageTimer.Tick();
 
+            float distFromPlayer = Vector2.Distance(player.position, enemy.position);
+
+            if (distFromPlayer < 0.35f && !enemy.animator.Playing("Attack")) {
+                enemy.animator.Play("Attack");
+                enemy.applyDamageTimer.SetTime(0.31f);
+                enemy.applyDamageTimer.EndAction = () => {
+                    Vector3 dirToPlayer = (player.position - enemy.position).normalized;
+                    Vector2 attackCheckPos = enemy.position + dirToPlayer * 0.15f;
+                    Collider2D col = Physics2D.OverlapCircle(attackCheckPos, 0.15f, Masks.PlayerMask);
+                    if (col != null) {
+                        DamagePlayer(enemy.data.damage);
+                    }
+                };
+            }
+            
             if (enemy.bleed.TryGetValue(out BleedModInstance bleed)) {
                 if (Time.time - bleed.lastBleedTime > bleed.bleedInterval) {
                     enemy.health -= bleed.bleedDamage;
@@ -1193,17 +1213,6 @@ public partial class GameManager : MonoBehaviour {
                 }
             }
 
-            // Assign material properties like damage flash
-            {
-                // if (Time.time - enemy.lastDamageTime < 0.08f) {
-                //     enemy.matPropertyBlock.SetFloat(damageFlashTintPropertyId, 1f);
-                // }
-                // else {
-                //     enemy.matPropertyBlock.SetFloat(damageFlashTintPropertyId, 0f);
-                // }
-                // enemy.spriteRenderer.SetPropertyBlock(enemy.matPropertyBlock);
-            }
-            
             if (enemy.health <= 0) {
                 // Drop items from enemy 
                 {
@@ -1280,7 +1289,9 @@ public partial class GameManager : MonoBehaviour {
             
             usingPath = usingPath && pathData.waypointIndex < pathData.abPath.vectorPath.Count;
 
+            
             float speed = enemy.data.speed;
+            
             float totalSlowPercentage = 0f;
             if (enemy.defaultSlow.TryGetValue(out SlowInstance defaultSlow)) {
                 totalSlowPercentage += defaultSlow.speedReductionPercent;
@@ -1295,6 +1306,16 @@ public partial class GameManager : MonoBehaviour {
                 }
             }
             speed = Mathf.Clamp(speed * Mathf.Clamp01(1f - totalSlowPercentage), 0.05f, enemy.data.speed);
+            
+            AnimatorStateInfo animStateInfo = enemy.animator.GetCurrentAnimatorStateInfo(0);
+            if (animStateInfo.IsName("Attack")) {
+                if (animStateInfo.normalizedTime > 1f) {
+                    enemy.animator.Play("Walk");        
+                }
+                else {
+                    speed = 0f;
+                }
+            }
             
             /*
                 The below separation method causes jitter in big pools of enemies because center enemies are bouncing back and forth
@@ -1598,7 +1619,6 @@ public partial class GameManager : MonoBehaviour {
         public MaterialPropertyBlock matPropertyBlock = new();
         public int health;
         public int damageAccumilation;
-        public float lastDamageTime;
         public EntityLifeTime lifeTime;
         public HitFlashEffect? hitFlashEffect;
         public BounceEffect? bounceEffect;
@@ -1652,6 +1672,26 @@ public partial class GameManager : MonoBehaviour {
         Destroy(entity.gameObject);
     }
 
+    private List<(Entity entity, float delay)> delayedEntitiesToDestroy = new();
+    
+    private void DestroyEntity(Entity entity, float delay) {
+        delayedEntitiesToDestroy.Add((entity, delay));
+    }
+
+    private void UpdateDelayedEntitiesToDestroy() {
+        for (int i = delayedEntitiesToDestroy.Count - 1; i >= 0; i--) {
+            (Entity entity, float delay) tuple = delayedEntitiesToDestroy[i];
+            tuple.delay -= Time.deltaTime;
+            if (tuple.delay < 0) {
+                DestroyEntity(tuple.entity);
+                delayedEntitiesToDestroy.RemoveAt(i);
+            }
+            else {
+                delayedEntitiesToDestroy[i] = tuple;
+            }
+        }
+    }
+
 
     private void InitHideoutUI() {
         characterTabButton.image.sprite = tabSelectedSprite;
@@ -1662,6 +1702,17 @@ public partial class GameManager : MonoBehaviour {
         hideoutTabsParent.gameObject.SetActive(true);
         playerPanel.gameObject.SetActive(true);
         stashPanel.gameObject.SetActive(true);
+        eyeForgePanel.gameObject.SetActive(false);
+        traderInventoryPanel.gameObject.SetActive(false);
+        traderTransactionPanel.gameObject.SetActive(false);
+        lootInventoryPanel.gameObject.SetActive(false);
+    }
+
+    private void CloseHideoutUI() {
+        hideoutHeaderParent.gameObject.SetActive(false);
+        hideoutTabsParent.gameObject.SetActive(false);
+        playerPanel.gameObject.SetActive(false);
+        stashPanel.gameObject.SetActive(false);
         eyeForgePanel.gameObject.SetActive(false);
         traderInventoryPanel.gameObject.SetActive(false);
         traderTransactionPanel.gameObject.SetActive(false);
@@ -1965,6 +2016,9 @@ public partial class GameManager : MonoBehaviour {
         }
     }
 
+    
+    private int damageFlashTintPropertyId = Shader.PropertyToID("_DamageFlashTint");
+    
     public struct HitFlashEffect {
         public Timer timer;
     }
@@ -1980,6 +2034,7 @@ public partial class GameManager : MonoBehaviour {
         if (!entity.hitFlashEffect.TryGetValue(out HitFlashEffect hitFlash)) return;
         hitFlash.timer.Tick();
         float comp = hitFlash.timer.Comp();
+        entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
         entity.matPropertyBlock.SetFloat(damageFlashTintPropertyId, hitFlashCurve.Evaluate(comp));
         entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
         entity.hitFlashEffect = hitFlash;
@@ -1989,23 +2044,12 @@ public partial class GameManager : MonoBehaviour {
         public Vector2 targetPos;
         public Vector2 initialPos;
         public Timer timer;
-        public Vector2 initDir;
-        public float xDist;
     }
 
     private void AddBounceEffect(Entity entity, Vector3 pos, float duration) {
         BounceEffect bounce = new();
         bounce.targetPos = pos;
         bounce.initialPos = entity.position;
-        bounce.initDir = (pos - entity.position).normalized;
-
-        Vector3 flatPos = pos;
-        flatPos.y = 0f;
-        
-        Vector3 flatEntityPos = entity.position;
-        flatEntityPos.y = 0f;
-        
-        bounce.xDist = Vector2.Distance(flatPos, flatEntityPos);
         bounce.timer.SetTime(duration);
         entity.bounceEffect = bounce;
     }
@@ -2020,4 +2064,94 @@ public partial class GameManager : MonoBehaviour {
         entity.bounceEffect = bounce;
     }
     
+    
+    private Dictionary<int, List<DynamicClipRecord>> clipRecords;
+    private Queue<AudioSource> sources;
+    
+    private struct DynamicClipRecord {
+        public float timePlayed;
+        public Vector2 positionPlayed;
+    }
+
+    private void InitAudio() {
+        const int numberOfSources = 20;
+        sources = new(numberOfSources);
+        
+        for (int i = 0; i < numberOfSources; i++) {
+            GameObject audioGo = Instantiate(dynamicAudioSourcePrefab, transform);
+            sources.Enqueue(audioGo.GetComponent<AudioSource>());
+        }
+    }
+
+    private void PlayAudioClip(DynamicClip dynamicClip, Vector2 position, float volumeScaler) {
+        if (ClipIsViolatingLocalArea(dynamicClip, position)) return;
+        
+        AudioSource source = sources.Dequeue();
+        sources.Enqueue(source);
+        
+        source.transform.position = position;
+        source.rolloffMode = dynamicClip.rolloffMode;
+        source.clip = dynamicClip.clips[Random.Range(0, dynamicClip.clips.Length)];
+        source.outputAudioMixerGroup = dynamicClip.mixerGroup;
+        source.volume = volumeScaler;
+        source.pitch = Random.Range(dynamicClip.minPitch, dynamicClip.maxPitch);
+        source.minDistance = dynamicClip.minDistance;
+        source.maxDistance = dynamicClip.maxDistance;
+        source.Play();
+    }
+
+    private bool ClipIsViolatingLocalArea(DynamicClip clip, Vector2 clipPos) {
+        if (clip.localAreaCooldownTime <= 0f || clip.localAreaDistance <= 0f) {
+            return false;
+        }
+        
+        bool recordsExits = clipRecords.TryGetValue(clip.GetInstanceID(), out List<DynamicClipRecord> records);
+        
+        if (!recordsExits) {
+            const int initCapacity = 10;
+            List<DynamicClipRecord> newRecords = new(initCapacity);
+            
+            newRecords.Add(new() {  
+                timePlayed = Time.time, 
+                positionPlayed = clipPos 
+            });
+            
+            clipRecords.Add(clip.GetInstanceID(), newRecords);
+            return false;
+        }
+        
+        float cooldownTime = clip.localAreaCooldownTime;
+        float areaDistance = clip.localAreaDistance;
+        
+        // Remove any records that have been expired
+        for (int i = records.Count - 1; i >= 0; i--) {
+            bool recordHadExpired = Time.time >= records[i].timePlayed + cooldownTime;
+            if (recordHadExpired) {
+                records.RemoveAt(i);         
+            }
+        }
+        
+        // After removing expired records, check to see if one is too close to the potential pos
+        foreach (DynamicClipRecord record in records) {
+            if (Vector3.Distance(record.positionPlayed, clipPos) < areaDistance) {
+                return true;
+            } 
+        }
+        
+        // Add a new record since we are going to play the sound
+        records.Add(new() {  
+            timePlayed = Time.time, 
+            positionPlayed = clipPos 
+        });
+
+        return false;
+    }
+
+    private void Reset() {
+        foreach (AudioSource source in sources) {
+            source.transform.SetParent(transform);
+            source.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+        }
+    }
+
 }

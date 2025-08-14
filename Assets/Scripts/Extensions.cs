@@ -61,4 +61,8 @@ public static class Extensions {
         return nullableStruct.HasValue;
     }
 
+    public static bool Playing(this Animator animator, string animName) {
+        return animator.GetCurrentAnimatorStateInfo(0).IsName(animName);
+    }
+
 }
