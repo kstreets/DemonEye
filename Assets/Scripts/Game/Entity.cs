@@ -1,5 +1,8 @@
+using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public partial class GameManager {
     
@@ -11,6 +14,7 @@ public partial class GameManager {
         public Rigidbody2D rigidbody;
         public SpriteRenderer spriteRenderer;
         public Animator animator;
+        public TextMeshProUGUI textMesh;
         
         public MaterialPropertyBlock matPropertyBlock = new();
         public ObjectPool objectPool;
@@ -23,6 +27,7 @@ public partial class GameManager {
         public HitFlashEffect? hitFlashEffect;
         public BounceEffect? bounceEffect;
         public ParentToEntity? parentEffect;
+        public TweenPosition? tweenPosition;
         
         public Vector3 position {
             get => trans.position;
@@ -70,6 +75,7 @@ public partial class GameManager {
             rigidbody = objInstance.TryGetComponent(out Rigidbody2D rbody) ? rbody : null,
             spriteRenderer = objInstance.TryGetComponent(out SpriteRenderer spriteRenderer) ? spriteRenderer : null,
             animator = objInstance.TryGetComponent(out Animator anim) ? anim : null,
+            textMesh = objInstance.TryGetComponent(out TextMeshProUGUI text) ? text : null,
         };
         entities.Add(newEntity);
         entityLookup.Add(objInstance, newEntity);
@@ -134,6 +140,7 @@ public partial class GameManager {
             UpdateHitFlashEffect(entity);
             UpdateBounceEffect(entity);
             UpdateParentEffect(entity);
+            UpdateTweenPosition(entity);
         }
     }
     
@@ -275,6 +282,48 @@ public partial class GameManager {
             return;
         }
         entity.position = parentToEntity.parentEntity.position + parentToEntity.localOffset.ToVector3();
+    }
+
+
+    public enum TweenCurve { Linear, EaseOut, EaseIn, EaseInOut }
+
+    public struct TweenPosition {
+        public Vector2 startPos;
+        public Vector2 endPos;
+        public Timer timer;
+        public TweenCurve curve;
+    }
+
+    private void AddTweenPosition(Entity entity, Vector2 endPos, float duration, TweenCurve curve = TweenCurve.Linear) {
+        TweenPosition tween = new() {
+            startPos = entity.position,
+            endPos = endPos,
+            curve = curve
+        };
+        tween.timer.SetTime(duration);
+        entity.tweenPosition = tween;
+    }
+
+    private void UpdateTweenPosition(Entity entity) {
+        if (!entity.tweenPosition.TryGetValue(out TweenPosition tween)) return;
+
+        tween.timer.Tick();
+        float comp = tween.timer.Comp();
+        
+        switch (tween.curve) {
+            case TweenCurve.EaseOut:
+                comp = 1 - Mathf.Pow(1 - comp, 3);
+                break;
+            case TweenCurve.EaseIn:
+                comp = Mathf.Pow(comp, 3);
+                break;
+            case TweenCurve.EaseInOut:
+                comp = Mathf.SmoothStep(0f, 1f, comp);
+                break;
+        }
+        
+        entity.position = Vector2.Lerp(tween.startPos, tween.endPos, comp);
+        entity.tweenPosition = tween;
     }
     
 }

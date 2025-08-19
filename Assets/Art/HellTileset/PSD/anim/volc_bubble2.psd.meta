@@ -334,7 +334,16 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      volc_bubble2_0: -8436692676143593903
+      volc_bubble2_1: 1790006754566493722
+      volc_bubble2_2: -3917420717997975127
+      volc_bubble2_3: 5800749192122701073
+      volc_bubble2_4: -5284256873481409689
+      volc_bubble2_5: 8928029486036610719
+      volc_bubble2_6: -1836112467138636014
+      volc_bubble2_7: -6669084698543584219
+      volc_bubble2_8: -847368754152236145
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

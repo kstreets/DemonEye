@@ -509,7 +509,23 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      mainlevbuild_0: -418600334569417129
+      mainlevbuild_1: -5727760111797192145
+      mainlevbuild_10: 7849981455521004453
+      mainlevbuild_11: 4862577987027710429
+      mainlevbuild_12: -5629698620501372720
+      mainlevbuild_13: -8026734006290447909
+      mainlevbuild_14: 9052083678068739164
+      mainlevbuild_15: 8663717305663940273
+      mainlevbuild_2: 4011826581710594722
+      mainlevbuild_3: -2921649638176895635
+      mainlevbuild_4: -5296460117389895971
+      mainlevbuild_5: -7498149340825567013
+      mainlevbuild_6: 4188783655783027223
+      mainlevbuild_7: 4262012770324947943
+      mainlevbuild_8: -3679733267116199293
+      mainlevbuild_9: 7759064944903599796
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

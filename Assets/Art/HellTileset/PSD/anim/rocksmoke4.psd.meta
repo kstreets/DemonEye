@@ -259,7 +259,13 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      rocksmoke4_0: -1420845317883111267
+      rocksmoke4_1: -6361082598853666447
+      rocksmoke4_2: 928112896705409638
+      rocksmoke4_3: -2472124027186087994
+      rocksmoke4_4: 2964848998633139082
+      rocksmoke4_5: -9076260599277198719
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

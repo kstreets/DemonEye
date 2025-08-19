@@ -145011,6 +145011,8 @@ MonoBehaviour:
   objectPools:
   - {fileID: 11400000, guid: 18a4f01d4614ca4409899bbc56114cea, type: 2}
   bloodDropPool: {fileID: 11400000, guid: 18a4f01d4614ca4409899bbc56114cea, type: 2}
+  defaultCriticalStrikeChange: 0.1
+  defaultCriticalStrikeMultiplier: 2
   mainCamera: {fileID: 519420031}
   cinemachineCamera: {fileID: 519420036}
   crosshairTrans: {fileID: 997770961}
@@ -145187,6 +145189,7 @@ MonoBehaviour:
   interactPrompt: {fileID: 1296663431}
   exitPortalStatusText: {fileID: 950174151}
   damageNumbersParent: {fileID: 764777864}
+  criticalStrikeColor: {r: 0.89433956, g: 0.68916094, b: 0.1873051, a: 1}
   crucibleUpgradePath: {fileID: 11400000, guid: 199c6fbb39d90cb49b907734ccaf5a95, type: 2}
   stashUpgradePath: {fileID: 11400000, guid: 1508c59670ca7e940ab0b64facd6695f, type: 2}
   traderLevels: {fileID: 11400000, guid: 04e0a3aa4465f4a4a9650a4d9f483b7f, type: 2}

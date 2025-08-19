@@ -13,6 +13,14 @@ public partial class GameManager {
     private Vector3 RandomOffset360(float minDist, float maxDist) {
         return Quaternion.AngleAxis(Random.Range(0, 360), Vector3.forward) * Vector3.right * Random.Range(minDist, maxDist);
     }
+
+    private Vector2 OffsetY(Vector2 pos, float yOffset) {
+        return new(pos.x, pos.y + yOffset);
+    }
+    
+    private Vector2 OffsetX(Vector2 pos, float xOffset) {
+        return new(pos.x, pos.y + xOffset);
+    }
     
     private void SaveToFile(string path, object obj) {
         BinaryFormatter bf = new();

@@ -21,6 +21,11 @@ public partial class GameManager : MonoBehaviour {
     [Foldout("Pooling/Individuals")]
     public ObjectPool bloodDropPool;
     [EndFoldout]
+    
+    [Foldout("Gameplay Variables")]
+    [Range(0f, 1f)] public float defaultCriticalStrikeChange;
+    public float defaultCriticalStrikeMultiplier;
+    [EndFoldout]
 
     public Camera mainCamera;
     public CinemachineCamera cinemachineCamera;
@@ -115,6 +120,7 @@ public partial class GameManager : MonoBehaviour {
 
     [Foldout("UI/DamageNumbers")]
     public RectTransform damageNumbersParent;
+    public Color criticalStrikeColor;
     [EndFoldout]
     
     [Foldout("UpgradePaths")]
@@ -411,23 +417,39 @@ public partial class GameManager : MonoBehaviour {
         if (!col) return;
         
         Entity entity = entityLookup[col.gameObject];
-        
         DemonEyeInstance eyeInstance = projectile.EyeInstanceSpawnedFrom;
         
         if (col.CompareTag(Tags.Enemy)) {
+            int damage = eyeInstance.coreAttack.damage;
+            float criticalStrikeProb = defaultCriticalStrikeChange;
+            bool isCriticalStrike = RollProbability(criticalStrikeProb);
+            if (isCriticalStrike) {
+                damage = Mathf.RoundToInt(damage * defaultCriticalStrikeMultiplier);
+            }
+            
             Enemy enemy = enemyLookup[col.gameObject];
+            enemy.health -= damage;
+            
             foreach (EquipedModInstance modInstance in eyeInstance.modInstances) {
                 modInstance.ApplyToEnemy(enemy);
             }
-            enemy.health -= (int)eyeInstance.coreAttack.damage;
+            
             enemy.defaultSlow = new() { activationTime = Time.time, duration = 0.1f, speedReductionPercent = eyeInstance.coreAttack.enemySpeedReductionPercent };
             AddFlashHitEffect(entity);
 
-            SpawnLevelEntity<Entity>(damageNumberPrefab, enemy.position, Quaternion.identity, damageNumbersParent);
+            Vector2 startDamageNumPos = OffsetY(enemy.position, 0.15f);
+            Vector2 endDamageNumPos = OffsetY(enemy.position, 0.22f);
+            Entity damageNumber = SpawnLevelEntity<Entity>(damageNumberPrefab, startDamageNumPos, Quaternion.identity, damageNumbersParent);
+            damageNumber.textMesh.text = damage.ToString();
+            if (isCriticalStrike) {
+                damageNumber.textMesh.color = criticalStrikeColor;
+            }
+            AddTweenPosition(damageNumber, endDamageNumPos, 0.3f, TweenCurve.EaseOut); 
+            DestroyEntity(damageNumber, 0.3f);
         }
         else {
-            entity.damageAccumilation += (int)eyeInstance.coreAttack.damage;
-            entity.health -= (int)eyeInstance.coreAttack.damage;
+            entity.damageAccumilation += eyeInstance.coreAttack.damage;
+            entity.health -= eyeInstance.coreAttack.damage;
 
             if (entity.damageAccumilation > 50) {
                 entity.damageAccumilation = 0;
