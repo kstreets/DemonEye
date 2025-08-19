@@ -13,5 +13,9 @@ public class Soulcard : Item {
     public virtual string GetStackDescription(int stackCount) {
         return "Modifier has no description";
     }
+
+    public static string DisplayProbability(float probability) {
+        return $"{Mathf.FloorToInt(probability * 100f)}%";
+    }
     
 }

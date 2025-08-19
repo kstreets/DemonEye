@@ -420,14 +420,20 @@ public partial class GameManager : MonoBehaviour {
         DemonEyeInstance eyeInstance = projectile.EyeInstanceSpawnedFrom;
         
         if (col.CompareTag(Tags.Enemy)) {
+            Enemy enemy = enemyLookup[col.gameObject];
+            
             int damage = eyeInstance.coreAttack.damage;
             float criticalStrikeProb = defaultCriticalStrikeChange;
+
+            if (eyeInstance.bleedCritInstance.HasValue && enemy.bleed.HasValue) {
+                criticalStrikeProb += eyeInstance.bleedCritInstance.Value.probability;
+            }
+            
             bool isCriticalStrike = RollProbability(criticalStrikeProb);
             if (isCriticalStrike) {
                 damage = Mathf.RoundToInt(damage * defaultCriticalStrikeMultiplier);
             }
             
-            Enemy enemy = enemyLookup[col.gameObject];
             enemy.health -= damage;
             
             foreach (EquipedModInstance modInstance in eyeInstance.modInstances) {

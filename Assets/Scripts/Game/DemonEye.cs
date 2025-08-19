@@ -22,6 +22,7 @@ public partial class GameManager {
         
         public FirerateModInstance? firerateModInstance;
         public TrishotModInstance? trishotModModInstance;
+        public BleedCritInstance? bleedCritInstance;
     }
 
     private Dictionary<string, DemonEyeInstance> eyeInstanceFromItemId = new();
