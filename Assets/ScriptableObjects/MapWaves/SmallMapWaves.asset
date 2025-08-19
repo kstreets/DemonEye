@@ -130,5 +130,3 @@ MonoBehaviour:
     waveUnits:
     - enemyCount: 100
       enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
-    - enemyCount: 30
-      enemyData: {fileID: 11400000, guid: 93d1cb040d05e5c4499c666352c30bfe, type: 2}

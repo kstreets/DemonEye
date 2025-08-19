@@ -52,5 +52,8 @@ TagManager:
   - name: Entity
     uniqueID: 1394232625
     locked: 0
+  - name: DamageNumbers
+    uniqueID: 974457483
+    locked: 0
   m_RenderingLayers:
   - Default

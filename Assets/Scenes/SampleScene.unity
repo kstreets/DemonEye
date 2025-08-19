@@ -46110,6 +46110,107 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: bf75e86a693207f4989ab5583182497f, type: 3}
+--- !u!1 &764777860
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 764777864}
+  - component: {fileID: 764777863}
+  - component: {fileID: 764777862}
+  - component: {fileID: 764777861}
+  m_Layer: 5
+  m_Name: DamageNumbersCanvas
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &764777861
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 764777860}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IgnoreReversedGraphics: 1
+  m_BlockingObjects: 0
+  m_BlockingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+--- !u!114 &764777862
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 764777860}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_UiScaleMode: 0
+  m_ReferencePixelsPerUnit: 100
+  m_ScaleFactor: 1
+  m_ReferenceResolution: {x: 800, y: 600}
+  m_ScreenMatchMode: 0
+  m_MatchWidthOrHeight: 0
+  m_PhysicalUnit: 3
+  m_FallbackScreenDPI: 96
+  m_DefaultSpriteDPI: 96
+  m_DynamicPixelsPerUnit: 1
+  m_PresetInfoIsWorld: 1
+--- !u!223 &764777863
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 764777860}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 2
+  m_Camera: {fileID: 519420031}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 0
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 1
+  m_AdditionalShaderChannelsFlag: 25
+  m_UpdateRectTransformForStandalone: 0
+  m_SortingLayerID: 974457483
+  m_SortingOrder: 0
+  m_TargetDisplay: 0
+--- !u!224 &764777864
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 764777860}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 960, y: 540}
+  m_SizeDelta: {x: 1920, y: 1080}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!213 &782790884
 Sprite:
   m_ObjectHideFlags: 0
@@ -144907,6 +145008,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 54622a27d26ec3243930fb8f40b4a14c, type: 2}
   traderLevelPools:
   - {fileID: 11400000, guid: 0694fa22015d4ea47bc4555bd2490364, type: 2}
+  objectPools:
+  - {fileID: 11400000, guid: 18a4f01d4614ca4409899bbc56114cea, type: 2}
+  bloodDropPool: {fileID: 11400000, guid: 18a4f01d4614ca4409899bbc56114cea, type: 2}
   mainCamera: {fileID: 519420031}
   cinemachineCamera: {fileID: 519420036}
   crosshairTrans: {fileID: 997770961}
@@ -144917,6 +145021,7 @@ MonoBehaviour:
   altarPrefab: {fileID: 5684300478470835813, guid: 9a1d6fd835fa2474a9cdbed7d6ada3f8, type: 3}
   deadBodyPrefab: {fileID: 7104348053268977879, guid: 155b87af078ab3d4790da6d5e29d1337, type: 3}
   exitPortalPrefab: {fileID: 1919934169009674015, guid: e878bf56970589c408c5be35c9a6c966, type: 3}
+  baseStats: {fileID: 11400000, guid: 35476ad9ae2e6694286f87aeee6609a2, type: 2}
   defaultAttack: {fileID: 11400000, guid: 6f7f20f8211114b4485e5e39f0547140, type: 2}
   demonEyeItem: {fileID: 11400000, guid: cd687a7e47b684f45b3fb8851a1e8edb, type: 2}
   deadBodyPool: {fileID: 11400000, guid: d1d5e1485b6925d4dbad1feaf3701fcc, type: 2}
@@ -144925,12 +145030,13 @@ MonoBehaviour:
   hellSpawnPosition: {x: -4.428, y: -1.215, z: 0}
   inventorySlotPrefab: {fileID: 5872114115220716725, guid: 0412bcb04847baa4d920e89c3e52615d, type: 3}
   rockSmokePrefab: {fileID: 5935938718941175970, guid: d08dafda554f85a4db705e94aa604f77, type: 3}
+  damageNumberPrefab: {fileID: 5909869051241108679, guid: 50a717d9d3a10204da7d29b281113572, type: 3}
   hitFlashCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0.62386197
+      value: 0.4
       inSlope: 13.613393
       outSlope: 13.613393
       tangentMode: 0
@@ -144938,7 +145044,7 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0.15948735
     - serializedVersion: 3
-      time: 0.05776926
+      time: 0.088202484
       value: 1
       inSlope: 0
       outSlope: 0
@@ -144947,7 +145053,7 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.1130762
+      time: 0.13420253
       value: 1
       inSlope: 0
       outSlope: 0
@@ -144956,7 +145062,7 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.2863328
+      time: 0.3074591
       value: -0.022562882
       inSlope: -8.515357
       outSlope: -8.515357
@@ -145080,6 +145186,7 @@ MonoBehaviour:
   healthBarFillImage: {fileID: 1906389859}
   interactPrompt: {fileID: 1296663431}
   exitPortalStatusText: {fileID: 950174151}
+  damageNumbersParent: {fileID: 764777864}
   crucibleUpgradePath: {fileID: 11400000, guid: 199c6fbb39d90cb49b907734ccaf5a95, type: 2}
   stashUpgradePath: {fileID: 11400000, guid: 1508c59670ca7e940ab0b64facd6695f, type: 2}
   traderLevels: {fileID: 11400000, guid: 04e0a3aa4465f4a4a9650a4d9f483b7f, type: 2}
@@ -147498,3 +147605,4 @@ SceneRoots:
   - {fileID: 201188077}
   - {fileID: 280759610}
   - {fileID: 848481703}
+  - {fileID: 764777864}

@@ -21,7 +21,7 @@ public class SlowSoulcard : Soulcard {
         enemy.slow = slow;
     }
 
-    public override string GetModifierDescription(int stackCount) {
+    public override string GetStackDescription(int stackCount) {
         return $"Reduces speed by {GetSpeedReduction(stackCount)}% for {slowDuration}s";
     }
 

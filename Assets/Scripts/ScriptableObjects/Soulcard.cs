@@ -4,13 +4,13 @@ using UnityEngine;
 public class Soulcard : Item {
 
     public virtual void AddInstanceToEnemy(GameManager.Enemy enemy, int stackCount) { }
-    public virtual void AddInstanceToEye(DemonEyeInstance eyeInstance, int stackCount) { }
+    public virtual void AddInstanceToEye(GameManager.DemonEyeInstance eyeInstance, int stackCount) { }
 
     public override string GetDescription() {
-        return GetModifierDescription(1);
+        return GetStackDescription(1);
     }
 
-    public virtual string GetModifierDescription(int stackCount) {
+    public virtual string GetStackDescription(int stackCount) {
         return "Modifier has no description";
     }
     

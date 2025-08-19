@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: e37433e2731aef34a8066f6fb3b177b3
+guid: 15859338ee736b146b15efd549b2214b
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -97,133 +97,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: DemonWalk_0
+      name: AttackRune1_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 32
-        height: 32
+        width: 16
+        height: 16
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: 0
+      tessellationDetail: -1
       bones: []
-      spriteID: f645ca0d5acc32e4d94aefe8c50f477c
-      internalID: -231111701
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: DemonWalk_1
-      rect:
-        serializedVersion: 2
-        x: 32
-        y: 0
-        width: 32
-        height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 727899ffb8c0fe34fa0417342eb02506
-      internalID: 1724769905
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: DemonWalk_2
-      rect:
-        serializedVersion: 2
-        x: 64
-        y: 0
-        width: 32
-        height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 00e3f7fe776f50a499c701cfecf19f72
-      internalID: -1187733468
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: DemonWalk_3
-      rect:
-        serializedVersion: 2
-        x: 96
-        y: 0
-        width: 32
-        height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: c76923322f2e5964e856a4aadc85c078
-      internalID: 738849221
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: DemonWalk_4
-      rect:
-        serializedVersion: 2
-        x: 128
-        y: 0
-        width: 32
-        height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: ea18750904fd99e4eaf7961d5a990052
-      internalID: 1368191445
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: DemonWalk_5
-      rect:
-        serializedVersion: 2
-        x: 160
-        y: 0
-        width: 32
-        height: 32
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: a824d4d72bd3deb44b20d12f6dda200b
-      internalID: -1460648542
+      spriteID: 94d6a917db308d800800000000000000
+      internalID: 637263459462573385
       vertices: []
       indices: 
       edges: []
@@ -232,7 +122,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 6555bc7a9471470488f79453c3646fd2
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -242,12 +132,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      DemonWalk_0: -231111701
-      DemonWalk_1: 1724769905
-      DemonWalk_2: -1187733468
-      DemonWalk_3: 738849221
-      DemonWalk_4: 1368191445
-      DemonWalk_5: -1460648542
+      AttackRune1_0: 637263459462573385
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

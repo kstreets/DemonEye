@@ -9,14 +9,14 @@ public class FirerateSoulcard : Soulcard {
 
     public float reduction;
     
-    public override void AddInstanceToEye(DemonEyeInstance eyeInstance, int stackCount) {
+    public override void AddInstanceToEye(GameManager.DemonEyeInstance eyeInstance, int stackCount) {
         FirerateModInstance instance = new() {
             reduction = GetReduction(stackCount) 
         };
         eyeInstance.firerateModInstance = instance;
     }
 
-    public override string GetModifierDescription(int stackCount) {
+    public override string GetStackDescription(int stackCount) {
         return $"Reduces attack cooldown by {GetReduction(stackCount)}s";
     }
 

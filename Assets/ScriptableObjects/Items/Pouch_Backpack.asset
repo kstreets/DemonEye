@@ -20,3 +20,5 @@ MonoBehaviour:
   sellPrice: 0
   traderXp: 0
   description: 
+  modifiesStats: 0
+  agilityStatAdjustment: 0

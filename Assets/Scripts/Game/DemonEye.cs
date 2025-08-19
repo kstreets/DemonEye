@@ -4,27 +4,31 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using Random = UnityEngine.Random;
 
-public class DemonEyeInstance {
+public partial class GameManager {
     
     public struct EquipedModInstance {
         public string modId;
         public int stackCount;
+        
+        public Soulcard Soulcard => eyeModifierLookup[modId];
+        public void ApplyToEnemy(Enemy enemy) => Soulcard.AddInstanceToEnemy(enemy, stackCount);
+        public void ApplyToEye(DemonEyeInstance eyeInstance) => Soulcard.AddInstanceToEye(eyeInstance, stackCount);
+        public string GetDescriptionForEye() => Soulcard.GetStackDescription(stackCount);
     }
-    
-    public List<EquipedModInstance> modInstances = new();
-    public CoreAttack coreAttack;
-    
-    public FirerateModInstance? firerateModInstance;
-    public TrishotModInstance? trishotModModInstance;
-}
 
-public partial class GameManager {
+    public class DemonEyeInstance {
+        public List<EquipedModInstance> modInstances = new();
+        public CoreAttack coreAttack;
+        
+        public FirerateModInstance? firerateModInstance;
+        public TrishotModInstance? trishotModModInstance;
+    }
 
-    public Dictionary<string, DemonEyeInstance> eyeInstanceFromItemId = new();
-    public DemonEyeInstance equipedEye;
+    private Dictionary<string, DemonEyeInstance> eyeInstanceFromItemId = new();
+    private DemonEyeInstance equipedEye;
     private Limiter attackLimiter;
 
-    public DemonEyeInstance BuildAndRegisterEye(InventoryItem item) {
+    private DemonEyeInstance BuildAndRegisterEye(InventoryItem item) {
         item.itemDataUuid = Guid.NewGuid().ToString();
         item._itemRef = demonEyeItem;
         
@@ -35,7 +39,7 @@ public partial class GameManager {
             }
         }
         
-        List<DemonEyeInstance.EquipedModInstance> eyeModifiers = new();
+        List<EquipedModInstance> eyeModifiers = new();
         foreach (KeyValuePair<string, int> pair in eyeModCountFromId) {
             eyeModifiers.Add(new() {
                 modId = pair.Key,
@@ -48,15 +52,15 @@ public partial class GameManager {
             modInstances = eyeModifiers,
         };
         
-        foreach (DemonEyeInstance.EquipedModInstance modInstance in eyeModifiers) { 
-            eyeModifierLookup[modInstance.modId].AddInstanceToEye(newDemonEye, modInstance.stackCount); 
+        foreach (EquipedModInstance modInstance in eyeModifiers) { 
+            modInstance.ApplyToEye(newDemonEye); 
         }
         
         eyeInstanceFromItemId.Add(item.itemDataUuid, newDemonEye);
         return newDemonEye;
     }
 
-    public bool CanShootPrimary() {
+    private bool CanShootPrimary() {
         float attackDelay = equipedEye.coreAttack.attackDelay;
         if (equipedEye.firerateModInstance.TryGetValue(out FirerateModInstance firerate)) {
             attackDelay -= firerate.reduction;
@@ -65,7 +69,7 @@ public partial class GameManager {
         return attackLimiter.TimeHasPassed(attackDelay);
     }
 
-    public void ShootPrimary() {
+    private void ShootPrimary() {
         ProjectilePrimaryShoot();
     }
 
@@ -103,10 +107,6 @@ public partial class GameManager {
             velocity = velocity,
             EyeInstanceSpawnedFrom = equipedEye,
         });
-    }
-
-    private bool RollProbability(float probability) {
-        return Random.value < probability;
     }
 
 }
