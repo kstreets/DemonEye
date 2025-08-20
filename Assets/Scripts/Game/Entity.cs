@@ -224,9 +224,18 @@ public partial class GameManager {
 
     private void UpdateHitFlashEffect(Entity entity) {
         if (!entity.hitFlashEffect.TryGetValue(out HitFlashEffect hitFlash)) return;
+
+        if (hitFlash.timer.IsFinished) {
+            entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
+            entity.matPropertyBlock.Clear();
+            entity.hitFlashEffect = null;
+            return;
+        }
+        
         hitFlash.timer.Tick();
         float comp = hitFlash.timer.Comp();
         entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
+        entity.matPropertyBlock.Clear();
         entity.matPropertyBlock.SetFloat(damageFlashTintPropertyId, hitFlashCurve.Evaluate(comp));
         entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
         entity.hitFlashEffect = hitFlash;

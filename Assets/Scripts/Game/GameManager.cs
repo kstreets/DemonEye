@@ -312,12 +312,18 @@ public partial class GameManager : MonoBehaviour {
         if (moveInput.x < 0) {
             player.spriteRenderer.flipX = true;
         }
-        else if (moveInput.x > 0) {
+        else {
             player.spriteRenderer.flipX = false;
         }
         
-        if (moveInput != Vector2.zero) {
+        if (moveInput.x != 0) {
             player.animator.Play("PlayerRun");
+        }
+        else if (moveInput.y > 0) {
+            player.animator.Play("PlayerRunUp");
+        }
+        else if (moveInput.y < 0) {
+            player.animator.Play("PlayerRunDown");
         }
         else {
             player.animator.Play("PlayerIdle");
@@ -373,9 +379,10 @@ public partial class GameManager : MonoBehaviour {
     public struct Projectile {
         public Transform trans;
         public float timeAlive;
-        public float range;
+        public float destroyTime;
         public Vector2 velocity;
         public DemonEyeInstance EyeInstanceSpawnedFrom;
+        public List<Entity> ignoreEntities;
     }
     
     private void UpdateProjectiles() {
@@ -383,18 +390,37 @@ public partial class GameManager : MonoBehaviour {
             Projectile proj = projectiles[i];
             proj.timeAlive += Time.deltaTime;
             proj.trans.position += proj.velocity.ToVector3() * Time.deltaTime;
-            projectiles[i] = proj;
             
             Collider2D col = Physics2D.OverlapCircle(proj.trans.position, 0.1f, Masks.DamagableMask);
-            if (col) {
-                HandleDamage(proj, col);
-                Destroy(projectiles[i].trans.gameObject);
-                projectiles.RemoveAt(i);
+            if (!col) continue;
+            
+            Entity entity = entityLookup[col.gameObject];
+                    
+            if (proj.ignoreEntities == null || !proj.ignoreEntities.Contains(entity)) {
+                HandleDamage(proj, entity);
+                
+                if (proj.EyeInstanceSpawnedFrom.penetrationInstance.TryGetValue(out PenetrationInstance pen)) {
+                    int alreadyPenetratedCount = proj.ignoreEntities?.Count ?? 0;
+                    if (alreadyPenetratedCount < pen.goThroughCount) {
+                        if (entity.IsValid) {
+                            proj.ignoreEntities ??= new();
+                            proj.ignoreEntities.Add(entity);
+                            print("here");
+                        }
+                        projectiles[i] = proj;
+                        continue;
+                    }
+                }
             }
+
+            projectiles[i] = proj;
+                
+            Destroy(projectiles[i].trans.gameObject);
+            projectiles.RemoveAt(i);
         }
 
         for (int i = projectiles.Count - 1; i >= 0; i--) {
-            if (projectiles[i].timeAlive > projectiles[i].range) {
+            if (projectiles[i].timeAlive > projectiles[i].destroyTime) {
                 Destroy(projectiles[i].trans.gameObject);
                 projectiles.RemoveAt(i);
             }
@@ -413,14 +439,13 @@ public partial class GameManager : MonoBehaviour {
         AddFlashHitEffect(player);
     }
     
-    private void HandleDamage(Projectile projectile, Collider2D col) {
-        if (!col) return;
+    private void HandleDamage(Projectile projectile, Entity entity) {
+        if (entity == null) return;
         
-        Entity entity = entityLookup[col.gameObject];
         DemonEyeInstance eyeInstance = projectile.EyeInstanceSpawnedFrom;
         
-        if (col.CompareTag(Tags.Enemy)) {
-            Enemy enemy = enemyLookup[col.gameObject];
+        if (entity.gameObject.CompareTag(Tags.Enemy)) {
+            Enemy enemy = enemyLookup[entity.gameObject];
             
             int damage = eyeInstance.coreAttack.damage;
             float criticalStrikeProb = defaultCriticalStrikeChange;
@@ -472,8 +497,8 @@ public partial class GameManager : MonoBehaviour {
                 PlayAudioClip(stoneBreakClip, entity.position, 1f);
 
                 for (int i = 0; i < 6; i++) {
-                    Vector3 spawnPos = col.transform.position + RandomOffset360(0.18f, 0.25f);
-                    Entity rockDrop = SpawnLevelEntity<Entity>(rockDropPool.GetDropFromPool(), col.transform.position, Quaternion.identity);
+                    Vector3 spawnPos = entity.position + RandomOffset360(0.18f, 0.25f);
+                    Entity rockDrop = SpawnLevelEntity<Entity>(rockDropPool.GetDropFromPool(), entity.position, Quaternion.identity);
                     AddBounceEffect(rockDrop, spawnPos, 0.8f);
                 }
             }

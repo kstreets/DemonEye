@@ -23,6 +23,8 @@ public partial class GameManager {
         public FirerateModInstance? firerateModInstance;
         public TrishotModInstance? trishotModModInstance;
         public BleedCritInstance? bleedCritInstance;
+        public RangeInstance? rangeInstance;
+        public PenetrationInstance? penetrationInstance;
     }
 
     private Dictionary<string, DemonEyeInstance> eyeInstanceFromItemId = new();
@@ -100,10 +102,16 @@ public partial class GameManager {
         float angle = Vector2.SignedAngle(Vector2.right, velocity.normalized);
         Quaternion projectileRotation = Quaternion.AngleAxis(angle, Vector3.forward);
         GameObject projectile = Instantiate(equipedEye.coreAttack.projectilePrefab, player.position + new Vector3(0f, 0.13f, 0f), projectileRotation);
+
+        float travelDist = equipedEye.coreAttack.range;
+        if (equipedEye.rangeInstance.TryGetValue(out RangeInstance rangeIncrease)) {
+            travelDist += rangeIncrease.distanceIncrease;
+        }
+        float destroyTime = travelDist / velocity.magnitude;
         
         projectiles.Add(new() {
             timeAlive = 0f,
-            range = equipedEye.coreAttack.range,
+            destroyTime = destroyTime,
             trans = projectile.transform,
             velocity = velocity,
             EyeInstanceSpawnedFrom = equipedEye,
