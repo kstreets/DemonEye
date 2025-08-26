@@ -42,6 +42,13 @@ public static class Extensions {
         return count;
     }
 
+    public static T PopLast<T>(this List<T> list) {
+        if (list.Count <= 0) throw new Exception("Cannot pop last item from empty list");
+        T lastItem = list[^1];
+        list.RemoveAt(list.Count - 1);
+        return lastItem;
+    }
+
     public static void InitalizeWithDefault<T>(this T[] array) where T : new() {
         for (int i = 0; i < array.Length; i++) {
             array[i] = new();

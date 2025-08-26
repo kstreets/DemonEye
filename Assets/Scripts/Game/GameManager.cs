@@ -5,6 +5,7 @@ using TMPro;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Pool;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 using VInspector;
@@ -13,13 +14,10 @@ public partial class GameManager : MonoBehaviour {
 
     public List<Item> allItems;
     public List<ItemPool> traderLevelPools;
-    
-    [Foldout("Pooling")]
-    public List<ObjectPool> objectPools;
-    [EndFoldout]
-    
-    [Foldout("Pooling/Individuals")]
-    public ObjectPool bloodDropPool;
+
+    [Foldout("Pooling Prefabs")]
+    public GameObject bloodDropPrefab;
+    public GameObject projectilePrefab;
     [EndFoldout]
     
     [Foldout("Gameplay Variables")]
@@ -161,6 +159,9 @@ public partial class GameManager : MonoBehaviour {
 
     private Timer exitPortalTimer;
 
+    private EntityPool<Entity> bloodDropPool;
+    private EntityPool<Projectile> projectilePool;
+
     private State hideoutState;
     private State raidState;
     private StateMachine gameStateMachine = new();
@@ -186,14 +187,6 @@ public partial class GameManager : MonoBehaviour {
             itemDataLookup.Add(itemData.uuid, itemData);
         }
         
-        foreach (ObjectPool pool in objectPools) {
-            for (int i = 0; i < pool.initialCount; i++) {
-                GameObject obj = Instantiate(pool.prefab, Vector3.zero, Quaternion.identity, transform);
-                obj.SetActive(false);
-                pool.availableQueue.Enqueue(obj);
-            }
-        }
-        
         InitAudio();
         InitHideoutUI();
         BuildSavePaths();
@@ -204,6 +197,9 @@ public partial class GameManager : MonoBehaviour {
         InitButtonCallbacks();
         AddItemsToTraderInventory(hideoutStateData.traderLevel);
         SetStashValue(0);
+
+        bloodDropPool = CreateEntityPool<Entity>(bloodDropPrefab, 10, null);
+        projectilePool = CreateEntityPool<Projectile>(projectilePrefab, 20, OnSpawnProjectile);
 
         equipedEye = new() { coreAttack = defaultAttack };
         
@@ -260,7 +256,7 @@ public partial class GameManager : MonoBehaviour {
 
         smallMapParent.gameObject.SetActive(true);
         Map map = smallMapParent.GetComponent<Map>();
-        player = SpawnLevelEntity<Entity>(playerPrefab, hellSpawnPosition, Quaternion.identity);
+        player = SpawnEntity<Entity>(playerPrefab, hellSpawnPosition, Quaternion.identity);
         cinemachineCamera.Follow = player.trans;
         
         AstarPath.active.Scan();
@@ -376,13 +372,23 @@ public partial class GameManager : MonoBehaviour {
         interactPrompt.transform.position = mainCamera.WorldToScreenPoint(position + new Vector3(0f, 0.1f, 0f));
     }
 
-    public struct Projectile {
-        public Transform trans;
+    public class Projectile : Entity {
         public float timeAlive;
         public float destroyTime;
         public Vector2 velocity;
-        public DemonEyeInstance EyeInstanceSpawnedFrom;
+        public DemonEyeInstance eyeInstanceSpawnedFrom;
         public List<Entity> ignoreEntities;
+    }
+    
+    private static void OnSpawnProjectile(Projectile projectile) {
+        projectile.timeAlive = default;
+        projectile.destroyTime = default;
+        projectile.velocity = default;
+        projectile.eyeInstanceSpawnedFrom = default;
+        if (projectile.ignoreEntities != null) {
+            ListPool<Entity>.Release(projectile.ignoreEntities);
+        }
+        projectile.ignoreEntities = default;
     }
     
     private void UpdateProjectiles() {
@@ -398,38 +404,40 @@ public partial class GameManager : MonoBehaviour {
                     
             if (proj.ignoreEntities == null || !proj.ignoreEntities.Contains(entity)) {
                 HandleDamage(proj, entity);
-                
-                if (proj.EyeInstanceSpawnedFrom.penetrationInstance.TryGetValue(out PenetrationInstance pen)) {
-                    int alreadyPenetratedCount = proj.ignoreEntities?.Count ?? 0;
-                    if (alreadyPenetratedCount < pen.goThroughCount) {
-                        if (entity.IsValid) {
-                            proj.ignoreEntities ??= new();
-                            proj.ignoreEntities.Add(entity);
-                            print("here");
-                        }
-                        projectiles[i] = proj;
-                        continue;
-                    }
-                }
             }
 
-            projectiles[i] = proj;
-                
-            Destroy(projectiles[i].trans.gameObject);
+            if (entity is Enemy && ProjectileShouldPassThrough(proj, entity)) continue;
+            
+            DestroyEntity(projectiles[i]);
             projectiles.RemoveAt(i);
         }
 
         for (int i = projectiles.Count - 1; i >= 0; i--) {
             if (projectiles[i].timeAlive > projectiles[i].destroyTime) {
-                Destroy(projectiles[i].trans.gameObject);
+                DestroyEntity(projectiles[i]);
                 projectiles.RemoveAt(i);
             }
         }
     }
 
+    private bool ProjectileShouldPassThrough(Projectile proj, Entity entity) {
+        if (!proj.eyeInstanceSpawnedFrom.penetrationInstance.TryGetValue(out PenetrationInstance pen)) {
+            return false;
+        }
+        
+        bool alreadyContainsEntity = proj.ignoreEntities?.Contains(entity) ?? false;
+        if (entity.IsValid && !alreadyContainsEntity) {
+            proj.ignoreEntities ??= ListPool<Entity>.Get();
+            proj.ignoreEntities.Add(entity);
+        }
+        
+        int alreadyPenetratedCount = proj.ignoreEntities?.Count ?? 0;
+        return alreadyPenetratedCount <= pen.goThroughCount;
+    }
+
     private void ClearProjectiles() {
         foreach (Projectile projectile in projectiles) {
-            Destroy(projectile.trans.gameObject);
+            DestroyEntity(projectile);
         }
         projectiles.Clear();
     }
@@ -442,7 +450,7 @@ public partial class GameManager : MonoBehaviour {
     private void HandleDamage(Projectile projectile, Entity entity) {
         if (entity == null) return;
         
-        DemonEyeInstance eyeInstance = projectile.EyeInstanceSpawnedFrom;
+        DemonEyeInstance eyeInstance = projectile.eyeInstanceSpawnedFrom;
         
         if (entity.gameObject.CompareTag(Tags.Enemy)) {
             Enemy enemy = enemyLookup[entity.gameObject];
@@ -470,7 +478,7 @@ public partial class GameManager : MonoBehaviour {
 
             Vector2 startDamageNumPos = OffsetY(enemy.position, 0.15f);
             Vector2 endDamageNumPos = OffsetY(enemy.position, 0.22f);
-            Entity damageNumber = SpawnLevelEntity<Entity>(damageNumberPrefab, startDamageNumPos, Quaternion.identity, damageNumbersParent);
+            Entity damageNumber = SpawnEntity<Entity>(damageNumberPrefab, startDamageNumPos, Quaternion.identity, damageNumbersParent);
             damageNumber.textMesh.text = damage.ToString();
             if (isCriticalStrike) {
                 damageNumber.textMesh.color = criticalStrikeColor;
@@ -489,7 +497,7 @@ public partial class GameManager : MonoBehaviour {
             PlayAudioClip(stoneHitClip, entity.position, 1f);
                 
             if (entity.health <= 0) {
-                Entity smokeEntity = SpawnLevelEntity<Entity>(rockSmokePrefab, entity.position, Quaternion.identity);
+                Entity smokeEntity = SpawnEntity<Entity>(rockSmokePrefab, entity.position, Quaternion.identity);
                 DestroyEntity(smokeEntity, 0.417f);
                 AstarPath.active.UpdateGraphs(entity.collider.bounds);
                 DestroyEntity(entity);
@@ -498,7 +506,7 @@ public partial class GameManager : MonoBehaviour {
 
                 for (int i = 0; i < 6; i++) {
                     Vector3 spawnPos = entity.position + RandomOffset360(0.18f, 0.25f);
-                    Entity rockDrop = SpawnLevelEntity<Entity>(rockDropPool.GetDropFromPool(), entity.position, Quaternion.identity);
+                    Entity rockDrop = SpawnEntity<Entity>(rockDropPool.GetDropFromPool(), entity.position, Quaternion.identity);
                     AddBounceEffect(rockDrop, spawnPos, 0.8f);
                 }
             }
@@ -525,7 +533,7 @@ public partial class GameManager : MonoBehaviour {
         exitPortalTimer.EndAction ??= () => {
             int randomSpawnIndex = Random.Range(0, exitPortalSpawnParent.childCount);
             Transform exitPortalParent = exitPortalSpawnParent.GetChild(randomSpawnIndex);
-            SpawnLevelEntity<Entity>(exitPortalPrefab, exitPortalParent.position, Quaternion.identity, exitPortalParent);
+            SpawnEntity<Entity>(exitPortalPrefab, exitPortalParent.position, Quaternion.identity, exitPortalParent);
             exitPortalStatusText.text = $"Exit Portal: { exitPortalParent.name }";
         };
     }
@@ -559,7 +567,7 @@ public partial class GameManager : MonoBehaviour {
                 Item spawnItem = deadBodyPool.GetItemFromPool();
                 InventoryItem lootItem = new() {
                     itemDataUuid = spawnItem.uuid, 
-                    count = Random.Range(1, spawnItem.maxStackCount / 3),
+                    count = Random.Range(1, spawnItem.MaxStackCount / 3),
                     notDiscovered = true,
                 };
                 deadBodySlots[j] = new() {
@@ -583,7 +591,7 @@ public partial class GameManager : MonoBehaviour {
             Transform spawnTrans = spawnPoints[randomIndex];
             spawnPoints.RemoveAt(randomIndex);
             
-            T resource = SpawnLevelEntity<T>(resourcePrefab, spawnTrans.position, spawnTrans.rotation);
+            T resource = SpawnEntity<T>(resourcePrefab, spawnTrans.position, spawnTrans.rotation);
 
             if (cutsNavmesh) {
                 AstarPath.active.UpdateGraphs(resource.collider.bounds);
@@ -595,9 +603,7 @@ public partial class GameManager : MonoBehaviour {
 
     private void DestroyLevelEntities() {
         for (int i = entities.Count - 1; i >= 0; i--) {
-            if (entities[i].lifeTime == EntityLifeTime.Level) {
-                DestroyEntityAtIndex(i);    
-            }
+            DestroyEntityAtIndex(i);    
         }
 
         deadBodySlotsLookup.Clear();

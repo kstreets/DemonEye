@@ -16,7 +16,7 @@ public partial class GameManager {
         [NonSerialized] public Item _itemRef; // Used for items created at runtime, like demon eyes
 
         public Item ItemRef => _itemRef ? _itemRef : itemDataLookup[itemDataUuid];
-        public bool IsFullStack => count == ItemRef.maxStackCount;
+        public bool IsFullStack => count == ItemRef.MaxStackCount;
 
         public InventoryItem(Item item = null, int count = 1) {
             if (item == null) return;
@@ -365,7 +365,7 @@ public partial class GameManager {
         ItemPool itemPool = traderLevelPools[traderLevel];
         for (int i = 0; i < 5; i++) {
             Item traderItem = itemPool.GetItemFromPool();
-            TryAddItemToInventory(traderInventory, traderItem, traderItem.maxStackCount);
+            TryAddItemToInventory(traderInventory, traderItem, traderItem.MaxStackCount);
             RefreshInventoryDisplay(traderInventory);
         }
     }
@@ -440,9 +440,9 @@ public partial class GameManager {
         foreach (InventorySlot slot in inventory.slots) {
             if (slot.item == null || slot.ui.disallowItemStacking || slot.item.IsFullStack || slot.item.itemDataUuid != item.itemDataUuid) continue;
 
-            int overflowAmount = (count + slot.item.count) - slot.item.ItemRef.maxStackCount;
+            int overflowAmount = (count + slot.item.count) - slot.item.ItemRef.MaxStackCount;
             if (overflowAmount > 0) {
-                int addCount = slot.item.ItemRef.maxStackCount - slot.item.count;
+                int addCount = slot.item.ItemRef.MaxStackCount - slot.item.count;
                 
                 slot.item.count += addCount;
                 count = overflowAmount;
@@ -465,7 +465,7 @@ public partial class GameManager {
             bool slotCanAcceptItemType = slot.ui.acceptsAllTypes || slot.ui.onlyAcceptedItemType == item.ItemRef.type;
             if (!slotCanAcceptItemType) continue;
 
-            int addCount = slot.ui.disallowItemStacking ? 1 : Mathf.Clamp(count, 0, item.ItemRef.maxStackCount);
+            int addCount = slot.ui.disallowItemStacking ? 1 : Mathf.Clamp(count, 0, item.ItemRef.MaxStackCount);
             bool canMoveCleanly = addCount == count;
             
             if (canMoveCleanly) {
@@ -662,7 +662,7 @@ public partial class GameManager {
         int weight = 0;
         foreach (InventorySlot slot in inventory.slots) {
             if (slot.item == null) continue;
-            weight += slot.item.ItemRef.weight * slot.item.count;
+            weight += slot.item.ItemRef.Weight * slot.item.count;
         }
         return weight;
     }

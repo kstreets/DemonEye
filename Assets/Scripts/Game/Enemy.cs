@@ -49,7 +49,7 @@ public partial class GameManager {
                     enemy.health -= bleed.bleedDamage;
                     bleed.lastBleedTime = Time.time;
                     enemy.bleed = bleed;
-                    Entity bloodDrop = SpawnLevelEntity<Entity>(bloodDropPool, enemy.position, Quaternion.identity);
+                    Entity bloodDrop = SpawnEntity(bloodDropPool, enemy.position, Quaternion.identity);
                     AddParentEffect(bloodDrop, enemy, 0.4f);
                     DestroyEntity(bloodDrop, 0.8f);
                 }
@@ -62,7 +62,7 @@ public partial class GameManager {
                     foreach (EnemyData.ItemDrop itemDrop in itemDrops) {
                         float randomChance = Random.value;
                         if (randomChance < itemDrop.dropChance) {
-                            SpawnLevelEntity<Entity>(itemDrop.itemPrefab, enemy.position, Quaternion.identity);
+                            SpawnEntity<Entity>(itemDrop.itemPrefab, enemy.position, Quaternion.identity);
                         }
                     }
                 }
@@ -270,7 +270,7 @@ public partial class GameManager {
             NNInfo info = AstarPath.active.graphs[0].GetNearest(randomSpawnPos, NNConstraint.Walkable);
 
             EnemyData enemyToSpawn = wm.spawnEvents[wm.spawnTimeIndex].enemy;
-            Enemy enemy = SpawnLevelEntity<Enemy>(enemyToSpawn.enemyPrefab, info.position, Quaternion.identity);
+            Enemy enemy = SpawnEntity<Enemy>(enemyToSpawn.enemyPrefab, info.position, Quaternion.identity);
             enemy.health = enemyToSpawn.health;
             enemy.data = enemyToSpawn;
             

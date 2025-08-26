@@ -19,15 +19,16 @@ MonoBehaviour:
   buyPrice: 0
   sellPrice: 0
   traderXp: 0
+  weight: 0
   description: 
-  attackType: 0
+  modifiesStats: 0
+  agilityStatAdjustment: 0
+  strengthStatAdjustment: 0
   attackDelay: 0.2
   cappedMinAttackDelay: 0.1
   damage: 22
-  range: 0.6
+  range: 1.2
   accuracy: 0.3
   enemySpeedReductionPercent: 0.2
   projectileSpeed: 2
   projectilePrefab: {fileID: 2758590605051147821, guid: 490c322ccae8e8149a6dddb96650a50e, type: 3}
-  laserDuration: 1
-  laserDamageTickDelay: 0.05

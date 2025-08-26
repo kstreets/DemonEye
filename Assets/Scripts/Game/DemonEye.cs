@@ -101,21 +101,18 @@ public partial class GameManager {
     private void SpawnProjectile(Vector2 velocity) {
         float angle = Vector2.SignedAngle(Vector2.right, velocity.normalized);
         Quaternion projectileRotation = Quaternion.AngleAxis(angle, Vector3.forward);
-        GameObject projectile = Instantiate(equipedEye.coreAttack.projectilePrefab, player.position + new Vector3(0f, 0.13f, 0f), projectileRotation);
-
+        
         float travelDist = equipedEye.coreAttack.range;
         if (equipedEye.rangeInstance.TryGetValue(out RangeInstance rangeIncrease)) {
             travelDist += rangeIncrease.distanceIncrease;
         }
         float destroyTime = travelDist / velocity.magnitude;
-        
-        projectiles.Add(new() {
-            timeAlive = 0f,
-            destroyTime = destroyTime,
-            trans = projectile.transform,
-            velocity = velocity,
-            EyeInstanceSpawnedFrom = equipedEye,
-        });
+
+        Projectile projectile = SpawnEntity(projectilePool, player.position + new Vector3(0f, 0.13f, 0f), projectileRotation);
+        projectile.destroyTime = destroyTime;
+        projectile.velocity = velocity;
+        projectile.eyeInstanceSpawnedFrom = equipedEye;
+        projectiles.Add(projectile);
     }
 
 }

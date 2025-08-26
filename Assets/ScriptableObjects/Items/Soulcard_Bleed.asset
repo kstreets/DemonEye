@@ -15,10 +15,15 @@ MonoBehaviour:
   uuid: 9e2f280c-4df1-4f51-ad60-db56ef2c3f32
   type: 2
   inventorySprite: {fileID: 619219371, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
+  itemGroupProps: {fileID: 11400000, guid: 78826f3a685555a4896655f4c68ef737, type: 2}
   maxStackCount: 3
+  weight: 0
+  description: 
   buyPrice: 100
   sellPrice: 33
   traderXp: 5
-  description: 
+  modifiesStats: 0
+  agilityStatAdjustment: 0
+  strengthStatAdjustment: 0
   bleedDamage: 5
   bleedInterval: 0.5

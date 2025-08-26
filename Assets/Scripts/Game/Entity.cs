@@ -6,8 +6,40 @@ using Random = UnityEngine.Random;
 
 public partial class GameManager {
     
-    public enum EntityLifeTime { Global, Level }
+    public interface IEntityPooler { 
+        public void ReleaseEntity(Entity entity);
+    }
 
+    public class EntityPool<T> : IEntityPooler where T : Entity {
+        public Action<T> OnSpawnCallback;
+        public GameObject prefab;
+        public List<T> standbyList = new();
+        public List<T> inUseList = new();
+
+        public void ReleaseEntity(Entity entity) {
+            entity.gameObject.SetActive(false);
+            standbyList.Add((T)entity);
+            inUseList.Remove((T)entity);
+        }
+    }
+    
+    private EntityPool<T> CreateEntityPool<T>(GameObject gameObj, int initialSize, Action<T> onSpawnCallback) where T : Entity, new() {
+        EntityPool<T> pool = new() {
+            OnSpawnCallback = onSpawnCallback,
+            prefab = gameObj,
+        };
+        
+        for (int i = 0; i < initialSize; i++) {
+            T entity = SpawnEntity<T>(gameObj, Vector3.zero, Quaternion.identity, transform);
+            entity.entityPool = pool;
+            entity.gameObject.SetActive(false);
+            pool.standbyList.Add(entity);
+        }
+        
+        return pool;
+    }
+    
+    
     public class Entity {
         public Transform trans;
         public Collider2D collider;
@@ -17,10 +49,9 @@ public partial class GameManager {
         public TextMeshProUGUI textMesh;
         
         public MaterialPropertyBlock matPropertyBlock = new();
-        public ObjectPool objectPool;
+        public IEntityPooler entityPool;
         public int health;
         public int damageAccumilation;
-        public EntityLifeTime lifeTime;
         
         public SpringShake? springShake;
         public ScaleEffect? scaleEffect;
@@ -38,48 +69,50 @@ public partial class GameManager {
         public GameObject gameObject => trans.gameObject;
     }
     
-    private T SpawnGlobalEntity<T>(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null) where T : Entity, new() {
+    private T SpawnEntity<T>(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null) where T : Entity, new() {
         GameObject obj = Instantiate(prefab, position, rotation, parent);
-        return SpawnAndBindEntity<T>(obj, position, rotation, parent, EntityLifeTime.Global);
-    }
-    
-    private T SpawnGlobalEntity<T>(ObjectPool pool, Vector3 position, Quaternion rotation, Transform parent = null) where T : Entity, new() {
-        GameObject obj = pool.availableQueue.Dequeue();
-        obj.SetActive(true);
-        T entity = SpawnAndBindEntity<T>(obj, position, rotation, parent, EntityLifeTime.Global);
-        entity.objectPool = pool;
-        return entity;
-    }
-    
-    private T SpawnLevelEntity<T>(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null) where T : Entity, new() {
-        GameObject obj = Instantiate(prefab, position, rotation, parent);
-        return SpawnAndBindEntity<T>(obj, position, rotation, parent, EntityLifeTime.Level);
+        return InitializeEntity<T>(obj, position, rotation, parent);
     }
 
-    private T SpawnLevelEntity<T>(ObjectPool pool, Vector3 position, Quaternion rotation, Transform parent = null) where T : Entity, new() {
-        GameObject obj = pool.availableQueue.Dequeue();
-        obj.SetActive(true);
-        T entity = SpawnAndBindEntity<T>(obj, position, rotation, parent, EntityLifeTime.Level);
-        entity.objectPool = pool;
+    private T SpawnEntity<T>(EntityPool<T> pool, Vector3 position, Quaternion rotation, Transform parent = null) where T : Entity, new() {
+        T entity;
+        if (pool.standbyList.Count > 0) {
+            entity = pool.standbyList.PopLast();
+            entity.trans.SetPositionAndRotation(position, rotation);
+            entity.trans.SetParent(parent);
+            ResetEntity(entity);
+        }
+        else { 
+            entity = SpawnEntity<T>(pool.prefab, position, rotation, parent);
+            entity.entityPool = pool;
+        }
+        entity.gameObject.SetActive(true);
+        pool.inUseList.Add(entity);
+        pool.OnSpawnCallback?.Invoke(entity);
         return entity;
     }
     
-    private T SpawnAndBindEntity<T>(GameObject objInstance, Vector3 position, Quaternion rotation, Transform parent, EntityLifeTime lifeTime) where T : Entity, new() {
+    private T InitializeEntity<T>(GameObject objInstance, Vector3 position, Quaternion rotation, Transform parent) where T : Entity, new() {
         objInstance.transform.SetPositionAndRotation(position, rotation);
         objInstance.transform.SetParent(parent);
         T newEntity = new() {
             trans = objInstance.transform,
-            health = 100,
-            lifeTime = lifeTime,
             collider = objInstance.TryGetComponent(out Collider2D col) ? col : null,
             rigidbody = objInstance.TryGetComponent(out Rigidbody2D rbody) ? rbody : null,
             spriteRenderer = objInstance.TryGetComponent(out SpriteRenderer spriteRenderer) ? spriteRenderer : null,
             animator = objInstance.TryGetComponent(out Animator anim) ? anim : null,
             textMesh = objInstance.TryGetComponent(out TextMeshProUGUI text) ? text : null,
         };
+        ResetEntity(newEntity);
         entities.Add(newEntity);
         entityLookup.Add(objInstance, newEntity);
         return newEntity;
+    }
+
+    private void ResetEntity<T>(T entity) where T : Entity {
+        entity.health = 100;
+        entity.animator?.Rebind();
+        entity.animator?.Update(0);
     }
     
     private void DestroyEntity(GameObject gameObj) {
@@ -87,6 +120,8 @@ public partial class GameManager {
     }
     
     private void DestroyEntity(Entity entity) {
+        RemoveHitFlashEffect(entity);
+        
         entityLookup.Remove(entity.gameObject);
         entities.Remove(entity);
         DestroyOrReleaseEntitysGameObject(entity);
@@ -100,15 +135,12 @@ public partial class GameManager {
     }
 
     private void DestroyOrReleaseEntitysGameObject(Entity entity) {
-        if (!entity.objectPool) {
+        if (entity.entityPool == null) {
             Destroy(entity.gameObject);
             return;
         }
-        
-        // Return game object back to pool
         entity.gameObject.transform.SetParent(transform);
-        entity.gameObject.SetActive(false);
-        entity.objectPool.availableQueue.Enqueue(entity.gameObject);
+        entity.entityPool.ReleaseEntity(entity);
     }
 
     private List<(Entity entity, float delay)> delayedEntitiesToDestroy = new();
@@ -226,19 +258,25 @@ public partial class GameManager {
         if (!entity.hitFlashEffect.TryGetValue(out HitFlashEffect hitFlash)) return;
 
         if (hitFlash.timer.IsFinished) {
-            entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
-            entity.matPropertyBlock.Clear();
-            entity.hitFlashEffect = null;
+            RemoveHitFlashEffect(entity);
             return;
         }
         
         hitFlash.timer.Tick();
         float comp = hitFlash.timer.Comp();
         entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
-        entity.matPropertyBlock.Clear();
         entity.matPropertyBlock.SetFloat(damageFlashTintPropertyId, hitFlashCurve.Evaluate(comp));
         entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
         entity.hitFlashEffect = hitFlash;
+    }
+
+    private void RemoveHitFlashEffect(Entity entity) {
+        if (!entity.hitFlashEffect.HasValue) return;
+        
+        entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
+        entity.matPropertyBlock.SetFloat(damageFlashTintPropertyId, 0);
+        entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
+        entity.hitFlashEffect = null;
     }
 
     
@@ -334,5 +372,5 @@ public partial class GameManager {
         entity.position = Vector2.Lerp(tween.startPos, tween.endPos, comp);
         entity.tweenPosition = tween;
     }
-    
+
 }

@@ -169,8 +169,8 @@ MonoBehaviour:
   acceptsAllTypes: 1
   slotImage: {fileID: 2399182519088167438}
   itemImage: {fileID: 6153983853364303732}
-  inactiveSlotSprite: {fileID: 957642039, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
   activeSlotSprite: {fileID: 823751994, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
+  inactiveSlotSprite: {fileID: 957642039, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
   countText: {fileID: 1399841001326380426}
   onlyAcceptedItemType: 0
 --- !u!1 &6776181244067007233
