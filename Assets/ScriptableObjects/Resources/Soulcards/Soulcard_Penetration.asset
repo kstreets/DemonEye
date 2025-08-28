@@ -9,18 +9,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9bc23522601a56f4d89295cf565d360b, type: 3}
-  m_Name: DemonEye
+  m_Script: {fileID: 11500000, guid: 10470051e6697234f88e1fa8d25094da, type: 3}
+  m_Name: Soulcard_Penetration
   m_EditorClassIdentifier: 
-  uuid: d6d0e96c-4eb3-42eb-a6b6-6ca0a73cb84f
-  type: 3
-  inventorySprite: {fileID: -1083478326, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
-  maxStackCount: 1
+  uuid: 1883036087
+  type: 2
+  inventorySprite: {fileID: 541499864, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
+  itemGroupProps: {fileID: 11400000, guid: 78826f3a685555a4896655f4c68ef737, type: 2}
+  maxStackCount: 3
+  weight: 0
+  description: 
   buyPrice: 0
   sellPrice: 0
   traderXp: 0
-  weight: 0
-  description: 
   modifiesStats: 0
   agilityStatAdjustment: 0
   strengthStatAdjustment: 0
+  startingGoThroughCount: 1

@@ -7,7 +7,7 @@ using Random = UnityEngine.Random;
 public partial class GameManager {
     
     public struct EquipedModInstance {
-        public string modId;
+        public int modId;
         public int stackCount;
         
         public Soulcard Soulcard => eyeModifierLookup[modId];
@@ -24,26 +24,28 @@ public partial class GameManager {
         public TrishotModInstance? trishotModModInstance;
         public BleedCritInstance? bleedCritInstance;
         public RangeInstance? rangeInstance;
+        public FarDamageInstance? farDamageInstance;
         public PenetrationInstance? penetrationInstance;
+        public DoubleCritInstance? doubleCritInstance;
     }
 
-    private Dictionary<string, DemonEyeInstance> eyeInstanceFromItemId = new();
+    private Dictionary<int, DemonEyeInstance> eyeInstanceFromItemId = new();
     private DemonEyeInstance equipedEye;
     private Limiter attackLimiter;
 
     private DemonEyeInstance BuildAndRegisterEye(InventoryItem item) {
-        item.itemDataUuid = Guid.NewGuid().ToString();
+        item.itemDataUuid = GenerateNewItemUuid();
         item._itemRef = demonEyeItem;
         
-        Dictionary<string, int> eyeModCountFromId = new();
-        foreach (string modUuid in item.modifierUuids) {
+        Dictionary<int, int> eyeModCountFromId = new();
+        foreach (int modUuid in item.modifierUuids) {
             if (!eyeModCountFromId.TryAdd(modUuid, 1)) {
                 eyeModCountFromId[modUuid]++;
             }
         }
         
         List<EquipedModInstance> eyeModifiers = new();
-        foreach (KeyValuePair<string, int> pair in eyeModCountFromId) {
+        foreach (KeyValuePair<int, int> pair in eyeModCountFromId) {
             eyeModifiers.Add(new() {
                 modId = pair.Key,
                 stackCount = pair.Value,
@@ -107,6 +109,10 @@ public partial class GameManager {
             travelDist += rangeIncrease.distanceIncrease;
         }
         float destroyTime = travelDist / velocity.magnitude;
+
+        if (equipedEye.farDamageInstance.TryGetValue(out FarDamageInstance farDamage)) {
+             
+        }
 
         Projectile projectile = SpawnEntity(projectilePool, player.position + new Vector3(0f, 0.13f, 0f), projectileRotation);
         projectile.destroyTime = destroyTime;

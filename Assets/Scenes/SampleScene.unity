@@ -144988,24 +144988,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe0d147fa5ac6ad488d161e946b96d11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  allItems:
-  - {fileID: 11400000, guid: 6f7f20f8211114b4485e5e39f0547140, type: 2}
-  - {fileID: 11400000, guid: 4657eb0c1f4fb404f918b49b86323991, type: 2}
-  - {fileID: 11400000, guid: cd687a7e47b684f45b3fb8851a1e8edb, type: 2}
-  - {fileID: 11400000, guid: e40bd991cff5cf042ad9c0cbb1ddcb72, type: 2}
-  - {fileID: 11400000, guid: 879589b7002a56d4791affd28d5fb199, type: 2}
-  - {fileID: 11400000, guid: dd6594e1ebfbb334495ddd1d6a65f0a1, type: 2}
-  - {fileID: 11400000, guid: 9285ab41e291784449187596580ae02c, type: 2}
-  - {fileID: 11400000, guid: 80f19e812bb183b498023f74d3bbef97, type: 2}
-  - {fileID: 11400000, guid: 667a64d81be74684794ef55b13295ef7, type: 2}
-  - {fileID: 11400000, guid: 8a1342e3b7302de4c897cb310bc19b12, type: 2}
-  - {fileID: 11400000, guid: 080b4f634b61c1d49a235bcf9b6ae110, type: 2}
-  - {fileID: 11400000, guid: cd2654388b5ebf84bb80fbb822a8960a, type: 2}
-  - {fileID: 11400000, guid: dd59441e955a1cc49ba1c1e14f358d3f, type: 2}
-  - {fileID: 11400000, guid: 91c439eaaf97da2469444e529486f33a, type: 2}
-  - {fileID: 11400000, guid: 4b4b5e09fc52bd540ba56dee61244ccb, type: 2}
-  - {fileID: 11400000, guid: 8842a0e3b2453f440b32b802a0cf16c4, type: 2}
-  - {fileID: 11400000, guid: 54622a27d26ec3243930fb8f40b4a14c, type: 2}
   traderLevelPools:
   - {fileID: 11400000, guid: 0694fa22015d4ea47bc4555bd2490364, type: 2}
   bloodDropPrefab: {fileID: 2835100544158664230, guid: a3700393b2b39cc44a28e9dee1a285c8, type: 3}

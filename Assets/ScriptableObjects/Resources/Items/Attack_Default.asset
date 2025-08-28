@@ -12,15 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ddbfdc15501c354980f508215255cf2, type: 3}
   m_Name: Attack_Default
   m_EditorClassIdentifier: 
-  uuid: 42bfd6a6-e5b7-486d-be34-2f798f1a1d7a
+  uuid: -226384764
   type: 0
   inventorySprite: {fileID: 0}
+  itemGroupProps: {fileID: 0}
   maxStackCount: 0
+  weight: 0
+  description: 
   buyPrice: 0
   sellPrice: 0
   traderXp: 0
-  weight: 0
-  description: 
   modifiesStats: 0
   agilityStatAdjustment: 0
   strengthStatAdjustment: 0

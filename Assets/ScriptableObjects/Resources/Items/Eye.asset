@@ -10,13 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9bc23522601a56f4d89295cf565d360b, type: 3}
-  m_Name: StoneGemRare
+  m_Name: Eye
   m_EditorClassIdentifier: 
-  uuid: 1dd02437-e00f-4a09-871f-a7ee44df9706
-  type: 0
-  inventorySprite: {fileID: -51953114, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
-  maxStackCount: 15
-  buyPrice: 5
-  sellPrice: 15
-  traderXp: 200
-  description: Demonic gem, traders buy this item to make their trinkets.
+  uuid: 278913107
+  type: 1
+  inventorySprite: {fileID: -12894388, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  itemGroupProps: {fileID: 0}
+  maxStackCount: 10
+  weight: 0
+  description: Used to craft demonic eyes.
+  buyPrice: 25
+  sellPrice: 20
+  traderXp: 5
+  modifiesStats: 0
+  agilityStatAdjustment: 0
+  strengthStatAdjustment: 0

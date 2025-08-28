@@ -10,17 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9bc23522601a56f4d89295cf565d360b, type: 3}
-  m_Name: StoneDrop
+  m_Name: StoneGemRare
   m_EditorClassIdentifier: 
-  uuid: 7ba12bf6-38c9-43f8-8176-7322ff1377b6
+  uuid: -2122329079
   type: 0
-  inventorySprite: {fileID: 1172067732, guid: f5f130e61e73c674ba01af3a5a5f58ea, type: 3}
+  inventorySprite: {fileID: -51953114, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
+  itemGroupProps: {fileID: 0}
   maxStackCount: 15
+  weight: 0
+  description: Demonic gem, traders buy this item to make their trinkets.
   buyPrice: 5
-  sellPrice: 3
-  traderXp: 2
-  weight: 10
-  description: Demonic stone, a powerful tool for building.
+  sellPrice: 15
+  traderXp: 200
   modifiesStats: 0
   agilityStatAdjustment: 0
   strengthStatAdjustment: 0

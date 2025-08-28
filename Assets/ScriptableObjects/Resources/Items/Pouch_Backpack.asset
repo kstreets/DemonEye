@@ -10,13 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9bc23522601a56f4d89295cf565d360b, type: 3}
-  m_Name: Eye
+  m_Name: Pouch_Backpack
   m_EditorClassIdentifier: 
-  uuid: bb851969-3bd5-485c-9358-506748f1e246
-  type: 1
-  inventorySprite: {fileID: -12894388, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
-  maxStackCount: 10
-  buyPrice: 25
-  sellPrice: 20
-  traderXp: 5
-  description: Used to craft demonic eyes.
+  uuid: 557379604
+  type: 4
+  inventorySprite: {fileID: 2107831646, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  itemGroupProps: {fileID: 0}
+  maxStackCount: 1
+  weight: 0
+  description: 
+  buyPrice: 0
+  sellPrice: 0
+  traderXp: 0
+  modifiesStats: 0
+  agilityStatAdjustment: 0
+  strengthStatAdjustment: 0

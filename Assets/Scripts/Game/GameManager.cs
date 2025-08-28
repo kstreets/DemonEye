@@ -12,7 +12,6 @@ using VInspector;
 
 public partial class GameManager : MonoBehaviour {
 
-    public List<Item> allItems;
     public List<ItemPool> traderLevelPools;
 
     [Foldout("Pooling Prefabs")]
@@ -153,15 +152,15 @@ public partial class GameManager : MonoBehaviour {
     [NonSerialized] public List<Enemy> enemies = new();
     [NonSerialized] public Dictionary<GameObject, Enemy> enemyLookup = new();
     
-    public static Dictionary<string, Item> itemDataLookup = new();
-    public static Dictionary<string, Soulcard> eyeModifierLookup = new();
-    public static Dictionary<string, CoreAttack> baseAttackLookup = new();
+    public static Dictionary<int, Item> itemLookup = new();
+    public static Dictionary<int, Soulcard> eyeModifierLookup = new();
 
     private Timer exitPortalTimer;
+    private int consecutiveCriticalHits;
 
     private EntityPool<Entity> bloodDropPool;
     private EntityPool<Projectile> projectilePool;
-
+    
     private State hideoutState;
     private State raidState;
     private StateMachine gameStateMachine = new();
@@ -177,16 +176,7 @@ public partial class GameManager : MonoBehaviour {
     private HideoutStateData hideoutStateData;
     
     private void Start() {
-        foreach (Item itemData in allItems) {
-            if (itemData is Soulcard mod) {
-                eyeModifierLookup.Add(mod.uuid, mod);
-            }
-            else if (itemData is CoreAttack core) {
-                baseAttackLookup.Add(core.uuid, core);
-            }
-            itemDataLookup.Add(itemData.uuid, itemData);
-        }
-        
+        LoadAllItems();
         InitAudio();
         InitHideoutUI();
         BuildSavePaths();
@@ -375,6 +365,7 @@ public partial class GameManager : MonoBehaviour {
     public class Projectile : Entity {
         public float timeAlive;
         public float destroyTime;
+        public float distTraveled;
         public Vector2 velocity;
         public DemonEyeInstance eyeInstanceSpawnedFrom;
         public List<Entity> ignoreEntities;
@@ -383,6 +374,7 @@ public partial class GameManager : MonoBehaviour {
     private static void OnSpawnProjectile(Projectile projectile) {
         projectile.timeAlive = default;
         projectile.destroyTime = default;
+        projectile.distTraveled = default;
         projectile.velocity = default;
         projectile.eyeInstanceSpawnedFrom = default;
         if (projectile.ignoreEntities != null) {
@@ -396,6 +388,7 @@ public partial class GameManager : MonoBehaviour {
             Projectile proj = projectiles[i];
             proj.timeAlive += Time.deltaTime;
             proj.trans.position += proj.velocity.ToVector3() * Time.deltaTime;
+            proj.distTraveled += proj.velocity.magnitude * Time.deltaTime;
             
             Collider2D col = Physics2D.OverlapCircle(proj.trans.position, 0.1f, Masks.DamagableMask);
             if (!col) continue;
@@ -464,7 +457,22 @@ public partial class GameManager : MonoBehaviour {
             
             bool isCriticalStrike = RollProbability(criticalStrikeProb);
             if (isCriticalStrike) {
+                consecutiveCriticalHits++;
                 damage = Mathf.RoundToInt(damage * defaultCriticalStrikeMultiplier);
+            }
+            else {
+                consecutiveCriticalHits = 0;
+            }
+
+            if (projectile.eyeInstanceSpawnedFrom.farDamageInstance.TryGetValue(out FarDamageInstance farDamage)) {
+                int increasedDamageFromDist = Mathf.RoundToInt(farDamage.damageIncreasePerUnitTraveled * projectile.distTraveled);
+                damage += increasedDamageFromDist;
+            }
+
+            if (projectile.eyeInstanceSpawnedFrom.doubleCritInstance.TryGetValue(out DoubleCritInstance doubleCrit)) {
+                if (consecutiveCriticalHits > 0 && consecutiveCriticalHits % 2 == 0) {
+                    damage = Mathf.RoundToInt(damage * doubleCrit.damageMultiplier);
+                }
             }
             
             enemy.health -= damage;
@@ -988,6 +996,17 @@ public partial class GameManager : MonoBehaviour {
     }
     
     
+    private void LoadAllItems() {
+        Item[] itemsFoundInFolder = Resources.LoadAll<Item>(string.Empty);
+        foreach (Item item in itemsFoundInFolder) {
+            if (item is Soulcard mod) {
+                eyeModifierLookup.Add(mod.uuid, mod);
+            }
+            itemLookup.Add(item.uuid, item);
+        }
+    }
+    
+    
     private const float defaultPlayerSpeed = 0.55f;
     private const float maxPlayerSpeed = 0.85f;
 
@@ -1030,5 +1049,5 @@ public partial class GameManager : MonoBehaviour {
         playerSpeed -= speedReductionFromWeight;
         return playerSpeed;
     }
-
+    
 }

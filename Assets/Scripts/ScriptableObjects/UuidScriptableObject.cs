@@ -1,36 +1,54 @@
-using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using VInspector;
+using Random = UnityEngine.Random;
 
 [CreateAssetMenu(fileName = "UuidScriptableObject", menuName = "Scriptable Objects/UuidScriptableObject")]
 public class UuidScriptableObject : ScriptableObject {
 
-    [ReadOnly] public string uuid;
+    [ReadOnly] public int uuid;
 
+    public static int GetIntUuid() {
+        return Random.Range(int.MinValue, int.MaxValue);
+    }
+    
 #if UNITY_EDITOR
     
-    private void OnEnable() {
-        TryCreateUuid();
-    }
-
-    private void OnValidate() {
-        TryCreateUuid();
-    }
-    
-    private void TryCreateUuid() {
-        if (string.IsNullOrEmpty(uuid)) {
-            uuid = Guid.NewGuid().ToString();
-            EditorUtility.SetDirty(this);
+    public void CreateUuid() {
+        Item[] itemsFoundInFolder = Resources.LoadAll<Item>(string.Empty);
+        HashSet<int> existingUuids = new();
+        foreach (Item item in itemsFoundInFolder) {
+            existingUuids.Add(item.uuid);
         }
-    }
 
-    [Button]
-    private void CreateNewUuid() {
-        uuid = Guid.NewGuid().ToString();
+        int newId = GetIntUuid();
+        while (existingUuids.Contains(newId)) {
+            newId = GetIntUuid();
+        }
+
+        uuid = newId;
         EditorUtility.SetDirty(this);
     }
-    
+
 #endif
     
 }
+
+#if UNITY_EDITOR
+
+public class UuidAssetProcessor : AssetModificationProcessor {
+    
+    // Check to see if the asset we created is a UuidScriptableObject for uuid generation
+    public static void OnWillCreateAsset(string path) {
+        if (!path.EndsWith(".asset")) return;
+        EditorApplication.delayCall += () => {
+            UuidScriptableObject asset = AssetDatabase.LoadAssetAtPath<UuidScriptableObject>(path);
+            if (!asset) return;
+            asset.CreateUuid();
+        };
+    }
+    
+}
+
+#endif

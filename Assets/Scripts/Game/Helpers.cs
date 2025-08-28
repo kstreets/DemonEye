@@ -21,6 +21,14 @@ public partial class GameManager {
     private Vector2 OffsetX(Vector2 pos, float xOffset) {
         return new(pos.x, pos.y + xOffset);
     }
+
+    private int GenerateNewItemUuid() {
+        int newItemId = UuidScriptableObject.GetIntUuid();
+        while (itemLookup.ContainsKey(newItemId)) {
+            newItemId = UuidScriptableObject.GetIntUuid();
+        }
+        return newItemId;
+    }
     
     private void SaveToFile(string path, object obj) {
         BinaryFormatter bf = new();

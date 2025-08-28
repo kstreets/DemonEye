@@ -8,14 +8,14 @@ public partial class GameManager {
     
     [Serializable]
     public class InventoryItem {
-        public string itemDataUuid;
-        public List<string> modifierUuids;
+        public int itemDataUuid;
+        public List<int> modifierUuids;
         public int count = 1;
 
         [NonSerialized] public bool notDiscovered;
         [NonSerialized] public Item _itemRef; // Used for items created at runtime, like demon eyes
 
-        public Item ItemRef => _itemRef ? _itemRef : itemDataLookup[itemDataUuid];
+        public Item ItemRef => _itemRef ? _itemRef : itemLookup[itemDataUuid];
         public bool IsFullStack => count == ItemRef.MaxStackCount;
 
         public InventoryItem(Item item = null, int count = 1) {
@@ -33,7 +33,7 @@ public partial class GameManager {
             };
 
             if (modifierUuids != null) {
-                foreach (string modifierUuid in modifierUuids) {
+                foreach (int modifierUuid in modifierUuids) {
                     clonedItem.modifierUuids ??= new();     
                     clonedItem.modifierUuids.Add(modifierUuid);
                 }
