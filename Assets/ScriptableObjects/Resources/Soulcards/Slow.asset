@@ -9,20 +9,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 774b49399eaf50645b14ceb5bc95c7e2, type: 3}
-  m_Name: Soulcard_BleedCrit
+  m_Script: {fileID: 11500000, guid: 9a987089865139440bcc81277dd2981c, type: 3}
+  m_Name: Slow
   m_EditorClassIdentifier: 
-  uuid: 315277496
+  uuid: -1073845547
   type: 2
-  inventorySprite: {fileID: -1606368622, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
+  inventorySprite: {fileID: -1427259993, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
   itemGroupProps: {fileID: 11400000, guid: 78826f3a685555a4896655f4c68ef737, type: 2}
   maxStackCount: 3
   weight: 0
   description: 
-  buyPrice: 0
-  sellPrice: 0
-  traderXp: 0
+  buyPrice: 150
+  sellPrice: 50
+  traderXp: 5
   modifiesStats: 0
   agilityStatAdjustment: 0
   strengthStatAdjustment: 0
-  probability: 0.2
+  speedReductionPercent: 0.1
+  slowDuration: 2

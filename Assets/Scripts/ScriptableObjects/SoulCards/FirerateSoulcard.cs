@@ -4,7 +4,7 @@ public struct FirerateModInstance {
     public float reduction;
 }
 
-[CreateAssetMenu(fileName = "FirerateSoulcard", menuName = "Scriptable Objects/FirerateSoulcard")]
+[CreateAssetMenu(fileName = "FirerateSoulcard", menuName = "Scriptable Objects/Soulcards/FirerateSoulcard")]
 public class FirerateSoulcard : Soulcard {
 
     public float reduction;
@@ -13,7 +13,7 @@ public class FirerateSoulcard : Soulcard {
         FirerateModInstance instance = new() {
             reduction = GetReduction(stackCount) 
         };
-        eyeInstance.firerateModInstance = instance;
+        eyeInstance.firerate = instance;
     }
 
     public override string GetStackDescription(int stackCount) {

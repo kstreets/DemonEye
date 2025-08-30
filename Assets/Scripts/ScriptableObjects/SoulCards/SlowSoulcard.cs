@@ -6,7 +6,7 @@ public struct SlowInstance {
     public float duration;
 }
 
-[CreateAssetMenu(fileName = "SlowSoulcard", menuName = "Scriptable Objects/SlowSoulcard")]
+[CreateAssetMenu(fileName = "SlowSoulcard", menuName = "Scriptable Objects/Soulcards/SlowSoulcard")]
 public class SlowSoulcard : Soulcard {
     
     public float speedReductionPercent;

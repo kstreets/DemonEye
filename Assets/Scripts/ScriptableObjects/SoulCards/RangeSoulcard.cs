@@ -4,13 +4,13 @@ public struct RangeInstance {
     public float distanceIncrease;
 }
 
-[CreateAssetMenu(fileName = "RangeSoulcard", menuName = "Scriptable Objects/RangeSoulcard")]
+[CreateAssetMenu(fileName = "RangeSoulcard", menuName = "Scriptable Objects/Soulcards/RangeSoulcard")]
 public class RangeSoulcard : Soulcard {
 
     public float rangeIncrease;
     
     public override void AddInstanceToEye(GameManager.DemonEyeInstance eyeInstance, int stackCount) {
-        eyeInstance.rangeInstance = new() {
+        eyeInstance.range = new() {
             distanceIncrease = GetRangeIncrease(stackCount),
         };
     }

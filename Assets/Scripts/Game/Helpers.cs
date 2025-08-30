@@ -4,12 +4,12 @@ using UnityEngine;
 
 public partial class GameManager {
 
-    private bool InRaid => gameStateMachine.CurState == raidState;
-    
-    private bool RollProbability(float probability) {
+    public static bool RollProbability(float probability) {
         return Random.value < probability;
     }
 
+    private bool InRaid => gameStateMachine.CurState == raidState;
+    
     private Vector3 RandomOffset360(float minDist, float maxDist) {
         return Quaternion.AngleAxis(Random.Range(0, 360), Vector3.forward) * Vector3.right * Random.Range(minDist, maxDist);
     }

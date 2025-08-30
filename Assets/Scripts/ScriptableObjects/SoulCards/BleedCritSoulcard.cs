@@ -4,13 +4,13 @@ public struct BleedCritInstance {
     public float probability;
 }
 
-[CreateAssetMenu(fileName = "BleedCritSoulcard", menuName = "Scriptable Objects/BleedCritSoulcard")]
+[CreateAssetMenu(fileName = "BleedCritSoulcard", menuName = "Scriptable Objects/Soulcards/BleedCritSoulcard")]
 public class BleedCritSoulcard : Soulcard {
 
     public float probability;
     
     public override void AddInstanceToEye(GameManager.DemonEyeInstance eyeInstance, int stackCount) {
-        eyeInstance.bleedCritInstance = new() {
+        eyeInstance.bleedCrit = new() {
             probability = GetProbability(stackCount) 
         };
     }

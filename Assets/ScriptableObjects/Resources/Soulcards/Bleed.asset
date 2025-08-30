@@ -9,20 +9,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d4204fdc7c229734fa4e7244f83ccf55, type: 3}
-  m_Name: Soulcard_Range
-  m_EditorClassIdentifier: Assembly-CSharp::RangeSoulcard
-  uuid: 911285470
+  m_Script: {fileID: 11500000, guid: ca59222e1840b6f4d9a632e2dc2bcfb1, type: 3}
+  m_Name: Bleed
+  m_EditorClassIdentifier: 
+  uuid: -205166182
   type: 2
-  inventorySprite: {fileID: 541499864, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
+  inventorySprite: {fileID: 619219371, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
   itemGroupProps: {fileID: 11400000, guid: 78826f3a685555a4896655f4c68ef737, type: 2}
-  maxStackCount: 0
+  maxStackCount: 3
   weight: 0
   description: 
-  buyPrice: 0
-  sellPrice: 0
-  traderXp: 0
+  buyPrice: 100
+  sellPrice: 33
+  traderXp: 5
   modifiesStats: 0
   agilityStatAdjustment: 0
   strengthStatAdjustment: 0
-  rangeIncrease: 1.2
+  bleedDamage: 5
+  bleedInterval: 0.5

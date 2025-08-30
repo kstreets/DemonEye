@@ -6,7 +6,7 @@ public struct BleedModInstance {
     public float lastBleedTime;
 }
 
-[CreateAssetMenu(fileName = "BleedSoulcard", menuName = "Scriptable Objects/BleedSoulcard")]
+[CreateAssetMenu(fileName = "BleedSoulcard", menuName = "Scriptable Objects/Soulcards/BleedSoulcard")]
 public class BleedSoulcard : Soulcard {
 
     public int bleedDamage;

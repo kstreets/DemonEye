@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -20,13 +19,15 @@ public partial class GameManager {
         public List<EquipedModInstance> modInstances = new();
         public CoreAttack coreAttack;
         
-        public FirerateModInstance? firerateModInstance;
-        public TrishotModInstance? trishotModModInstance;
-        public BleedCritInstance? bleedCritInstance;
-        public RangeInstance? rangeInstance;
-        public FarDamageInstance? farDamageInstance;
-        public PenetrationInstance? penetrationInstance;
-        public DoubleCritInstance? doubleCritInstance;
+        public FirerateModInstance? firerate;
+        public TrishotModInstance? trishot;
+        public BleedCritInstance? bleedCrit;
+        public RangeInstance? range;
+        public FarDamageInstance? farDamage;
+        public PenetrationInstance? penetration;
+        public DoubleCritInstance? doubleCrit;
+        public BackwardShotInstance? backwardShot;
+        public PoisonInstance? poison;
     }
 
     private Dictionary<int, DemonEyeInstance> eyeInstanceFromItemId = new();
@@ -67,7 +68,7 @@ public partial class GameManager {
 
     private bool CanShootPrimary() {
         float attackDelay = equipedEye.coreAttack.attackDelay;
-        if (equipedEye.firerateModInstance.TryGetValue(out FirerateModInstance firerate)) {
+        if (equipedEye.firerate.TryGetValue(out FirerateModInstance firerate)) {
             attackDelay -= firerate.reduction;
             attackDelay = Mathf.Clamp(attackDelay, equipedEye.coreAttack.cappedMinAttackDelay, equipedEye.coreAttack.attackDelay);
         }
@@ -91,12 +92,16 @@ public partial class GameManager {
         Vector2 velocity = dir * equipedEye.coreAttack.projectileSpeed; 
         SpawnProjectile(velocity);
 
-        if (equipedEye.trishotModModInstance.TryGetValue(out TrishotModInstance trishot) && RollProbability(trishot.probability)) {
+        if (equipedEye.trishot.TryGetValue(out TrishotModInstance trishot) && RollProbability(trishot.probability)) {
             const float baseTriShotAngle = 8f;
             Vector2 secondShotVelocity = Quaternion.AngleAxis(baseTriShotAngle, Vector3.forward) * velocity;
             SpawnProjectile(secondShotVelocity);
             Vector2 thirdShotVelocity = Quaternion.AngleAxis(-baseTriShotAngle, Vector3.forward) * velocity;
             SpawnProjectile(thirdShotVelocity);
+        }
+
+        if (equipedEye.backwardShot.TryGetValue(out BackwardShotInstance backShot) && RollProbability(backShot.probability)) {
+            SpawnProjectile(-velocity);
         }
     }
     
@@ -105,12 +110,12 @@ public partial class GameManager {
         Quaternion projectileRotation = Quaternion.AngleAxis(angle, Vector3.forward);
         
         float travelDist = equipedEye.coreAttack.range;
-        if (equipedEye.rangeInstance.TryGetValue(out RangeInstance rangeIncrease)) {
+        if (equipedEye.range.TryGetValue(out RangeInstance rangeIncrease)) {
             travelDist += rangeIncrease.distanceIncrease;
         }
         float destroyTime = travelDist / velocity.magnitude;
 
-        if (equipedEye.farDamageInstance.TryGetValue(out FarDamageInstance farDamage)) {
+        if (equipedEye.farDamage.TryGetValue(out FarDamageInstance farDamage)) {
              
         }
 

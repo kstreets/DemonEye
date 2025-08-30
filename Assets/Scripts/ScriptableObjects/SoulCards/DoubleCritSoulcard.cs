@@ -4,13 +4,13 @@ public struct DoubleCritInstance {
     public float damageMultiplier;
 }
 
-[CreateAssetMenu(fileName = "DoubleCritSoulcard", menuName = "Scriptable Objects/DoubleCritSoulcard")]
+[CreateAssetMenu(fileName = "DoubleCritSoulcard", menuName = "Scriptable Objects/Soulcards/DoubleCritSoulcard")]
 public class DoubleCritSoulcard : Soulcard {
     
     public float damageMultiplier;
     
     public override void AddInstanceToEye(GameManager.DemonEyeInstance eyeInstance, int stackCount) {
-        eyeInstance.doubleCritInstance = new() {
+        eyeInstance.doubleCrit = new() {
             damageMultiplier = GetDamageMultiplier(stackCount),
         };
     }

@@ -414,7 +414,7 @@ public partial class GameManager : MonoBehaviour {
     }
 
     private bool ProjectileShouldPassThrough(Projectile proj, Entity entity) {
-        if (!proj.eyeInstanceSpawnedFrom.penetrationInstance.TryGetValue(out PenetrationInstance pen)) {
+        if (!proj.eyeInstanceSpawnedFrom.penetration.TryGetValue(out PenetrationInstance pen)) {
             return false;
         }
         
@@ -451,8 +451,8 @@ public partial class GameManager : MonoBehaviour {
             int damage = eyeInstance.coreAttack.damage;
             float criticalStrikeProb = defaultCriticalStrikeChange;
 
-            if (eyeInstance.bleedCritInstance.HasValue && enemy.bleed.HasValue) {
-                criticalStrikeProb += eyeInstance.bleedCritInstance.Value.probability;
+            if (eyeInstance.bleedCrit.HasValue && enemy.bleed.HasValue) {
+                criticalStrikeProb += eyeInstance.bleedCrit.Value.probability;
             }
             
             bool isCriticalStrike = RollProbability(criticalStrikeProb);
@@ -464,12 +464,12 @@ public partial class GameManager : MonoBehaviour {
                 consecutiveCriticalHits = 0;
             }
 
-            if (projectile.eyeInstanceSpawnedFrom.farDamageInstance.TryGetValue(out FarDamageInstance farDamage)) {
+            if (projectile.eyeInstanceSpawnedFrom.farDamage.TryGetValue(out FarDamageInstance farDamage)) {
                 int increasedDamageFromDist = Mathf.RoundToInt(farDamage.damageIncreasePerUnitTraveled * projectile.distTraveled);
                 damage += increasedDamageFromDist;
             }
 
-            if (projectile.eyeInstanceSpawnedFrom.doubleCritInstance.TryGetValue(out DoubleCritInstance doubleCrit)) {
+            if (projectile.eyeInstanceSpawnedFrom.doubleCrit.TryGetValue(out DoubleCritInstance doubleCrit)) {
                 if (consecutiveCriticalHits > 0 && consecutiveCriticalHits % 2 == 0) {
                     damage = Mathf.RoundToInt(damage * doubleCrit.damageMultiplier);
                 }

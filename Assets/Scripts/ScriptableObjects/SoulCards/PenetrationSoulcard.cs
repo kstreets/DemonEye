@@ -4,13 +4,13 @@ public struct PenetrationInstance {
     public int goThroughCount;
 }
 
-[CreateAssetMenu(fileName = "PenetrationSoulcard", menuName = "Scriptable Objects/PenetrationSoulcard")]
+[CreateAssetMenu(fileName = "PenetrationSoulcard", menuName = "Scriptable Objects/Soulcards/PenetrationSoulcard")]
 public class PenetrationSoulcard : Soulcard {
 
     public int startingGoThroughCount;
     
     public override void AddInstanceToEye(GameManager.DemonEyeInstance eyeInstance, int stackCount) {
-        eyeInstance.penetrationInstance = new() {
+        eyeInstance.penetration = new() {
             goThroughCount = GetGoThroughCount(stackCount),
         };
     }

@@ -1,24 +1,22 @@
 using UnityEngine;
 
-public struct TrishotModInstance {
+public struct BackwardShotInstance {
     public float probability;
 }
 
-[CreateAssetMenu(fileName = "TrishotSoulcard", menuName = "Scriptable Objects/Soulcards/TrishotSoulcard")]
-public class TrishotSoulcard : Soulcard {
-
+[CreateAssetMenu(fileName = "BackwardsShotSoulcard", menuName = "Scriptable Objects/Soulcards/BackwardsShotSoulcard")]
+public class BackwardsShotSoulcard : Soulcard {
+    
     public float probability;
     
     public override void AddInstanceToEye(GameManager.DemonEyeInstance eyeInstance, int stackCount) {
-        TrishotModInstance instance = new() {
+        eyeInstance.backwardShot = new() {
             probability = GetProbability(stackCount),
         };
-        eyeInstance.trishot = instance;
     }
-
+    
     public override string GetStackDescription(int stackCount) {
-        string displayProb = DisplayProbability(GetProbability(stackCount));
-        return $"{displayProb} chance that an attack splits into 3";
+        return $"{DisplayProbability(GetProbability(stackCount))} chance to shoot a projectile out the back of your head.";
     }
 
     private float GetProbability(int stackCount) {

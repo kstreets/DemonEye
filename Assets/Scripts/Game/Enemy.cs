@@ -9,6 +9,7 @@ public partial class GameManager {
     public class Enemy : Entity {
         public EnemyData data;
         public PathData pathData = new();
+        public bool poisoned;
         public Timer applyDamageTimer;
         public BleedModInstance? bleed;
         public SlowInstance? defaultSlow;
@@ -23,7 +24,7 @@ public partial class GameManager {
         
         public bool HasPath => abPath != null;
     }
-
+    
     private void UpdateEnemies() {
         for (int i = enemies.Count - 1; i >= 0; i--) {
             Enemy enemy = enemies[i];
@@ -31,7 +32,7 @@ public partial class GameManager {
 
             float distFromPlayer = Vector2.Distance(player.position, enemy.position);
 
-            if (distFromPlayer < 0.35f && !enemy.animator.Playing("Attack")) {
+            if (!enemy.poisoned && distFromPlayer < 0.35f && !enemy.animator.Playing("Attack")) {
                 enemy.animator.Play("Attack");
                 enemy.applyDamageTimer.SetTime(0.31f);
                 enemy.applyDamageTimer.EndAction = () => {
