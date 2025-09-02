@@ -20,7 +20,7 @@ public class TestingInventory : ScriptableObject {
             return;
         }
         
-        GameManager gameManager = FindAnyObjectByType(typeof(GameManager)) as GameManager;
+        Game gameManager = FindAnyObjectByType(typeof(Game)) as Game;
         foreach (TestInventoryItem inventoryItem in items) {
             gameManager?.TryAddItemToInventory(gameManager.playerInventory, inventoryItem.item, inventoryItem.count);
         }
@@ -33,7 +33,7 @@ public class TestingInventory : ScriptableObject {
             return;
         }
         
-        GameManager gameManager = FindAnyObjectByType(typeof(GameManager)) as GameManager;
+        Game gameManager = FindAnyObjectByType(typeof(Game)) as Game;
         foreach (TestInventoryItem inventoryItem in items) {
             gameManager?.TryAddItemToInventory(gameManager.stashInventory, inventoryItem.item, inventoryItem.count);
             gameManager?.RefreshInventoryDisplay(gameManager.stashInventory);

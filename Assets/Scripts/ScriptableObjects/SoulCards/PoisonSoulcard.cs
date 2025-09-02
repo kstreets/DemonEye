@@ -1,35 +1,44 @@
 using UnityEngine;
 
-public struct PoisonInstance {
-    public float probability;
-}
-
 [CreateAssetMenu(fileName = "PoisonSoulcard", menuName = "Scriptable Objects/Soulcards/PoisonSoulcard")]
 public class PoisonSoulcard : Soulcard {
 
+    public struct InstanceData {
+        public float probability;
+        public float duration;
+    }
+    
     public float probability;
+    public float duration;
 
-    public override void AddInstanceToEnemy(GameManager.Enemy enemy, int stackCount) {
-        if (enemy.poisoned) return;
-        
+    public override void AddInstanceToEnemy(Game.Enemy enemy, int stackCount) {
         float prob = GetProbability(stackCount);
-        if (GameManager.RollProbability(prob)) {
-            enemy.poisoned = true;
+        if (Game.RollProbability(prob)) {
+            enemy.poisoned = new() {
+                probability = GetProbability(stackCount),
+                duration = GetDuration(stackCount),
+            };
+            Game.instance.AddPoisonedEffect(enemy, enemy.poisoned.Value.duration);
         }
     }
     
-    public override void AddInstanceToEye(GameManager.DemonEyeInstance eyeInstance, int stackCount) {
+    public override void AddInstanceToEye(Game.DemonEyeInstance eyeInstance, int stackCount) {
         eyeInstance.poison = new() {
             probability = GetProbability(stackCount),
+            duration = GetDuration(stackCount),
         };
     }
     
     public override string GetStackDescription(int stackCount) {
-        return $"{DisplayProbability(GetProbability(stackCount))} chance for a projectile to poison an enemy.";
+        return $"{DisplayProbability(GetProbability(stackCount))} chance for a projectile to poison an enemy for {GetDuration(stackCount)} seconds.";
     }
 
     private float GetProbability(int stackCount) {
         return probability * stackCount;
+    }
+
+    private float GetDuration(int stackCount) {
+        return duration * stackCount;
     }
 
 }

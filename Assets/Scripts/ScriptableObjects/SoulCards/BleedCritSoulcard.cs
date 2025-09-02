@@ -1,15 +1,15 @@
 using UnityEngine;
 
-public struct BleedCritInstance {
-    public float probability;
-}
-
 [CreateAssetMenu(fileName = "BleedCritSoulcard", menuName = "Scriptable Objects/Soulcards/BleedCritSoulcard")]
 public class BleedCritSoulcard : Soulcard {
+    
+    public struct InstanceData {
+        public float probability;
+    }
 
     public float probability;
     
-    public override void AddInstanceToEye(GameManager.DemonEyeInstance eyeInstance, int stackCount) {
+    public override void AddInstanceToEye(Game.DemonEyeInstance eyeInstance, int stackCount) {
         eyeInstance.bleedCrit = new() {
             probability = GetProbability(stackCount) 
         };

@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89cf4b0ee9babad459332597304a99be, type: 3}
+  m_Name: BackwardsShotMultiplier
+  m_EditorClassIdentifier: Assembly-CSharp::BackwardsShotMultiplierSoulcard
+  uuid: 1497826800
+  type: 2
+  inventorySprite: {fileID: 541499864, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
+  itemGroupProps: {fileID: 11400000, guid: 78826f3a685555a4896655f4c68ef737, type: 2}
+  maxStackCount: 0
+  weight: 0
+  description: 
+  buyPrice: 0
+  sellPrice: 0
+  traderXp: 0
+  modifiesStats: 0
+  agilityStatAdjustment: 0
+  strengthStatAdjustment: 0
+  damageMultiplier: 2.5

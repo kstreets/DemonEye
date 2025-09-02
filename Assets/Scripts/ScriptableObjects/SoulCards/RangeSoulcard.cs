@@ -1,15 +1,15 @@
 using UnityEngine;
 
-public struct RangeInstance {
-    public float distanceIncrease;
-}
-
 [CreateAssetMenu(fileName = "RangeSoulcard", menuName = "Scriptable Objects/Soulcards/RangeSoulcard")]
 public class RangeSoulcard : Soulcard {
+    
+    public struct InstanceData {
+        public float distanceIncrease;
+    }
 
     public float rangeIncrease;
     
-    public override void AddInstanceToEye(GameManager.DemonEyeInstance eyeInstance, int stackCount) {
+    public override void AddInstanceToEye(Game.DemonEyeInstance eyeInstance, int stackCount) {
         eyeInstance.range = new() {
             distanceIncrease = GetRangeIncrease(stackCount),
         };

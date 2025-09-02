@@ -12,7 +12,7 @@ public class BleedSoulcard : Soulcard {
     public int bleedDamage;
     public float bleedInterval;
     
-    public override void AddInstanceToEnemy(GameManager.Enemy enemy, int stackCount) {
+    public override void AddInstanceToEnemy(Game.Enemy enemy, int stackCount) {
         if (enemy.bleed.TryGetValue(out BleedModInstance bleed)) {
             bleed.bleedDamage = GetBleedDamage(stackCount);
             bleed.bleedInterval = bleedInterval;

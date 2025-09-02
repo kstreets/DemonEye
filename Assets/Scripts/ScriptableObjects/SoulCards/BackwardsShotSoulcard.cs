@@ -1,15 +1,15 @@
 using UnityEngine;
 
-public struct BackwardShotInstance {
-    public float probability;
-}
-
 [CreateAssetMenu(fileName = "BackwardsShotSoulcard", menuName = "Scriptable Objects/Soulcards/BackwardsShotSoulcard")]
 public class BackwardsShotSoulcard : Soulcard {
     
+    public struct InstanceData {
+        public float probability;
+    }
+    
     public float probability;
     
-    public override void AddInstanceToEye(GameManager.DemonEyeInstance eyeInstance, int stackCount) {
+    public override void AddInstanceToEye(Game.DemonEyeInstance eyeInstance, int stackCount) {
         eyeInstance.backwardShot = new() {
             probability = GetProbability(stackCount),
         };

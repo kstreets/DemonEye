@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 505529d7f2d1ffe40a04d43fad9719ce, type: 3}
+  m_Name: Explosion
+  m_EditorClassIdentifier: Assembly-CSharp::ExplosionSoulcard
+  uuid: -613411379
+  type: 2
+  inventorySprite: {fileID: 541499864, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
+  itemGroupProps: {fileID: 11400000, guid: 78826f3a685555a4896655f4c68ef737, type: 2}
+  maxStackCount: 0
+  weight: 0
+  description: 
+  buyPrice: 0
+  sellPrice: 0
+  traderXp: 0
+  modifiesStats: 0
+  agilityStatAdjustment: 0
+  strengthStatAdjustment: 0
+  probability: 0.2
+  damage: 50
+  radius: 0.22

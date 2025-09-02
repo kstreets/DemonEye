@@ -1,16 +1,16 @@
 using UnityEngine;
 
-public struct FirerateModInstance {
-    public float reduction;
-}
-
 [CreateAssetMenu(fileName = "FirerateSoulcard", menuName = "Scriptable Objects/Soulcards/FirerateSoulcard")]
 public class FirerateSoulcard : Soulcard {
 
+    public struct InstanceData {
+        public float reduction;
+    }
+    
     public float reduction;
     
-    public override void AddInstanceToEye(GameManager.DemonEyeInstance eyeInstance, int stackCount) {
-        FirerateModInstance instance = new() {
+    public override void AddInstanceToEye(Game.DemonEyeInstance eyeInstance, int stackCount) {
+        InstanceData instance = new() {
             reduction = GetReduction(stackCount) 
         };
         eyeInstance.firerate = instance;

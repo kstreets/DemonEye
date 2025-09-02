@@ -144955,7 +144955,7 @@ GameObject:
   - component: {fileID: 2018473790}
   - component: {fileID: 2018473789}
   m_Layer: 0
-  m_Name: GameManager
+  m_Name: Game
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -144992,6 +144992,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 0694fa22015d4ea47bc4555bd2490364, type: 2}
   bloodDropPrefab: {fileID: 2835100544158664230, guid: a3700393b2b39cc44a28e9dee1a285c8, type: 3}
   projectilePrefab: {fileID: 2758590605051147821, guid: 490c322ccae8e8149a6dddb96650a50e, type: 3}
+  poisonDebuffPrefab: {fileID: 9042913863694245120, guid: b52083b254543e949b6579beea5aef46, type: 3}
+  explosionPrefab: {fileID: 1132575347036418292, guid: 97edbac11773f6b4d8f88d6785f366e1, type: 3}
   defaultCriticalStrikeChange: 0.1
   defaultCriticalStrikeMultiplier: 2
   mainCamera: {fileID: 519420031}

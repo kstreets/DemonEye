@@ -12,7 +12,7 @@ public class SlowSoulcard : Soulcard {
     public float speedReductionPercent;
     public float slowDuration;
 
-    public override void AddInstanceToEnemy(GameManager.Enemy enemy, int stackCount) {
+    public override void AddInstanceToEnemy(Game.Enemy enemy, int stackCount) {
         SlowInstance slow = new() {
             speedReductionPercent = GetSpeedReduction(stackCount),
             duration = slowDuration,

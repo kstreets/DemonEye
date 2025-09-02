@@ -1,25 +1,27 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "DoubleCritSoulcard", menuName = "Scriptable Objects/Soulcards/DoubleCritSoulcard")]
-public class DoubleCritSoulcard : Soulcard {
-    
+[CreateAssetMenu(fileName = "BackwardsShotMultiplierSoulcard", menuName = "Scriptable Objects/Soulcards/BackwardsShotMultiplierSoulcard")]
+public class BackwardsShotMultiplierSoulcard : Soulcard {
+
     public struct InstanceData {
         public float damageMultiplier;
     }
+
     
     public float damageMultiplier;
     
     public override void AddInstanceToEye(Game.DemonEyeInstance eyeInstance, int stackCount) {
-        eyeInstance.doubleCrit = new() {
+        eyeInstance.backwardsShotCrit = new() {
             damageMultiplier = GetDamageMultiplier(stackCount),
         };
     }
     
     public override string GetStackDescription(int stackCount) {
-        return $"Landing 2 critical strikes in a row adds a {GetDamageMultiplier(stackCount)} multiplier.";
+        return $"Backwards shots have a {GetDamageMultiplier(stackCount)} damage multiplier.";
     }
 
     private float GetDamageMultiplier(int stackCount) {
         return damageMultiplier * stackCount;
     }
+    
 }

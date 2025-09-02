@@ -1,15 +1,15 @@
 using UnityEngine;
 
-public struct PenetrationInstance {
-    public int goThroughCount;
-}
-
 [CreateAssetMenu(fileName = "PenetrationSoulcard", menuName = "Scriptable Objects/Soulcards/PenetrationSoulcard")]
 public class PenetrationSoulcard : Soulcard {
 
+    public struct InstanceData {
+        public int goThroughCount;
+    }
+    
     public int startingGoThroughCount;
     
-    public override void AddInstanceToEye(GameManager.DemonEyeInstance eyeInstance, int stackCount) {
+    public override void AddInstanceToEye(Game.DemonEyeInstance eyeInstance, int stackCount) {
         eyeInstance.penetration = new() {
             goThroughCount = GetGoThroughCount(stackCount),
         };
