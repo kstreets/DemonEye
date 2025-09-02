@@ -17,11 +17,9 @@ MonoBehaviour:
     count: 2
   - item: {fileID: 11400000, guid: 080b4f634b61c1d49a235bcf9b6ae110, type: 2}
     count: 15
-  - item: {fileID: 11400000, guid: f7c724c49aae4c04c96cab2b1076d025, type: 2}
-    count: 1
-  - item: {fileID: 11400000, guid: 0f33211a66fc5f445945e18f3fbc6b77, type: 2}
-    count: 1
   - item: {fileID: 11400000, guid: 75a513a0644776c409fce1e4cc9b4dd8, type: 2}
     count: 1
   - item: {fileID: 11400000, guid: 3505426df7dc8164caf246c28362eb53, type: 2}
+    count: 1
+  - item: {fileID: 11400000, guid: 3846f52121da03e4a87d0c80d7d6eb7c, type: 2}
     count: 1

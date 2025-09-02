@@ -20,8 +20,9 @@ public class Game : MonoBehaviour {
     public List<ItemPool> traderLevelPools;
 
     [Foldout("Pooling Prefabs")]
+    public GameObject baseProjectilePrefab;
+    public GameObject stoppingPowerProjectilePrefab;
     public GameObject bloodDropPrefab;
-    public GameObject projectilePrefab;
     public GameObject poisonDebuffPrefab;
     public GameObject explosionPrefab;
     [EndFoldout]
@@ -164,6 +165,7 @@ public class Game : MonoBehaviour {
 
     private EntityPool<Entity> bloodDropPool;
     private EntityPool<Projectile> projectilePool;
+    private EntityPool<Projectile> stoppingPowerProjectilePool;
     private EntityPool<Entity> poisonDebuffPool;
     private EntityPool<Entity> explosionPool;
     
@@ -197,7 +199,8 @@ public class Game : MonoBehaviour {
         SetStashValue(0);
 
         bloodDropPool = CreateEntityPool<Entity>(bloodDropPrefab, 10, null);
-        projectilePool = CreateEntityPool<Projectile>(projectilePrefab, 20, OnSpawnProjectile);
+        projectilePool = CreateEntityPool<Projectile>(baseProjectilePrefab, 20, OnSpawnProjectile);
+        stoppingPowerProjectilePool = CreateEntityPool<Projectile>(stoppingPowerProjectilePrefab, 20, OnSpawnProjectile);
         poisonDebuffPool = CreateEntityPool<Entity>(poisonDebuffPrefab, 10, null);
         explosionPool = CreateEntityPool<Entity>(explosionPrefab, 5, null);
 
@@ -1851,6 +1854,7 @@ public class Game : MonoBehaviour {
         public BackwardsShotMultiplierSoulcard.InstanceData? backwardsShotCrit;
         public PoisonSoulcard.InstanceData? poison;
         public ExplosionSoulcard.InstanceData? explosion;
+        public StoppingPowerSoulcard.InstanceData? stoppingPower;
     }
 
     private Dictionary<int, DemonEyeInstance> eyeInstanceFromItemId = new();
@@ -1905,10 +1909,15 @@ public class Game : MonoBehaviour {
         const float maxInaccuracyAngle = 18f;
         float maxAccuracyAngle = maxInaccuracyAngle * (1f - equipedEye.coreAttack.accuracy);
         float accuracyAngle = Random.Range(-maxAccuracyAngle, maxAccuracyAngle);
+
+        float projectileSpeed = equipedEye.coreAttack.projectileSpeed;
+        if (equipedEye.stoppingPower.TryGetValue(out var stoppingPower)) {
+            projectileSpeed *= 1f - stoppingPower.percentSpeedReduction;
+        }
         
         Vector2 dir = (mouseWorldPos - player.trans.PositionV2()).normalized;
         dir = Quaternion.AngleAxis(accuracyAngle, Vector3.forward) * dir;
-        Vector2 velocity = dir * equipedEye.coreAttack.projectileSpeed; 
+        Vector2 velocity = dir * projectileSpeed; 
         SpawnProjectile(velocity);
 
         if (equipedEye.trishot.TryGetValue(out var trishot) && RollProbability(trishot.probability)) {
@@ -1929,14 +1938,15 @@ public class Game : MonoBehaviour {
         float angle = Vector2.SignedAngle(Vector2.right, velocity.normalized);
         Quaternion projectileRotation = Quaternion.AngleAxis(angle, Vector3.forward);
         
-        float travelDist = equipedEye.coreAttack.range;
+        const float defaultTimeAlive = 1.2f;
+        float projLifeTime = defaultTimeAlive;
         if (equipedEye.range.TryGetValue(out var rangeIncrease)) {
-            travelDist += rangeIncrease.distanceIncrease;
+            projLifeTime += rangeIncrease.timeAliveIncrease;
         }
-        float destroyTime = travelDist / velocity.magnitude;
 
-        Projectile projectile = SpawnEntity(projectilePool, player.position + new Vector3(0f, 0.13f, 0f), projectileRotation);
-        projectile.destroyTime = destroyTime;
+        EntityPool<Projectile> poolToSpawnFrom = equipedEye.stoppingPower.HasValue ? stoppingPowerProjectilePool : projectilePool;
+        Projectile projectile = SpawnEntity(poolToSpawnFrom, player.position + new Vector3(0f, 0.13f, 0f), projectileRotation);
+        projectile.lifeTimeDuration = projLifeTime;
         projectile.velocity = velocity;
         projectile.eyeInstanceSpawnedFrom = equipedEye;
         projectiles.Add(projectile);
@@ -1991,8 +2001,8 @@ public class Game : MonoBehaviour {
     // *******************************
 
     public class Projectile : Entity {
-        public float timeAlive;
-        public float destroyTime;
+        public float curTimeAlive;
+        public float lifeTimeDuration;
         public float distTraveled;
         public bool isBackwardsShot;
         public Vector2 velocity;
@@ -2001,8 +2011,8 @@ public class Game : MonoBehaviour {
     }
     
     private static void OnSpawnProjectile(Projectile projectile) {
-        projectile.timeAlive = default;
-        projectile.destroyTime = default;
+        projectile.curTimeAlive = default;
+        projectile.lifeTimeDuration = default;
         projectile.distTraveled = default;
         projectile.isBackwardsShot = default;
         projectile.velocity = default;
@@ -2016,7 +2026,7 @@ public class Game : MonoBehaviour {
     private void UpdateProjectiles() {
         for (int i = projectiles.Count - 1; i >= 0; i--) {
             Projectile proj = projectiles[i];
-            proj.timeAlive += Time.deltaTime;
+            proj.curTimeAlive += Time.deltaTime;
             proj.trans.position += proj.velocity.ToVector3() * Time.deltaTime;
             proj.distTraveled += proj.velocity.magnitude * Time.deltaTime;
             
@@ -2036,7 +2046,7 @@ public class Game : MonoBehaviour {
         }
 
         for (int i = projectiles.Count - 1; i >= 0; i--) {
-            if (projectiles[i].timeAlive > projectiles[i].destroyTime) {
+            if (projectiles[i].curTimeAlive > projectiles[i].lifeTimeDuration) {
                 DestroyEntity(projectiles[i]);
                 projectiles.RemoveAt(i);
             }
@@ -2169,6 +2179,10 @@ public class Game : MonoBehaviour {
         if (eyeInstance.farDamage.TryGetValue(out var farDamage)) {
             int increasedDamageFromDist = Mathf.RoundToInt(farDamage.damageIncreasePerUnitTraveled * proj.distTraveled);
             damage += increasedDamageFromDist;
+        }
+
+        if (eyeInstance.stoppingPower.TryGetValue(out var stoppingPower)) {
+            damage += stoppingPower.extraDamage;
         }
         
         return damage;

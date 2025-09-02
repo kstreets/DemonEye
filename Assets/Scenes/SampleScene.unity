@@ -144990,8 +144990,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   traderLevelPools:
   - {fileID: 11400000, guid: 0694fa22015d4ea47bc4555bd2490364, type: 2}
+  baseProjectilePrefab: {fileID: 2758590605051147821, guid: 490c322ccae8e8149a6dddb96650a50e, type: 3}
+  stoppingPowerProjectilePrefab: {fileID: 4682860730991365088, guid: 5fa01c7df64854b40996c60725181067, type: 3}
   bloodDropPrefab: {fileID: 2835100544158664230, guid: a3700393b2b39cc44a28e9dee1a285c8, type: 3}
-  projectilePrefab: {fileID: 2758590605051147821, guid: 490c322ccae8e8149a6dddb96650a50e, type: 3}
   poisonDebuffPrefab: {fileID: 9042913863694245120, guid: b52083b254543e949b6579beea5aef46, type: 3}
   explosionPrefab: {fileID: 1132575347036418292, guid: 97edbac11773f6b4d8f88d6785f366e1, type: 3}
   defaultCriticalStrikeChange: 0.1

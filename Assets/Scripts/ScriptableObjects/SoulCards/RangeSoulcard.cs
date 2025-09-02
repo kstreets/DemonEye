@@ -4,23 +4,23 @@ using UnityEngine;
 public class RangeSoulcard : Soulcard {
     
     public struct InstanceData {
-        public float distanceIncrease;
+        public float timeAliveIncrease;
     }
 
-    public float rangeIncrease;
+    public float timeAliveIncrease;
     
     public override void AddInstanceToEye(Game.DemonEyeInstance eyeInstance, int stackCount) {
         eyeInstance.range = new() {
-            distanceIncrease = GetRangeIncrease(stackCount),
+            timeAliveIncrease = GetTimeIncrease(stackCount),
         };
     }
     
     public override string GetStackDescription(int stackCount) {
-        return $"Increases range by {GetRangeIncrease(stackCount)}";
+        return $"Increases projectile lifetime by {GetTimeIncrease(stackCount)} seconds.";
     }
 
-    private float GetRangeIncrease(int stackCount) {
-        return rangeIncrease * stackCount;
+    private float GetTimeIncrease(int stackCount) {
+        return timeAliveIncrease * stackCount;
     }
     
 }
