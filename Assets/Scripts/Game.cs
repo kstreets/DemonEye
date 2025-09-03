@@ -1735,6 +1735,15 @@ public class Game : MonoBehaviour {
     private Entity player;
     private List<Collider2D> playerContacts = new(10);
     private Vector2 playerVelocity;
+    private int nextIdleAnimHash;
+    private int nextIdleDir;
+    
+    private int PlayerRunSideHash = Animator.StringToHash("PlayerRunSide");
+    private int PlayerRunUpHash = Animator.StringToHash("PlayerRunUp");
+    private int PlayerRunDownHash = Animator.StringToHash("PlayerRunDown");
+    private int PlayerIdleSide = Animator.StringToHash("PlayerIdleSide");
+    private int PlayerIdleUp = Animator.StringToHash("PlayerIdleUp");
+    private int PlayerIdleDown = Animator.StringToHash("PlayerIdleDown");
     
     private void UpdatePlayer() {
         if (player.health <= 0f) {
@@ -1753,24 +1762,28 @@ public class Game : MonoBehaviour {
         player.position += new Vector3(moveInput.x, moveInput.y, 0f) * (speed * Time.deltaTime);
         playerVelocity = new Vector3(moveInput.x, moveInput.y, 0f) * speed;
 
-        if (moveInput.x < 0) {
-            player.spriteRenderer.flipX = true;
+        if (moveInput != Vector2.zero) {
+            player.spriteRenderer.flipX = moveInput.x < 0;
+            nextIdleDir = (int)Mathf.Sign(moveInput.x);
         }
         else {
-            player.spriteRenderer.flipX = false;
+            player.spriteRenderer.flipX = nextIdleDir < 0;
         }
         
         if (moveInput.x != 0) {
-            player.animator.Play("PlayerRun");
+            player.animator.Play(PlayerRunSideHash);
+            nextIdleAnimHash = PlayerIdleSide;
         }
         else if (moveInput.y > 0) {
-            player.animator.Play("PlayerRunUp");
+            player.animator.Play(PlayerRunUpHash);
+            nextIdleAnimHash = PlayerIdleUp;
         }
         else if (moveInput.y < 0) {
-            player.animator.Play("PlayerRunDown");
+            player.animator.Play(PlayerRunDownHash);
+            nextIdleAnimHash = PlayerIdleDown;
         }
         else {
-            player.animator.Play("PlayerIdle");
+            player.animator.Play(nextIdleAnimHash);
         }
         
         Vector2 mousePos = Mouse.current.position.ReadValue();
@@ -1938,7 +1951,7 @@ public class Game : MonoBehaviour {
         float angle = Vector2.SignedAngle(Vector2.right, velocity.normalized);
         Quaternion projectileRotation = Quaternion.AngleAxis(angle, Vector3.forward);
         
-        const float defaultTimeAlive = 1.2f;
+        const float defaultTimeAlive = 0.65f;
         float projLifeTime = defaultTimeAlive;
         if (equipedEye.range.TryGetValue(out var rangeIncrease)) {
             projLifeTime += rangeIncrease.timeAliveIncrease;
