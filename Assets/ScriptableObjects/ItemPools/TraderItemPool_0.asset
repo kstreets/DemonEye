@@ -25,3 +25,23 @@ MonoBehaviour:
     dropChance: 0.1
   - item: {fileID: 11400000, guid: 8842a0e3b2453f440b32b802a0cf16c4, type: 2}
     dropChance: 0.1
+  - item: {fileID: 11400000, guid: f7c724c49aae4c04c96cab2b1076d025, type: 2}
+    dropChance: 0.1
+  - item: {fileID: 11400000, guid: 75a513a0644776c409fce1e4cc9b4dd8, type: 2}
+    dropChance: 0.1
+  - item: {fileID: 11400000, guid: 667a64d81be74684794ef55b13295ef7, type: 2}
+    dropChance: 0.1
+  - item: {fileID: 11400000, guid: 3505426df7dc8164caf246c28362eb53, type: 2}
+    dropChance: 0.1
+  - item: {fileID: 11400000, guid: 90a9c4698fb11e84eab82e2adc29f8fd, type: 2}
+    dropChance: 0.1
+  - item: {fileID: 11400000, guid: 8a1342e3b7302de4c897cb310bc19b12, type: 2}
+    dropChance: 0.1
+  - item: {fileID: 11400000, guid: 0f33211a66fc5f445945e18f3fbc6b77, type: 2}
+    dropChance: 0.1
+  - item: {fileID: 11400000, guid: f8fe16e37d39ac04281746434ee366a9, type: 2}
+    dropChance: 0.1
+  - item: {fileID: 11400000, guid: 9285ab41e291784449187596580ae02c, type: 2}
+    dropChance: 0.1
+  - item: {fileID: 11400000, guid: 3846f52121da03e4a87d0c80d7d6eb7c, type: 2}
+    dropChance: 0.1

@@ -19,8 +19,8 @@ MonoBehaviour:
   maxStackCount: 3
   weight: 0
   description: 
-  buyPrice: 200
-  sellPrice: 66
+  buyPrice: 350
+  sellPrice: 150
   traderXp: 5
   modifiesStats: 0
   agilityStatAdjustment: 0

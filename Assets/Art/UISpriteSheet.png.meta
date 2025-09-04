@@ -606,13 +606,13 @@ TextureImporter:
       name: UISpriteSheet_22
       rect:
         serializedVersion: 2
-        x: 112
-        y: 406
-        width: 65
-        height: 4
+        x: 97
+        y: 404
+        width: 125
+        height: 8
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 4, y: 0, z: 6, w: 0}
+      border: {x: 6, y: 0, z: 6, w: 0}
       customData: 
       outline: []
       physicsShape: []
@@ -628,13 +628,13 @@ TextureImporter:
       name: UISpriteSheet_23
       rect:
         serializedVersion: 2
-        x: 115
+        x: 101
         y: 390
-        width: 57
-        height: 4
+        width: 114
+        height: 6
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 2, y: 0, z: 2, w: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
@@ -712,6 +712,50 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: UISpriteSheet_27
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 352
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b301d4058d0fe084793a6530d6dae6f5
+      internalID: -543200239
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UISpriteSheet_28
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 320
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1b696e679506c6948b93f648667c4676
+      internalID: -909882854
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -747,6 +791,8 @@ TextureImporter:
       UISpriteSheet_24: 1980637295
       UISpriteSheet_25: -2041690214
       UISpriteSheet_26: 798261383
+      UISpriteSheet_27: -543200239
+      UISpriteSheet_28: -909882854
       UISpriteSheet_3: 1439875600
       UISpriteSheet_4: 2144612291
       UISpriteSheet_5: 896199210

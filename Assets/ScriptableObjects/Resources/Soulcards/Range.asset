@@ -19,10 +19,10 @@ MonoBehaviour:
   maxStackCount: 0
   weight: 0
   description: 
-  buyPrice: 0
-  sellPrice: 0
+  buyPrice: 50
+  sellPrice: 25
   traderXp: 0
   modifiesStats: 0
   agilityStatAdjustment: 0
   strengthStatAdjustment: 0
-  rangeIncrease: 1.2
+  timeAliveIncrease: 0

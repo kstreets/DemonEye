@@ -119,6 +119,7 @@ public class Game : MonoBehaviour {
     public RectTransform lootInventoryParent;
     public RectTransform playerBarsPanel;
     public Image healthBarFillImage;
+    public Image weightBarFillImage;
     public GameObject interactPrompt;
     public TextMeshProUGUI exitPortalStatusText;
     [EndFoldout]
@@ -284,6 +285,7 @@ public class Game : MonoBehaviour {
         UpdateWave();
         UpdateEnemies();
         UpdateEntityEffects();
+        UpdateInRaidUi();
     }
     
     // *****************************
@@ -397,7 +399,9 @@ public class Game : MonoBehaviour {
     private void ResetEntity<T>(T entity) where T : Entity {
         entity.health = 100;
         entity.animator?.Rebind();
-        entity.animator?.Update(0);
+        if (entity.gameObject.activeInHierarchy) {
+            entity.animator?.Update(0);
+        }
     }
     
     private void DestroyEntity(GameObject gameObj) {
@@ -1345,7 +1349,7 @@ public class Game : MonoBehaviour {
 
     private void AddItemsToTraderInventory(int traderLevel) {
         ItemPool itemPool = traderLevelPools[traderLevel];
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 10; i++) {
             Item traderItem = itemPool.GetItemFromPool();
             TryAddItemToInventory(traderInventory, traderItem, traderItem.MaxStackCount);
             RefreshInventoryDisplay(traderInventory);
@@ -1752,8 +1756,6 @@ public class Game : MonoBehaviour {
             return;
         }
         
-        healthBarFillImage.fillAmount = player.health / 100f;
-        
         if (InventoryIsOpen) return;
         
         Vector2 moveInput = moveInputAction.ReadValue<Vector2>();
@@ -1799,8 +1801,8 @@ public class Game : MonoBehaviour {
     private const float maxPlayerSpeed = 0.85f;
 
     private const int encumberingIncreasePerStrengthPoint = 50;
-    private const int defaultStartingEncumberingWeight = 600;
-    private const int maxEncumberedWeight = 700;
+    private const int defaultStartingEncumberingWeight = 180;
+    private const int maxEncumberedWeight = 280;
     private const float maxEncumberedSpeedReduction = 0.3f;
     
     private float GetPlayerSpeedBasedOnStats() {
@@ -1814,6 +1816,14 @@ public class Game : MonoBehaviour {
         }
         float playerSpeed = Mathf.Lerp(defaultPlayerSpeed, maxPlayerSpeed, (float)agilityStat / BaseCharacterStats.maxStatValue);
         
+        float speedReductionFromWeight = Mathf.Lerp(0f, maxEncumberedSpeedReduction, GetOverweightCompletion());
+        speedReductionFromWeight = Mathf.Clamp(speedReductionFromWeight, 0f, maxEncumberedSpeedReduction);
+
+        playerSpeed -= speedReductionFromWeight;
+        return playerSpeed;
+    }
+
+    private int GetStrengthStat() {
         int strengthStat = baseStats.strength;
         for (int i = 0; i < playerEquipmentSize; i++) {
             InventoryItem item = playerInventory.slots[i].item;
@@ -1822,20 +1832,27 @@ public class Game : MonoBehaviour {
                 strengthStat += item.ItemRef.strengthStatAdjustment;
             }
         }
+        return strengthStat;
+    }
 
-        int encumberingIncreaseFromStrength = strengthStat * encumberingIncreasePerStrengthPoint;
-        int startingEncumberingWeight = defaultStartingEncumberingWeight + encumberingIncreaseFromStrength;
-        int endingEncumberingWeight = maxEncumberedWeight + encumberingIncreaseFromStrength;
+    private void GetEncumberingWeightRange(out int startingWeight, out int endingWeight) {
+        int encumberingIncreaseFromStrength = GetStrengthStat() * encumberingIncreasePerStrengthPoint;
+        endingWeight = maxEncumberedWeight + encumberingIncreaseFromStrength;
+        startingWeight = defaultStartingEncumberingWeight + encumberingIncreaseFromStrength;
+    }
 
+    private float GetTotalWeightCompletion() {
+        GetEncumberingWeightRange(out int _, out int endingEncumberingWeight);
+        int inventoryWeight = GetInventoryWeight(playerInventory);
+        return Mathf.Clamp01(inventoryWeight / (float)endingEncumberingWeight);
+    }
+
+    private float GetOverweightCompletion() {
+        GetEncumberingWeightRange(out int startingEncumberingWeight, out int endingEncumberingWeight);
         int inventoryWeight = GetInventoryWeight(playerInventory);
         int overWeightAmount = Mathf.Clamp(inventoryWeight - startingEncumberingWeight, 0, int.MaxValue);
         float overWeightComp = overWeightAmount / (float)endingEncumberingWeight;
-
-        float speedReductionFromWeight = Mathf.Lerp(0f, maxEncumberedSpeedReduction, overWeightComp);
-        speedReductionFromWeight = Mathf.Clamp(speedReductionFromWeight, 0f, maxEncumberedSpeedReduction);
-
-        playerSpeed -= speedReductionFromWeight;
-        return playerSpeed;
+        return Mathf.Clamp01(overWeightComp);
     }
     
     // ************************ 
@@ -2624,6 +2641,11 @@ public class Game : MonoBehaviour {
         enterNextRaidButton.onClick.AddListener(() => {
             gameStateMachine.SetStateIfNotCurrent(raidState);
         });
+    }
+
+    private void UpdateInRaidUi() {
+        healthBarFillImage.fillAmount = player.health / 100f;
+        weightBarFillImage.fillAmount = GetTotalWeightCompletion();
     }
 
     // Its better just to have these as constants because the canvas layout recalculates in LateUpdate
