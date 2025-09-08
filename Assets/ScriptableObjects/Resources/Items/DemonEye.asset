@@ -11,17 +11,17 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9bc23522601a56f4d89295cf565d360b, type: 3}
   m_Name: DemonEye
-  m_EditorClassIdentifier: 
-  uuid: 1216294888
-  type: 3
+  m_EditorClassIdentifier: Assembly-CSharp::Item
+  uuid: -698570393
   inventorySprite: {fileID: -1083478326, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
-  itemGroupProps: {fileID: 0}
-  maxStackCount: 1
-  weight: 0
-  description: 
+  type: {fileID: 11400000, guid: fd77ee936723b1448b554eb40ddbf4f4, type: 2}
   buyPrice: 0
   sellPrice: 0
   traderXp: 0
   modifiesStats: 0
   agilityStatAdjustment: 0
   strengthStatAdjustment: 0
+  itemGroupProps: {fileID: 0}
+  maxStackCount: 1
+  weight: 0
+  description: 

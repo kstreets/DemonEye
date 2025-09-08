@@ -27,6 +27,21 @@ public class Game : MonoBehaviour {
     public GameObject explosionPrefab;
     [EndFoldout]
     
+    [Foldout("Item Type Refs")]
+    public ItemType backpackType;
+    public ItemType eyeType;
+    public ItemType demonEyeType;
+    public ItemType trinketType;
+    public ItemType soulcardType;
+    [EndFoldout]
+
+    [Foldout("Item Refs")]
+    public Item bandageItem;
+    public Item healthPotionItem;
+    public Item pouchItem;
+    public Item ruckSackItem;
+    [EndFoldout]
+    
     [Foldout("Gameplay Variables")]
     [Range(0f, 1f)] public float defaultCriticalStrikeChange;
     public float defaultCriticalStrikeMultiplier;
@@ -56,15 +71,15 @@ public class Game : MonoBehaviour {
     [Header("Spawn Positions")]
     public Vector3 hellSpawnPosition;
     
+    [Foldout("Effects")]
+    public AnimationCurve hitFlashCurve;
+    public AnimationCurve bounceCurve;
+    [EndFoldout]
+    
     [Foldout("UI/Prefabs")]
     public GameObject inventorySlotPrefab;
     public GameObject rockSmokePrefab;
     public GameObject damageNumberPrefab;
-    [EndFoldout]
-
-    [Foldout("Effects")]
-    public AnimationCurve hitFlashCurve;
-    public AnimationCurve bounceCurve;
     [EndFoldout]
     
     [Foldout("UI/MiscRefs")]
@@ -88,6 +103,8 @@ public class Game : MonoBehaviour {
     public RectTransform playerBackpackParent;
     public RectTransform playerPocketsBackpackParent;
     public RectTransform playerInventoryParent;
+    public TextMeshProUGUI playerPanelHealthText;
+    public TextMeshProUGUI playerPanelWeightText;
     [EndFoldout]
     
     [Foldout("UI/StashPanel")]
@@ -145,13 +162,13 @@ public class Game : MonoBehaviour {
     public DynamicClip stoneHitClip;
     [EndFoldout]
     
-    [Header("Controls")]
-    public InputAction moveInputAction;
-    public InputAction attackInputAction;
-    public InputAction interactInputAction;
-    public InputAction inventoryInputAction;
-    public InputAction selectItemInputAction;
-    public InputAction splitStackInputAction;
+    private InputAction moveInputAction;
+    private InputAction attackInputAction;
+    private InputAction interactInputAction;
+    private InputAction inventoryInputAction;
+    private InputAction selectItemInputAction;
+    private InputAction useItemInputAction;
+    private InputAction splitStackInputAction;
     
     [NonSerialized] public List<Entity> entities = new();
     [NonSerialized] public Dictionary<GameObject, Entity> entityLookup = new();
@@ -190,15 +207,20 @@ public class Game : MonoBehaviour {
         LoadAllItems();
         InitAudio();
         InitHideoutUI();
+        
         BuildSavePaths();
         hideoutStateData = LoadFromFile<HideoutStateData>(hideoutDataSavePath) ?? new HideoutStateData();
+        player = SpawnEntity<Player>(playerPrefab, Vector3.zero, Quaternion.identity, null, EntityLifetime.Global);
+        player.gameObject.SetActive(false);
+        LoadAndAssignPlayerSaveData(player);
+        
         InitInventory();
         LoadInventory(playerInventory);
         LoadInventory(stashInventory);
         InitButtonCallbacks();
         AddItemsToTraderInventory(hideoutStateData.traderLevel);
         SetStashValue(0);
-
+        
         bloodDropPool = CreateEntityPool<Entity>(bloodDropPrefab, 10, null);
         projectilePool = CreateEntityPool<Projectile>(baseProjectilePrefab, 20, OnSpawnProjectile);
         stoppingPowerProjectilePool = CreateEntityPool<Projectile>(stoppingPowerProjectilePrefab, 20, OnSpawnProjectile);
@@ -213,6 +235,7 @@ public class Game : MonoBehaviour {
         inventoryInputAction = InputSystem.actions.FindAction("Inventory");
         selectItemInputAction = InputSystem.actions.FindAction("SelectItem");
         splitStackInputAction = InputSystem.actions.FindAction("SplitStack");
+        useItemInputAction = InputSystem.actions.FindAction("UseItem");
 
         hideoutState = gameStateMachine.CreateState(OnHideoutStateUpdate, OnHideoutStateEnter, OnHideoutStateExit);
         raidState = gameStateMachine.CreateState(OnRaidStateUpdate, OnRaidStateEnter, OnRaidStateExit);
@@ -230,6 +253,7 @@ public class Game : MonoBehaviour {
     private void OnApplicationQuit() {
         SaveInventory(playerInventory);
         SaveInventory(stashInventory);
+        SavePlayerData();
     }
 
     private void UpdateTimers() {
@@ -260,7 +284,8 @@ public class Game : MonoBehaviour {
 
         smallMapParent.gameObject.SetActive(true);
         Map map = smallMapParent.GetComponent<Map>();
-        player = SpawnEntity<Entity>(playerPrefab, hellSpawnPosition, Quaternion.identity);
+        player.gameObject.SetActive(true);
+        player.position = hellSpawnPosition;
         cinemachineCamera.Follow = player.trans;
         
         AstarPath.active.Scan();
@@ -274,6 +299,7 @@ public class Game : MonoBehaviour {
         ClearProjectiles();
         smallMapParent.gameObject.SetActive(false);
         playerBarsPanel.gameObject.SetActive(false);
+        player.gameObject.SetActive(false);
     }
 
     private void OnRaidStateUpdate() {
@@ -324,8 +350,9 @@ public class Game : MonoBehaviour {
         
         return pool;
     }
-    
-    
+
+    public enum EntityLifetime { Level, Global }
+
     public class Entity {
         public Transform trans;
         public Collider2D collider;
@@ -333,6 +360,7 @@ public class Game : MonoBehaviour {
         public SpriteRenderer spriteRenderer;
         public Animator animator;
         public TextMeshProUGUI textMesh;
+        public EntityLifetime lifetime;
         
         public MaterialPropertyBlock matPropertyBlock = new();
         public IEntityPooler entityPool;
@@ -356,21 +384,22 @@ public class Game : MonoBehaviour {
         public GameObject gameObject => trans.gameObject;
     }
     
-    private T SpawnEntity<T>(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null) where T : Entity, new() {
+    private T SpawnEntity<T>(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level) where T : Entity, new() {
         GameObject obj = Instantiate(prefab, position, rotation, parent);
-        return InitializeEntity<T>(obj, position, rotation, parent);
+        return InitializeEntity<T>(obj, position, rotation, parent, lifetime);
     }
 
-    private T SpawnEntity<T>(EntityPool<T> pool, Vector3 position, Quaternion rotation, Transform parent = null) where T : Entity, new() {
+    private T SpawnEntity<T>(EntityPool<T> pool, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level) where T : Entity, new() {
         T entity;
         if (pool.standbyList.Count > 0) {
             entity = pool.standbyList.PopLast();
+            entity.lifetime = lifetime;
             entity.trans.SetPositionAndRotation(position, rotation);
             entity.trans.SetParent(parent);
             ResetEntity(entity);
         }
         else { 
-            entity = SpawnEntity<T>(pool.prefab, position, rotation, parent);
+            entity = SpawnEntity<T>(pool.prefab, position, rotation, parent, lifetime);
             entity.entityPool = pool;
         }
         entity.gameObject.SetActive(true);
@@ -379,7 +408,7 @@ public class Game : MonoBehaviour {
         return entity;
     }
     
-    private T InitializeEntity<T>(GameObject objInstance, Vector3 position, Quaternion rotation, Transform parent) where T : Entity, new() {
+    private T InitializeEntity<T>(GameObject objInstance, Vector3 position, Quaternion rotation, Transform parent, EntityLifetime lifetime) where T : Entity, new() {
         objInstance.transform.SetPositionAndRotation(position, rotation);
         objInstance.transform.SetParent(parent);
         T newEntity = new() {
@@ -389,6 +418,7 @@ public class Game : MonoBehaviour {
             spriteRenderer = objInstance.TryGetComponent(out SpriteRenderer spriteRenderer) ? spriteRenderer : null,
             animator = objInstance.TryGetComponent(out Animator anim) ? anim : null,
             textMesh = objInstance.TryGetComponent(out TextMeshProUGUI text) ? text : null,
+            lifetime = lifetime,
         };
         ResetEntity(newEntity);
         entities.Add(newEntity);
@@ -747,7 +777,7 @@ public class Game : MonoBehaviour {
                     Vector2 attackCheckPos = enemy.position + dirToPlayer * 0.15f;
                     Collider2D col = Physics2D.OverlapCircle(attackCheckPos, 0.15f, Masks.PlayerMask);
                     if (col != null) {
-                        DamagePlayer(enemy.data.damage);
+                        DamagePlayer(enemy.data.damage,enemy.data.changeToCauseBleed);
                     }
                 };
             }
@@ -809,7 +839,7 @@ public class Game : MonoBehaviour {
             float dist = Vector2.Distance(enemy.position, player.position);
             float time = dist / enemy.data.speed;
             
-            Vector2 estimatedPlayerPos = player.position + playerVelocity.ToVector3() * time;
+            Vector2 estimatedPlayerPos = player.position + player.velocity.ToVector3() * time;
             Vector2 conservativeEstimatedPlayerPos = Vector2.Lerp(player.position, estimatedPlayerPos, 0.5f);
             ABPath abPath = ABPath.Construct(enemy.position, conservativeEstimatedPlayerPos, path => {
                 path.Claim(this);
@@ -1099,8 +1129,7 @@ public class Game : MonoBehaviour {
 
             InventorySlotUI centerSlotUi = centerSlot.GetComponent<InventorySlotUI>();
             centerSlotUi.disallowItemStacking = true;
-            centerSlotUi.acceptsAllTypes = false;
-            centerSlotUi.onlyAcceptedItemType = Item.ItemType.Eye;
+            centerSlotUi.onlyAcceptedItemType = eyeType;
             
             for (int i = 0; i < crucibleVeinSize; i++) {
                 float deg = 360f / crucibleVeinSize * i;
@@ -1113,8 +1142,7 @@ public class Game : MonoBehaviour {
                 }
                 
                 veinSlot.disallowItemStacking = true;
-                veinSlot.acceptsAllTypes = false;
-                veinSlot.onlyAcceptedItemType = Item.ItemType.Soulcard;
+                veinSlot.onlyAcceptedItemType = soulcardType;
             }
         }
         crucibleInventory = CreateInventory(crucibleParent, crucibleInventorySize);
@@ -1142,7 +1170,9 @@ public class Game : MonoBehaviour {
 
         InventoryHoverInfo invHoverInfo = UpdateInventoryHover();
         UpdateItemtooltip(invHoverInfo);
-        HandleItemClicked(invHoverInfo);
+        CheckToMoveItem(invHoverInfo);
+        CheckToConsumeItem(invHoverInfo);
+        UpdatePlayerPanelUI();
         CheckForEquipmentChange();
     }
     
@@ -1162,7 +1192,7 @@ public class Game : MonoBehaviour {
         }
     }
 
-    private void HandleItemClicked(InventoryHoverInfo invHoverInfo) {
+    private void CheckToMoveItem(InventoryHoverInfo invHoverInfo) {
         if (!selectItemInputAction.WasPressedThisFrame() && !splitStackInputAction.WasPressedThisFrame()) return;
 
         Inventory hoveredInventory = invHoverInfo.hoveredInventory;
@@ -1170,7 +1200,7 @@ public class Game : MonoBehaviour {
 
         if (!TryGetItemFromHoverInfo(invHoverInfo, out InventoryItem hoveredItem)) return;
 
-        bool clickedOnEquipedBackpack = hoveredInventory == playerInventory && hoveredItem.ItemRef.type == Item.ItemType.Backpack;
+        bool clickedOnEquipedBackpack = hoveredInventory == playerInventory && hoveredItem.ItemRef is BackpackType;
         if (clickedOnEquipedBackpack && EquipedBackpackHasItems()) {
             return;
         }
@@ -1195,7 +1225,7 @@ public class Game : MonoBehaviour {
         }
         else if (OnEyeForgeTab) {
             if (hoveredInventory == stashInventory) {
-                bool hoveredItemIsDemonEye = hoveredItem.ItemRef.type == Item.ItemType.DemonEye;
+                bool hoveredItemIsDemonEye = hoveredItem.ItemRef.type == demonEyeType;
                 destinationInventory = hoveredItemIsDemonEye ? playerInventory : crucibleInventory;
             }
             else if (hoveredInventory == crucibleInventory) {
@@ -1246,6 +1276,30 @@ public class Game : MonoBehaviour {
             }
             RefreshTransactionUI();
         }
+    }
+
+    private void CheckToConsumeItem(InventoryHoverInfo invHoverInfo) {
+        if (!useItemInputAction.WasPressedThisFrame()) return;
+        if (!TryGetItemFromHoverInfo(invHoverInfo, out InventoryItem hoveredItem)) return;
+
+        if (hoveredItem.ItemRef == bandageItem) {
+            if (!player.bleeding) return;
+            player.bleeding = false;
+        }
+        else if (hoveredItem.ItemRef == healthPotionItem) {
+            if (player.health >= 100f) return;
+            HealPlayer(20);
+        }
+        
+        RemoveItemFromInventory(invHoverInfo.hoveredInventory, invHoverInfo.hoveredSlotIndex);
+    }
+
+    private void UpdatePlayerPanelUI() {
+        playerPanelHealthText.text = $"<color=#5CF25B>{player.health}</color><size=22>/100";
+
+        int inventoryWeight = GetInventoryWeight(playerInventory);
+        GetEncumberingWeightRange(out int startEncumberingWeight, out _);
+        playerPanelWeightText.text = $"<color=#98C5CC>{inventoryWeight}</color><size=22>/{startEncumberingWeight}";
     }
 
     private bool TryGetItemFromHoverInfo(InventoryHoverInfo invHoverInfo, out InventoryItem hoveredItem) {
@@ -1447,9 +1501,8 @@ public class Game : MonoBehaviour {
         // Otherwise add to empty inventory slot
         foreach (InventorySlot slot in inventory.slots) {
             if (slot.item != null || slot.ui.SlotIsInactive) continue;
-            
-            bool slotCanAcceptItemType = slot.ui.acceptsAllTypes || slot.ui.onlyAcceptedItemType == item.ItemRef.type;
-            if (!slotCanAcceptItemType) continue;
+
+            if (!slot.ui.AcceptsItem(item.ItemRef)) continue;
 
             int addCount = slot.ui.disallowItemStacking ? 1 : Mathf.Clamp(count, 0, item.ItemRef.MaxStackCount);
             bool canMoveCleanly = addCount == count;
@@ -1542,7 +1595,7 @@ public class Game : MonoBehaviour {
             itemDescPopup.SetActive(true);
         }
         
-        if (hoveredSlot.item.ItemRef.type == Item.ItemType.DemonEye) {
+        if (hoveredSlot.item.ItemRef.type == demonEyeType) {
             DemonEyeInstance eyeInstance = eyeInstanceFromItemId[hoveredSlot.item.itemDataUuid];
             string eyeDescription = "";
             foreach (EquipedModInstance modInstance in eyeInstance.modInstances) {
@@ -1573,6 +1626,7 @@ public class Game : MonoBehaviour {
     
     private void RemoveItemFromInventory(Inventory inventory, int slotIndex) {
         inventory.slots[slotIndex].item = null;
+        inventory.slots[slotIndex].ui.ClearItem();
     }
 
     // Returns the count of items we removed
@@ -1736,11 +1790,15 @@ public class Game : MonoBehaviour {
     // Player
     // **********************************
 
-    private Entity player;
-    private List<Collider2D> playerContacts = new(10);
-    private Vector2 playerVelocity;
-    private int nextIdleAnimHash;
-    private int nextIdleDir;
+    public class Player : Entity {
+        public bool bleeding;
+        public Vector2 velocity;
+        public int nextIdleAnimHash;
+        public int nextIdleDir;
+        public Limiter bleedLimiter;
+    }
+
+    private Player player;
     
     private int PlayerRunSideHash = Animator.StringToHash("PlayerRunSide");
     private int PlayerRunUpHash = Animator.StringToHash("PlayerRunUp");
@@ -1755,37 +1813,41 @@ public class Game : MonoBehaviour {
             gameStateMachine.SetState(hideoutState);
             return;
         }
-        
+
+        if (player.bleeding && player.bleedLimiter.TimeHasPassed(3.5f)) {
+            player.health -= 5;
+        }
+
         if (InventoryIsOpen) return;
         
         Vector2 moveInput = moveInputAction.ReadValue<Vector2>();
         
         float speed = GetPlayerSpeedBasedOnStats();
         player.position += new Vector3(moveInput.x, moveInput.y, 0f) * (speed * Time.deltaTime);
-        playerVelocity = new Vector3(moveInput.x, moveInput.y, 0f) * speed;
+        player.velocity = new Vector3(moveInput.x, moveInput.y, 0f) * speed;
 
         if (moveInput != Vector2.zero) {
             player.spriteRenderer.flipX = moveInput.x < 0;
-            nextIdleDir = (int)Mathf.Sign(moveInput.x);
+            player.nextIdleDir = (int)Mathf.Sign(moveInput.x);
         }
         else {
-            player.spriteRenderer.flipX = nextIdleDir < 0;
+            player.spriteRenderer.flipX = player.nextIdleDir < 0;
         }
         
         if (moveInput.x != 0) {
             player.animator.Play(PlayerRunSideHash);
-            nextIdleAnimHash = PlayerIdleSide;
+            player.nextIdleAnimHash = PlayerIdleSide;
         }
         else if (moveInput.y > 0) {
             player.animator.Play(PlayerRunUpHash);
-            nextIdleAnimHash = PlayerIdleUp;
+            player.nextIdleAnimHash = PlayerIdleUp;
         }
         else if (moveInput.y < 0) {
             player.animator.Play(PlayerRunDownHash);
-            nextIdleAnimHash = PlayerIdleDown;
+            player.nextIdleAnimHash = PlayerIdleDown;
         }
         else {
-            player.animator.Play(nextIdleAnimHash);
+            player.animator.Play(player.nextIdleAnimHash);
         }
         
         Vector2 mousePos = Mouse.current.position.ReadValue();
@@ -1795,6 +1857,18 @@ public class Game : MonoBehaviour {
             PlayAudioClip(shootClip, player.position, 1f);
             ShootProjectile();
         }
+    }
+
+    private void HealPlayer(int healing) {
+        player.health = Mathf.Clamp(player.health + healing, 0, 100);
+    }
+
+    private void DamagePlayer(int damage, float chanceToBleed = 0f) {
+        if (RollProbability(chanceToBleed)) {
+            player.bleeding = true;
+        }
+        player.health -= damage;
+        AddFlashHitEffect(player);
     }
     
     private const float defaultPlayerSpeed = 0.55f;
@@ -1992,12 +2066,8 @@ public class Game : MonoBehaviour {
         interactPrompt.SetActive(false);
         
         Vector2 checkCenter = player.position + new Vector3(0f, 0.05f, 0f);
-        ContactFilter2D contactFilter = new() { layerMask = Masks.ItemMask };
-        int size = Physics2D.OverlapCircle(checkCenter, 0.1f, contactFilter, playerContacts);
         
-        for (int i = 0; i < size; i++) {
-            Collider2D col = playerContacts[i];
-            
+        ForCollidersInOverlapCircle(checkCenter, 0.1f, Masks.ItemMask, 10, col => {
             if (col.CompareTag(Tags.Pickup)) {
                 EnableInteractionPrompt(col.transform.position);
                 if (interactInputAction.WasPressedThisFrame()) {
@@ -2018,7 +2088,7 @@ public class Game : MonoBehaviour {
             if (col.CompareTag(Tags.ExitPortal)) {
                 gameStateMachine.SetStateIfNotCurrent(hideoutState);
             }
-        } 
+        });
     }
 
     private void EnableInteractionPrompt(Vector3 position) {
@@ -2109,11 +2179,6 @@ public class Game : MonoBehaviour {
     // Damage Handling 
     // ***********************************
     
-    private void DamagePlayer(int damage) { 
-        player.health -= damage;
-        AddFlashHitEffect(player);
-    }
-
     private void DamageEnemy(Entity enemy, int damage, bool isCriticalStrike) {
         enemy.health -= damage;
         AddFlashHitEffect(enemy);
@@ -2236,20 +2301,12 @@ public class Game : MonoBehaviour {
     }
 
     private void SpawnExplosion(ExplosionSoulcard.InstanceData explosion, Vector2 spawnPos) {
-        Entity exp = SpawnEntity(explosionPool, spawnPos, Quaternion.identity); 
-        DestroyEntity(exp, CurrentClipLength(exp.animator));
-
-        ContactFilter2D contactFilter = new() {
-            layerMask = Masks.EnemyMask,
-            useLayerMask = true,
-        };
-
-        List<Collider2D> cols = ListPool<Collider2D>.Get();
-        int count = Physics2D.OverlapCircle(spawnPos, explosion.radius, contactFilter, cols);
-        for (int i = 0; i < count; i++) {
-            DamageEnemy(entityLookup[cols[i].gameObject], explosion.damage, false);
-        }
-        ListPool<Collider2D>.Release(cols);
+        Entity expEntity = SpawnEntity(explosionPool, spawnPos, Quaternion.identity); 
+        DestroyEntity(expEntity, CurrentClipLength(expEntity.animator));
+        
+        ForCollidersInOverlapCircle(spawnPos, explosion.radius, Masks.EnemyMask, 30, col => {
+            DamageEnemy(entityLookup[col.gameObject], explosion.damage, false);
+        });
     }
     
     // ***************************
@@ -2341,7 +2398,9 @@ public class Game : MonoBehaviour {
 
     private void DestroyLevelEntities() {
         for (int i = entities.Count - 1; i >= 0; i--) {
-            DestroyEntityAtIndex(i);    
+            if (entities[i].lifetime == EntityLifetime.Level) {
+                DestroyEntityAtIndex(i);    
+            }
         }
 
         deadBodySlotsLookup.Clear();
@@ -2357,6 +2416,7 @@ public class Game : MonoBehaviour {
     private string stashSavePath;
     private string crucibleSavePath;
     private string hideoutDataSavePath;
+    private string playerSavePath;
     private List<InventoryItem> cachedInventoryForSaving = new(50);
 
     private void BuildSavePaths() {
@@ -2364,6 +2424,7 @@ public class Game : MonoBehaviour {
         stashSavePath = $"{Application.persistentDataPath}/stash";
         crucibleSavePath = $"{Application.persistentDataPath}/crucible";
         hideoutDataSavePath = $"{Application.persistentDataPath}/hideoutData";
+        playerSavePath = $"{Application.persistentDataPath}/player";
     }
 
     private string GetSavePath(Inventory inventory) {
@@ -2436,6 +2497,24 @@ public class Game : MonoBehaviour {
             }
             itemLookup.Add(item.uuid, item);
         }
+    }
+
+    [Serializable]
+    private class PlayerSaveData {
+        public int health;
+    }
+
+    private void SavePlayerData() {
+        PlayerSaveData data = new() {
+            health = player.health,
+        };
+        SaveToFile(playerSavePath, data);
+    }
+
+    private void LoadAndAssignPlayerSaveData(Player instancedPlayer) {
+        PlayerSaveData data = LoadFromFile<PlayerSaveData>(playerSavePath);
+        if (data == null) return;
+        instancedPlayer.health = data.health;
     }
 
     // ************************************
@@ -2513,7 +2592,7 @@ public class Game : MonoBehaviour {
 
             for (int i = 0; i < crucibleInventory.slots.Length; i++) {
                 InventorySlot slot = crucibleInventory.slots[i];
-                if (slot.ui.onlyAcceptedItemType == Item.ItemType.Eye) {
+                if (slot.ui.OnlyAcceptsType(eyeType)) {
                     eyeItem = slot.item;
                     eyeSlotIndex = i;
                 }
@@ -2534,7 +2613,7 @@ public class Game : MonoBehaviour {
             foreach (InventorySlot slot in crucibleInventory.slots) {
                 if (slot.item == null) continue;
                 
-                if (slot.ui.onlyAcceptedItemType == Item.ItemType.Soulcard) {
+                if (slot.ui.OnlyAcceptsType(soulcardType)) {
                     newDemonEyeItem.modifierUuids.Add(slot.item.ItemRef.uuid);
                 }
                 slot.item = null;
@@ -2685,7 +2764,7 @@ public class Game : MonoBehaviour {
         hideoutStateData.curTraderXpForLevel += xpGain;
         traderXpLevelFill.fillAmount = hideoutStateData.curTraderXpForLevel / (float)totalXp;
     }
-
+    
     // ************************
     // Audio
     // ************************
@@ -2794,6 +2873,26 @@ public class Game : MonoBehaviour {
 
     private float CurrentClipLength(Animator anim) {
         return anim.GetCurrentAnimatorStateInfo(0).length;
+    }
+
+    private void ForCollidersInOverlapCircle(Vector2 center, float radius, LayerMask mask, int maxColliders, Action<Collider2D> perItemCallback) {
+        ContactFilter2D contactFilter = new() {
+            layerMask = mask, 
+            useLayerMask = true,
+        };
+        
+        List<Collider2D> cols = ListPool<Collider2D>.Get();
+        
+        if (cols.Capacity < maxColliders) {
+            cols.Capacity = maxColliders;
+        }
+        
+        int count = Physics2D.OverlapCircle(center, radius, contactFilter, cols);
+        for (int i = 0; i < count; i++) {
+            perItemCallback?.Invoke(cols[i]);
+        }
+        
+        ListPool<Collider2D>.Release(cols);
     }
     
 }

@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -5,17 +6,29 @@ using UnityEngine.UI;
 public class InventorySlotUI : MonoBehaviour {
 
     public bool disallowItemStacking;
-    public bool acceptsAllTypes = true;
+    public ItemType onlyAcceptedItemType;
     public Image slotImage;
     public Image itemImage;
     public Sprite activeSlotSprite;
     public Sprite inactiveSlotSprite;
     public TextMeshProUGUI countText;
     
-    [VInspector.ShowIf("acceptsAllTypes", false)]
-    public Item.ItemType onlyAcceptedItemType;
-
     public bool SlotIsInactive => slotImage.sprite == inactiveSlotSprite;
+    public bool AcceptsAllTypes => onlyAcceptedItemType == null;
+
+    public bool AcceptsItem(Item item) {
+        if (AcceptsAllTypes) {
+            return true;
+        }
+        return item.type == onlyAcceptedItemType;
+    }
+
+    public bool OnlyAcceptsType(ItemType itemType) {
+        if (AcceptsAllTypes) {
+            return false;
+        }
+        return onlyAcceptedItemType == itemType;
+    }
 
     public void MakeSlotActive() {
         slotImage.sprite = activeSlotSprite;     

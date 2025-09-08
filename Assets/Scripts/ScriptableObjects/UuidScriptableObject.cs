@@ -1,13 +1,12 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using VInspector;
 using Random = UnityEngine.Random;
 
 [CreateAssetMenu(fileName = "UuidScriptableObject", menuName = "Scriptable Objects/UuidScriptableObject")]
 public class UuidScriptableObject : ScriptableObject {
 
-    [ReadOnly] public int uuid;
+    [HideInInspector] public int uuid;
 
     public static int GetIntUuid() {
         return Random.Range(int.MinValue, int.MaxValue);

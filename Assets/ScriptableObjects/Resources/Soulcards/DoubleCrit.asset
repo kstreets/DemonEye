@@ -13,16 +13,16 @@ MonoBehaviour:
   m_Name: DoubleCrit
   m_EditorClassIdentifier: Assembly-CSharp::DoubleCritSoulcard
   uuid: 1128319698
-  type: 2
   inventorySprite: {fileID: 541499864, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
-  itemGroupProps: {fileID: 11400000, guid: 78826f3a685555a4896655f4c68ef737, type: 2}
-  maxStackCount: 0
-  weight: 0
-  description: 
+  type: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
   buyPrice: 89
   sellPrice: 89
   traderXp: 0
   modifiesStats: 0
   agilityStatAdjustment: 0
   strengthStatAdjustment: 0
+  itemGroupProps: {fileID: 11400000, guid: 78826f3a685555a4896655f4c68ef737, type: 2}
+  maxStackCount: 0
+  weight: 0
+  description: 
   damageMultiplier: 1.5
