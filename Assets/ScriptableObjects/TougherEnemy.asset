@@ -19,3 +19,4 @@ MonoBehaviour:
   speed: 0.37
   health: 200
   damage: 15
+  changeToCauseBleed: 50

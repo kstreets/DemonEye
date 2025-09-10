@@ -18,6 +18,7 @@ public class Game : MonoBehaviour {
     public static Game instance;
     
     public List<ItemPool> traderLevelPools;
+    public List<Map> mapSequence;
 
     [Foldout("Pooling Prefabs")]
     public GameObject baseProjectilePrefab;
@@ -51,8 +52,6 @@ public class Game : MonoBehaviour {
     public CinemachineCamera cinemachineCamera;
     public RectTransform crosshairTrans;
     public Transform exitPortalSpawnParent;
-
-    public Transform smallMapParent;
 
     public GameObject playerPrefab;
     public GameObject gemRockPrefab;
@@ -139,6 +138,7 @@ public class Game : MonoBehaviour {
     public Image weightBarFillImage;
     public GameObject interactPrompt;
     public TextMeshProUGUI exitPortalStatusText;
+    public TextMeshProUGUI raidTimerText;
     [EndFoldout]
 
     [Foldout("UI/DamageNumbers")]
@@ -191,18 +191,15 @@ public class Game : MonoBehaviour {
     private State raidState;
     private StateMachine gameStateMachine = new();
 
-    [Serializable]
-    private class HideoutStateData {
-        public int crucibleLevel;
-        public int stashLevel;
-        public int traderLevel;
-        public int curTraderXpForLevel;
-    }
-    
     private HideoutStateData hideoutStateData;
+    private RaidStateData raidStateData;
     
     private void Start() {
         instance = this;
+        
+        #if UNITY_EDITOR
+        Application.targetFrameRate = 120;
+        #endif
         
         LoadAllItems();
         InitAudio();
@@ -210,9 +207,17 @@ public class Game : MonoBehaviour {
         
         BuildSavePaths();
         hideoutStateData = LoadFromFile<HideoutStateData>(hideoutDataSavePath) ?? new HideoutStateData();
+        raidStateData = LoadFromFile<RaidStateData>(raidDataSavePath) ?? new RaidStateData();
         player = SpawnEntity<Player>(playerPrefab, Vector3.zero, Quaternion.identity, null, EntityLifetime.Global);
         player.gameObject.SetActive(false);
         LoadAndAssignPlayerSaveData(player);
+        
+        // Temporary for now
+        {
+            raidStateData = new() {
+                maps = mapSequence
+            };
+        }
         
         InitInventory();
         LoadInventory(playerInventory);
@@ -264,6 +269,7 @@ public class Game : MonoBehaviour {
 
     private void OnHideoutStateEnter() {
         Cursor.visible = true;
+        ShowRaidUI(false); 
         InitHideoutUI(); 
         RefreshInventoryDisplay(playerInventory);
         RefreshInventoryDisplay(stashInventory);
@@ -280,26 +286,27 @@ public class Game : MonoBehaviour {
     }
 
     private void OnRaidStateEnter() {
-        playerBarsPanel.gameObject.SetActive(true);
-
-        smallMapParent.gameObject.SetActive(true);
-        Map map = smallMapParent.GetComponent<Map>();
+        ShowRaidUI(true); 
+        
+        Map curMap = raidStateData.CurrentMap;
+        curMap.gameObject.SetActive(true);
         player.gameObject.SetActive(true);
         player.position = hellSpawnPosition;
         cinemachineCamera.Follow = player.trans;
         
         AstarPath.active.Scan();
         InitExitPortal();
-        InitWave(map.waves);
-        SpawnResources(map.resourceParent);
+        InitSpawnManager(curMap.waves);
+        SpawnResources(curMap.resourceParent);
     }
 
     private void OnRaidStateExit() {
         DestroyLevelEntities();
         ClearProjectiles();
-        smallMapParent.gameObject.SetActive(false);
+        raidStateData.CurrentMap.gameObject.SetActive(false);
         playerBarsPanel.gameObject.SetActive(false);
         player.gameObject.SetActive(false);
+        raidStateData.raidDifficulty++;
     }
 
     private void OnRaidStateUpdate() {
@@ -308,10 +315,13 @@ public class Game : MonoBehaviour {
         UpdateInventory();
         UpdatePlayer();
         UpdateProjectiles();
-        UpdateWave();
+        UpdateSpawnManager();
         UpdateEnemies();
         UpdateEntityEffects();
         UpdateInRaidUi();
+        if (spawnManager.totalTimeLeft <= 0f) {
+            gameStateMachine.SetState(hideoutState);
+        }
     }
     
     // *****************************
@@ -924,11 +934,11 @@ public class Game : MonoBehaviour {
     }
     
     
-    public class EnemyWaveManager {
-        public float timeInCurWave;
-        public int curWaveIndex;
-        public EnemyWaves waves;
-        public EnemyWaves.WaveData CurWaveData;
+    public class EnemySpawnManager {
+        public float timeInPhase;
+        public float totalTimeLeft;
+        public int curPhaseIndex;
+        public RaidSpawnPattern spawnPattern;
         
         public const int prefixedSumResolution = 500;
         public float[] prefixedSums = new float[prefixedSumResolution];
@@ -937,83 +947,91 @@ public class Game : MonoBehaviour {
         public int spawnTimeIndex;
     }
 
-    [NonSerialized] private EnemyWaveManager waveManager = new();
+    [NonSerialized] private EnemySpawnManager spawnManager = new();
     
-    private void InitWave(EnemyWaves waves) {
-        waveManager.waves = waves;
-        waveManager.curWaveIndex = -1;
+    private void InitSpawnManager(RaidSpawnPattern pattern) {
+        spawnManager.spawnPattern = pattern;
+        spawnManager.curPhaseIndex = -1;
+        spawnManager.totalTimeLeft = pattern.timeBeforeFirstPhase;
+        foreach (RaidSpawnPattern.SpawnPhase phase in spawnManager.spawnPattern.spawnPhases) {
+            spawnManager.totalTimeLeft += phase.phaseDuration;
+        }
     }
     
-    private void UpdateWave() {
-        EnemyWaveManager wm = waveManager;
-        if (wm.curWaveIndex >= wm.waves.waves.Count) return;
+    private void UpdateSpawnManager() {
+        EnemySpawnManager sm = spawnManager;
         
-        wm.timeInCurWave += Time.deltaTime;
-        float waveDuration = wm.curWaveIndex == -1 ? wm.waves.timeBeforeFirstWave : wm.CurWaveData.waveDuration;
+        if (sm.curPhaseIndex >= sm.spawnPattern.spawnPhases.Count) return;
+        
+        sm.timeInPhase += Time.deltaTime;
+        sm.totalTimeLeft -= Time.deltaTime;
+        
+        float waveDuration = sm.curPhaseIndex == -1 ? 
+            sm.spawnPattern.timeBeforeFirstPhase : 
+            sm.spawnPattern.spawnPhases[sm.curPhaseIndex].phaseDuration;
 
-        bool startNextWave = wm.timeInCurWave >= waveDuration;
+        bool startNextWave = sm.timeInPhase >= waveDuration;
         if (startNextWave) {
-            wm.curWaveIndex++;
-            if (!wm.waves.waves.IndexInRange(wm.curWaveIndex)) return;
+            sm.curPhaseIndex++;
+            if (!sm.spawnPattern.spawnPhases.IndexInRange(sm.curPhaseIndex)) return;
 
-            EnemyWaves.WaveData newUnitWave = wm.waves.waves[wm.curWaveIndex];
-            wm.CurWaveData = newUnitWave;
+            RaidSpawnPattern.SpawnPhase curPhase = sm.spawnPattern.spawnPhases[sm.curPhaseIndex];
 
-            foreach (EnemyWaves.UnitWave waveUnit in newUnitWave.waveUnits) {
-                if (waveUnit.enemyCount >= EnemyWaveManager.prefixedSumResolution) {
-                    Debug.LogError($"Wave cannot have more enemies than {nameof(EnemyWaveManager.prefixedSumResolution)}");
+            foreach (RaidSpawnPattern.EnemyBatch batch in curPhase.enemyBatches) {
+                if (batch.enemyCount >= EnemySpawnManager.prefixedSumResolution) {
+                    Debug.LogError($"Wave cannot have more enemies than {nameof(EnemySpawnManager.prefixedSumResolution)}");
                 }
             }
             
-            wm.timeInCurWave = 0f;
-            wm.spawnTimeIndex = 0;
+            sm.timeInPhase = 0f;
+            sm.spawnTimeIndex = 0;
 
             float totalWeight = 0f;
-            for (int i = 0; i < EnemyWaveManager.prefixedSumResolution; i++) {
-                float sliceIndex = i / (float)(EnemyWaveManager.prefixedSumResolution - 1);
-                float weight = Mathf.Clamp01(newUnitWave.spawnRateCurve.Evaluate(sliceIndex));
+            for (int i = 0; i < EnemySpawnManager.prefixedSumResolution; i++) {
+                float sliceIndex = i / (float)(EnemySpawnManager.prefixedSumResolution - 1);
+                float weight = Mathf.Clamp01(curPhase.spawnRateCurve.Evaluate(sliceIndex));
                 totalWeight += weight;
-                wm.prefixedSums[i] = totalWeight;
+                sm.prefixedSums[i] = totalWeight;
             }
 
             // Build spawntimes for this next wave
             {
-                wm.spawnEvents.Clear();
+                sm.spawnEvents.Clear();
                 
-                foreach (EnemyWaves.UnitWave waveUnit in newUnitWave.waveUnits) {
+                foreach (RaidSpawnPattern.EnemyBatch waveUnit in curPhase.enemyBatches) {
                     int enemySpawnCount = waveUnit.enemyCount;
                     for (int i = 0; i < enemySpawnCount; i++) {
                         float targetWeight = (i / (float)(enemySpawnCount - 1)) * totalWeight;
 
                         // Find the corresponding time using linear search
                         int weightIndex = 0;
-                        while (weightIndex < EnemyWaveManager.prefixedSumResolution && wm.prefixedSums[weightIndex] < targetWeight) {
+                        while (weightIndex < EnemySpawnManager.prefixedSumResolution && sm.prefixedSums[weightIndex] < targetWeight) {
                             weightIndex++;
                         }
 
-                        float normalizedTime = weightIndex / (float)(EnemyWaveManager.prefixedSumResolution - 1);
-                        wm.spawnEvents.Add((normalizedTime * newUnitWave.spawnDuration, waveUnit.enemyData));
+                        float normalizedTime = weightIndex / (float)(EnemySpawnManager.prefixedSumResolution - 1);
+                        sm.spawnEvents.Add((normalizedTime * curPhase.spawnDuration, waveUnit.enemyData));
                     }
                 }
                 
                 // Due to the way we add elements we need to sort by time so its chronologically ordered 
-                wm.spawnEvents.Sort((x, y) => x.time.CompareTo(y.time));
+                sm.spawnEvents.Sort((x, y) => x.time.CompareTo(y.time));
             }
         }
 
-        if (wm.spawnEvents.Count <= 0) return;
+        if (sm.spawnEvents.Count <= 0) return;
         
-        while (wm.spawnEvents.IndexInRange(wm.spawnTimeIndex) && wm.spawnEvents[wm.spawnTimeIndex].time <= wm.timeInCurWave) {
+        while (sm.spawnEvents.IndexInRange(sm.spawnTimeIndex) && sm.spawnEvents[sm.spawnTimeIndex].time <= sm.timeInPhase) {
             Vector2 randomSpawnPos = player.position + RandomOffset360(3f, 4f);
             NNInfo info = AstarPath.active.graphs[0].GetNearest(randomSpawnPos, NNConstraint.Walkable);
 
-            EnemyData enemyToSpawn = wm.spawnEvents[wm.spawnTimeIndex].enemy;
+            EnemyData enemyToSpawn = sm.spawnEvents[sm.spawnTimeIndex].enemy;
             Enemy enemy = SpawnEntity<Enemy>(enemyToSpawn.enemyPrefab, info.position, Quaternion.identity);
             enemy.health = enemyToSpawn.health;
             enemy.data = enemyToSpawn;
             enemies.Add(enemy);
             
-            wm.spawnTimeIndex++;
+            sm.spawnTimeIndex++;
         }
 
     }
@@ -1810,6 +1828,7 @@ public class Game : MonoBehaviour {
     private void UpdatePlayer() {
         if (player.health <= 0f) {
             ClearInventory(playerInventory);
+            raidStateData.raidDifficulty = 0;
             gameStateMachine.SetState(hideoutState);
             return;
         }
@@ -2412,18 +2431,35 @@ public class Game : MonoBehaviour {
     // Saving and Loading
     // ***************************
     
+    [Serializable]
+    private class RaidStateData {
+        public int raidDifficulty;
+        public List<Map> maps;
+        public Map CurrentMap => maps[raidDifficulty];
+    }
+    
+    [Serializable]
+    private class HideoutStateData {
+        public int crucibleLevel;
+        public int stashLevel;
+        public int traderLevel;
+        public int curTraderXpForLevel;
+    }
+    
     private string inventorySavePath;
     private string stashSavePath;
     private string crucibleSavePath;
     private string hideoutDataSavePath;
+    private string raidDataSavePath;
     private string playerSavePath;
     private List<InventoryItem> cachedInventoryForSaving = new(50);
-
+    
     private void BuildSavePaths() {
         inventorySavePath = $"{Application.persistentDataPath}/inventory";
         stashSavePath = $"{Application.persistentDataPath}/stash";
         crucibleSavePath = $"{Application.persistentDataPath}/crucible";
-        hideoutDataSavePath = $"{Application.persistentDataPath}/hideoutData";
+        hideoutDataSavePath = $"{Application.persistentDataPath}/hideoutData"; 
+        raidDataSavePath = $"{Application.persistentDataPath}/raidStateData";
         playerSavePath = $"{Application.persistentDataPath}/player";
     }
 
@@ -2506,7 +2542,7 @@ public class Game : MonoBehaviour {
 
     private void SavePlayerData() {
         PlayerSaveData data = new() {
-            health = player.health,
+            health = player.health > 0 ? player.health : 100,
         };
         SaveToFile(playerSavePath, data);
     }
@@ -2547,6 +2583,14 @@ public class Game : MonoBehaviour {
         lootInventoryPanel.gameObject.SetActive(false);
     }
 
+    private void ShowRaidUI(bool show) {
+        if (!show) {
+            interactPrompt.gameObject.SetActive(false);
+        }
+        playerBarsPanel.gameObject.SetActive(show);
+        raidTimerText.gameObject.SetActive(show);
+    }
+    
     private void InitButtonCallbacks() {
         characterTabButton.onClick.AddListener(() => {
             characterTabButton.image.sprite = tabSelectedSprite;
@@ -2725,6 +2769,10 @@ public class Game : MonoBehaviour {
     private void UpdateInRaidUi() {
         healthBarFillImage.fillAmount = player.health / 100f;
         weightBarFillImage.fillAmount = GetTotalWeightCompletion();
+        
+        int minutesLeftInRaid = Mathf.FloorToInt(spawnManager.totalTimeLeft / 60f);
+        int secondsLeftInRaid = Mathf.FloorToInt(spawnManager.totalTimeLeft % 60f);
+        raidTimerText.text = $"{minutesLeftInRaid:0}:{secondsLeftInRaid:00}";
     }
 
     // Its better just to have these as constants because the canvas layout recalculates in LateUpdate
