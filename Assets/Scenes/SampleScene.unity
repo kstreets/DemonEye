@@ -123152,8 +123152,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe0d147fa5ac6ad488d161e946b96d11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  traderLevelPools:
-  - {fileID: 11400000, guid: 0694fa22015d4ea47bc4555bd2490364, type: 2}
+  traderConfig: {fileID: 11400000, guid: 30acb7433aefe754eb84738a04027278, type: 2}
   mapSequence:
   - {fileID: 280759611}
   - {fileID: 1785456717}
@@ -123168,10 +123167,10 @@ MonoBehaviour:
   demonEyeType: {fileID: 11400000, guid: fd77ee936723b1448b554eb40ddbf4f4, type: 2}
   trinketType: {fileID: 11400000, guid: 91804a8de7d984648aff2f6ae72e2331, type: 2}
   soulcardType: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
-  bandageItem: {fileID: 0}
-  healthPotionItem: {fileID: 0}
-  pouchItem: {fileID: 0}
-  ruckSackItem: {fileID: 0}
+  bandageItem: {fileID: 11400000, guid: e8d0b8b28b7a08542bc780d7b1d86d01, type: 2}
+  healthPotionItem: {fileID: 11400000, guid: 363ba89e00af17d4ea4faef47c515f35, type: 2}
+  pouchItem: {fileID: 11400000, guid: a633801cff72587439a4e3cfc32727b0, type: 2}
+  ruckSackItem: {fileID: 11400000, guid: 416d6e8ae11f1d14ea5c9c8d31ed0a65, type: 2}
   defaultCriticalStrikeChange: 0.1
   defaultCriticalStrikeMultiplier: 2
   mainCamera: {fileID: 519420031}

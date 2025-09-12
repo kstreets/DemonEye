@@ -17,7 +17,7 @@ public class Game : MonoBehaviour {
 
     public static Game instance;
     
-    public List<ItemPool> traderLevelPools;
+    public TraderConfig traderConfig;
     public List<Map> mapSequence;
 
     [Foldout("Pooling Prefabs")]
@@ -1310,6 +1310,7 @@ public class Game : MonoBehaviour {
         }
         
         RemoveItemFromInventory(invHoverInfo.hoveredInventory, invHoverInfo.hoveredSlotIndex);
+        AdjustItemCountInInventory(invHoverInfo.hoveredInventory, invHoverInfo.hoveredSlotIndex, );
     }
 
     private void UpdatePlayerPanelUI() {
@@ -1420,12 +1421,17 @@ public class Game : MonoBehaviour {
     }
 
     private void AddItemsToTraderInventory(int traderLevel) {
-        ItemPool itemPool = traderLevelPools[traderLevel];
+        foreach (Item item in traderConfig.persistentItems) {
+            TryAddItemToInventory(traderInventory, item, 99);
+        }
+        
+        ItemPool itemPool = traderConfig.itemPool;
         for (int i = 0; i < 10; i++) {
             Item traderItem = itemPool.GetItemFromPool();
             TryAddItemToInventory(traderInventory, traderItem, traderItem.MaxStackCount);
-            RefreshInventoryDisplay(traderInventory);
         }
+        
+        RefreshInventoryDisplay(traderInventory);
     }
 
     public struct InventoryHoverInfo {
@@ -1492,11 +1498,19 @@ public class Game : MonoBehaviour {
             type = InventoryAddResult.ResultType.Failure
         };
 
+        bool allowInfiniteStacking = inventory == traderInventory;
         int count = item.count;
 
         // If we can stack the item then we just do that
         foreach (InventorySlot slot in inventory.slots) {
             if (slot.item == null || slot.ui.disallowItemStacking || slot.item.IsFullStack || slot.item.itemDataUuid != item.itemDataUuid) continue;
+
+            if (allowInfiniteStacking) {
+                slot.item.count += count;
+                result.addedCount += count;
+                result.type = InventoryAddResult.ResultType.Success;
+                return result;
+            }
 
             int overflowAmount = (count + slot.item.count) - slot.item.ItemRef.MaxStackCount;
             if (overflowAmount > 0) {
@@ -1525,7 +1539,7 @@ public class Game : MonoBehaviour {
             int addCount = slot.ui.disallowItemStacking ? 1 : Mathf.Clamp(count, 0, item.ItemRef.MaxStackCount);
             bool canMoveCleanly = addCount == count;
             
-            if (canMoveCleanly) {
+            if (canMoveCleanly || allowInfiniteStacking) {
                 slot.item = item;
                 result.type = InventoryAddResult.ResultType.Success;
                 result.addedCount = count;
@@ -1674,6 +1688,10 @@ public class Game : MonoBehaviour {
             return null;
         }
         return inventory.slots[slotIndex].item;
+    }
+
+    private void ReduceItemCountInInventory(Inventory inventory, int slotIndex, int reduction) {
+        
     }
     
     private void AdjustItemCountInInventory(Inventory inventory, int slotIndex, int newCount) {

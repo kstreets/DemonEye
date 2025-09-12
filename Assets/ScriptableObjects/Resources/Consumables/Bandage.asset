@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Item
   uuid: -1192992996
   inventorySprite: {fileID: 1876801147, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
-  type: {fileID: 11400000, guid: 151e227f7d92fd7468f04a2a625486ff, type: 2}
+  type: {fileID: 11400000, guid: 229fbe8e9203e95499f73ff3b9ecfb68, type: 2}
   buyPrice: 50
   sellPrice: 20
   traderXp: 0
@@ -22,6 +22,6 @@ MonoBehaviour:
   agilityStatAdjustment: 0
   strengthStatAdjustment: 0
   itemGroupProps: {fileID: 0}
-  maxStackCount: 1
+  maxStackCount: 3
   weight: 1
   description: Stops bleeding.
