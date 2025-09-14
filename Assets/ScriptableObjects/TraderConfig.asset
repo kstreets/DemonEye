@@ -15,4 +15,7 @@ MonoBehaviour:
   persistentItems:
   - {fileID: 11400000, guid: e8d0b8b28b7a08542bc780d7b1d86d01, type: 2}
   - {fileID: 11400000, guid: 363ba89e00af17d4ea4faef47c515f35, type: 2}
+  - {fileID: 11400000, guid: a633801cff72587439a4e3cfc32727b0, type: 2}
+  - {fileID: 11400000, guid: 416d6e8ae11f1d14ea5c9c8d31ed0a65, type: 2}
+  - {fileID: 11400000, guid: 813a59de02795ad40bfd5fccf7ddc415, type: 2}
   itemPool: {fileID: 11400000, guid: 0694fa22015d4ea47bc4555bd2490364, type: 2}

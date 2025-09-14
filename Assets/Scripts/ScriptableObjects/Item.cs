@@ -10,6 +10,7 @@ public class Item : UuidScriptableObject {
     public int buyPrice;
     public int sellPrice;
     public int traderXp;
+    [Range(0f, 1f)] public float chanceToSpawn;
 
     public bool modifiesStats;
     [ShowIf(nameof(modifiesStats))]
@@ -23,7 +24,7 @@ public class Item : UuidScriptableObject {
     [SerializeField] [Range(0, 10)] private int weight;
     [SerializeField] [TextArea] private string description;
     [EndIf]
-
+    
     public int Weight => itemGroupProps ? itemGroupProps.weight : weight;
     public int MaxStackCount => itemGroupProps ? itemGroupProps.maxStackCount : maxStackCount;
 

@@ -123153,6 +123153,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   traderConfig: {fileID: 11400000, guid: 30acb7433aefe754eb84738a04027278, type: 2}
+  startingItems: {fileID: 11400000, guid: 289cab2c4c800154ebe376a64e8eb57a, type: 2}
   mapSequence:
   - {fileID: 280759611}
   - {fileID: 1785456717}
@@ -125012,7 +125013,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 250, y: 150}
+  m_SizeDelta: {x: 250, y: 200}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!1001 &2511484942037324688
 PrefabInstance:
@@ -126172,8 +126173,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -75}
-  m_SizeDelta: {x: 250, y: 370}
+  m_AnchoredPosition: {x: 0, y: -100}
+  m_SizeDelta: {x: 250, y: 320}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &6811341249636141774
 MonoBehaviour:

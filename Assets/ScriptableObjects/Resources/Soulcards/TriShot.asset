@@ -18,6 +18,7 @@ MonoBehaviour:
   buyPrice: 350
   sellPrice: 150
   traderXp: 5
+  chanceToSpawn: 0.1
   modifiesStats: 0
   agilityStatAdjustment: 0
   strengthStatAdjustment: 0

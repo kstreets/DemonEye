@@ -18,6 +18,7 @@ public class Game : MonoBehaviour {
     public static Game instance;
     
     public TraderConfig traderConfig;
+    public StartingItemsConfig startingItems;
     public List<Map> mapSequence;
 
     [Foldout("Pooling Prefabs")]
@@ -189,6 +190,7 @@ public class Game : MonoBehaviour {
     
     private State hideoutState;
     private State raidState;
+    private State gameOverState;
     private StateMachine gameStateMachine = new();
 
     private HideoutStateData hideoutStateData;
@@ -207,7 +209,7 @@ public class Game : MonoBehaviour {
         
         BuildSavePaths();
         hideoutStateData = LoadFromFile<HideoutStateData>(hideoutDataSavePath) ?? new HideoutStateData();
-        raidStateData = LoadFromFile<RaidStateData>(raidDataSavePath) ?? new RaidStateData();
+        // raidStateData = LoadFromFile<RaidStateData>(raidDataSavePath) ?? new RaidStateData();
         player = SpawnEntity<Player>(playerPrefab, Vector3.zero, Quaternion.identity, null, EntityLifetime.Global);
         player.gameObject.SetActive(false);
         LoadAndAssignPlayerSaveData(player);
@@ -215,7 +217,8 @@ public class Game : MonoBehaviour {
         // Temporary for now
         {
             raidStateData = new() {
-                maps = mapSequence
+                raidDifficulty = 0,
+                maps = mapSequence,
             };
         }
         
@@ -244,6 +247,10 @@ public class Game : MonoBehaviour {
 
         hideoutState = gameStateMachine.CreateState(OnHideoutStateUpdate, OnHideoutStateEnter, OnHideoutStateExit);
         raidState = gameStateMachine.CreateState(OnRaidStateUpdate, OnRaidStateEnter, OnRaidStateExit);
+        gameOverState = gameStateMachine.CreateState(null, OnGameOverEnter, OnGameOverExit);
+        
+        raidState.To(gameOverState).When(() => player.health <= 0);
+        gameOverState.To(hideoutState).When(() => true).AfterSeconds(3f);
     }
 
     private void Update() {
@@ -266,8 +273,13 @@ public class Game : MonoBehaviour {
         discoverLootTimer.Tick();
     }
 
-
     private void OnHideoutStateEnter() {
+        if (raidStateData.raidDifficulty == 0) {
+            foreach (StartingItemsConfig.ItemConfig config in startingItems.configs) {
+                TryAddItemToInventory(playerInventory, config.item, config.count);
+            }
+        }
+        
         Cursor.visible = true;
         ShowRaidUI(false); 
         InitHideoutUI(); 
@@ -301,12 +313,10 @@ public class Game : MonoBehaviour {
     }
 
     private void OnRaidStateExit() {
-        DestroyLevelEntities();
-        ClearProjectiles();
-        raidStateData.CurrentMap.gameObject.SetActive(false);
-        playerBarsPanel.gameObject.SetActive(false);
-        player.gameObject.SetActive(false);
-        raidStateData.raidDifficulty++;
+        if (player.health > 0) {
+            LeaveRaid();
+            raidStateData.raidDifficulty++;
+        }
     }
 
     private void OnRaidStateUpdate() {
@@ -321,6 +331,38 @@ public class Game : MonoBehaviour {
         UpdateInRaidUi();
         if (spawnManager.totalTimeLeft <= 0f) {
             gameStateMachine.SetState(hideoutState);
+        }
+    }
+
+    private void OnGameOverEnter() { }
+
+    private void OnGameOverExit() {
+        player.health = 100;
+        SavePlayerData();
+        LeaveRaid();
+
+        ClearInventory(playerInventory);
+        ClearInventory(stashInventory);
+        SaveInventory(playerInventory);
+        SaveInventory(stashInventory);
+        ResetCrucibleUpgrades();
+        raidStateData.raidDifficulty = 0;
+        hideoutStateData.stashLevel = 0;
+        SaveToFile(hideoutDataSavePath, hideoutStateData);
+    }
+
+    private void LeaveRaid() {
+        DestroyLevelEntities();
+        ClearProjectiles();
+        raidStateData.CurrentMap.gameObject.SetActive(false);
+        playerBarsPanel.gameObject.SetActive(false);
+        player.gameObject.SetActive(false);
+    }
+
+    private void ResetCrucibleUpgrades() {
+        hideoutStateData.crucibleLevel = 0;
+        for (int i = 1; i < crucibleInventory.slots.Length; i++) {
+            crucibleInventory.slots[i].ui.MakeSlotInactive();
         }
     }
     
@@ -952,6 +994,7 @@ public class Game : MonoBehaviour {
     private void InitSpawnManager(RaidSpawnPattern pattern) {
         spawnManager.spawnPattern = pattern;
         spawnManager.curPhaseIndex = -1;
+        spawnManager.timeInPhase = 0f;
         spawnManager.totalTimeLeft = pattern.timeBeforeFirstPhase;
         foreach (RaidSpawnPattern.SpawnPhase phase in spawnManager.spawnPattern.spawnPhases) {
             spawnManager.totalTimeLeft += phase.phaseDuration;
@@ -1096,7 +1139,7 @@ public class Game : MonoBehaviour {
     [NonSerialized] private Inventory lootInvetoryPtr;
     [NonSerialized] private List<Inventory> allInventories = new();
     
-    private const int playerPocketSize = 6;
+    private const int playerPocketSize = 9;
     private const int playerEquipmentSize = 3;
     private int DefaultPlayerInventorySize => playerPocketSize + playerEquipmentSize;
 
@@ -1309,8 +1352,8 @@ public class Game : MonoBehaviour {
             HealPlayer(20);
         }
         
-        RemoveItemFromInventory(invHoverInfo.hoveredInventory, invHoverInfo.hoveredSlotIndex);
-        AdjustItemCountInInventory(invHoverInfo.hoveredInventory, invHoverInfo.hoveredSlotIndex, );
+        ReduceItemCountInInventory(invHoverInfo.hoveredInventory, invHoverInfo.hoveredSlotIndex);
+        RefreshInventoryDisplay(invHoverInfo.hoveredInventory);
     }
 
     private void UpdatePlayerPanelUI() {
@@ -1410,7 +1453,14 @@ public class Game : MonoBehaviour {
         if (prevEquippedBackpackItem != curBackpackItem) {
             prevEquippedBackpackItem = curBackpackItem;
             if (curBackpackItem != null) {
-                ChangeInventorySize(playerInventory, DefaultPlayerInventorySize + 9);
+                int backpackSize = 0;
+                if (curBackpackItem.ItemRef == pouchItem) {
+                    backpackSize = 6;
+                }
+                else if (curBackpackItem.ItemRef == ruckSackItem) {
+                    backpackSize = 9;
+                }
+                ChangeInventorySize(playerInventory, DefaultPlayerInventorySize + backpackSize);
             }
             else {
                 ChangeInventorySize(playerInventory, DefaultPlayerInventorySize);
@@ -1690,8 +1740,12 @@ public class Game : MonoBehaviour {
         return inventory.slots[slotIndex].item;
     }
 
-    private void ReduceItemCountInInventory(Inventory inventory, int slotIndex, int reduction) {
-        
+    private void ReduceItemCountInInventory(Inventory inventory, int slotIndex, int reduction = 1) {
+        var item = GetInventoryItem(inventory, slotIndex);
+        item.count -= reduction;
+        if (item.count <= 0) {
+            RemoveItemFromInventory(inventory, slotIndex);
+        }
     }
     
     private void AdjustItemCountInInventory(Inventory inventory, int slotIndex, int newCount) {
@@ -1844,13 +1898,6 @@ public class Game : MonoBehaviour {
     private int PlayerIdleDown = Animator.StringToHash("PlayerIdleDown");
     
     private void UpdatePlayer() {
-        if (player.health <= 0f) {
-            ClearInventory(playerInventory);
-            raidStateData.raidDifficulty = 0;
-            gameStateMachine.SetState(hideoutState);
-            return;
-        }
-
         if (player.bleeding && player.bleedLimiter.TimeHasPassed(3.5f)) {
             player.health -= 5;
         }
@@ -2392,11 +2439,20 @@ public class Game : MonoBehaviour {
         InventorySlotUI[] lootInventorySlotUis = lootInventoryParent.GetComponentsInChildren<InventorySlotUI>(true);
         
         for (int i = 0; i < deadBodiesToSpawn; i++) {
-            int randomInventorySize = Random.Range(2, 6);
-            InventorySlot[] deadBodySlots = new InventorySlot[randomInventorySize];
-
-            for (int j = 0; j < randomInventorySize; j++) {
-                Item spawnItem = deadBodyPool.GetItemFromPool();
+            List<Item> deadBodyItems = ListPool<Item>.Get();
+            foreach (var itemPair in itemLookup) {
+                if (Random.value <= itemPair.Value.chanceToSpawn) {
+                    deadBodyItems.Add(itemPair.Value);
+                }
+            }
+            
+            int maxDeadBodyItemCount = Random.Range(2, 6);
+            deadBodyItems = deadBodyItems.OrderBy(x => Random.value).Take(maxDeadBodyItemCount).ToList();
+            
+            InventorySlot[] deadBodySlots = new InventorySlot[deadBodyItems.Count];
+           
+            for (int j = 0; j < deadBodyItems.Count; j++) {
+                Item spawnItem = deadBodyItems[j];
                 InventoryItem lootItem = new() {
                     itemDataUuid = spawnItem.uuid, 
                     count = Random.Range(1, spawnItem.MaxStackCount / 3),
@@ -2407,6 +2463,21 @@ public class Game : MonoBehaviour {
                     ui = lootInventorySlotUis[j]
                 };
             }
+            
+            ListPool<Item>.Release(deadBodyItems);
+
+            // for (int j = 0; j < randomInventorySize; j++) {
+            //     Item spawnItem = deadBodyPool.GetItemFromPool();
+            //     InventoryItem lootItem = new() {
+            //         itemDataUuid = spawnItem.uuid, 
+            //         count = Random.Range(1, spawnItem.MaxStackCount / 3),
+            //         notDiscovered = true,
+            //     };
+            //     deadBodySlots[j] = new() {
+            //         item = lootItem,
+            //         ui = lootInventorySlotUis[j]
+            //     };
+            // }
             
             Entity body = SpawnResource<Entity>(deadBodyPrefab, false);
             deadBodySlotsLookup.Add(body.gameObject, deadBodySlots);
@@ -2560,7 +2631,7 @@ public class Game : MonoBehaviour {
 
     private void SavePlayerData() {
         PlayerSaveData data = new() {
-            health = player.health > 0 ? player.health : 100,
+            health = player.health,
         };
         SaveToFile(playerSavePath, data);
     }
