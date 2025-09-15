@@ -15,17 +15,9 @@ MonoBehaviour:
   items:
   - item: {fileID: 11400000, guid: 813a59de02795ad40bfd5fccf7ddc415, type: 2}
     count: 2
+  - item: {fileID: 11400000, guid: 879589b7002a56d4791affd28d5fb199, type: 2}
+    count: 2
   - item: {fileID: 11400000, guid: 080b4f634b61c1d49a235bcf9b6ae110, type: 2}
     count: 15
-  - item: {fileID: 11400000, guid: 75a513a0644776c409fce1e4cc9b4dd8, type: 2}
-    count: 1
-  - item: {fileID: 11400000, guid: 3505426df7dc8164caf246c28362eb53, type: 2}
-    count: 1
-  - item: {fileID: 11400000, guid: 3846f52121da03e4a87d0c80d7d6eb7c, type: 2}
-    count: 1
-  - item: {fileID: 11400000, guid: 416d6e8ae11f1d14ea5c9c8d31ed0a65, type: 2}
-    count: 1
-  - item: {fileID: 11400000, guid: 363ba89e00af17d4ea4faef47c515f35, type: 2}
-    count: 1
-  - item: {fileID: 11400000, guid: a633801cff72587439a4e3cfc32727b0, type: 2}
-    count: 1
+  - item: {fileID: 11400000, guid: 080b4f634b61c1d49a235bcf9b6ae110, type: 2}
+    count: 15

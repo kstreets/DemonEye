@@ -15,9 +15,10 @@ MonoBehaviour:
   uuid: -245954202
   inventorySprite: {fileID: -761439653, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   type: {fileID: 11400000, guid: 229fbe8e9203e95499f73ff3b9ecfb68, type: 2}
-  buyPrice: 60
+  buyPrice: 20
   sellPrice: 22
   traderXp: 0
+  chanceToSpawn: 0
   modifiesStats: 0
   agilityStatAdjustment: 0
   strengthStatAdjustment: 0

@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6be7b725e872d8544a676cc6767aad0a, type: 3}
   m_Name: SmallMapWavesEasy
   m_EditorClassIdentifier: 
-  timeBeforeFirstPhase: 30
+  timeBeforeFirstPhase: 0
   spawnPhases:
-  - phaseDuration: 45
+  - phaseDuration: 80
     spawnDuration: 10
     spawnRateCurve:
       serializedVersion: 2
@@ -43,7 +43,7 @@ MonoBehaviour:
     enemyBatches:
     - enemyCount: 10
       enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
-  - phaseDuration: 50
+  - phaseDuration: 80
     spawnDuration: 12
     spawnRateCurve:
       serializedVersion: 2

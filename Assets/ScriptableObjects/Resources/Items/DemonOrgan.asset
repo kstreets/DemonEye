@@ -10,19 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9bc23522601a56f4d89295cf565d360b, type: 3}
-  m_Name: Bandage
+  m_Name: DemonOrgan
   m_EditorClassIdentifier: Assembly-CSharp::Item
-  uuid: -1192992996
-  inventorySprite: {fileID: 1876801147, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
-  type: {fileID: 11400000, guid: 229fbe8e9203e95499f73ff3b9ecfb68, type: 2}
-  buyPrice: 18
-  sellPrice: 20
+  uuid: 413746779
+  inventorySprite: {fileID: 1915861382, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  type: {fileID: 0}
+  buyPrice: 0
+  sellPrice: 100
   traderXp: 0
-  chanceToSpawn: 0
+  chanceToSpawn: 0.05
   modifiesStats: 0
   agilityStatAdjustment: 0
   strengthStatAdjustment: 0
   itemGroupProps: {fileID: 0}
-  maxStackCount: 3
-  weight: 1
-  description: Stops bleeding.
+  maxStackCount: 5
+  weight: 2
+  description: The organ of a demon. Traders like to buy this.

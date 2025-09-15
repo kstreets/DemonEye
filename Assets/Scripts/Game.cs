@@ -274,7 +274,7 @@ public class Game : MonoBehaviour {
     }
 
     private void OnHideoutStateEnter() {
-        if (raidStateData.raidDifficulty == 0) {
+        if (raidStateData.raidDifficulty == 0 && GetInventoryWeight(playerInventory) == 0) {
             foreach (StartingItemsConfig.ItemConfig config in startingItems.configs) {
                 TryAddItemToInventory(playerInventory, config.item, config.count);
             }
@@ -394,7 +394,8 @@ public class Game : MonoBehaviour {
         };
         
         for (int i = 0; i < initialSize; i++) {
-            T entity = SpawnEntity<T>(gameObj, Vector3.zero, Quaternion.identity, transform);
+            GameObject obj = Instantiate(gameObj, Vector3.zero, Quaternion.identity, transform);
+            T entity = InitializeEntity<T>(obj, EntityLifetime.Level);
             entity.entityPool = pool;
             entity.gameObject.SetActive(false);
             pool.standbyList.Add(entity);
@@ -438,7 +439,9 @@ public class Game : MonoBehaviour {
     
     private T SpawnEntity<T>(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level) where T : Entity, new() {
         GameObject obj = Instantiate(prefab, position, rotation, parent);
-        return InitializeEntity<T>(obj, position, rotation, parent, lifetime);
+        T entity = InitializeEntity<T>(obj, lifetime);
+        RegisterEntity(entity);
+        return entity;
     }
 
     private T SpawnEntity<T>(EntityPool<T> pool, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level) where T : Entity, new() {
@@ -447,22 +450,22 @@ public class Game : MonoBehaviour {
             entity = pool.standbyList.PopLast();
             entity.lifetime = lifetime;
             entity.trans.SetPositionAndRotation(position, rotation);
-            entity.trans.SetParent(parent);
+            entity.trans.SetParent(parent, true);
             ResetEntity(entity);
+            RegisterEntity(entity);
         }
         else { 
             entity = SpawnEntity<T>(pool.prefab, position, rotation, parent, lifetime);
             entity.entityPool = pool;
         }
+        
         entity.gameObject.SetActive(true);
         pool.inUseList.Add(entity);
         pool.OnSpawnCallback?.Invoke(entity);
         return entity;
     }
     
-    private T InitializeEntity<T>(GameObject objInstance, Vector3 position, Quaternion rotation, Transform parent, EntityLifetime lifetime) where T : Entity, new() {
-        objInstance.transform.SetPositionAndRotation(position, rotation);
-        objInstance.transform.SetParent(parent);
+    private T InitializeEntity<T>(GameObject objInstance, EntityLifetime lifetime) where T : Entity, new() {
         T newEntity = new() {
             trans = objInstance.transform,
             collider = objInstance.TryGetComponent(out Collider2D col) ? col : null,
@@ -472,9 +475,6 @@ public class Game : MonoBehaviour {
             textMesh = objInstance.TryGetComponent(out TextMeshProUGUI text) ? text : null,
             lifetime = lifetime,
         };
-        ResetEntity(newEntity);
-        entities.Add(newEntity);
-        entityLookup.Add(objInstance, newEntity);
         return newEntity;
     }
 
@@ -485,6 +485,11 @@ public class Game : MonoBehaviour {
             entity.animator?.Update(0);
         }
     }
+
+    private void RegisterEntity<T>(T entity) where T : Entity {
+        entities.Add(entity);
+        entityLookup.Add(entity.gameObject, entity);
+    }
     
     private void DestroyEntity(GameObject gameObj) {
         DestroyEntity(entityLookup[gameObj]);
@@ -493,6 +498,7 @@ public class Game : MonoBehaviour {
     private void DestroyEntity(Entity entity) {
         RemoveHitFlashEffect(entity);
         RemovePoisonedEffect(entity);
+        entity.parentEffect = null;
         
         entityLookup.Remove(entity.gameObject);
         entities.Remove(entity);
@@ -511,7 +517,7 @@ public class Game : MonoBehaviour {
             Destroy(entity.gameObject);
             return;
         }
-        entity.gameObject.transform.SetParent(transform);
+        entity.gameObject.transform.SetParent(transform, true);
         entity.entityPool.ReleaseEntity(entity);
     }
 
@@ -742,7 +748,7 @@ public class Game : MonoBehaviour {
 
     private void UpdateParentEffect(Entity entity) {
         if (!entity.parentEffect.TryGetValue(out var parentToEntity)) return;
-        if (Time.time > parentToEntity.endTime || !parentToEntity.parentEntity.IsValid) {
+        if (Time.time > parentToEntity.endTime || !parentToEntity.parentEntity.IsValid) { 
             entity.parentEffect = null;
             return;
         }
@@ -839,7 +845,7 @@ public class Game : MonoBehaviour {
                     enemy.health -= bleed.bleedDamage;
                     bleed.lastBleedTime = Time.time;
                     enemy.bleed = bleed;
-                    Entity bloodDrop = SpawnEntity(bloodDropPool, enemy.position, Quaternion.identity);
+                    Entity bloodDrop = SpawnEntity(bloodDropPool, OffsetY(enemy.position, 0.015f), Quaternion.identity);
                     AddParentEffect(bloodDrop, enemy, 0.4f);
                     DestroyEntity(bloodDrop, 0.8f);
                 }
@@ -853,6 +859,7 @@ public class Game : MonoBehaviour {
                         float randomChance = Random.value;
                         if (randomChance < itemDrop.dropChance) {
                             SpawnEntity<Entity>(itemDrop.itemPrefab, enemy.position, Quaternion.identity);
+                            break;
                         }
                     }
                 }
@@ -2267,8 +2274,8 @@ public class Game : MonoBehaviour {
         enemy.health -= damage;
         AddFlashHitEffect(enemy);
 
-        Vector2 startDamageNumPos = OffsetY(enemy.position, 0.15f);
-        Vector2 endDamageNumPos = OffsetY(enemy.position, 0.22f);
+        Vector2 startDamageNumPos = OffsetY(enemy.position, 0.28f);
+        Vector2 endDamageNumPos = OffsetY(enemy.position, 0.36f);
         Entity damageNumber = SpawnEntity<Entity>(damageNumberPrefab, startDamageNumPos, Quaternion.identity, damageNumbersParent);
         damageNumber.textMesh.text = damage.ToString();
         if (isCriticalStrike) {
