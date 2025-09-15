@@ -13,11 +13,5 @@ MonoBehaviour:
   m_Name: TestingInventory
   m_EditorClassIdentifier: 
   items:
-  - item: {fileID: 11400000, guid: 813a59de02795ad40bfd5fccf7ddc415, type: 2}
-    count: 2
-  - item: {fileID: 11400000, guid: 879589b7002a56d4791affd28d5fb199, type: 2}
-    count: 2
-  - item: {fileID: 11400000, guid: 080b4f634b61c1d49a235bcf9b6ae110, type: 2}
-    count: 15
-  - item: {fileID: 11400000, guid: 080b4f634b61c1d49a235bcf9b6ae110, type: 2}
-    count: 15
+  - item: {fileID: 11400000, guid: 363ba89e00af17d4ea4faef47c515f35, type: 2}
+    count: 3

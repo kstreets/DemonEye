@@ -13,15 +13,16 @@ MonoBehaviour:
   m_Name: StoneGemCommon
   m_EditorClassIdentifier: 
   uuid: -1243320832
-  type: 0
   inventorySprite: {fileID: -662992353, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
-  itemGroupProps: {fileID: 0}
-  maxStackCount: 15
-  weight: 0
-  description: Demonic gem, traders buy this item to make their trinkets.
+  type: {fileID: 0}
   buyPrice: 5
-  sellPrice: 10
+  sellPrice: 25
   traderXp: 30
+  chanceToSpawn: 0
   modifiesStats: 0
   agilityStatAdjustment: 0
   strengthStatAdjustment: 0
+  itemGroupProps: {fileID: 11400000, guid: d6cdda62e69bb8d409c3ae50dc007477, type: 2}
+  maxStackCount: 15
+  weight: 6
+  description: Demonic gem, traders buy this item to make their trinkets.

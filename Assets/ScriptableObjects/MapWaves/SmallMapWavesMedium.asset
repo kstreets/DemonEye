@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6be7b725e872d8544a676cc6767aad0a, type: 3}
   m_Name: SmallMapWavesMedium
   m_EditorClassIdentifier: 
-  timeBeforeFirstPhase: 25
+  timeBeforeFirstPhase: 45
   spawnPhases:
-  - phaseDuration: 60
+  - phaseDuration: 80
     spawnDuration: 30
     spawnRateCurve:
       serializedVersion: 2

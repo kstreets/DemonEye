@@ -30,6 +30,7 @@ public class Game : MonoBehaviour {
     [EndFoldout]
     
     [Foldout("Item Type Refs")]
+    public ItemType consumableType;
     public ItemType backpackType;
     public ItemType eyeType;
     public ItemType demonEyeType;
@@ -40,6 +41,7 @@ public class Game : MonoBehaviour {
     [Foldout("Item Refs")]
     public Item bandageItem;
     public Item healthPotionItem;
+    public Item demonSteakItem;
     public Item pouchItem;
     public Item ruckSackItem;
     [EndFoldout]
@@ -433,6 +435,7 @@ public class Game : MonoBehaviour {
             set => trans.position = value;
         }
 
+        public Vector3 Center => collider.bounds.center;
         public bool IsValid => trans;
         public GameObject gameObject => trans.gameObject;
     }
@@ -440,6 +443,7 @@ public class Game : MonoBehaviour {
     private T SpawnEntity<T>(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level) where T : Entity, new() {
         GameObject obj = Instantiate(prefab, position, rotation, parent);
         T entity = InitializeEntity<T>(obj, lifetime);
+        ResetEntity(entity);
         RegisterEntity(entity);
         return entity;
     }
@@ -825,14 +829,14 @@ public class Game : MonoBehaviour {
             Enemy enemy = enemies[i];
             enemy.applyDamageTimer.Tick();
 
-            float distFromPlayer = Vector2.Distance(player.position, enemy.position);
+            float distFromPlayer = Vector2.Distance(player.Center, enemy.Center);
 
             if (!enemy.poisoned.HasValue && distFromPlayer < 0.35f && !enemy.animator.Playing("Attack")) {
                 enemy.animator.Play("Attack");
                 enemy.applyDamageTimer.SetTime(0.31f);
                 enemy.applyDamageTimer.EndAction = () => {
-                    Vector3 dirToPlayer = (player.position - enemy.position).normalized;
-                    Vector2 attackCheckPos = enemy.position + dirToPlayer * 0.15f;
+                    Vector3 dirToPlayer = (player.Center - enemy.Center).normalized;
+                    Vector2 attackCheckPos = enemy.Center + dirToPlayer * 0.15f;
                     Collider2D col = Physics2D.OverlapCircle(attackCheckPos, 0.15f, Masks.PlayerMask);
                     if (col != null) {
                         DamagePlayer(enemy.data.damage,enemy.data.changeToCauseBleed);
@@ -1146,12 +1150,10 @@ public class Game : MonoBehaviour {
     [NonSerialized] private Inventory lootInvetoryPtr;
     [NonSerialized] private List<Inventory> allInventories = new();
     
-    private const int playerPocketSize = 9;
+    private const int playerPocketSize = 12;
     private const int playerEquipmentSize = 3;
     private int DefaultPlayerInventorySize => playerPocketSize + playerEquipmentSize;
 
-    private const int stashUpgradeSlotIncrease = 4;
-    
     private Timer discoverLootTimer;
     private int discoverLootIndex;
 
@@ -1176,8 +1178,8 @@ public class Game : MonoBehaviour {
         SpawnUiSlots(lootInventoryParent, cachedLootInventorySize); 
         lootInvetoryPtr = CreateInventory(lootInventoryParent, cachedLootInventorySize);
 
-        int stashInventorySize = 12 + hideoutStateData.stashLevel * stashUpgradeSlotIncrease;
-        SpawnUiSlots(stashInventoryParent, 40);
+        int stashInventorySize = 40;
+        SpawnUiSlots(stashInventoryParent, stashInventorySize);
         stashInventory = CreateInventory(stashInventoryParent, stashInventorySize);
         
         const int traderInventorySize = 15;
@@ -1349,6 +1351,7 @@ public class Game : MonoBehaviour {
     private void CheckToConsumeItem(InventoryHoverInfo invHoverInfo) {
         if (!useItemInputAction.WasPressedThisFrame()) return;
         if (!TryGetItemFromHoverInfo(invHoverInfo, out InventoryItem hoveredItem)) return;
+        if (hoveredItem.ItemRef.type != consumableType) return;
 
         if (hoveredItem.ItemRef == bandageItem) {
             if (!player.bleeding) return;
@@ -1356,7 +1359,11 @@ public class Game : MonoBehaviour {
         }
         else if (hoveredItem.ItemRef == healthPotionItem) {
             if (player.health >= 100f) return;
-            HealPlayer(20);
+            HealPlayer(25);
+        }
+        else if (hoveredItem.ItemRef == demonSteakItem) {
+            if (player.health >= 100f) return;
+            HealPlayer(15);
         }
         
         ReduceItemCountInInventory(invHoverInfo.hoveredInventory, invHoverInfo.hoveredSlotIndex);
@@ -1462,10 +1469,10 @@ public class Game : MonoBehaviour {
             if (curBackpackItem != null) {
                 int backpackSize = 0;
                 if (curBackpackItem.ItemRef == pouchItem) {
-                    backpackSize = 6;
+                    backpackSize = 8;
                 }
                 else if (curBackpackItem.ItemRef == ruckSackItem) {
-                    backpackSize = 9;
+                    backpackSize = 12;
                 }
                 ChangeInventorySize(playerInventory, DefaultPlayerInventorySize + backpackSize);
             }
@@ -1551,38 +1558,36 @@ public class Game : MonoBehaviour {
     }
 
     public InventoryAddResult TryAddItemToInventory(Inventory inventory, InventoryItem item) {
-        InventoryAddResult result = new() {
-            type = InventoryAddResult.ResultType.Failure
-        };
+        InventoryAddResult result = new() { type = InventoryAddResult.ResultType.Failure };
 
         bool allowInfiniteStacking = inventory == traderInventory;
-        int count = item.count;
+        int remainingItemCount = item.count;
 
         // If we can stack the item then we just do that
         foreach (InventorySlot slot in inventory.slots) {
             if (slot.item == null || slot.ui.disallowItemStacking || slot.item.IsFullStack || slot.item.itemDataUuid != item.itemDataUuid) continue;
 
             if (allowInfiniteStacking) {
-                slot.item.count += count;
-                result.addedCount += count;
+                slot.item.count += item.count;
+                result.addedCount += item.count;
                 result.type = InventoryAddResult.ResultType.Success;
                 return result;
             }
 
-            int overflowAmount = (count + slot.item.count) - slot.item.ItemRef.MaxStackCount;
+            int overflowAmount = (remainingItemCount + slot.item.count) - slot.item.ItemRef.MaxStackCount;
             if (overflowAmount > 0) {
                 int addCount = slot.item.ItemRef.MaxStackCount - slot.item.count;
                 
                 slot.item.count += addCount;
-                count = overflowAmount;
+                remainingItemCount = overflowAmount;
                 
                 result.addedCount += addCount;
                 result.type = InventoryAddResult.ResultType.FailureToAddAll;
                 continue;
             }
             
-            slot.item.count += count;
-            result.addedCount += count;
+            slot.item.count += remainingItemCount;
+            result.addedCount += remainingItemCount;
             result.type = InventoryAddResult.ResultType.Success;
             return result;
         }
@@ -1593,22 +1598,15 @@ public class Game : MonoBehaviour {
 
             if (!slot.ui.AcceptsItem(item.ItemRef)) continue;
 
-            int addCount = slot.ui.disallowItemStacking ? 1 : Mathf.Clamp(count, 0, item.ItemRef.MaxStackCount);
-            bool canMoveCleanly = addCount == count;
+            int newItemCount = slot.ui.disallowItemStacking ? 1 : Mathf.Clamp(remainingItemCount, 0, item.ItemRef.MaxStackCount);
+            result.addedCount += newItemCount;
             
-            if (canMoveCleanly || allowInfiniteStacking) {
-                slot.item = item;
-                result.type = InventoryAddResult.ResultType.Success;
-                result.addedCount = count;
-                return result;
-            }
-
             InventoryItem newItem = item.Clone();
-            newItem.count = addCount;
+            newItem.count = newItemCount;
             slot.item = newItem;
             
-            result.type = InventoryAddResult.ResultType.FailureToAddAll;
-            result.addedCount = addCount;
+            bool movedEntireStack = newItemCount == remainingItemCount;
+            result.type = movedEntireStack ? InventoryAddResult.ResultType.Success : InventoryAddResult.ResultType.FailureToAddAll;
             return result;
         }
         
@@ -2802,35 +2800,35 @@ public class Game : MonoBehaviour {
             }
         });
         
-        stashUpgradeButton.onClick.AddListener(() => {
-            UpgradePath.UpgradeRequirements requirements = stashUpgradePath.pathUpgrades[hideoutStateData.stashLevel];
-            
-            bool canUpgrade = true;
-            foreach (UpgradePath.Requirement requirement in requirements.requirements) {
-                int itemCount = 0;
-                itemCount += GetItemCountInInventory(stashInventory, requirement.item);
-                itemCount += GetItemCountInInventory(playerInventory, requirement.item);
-                
-                if (itemCount < requirement.count) {
-                    canUpgrade = false;
-                    break;
-                }
-            }
-
-            if (!canUpgrade) return;
-            
-            foreach (UpgradePath.Requirement requirement in requirements.requirements) {
-                int stashRemoveCount = RemoveNumberOfItemsFromInventory(stashInventory, requirement.item, requirement.count);
-                if (stashRemoveCount == requirement.count) continue;
-                RemoveNumberOfItemsFromInventory(playerInventory, requirement.item, requirement.count - stashRemoveCount);
-            }
-            
-            hideoutStateData.stashLevel++;
-            SaveToFile(hideoutDataSavePath, hideoutStateData);
-            
-            ChangeInventorySize(stashInventory, stashInventory.slots.Length + stashUpgradeSlotIncrease);
-            RefreshInventoryDisplay(stashInventory);
-        });
+        // stashUpgradeButton.onClick.AddListener(() => {
+            // UpgradePath.UpgradeRequirements requirements = stashUpgradePath.pathUpgrades[hideoutStateData.stashLevel];
+            //
+            // bool canUpgrade = true;
+            // foreach (UpgradePath.Requirement requirement in requirements.requirements) {
+            //     int itemCount = 0;
+            //     itemCount += GetItemCountInInventory(stashInventory, requirement.item);
+            //     itemCount += GetItemCountInInventory(playerInventory, requirement.item);
+            //     
+            //     if (itemCount < requirement.count) {
+            //         canUpgrade = false;
+            //         break;
+            //     }
+            // }
+            //
+            // if (!canUpgrade) return;
+            //
+            // foreach (UpgradePath.Requirement requirement in requirements.requirements) {
+            //     int stashRemoveCount = RemoveNumberOfItemsFromInventory(stashInventory, requirement.item, requirement.count);
+            //     if (stashRemoveCount == requirement.count) continue;
+            //     RemoveNumberOfItemsFromInventory(playerInventory, requirement.item, requirement.count - stashRemoveCount);
+            // }
+            //
+            // hideoutStateData.stashLevel++;
+            // SaveToFile(hideoutDataSavePath, hideoutStateData);
+            //
+            // ChangeInventorySize(stashInventory, stashInventory.slots.Length + stashUpgradeSlotIncrease);
+            // RefreshInventoryDisplay(stashInventory);
+        // });
         
         traderDealButton.onClick.AddListener(() => {
             InventoryValueType valueType = transactionState == TransactionInvetoryState.Buying ? InventoryValueType.Buy : InventoryValueType.Sell;
@@ -2872,7 +2870,7 @@ public class Game : MonoBehaviour {
     }
 
     // Its better just to have these as constants because the canvas layout recalculates in LateUpdate
-    private const float playerPanelWidth = 500f;
+    private const float playerPanelWidth = 570f;
     private const float playerPocketsBackpackWidth = 221.55f;
     
     private void ToggleSlimPlayerPanel(bool toggle) {

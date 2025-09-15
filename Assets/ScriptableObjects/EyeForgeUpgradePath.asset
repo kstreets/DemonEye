@@ -15,16 +15,22 @@ MonoBehaviour:
   pathUpgrades:
   - requirements:
     - item: {fileID: 11400000, guid: 080b4f634b61c1d49a235bcf9b6ae110, type: 2}
-      count: 5
+      count: 8
   - requirements:
     - item: {fileID: 11400000, guid: 080b4f634b61c1d49a235bcf9b6ae110, type: 2}
       count: 10
   - requirements:
     - item: {fileID: 11400000, guid: 080b4f634b61c1d49a235bcf9b6ae110, type: 2}
+      count: 12
+  - requirements:
+    - item: {fileID: 11400000, guid: 080b4f634b61c1d49a235bcf9b6ae110, type: 2}
       count: 15
   - requirements:
     - item: {fileID: 11400000, guid: 080b4f634b61c1d49a235bcf9b6ae110, type: 2}
-      count: 25
+      count: 18
   - requirements:
     - item: {fileID: 11400000, guid: 080b4f634b61c1d49a235bcf9b6ae110, type: 2}
-      count: 33
+      count: 20
+  - requirements:
+    - item: {fileID: 11400000, guid: 080b4f634b61c1d49a235bcf9b6ae110, type: 2}
+      count: 22

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   timeBeforeFirstPhase: 30
   spawnPhases:
-  - phaseDuration: 60
+  - phaseDuration: 80
     spawnDuration: 20
     spawnRateCurve:
       serializedVersion: 2
