@@ -774,7 +774,7 @@
     "m_Group": {
         "m_Id": ""
     },
-    "m_Name": "PoisonSubGraph",
+    "m_Name": "Poison",
     "m_DrawState": {
         "m_Expanded": true,
         "m_Position": {
@@ -793,7 +793,7 @@
             "m_Id": "c383818952ff43b38f6cfc975bdfeed5"
         },
         {
-            "m_Id": "d62d9c5edfd542e0af002e646e1fecf0"
+            "m_Id": "c0f6dc45a5b946e29f970108b2912bbe"
         }
     ],
     "synonyms": [],
@@ -1075,6 +1075,31 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Vector4MaterialSlot",
+    "m_ObjectId": "c0f6dc45a5b946e29f970108b2912bbe",
+    "m_Id": 2,
+    "m_DisplayName": "PoisonColor",
+    "m_SlotType": 1,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "PoisonColor",
+    "m_StageCapability": 3,
+    "m_Value": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+    },
+    "m_DefaultValue": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+    },
+    "m_Labels": []
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.BooleanMaterialSlot",
     "m_ObjectId": "c383818952ff43b38f6cfc975bdfeed5",
     "m_Id": -1098158282,
@@ -1201,29 +1226,6 @@
     "m_CustomColors": {
         "m_SerializableColors": []
     }
-}
-
-{
-    "m_SGVersion": 0,
-    "m_Type": "UnityEditor.ShaderGraph.Vector3MaterialSlot",
-    "m_ObjectId": "d62d9c5edfd542e0af002e646e1fecf0",
-    "m_Id": 2,
-    "m_DisplayName": "PoisonColor",
-    "m_SlotType": 1,
-    "m_Hidden": false,
-    "m_ShaderOutputName": "PoisonColor",
-    "m_StageCapability": 3,
-    "m_Value": {
-        "x": 0.0,
-        "y": 0.0,
-        "z": 0.0
-    },
-    "m_DefaultValue": {
-        "x": 0.0,
-        "y": 0.0,
-        "z": 0.0
-    },
-    "m_Labels": []
 }
 
 {
