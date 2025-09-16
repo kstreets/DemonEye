@@ -4,6 +4,7 @@ using VInspector;
 [CreateAssetMenu(fileName = "Item", menuName = "Scriptable Objects/Item")]
 public class Item : UuidScriptableObject {
 
+    public string displayName;
     public Sprite inventorySprite;
     public ItemType type;
     

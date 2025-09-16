@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: DemonSkull
   m_EditorClassIdentifier: Assembly-CSharp::Item
   uuid: -1746504918
+  displayName: Demon Skull
   inventorySprite: {fileID: 513872900, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   type: {fileID: 0}
   buyPrice: 0

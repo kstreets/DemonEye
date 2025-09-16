@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
 
 public static class Extensions {
 
@@ -15,6 +16,11 @@ public static class Extensions {
     
     public static Vector3 ToVector3(this Vector2 vector) {
         return new Vector3(vector.x, vector.y, 0f);
+    }
+
+    public static void ForceRecalculate(this ContentSizeFitter fitter) {
+        fitter.SetLayoutVertical();
+        fitter.SetLayoutHorizontal();
     }
 
     public static bool ContainsCount<T>(this List<T> list, T item, out int count) {

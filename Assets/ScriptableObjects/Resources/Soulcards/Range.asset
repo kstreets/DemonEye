@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Range
   m_EditorClassIdentifier: Assembly-CSharp::RangeSoulcard
   uuid: 911285470
+  displayName: Range Increase
   inventorySprite: {fileID: 541499864, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
   type: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
   buyPrice: 50

@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Pouch
   m_EditorClassIdentifier: Assembly-CSharp::Item
   uuid: 1618268492
+  displayName: Pouch
   inventorySprite: {fileID: 2107831646, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   type: {fileID: 11400000, guid: b4838a3d7e08dae4fbca579b80e09e71, type: 2}
   buyPrice: 80

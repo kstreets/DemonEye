@@ -13,11 +13,13 @@ MonoBehaviour:
   m_Name: DemonEye
   m_EditorClassIdentifier: Assembly-CSharp::Item
   uuid: -698570393
+  displayName: Demon Eye
   inventorySprite: {fileID: -1083478326, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   type: {fileID: 11400000, guid: fd77ee936723b1448b554eb40ddbf4f4, type: 2}
   buyPrice: 0
   sellPrice: 0
   traderXp: 0
+  chanceToSpawn: 0
   modifiesStats: 0
   agilityStatAdjustment: 0
   strengthStatAdjustment: 0

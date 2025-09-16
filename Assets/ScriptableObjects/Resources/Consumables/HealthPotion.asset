@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: HealthPotion
   m_EditorClassIdentifier: Assembly-CSharp::Item
   uuid: -245954202
+  displayName: Small Health Potion
   inventorySprite: {fileID: -761439653, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   type: {fileID: 11400000, guid: 229fbe8e9203e95499f73ff3b9ecfb68, type: 2}
   buyPrice: 20

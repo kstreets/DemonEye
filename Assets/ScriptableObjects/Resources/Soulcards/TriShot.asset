@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: TriShot
   m_EditorClassIdentifier: 
   uuid: 2008728135
+  displayName: Tripple Shot
   inventorySprite: {fileID: 541499864, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
   type: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
   buyPrice: 350

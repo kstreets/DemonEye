@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: DemonClaw
   m_EditorClassIdentifier: Assembly-CSharp::Item
   uuid: -580269172
+  displayName: Demon Claw
   inventorySprite: {fileID: 1568950830, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   type: {fileID: 0}
   buyPrice: 0

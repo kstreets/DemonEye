@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: StoneGemSuperRare
   m_EditorClassIdentifier: 
   uuid: 1315023482
+  displayName: Stone Gem
   inventorySprite: {fileID: -252513017, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
   type: {fileID: 0}
   buyPrice: 5

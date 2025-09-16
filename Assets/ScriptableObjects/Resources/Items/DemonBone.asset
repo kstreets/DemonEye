@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: DemonBone
   m_EditorClassIdentifier: Assembly-CSharp::Item
   uuid: -112654490
+  displayName: Demon Bone
   inventorySprite: {fileID: 1537612735, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   type: {fileID: 0}
   buyPrice: 0

@@ -13,15 +13,17 @@ MonoBehaviour:
   m_Name: StoneDrop
   m_EditorClassIdentifier: 
   uuid: 675888058
-  type: 0
+  displayName: Demonic Stone
   inventorySprite: {fileID: 1172067732, guid: f5f130e61e73c674ba01af3a5a5f58ea, type: 3}
+  type: {fileID: 0}
+  buyPrice: 5
+  sellPrice: 3
+  traderXp: 2
+  chanceToSpawn: 0
+  modifiesStats: 0
+  agilityStatAdjustment: 0
+  strengthStatAdjustment: 0
   itemGroupProps: {fileID: 0}
   maxStackCount: 15
   weight: 10
   description: Demonic stone, a powerful tool for building.
-  buyPrice: 5
-  sellPrice: 3
-  traderXp: 2
-  modifiesStats: 0
-  agilityStatAdjustment: 0
-  strengthStatAdjustment: 0

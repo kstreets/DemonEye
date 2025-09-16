@@ -13,11 +13,13 @@ MonoBehaviour:
   m_Name: Eye
   m_EditorClassIdentifier: Assembly-CSharp::Item
   uuid: -564544578
+  displayName: Eyeball
   inventorySprite: {fileID: -12894388, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   type: {fileID: 11400000, guid: 5cca30c9ef87dc746b52b824dea7ceca, type: 2}
   buyPrice: 15
   sellPrice: 8
   traderXp: 0
+  chanceToSpawn: 0
   modifiesStats: 0
   agilityStatAdjustment: 0
   strengthStatAdjustment: 0

@@ -85,7 +85,8 @@ public class Game : MonoBehaviour {
     [EndFoldout]
     
     [Foldout("UI/MiscRefs")]
-    public GameObject itemDescPopup;
+    public ItemDescPopup itemDescPopup;
+    public AbilityDescPopup abilityDescPopup;
     public Button enterNextRaidButton;
     public RectTransform hideoutHeaderParent;
     [EndFoldout]
@@ -1233,35 +1234,91 @@ public class Game : MonoBehaviour {
             }
             
             if (!InventoryIsOpen && !LootInventoryIsOpen) {
-                HideItemTooltip();
+                HideItemDescPopup();
                 return;
             }
         }
 
         InventoryHoverInfo invHoverInfo = UpdateInventoryHover();
-        UpdateItemtooltip(invHoverInfo);
+        UpdateItemDescPopup(invHoverInfo);
         CheckToMoveItem(invHoverInfo);
         CheckToConsumeItem(invHoverInfo);
         UpdatePlayerPanelUI();
         CheckForEquipmentChange();
     }
     
-    private void UpdateItemtooltip(InventoryHoverInfo invHoverInfo) {
-        if (!TryGetItemFromHoverInfo(invHoverInfo, out InventoryItem _)) {
-            HideItemTooltip();
-            return;
-        }
-         
+    private void UpdateItemDescPopup(InventoryHoverInfo invHoverInfo) {
+        bool hoveringOverItem = TryGetItemFromHoverInfo(invHoverInfo, out InventoryItem _);
+        
         const float hoverTimeUntilTooltip = 0.32f;
         bool spentEnoughTimeHovering = invHoverInfo.timeSpentHovering >= hoverTimeUntilTooltip;
-        if (spentEnoughTimeHovering) {
-            ShowItemTooltip(invHoverInfo);
+        
+        if (hoveringOverItem && spentEnoughTimeHovering) {
+            ShowItemDescPopup(invHoverInfo);
         }
         else {
-            HideItemTooltip();
+            HideItemDescPopup();
+        }
+    }
+    
+    private void ShowItemDescPopup(InventoryHoverInfo info) {
+        if (itemDescPopup.gameObject.activeInHierarchy) return;
+        
+        itemDescPopup.gameObject.SetActive(true);
+        
+        InventorySlot hoveredSlot = info.hoveredInventory.slots[info.hoveredSlotIndex];
+        TextMeshProUGUI nameText = itemDescPopup.nameText;
+        TextMeshProUGUI descText = itemDescPopup.descText;
+
+        nameText.text = hoveredSlot.item.ItemRef.displayName;
+        
+        // Set description
+        {
+            if (hoveredSlot.item.ItemRef.type == demonEyeType) {
+                DemonEyeInstance eyeInstance = eyeInstanceFromItemId[hoveredSlot.item.itemDataUuid];
+                string eyeDescription = "";
+                foreach (EquipedModInstance modInstance in eyeInstance.modInstances) {
+                    eyeDescription += modInstance.GetDescriptionForEye() + "\n";
+                }
+                descText.text = eyeDescription;
+            }
+            else {
+                descText.text = hoveredSlot.item.ItemRef.GetDescription();
+            }
+        }
+
+        // Set popup position
+        {
+            Vector2 popupPos = hoveredSlot.ui.transform.position;
+            float slotWidth = hoveredSlot.ui.rectTransform.rect.width;
+            float slotHeight = hoveredSlot.ui.rectTransform.rect.height;
+            popupPos += new Vector2(slotWidth / 2 + 20, slotHeight / 2 + 20);
+            itemDescPopup.transform.position = popupPos;
+        }
+
+        // Fit popup size to text elements
+        {
+            itemDescPopup.nameContentFitter.ForceRecalculate();
+            itemDescPopup.descContentFitter.ForceRecalculate();
+            float height = descText.rectTransform.rect.height + nameText.rectTransform.rect.height;
+
+            Rect rect = itemDescPopup.rectTransform.rect;
+            int minHeight = 80;
+            rect.height = Mathf.Clamp(height, minHeight, Mathf.Infinity);
+            itemDescPopup.rectTransform.sizeDelta = new(rect.width, rect.height);
         }
     }
 
+    private void HideItemDescPopup() {
+        itemDescPopup.nameText.text = string.Empty;
+        itemDescPopup.descText.text = string.Empty;
+        itemDescPopup.gameObject.SetActive(false);
+        
+        abilityDescPopup.nameText.text = string.Empty;
+        abilityDescPopup.descText.text = string.Empty;
+        abilityDescPopup.gameObject.SetActive(false);
+    }
+    
     private void CheckToMoveItem(InventoryHoverInfo invHoverInfo) {
         if (!selectItemInputAction.WasPressedThisFrame() && !splitStackInputAction.WasPressedThisFrame()) return;
 
@@ -1537,7 +1594,7 @@ public class Game : MonoBehaviour {
     private int GetHoveredInventorySlot(Inventory inventory) {
         Vector2 mousePos = Mouse.current.position.ReadValue();
         for (int i = 0; i < inventory.slots.Length; i++) {
-            RectTransform rectTrans = inventory.slots[i].ui.GetComponent<RectTransform>();
+            RectTransform rectTrans = inventory.slots[i].ui.rectTransform;
             bool mouseInRect = RectTransformUtility.RectangleContainsScreenPoint(rectTrans, mousePos);
             if (mouseInRect) {
                 return i;
@@ -1674,43 +1731,6 @@ public class Game : MonoBehaviour {
         }
     }
 
-    private void ShowItemTooltip(InventoryHoverInfo info) {
-        InventorySlot hoveredSlot = info.hoveredInventory.slots[info.hoveredSlotIndex];
-        TextMeshProUGUI tooltipText = itemDescPopup.GetComponentInChildren<TextMeshProUGUI>();
-        
-        if (tooltipText.text != string.Empty) {
-            itemDescPopup.SetActive(true);
-        }
-        
-        if (hoveredSlot.item.ItemRef.type == demonEyeType) {
-            DemonEyeInstance eyeInstance = eyeInstanceFromItemId[hoveredSlot.item.itemDataUuid];
-            string eyeDescription = "";
-            foreach (EquipedModInstance modInstance in eyeInstance.modInstances) {
-                eyeDescription += modInstance.GetDescriptionForEye() + "\n";
-            }
-            tooltipText.text = eyeDescription;
-        }
-        else {
-            tooltipText.text = hoveredSlot.item.ItemRef.GetDescription();
-        }
-        
-        Vector2 toolTipPos = hoveredSlot.ui.transform.position;
-        float slotWidth = hoveredSlot.ui.GetComponent<RectTransform>().rect.width;
-        float slotHeight = hoveredSlot.ui.GetComponent<RectTransform>().rect.height;
-        toolTipPos += new Vector2(slotWidth / 2 + 20, slotHeight / 2 + 20);
-        itemDescPopup.transform.position = toolTipPos;
-
-        Rect rect = itemDescPopup.GetComponent<RectTransform>().rect;
-        int minHeight = 80;
-        rect.height = Mathf.Clamp(tooltipText.GetComponent<RectTransform>().rect.height, minHeight, Mathf.Infinity);
-        itemDescPopup.GetComponent<RectTransform>().sizeDelta = new(rect.width, rect.height);
-    }
-
-    private void HideItemTooltip() {
-        itemDescPopup.GetComponentInChildren<TextMeshProUGUI>().text = string.Empty;
-        itemDescPopup.SetActive(false);
-    }
-    
     private void RemoveItemFromInventory(Inventory inventory, int slotIndex) {
         inventory.slots[slotIndex].item = null;
         inventory.slots[slotIndex].ui.ClearItem();
@@ -2471,19 +2491,6 @@ public class Game : MonoBehaviour {
             
             ListPool<Item>.Release(deadBodyItems);
 
-            // for (int j = 0; j < randomInventorySize; j++) {
-            //     Item spawnItem = deadBodyPool.GetItemFromPool();
-            //     InventoryItem lootItem = new() {
-            //         itemDataUuid = spawnItem.uuid, 
-            //         count = Random.Range(1, spawnItem.MaxStackCount / 3),
-            //         notDiscovered = true,
-            //     };
-            //     deadBodySlots[j] = new() {
-            //         item = lootItem,
-            //         ui = lootInventorySlotUis[j]
-            //     };
-            // }
-            
             Entity body = SpawnResource<Entity>(deadBodyPrefab, false);
             deadBodySlotsLookup.Add(body.gameObject, deadBodySlots);
         }

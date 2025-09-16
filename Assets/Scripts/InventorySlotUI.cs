@@ -16,6 +16,17 @@ public class InventorySlotUI : MonoBehaviour {
     public bool SlotIsInactive => slotImage.sprite == inactiveSlotSprite;
     public bool AcceptsAllTypes => onlyAcceptedItemType == null;
 
+    private RectTransform _rectTransform;
+    
+    public RectTransform rectTransform {
+        get {
+            if (!_rectTransform) {
+                _rectTransform = GetComponent<RectTransform>();
+            }
+            return _rectTransform;
+        }
+    }
+
     public bool AcceptsItem(Item item) {
         if (AcceptsAllTypes) {
             return true;
