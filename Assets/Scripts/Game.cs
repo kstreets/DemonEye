@@ -86,7 +86,7 @@ public class Game : MonoBehaviour {
     
     [Foldout("UI/MiscRefs")]
     public ItemDescPopup itemDescPopup;
-    public AbilityDescPopup abilityDescPopup;
+    public MechanicDescPopup mechanicDescPopup;
     public Button enterNextRaidButton;
     public RectTransform hideoutHeaderParent;
     [EndFoldout]
@@ -1273,50 +1273,66 @@ public class Game : MonoBehaviour {
         nameText.text = hoveredSlot.item.ItemRef.displayName;
         
         // Set description
-        {
-            if (hoveredSlot.item.ItemRef.type == demonEyeType) {
-                DemonEyeInstance eyeInstance = eyeInstanceFromItemId[hoveredSlot.item.itemDataUuid];
-                string eyeDescription = "";
-                foreach (EquipedModInstance modInstance in eyeInstance.modInstances) {
-                    eyeDescription += modInstance.GetDescriptionForEye() + "\n";
-                }
-                descText.text = eyeDescription;
+        if (hoveredSlot.item.ItemRef.type == demonEyeType) {
+            DemonEyeInstance eyeInstance = eyeInstanceFromItemId[hoveredSlot.item.itemDataUuid];
+            string eyeDescription = "";
+            foreach (EquipedModInstance modInstance in eyeInstance.modInstances) {
+                eyeDescription += modInstance.GetDescriptionForEye() + "\n";
             }
-            else {
-                descText.text = hoveredSlot.item.ItemRef.GetDescription();
-            }
+            descText.text = eyeDescription;
+        }
+        else {
+            descText.text = hoveredSlot.item.ItemRef.GetDescription();
         }
 
         // Set popup position
-        {
-            Vector2 popupPos = hoveredSlot.ui.transform.position;
-            float slotWidth = hoveredSlot.ui.rectTransform.rect.width;
-            float slotHeight = hoveredSlot.ui.rectTransform.rect.height;
-            popupPos += new Vector2(slotWidth / 2 + 20, slotHeight / 2 + 20);
-            itemDescPopup.transform.position = popupPos;
-        }
+        Vector2 center = hoveredSlot.ui.rectTransform.WorldRect().center;
+        Vector2 popupPos = center + new Vector2(40, 40);
+        itemDescPopup.transform.position = popupPos;
 
         // Fit popup size to text elements
-        {
-            itemDescPopup.nameContentFitter.ForceRecalculate();
-            itemDescPopup.descContentFitter.ForceRecalculate();
-            float height = descText.rectTransform.rect.height + nameText.rectTransform.rect.height;
-
-            Rect rect = itemDescPopup.rectTransform.rect;
-            int minHeight = 80;
-            rect.height = Mathf.Clamp(height, minHeight, Mathf.Infinity);
-            itemDescPopup.rectTransform.sizeDelta = new(rect.width, rect.height);
+        itemDescPopup.nameContentFitter.ForceRecalculate();
+        itemDescPopup.descContentFitter.ForceRecalculate();
+        FitPopupSize(itemDescPopup.rectTransform, itemDescPopup.nameText, itemDescPopup.descText);
+        
+        // Add mechanic desctiption if necessary
+        if (hoveredSlot.item.ItemRef.type == soulcardType) {
+            Soulcard soulcard = (Soulcard)hoveredSlot.item.ItemRef;
+            if (soulcard.relativeMechanicDesc) {
+                mechanicDescPopup.gameObject.SetActive(true);
+                mechanicDescPopup.nameText.text = soulcard.relativeMechanicDesc.displayName;
+                mechanicDescPopup.descText.text = soulcard.relativeMechanicDesc.description;
+                mechanicDescPopup.transform.position = itemDescPopup.rectTransform.WorldRect().min;
+                
+                mechanicDescPopup.nameFitter.ForceRecalculate();
+                mechanicDescPopup.descFitter.ForceRecalculate();
+                FitPopupSize(mechanicDescPopup.rectTransform, mechanicDescPopup.nameText, mechanicDescPopup.descText);
+            } 
         }
     }
 
+    private void FitPopupSize(RectTransform popupRect, params TextMeshProUGUI[] texts) {
+        float height = 0f;
+        foreach (TextMeshProUGUI text in texts) {
+            height += text.rectTransform.rect.height;
+        }
+        
+        const int minHeight = 80;
+        Rect rect = popupRect.rect;
+        rect.height = Mathf.Clamp(height, minHeight, Mathf.Infinity);
+        popupRect.sizeDelta = new(rect.width, rect.height);
+    }
+
     private void HideItemDescPopup() {
+        mechanicDescPopup.gameObject.SetActive(false);
+        
         itemDescPopup.nameText.text = string.Empty;
         itemDescPopup.descText.text = string.Empty;
         itemDescPopup.gameObject.SetActive(false);
         
-        abilityDescPopup.nameText.text = string.Empty;
-        abilityDescPopup.descText.text = string.Empty;
-        abilityDescPopup.gameObject.SetActive(false);
+        mechanicDescPopup.nameText.text = string.Empty;
+        mechanicDescPopup.descText.text = string.Empty;
+        mechanicDescPopup.gameObject.SetActive(false);
     }
     
     private void CheckToMoveItem(InventoryHoverInfo invHoverInfo) {

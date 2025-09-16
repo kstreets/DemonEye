@@ -3,6 +3,8 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "EyeModifier", menuName = "Scriptable Objects/EyeModifier")]
 public class Soulcard : Item {
 
+    public MechanicDesc relativeMechanicDesc;
+    
     public virtual void AddInstanceToEnemy(Game.Enemy enemy, int stackCount) { }
     public virtual void AddInstanceToEye(Game.DemonEyeInstance eyeInstance, int stackCount) { }
 

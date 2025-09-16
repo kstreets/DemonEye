@@ -27,5 +27,6 @@ MonoBehaviour:
   maxStackCount: 0
   weight: 0
   description: 
+  relativeMechanicDesc: {fileID: 11400000, guid: 6692596209241604e926c8575f8226ef, type: 2}
   probability: 0.15
   duration: 5

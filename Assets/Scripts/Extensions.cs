@@ -23,6 +23,12 @@ public static class Extensions {
         fitter.SetLayoutHorizontal();
     }
 
+    public static Rect WorldRect(this RectTransform rectTransform) {
+        Rect rect = rectTransform.rect;
+        Matrix4x4 ltw = rectTransform.localToWorldMatrix;
+        return new (ltw.MultiplyPoint(new(rect.x, 1f, 1f)).x, ltw.MultiplyPoint(new(1f, rect.y, 1f)).y, rect.width, rect.height);
+    } 
+
     public static bool ContainsCount<T>(this List<T> list, T item, out int count) {
         count = 0;
         
