@@ -366,6 +366,13 @@
       },
       "url": "https://packages.unity.com"
     },
+    "com.yohash.priorityqueue": {
+      "version": "https://github.com/yohash/PriorityQueue.git#upm",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "5925cdcfd63eae100287a62eb7008f4e7641b17b"
+    },
     "com.unity.modules.accessibility": {
       "version": "1.0.0",
       "depth": 0,

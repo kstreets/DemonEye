@@ -262,7 +262,8 @@ public class Game : MonoBehaviour {
     }
 
     private void FixedUpdate() {
-        FixedUpdateEnemies();
+        // FixedUpdateEnemies();
+        NewFixedUpdateEnemies();
     }
 
     private void OnApplicationQuit() {
@@ -305,11 +306,13 @@ public class Game : MonoBehaviour {
         
         Map curMap = raidStateData.CurrentMap;
         curMap.gameObject.SetActive(true);
+        curMap.grid.Init();
+        
         player.gameObject.SetActive(true);
         player.position = hellSpawnPosition;
         cinemachineCamera.Follow = player.trans;
         
-        AstarPath.active.Scan();
+        // AstarPath.active.Scan();
         InitExitPortal();
         InitSpawnManager(curMap.waves);
         SpawnResources(curMap.resourceParent);
@@ -323,12 +326,14 @@ public class Game : MonoBehaviour {
     }
 
     private void OnRaidStateUpdate() {
+        raidStateData.CurrentMap.grid.ScheduleFlowFieldCalculation(player.position);
         UpdateTimers();
         CheckForInteractions();
         UpdateInventory();
         UpdatePlayer();
         UpdateProjectiles();
         UpdateSpawnManager();
+        raidStateData.CurrentMap.grid.CompleteFlowFieldCalculation();
         UpdateEnemies();
         UpdateEntityEffects();
         UpdateInRaidUi();
@@ -897,25 +902,76 @@ public class Game : MonoBehaviour {
             }
         }
 
+        // foreach (Enemy enemy in enemies) {
+        //     if ((enemy.pathData.HasPath && Time.time - enemy.pathData.lastUpdateTime <= 0.5f) || enemy.pathData.isBeingCalculated) continue;
+        //
+        //     float dist = Vector2.Distance(enemy.position, player.position);
+        //     float time = dist / enemy.data.speed;
+        //     
+        //     Vector2 estimatedPlayerPos = player.position + player.velocity.ToVector3() * time;
+        //     Vector2 conservativeEstimatedPlayerPos = Vector2.Lerp(player.position, estimatedPlayerPos, 0.5f);
+        //     ABPath abPath = ABPath.Construct(enemy.position, conservativeEstimatedPlayerPos, path => {
+        //         path.Claim(this);
+        //         enemy.pathData.abPath?.Release(this);
+        //         enemy.pathData.abPath = path as ABPath;
+        //         enemy.pathData.waypointIndex = 1;
+        //         enemy.pathData.isBeingCalculated = false;
+        //         enemy.pathData.lastUpdateTime = Time.time;
+        //     });
+        //     
+        //     AstarPath.StartPath(abPath);
+        //     enemy.pathData.isBeingCalculated = true;
+        // }
+    }
+    
+    private void NewFixedUpdateEnemies() {
         foreach (Enemy enemy in enemies) {
-            if ((enemy.pathData.HasPath && Time.time - enemy.pathData.lastUpdateTime <= 0.5f) || enemy.pathData.isBeingCalculated) continue;
+            float speed = enemy.data.speed;
+            
+            float totalSlowPercentage = 0f;
+            if (enemy.defaultSlow.TryGetValue(out var defaultSlow)) {
+                totalSlowPercentage += defaultSlow.speedReductionPercent;
+                if (Time.time > defaultSlow.activationTime + defaultSlow.duration) {
+                    enemy.defaultSlow = null;
+                }
+            }
+            if (enemy.slow.TryGetValue(out var slow)) {
+                totalSlowPercentage += slow.speedReductionPercent;
+                if (Time.time > slow.activationTime + slow.duration) {
+                    enemy.slow = null;
+                }
+            }
+            speed = Mathf.Clamp(speed * Mathf.Clamp01(1f - totalSlowPercentage), 0.05f, enemy.data.speed);
+            
+            AnimatorStateInfo animStateInfo = enemy.animator.GetCurrentAnimatorStateInfo(0);
+            if (animStateInfo.IsName("Attack")) {
+                if (animStateInfo.normalizedTime > 1f) {
+                    enemy.animator.Play("Walk");        
+                }
+                else {
+                    speed = 0f;
+                }
+            }
+            
+            const float targetSeparationDist = 0.15f;
+            Vector2 separation = Vector2.zero;
+            foreach (Enemy avoidEnemy in enemies) {
+                if (avoidEnemy == enemy) continue;
+                
+                Vector2 diff = enemy.position - avoidEnemy.position;
+                float dist = diff.magnitude;
 
-            float dist = Vector2.Distance(enemy.position, player.position);
-            float time = dist / enemy.data.speed;
-            
-            Vector2 estimatedPlayerPos = player.position + player.velocity.ToVector3() * time;
-            Vector2 conservativeEstimatedPlayerPos = Vector2.Lerp(player.position, estimatedPlayerPos, 0.5f);
-            ABPath abPath = ABPath.Construct(enemy.position, conservativeEstimatedPlayerPos, path => {
-                path.Claim(this);
-                enemy.pathData.abPath?.Release(this);
-                enemy.pathData.abPath = path as ABPath;
-                enemy.pathData.waypointIndex = 1;
-                enemy.pathData.isBeingCalculated = false;
-                enemy.pathData.lastUpdateTime = Time.time;
-            });
-            
-            AstarPath.StartPath(abPath);
-            enemy.pathData.isBeingCalculated = true;
+                if (dist < targetSeparationDist)
+                    separation += diff.normalized / dist; // Stronger repulsion if closer
+            }
+
+            Vector2 moveDir = raidStateData.CurrentMap.grid.GetFlowFieldDirection(enemy.position);
+            // Vector2 targetPos = enemy.position.ToVector2() + moveDir;
+            // Vector2 dirToTarget = (targetPos - enemy.position.ToVector2()).normalized;
+            Vector2 finalDirection = (moveDir + separation.normalized * 0.5f).normalized;
+            enemy.rigidbody.linearVelocity = finalDirection * speed;
+
+            enemy.spriteRenderer.flipX = player.position.x < enemy.position.x;
         }
     }
 
@@ -1077,11 +1133,11 @@ public class Game : MonoBehaviour {
         if (sm.spawnEvents.Count <= 0) return;
         
         while (sm.spawnEvents.IndexInRange(sm.spawnTimeIndex) && sm.spawnEvents[sm.spawnTimeIndex].time <= sm.timeInPhase) {
-            Vector2 randomSpawnPos = player.position + RandomOffset360(3f, 4f);
-            NNInfo info = AstarPath.active.graphs[0].GetNearest(randomSpawnPos, NNConstraint.Walkable);
+            Grid.GridCell randomSpawnGridPos = raidStateData.CurrentMap.grid.GetSpawnPosition(player.position);
+            Vector2 randomSpawnPos = randomSpawnGridPos.position;
 
             EnemyData enemyToSpawn = sm.spawnEvents[sm.spawnTimeIndex].enemy;
-            Enemy enemy = SpawnEntity<Enemy>(enemyToSpawn.enemyPrefab, info.position, Quaternion.identity);
+            Enemy enemy = SpawnEntity<Enemy>(enemyToSpawn.enemyPrefab, randomSpawnPos, Quaternion.identity);
             enemy.health = enemyToSpawn.health;
             enemy.data = enemyToSpawn;
             enemies.Add(enemy);
@@ -1989,6 +2045,7 @@ public class Game : MonoBehaviour {
     }
 
     private void DamagePlayer(int damage, float chanceToBleed = 0f) {
+        return;
         if (RollProbability(chanceToBleed)) {
             player.bleeding = true;
         }
@@ -2525,7 +2582,7 @@ public class Game : MonoBehaviour {
             T resource = SpawnEntity<T>(resourcePrefab, spawnTrans.position, spawnTrans.rotation);
 
             if (cutsNavmesh) {
-                AstarPath.active.UpdateGraphs(resource.collider.bounds);
+                // AstarPath.active.UpdateGraphs(resource.collider.bounds);
             }
 
             return resource;
