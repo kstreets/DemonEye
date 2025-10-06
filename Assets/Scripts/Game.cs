@@ -953,23 +953,8 @@ public class Game : MonoBehaviour {
                 }
             }
             
-            const float targetSeparationDist = 0.15f;
-            Vector2 separation = Vector2.zero;
-            foreach (Enemy avoidEnemy in enemies) {
-                if (avoidEnemy == enemy) continue;
-                
-                Vector2 diff = enemy.position - avoidEnemy.position;
-                float dist = diff.magnitude;
-
-                if (dist < targetSeparationDist)
-                    separation += diff.normalized / dist; // Stronger repulsion if closer
-            }
-
             Vector2 moveDir = raidStateData.CurrentMap.grid.GetFlowFieldDirection(enemy.position);
-            // Vector2 targetPos = enemy.position.ToVector2() + moveDir;
-            // Vector2 dirToTarget = (targetPos - enemy.position.ToVector2()).normalized;
-            Vector2 finalDirection = (moveDir + separation.normalized * 0.5f).normalized;
-            enemy.rigidbody.linearVelocity = finalDirection * speed;
+            enemy.rigidbody.linearVelocity = moveDir * speed;
 
             enemy.spriteRenderer.flipX = player.position.x < enemy.position.x;
         }
@@ -1037,7 +1022,7 @@ public class Game : MonoBehaviour {
             Vector2 targetPos = usingPath ? pathData.abPath.vectorPath[pathData.waypointIndex] : player.position;
             Vector2 dirToTarget = (targetPos - enemy.position.ToVector2()).normalized;
             Vector2 finalDirection = (dirToTarget + separation.normalized * 0.5f).normalized;
-            enemy.rigidbody.linearVelocity = finalDirection * speed;
+            enemy.rigidbody.linearVelocity = dirToTarget * speed;
 
             enemy.spriteRenderer.flipX = player.position.x < enemy.position.x;
         }

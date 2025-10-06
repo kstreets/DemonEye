@@ -123,15 +123,17 @@ public class Grid : MonoBehaviour {
         }
         
         int cellIndex = cells.IndexOf(cellAtPos);
+        return flowField[cellIndex];
         List<GridCell> neighbors = GetNeighbors(cellAtPos);
 
-        int avgCount = 3;
-        Vector2 averageDir = cellAtPos.traversable ? flowField[cellIndex] : cellAtPos.avoidCollisionDir;
+        int avgCount = 2;
+        Vector2 averageDir = cellAtPos.traversable ? flowField[cellIndex] : (position - cellAtPos.position).normalized;
+        return averageDir;
         averageDir += averageDir;
-        averageDir += averageDir;
+        // averageDir += averageDir;
         
         foreach (GridCell nCell in neighbors) {
-            Vector2 nDir = nCell.traversable ? flowField[cells.IndexOf(nCell)] : nCell.avoidCollisionDir;
+            Vector2 nDir = nCell.traversable ? flowField[cells.IndexOf(nCell)] : (position - nCell.position).normalized;
             averageDir += nDir;
             avgCount++;
         }
@@ -269,16 +271,12 @@ public class Grid : MonoBehaviour {
         public int gridHeight;
 
         public void Execute(int index) {
-            if (!traversables[index]) {
-                results[index] = Vector2.zero;
-                return;
-            }
-
             int smallestDist = int.MaxValue;
             int closestCellIndex = -1;
             
             for (int i = 0; i < 9; i++) {
                 if (i == 4) continue;
+                if (!traversables[index] && (i == 0 || i == 2 || i == 6 || i == 8)) continue;
                 int neighborIndex = GetNeighborIndex(gridWitdh, gridHeight, index, i);
                 
                 if (neighborIndex == -1 || !traversables[neighborIndex]) continue;
@@ -297,6 +295,11 @@ public class Grid : MonoBehaviour {
             
             if (closestCellIndex == -1) {
                 results[index] = Vector2.zero;
+                return;
+            }
+
+            if (!traversables[index]) {
+                results[index] = (positions[closestCellIndex] - positions[index]).normalized;
                 return;
             }
 
@@ -355,33 +358,51 @@ public class Grid : MonoBehaviour {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 Vector2 pos = CalculateCellPosition(x, y);
-
+                
                 bool traversable = true;
-                Vector2 avoidCollisionDir = Vector2.zero;
-
-                Collider2D col = Physics2D.OverlapBox(pos, traversableTestBoxSize, 0f);
-                if (col) {
-                    Vector2 closestColPos = col.ClosestPoint(pos);
-
-                    if (closestColPos == pos) {
-                        avoidCollisionDir = (pos - col.transform.position.ToVector2()).normalized;
-                    }
-                    else {
-                        avoidCollisionDir = (pos - closestColPos).normalized;
-                    }
-                    
+                if (Physics2D.OverlapBox(pos, traversableTestBoxSize, 0f)) {
                     traversable = false;
                 }
 
                 cells.Add(new() {
                     position = pos,
                     traversable = traversable,
-                    avoidCollisionDir = avoidCollisionDir,
                 });
             }
         }
+        
+        // foreach (GridCell cell in cells) {
+        //     if (cell.traversable) continue;
+        //     
+        //     int avgCount = 0;
+        //     Vector2 avgTraversableNeighborPos = Vector2.zero;
+        //     
+        //     List<GridCell> neighbors = GetNeighbors(cell);
+        //     foreach (GridCell nCell in neighbors) {
+        //         avgTraversableNeighborPos += (nCell.position - cell.position);
+        //         avgCount++;
+        //     }
+        //
+        //     print(avgCount);
+        //     if (avgCount == 0) {
+        //         cell.avoidCollisionDir = Vector2.zero;
+        //         continue;
+        //     }
+        //     
+        //     avgTraversableNeighborPos /= avgCount;
+        //     cell.avoidCollisionDir = avgTraversableNeighborPos.normalized; 
+        // }
 
         EditorUtility.SetDirty(this);
+    }
+
+    public Transform sourcePosForTesting;
+    
+    [VInspector.Button("Click this one")]
+    private void GenerateFlowField() {
+        Init();
+        ScheduleFlowFieldCalculation(sourcePosForTesting.position);
+        CompleteFlowFieldCalculation();
     }
 
     [VInspector.Button("Clear")]
@@ -539,23 +560,18 @@ public class Grid : MonoBehaviour {
         }
         else {
             foreach (GridCell cell in cells) {
-                if (cell.traversable) {
-                    Bounds bounds = new() {
-                        center = cell.position,
-                        size = Vector3.one * cellSize,
-                    };
-                    DebugExtension.DrawBounds(bounds, gridColor);
-                    Gizmos.color = gridFill;
-                    Gizmos.DrawCube(cell.position, Vector3.one * cellSize);
-                }
-                else {
-                    DebugExtension.DrawArrow(cell.position, cell.avoidCollisionDir * 0.16f);
-                }
+                if (!cell.traversable) continue;
+                
+                Bounds bounds = new() {
+                    center = cell.position,
+                    size = Vector3.one * cellSize,
+                };
+                DebugExtension.DrawBounds(bounds, gridColor);
+                Gizmos.color = gridFill;
+                Gizmos.DrawCube(cell.position, Vector3.one * cellSize);
             }
         }
 
-        return;
-        
         if (flowField != null && cells != null && flowField.Count == cells.Count) {
             for (int i = 0; i < cells.Count; i++) {
                 Vector2 flowDir = flowField[i];
