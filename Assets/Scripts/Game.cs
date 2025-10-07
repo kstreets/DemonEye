@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,8 +9,8 @@ using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Pool;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using Pathfinding;
 using Random = UnityEngine.Random;
 using VInspector;
 
@@ -19,7 +20,7 @@ public class Game : MonoBehaviour {
     
     public TraderConfig traderConfig;
     public StartingItemsConfig startingItems;
-    public List<Map> mapSequence;
+    public List<Scene> mapSequence;
 
     [Foldout("Pooling Prefabs")]
     public GameObject baseProjectilePrefab;
@@ -70,9 +71,6 @@ public class Game : MonoBehaviour {
     public DropPool altarDropPool;
     public DropPool rockDropPool;
 
-    [Header("Spawn Positions")]
-    public Vector3 hellSpawnPosition;
-    
     [Foldout("Effects")]
     public AnimationCurve hitFlashCurve;
     public AnimationCurve bounceCurve;
@@ -216,12 +214,16 @@ public class Game : MonoBehaviour {
         player = SpawnEntity<Player>(playerPrefab, Vector3.zero, Quaternion.identity, null, EntityLifetime.Global);
         player.gameObject.SetActive(false);
         LoadAndAssignPlayerSaveData(player);
+
+        List<string> mapSceneNames = new();
+        mapSceneNames.Add("Lighthouse");
+        mapSceneNames.Add("Customs");
         
         // Temporary for now
         {
             raidStateData = new() {
                 raidDifficulty = 0,
-                maps = mapSequence,
+                mapSceneNames = mapSceneNames,
             };
         }
         
@@ -263,8 +265,8 @@ public class Game : MonoBehaviour {
 
     private void FixedUpdate() {
         if (!InRaid) return;
-        raidStateData.CurrentMap.grid.CompleteFlowFieldCalculation();
-        raidStateData.CurrentMap.grid.ScheduleFlowFieldCalculation(player.position);
+        raidStateData.currentMap.grid.CompleteFlowFieldCalculation();
+        raidStateData.currentMap.grid.ScheduleFlowFieldCalculation(player.position);
         FixedUpdateEnemies();
     }
 
@@ -272,7 +274,7 @@ public class Game : MonoBehaviour {
         SaveInventory(playerInventory);
         SaveInventory(stashInventory);
         SavePlayerData();
-        raidStateData.CurrentMap.grid.Deinit();
+        raidStateData.currentMap.grid.Deinit();
     }
 
     private void UpdateTimers() {
@@ -281,6 +283,9 @@ public class Game : MonoBehaviour {
     }
 
     private void OnHideoutStateEnter() {
+        string nextMapScene = raidStateData.mapSceneNames[raidStateData.raidDifficulty];
+        LoadMapAsync(nextMapScene);
+        
         if (raidStateData.raidDifficulty == 0 && GetInventoryWeight(playerInventory) == 0) {
             foreach (StartingItemsConfig.ItemConfig config in startingItems.configs) {
                 TryAddItemToInventory(playerInventory, config.item, config.count);
@@ -305,14 +310,17 @@ public class Game : MonoBehaviour {
     }
 
     private void OnRaidStateEnter() {
-        ShowRaidUI(true); 
+        ShowRaidUI(true);
         
-        Map curMap = raidStateData.CurrentMap;
+        Map curMap = raidStateData.currentMap;
         curMap.gameObject.SetActive(true);
         curMap.grid.Init();
+
+        int randomSpawnIndex = Random.Range(0, curMap.spawnPositionsParent.childCount);
+        Vector2 randomSpawnPos = curMap.spawnPositionsParent.GetChild(randomSpawnIndex).position;
         
         player.gameObject.SetActive(true);
-        player.position = hellSpawnPosition;
+        player.position = randomSpawnPos;
         cinemachineCamera.Follow = player.trans;
         
         // AstarPath.active.Scan();
@@ -326,7 +334,8 @@ public class Game : MonoBehaviour {
             LeaveRaid();
             raidStateData.raidDifficulty++;
         }
-        raidStateData.CurrentMap.grid.Deinit();
+        raidStateData.currentMap.grid.Deinit();
+        UnloadCurrentMapAsync();
     }
 
     private void OnRaidStateUpdate() {
@@ -364,7 +373,7 @@ public class Game : MonoBehaviour {
     private void LeaveRaid() {
         DestroyLevelEntities();
         ClearProjectiles();
-        raidStateData.CurrentMap.gameObject.SetActive(false);
+        raidStateData.currentMap.gameObject.SetActive(false);
         playerBarsPanel.gameObject.SetActive(false);
         player.gameObject.SetActive(false);
     }
@@ -924,7 +933,7 @@ public class Game : MonoBehaviour {
                 }
             }
             
-            Vector2 moveDir = raidStateData.CurrentMap.grid.GetFlowFieldDirection(enemy.position);
+            Vector2 moveDir = raidStateData.currentMap.grid.GetFlowFieldDirection(enemy.position);
             enemy.rigidbody.linearVelocity = moveDir * speed;
 
             enemy.spriteRenderer.flipX = player.position.x < enemy.position.x;
@@ -1020,7 +1029,7 @@ public class Game : MonoBehaviour {
         if (sm.spawnEvents.Count <= 0) return;
         
         while (sm.spawnEvents.IndexInRange(sm.spawnTimeIndex) && sm.spawnEvents[sm.spawnTimeIndex].time <= sm.timeInPhase) {
-            Grid.GridCell randomSpawnGridPos = raidStateData.CurrentMap.grid.GetSpawnPosition(player.position);
+            CoolerGrid.GridCell randomSpawnGridPos = raidStateData.currentMap.grid.GetSpawnPosition(player.position);
             Vector2 randomSpawnPos = randomSpawnGridPos.position;
 
             EnemyData enemyToSpawn = sm.spawnEvents[sm.spawnTimeIndex].enemy;
@@ -2306,7 +2315,6 @@ public class Game : MonoBehaviour {
             if (entity.health <= 0) {
                 Entity smokeEntity = SpawnEntity<Entity>(rockSmokePrefab, entity.position, Quaternion.identity);
                 DestroyEntity(smokeEntity, 0.417f);
-                AstarPath.active.UpdateGraphs(entity.collider.bounds);
                 DestroyEntity(entity);
                 
                 PlayAudioClip(stoneBreakClip, entity.position, 1f);
@@ -2491,12 +2499,17 @@ public class Game : MonoBehaviour {
     // ***************************
     // Saving and Loading
     // ***************************
+
+    [Serializable]
+    private class SaveData {
+        
+    }
     
     [Serializable]
     private class RaidStateData {
         public int raidDifficulty;
-        public List<Map> maps;
-        public Map CurrentMap => maps[raidDifficulty];
+        public List<string> mapSceneNames;
+        [NonSerialized] public Map currentMap;
     }
     
     [Serializable]
@@ -2960,6 +2973,76 @@ public class Game : MonoBehaviour {
         return false;
     }
     
+    // ************************
+    // Scene Management 
+    // ************************
+
+    public string loadedMapName;
+    public string activelyLoadingMapName;
+    public string activelyUnloadingMapName;
+
+    public void LoadMapAsync(string sceneName) {
+        if (LoadingMapInProgress()) return;
+
+        AsyncOperation loadOperation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+        if (loadOperation == null) return;
+        
+        activelyLoadingMapName = sceneName;
+        StartCoroutine(WaitForSceneToLoad());
+
+        IEnumerator WaitForSceneToLoad() {
+            while (!loadOperation.isDone) {
+                yield return null;
+            }
+            activelyLoadingMapName = string.Empty;
+            loadedMapName = sceneName;
+
+            List<GameObject> loadedMapRoots = ListPool<GameObject>.Get();
+            
+            Scene loadedMapScene = SceneManager.GetSceneByName(sceneName);
+            loadedMapScene.GetRootGameObjects(loadedMapRoots);
+            
+            foreach (GameObject root in loadedMapRoots) {
+                if (root.TryGetComponent(out Map map)) {
+                    raidStateData.currentMap = map;
+                    map.gameObject.SetActive(false);
+                }
+            }
+            
+            ListPool<GameObject>.Release(loadedMapRoots);
+        }
+    }
+
+    public void UnloadCurrentMapAsync() {
+        if (UnloadingMapInProgress()) return;
+            
+        raidStateData.currentMap.gameObject.SetActive(false); 
+        
+        Scene loadedMap = SceneManager.GetSceneByName(loadedMapName);
+        AsyncOperation unloadOperation = SceneManager.UnloadSceneAsync(loadedMap);
+
+        if (unloadOperation == null) return;
+        
+        activelyUnloadingMapName = loadedMapName;
+        loadedMapName = string.Empty;
+        
+        StartCoroutine(WaitForSceneToLoad());
+
+        IEnumerator WaitForSceneToLoad() {
+            while (!unloadOperation.isDone) {
+                yield return null;
+            }
+            activelyUnloadingMapName = string.Empty;
+        }
+    } 
+    
+    public bool LoadingMapInProgress() {
+        return !string.IsNullOrEmpty(activelyLoadingMapName);
+    }
+    
+    public bool UnloadingMapInProgress() {
+        return !string.IsNullOrEmpty(activelyUnloadingMapName);
+    }
     
     
     public static bool RollProbability(float probability) {
