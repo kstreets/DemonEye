@@ -586,8 +586,8 @@ public class Game : MonoBehaviour {
     }
 
     private void AddSpringShakeEffect(Entity entity, Vector2 velocity) {
-        const float stiffness = 1000f;
-        const float damping = 15f;
+        const float stiffness = 2000f;
+        const float damping = 4f;
         
         SpringShake shake = new() {
             stiffness = stiffness,
@@ -596,7 +596,7 @@ public class Game : MonoBehaviour {
         };
 
         const float randomVelocityAngle = 15f;
-        const float shakeMagnitude = 0.017f;
+        const float shakeMagnitude = 0.025f;
         shake.offset = (Quaternion.AngleAxis(Random.Range(-randomVelocityAngle, randomVelocityAngle), Vector3.forward) * velocity.normalized * shakeMagnitude).ToVector2();
         
         entity.springShake = shake;
@@ -605,11 +605,36 @@ public class Game : MonoBehaviour {
     private void UpdateShakeEffect(Entity entity) {
         if (!entity.springShake.TryGetValue(out var shake)) return;
         
-        Vector2 displacement = shake.offset;
-        Vector2 acceleration = -shake.stiffness * displacement - shake.damping * shake.velocity;
-        shake.velocity += acceleration * Time.deltaTime;
-        shake.offset += shake.velocity * Time.deltaTime;
-        
+        float dt = Time.deltaTime;
+        float k = shake.stiffness;
+        float c = shake.damping;
+
+        Vector2 x = shake.offset;
+        Vector2 v = shake.velocity;
+
+        // Derived constants
+        float omega = Mathf.Sqrt(k);
+        float zeta = c / (2f * omega);
+
+        if (zeta < 1f) // underdamped
+        {
+            float expTerm = Mathf.Exp(-zeta * omega * dt);
+            float c1 = expTerm * (Mathf.Cos(omega * Mathf.Sqrt(1f - zeta * zeta) * dt));
+            float c2 = expTerm * (Mathf.Sin(omega * Mathf.Sqrt(1f - zeta * zeta) * dt));
+
+            // Combine into matrix form for performance
+            Vector2 newX = c1 * x + (dt * c2) * v;
+            Vector2 newV = (-omega * zeta * c1 * x) + (c1 * v - omega * c2 * x);
+            shake.offset = newX;
+            shake.velocity = newV;
+        }
+        else // critically/overdamped
+        {
+            float expTerm = Mathf.Exp(-omega * dt);
+            shake.offset = expTerm * (x + v * dt);
+            shake.velocity = expTerm * (v - omega * x * dt);
+        }
+
         entity.trans.localPosition = shake.targetPos + shake.offset;
         entity.springShake = shake;
     }
@@ -2319,10 +2344,15 @@ public class Game : MonoBehaviour {
                 
                 PlayAudioClip(stoneBreakClip, entity.position, 1f);
 
-                for (int i = 0; i < 6; i++) {
-                    Vector3 spawnPos = entity.position + RandomOffset360(0.18f, 0.25f);
+                int dropCount = Random.Range(3, 6);
+                float angleDeltaPerDrop = 360f / dropCount;
+                float randomRangePerDrop = angleDeltaPerDrop * 0.25f;
+                
+                for (int i = 0; i < dropCount; i++) {
+                    float randomAngle = (angleDeltaPerDrop * i) + Random.Range(-randomRangePerDrop, randomRangePerDrop);
+                    Vector3 endPos = entity.position + RotationVector(0.18f, 0.25f, randomAngle);
                     Entity rockDrop = SpawnEntity<Entity>(rockDropPool.GetDropFromPool(), entity.position, Quaternion.identity);
-                    AddBounceEffect(rockDrop, spawnPos, 0.8f);
+                    AddBounceEffect(rockDrop, endPos, 0.8f);
                 }
             }
             else {
@@ -3051,10 +3081,14 @@ public class Game : MonoBehaviour {
 
     private bool InRaid => gameStateMachine.CurState == raidState;
     
-    private Vector3 RandomOffset360(float minDist, float maxDist) {
+    private Vector3 RotationVector360(float minDist, float maxDist) {
         return Quaternion.AngleAxis(Random.Range(0, 360), Vector3.forward) * Vector3.right * Random.Range(minDist, maxDist);
     }
-
+    
+    private Vector3 RotationVector(float degrees, float minDist, float maxDist) {
+        return Quaternion.AngleAxis(degrees, Vector3.forward) * Vector3.right * Random.Range(minDist, maxDist);
+    }
+    
     private Vector2 OffsetY(Vector2 pos, float yOffset) {
         return new(pos.x, pos.y + yOffset);
     }
