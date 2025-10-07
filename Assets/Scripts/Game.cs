@@ -262,14 +262,17 @@ public class Game : MonoBehaviour {
     }
 
     private void FixedUpdate() {
-        // FixedUpdateEnemies();
-        NewFixedUpdateEnemies();
+        if (!InRaid) return;
+        raidStateData.CurrentMap.grid.CompleteFlowFieldCalculation();
+        raidStateData.CurrentMap.grid.ScheduleFlowFieldCalculation(player.position);
+        FixedUpdateEnemies();
     }
 
     private void OnApplicationQuit() {
         SaveInventory(playerInventory);
         SaveInventory(stashInventory);
         SavePlayerData();
+        raidStateData.CurrentMap.grid.Deinit();
     }
 
     private void UpdateTimers() {
@@ -323,17 +326,16 @@ public class Game : MonoBehaviour {
             LeaveRaid();
             raidStateData.raidDifficulty++;
         }
+        raidStateData.CurrentMap.grid.Deinit();
     }
 
     private void OnRaidStateUpdate() {
-        raidStateData.CurrentMap.grid.ScheduleFlowFieldCalculation(player.position);
         UpdateTimers();
         CheckForInteractions();
         UpdateInventory();
         UpdatePlayer();
         UpdateProjectiles();
         UpdateSpawnManager();
-        raidStateData.CurrentMap.grid.CompleteFlowFieldCalculation();
         UpdateEnemies();
         UpdateEntityEffects();
         UpdateInRaidUi();
@@ -813,21 +815,11 @@ public class Game : MonoBehaviour {
     
     public class Enemy : Entity {
         public EnemyData data;
-        public PathData pathData = new();
         public Timer applyDamageTimer;
         public BleedModInstance? bleed;
         public PoisonSoulcard.InstanceData? poisoned;
         public SlowInstance? defaultSlow;
         public SlowInstance? slow;
-    }
-    
-    public class PathData {
-        public ABPath abPath;
-        public int waypointIndex;
-        public bool isBeingCalculated;
-        public float lastUpdateTime;
-        
-        public bool HasPath => abPath != null;
     }
     
     private void UpdateEnemies() {
@@ -901,30 +893,9 @@ public class Game : MonoBehaviour {
                 enemies.RemoveAt(i);
             }
         }
-
-        // foreach (Enemy enemy in enemies) {
-        //     if ((enemy.pathData.HasPath && Time.time - enemy.pathData.lastUpdateTime <= 0.5f) || enemy.pathData.isBeingCalculated) continue;
-        //
-        //     float dist = Vector2.Distance(enemy.position, player.position);
-        //     float time = dist / enemy.data.speed;
-        //     
-        //     Vector2 estimatedPlayerPos = player.position + player.velocity.ToVector3() * time;
-        //     Vector2 conservativeEstimatedPlayerPos = Vector2.Lerp(player.position, estimatedPlayerPos, 0.5f);
-        //     ABPath abPath = ABPath.Construct(enemy.position, conservativeEstimatedPlayerPos, path => {
-        //         path.Claim(this);
-        //         enemy.pathData.abPath?.Release(this);
-        //         enemy.pathData.abPath = path as ABPath;
-        //         enemy.pathData.waypointIndex = 1;
-        //         enemy.pathData.isBeingCalculated = false;
-        //         enemy.pathData.lastUpdateTime = Time.time;
-        //     });
-        //     
-        //     AstarPath.StartPath(abPath);
-        //     enemy.pathData.isBeingCalculated = true;
-        // }
     }
     
-    private void NewFixedUpdateEnemies() {
+    private void FixedUpdateEnemies() {
         foreach (Enemy enemy in enemies) {
             float speed = enemy.data.speed;
             
@@ -960,75 +931,6 @@ public class Game : MonoBehaviour {
         }
     }
 
-    private void FixedUpdateEnemies() {
-        foreach (Enemy enemy in enemies) {
-            if (enemy.pathData.abPath == null) continue;
-            
-            PathData pathData = enemy.pathData;
-            
-            bool usingPath = enemy.pathData.abPath.vectorPath.Count >= 2 && pathData.waypointIndex < pathData.abPath.vectorPath.Count;
-            
-            if (usingPath && Vector2.Distance(enemy.position, pathData.abPath.vectorPath[pathData.waypointIndex].ToVector2()) < 0.5f) {
-                pathData.waypointIndex++;
-            }
-            
-            usingPath = usingPath && pathData.waypointIndex < pathData.abPath.vectorPath.Count;
-
-            
-            float speed = enemy.data.speed;
-            
-            float totalSlowPercentage = 0f;
-            if (enemy.defaultSlow.TryGetValue(out var defaultSlow)) {
-                totalSlowPercentage += defaultSlow.speedReductionPercent;
-                if (Time.time > defaultSlow.activationTime + defaultSlow.duration) {
-                    enemy.defaultSlow = null;
-                }
-            }
-            if (enemy.slow.TryGetValue(out var slow)) {
-                totalSlowPercentage += slow.speedReductionPercent;
-                if (Time.time > slow.activationTime + slow.duration) {
-                    enemy.slow = null;
-                }
-            }
-            speed = Mathf.Clamp(speed * Mathf.Clamp01(1f - totalSlowPercentage), 0.05f, enemy.data.speed);
-            
-            AnimatorStateInfo animStateInfo = enemy.animator.GetCurrentAnimatorStateInfo(0);
-            if (animStateInfo.IsName("Attack")) {
-                if (animStateInfo.normalizedTime > 1f) {
-                    enemy.animator.Play("Walk");        
-                }
-                else {
-                    speed = 0f;
-                }
-            }
-            
-            /*
-                The below separation method causes jitter in big pools of enemies because center enemies are bouncing back and forth
-                Todo: Make the separation logic start from the center of a crowd and work its way out to prevent this jitter
-            */
-
-            const float targetSeparationDist = 0.15f;
-            Vector2 separation = Vector2.zero;
-            foreach (Enemy avoidEnemy in enemies) {
-                if (avoidEnemy == enemy) continue;
-                
-                Vector2 diff = enemy.position - avoidEnemy.position;
-                float dist = diff.magnitude;
-
-                if (dist < targetSeparationDist)
-                    separation += diff.normalized / dist; // Stronger repulsion if closer
-            }
-
-            Vector2 targetPos = usingPath ? pathData.abPath.vectorPath[pathData.waypointIndex] : player.position;
-            Vector2 dirToTarget = (targetPos - enemy.position.ToVector2()).normalized;
-            Vector2 finalDirection = (dirToTarget + separation.normalized * 0.5f).normalized;
-            enemy.rigidbody.linearVelocity = dirToTarget * speed;
-
-            enemy.spriteRenderer.flipX = player.position.x < enemy.position.x;
-        }
-    }
-    
-    
     public class EnemySpawnManager {
         public float timeInPhase;
         public float totalTimeLeft;

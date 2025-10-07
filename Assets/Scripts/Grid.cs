@@ -14,11 +14,10 @@ public class Grid : MonoBehaviour {
     public class GridCell {
         public Vector2 position;
         public bool traversable;
-        public Vector2 avoidCollisionDir;
     }
 
     [HideInInspector] public List<GridCell> cells;
-    [HideInInspector] public List<Vector2> flowField = new();
+    [HideInInspector] public List<Vector2> flowField;
 
     public int width = 100;
     public int height = 100;
@@ -39,6 +38,19 @@ public class Grid : MonoBehaviour {
 
     public void Init() {
         gridGameObjectPosition = transform.position;
+        flowField = new(100);
+        nativeDistances = new(cells.Count, Allocator.Persistent);
+        nativeTraversables = new(cells.Count, Allocator.Persistent);
+        nativePositions = new(cells.Count, Allocator.Persistent);
+        flowFieldJobResults = new(cells.Count, Allocator.Persistent);
+    }
+
+    public void Deinit() {
+        flowFieldJobHandle.Complete();
+        nativeDistances.Dispose();
+        nativeTraversables.Dispose();
+        nativePositions.Dispose();
+        flowFieldJobResults.Dispose();
     }
     
     public GridCell GetSpawnPosition(Vector2 playerPosition) {
@@ -51,7 +63,7 @@ public class Grid : MonoBehaviour {
                 return null;
             }
 
-            UpdateDataForSpawnCells(playerCell, 2, 8);
+            UpdateDataForSpawnCells(playerCell, 4, 10);
         }
 
         float rand = Random.value * totalSpawnCellsWeight;
@@ -70,13 +82,6 @@ public class Grid : MonoBehaviour {
         GridCell sourceNode = GetCellAtPosition(sourcePosition);
         if (sourceNode == null) return;
 
-        if (!nativeDistances.IsCreated) {
-            nativeDistances = new(cells.Count, Allocator.Persistent);
-            nativeTraversables = new(cells.Count, Allocator.Persistent);
-            nativePositions = new(cells.Count, Allocator.Persistent);
-            flowFieldJobResults = new(cells.Count, Allocator.Persistent);
-        }
-        
         for (int i = 0; i < cells.Count; i++) {
             GridCell cell = cells[i];
             nativeDistances[i] = cell == sourceNode ? 0 : int.MaxValue;
@@ -107,6 +112,8 @@ public class Grid : MonoBehaviour {
     }
     
     public void CompleteFlowFieldCalculation() {
+        if (flowFieldJobHandle == default) return;
+        
         flowFieldJobHandle.Complete();
         
         flowField.Clear();
@@ -124,21 +131,6 @@ public class Grid : MonoBehaviour {
         
         int cellIndex = cells.IndexOf(cellAtPos);
         return flowField[cellIndex];
-        List<GridCell> neighbors = GetNeighbors(cellAtPos);
-
-        int avgCount = 2;
-        Vector2 averageDir = cellAtPos.traversable ? flowField[cellIndex] : (position - cellAtPos.position).normalized;
-        return averageDir;
-        averageDir += averageDir;
-        // averageDir += averageDir;
-        
-        foreach (GridCell nCell in neighbors) {
-            Vector2 nDir = nCell.traversable ? flowField[cells.IndexOf(nCell)] : (position - nCell.position).normalized;
-            averageDir += nDir;
-            avgCount++;
-        }
-
-        return (averageDir / avgCount).normalized;
     }
 
     private GridCell GetCellAtPosition(Vector2 position) {
@@ -176,15 +168,15 @@ public class Grid : MonoBehaviour {
         totalSpawnCellsWeight = 0f;
 
         ContactFilter2D filter = new() {
-        useLayerMask = true,
-        layerMask = Masks.EnemyMask,
+            useLayerMask = true,
+            layerMask = Masks.EnemyMask,
         };
         List<Collider2D> colList = UnityEngine.Pool.ListPool<Collider2D>.Get();
 
         float expandedSizeForEnemyTesting = cellSize * 5f;
         foreach (GridCell nCell in spawnCells) {
             int enemyCount = Physics2D.OverlapCircle(nCell.position, expandedSizeForEnemyTesting, filter, colList);
-            float weight = 1f / (enemyCount + 1f);
+            float weight = 1f / ((enemyCount + 1f) * 3f);
             spawnCellWeights.Add(weight);
             totalSpawnCellsWeight += weight;
         }
@@ -371,43 +363,13 @@ public class Grid : MonoBehaviour {
             }
         }
         
-        // foreach (GridCell cell in cells) {
-        //     if (cell.traversable) continue;
-        //     
-        //     int avgCount = 0;
-        //     Vector2 avgTraversableNeighborPos = Vector2.zero;
-        //     
-        //     List<GridCell> neighbors = GetNeighbors(cell);
-        //     foreach (GridCell nCell in neighbors) {
-        //         avgTraversableNeighborPos += (nCell.position - cell.position);
-        //         avgCount++;
-        //     }
-        //
-        //     print(avgCount);
-        //     if (avgCount == 0) {
-        //         cell.avoidCollisionDir = Vector2.zero;
-        //         continue;
-        //     }
-        //     
-        //     avgTraversableNeighborPos /= avgCount;
-        //     cell.avoidCollisionDir = avgTraversableNeighborPos.normalized; 
-        // }
-
         EditorUtility.SetDirty(this);
-    }
-
-    public Transform sourcePosForTesting;
-    
-    [VInspector.Button("Click this one")]
-    private void GenerateFlowField() {
-        Init();
-        ScheduleFlowFieldCalculation(sourcePosForTesting.position);
-        CompleteFlowFieldCalculation();
     }
 
     [VInspector.Button("Clear")]
     public void Clear() {
         cells = null;
+        flowField = null;
         EditorUtility.SetDirty(this);
     }
 
@@ -421,109 +383,27 @@ public class Grid : MonoBehaviour {
         transform.position = pos;
         EditorUtility.SetDirty(this);
     }
-
-    [VInspector.Button("Generate Grid Distances")]
-    private void GenerateGridDistances() {
-        // if (testTransform == null || cells == null) return;
-        //
-        // GridCell sourceNode = GetCellAtPosition(testTransform.position);
-        // if (sourceNode == null) return;
-        //     
-        // Dictionary<GridCell, int> gridCellIndexLookup = new();
-        // for (int i = 0; i < cells.Count; i++) {
-        //     GridCell cell = cells[i];
-        //     gridCellIndexLookup.Add(cell, i);
-        // }
-        //
-        // distances = new();
-        // foreach (GridCell cell in cells) {
-        //     distances.Add(cell == sourceNode ? 0 : int.MaxValue);
-        // }
-        //     
-        // SimplePriorityQueue<GridCell, int> unvisited = new();
-        // for (int i = 0; i < cells.Count; i++) {
-        //     unvisited.Enqueue(cells[i], distances[i]);
-        // }
-        //
-        // while (unvisited.Count > 0) {
-        //     GridCell curCell = unvisited.Dequeue();
-        //     if (curCell == null) break;
-        //         
-        //     int curCellIndex = gridCellIndexLookup[curCell];
-        //     if (distances[curCellIndex] == int.MaxValue) break;
-        //
-        //     List<GridCell> neighbors = GetNeighbors(curCell);
-        //     if (neighbors == null) continue;
-        //
-        //     for (int i = 0; i < neighbors.Count; i++) {
-        //         GridCell neighborCell = neighbors[i];
-        //
-        //         bool neighborIsDiagonal = i == 0 || i == 2 || i == 5 || i == 7;
-        //         int dist = neighborIsDiagonal ? 2 : 1;
-        //             
-        //         int neighborIndex = gridCellIndexLookup[neighborCell];
-        //         int distFromCurToNeighbor = distances[curCellIndex] + dist;
-        //         if (distFromCurToNeighbor < distances[neighborIndex]) {
-        //             distances[neighborIndex] = distFromCurToNeighbor;
-        //             unvisited.UpdatePriority(neighborCell, distFromCurToNeighbor);
-        //         }
-        //     }
-        // }
-    }
-
-    [VInspector.Button("Create Flow Field From Distances")]
-    private void CreateFlowFieldFromDistances() {
-        if (distances == null || cells == null) return;
-        
-        flowField = new();
-        
-        Dictionary<GridCell, int> gridCellIndexLookup = new();
-        for (int i = 0; i < cells.Count; i++) {
-            GridCell cell = cells[i];
-            gridCellIndexLookup.Add(cell, i);
-        }
-
-        foreach (GridCell cell in cells) {
-            if (!cell.traversable) {
-                flowField.Add(Vector2.zero);
-                continue;
-            }
-            
-            List<GridCell> neighbors = GetNeighbors(cell);
-            if (neighbors == null) {
-                flowField.Add(Vector2.zero);
-                continue;
-            }
-            
-            int smallestDist = int.MaxValue;
-            GridCell closestCell = null;
-            
-            foreach (GridCell neighbor in neighbors) {
-                int dist = distances[gridCellIndexLookup[neighbor]];
-                
-                if (closestCell == null) {
-                    closestCell = neighbor;
-                    smallestDist = dist;
-                    continue;
-                }
-
-                if (dist < smallestDist) {
-                    closestCell = neighbor;
-                    smallestDist = dist;
-                }
-            }
-
-            if (closestCell == null) {
-                flowField.Add(Vector2.zero);
-                continue;
-            }
-            
-            Vector2 flowDirToClosestNeighbor = (closestCell.position - cell.position).normalized;
-            flowField.Add(flowDirToClosestNeighbor);
-        }
-    }
     
-    private List<GridCell> GetNeighbors(GridCell cell) {
+    public Transform sourcePosForTesting;
+    
+    [VInspector.Button("Generate Flow Field")]
+    private void GenerateFlowField() {
+        if (sourcePosForTesting == null) {
+            Debug.LogError("Must assign sourcePosForTesting");
+            return;
+        }
+        
+        if (cells == null) {
+            Generate();
+        }
+        
+        Init();
+        ScheduleFlowFieldCalculation(sourcePosForTesting.position);
+        CompleteFlowFieldCalculation();
+        Deinit();
+    }
+
+    private List<GridCell> GetNeighborsSlow(GridCell cell) {
         List<GridCell> neighbors = new();
 
         for (int y = -1; y <= 1; y++) {
@@ -547,6 +427,16 @@ public class Grid : MonoBehaviour {
         Color gridColor = new(154f / 255f, 1f, 0f, 0.1f);
         Color gridFill = new(45f / 255f, 1f, 0f, 0.2f);
         
+        if (flowField != null && cells != null && flowField.Count == cells.Count) {
+            for (int i = 0; i < cells.Count; i++) {
+                Vector2 flowDir = flowField[i];
+                if (flowDir == Vector2.zero) continue;
+                Vector2 cellPos = cells[i].position;
+                DebugExtension.DrawArrow(cellPos, flowDir * 0.16f);
+            }
+            return;
+        }
+        
         if (cells == null) {
             for (int i = 0; i < width; i++) {
                 for (int j = 0; j < height; j++) {
@@ -557,41 +447,21 @@ public class Grid : MonoBehaviour {
                     DebugExtension.DrawBounds(bounds, nonGeneratedColor);
                 }
             }
-        }
-        else {
-            foreach (GridCell cell in cells) {
-                if (!cell.traversable) continue;
-                
-                Bounds bounds = new() {
-                    center = cell.position,
-                    size = Vector3.one * cellSize,
-                };
-                DebugExtension.DrawBounds(bounds, gridColor);
-                Gizmos.color = gridFill;
-                Gizmos.DrawCube(cell.position, Vector3.one * cellSize);
-            }
-        }
 
-        if (flowField != null && cells != null && flowField.Count == cells.Count) {
-            for (int i = 0; i < cells.Count; i++) {
-                Vector2 flowDir = flowField[i];
-                if (flowDir == Vector2.zero) continue;
-                Vector2 cellPos = cells[i].position;
-                DebugExtension.DrawArrow(cellPos, flowDir * 0.16f);
-            }
+            return;
         }
-        else {
-            GUIStyle labelStyle = new() { alignment = TextAnchor.MiddleCenter };
-            labelStyle.normal.textColor = Color.white;
+        
+        foreach (GridCell cell in cells) {
+            if (!cell.traversable) continue;
             
-            if (distances != null && cells != null) {
-                for (int i = 0; i < cells.Count; i++) {
-                    GridCell cell = cells[i];
-                    Handles.Label(cell.position, distances[i] == int.MaxValue ? "" : distances[i].ToString(), labelStyle);
-                }
-            }
+            Bounds bounds = new() {
+                center = cell.position,
+                size = Vector3.one * cellSize,
+            };
+            DebugExtension.DrawBounds(bounds, gridColor);
+            Gizmos.color = gridFill;
+            Gizmos.DrawCube(cell.position, Vector3.one * cellSize);
         }
-
     }
 
 #endif 
