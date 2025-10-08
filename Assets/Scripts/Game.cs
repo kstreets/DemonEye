@@ -77,6 +77,7 @@ public class Game : MonoBehaviour {
     [EndFoldout]
     
     [Foldout("UI/Prefabs")]
+    public GameObject inventoryItemPrefab;
     public GameObject inventorySlotPrefab;
     public GameObject rockSmokePrefab;
     public GameObject damageNumberPrefab;
@@ -87,6 +88,7 @@ public class Game : MonoBehaviour {
     public MechanicDescPopup mechanicDescPopup;
     public Button enterNextRaidButton;
     public RectTransform hideoutHeaderParent;
+    public ItemUI dragAndDropItemUI;
     [EndFoldout]
     
     [Foldout("UI/HideoutTabs")]
@@ -170,6 +172,7 @@ public class Game : MonoBehaviour {
     private InputAction inventoryInputAction;
     private InputAction selectItemInputAction;
     private InputAction useItemInputAction;
+    private InputAction moveStackInputAction;
     private InputAction splitStackInputAction;
     
     [NonSerialized] public List<Entity> entities = new();
@@ -201,7 +204,7 @@ public class Game : MonoBehaviour {
         instance = this;
         
         #if UNITY_EDITOR
-        Application.targetFrameRate = 120;
+        Application.targetFrameRate = 0;
         #endif
         
         LoadAllItems();
@@ -248,6 +251,7 @@ public class Game : MonoBehaviour {
         inventoryInputAction = InputSystem.actions.FindAction("Inventory");
         selectItemInputAction = InputSystem.actions.FindAction("SelectItem");
         splitStackInputAction = InputSystem.actions.FindAction("SplitStack");
+        moveStackInputAction = InputSystem.actions.FindAction("MoveStack");
         useItemInputAction = InputSystem.actions.FindAction("UseItem");
 
         hideoutState = gameStateMachine.CreateState(OnHideoutStateUpdate, OnHideoutStateEnter, OnHideoutStateExit);
@@ -268,6 +272,10 @@ public class Game : MonoBehaviour {
         raidStateData.currentMap.grid.CompleteFlowFieldCalculation();
         raidStateData.currentMap.grid.ScheduleFlowFieldCalculation(player.position);
         FixedUpdateEnemies();
+    }
+
+    private void LateUpdate() {
+        UpdateDragAndDropItemToCursor();
     }
 
     private void OnApplicationQuit() {
@@ -323,7 +331,6 @@ public class Game : MonoBehaviour {
         player.position = randomSpawnPos;
         cinemachineCamera.Follow = player.trans;
         
-        // AstarPath.active.Scan();
         InitExitPortal();
         InitSpawnManager(curMap.waves);
         SpawnResources(curMap.resourceParent);
@@ -1217,9 +1224,14 @@ public class Game : MonoBehaviour {
         }
 
         InventoryHoverInfo invHoverInfo = UpdateInventoryHover();
-        UpdateItemDescPopup(invHoverInfo);
-        CheckToMoveItem(invHoverInfo);
-        CheckToConsumeItem(invHoverInfo);
+        bool movingItem = UpdateInventoryDragAndDrop(invHoverInfo);
+
+        if (!movingItem) {
+            UpdateItemDescPopup(invHoverInfo);
+            CheckToMoveItem(invHoverInfo);
+            CheckToConsumeItem(invHoverInfo);
+        } 
+        
         UpdatePlayerPanelUI();
         CheckForEquipmentChange();
     }
@@ -1313,17 +1325,15 @@ public class Game : MonoBehaviour {
     }
     
     private void CheckToMoveItem(InventoryHoverInfo invHoverInfo) {
-        if (!selectItemInputAction.WasPressedThisFrame() && !splitStackInputAction.WasPressedThisFrame()) return;
+        if (!moveStackInputAction.WasPressedThisFrame() && !splitStackInputAction.WasPressedThisFrame()) return;
 
         Inventory hoveredInventory = invHoverInfo.hoveredInventory;
         if (hoveredInventory == null) return;
 
         if (!TryGetItemFromHoverInfo(invHoverInfo, out InventoryItem hoveredItem)) return;
 
-        bool clickedOnEquipedBackpack = hoveredInventory == playerInventory && hoveredItem.ItemRef is BackpackType;
-        if (clickedOnEquipedBackpack && EquipedBackpackHasItems()) {
-            return;
-        }
+        bool clickedOnEquipedBackpack = hoveredInventory == playerInventory && hoveredItem.ItemRef.type == backpackType;
+        if (clickedOnEquipedBackpack && EquipedBackpackHasItems()) return;
         
         Inventory destinationInventory = null;
 
@@ -1596,6 +1606,48 @@ public class Game : MonoBehaviour {
         return -1;
     }
 
+
+    private InventoryItem dragItem;
+
+    private bool UpdateInventoryDragAndDrop(InventoryHoverInfo hoverInfo) {
+        bool movingItem = dragItem != null;
+        
+        if (!selectItemInputAction.WasPressedThisFrame()) {
+            return movingItem;
+        }
+
+        bool pickingUpItem = dragItem == null;
+        if (pickingUpItem) {
+            if (!TryGetItemFromHoverInfo(hoverInfo, out InventoryItem item)) {
+                return movingItem;
+            }
+            
+            dragItem = item;
+            dragAndDropItemUI.gameObject.SetActive(true);
+            dragAndDropItemUI.SetItem(dragItem.ItemRef, dragItem.count);
+            
+            RemoveItemFromInventory(hoverInfo.hoveredInventory, hoverInfo.hoveredSlotIndex);
+        }
+
+        if (!pickingUpItem) {
+            if (hoverInfo.hoveredInventory != null) {
+                TryAddItemToInventory(hoverInfo.hoveredInventory, dragItem);
+                RefreshInventoryDisplay(hoverInfo.hoveredInventory);
+                dragItem = null;
+                dragAndDropItemUI.ClearItem();
+                dragAndDropItemUI.gameObject.SetActive(false);
+            }
+        }
+
+        return movingItem;
+    }
+
+    private void UpdateDragAndDropItemToCursor() {
+        if (dragItem == null) return;
+        Vector2 mousePos = Mouse.current.position.ReadValue();
+        dragAndDropItemUI.GetComponent<RectTransform>().position = mousePos;
+    }
+
     public struct InventoryAddResult {
         public enum ResultType { Success, Failure, FailureToAddAll };
         public ResultType type;
@@ -1607,10 +1659,15 @@ public class Game : MonoBehaviour {
         return TryAddItemToInventory(inventory, newInventoryItem);
     }
 
-    public InventoryAddResult TryAddItemToInventory(Inventory inventory, InventoryItem item) {
+    public InventoryAddResult TryAddItemToInventory(Inventory inventory, InventoryItem item, int slotIndex = -1) {
         InventoryAddResult result = new() { type = InventoryAddResult.ResultType.Failure };
 
         bool allowInfiniteStacking = inventory == traderInventory;
+        
+        if (slotIndex != -1) {
+                
+        }
+
         int remainingItemCount = item.count;
 
         // If we can stack the item then we just do that
@@ -3007,9 +3064,9 @@ public class Game : MonoBehaviour {
     // Scene Management 
     // ************************
 
-    public string loadedMapName;
-    public string activelyLoadingMapName;
-    public string activelyUnloadingMapName;
+    [NonSerialized] public string loadedMapName;
+    [NonSerialized] public string activelyLoadingMapName;
+    [NonSerialized] public string activelyUnloadingMapName;
 
     public void LoadMapAsync(string sceneName) {
         if (LoadingMapInProgress()) return;
@@ -3033,10 +3090,10 @@ public class Game : MonoBehaviour {
             loadedMapScene.GetRootGameObjects(loadedMapRoots);
             
             foreach (GameObject root in loadedMapRoots) {
-                if (root.TryGetComponent(out Map map)) {
-                    raidStateData.currentMap = map;
-                    map.gameObject.SetActive(false);
-                }
+                if (!root.TryGetComponent(out Map map)) continue;
+                raidStateData.currentMap = map;
+                map.gameObject.SetActive(false);
+                break;
             }
             
             ListPool<GameObject>.Release(loadedMapRoots);

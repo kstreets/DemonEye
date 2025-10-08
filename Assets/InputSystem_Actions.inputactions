@@ -265,6 +265,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "MoveStack",
+                    "type": "Button",
+                    "id": "90181fa9-2051-4b58-b5a5-7c2cf40531ee",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "UseItem",
                     "type": "Button",
                     "id": "999f0f2a-250d-49a6-8639-622a50b534c5",
@@ -305,6 +314,39 @@
                     "processors": "",
                     "groups": "",
                     "action": "SplitStack",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "One Modifier",
+                    "id": "42496022-203c-4b67-8330-970a5b242ea0",
+                    "path": "OneModifier",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MoveStack",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "modifier",
+                    "id": "8d4b7cee-4c46-495b-9c9d-681631d9105a",
+                    "path": "<Keyboard>/shift",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MoveStack",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "binding",
+                    "id": "97190c7a-1d35-4b1f-a100-8848801e8f05",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MoveStack",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },

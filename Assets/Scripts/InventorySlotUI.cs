@@ -7,10 +7,9 @@ public class InventorySlotUI : MonoBehaviour {
     public bool disallowItemStacking;
     public ItemType onlyAcceptedItemType;
     public Image slotImage;
-    public Image itemImage;
     public Sprite activeSlotSprite;
     public Sprite inactiveSlotSprite;
-    public TextMeshProUGUI countText;
+    public ItemUI itemUI;
     
     public bool SlotIsInactive => slotImage.sprite == inactiveSlotSprite;
     public bool AcceptsAllTypes => onlyAcceptedItemType == null;
@@ -49,15 +48,11 @@ public class InventorySlotUI : MonoBehaviour {
     }
     
     public void SetItem(Item data, int count) {
-        itemImage.sprite = data.inventorySprite;
-        itemImage.enabled = true;
-        countText.text = count.ToString();
+        itemUI.SetItem(data, count);
     }
     
     public void ClearItem() {
-        itemImage.sprite = null;
-        itemImage.enabled = false;
-        countText.text = "";
+        itemUI.ClearItem();
     }
     
 }
