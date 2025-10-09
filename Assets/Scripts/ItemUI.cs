@@ -12,6 +12,10 @@ public class ItemUI : MonoBehaviour {
         image.enabled = true;
         countText.text = count.ToString();
     }
+
+    public void UpdateCount(int count) {
+        countText.text = count.ToString();
+    }
     
     public void ClearItem() {
         image.sprite = null;

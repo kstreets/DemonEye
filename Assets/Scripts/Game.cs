@@ -171,6 +171,7 @@ public class Game : MonoBehaviour {
     private InputAction interactInputAction;
     private InputAction inventoryInputAction;
     private InputAction selectItemInputAction;
+    private InputAction placeSingleItemInputAction;
     private InputAction useItemInputAction;
     private InputAction moveStackInputAction;
     private InputAction splitStackInputAction;
@@ -182,6 +183,7 @@ public class Game : MonoBehaviour {
     
     public static Dictionary<int, Item> itemLookup = new();
     public static Dictionary<int, Soulcard> eyeModifierLookup = new();
+    public static Dictionary<Item, GameObject> itemPrefabLookup = new();
 
     private Timer exitPortalTimer;
     private int consecutiveCriticalHits;
@@ -250,6 +252,7 @@ public class Game : MonoBehaviour {
         interactInputAction = InputSystem.actions.FindAction("Interact");
         inventoryInputAction = InputSystem.actions.FindAction("Inventory");
         selectItemInputAction = InputSystem.actions.FindAction("SelectItem");
+        placeSingleItemInputAction = InputSystem.actions.FindAction("PlaceSingleItem");
         splitStackInputAction = InputSystem.actions.FindAction("SplitStack");
         moveStackInputAction = InputSystem.actions.FindAction("MoveStack");
         useItemInputAction = InputSystem.actions.FindAction("UseItem");
@@ -1224,13 +1227,15 @@ public class Game : MonoBehaviour {
         }
 
         InventoryHoverInfo invHoverInfo = UpdateInventoryHover();
-        bool movingItem = UpdateInventoryDragAndDrop(invHoverInfo);
+        CheckToMoveItem(invHoverInfo);
 
-        if (!movingItem) {
+        if (UpdateInventoryDragAndDrop(invHoverInfo)) {
+            HideItemDescPopup();
+        }
+        else {
             UpdateItemDescPopup(invHoverInfo);
-            CheckToMoveItem(invHoverInfo);
             CheckToConsumeItem(invHoverInfo);
-        } 
+        }
         
         UpdatePlayerPanelUI();
         CheckForEquipmentChange();
@@ -1255,7 +1260,7 @@ public class Game : MonoBehaviour {
         
         itemDescPopup.gameObject.SetActive(true);
         
-        InventorySlot hoveredSlot = info.hoveredInventory.slots[info.hoveredSlotIndex];
+        InventorySlot hoveredSlot = info.inventory.slots[info.slotIndex];
         TextMeshProUGUI nameText = itemDescPopup.nameText;
         TextMeshProUGUI descText = itemDescPopup.descText;
 
@@ -1325,9 +1330,9 @@ public class Game : MonoBehaviour {
     }
     
     private void CheckToMoveItem(InventoryHoverInfo invHoverInfo) {
-        if (!moveStackInputAction.WasPressedThisFrame() && !splitStackInputAction.WasPressedThisFrame()) return;
+        if (!moveStackInputAction.WasPressedThisFrame()) return;
 
-        Inventory hoveredInventory = invHoverInfo.hoveredInventory;
+        Inventory hoveredInventory = invHoverInfo.inventory;
         if (hoveredInventory == null) return;
 
         if (!TryGetItemFromHoverInfo(invHoverInfo, out InventoryItem hoveredItem)) return;
@@ -1396,7 +1401,7 @@ public class Game : MonoBehaviour {
         
         if (destinationInventory == null) return;
 
-        MoveItemBetweenInventories(hoveredInventory, destinationInventory, invHoverInfo.hoveredSlotIndex);
+        MoveItemBetweenInventories(hoveredInventory, destinationInventory, invHoverInfo.slotIndex);
         RefreshInventoryDisplay(hoveredInventory);
         RefreshInventoryDisplay(destinationInventory);
 
@@ -1426,8 +1431,8 @@ public class Game : MonoBehaviour {
             HealPlayer(15);
         }
         
-        ReduceItemCountInInventory(invHoverInfo.hoveredInventory, invHoverInfo.hoveredSlotIndex);
-        RefreshInventoryDisplay(invHoverInfo.hoveredInventory);
+        ReduceItemCountInInventory(invHoverInfo.inventory, invHoverInfo.slotIndex);
+        RefreshInventoryDisplay(invHoverInfo.inventory);
     }
 
     private void UpdatePlayerPanelUI() {
@@ -1441,8 +1446,8 @@ public class Game : MonoBehaviour {
     private bool TryGetItemFromHoverInfo(InventoryHoverInfo invHoverInfo, out InventoryItem hoveredItem) {
         hoveredItem = null;
         
-        int hoveredSlot = invHoverInfo.hoveredSlotIndex;
-        Inventory hoveredInventory = invHoverInfo.hoveredInventory;
+        int hoveredSlot = invHoverInfo.slotIndex;
+        Inventory hoveredInventory = invHoverInfo.inventory;
         
         if (hoveredInventory == null) return false;
         if (!hoveredInventory.slots.IndexInRange(hoveredSlot)) return false;
@@ -1559,8 +1564,8 @@ public class Game : MonoBehaviour {
     }
 
     public struct InventoryHoverInfo {
-        public Inventory hoveredInventory;
-        public int hoveredSlotIndex;
+        public Inventory inventory;
+        public int slotIndex;
         public float timeSpentHovering;
     }
 
@@ -1577,10 +1582,11 @@ public class Game : MonoBehaviour {
             Bounds localUiBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(inventory.parent);
             if (!localUiBounds.Contains(localMousePos)) continue;
             
-            info.hoveredInventory = inventory;
-            info.hoveredSlotIndex = GetHoveredInventorySlot(inventory);
-            
-            if (info.hoveredInventory == lastHoverInfo.hoveredInventory && info.hoveredSlotIndex == lastHoverInfo.hoveredSlotIndex) {
+            info.inventory = inventory;
+            info.slotIndex = GetHoveredInventorySlot(inventory);
+
+            bool hoveringOverPrevSlot = info.inventory == lastHoverInfo.inventory && info.slotIndex == lastHoverInfo.slotIndex;
+            if (hoveringOverPrevSlot && !IsDraggingItem) {
                 info.timeSpentHovering = lastHoverInfo.timeSpentHovering + Time.deltaTime;
             }
             else {
@@ -1608,38 +1614,142 @@ public class Game : MonoBehaviour {
 
 
     private InventoryItem dragItem;
+    private InventoryHoverInfo startDragInfo;
+    
+    private bool IsDraggingItem => dragItem != null;
 
     private bool UpdateInventoryDragAndDrop(InventoryHoverInfo hoverInfo) {
-        bool movingItem = dragItem != null;
+        bool pickupInputUsed = selectItemInputAction.WasPressedThisFrame() || splitStackInputAction.WasPressedThisFrame();
+        bool placeInputUsed = selectItemInputAction.WasPressedThisFrame() || placeSingleItemInputAction.WasPressedThisFrame();
         
-        if (!selectItemInputAction.WasPressedThisFrame()) {
-            return movingItem;
+        if (!pickupInputUsed && !placeInputUsed) {
+            return IsDraggingItem;
         }
-
+        
         bool pickingUpItem = dragItem == null;
-        if (pickingUpItem) {
+        if (pickingUpItem && pickupInputUsed) {
             if (!TryGetItemFromHoverInfo(hoverInfo, out InventoryItem item)) {
-                return movingItem;
+                return IsDraggingItem;
             }
-            
-            dragItem = item;
+
+            bool splittingStack = splitStackInputAction.WasPressedThisFrame() && item.count > 1;
+            if (splittingStack) {
+                int firstHalf = item.count / 2;
+                int secondHalf = item.count - firstHalf;
+                
+                dragItem = item.Clone();
+                dragItem.count = secondHalf;
+                
+                AdjustItemCountInInventory(hoverInfo.inventory, hoverInfo.slotIndex, firstHalf);
+                RefreshInventoryDisplay(hoverInfo.inventory);
+            }
+            else {
+                dragItem = item;
+                RemoveItemFromInventory(hoverInfo.inventory, hoverInfo.slotIndex);
+            }
+
+            startDragInfo = hoverInfo;
             dragAndDropItemUI.gameObject.SetActive(true);
             dragAndDropItemUI.SetItem(dragItem.ItemRef, dragItem.count);
-            
-            RemoveItemFromInventory(hoverInfo.hoveredInventory, hoverInfo.hoveredSlotIndex);
         }
 
-        if (!pickingUpItem) {
-            if (hoverInfo.hoveredInventory != null) {
-                TryAddItemToInventory(hoverInfo.hoveredInventory, dragItem);
-                RefreshInventoryDisplay(hoverInfo.hoveredInventory);
-                dragItem = null;
-                dragAndDropItemUI.ClearItem();
-                dragAndDropItemUI.gameObject.SetActive(false);
+        bool placingItem = !pickingUpItem;
+        if (placingItem && placeInputUsed) {
+            bool droppingItemInHideout = hoverInfo.inventory == null && InHideout;
+            if (droppingItemInHideout) {
+                TryAddItemToInventory(startDragInfo.inventory, dragItem, startDragInfo.slotIndex);
+                RefreshInventoryDisplay(startDragInfo.inventory);
+                EndDragAndDropItem();
+                return IsDraggingItem;
+            }
+
+            bool droppingItemInRaid = hoverInfo.inventory == null && InRaid;
+            if (droppingItemInRaid) {
+                bool droppingEntireStack = selectItemInputAction.WasPressedThisFrame();
+                if (droppingEntireStack) {
+                    DropItemFromInventory(dragItem);
+                    dragItem.count = 0;
+                }
+                else {
+                    DropItemFromInventory(dragItem, 1);
+                    dragItem.count--;
+                    dragAndDropItemUI.UpdateCount(dragItem.count);
+                }
+
+                if (dragItem.count <= 0) {
+                    EndDragAndDropItem();
+                }
+                return IsDraggingItem;
+            }
+
+            bool swappingItems = false;
+            if (TryGetItemFromHoverInfo(hoverInfo, out InventoryItem swapItem)) {
+                bool itemsCanSwap = swapItem.itemDataUuid != dragItem.itemDataUuid || (swapItem.IsFullStack || dragItem.IsFullStack);
+                swappingItems = itemsCanSwap && selectItemInputAction.WasPressedThisFrame();
+            }
+            
+            if (swappingItems) {
+                InventorySlot targetSlot = hoverInfo.inventory.slots[hoverInfo.slotIndex];
+                if (targetSlot.ui.disallowItemStacking && dragItem.count > 1) {
+                    return IsDraggingItem;
+                }
+                if (!targetSlot.ui.AcceptsAllTypes && targetSlot.ui.onlyAcceptedItemType != dragItem.ItemRef.type) {
+                    return IsDraggingItem;
+                }
+
+                targetSlot.item = dragItem;
+                dragItem = swapItem;
+                RefreshInventoryDisplay(hoverInfo.inventory);
+                dragAndDropItemUI.SetItem(dragItem.ItemRef, dragItem.count);
+                
+                return IsDraggingItem;
+            }
+
+            bool placingSingleItemFromStack = placeSingleItemInputAction.WasPressedThisFrame();
+            if (placingSingleItemFromStack) {
+                InventoryAddResult result = TryAddItemToInventory(hoverInfo.inventory, dragItem.ItemRef, 1, hoverInfo.slotIndex);
+                RefreshInventoryDisplay(hoverInfo.inventory);
+
+                dragItem.count -= result.addedCount;
+                if (dragItem.count <= 0) {
+                    EndDragAndDropItem();
+                }
+                else {
+                    dragAndDropItemUI.SetItem(dragItem.ItemRef, dragItem.count);
+                }
+            }
+
+            bool placingEntireStack = !placingSingleItemFromStack;
+            if (placingEntireStack) {
+                InventoryAddResult result = TryAddItemToInventory(hoverInfo.inventory, dragItem, hoverInfo.slotIndex);
+                RefreshInventoryDisplay(hoverInfo.inventory);
+
+                if (result.type == InventoryAddResult.ResultType.Success) {
+                    EndDragAndDropItem();
+                }
+                else if (result.type == InventoryAddResult.ResultType.FailureToAddAll) {
+                    dragItem.count -= result.addedCount;
+                    dragAndDropItemUI.SetItem(dragItem.ItemRef, dragItem.count);
+                }
             }
         }
 
-        return movingItem;
+        return IsDraggingItem;
+    }
+
+    private void DropItemFromInventory(InventoryItem inventoryItem, int count = -1) {
+        GameObject prefab = itemPrefabLookup[inventoryItem.ItemRef];
+
+        Vector2 mouseWorldPos = mainCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+        Vector2 dropDir = (mouseWorldPos - player.position.ToVector2()).normalized;
+        
+        Vector3 endPos = player.position + RandomizeVectorAngle(dropDir, 20f) * 0.2f;
+        Entity itemDrop = SpawnEntity<Entity>(prefab, player.position, Quaternion.identity);
+
+        int dropCount = count <= 0 ? inventoryItem.count : count;
+        itemDrop.gameObject.GetComponent<ItemReference>().dropCount = dropCount;
+        
+        AddBounceEffect(itemDrop, endPos, 0.8f);
     }
 
     private void UpdateDragAndDropItemToCursor() {
@@ -1647,6 +1757,14 @@ public class Game : MonoBehaviour {
         Vector2 mousePos = Mouse.current.position.ReadValue();
         dragAndDropItemUI.GetComponent<RectTransform>().position = mousePos;
     }
+    
+    private void EndDragAndDropItem() {
+        if (dragItem == null) return;
+        dragItem = null;
+        dragAndDropItemUI.ClearItem();
+        dragAndDropItemUI.gameObject.SetActive(false);
+    }
+    
 
     public struct InventoryAddResult {
         public enum ResultType { Success, Failure, FailureToAddAll };
@@ -1654,24 +1772,30 @@ public class Game : MonoBehaviour {
         public int addedCount;
     }
     
-    public InventoryAddResult TryAddItemToInventory(Inventory inventory, Item item, int count) {
+    public InventoryAddResult TryAddItemToInventory(Inventory inventory, Item item, int count, int slotIndex = -1) {
         InventoryItem newInventoryItem = new(item, count);
-        return TryAddItemToInventory(inventory, newInventoryItem);
+        return TryAddItemToInventory(inventory, newInventoryItem, slotIndex);
     }
 
     public InventoryAddResult TryAddItemToInventory(Inventory inventory, InventoryItem item, int slotIndex = -1) {
         InventoryAddResult result = new() { type = InventoryAddResult.ResultType.Failure };
 
         bool allowInfiniteStacking = inventory == traderInventory;
+        bool droppingItemInSpecificSlot = slotIndex != -1;
+
+        using var autoDispose = ListPool<InventorySlot>.Get(out List<InventorySlot> availableSlots);
         
-        if (slotIndex != -1) {
-                
+        if (droppingItemInSpecificSlot) {
+            availableSlots.Add(inventory.slots[slotIndex]);
+        }
+        else {
+            availableSlots.AddRange(inventory.slots[..]);
         }
 
         int remainingItemCount = item.count;
 
         // If we can stack the item then we just do that
-        foreach (InventorySlot slot in inventory.slots) {
+        foreach (InventorySlot slot in availableSlots) {
             if (slot.item == null || slot.ui.disallowItemStacking || slot.item.IsFullStack || slot.item.itemDataUuid != item.itemDataUuid) continue;
 
             if (allowInfiniteStacking) {
@@ -1690,7 +1814,10 @@ public class Game : MonoBehaviour {
                 
                 result.addedCount += addCount;
                 result.type = InventoryAddResult.ResultType.FailureToAddAll;
-                continue;
+
+                if (!droppingItemInSpecificSlot) continue;
+
+                return result;
             }
             
             slot.item.count += remainingItemCount;
@@ -1700,7 +1827,7 @@ public class Game : MonoBehaviour {
         }
 
         // Otherwise add to empty inventory slot
-        foreach (InventorySlot slot in inventory.slots) {
+        foreach (InventorySlot slot in availableSlots) {
             if (slot.item != null || slot.ui.SlotIsInactive) continue;
 
             if (!slot.ui.AcceptsItem(item.ItemRef)) continue;
@@ -1731,24 +1858,6 @@ public class Game : MonoBehaviour {
             InventoryAddResult traderMoveResult = TryAddItemToInventory(toInventory, newItem);
             if (traderMoveResult.type is InventoryAddResult.ResultType.Success or InventoryAddResult.ResultType.FailureToAddAll) {
                 int keepItemCount = inventoryItem.count - traderMoveResult.addedCount;
-                AdjustItemCountInInventory(fromInventory, slotIndex, keepItemCount);
-            }
-            return;
-        }
-
-        if (splitStackInputAction.WasPressedThisFrame() && inventoryItem.count > 1) {
-            int firstHalf = inventoryItem.count / 2;
-            int secondHalf = inventoryItem.count - firstHalf;
-
-            InventoryItem newItem = inventoryItem.Clone();
-            newItem.count = secondHalf;
-            
-            InventoryAddResult splitResult = TryAddItemToInventory(toInventory, newItem);
-            if (splitResult.type == InventoryAddResult.ResultType.Success) {
-                AdjustItemCountInInventory(fromInventory, slotIndex, firstHalf);
-            }
-            else if (splitResult.type == InventoryAddResult.ResultType.FailureToAddAll) {
-                int keepItemCount = inventoryItem.count - splitResult.addedCount;
                 AdjustItemCountInInventory(fromInventory, slotIndex, keepItemCount);
             }
             return;
@@ -1904,6 +2013,7 @@ public class Game : MonoBehaviour {
         playerPanel.gameObject.SetActive(false);
         crosshairTrans.gameObject.SetActive(true);
         Cursor.visible = false;
+        EndDragAndDropItem();
     }
 
     private void OpenLootInventory() {
@@ -2231,8 +2341,14 @@ public class Game : MonoBehaviour {
             if (col.CompareTag(Tags.Pickup)) {
                 EnableInteractionPrompt(col.transform.position);
                 if (interactInputAction.WasPressedThisFrame()) {
-                    TryAddItemToInventory(playerInventory, col.GetComponent<ItemReference>().item, 1); 
-                    DestroyEntity(col.gameObject);
+                    ItemReference itemReference = col.GetComponent<ItemReference>();
+                    InventoryAddResult result = TryAddItemToInventory(playerInventory, itemReference.item, itemReference.dropCount);
+                    if (result.type == InventoryAddResult.ResultType.Success) {
+                        DestroyEntity(col.gameObject);
+                    }
+                    else if (result.type == InventoryAddResult.ResultType.FailureToAddAll) {
+                        itemReference.dropCount -= result.addedCount;
+                    }
                 }
             }
 
@@ -2407,7 +2523,7 @@ public class Game : MonoBehaviour {
                 
                 for (int i = 0; i < dropCount; i++) {
                     float randomAngle = (angleDeltaPerDrop * i) + Random.Range(-randomRangePerDrop, randomRangePerDrop);
-                    Vector3 endPos = entity.position + RotationVector(0.18f, 0.25f, randomAngle);
+                    Vector3 endPos = entity.position + RotationVector(randomAngle, 0.18f, 0.25f);
                     Entity rockDrop = SpawnEntity<Entity>(rockDropPool.GetDropFromPool(), entity.position, Quaternion.identity);
                     AddBounceEffect(rockDrop, endPos, 0.8f);
                 }
@@ -2693,6 +2809,12 @@ public class Game : MonoBehaviour {
                 eyeModifierLookup.Add(mod.uuid, mod);
             }
             itemLookup.Add(item.uuid, item);
+        }
+
+        GameObject[] itemGameObjects = Resources.LoadAll<GameObject>(string.Empty);
+        foreach (GameObject itemGameObject in itemGameObjects) {
+            if (!itemGameObject.TryGetComponent(out ItemReference itemRef)) continue;
+            itemPrefabLookup[itemRef.item] = itemGameObject;
         }
     }
 
@@ -3136,6 +3258,8 @@ public class Game : MonoBehaviour {
         return Random.value < probability;
     }
 
+    private bool InHideout => gameStateMachine.CurState == hideoutState;
+    
     private bool InRaid => gameStateMachine.CurState == raidState;
     
     private Vector3 RotationVector360(float minDist, float maxDist) {
@@ -3144,6 +3268,10 @@ public class Game : MonoBehaviour {
     
     private Vector3 RotationVector(float degrees, float minDist, float maxDist) {
         return Quaternion.AngleAxis(degrees, Vector3.forward) * Vector3.right * Random.Range(minDist, maxDist);
+    }
+
+    private Vector3 RandomizeVectorAngle(Vector3 vector, float degreeDelta) {
+        return Quaternion.AngleAxis(Random.Range(-degreeDelta, degreeDelta), Vector3.forward) * vector;
     }
     
     private Vector2 OffsetY(Vector2 pos, float yOffset) {

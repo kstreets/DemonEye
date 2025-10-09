@@ -2584,12 +2584,12 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1296663432}
   - {fileID: 1336251045}
   - {fileID: 570121177}
   - {fileID: 775932231}
   - {fileID: 1508474435}
   - {fileID: 997770961}
-  - {fileID: 1296663432}
   - {fileID: 950174150}
   - {fileID: 223198397}
   - {fileID: 446889158}
@@ -3988,11 +3988,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6352755194111612605, guid: 3e12f7f107864354caefb153bd59d3a0, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 64
+      value: 56
       objectReference: {fileID: 0}
     - target: {fileID: 6352755194111612605, guid: 3e12f7f107864354caefb153bd59d3a0, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 64
+      value: 56
       objectReference: {fileID: 0}
     - target: {fileID: 6352755194111612605, guid: 3e12f7f107864354caefb153bd59d3a0, type: 3}
       propertyPath: m_LocalPosition.x

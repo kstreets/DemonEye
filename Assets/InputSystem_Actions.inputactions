@@ -256,6 +256,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "PlaceSingleItem",
+                    "type": "Button",
+                    "id": "3d3a0540-b408-4224-8b2a-dc993f0befe8",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "SplitStack",
                     "type": "Button",
                     "id": "2a6e8ec5-8195-4c3f-86a7-d7b0a56f74b7",
@@ -309,7 +318,7 @@
                 {
                     "name": "binding",
                     "id": "773f1da6-c513-407d-a15c-2ed42e47ff3c",
-                    "path": "<Mouse>/leftButton",
+                    "path": "<Mouse>/rightButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -331,7 +340,7 @@
                 {
                     "name": "modifier",
                     "id": "8d4b7cee-4c46-495b-9c9d-681631d9105a",
-                    "path": "<Keyboard>/shift",
+                    "path": "<Keyboard>/ctrl",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -369,6 +378,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "UseItem",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "96c64dc5-3924-4cb6-8c51-f22708594fe6",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "PlaceSingleItem",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
