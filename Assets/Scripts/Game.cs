@@ -268,6 +268,9 @@ public class Game : MonoBehaviour {
     private void Update() {
         UpdateDelayedEntitiesToDestroy();
         gameStateMachine.Tick();
+        foreach (Inventory inventory in allInventories) {
+            RefreshInventoryDisplay(inventory);
+        }
     }
 
     private void FixedUpdate() {
@@ -306,10 +309,6 @@ public class Game : MonoBehaviour {
         Cursor.visible = true;
         ShowRaidUI(false); 
         InitHideoutUI(); 
-        RefreshInventoryDisplay(playerInventory);
-        RefreshInventoryDisplay(stashInventory);
-        RefreshInventoryDisplay(crucibleInventory);
-        RefreshInventoryDisplay(transactionInventory);
     }
 
     private void OnHideoutStateExit() {
@@ -1337,7 +1336,7 @@ public class Game : MonoBehaviour {
 
         if (!TryGetItemFromHoverInfo(invHoverInfo, out InventoryItem hoveredItem)) return;
 
-        bool clickedOnEquipedBackpack = hoveredInventory == playerInventory && hoveredItem.ItemRef.type == backpackType;
+        bool clickedOnEquipedBackpack = IsEquipmentSlot(hoveredInventory, invHoverInfo.slotIndex) && hoveredItem.ItemRef.type == backpackType;
         if (clickedOnEquipedBackpack && EquipedBackpackHasItems()) return;
         
         Inventory destinationInventory = null;
@@ -1402,8 +1401,6 @@ public class Game : MonoBehaviour {
         if (destinationInventory == null) return;
 
         MoveItemBetweenInventories(hoveredInventory, destinationInventory, invHoverInfo.slotIndex);
-        RefreshInventoryDisplay(hoveredInventory);
-        RefreshInventoryDisplay(destinationInventory);
 
         if (OnTradingTab) {
             if (GetInventoryItemCount(transactionInventory) <= 0) {
@@ -1432,7 +1429,6 @@ public class Game : MonoBehaviour {
         }
         
         ReduceItemCountInInventory(invHoverInfo.inventory, invHoverInfo.slotIndex);
-        RefreshInventoryDisplay(invHoverInfo.inventory);
     }
 
     private void UpdatePlayerPanelUI() {
@@ -1501,6 +1497,10 @@ public class Game : MonoBehaviour {
         }
     }
 
+    private bool IsEquipmentSlot(Inventory inventory, int slotIndex) {
+        return inventory == playerInventory && slotIndex < playerEquipmentSize;
+    }
+    
     private bool EquipedBackpackHasItems() {
         int startingIndex = DefaultPlayerInventorySize;
         for (int i = startingIndex; i < playerInventory.slots.Length; i++) {
@@ -1544,7 +1544,6 @@ public class Game : MonoBehaviour {
             else {
                 ChangeInventorySize(playerInventory, DefaultPlayerInventorySize);
             }
-            RefreshInventoryDisplay(playerInventory);
         }
 
     }
@@ -1559,8 +1558,6 @@ public class Game : MonoBehaviour {
             Item traderItem = itemPool.GetItemFromPool();
             TryAddItemToInventory(traderInventory, traderItem, traderItem.MaxStackCount);
         }
-        
-        RefreshInventoryDisplay(traderInventory);
     }
 
     public struct InventoryHoverInfo {
@@ -1631,6 +1628,11 @@ public class Game : MonoBehaviour {
             if (!TryGetItemFromHoverInfo(hoverInfo, out InventoryItem item)) {
                 return IsDraggingItem;
             }
+            
+            bool clickedOnEquipedBackpack = IsEquipmentSlot(hoverInfo.inventory, hoverInfo.slotIndex) && item.ItemRef.type == backpackType;
+            if (clickedOnEquipedBackpack && EquipedBackpackHasItems()) {
+                return IsDraggingItem;
+            }
 
             bool splittingStack = splitStackInputAction.WasPressedThisFrame() && item.count > 1;
             if (splittingStack) {
@@ -1641,7 +1643,6 @@ public class Game : MonoBehaviour {
                 dragItem.count = secondHalf;
                 
                 AdjustItemCountInInventory(hoverInfo.inventory, hoverInfo.slotIndex, firstHalf);
-                RefreshInventoryDisplay(hoverInfo.inventory);
             }
             else {
                 dragItem = item;
@@ -1658,7 +1659,6 @@ public class Game : MonoBehaviour {
             bool droppingItemInHideout = hoverInfo.inventory == null && InHideout;
             if (droppingItemInHideout) {
                 TryAddItemToInventory(startDragInfo.inventory, dragItem, startDragInfo.slotIndex);
-                RefreshInventoryDisplay(startDragInfo.inventory);
                 EndDragAndDropItem();
                 return IsDraggingItem;
             }
@@ -1699,7 +1699,6 @@ public class Game : MonoBehaviour {
 
                 targetSlot.item = dragItem;
                 dragItem = swapItem;
-                RefreshInventoryDisplay(hoverInfo.inventory);
                 dragAndDropItemUI.SetItem(dragItem.ItemRef, dragItem.count);
                 
                 return IsDraggingItem;
@@ -1708,7 +1707,6 @@ public class Game : MonoBehaviour {
             bool placingSingleItemFromStack = placeSingleItemInputAction.WasPressedThisFrame();
             if (placingSingleItemFromStack) {
                 InventoryAddResult result = TryAddItemToInventory(hoverInfo.inventory, dragItem.ItemRef, 1, hoverInfo.slotIndex);
-                RefreshInventoryDisplay(hoverInfo.inventory);
 
                 dragItem.count -= result.addedCount;
                 if (dragItem.count <= 0) {
@@ -1722,7 +1720,6 @@ public class Game : MonoBehaviour {
             bool placingEntireStack = !placingSingleItemFromStack;
             if (placingEntireStack) {
                 InventoryAddResult result = TryAddItemToInventory(hoverInfo.inventory, dragItem, hoverInfo.slotIndex);
-                RefreshInventoryDisplay(hoverInfo.inventory);
 
                 if (result.type == InventoryAddResult.ResultType.Success) {
                     EndDragAndDropItem();
@@ -2006,7 +2003,6 @@ public class Game : MonoBehaviour {
         playerPanel.gameObject.SetActive(true);
         crosshairTrans.gameObject.SetActive(false);
         Cursor.visible = true;
-        RefreshInventoryDisplay(playerInventory);
     }
 
     private void ClosePlayerInventory() {
@@ -2949,7 +2945,6 @@ public class Game : MonoBehaviour {
             BuildAndRegisterEye(newDemonEyeItem);
             
             crucibleInventory.slots[eyeSlotIndex].item = newDemonEyeItem;
-            RefreshInventoryDisplay(crucibleInventory);
         });
         
         crucibleUpgradeButton.onClick.AddListener(() => {
@@ -2978,9 +2973,6 @@ public class Game : MonoBehaviour {
             hideoutStateData.crucibleLevel++;
             SaveToFile(hideoutDataSavePath, hideoutStateData);
             
-            RefreshInventoryDisplay(playerInventory);
-            RefreshInventoryDisplay(stashInventory);
-
             foreach (InventorySlot slot in crucibleInventory.slots) {
                 if (slot.ui.SlotIsInactive) {
                     slot.ui.MakeSlotActive();
@@ -3028,8 +3020,6 @@ public class Game : MonoBehaviour {
                 for (int i = 0; i < transactionInventory.slots.Length; i++) { 
                     MoveEntireItemStack(transactionInventory, stashInventory, i);
                 }
-                RefreshInventoryDisplay(transactionInventory);
-                RefreshInventoryDisplay(stashInventory);
                 transactionState = TransactionInvetoryState.Empty;
             }
             else if (transactionState == TransactionInvetoryState.Selling) {
@@ -3037,7 +3027,6 @@ public class Game : MonoBehaviour {
                 IncreaseTraderLevel(xpGain);
                 SetStashValue(stashValue + price);
                 ClearInventory(transactionInventory);
-                RefreshInventoryDisplay(transactionInventory);
                 transactionState = TransactionInvetoryState.Empty;
             }
 
