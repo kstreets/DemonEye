@@ -88,6 +88,7 @@ public class Game : MonoBehaviour {
     public MechanicDescPopup mechanicDescPopup;
     public Button enterNextRaidButton;
     public RectTransform hideoutHeaderParent;
+    public RectTransform hideoutRaidPanel;
     public ItemUI dragAndDropItemUI;
     [EndFoldout]
     
@@ -2842,6 +2843,7 @@ public class Game : MonoBehaviour {
         traderTabButton.image.sprite = tabNonSelectedSprite;
         
         hideoutHeaderParent.gameObject.SetActive(true);
+        hideoutRaidPanel.gameObject.SetActive(true);
         hideoutTabsParent.gameObject.SetActive(true);
         playerPanel.gameObject.SetActive(true);
         stashPanel.gameObject.SetActive(true);
@@ -2853,6 +2855,7 @@ public class Game : MonoBehaviour {
 
     private void CloseHideoutUI() {
         hideoutHeaderParent.gameObject.SetActive(false);
+        hideoutRaidPanel.gameObject.SetActive(false);
         hideoutTabsParent.gameObject.SetActive(false);
         playerPanel.gameObject.SetActive(false);
         stashPanel.gameObject.SetActive(false);
