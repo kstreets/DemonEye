@@ -2634,7 +2634,7 @@ public class Game : MonoBehaviour {
         for (int i = 0; i < deadBodiesToSpawn; i++) {
             List<Item> deadBodyItems = ListPool<Item>.Get();
             foreach (var itemPair in itemLookup) {
-                if (Random.value <= itemPair.Value.chanceToSpawn) {
+                if (Random.value < itemPair.Value.chanceToSpawnOnBody) {
                     deadBodyItems.Add(itemPair.Value);
                 }
             }
@@ -3243,6 +3243,50 @@ public class Game : MonoBehaviour {
     
     public bool UnloadingMapInProgress() {
         return !string.IsNullOrEmpty(activelyUnloadingMapName);
+    }
+
+
+    private enum DropOrigin { Rock, Body, Trader }
+
+    private struct DropPool {
+        public List<Item> items;
+        public DropOrigin dropOrigin;
+    }
+
+    private DropPool curRunRockDropPool;
+    private DropPool curRunBodyDropPool;
+    private DropPool curRunTraderDropPool;
+
+    private void CreateRunDropPools() {
+        
+    }
+
+    private Item GetItemFromDropPool(DropPool dropPool) {
+        float dropTotal = 0f;
+        foreach (Item drop in dropPool.items) {
+            dropTotal += GetDropChanceOfItem(drop, dropPool.dropOrigin);
+        }
+
+        float randomChance = Random.Range(0f, dropTotal);
+        float prefixSum = 0f;
+        
+        foreach (Item drop in dropPool.items) {
+            prefixSum += GetDropChanceOfItem(drop, dropPool.dropOrigin);
+            if (randomChance < prefixSum) {
+                return drop;
+            }
+        }
+        
+        return dropPool.items[^1];
+    }
+
+    private float GetDropChanceOfItem(Item item, DropOrigin origin) {
+        return origin switch {
+            DropOrigin.Rock => item.chanceToSpawnFromRock,
+            DropOrigin.Body => item.chanceToSpawnOnBody,
+            DropOrigin.Trader => item.chanceToSpawnOnTrader,
+            _ => 0f
+        };
     }
     
     
