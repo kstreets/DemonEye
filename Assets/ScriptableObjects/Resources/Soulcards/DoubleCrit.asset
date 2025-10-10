@@ -19,7 +19,9 @@ MonoBehaviour:
   buyPrice: 89
   sellPrice: 89
   traderXp: 0
-  chanceToSpawn: 0.2
+  chanceToSpawnOnBody: 1
+  chanceToSpawnOnTrader: 0
+  chanceToSpawnFromRock: 0
   modifiesStats: 0
   agilityStatAdjustment: 0
   strengthStatAdjustment: 0
@@ -27,4 +29,5 @@ MonoBehaviour:
   maxStackCount: 0
   weight: 0
   description: 
+  relativeMechanicDesc: {fileID: 0}
   damageMultiplier: 1.5

@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using VInspector;
 
@@ -9,19 +8,27 @@ public class Item : UuidScriptableObject {
     public Sprite inventorySprite;
     public ItemType type;
     
+    [Space]
+    
     public int buyPrice;
     public int sellPrice;
     public int traderXp;
+    
+    [Space]
     
     [Range(0f, 1f)] public float chanceToSpawnOnBody;
     [Range(0f, 1f)] public float chanceToSpawnOnTrader;
     [Range(0f, 1f)] public float chanceToSpawnFromRock;
 
+    [Space]
+    
     public bool modifiesStats;
     [ShowIf(nameof(modifiesStats))]
     public int agilityStatAdjustment;
     public int strengthStatAdjustment;
     [EndIf]
+    
+    [Space]
     
     public ItemGroupProperties itemGroupProps;
     [ShowIf(nameof(itemGroupProps), null)]
@@ -29,14 +36,14 @@ public class Item : UuidScriptableObject {
     [SerializeField] [Range(0, 10)] private int weight;
     [SerializeField] [TextArea] private string description;
     [EndIf]
-
+    
     public int Weight => itemGroupProps ? itemGroupProps.weight : weight;
     public int MaxStackCount => itemGroupProps ? itemGroupProps.maxStackCount : maxStackCount;
     
     public enum Rarity { Common, Uncommon, Rare, Legendary }
 
     public Rarity GetRarity() {
-        float minRarity = Mathf.Min(
+        float minRarity = Mathf.Max(
             chanceToSpawnOnBody   > 0 ? chanceToSpawnOnBody   : float.MaxValue,
             chanceToSpawnOnTrader > 0 ? chanceToSpawnOnTrader : float.MaxValue,
             chanceToSpawnFromRock > 0 ? chanceToSpawnFromRock : float.MaxValue

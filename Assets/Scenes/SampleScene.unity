@@ -3993,8 +3993,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 28
-  m_fontSizeBase: 28
+  m_fontSize: 22
+  m_fontSizeBase: 22
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -4829,9 +4829,6 @@ MonoBehaviour:
   baseStats: {fileID: 11400000, guid: 35476ad9ae2e6694286f87aeee6609a2, type: 2}
   defaultAttack: {fileID: 11400000, guid: 6f7f20f8211114b4485e5e39f0547140, type: 2}
   demonEyeItem: {fileID: 11400000, guid: 69e3a2fe6ea20814e8199b4a7f6979ff, type: 2}
-  deadBodyPool: {fileID: 11400000, guid: d1d5e1485b6925d4dbad1feaf3701fcc, type: 2}
-  altarDropPool: {fileID: 11400000, guid: 4af55f9ad1a35c646b1ba2be0e1f508b, type: 2}
-  rockDropPool: {fileID: 11400000, guid: f008cedd5a5342243b1c9b1064102461, type: 2}
   hitFlashCurve:
     serializedVersion: 2
     m_Curve:
@@ -4961,6 +4958,7 @@ MonoBehaviour:
   enterNextRaidButton: {fileID: 2088084698}
   hideoutHeaderParent: {fileID: 545871207}
   hideoutRaidPanel: {fileID: 877931931}
+  hideoutBackground: {fileID: 808721574}
   dragAndDropItemUI: {fileID: 1508474436}
   hideoutTabsParent: {fileID: 888674549}
   tabNonSelectedSprite: {fileID: 1949233253, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}

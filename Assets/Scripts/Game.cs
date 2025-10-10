@@ -7,6 +7,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using TMPro;
 using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.InputSystem;
 using UnityEngine.Pool;
 using UnityEngine.SceneManagement;
@@ -67,10 +68,6 @@ public class Game : MonoBehaviour {
     public CoreAttack defaultAttack;
     public Item demonEyeItem;
     
-    public ItemPool deadBodyPool;
-    public DropPool altarDropPool;
-    public DropPool rockDropPool;
-
     [Foldout("Effects")]
     public AnimationCurve hitFlashCurve;
     public AnimationCurve bounceCurve;
@@ -89,6 +86,7 @@ public class Game : MonoBehaviour {
     public Button enterNextRaidButton;
     public RectTransform hideoutHeaderParent;
     public RectTransform hideoutRaidPanel;
+    public RectTransform hideoutBackground;
     public ItemUI dragAndDropItemUI;
     [EndFoldout]
     
@@ -232,6 +230,8 @@ public class Game : MonoBehaviour {
                 mapSceneNames = mapSceneNames,
             };
         }
+
+        CreateRunDropPools();
         
         InitInventory();
         LoadInventory(playerInventory);
@@ -2521,7 +2521,7 @@ public class Game : MonoBehaviour {
                 for (int i = 0; i < dropCount; i++) {
                     float randomAngle = (angleDeltaPerDrop * i) + Random.Range(-randomRangePerDrop, randomRangePerDrop);
                     Vector3 endPos = entity.position + RotationVector(randomAngle, 0.18f, 0.25f);
-                    Entity rockDrop = SpawnEntity<Entity>(rockDropPool.GetDropFromPool(), entity.position, Quaternion.identity);
+                    Entity rockDrop = SpawnEntity<Entity>(GetPrefabFromDropPool(curRunRockDropPool), entity.position, Quaternion.identity);
                     AddBounceEffect(rockDrop, endPos, 0.8f);
                 }
             }
@@ -2632,18 +2632,12 @@ public class Game : MonoBehaviour {
         InventorySlotUI[] lootInventorySlotUis = lootInventoryParent.GetComponentsInChildren<InventorySlotUI>(true);
         
         for (int i = 0; i < deadBodiesToSpawn; i++) {
-            List<Item> deadBodyItems = ListPool<Item>.Get();
-            foreach (var itemPair in itemLookup) {
-                if (Random.value < itemPair.Value.chanceToSpawnOnBody) {
-                    deadBodyItems.Add(itemPair.Value);
-                }
-            }
+            using var autoRelease = ListPool<Item>.Get(out List<Item> deadBodyItems);
             
             int maxDeadBodyItemCount = Random.Range(2, 6);
-            deadBodyItems = deadBodyItems.OrderBy(x => Random.value).Take(maxDeadBodyItemCount).ToList();
+            GetUniqueItemsFromDropPool(curRunBodyDropPool, maxDeadBodyItemCount, deadBodyItems);
             
             InventorySlot[] deadBodySlots = new InventorySlot[deadBodyItems.Count];
-           
             for (int j = 0; j < deadBodyItems.Count; j++) {
                 Item spawnItem = deadBodyItems[j];
                 InventoryItem lootItem = new() {
@@ -2653,12 +2647,10 @@ public class Game : MonoBehaviour {
                 };
                 deadBodySlots[j] = new() {
                     item = lootItem,
-                    ui = lootInventorySlotUis[j]
+                    ui = lootInventorySlotUis[j],
                 };
             }
             
-            ListPool<Item>.Release(deadBodyItems);
-
             Entity body = SpawnResource<Entity>(deadBodyPrefab, false);
             deadBodySlotsLookup.Add(body.gameObject, deadBodySlots);
         }
@@ -2842,6 +2834,7 @@ public class Game : MonoBehaviour {
         eyeForgeTabButton.image.sprite = tabNonSelectedSprite;
         traderTabButton.image.sprite = tabNonSelectedSprite;
         
+        hideoutBackground.gameObject.SetActive(true);
         hideoutHeaderParent.gameObject.SetActive(true);
         hideoutRaidPanel.gameObject.SetActive(true);
         hideoutTabsParent.gameObject.SetActive(true);
@@ -2854,6 +2847,7 @@ public class Game : MonoBehaviour {
     }
 
     private void CloseHideoutUI() {
+        hideoutBackground.gameObject.SetActive(false);
         hideoutHeaderParent.gameObject.SetActive(false);
         hideoutRaidPanel.gameObject.SetActive(false);
         hideoutTabsParent.gameObject.SetActive(false);
@@ -3045,8 +3039,9 @@ public class Game : MonoBehaviour {
         healthBarFillImage.fillAmount = player.health / 100f;
         weightBarFillImage.fillAmount = GetTotalWeightCompletion();
         
-        int minutesLeftInRaid = Mathf.FloorToInt(spawnManager.totalTimeLeft / 60f);
-        int secondsLeftInRaid = Mathf.FloorToInt(spawnManager.totalTimeLeft % 60f);
+        float totalTimeLeft = Mathf.Clamp(spawnManager.totalTimeLeft, 0f, float.MaxValue);
+        int minutesLeftInRaid = Mathf.FloorToInt(totalTimeLeft / 60f);
+        int secondsLeftInRaid = Mathf.FloorToInt(totalTimeLeft % 60f);
         raidTimerText.text = $"{minutesLeftInRaid:0}:{secondsLeftInRaid:00}";
     }
 
@@ -3258,7 +3253,25 @@ public class Game : MonoBehaviour {
     private DropPool curRunTraderDropPool;
 
     private void CreateRunDropPools() {
-        
+        curRunRockDropPool = new() { items = new(), dropOrigin = DropOrigin.Rock };
+        curRunBodyDropPool = new() { items = new(), dropOrigin = DropOrigin.Body };
+        curRunTraderDropPool = new() { items = new(), dropOrigin = DropOrigin.Trader };
+
+        foreach ((int _, Item item) in itemLookup) {
+            if (item.chanceToSpawnFromRock > 0f) {
+                curRunRockDropPool.items.Add(item);
+            }    
+            if (item.chanceToSpawnOnBody > 0f) {
+                curRunBodyDropPool.items.Add(item);
+            }    
+            if (item.chanceToSpawnOnTrader > 0f) {
+                curRunTraderDropPool.items.Add(item);
+            }    
+        }
+    }
+
+    private GameObject GetPrefabFromDropPool(DropPool dropPool) {
+        return itemPrefabLookup[GetItemFromDropPool(dropPool)];
     }
 
     private Item GetItemFromDropPool(DropPool dropPool) {
@@ -3280,6 +3293,23 @@ public class Game : MonoBehaviour {
         return dropPool.items[^1];
     }
 
+    private void GetUniqueItemsFromDropPool(DropPool dropPool, int count, List<Item> items) {
+        foreach (Item item in dropPool.items) {
+            if (Random.value < GetDropChanceOfItem(item, dropPool.dropOrigin)) {
+                items.Add(item);
+            }
+        }
+        
+        Assert.IsTrue(count <= items.Count);
+        
+        for (int i = 0; i < items.Count; i++) {
+            int randomIndex = Random.Range(i, items.Count);
+            (items[i], items[randomIndex]) = (items[randomIndex], items[i]);
+        }
+
+        items.RemoveRange(count, items.Count - count);
+    }
+
     private float GetDropChanceOfItem(Item item, DropOrigin origin) {
         return origin switch {
             DropOrigin.Rock => item.chanceToSpawnFromRock,
@@ -3297,7 +3327,7 @@ public class Game : MonoBehaviour {
     private bool InHideout => gameStateMachine.CurState == hideoutState;
     
     private bool InRaid => gameStateMachine.CurState == raidState;
-    
+
     private Vector3 RotationVector360(float minDist, float maxDist) {
         return Quaternion.AngleAxis(Random.Range(0, 360), Vector3.forward) * Vector3.right * Random.Range(minDist, maxDist);
     }
