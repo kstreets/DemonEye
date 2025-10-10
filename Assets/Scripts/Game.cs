@@ -1147,9 +1147,6 @@ public class Game : MonoBehaviour {
 
     private int stashValue;
 
-    private enum TransactionInvetoryState { Empty, Buying, Selling }
-    private TransactionInvetoryState transactionState;
-    
     private bool InventoryIsOpen => playerPanel.gameObject.activeInHierarchy;
     private bool LootInventoryIsOpen => lootInventoryPanel.gameObject.activeInHierarchy;
 
@@ -1339,7 +1336,8 @@ public class Game : MonoBehaviour {
 
         bool clickedOnEquipedBackpack = IsEquipmentSlot(hoveredInventory, invHoverInfo.slotIndex) && hoveredItem.ItemRef.type == backpackType;
         if (clickedOnEquipedBackpack && EquipedBackpackHasItems()) return;
-        
+
+        MoveItemOption moveOption = MoveItemOption.FullStack;
         Inventory destinationInventory = null;
 
         if (InRaid) {
@@ -1371,15 +1369,16 @@ public class Game : MonoBehaviour {
             }
         }
         else if (OnTradingTab) {
-            if (transactionState == TransactionInvetoryState.Buying) {
+            if (transactionState == TransactionState.Buying) {
                 if (hoveredInventory == traderInventory) {
                     destinationInventory = transactionInventory;
+                    moveOption = MoveItemOption.Single;
                 }
                 else if (hoveredInventory == transactionInventory) {
                     destinationInventory = traderInventory;
                 }
             }
-            else if (transactionState == TransactionInvetoryState.Selling) {
+            else if (transactionState == TransactionState.Selling) {
                 if (hoveredInventory == stashInventory) {
                     destinationInventory = transactionInventory;
                 }
@@ -1390,25 +1389,18 @@ public class Game : MonoBehaviour {
             else {
                 if (hoveredInventory == traderInventory) {
                     destinationInventory = transactionInventory;
-                    transactionState = TransactionInvetoryState.Buying;
+                    moveOption = MoveItemOption.Single;
                 }
                 else if (hoveredInventory == stashInventory) {
                     destinationInventory = transactionInventory;
-                    transactionState = TransactionInvetoryState.Selling;
                 }
             }
         }
-        
+
         if (destinationInventory == null) return;
-
-        MoveItemBetweenInventories(hoveredInventory, destinationInventory, invHoverInfo.slotIndex);
-
-        if (OnTradingTab) {
-            if (GetInventoryItemCount(transactionInventory) <= 0) {
-                transactionState = TransactionInvetoryState.Empty;
-            }
-            RefreshTransactionUI();
-        }
+        
+        MoveItemBetweenInventories(hoveredInventory, destinationInventory, invHoverInfo.slotIndex, moveOption);
+        UpdateTraderTransactionState(hoveredInventory); 
     }
 
     private void CheckToConsumeItem(InventoryHoverInfo invHoverInfo) {
@@ -1560,7 +1552,7 @@ public class Game : MonoBehaviour {
             TryAddItemToInventory(traderInventory, traderItem, traderItem.MaxStackCount);
         }
     }
-
+    
     public struct InventoryHoverInfo {
         public Inventory inventory;
         public int slotIndex;
@@ -1623,6 +1615,22 @@ public class Game : MonoBehaviour {
         if (!pickupInputUsed && !placeInputUsed) {
             return IsDraggingItem;
         }
+
+        // We don't allow trader items to be picked up
+        if (hoverInfo.inventory == traderInventory && !IsDraggingItem) {
+            if (transactionState != TransactionState.Selling) {
+                MoveItemBetweenInventories(traderInventory, transactionInventory, hoverInfo.slotIndex, MoveItemOption.Single);
+                UpdateTraderTransactionState(traderInventory); 
+            }
+            return IsDraggingItem;
+        }
+
+        // If we are putting trader items back, then we also don't want to pick up the items
+        if (!IsDraggingItem && hoverInfo.inventory == transactionInventory && transactionState == TransactionState.Buying) {
+            MoveItemBetweenInventories(transactionInventory, traderInventory, hoverInfo.slotIndex, MoveItemOption.Single);
+            UpdateTraderTransactionState(null); 
+            return IsDraggingItem;
+        }
         
         bool pickingUpItem = dragItem == null;
         if (pickingUpItem && pickupInputUsed) {
@@ -1653,12 +1661,17 @@ public class Game : MonoBehaviour {
             startDragInfo = hoverInfo;
             dragAndDropItemUI.gameObject.SetActive(true);
             dragAndDropItemUI.SetItem(dragItem.ItemRef, dragItem.count);
+            
+            UpdateTraderTransactionState(null);
         }
 
         bool placingItem = !pickingUpItem;
         if (placingItem && placeInputUsed) {
             bool droppingItemInHideout = hoverInfo.inventory == null && InHideout;
-            if (droppingItemInHideout) {
+            bool tryingToPlaceItemToSellWhileBuying = hoverInfo.inventory == transactionInventory && transactionState == TransactionState.Buying;
+            bool tryingToPlaceInTraderInventory = hoverInfo.inventory == traderInventory;
+            
+            if (droppingItemInHideout || tryingToPlaceItemToSellWhileBuying || tryingToPlaceInTraderInventory) {
                 TryAddItemToInventory(startDragInfo.inventory, dragItem, startDragInfo.slotIndex);
                 EndDragAndDropItem();
                 return IsDraggingItem;
@@ -1701,6 +1714,8 @@ public class Game : MonoBehaviour {
                 targetSlot.item = dragItem;
                 dragItem = swapItem;
                 dragAndDropItemUI.SetItem(dragItem.ItemRef, dragItem.count);
+
+                UpdateTraderTransactionState(startDragInfo.inventory);
                 
                 return IsDraggingItem;
             }
@@ -1716,6 +1731,8 @@ public class Game : MonoBehaviour {
                 else {
                     dragAndDropItemUI.SetItem(dragItem.ItemRef, dragItem.count);
                 }
+                
+                UpdateTraderTransactionState(startDragInfo.inventory);
             }
 
             bool placingEntireStack = !placingSingleItemFromStack;
@@ -1729,6 +1746,8 @@ public class Game : MonoBehaviour {
                     dragItem.count -= result.addedCount;
                     dragAndDropItemUI.SetItem(dragItem.ItemRef, dragItem.count);
                 }
+                
+                UpdateTraderTransactionState(startDragInfo.inventory);
             }
         }
 
@@ -1830,7 +1849,8 @@ public class Game : MonoBehaviour {
 
             if (!slot.ui.AcceptsItem(item.ItemRef)) continue;
 
-            int newItemCount = slot.ui.disallowItemStacking ? 1 : Mathf.Clamp(remainingItemCount, 0, item.ItemRef.MaxStackCount);
+            int newItemCount = allowInfiniteStacking ? remainingItemCount : Mathf.Clamp(remainingItemCount, 0, item.ItemRef.MaxStackCount);
+            newItemCount = slot.ui.disallowItemStacking ? 1 : newItemCount;
             result.addedCount += newItemCount;
             
             InventoryItem newItem = item.Clone();
@@ -1845,17 +1865,19 @@ public class Game : MonoBehaviour {
         return result;
     }
 
-    private void MoveItemBetweenInventories(Inventory fromInventory, Inventory toInventory, int slotIndex) {
+    private enum MoveItemOption { FullStack, Single }
+
+    private void MoveItemBetweenInventories(Inventory fromInventory, Inventory toInventory, int slotIndex, MoveItemOption moveOption) {
         InventoryItem inventoryItem = GetInventoryItem(fromInventory, slotIndex);
         if (inventoryItem == null || inventoryItem.notDiscovered) return;
-
-        if (OnTradingTab) {
+        
+        if (moveOption == MoveItemOption.Single) {
             InventoryItem newItem = inventoryItem.Clone();
             newItem.count = 1;
             
-            InventoryAddResult traderMoveResult = TryAddItemToInventory(toInventory, newItem);
-            if (traderMoveResult.type is InventoryAddResult.ResultType.Success or InventoryAddResult.ResultType.FailureToAddAll) {
-                int keepItemCount = inventoryItem.count - traderMoveResult.addedCount;
+            InventoryAddResult result = TryAddItemToInventory(toInventory, newItem);
+            if (result.type is InventoryAddResult.ResultType.Success or InventoryAddResult.ResultType.FailureToAddAll) {
+                int keepItemCount = inventoryItem.count - result.addedCount;
                 AdjustItemCountInInventory(fromInventory, slotIndex, keepItemCount);
             }
             return;
@@ -3009,22 +3031,22 @@ public class Game : MonoBehaviour {
         // });
         
         traderDealButton.onClick.AddListener(() => {
-            InventoryValueType valueType = transactionState == TransactionInvetoryState.Buying ? InventoryValueType.Buy : InventoryValueType.Sell;
+            InventoryValueType valueType = transactionState == TransactionState.Buying ? InventoryValueType.Buy : InventoryValueType.Sell;
             int price = GetInventoryValue(transactionInventory, valueType);
             
-            if (transactionState == TransactionInvetoryState.Buying && stashValue >= price) {
+            if (transactionState == TransactionState.Buying && stashValue >= price) {
                 SetStashValue(stashValue - price); 
                 for (int i = 0; i < transactionInventory.slots.Length; i++) { 
                     MoveEntireItemStack(transactionInventory, stashInventory, i);
                 }
-                transactionState = TransactionInvetoryState.Empty;
+                transactionState = TransactionState.Empty;
             }
-            else if (transactionState == TransactionInvetoryState.Selling) {
+            else if (transactionState == TransactionState.Selling) {
                 int xpGain = GetInventoryValue(transactionInventory, InventoryValueType.Xp);
                 IncreaseTraderLevel(xpGain);
                 SetStashValue(stashValue + price);
                 ClearInventory(transactionInventory);
-                transactionState = TransactionInvetoryState.Empty;
+                transactionState = TransactionState.Empty;
             }
 
             RefreshTransactionUI();
@@ -3060,17 +3082,39 @@ public class Game : MonoBehaviour {
         playerPanel.GetComponent<LayoutElement>().preferredWidth = playerPanelWidth;
     }
 
+    private enum TransactionState { Empty, Buying, Selling }
+    private TransactionState transactionState;
+    
+    private void UpdateTraderTransactionState(Inventory sourceInventory) {
+        if (!OnTradingTab) return;
+        
+        if (sourceInventory != null && transactionState == TransactionState.Empty) {
+            if (sourceInventory == traderInventory) {
+                transactionState = TransactionState.Buying;
+            }
+            else if (sourceInventory == stashInventory) {
+                transactionState = TransactionState.Selling;
+            }
+        }
+        
+        if (GetInventoryItemCount(transactionInventory) <= 0) {
+            transactionState = TransactionState.Empty;
+        }
+        
+        RefreshTransactionUI();
+    }
+    
     private void RefreshTransactionUI() {
-        if (transactionState == TransactionInvetoryState.Empty) {
+        if (transactionState == TransactionState.Empty) {
             traderTransactionInfoText.text = string.Empty;
             return;
         }
         
-        if (transactionState == TransactionInvetoryState.Buying) {
+        if (transactionState == TransactionState.Buying) {
             int buyPrice = GetInventoryValue(transactionInventory, InventoryValueType.Buy);
             traderTransactionInfoText.text = $"Purchase for {buyPrice}";
         }
-        else if (transactionState == TransactionInvetoryState.Selling) {
+        else if (transactionState == TransactionState.Selling) {
             int sellPrice = GetInventoryValue(transactionInventory, InventoryValueType.Sell);
             int xpGain = GetInventoryValue(transactionInventory, InventoryValueType.Xp);
             traderTransactionInfoText.text = $"Sell for {sellPrice}\n Gain {xpGain} trader experience";
