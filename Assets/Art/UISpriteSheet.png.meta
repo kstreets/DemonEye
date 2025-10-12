@@ -778,6 +778,50 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: UISpriteSheet_30
+      rect:
+        serializedVersion: 2
+        x: 398
+        y: 337
+        width: 34
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 2, y: 3, z: 2, w: 3}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3c3f09ed734fad243a5b9bf335e68406
+      internalID: -1996136508
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UISpriteSheet_31
+      rect:
+        serializedVersion: 2
+        x: 432
+        y: 337
+        width: 34
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 2, y: 3, z: 2, w: 3}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 14bfb78a2d4790049952168b55428f2a
+      internalID: 1684691031
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -817,6 +861,8 @@ TextureImporter:
       UISpriteSheet_28: -909882854
       UISpriteSheet_29: 100822687
       UISpriteSheet_3: 1439875600
+      UISpriteSheet_30: -1996136508
+      UISpriteSheet_31: 1684691031
       UISpriteSheet_4: 2144612291
       UISpriteSheet_5: 896199210
       UISpriteSheet_6: 1504484193

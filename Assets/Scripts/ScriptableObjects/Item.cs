@@ -44,9 +44,9 @@ public class Item : UuidScriptableObject {
 
     public Rarity GetRarity() {
         float minRarity = Mathf.Max(
-            chanceToSpawnOnBody   > 0 ? chanceToSpawnOnBody   : float.MaxValue,
-            chanceToSpawnOnTrader > 0 ? chanceToSpawnOnTrader : float.MaxValue,
-            chanceToSpawnFromRock > 0 ? chanceToSpawnFromRock : float.MaxValue
+            chanceToSpawnOnBody   > 0 ? chanceToSpawnOnBody   : float.MinValue,
+            chanceToSpawnOnTrader > 0 ? chanceToSpawnOnTrader : float.MinValue,
+            chanceToSpawnFromRock > 0 ? chanceToSpawnFromRock : float.MinValue
         );
         if (minRarity <= 0.10) return Rarity.Legendary;
         if (minRarity <= 0.25) return Rarity.Rare;

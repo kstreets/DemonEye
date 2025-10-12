@@ -19,8 +19,8 @@ MonoBehaviour:
   buyPrice: 250
   sellPrice: 125
   traderXp: 0
-  chanceToSpawnOnBody: 1
-  chanceToSpawnOnTrader: 0
+  chanceToSpawnOnBody: 0.05
+  chanceToSpawnOnTrader: 0.05
   chanceToSpawnFromRock: 0
   modifiesStats: 0
   agilityStatAdjustment: 0

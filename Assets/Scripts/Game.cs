@@ -22,6 +22,7 @@ public class Game : MonoBehaviour {
     public TraderConfig traderConfig;
     public StartingItemsConfig startingItems;
     public List<Scene> mapSequence;
+    public Styles styles;
 
     [Foldout("Pooling Prefabs")]
     public GameObject baseProjectilePrefab;
@@ -97,6 +98,9 @@ public class Game : MonoBehaviour {
     public Button characterTabButton;
     public Button eyeForgeTabButton;
     public Button traderTabButton;
+    public TextMeshProUGUI characterTabText;
+    public TextMeshProUGUI eyeForgeTabText;
+    public TextMeshProUGUI traderTabText;
     [EndFoldout]
 
     [Foldout("UI/PlayerPanel")]
@@ -130,6 +134,8 @@ public class Game : MonoBehaviour {
     public RectTransform traderTransactionInventoryParent;
     public TextMeshProUGUI traderTransactionInfoText;
     public Image traderXpLevelFill;
+    public TextMeshProUGUI traderLevelText;
+    public TextMeshProUGUI traderRemainingXpText;
     public Button traderDealButton;
     [EndFoldout]
 
@@ -237,7 +243,7 @@ public class Game : MonoBehaviour {
         LoadInventory(playerInventory);
         LoadInventory(stashInventory);
         InitButtonCallbacks();
-        AddItemsToTraderInventory(hideoutStateData.traderLevel);
+        InitTrader();
         SetStashValue(0);
         
         bloodDropPool = CreateEntityPool<Entity>(bloodDropPrefab, 10, null);
@@ -1142,6 +1148,9 @@ public class Game : MonoBehaviour {
     private const int playerEquipmentSize = 3;
     private int DefaultPlayerInventorySize => playerPocketSize + playerEquipmentSize;
 
+    private const int traderInventoryColCount = 5;
+    private const int traderInventoryRowCount = 5;
+
     private Timer discoverLootTimer;
     private int discoverLootIndex;
 
@@ -1167,7 +1176,7 @@ public class Game : MonoBehaviour {
         SpawnUiSlots(stashInventoryParent, stashInventorySize);
         stashInventory = CreateInventory(stashInventoryParent, stashInventorySize);
         
-        const int traderInventorySize = 15;
+        const int traderInventorySize = traderInventoryRowCount * traderInventoryColCount;
         SpawnUiSlots(traderInventoryParent, traderInventorySize);
         traderInventory = CreateInventory(traderInventoryParent, traderInventorySize);
         
@@ -1261,7 +1270,10 @@ public class Game : MonoBehaviour {
         TextMeshProUGUI nameText = itemDescPopup.nameText;
         TextMeshProUGUI descText = itemDescPopup.descText;
 
-        nameText.text = hoveredSlot.item.ItemRef.displayName;
+        Item.Rarity itemRarity = hoveredSlot.item.ItemRef.GetRarity();
+        string coloredRarityText = ColorText($"({itemRarity.ToString()})", GetColorForRarity(itemRarity));
+        coloredRarityText = SizeText(coloredRarityText, styles.rarityFontSize);
+        nameText.text = $"{hoveredSlot.item.ItemRef.displayName} {coloredRarityText}";
         
         // Set description
         if (hoveredSlot.item.ItemRef.type == demonEyeType) {
@@ -1542,14 +1554,25 @@ public class Game : MonoBehaviour {
     }
 
     private void AddItemsToTraderInventory(int traderLevel) {
-        foreach (Item item in traderConfig.persistentItems) {
-            TryAddItemToInventory(traderInventory, item, 99);
+        if (traderLevel == 0) {
+            foreach (Item item in traderConfig.persistentItems) {
+                TryAddItemToInventory(traderInventory, item, 99);
+            }
+            return;
         }
+
+        float raritySkew = traderLevel switch {
+            1 => 0.1f,
+            2 => 0.20f,
+            3 => 0.40f,
+            4 => 0.50f,
+            _ => 0f,
+        };
         
-        ItemPool itemPool = traderConfig.itemPool;
-        for (int i = 0; i < 10; i++) {
-            Item traderItem = itemPool.GetItemFromPool();
-            TryAddItemToInventory(traderInventory, traderItem, traderItem.MaxStackCount);
+        using var autoRelease = ListPool<Item>.Get(out List<Item> items);
+        GetUniqueItemsFromDropPool(curRunTraderDropPool, traderInventoryColCount, items, raritySkew);
+        foreach (Item item in items) {
+            TryAddItemToInventory(traderInventory, item, item.MaxStackCount);
         }
     }
     
@@ -2856,6 +2879,10 @@ public class Game : MonoBehaviour {
         eyeForgeTabButton.image.sprite = tabNonSelectedSprite;
         traderTabButton.image.sprite = tabNonSelectedSprite;
         
+        characterTabText.margin = styles.selectedHideoutTabMargin;
+        eyeForgeTabText.margin = styles.nonSelectedHideoutTabMargin;
+        traderTabText.margin = styles.nonSelectedHideoutTabMargin;
+        
         hideoutBackground.gameObject.SetActive(true);
         hideoutHeaderParent.gameObject.SetActive(true);
         hideoutRaidPanel.gameObject.SetActive(true);
@@ -2895,6 +2922,10 @@ public class Game : MonoBehaviour {
             eyeForgeTabButton.image.sprite = tabNonSelectedSprite;
             traderTabButton.image.sprite = tabNonSelectedSprite;
             
+            characterTabText.margin = styles.selectedHideoutTabMargin;
+            eyeForgeTabText.margin = styles.nonSelectedHideoutTabMargin;
+            traderTabText.margin = styles.nonSelectedHideoutTabMargin;
+            
             ToggleSlimPlayerPanel(false);
             playerPanel.gameObject.SetActive(true);
             stashPanel.gameObject.SetActive(true);
@@ -2908,6 +2939,10 @@ public class Game : MonoBehaviour {
             eyeForgeTabButton.image.sprite = tabSelectedSprite;
             traderTabButton.image.sprite = tabNonSelectedSprite;
             
+            characterTabText.margin = styles.nonSelectedHideoutTabMargin;
+            eyeForgeTabText.margin = styles.selectedHideoutTabMargin;
+            traderTabText.margin = styles.nonSelectedHideoutTabMargin;
+            
             ToggleSlimPlayerPanel(true);
             playerPanel.gameObject.SetActive(true);
             stashPanel.gameObject.SetActive(true);
@@ -2920,6 +2955,10 @@ public class Game : MonoBehaviour {
             characterTabButton.image.sprite = tabNonSelectedSprite;
             eyeForgeTabButton.image.sprite = tabNonSelectedSprite;
             traderTabButton.image.sprite = tabSelectedSprite;
+            
+            characterTabText.margin = styles.nonSelectedHideoutTabMargin;
+            eyeForgeTabText.margin = styles.nonSelectedHideoutTabMargin;
+            traderTabText.margin = styles.selectedHideoutTabMargin;
             
             playerPanel.gameObject.SetActive(false);
             stashPanel.gameObject.SetActive(true);
@@ -3121,12 +3160,55 @@ public class Game : MonoBehaviour {
         }
     }
 
-    private void IncreaseTraderLevel(int xpGain) {
-        int totalXp = traderLevels.totalXpToNextLevel[hideoutStateData.traderLevel];
-        hideoutStateData.curTraderXpForLevel += xpGain;
-        traderXpLevelFill.fillAmount = hideoutStateData.curTraderXpForLevel / (float)totalXp;
+    private void InitTrader() {
+        int totalXpForLevel = traderLevels.totalXpToNextLevel[hideoutStateData.traderLevel];
+        while (hideoutStateData.curTraderXpForLevel > totalXpForLevel) {
+            hideoutStateData.traderLevel++;
+            hideoutStateData.curTraderXpForLevel -= totalXpForLevel;
+            totalXpForLevel = traderLevels.totalXpToNextLevel[hideoutStateData.traderLevel];
+        }
+        UpdateTraderXpBar();
+        
+        // This is temporary because we eventually need to load prev saved run items
+        AddItemsToTraderInventory(0); 
     }
     
+    private void IncreaseTraderLevel(int xpGain) {
+        if (ReachedTraderMaxLevel()) return;
+        
+        hideoutStateData.curTraderXpForLevel += xpGain;
+        
+        int totalXpForLevel = traderLevels.totalXpToNextLevel[hideoutStateData.traderLevel];
+        while (!ReachedTraderMaxLevel() && hideoutStateData.curTraderXpForLevel > totalXpForLevel) {
+            hideoutStateData.traderLevel++;
+            hideoutStateData.curTraderXpForLevel -= totalXpForLevel;
+            if (traderLevels.totalXpToNextLevel.IndexInRange(hideoutStateData.traderLevel)) {
+                totalXpForLevel = traderLevels.totalXpToNextLevel[hideoutStateData.traderLevel];
+            }
+            AddItemsToTraderInventory(hideoutStateData.traderLevel);
+        }
+
+        UpdateTraderXpBar();
+    }
+
+    private void UpdateTraderXpBar() {
+        if (ReachedTraderMaxLevel()) {
+            traderXpLevelFill.fillAmount = 0f;
+            traderRemainingXpText.text = string.Empty;
+            traderLevelText.text = $"Level {hideoutStateData.traderLevel + 1} (Max)";
+            return;
+        }
+        
+        int totalXp = traderLevels.totalXpToNextLevel[hideoutStateData.traderLevel];
+        traderXpLevelFill.fillAmount = hideoutStateData.curTraderXpForLevel / (float)totalXp;
+        traderRemainingXpText.text = $"{totalXp - hideoutStateData.curTraderXpForLevel} XP Left";
+        traderLevelText.text = $"Level {hideoutStateData.traderLevel + 1}";
+    }
+    
+    private bool ReachedTraderMaxLevel() {
+        return !traderLevels.totalXpToNextLevel.IndexInRange(hideoutStateData.traderLevel);
+    }
+
     // ************************
     // Audio
     // ************************
@@ -3310,6 +3392,8 @@ public class Game : MonoBehaviour {
             }    
             if (item.chanceToSpawnOnTrader > 0f) {
                 curRunTraderDropPool.items.Add(item);
+                Assert.IsFalse(traderConfig.persistentItems.Contains(item), 
+                    $"{item.name} is a default trader item and should not be apart of future item unlocks, set trader chance to spawn to 0");
             }    
         }
     }
@@ -3337,14 +3421,17 @@ public class Game : MonoBehaviour {
         return dropPool.items[^1];
     }
 
-    private void GetUniqueItemsFromDropPool(DropPool dropPool, int count, List<Item> items) {
+    private void GetUniqueItemsFromDropPool(DropPool dropPool, int count, List<Item> items, float raritySkew = 0f) {
         foreach (Item item in dropPool.items) {
-            if (Random.value < GetDropChanceOfItem(item, dropPool.dropOrigin)) {
+            float itemDropChance = GetDropChanceOfItem(item, dropPool.dropOrigin) + raritySkew;
+            if (itemDropChance > 1f) continue;
+            
+            if (Random.value < itemDropChance) {
                 items.Add(item);
             }
         }
         
-        Assert.IsTrue(count <= items.Count);
+        Assert.IsTrue(items.Count >= count, $"Could not produce up to {count} items");
         
         for (int i = 0; i < items.Count; i++) {
             int randomIndex = Random.Range(i, items.Count);
@@ -3414,6 +3501,28 @@ public class Game : MonoBehaviour {
         }
         
         ListPool<Collider2D>.Release(cols);
+    }
+
+    private string SizeText(string text, int fontSize) {
+        return $"<size={fontSize}>{text}</size>";
+    }
+    
+    private string ColorText(string text, Color color) {
+        return $"<color=#{ColorUtility.ToHtmlStringRGBA(color)}>{text}</color>";
+    }
+
+    private Color GetRarityColor(InventoryItem inventoryItem) {
+        return GetColorForRarity(inventoryItem.ItemRef.GetRarity());
+    }
+
+    private Color GetColorForRarity(Item.Rarity rarity) {
+        return rarity switch {
+            Item.Rarity.Common    => styles.commonTextColor,
+            Item.Rarity.Uncommon  => styles.uncommonTextColor,
+            Item.Rarity.Rare      => styles.rareTextColor,
+            Item.Rarity.Legendary => styles.legendaryTextColor,
+            _                     => styles.commonTextColor,
+        };
     }
     
 }

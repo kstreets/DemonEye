@@ -18,9 +18,9 @@ MonoBehaviour:
   type: {fileID: 11400000, guid: b4838a3d7e08dae4fbca579b80e09e71, type: 2}
   buyPrice: 150
   sellPrice: 40
-  traderXp: 0
+  traderXp: 500
   chanceToSpawnOnBody: 0
-  chanceToSpawnOnTrader: 1
+  chanceToSpawnOnTrader: 0
   chanceToSpawnFromRock: 0
   modifiesStats: 0
   agilityStatAdjustment: 0

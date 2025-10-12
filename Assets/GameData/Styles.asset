@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61064aeeb056f5b42910a87710c3d42e, type: 3}
+  m_Name: Styles
+  m_EditorClassIdentifier: Assembly-CSharp::Styles
+  commonTextColor: {r: 0.2502669, g: 0.46540874, b: 0.46540874, a: 1}
+  uncommonTextColor: {r: 0.51993585, g: 0.7987421, b: 0.51993585, a: 1}
+  rareTextColor: {r: 0.836478, g: 0.27093455, b: 0.27424183, a: 1}
+  legendaryTextColor: {r: 1, g: 0.6470588, b: 0, a: 1}
+  rarityFontSize: 22
+  nonSelectedHideoutTabMargin: {x: 0, y: 0, z: 0, w: 6}
+  selectedHideoutTabMargin: {x: 0, y: 0, z: 0, w: 0}

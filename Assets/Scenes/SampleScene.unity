@@ -1250,11 +1250,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5498981127109160898, guid: 1388258b3e69b7b488ca8e5df5d1d8c5, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 120
+      value: 150
       objectReference: {fileID: 0}
     - target: {fileID: 5498981127109160898, guid: 1388258b3e69b7b488ca8e5df5d1d8c5, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 55
+      value: 50
       objectReference: {fileID: 0}
     - target: {fileID: 5498981127109160898, guid: 1388258b3e69b7b488ca8e5df5d1d8c5, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1306,11 +1306,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8582787485506474109, guid: 1388258b3e69b7b488ca8e5df5d1d8c5, type: 3}
       propertyPath: m_text
-      value: Enter Next Raid
+      value: Next Run!
       objectReference: {fileID: 0}
     - target: {fileID: 8582787485506474109, guid: 1388258b3e69b7b488ca8e5df5d1d8c5, type: 3}
       propertyPath: m_fontSize
-      value: 26
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 8582787485506474109, guid: 1388258b3e69b7b488ca8e5df5d1d8c5, type: 3}
+      propertyPath: m_margin.w
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 8582787485506474109, guid: 1388258b3e69b7b488ca8e5df5d1d8c5, type: 3}
       propertyPath: m_lineSpacing
@@ -1318,7 +1322,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8582787485506474109, guid: 1388258b3e69b7b488ca8e5df5d1d8c5, type: 3}
       propertyPath: m_fontSizeBase
-      value: 26
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 8582787485506474109, guid: 1388258b3e69b7b488ca8e5df5d1d8c5, type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4280429856
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4799,6 +4807,7 @@ MonoBehaviour:
   - m_Handle: 0
   - m_Handle: 0
   - m_Handle: 0
+  styles: {fileID: 11400000, guid: f4b4ae74a1e122340bf1d9d4fa5ab586, type: 2}
   baseProjectilePrefab: {fileID: 2758590605051147821, guid: 490c322ccae8e8149a6dddb96650a50e, type: 3}
   stoppingPowerProjectilePrefab: {fileID: 4682860730991365088, guid: 5fa01c7df64854b40996c60725181067, type: 3}
   bloodDropPrefab: {fileID: 2835100544158664230, guid: a3700393b2b39cc44a28e9dee1a285c8, type: 3}
@@ -4966,6 +4975,9 @@ MonoBehaviour:
   characterTabButton: {fileID: 907677279}
   eyeForgeTabButton: {fileID: 1095477476}
   traderTabButton: {fileID: 262743765}
+  characterTabText: {fileID: 321644966}
+  eyeForgeTabText: {fileID: 786125356}
+  traderTabText: {fileID: 229131126}
   playerPanel: {fileID: 30304875}
   playerPocketParent: {fileID: 2490639301138263891}
   playerBackpackParent: {fileID: 6659290602298355629}
@@ -4987,6 +4999,8 @@ MonoBehaviour:
   traderTransactionInventoryParent: {fileID: 8817510710942224903}
   traderTransactionInfoText: {fileID: 8387168734858754231}
   traderXpLevelFill: {fileID: 4352375331506133839}
+  traderLevelText: {fileID: 8295241210336499545}
+  traderRemainingXpText: {fileID: 6811341249636141774}
   traderDealButton: {fileID: 1097623248}
   lootInventoryPanel: {fileID: 931173579}
   lootInventoryParent: {fileID: 1563041425724041498}

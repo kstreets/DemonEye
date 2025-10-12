@@ -37,7 +37,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 64, y: 64}
+  m_SizeDelta: {x: 60, y: 60}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6321444819211516612
 CanvasRenderer:
@@ -92,6 +92,7 @@ MonoBehaviour:
   disallowItemStacking: 0
   onlyAcceptedItemType: {fileID: 0}
   slotImage: {fileID: 2399182519088167438}
+  rarityOverlayImage: {fileID: 0}
   activeSlotSprite: {fileID: 823751994, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
   inactiveSlotSprite: {fileID: 957642039, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
   itemUI: {fileID: 6890701791358644999}
@@ -106,6 +107,10 @@ PrefabInstance:
     - target: {fileID: 294159173353948019, guid: 3e12f7f107864354caefb153bd59d3a0, type: 3}
       propertyPath: m_Name
       value: InventoryItem
+      objectReference: {fileID: 0}
+    - target: {fileID: 294159173353948019, guid: 3e12f7f107864354caefb153bd59d3a0, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6352755194111612605, guid: 3e12f7f107864354caefb153bd59d3a0, type: 3}
       propertyPath: m_Pivot.x
