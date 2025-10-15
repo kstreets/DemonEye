@@ -42,7 +42,7 @@ MonoBehaviour:
       m_RotationOrder: 0
     enemyBatches:
     - enemyCount: 10
-      enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
+      enemyData: {fileID: 11400000, guid: ec9149e42a27186489ef2d08d286c80a, type: 2}
   - phaseDuration: 70
     spawnDuration: 12
     spawnRateCurve:
@@ -71,4 +71,4 @@ MonoBehaviour:
       m_RotationOrder: 0
     enemyBatches:
     - enemyCount: 20
-      enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
+      enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}

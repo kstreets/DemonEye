@@ -863,6 +863,14 @@ public class Game : MonoBehaviour {
     // Enemy 
     // *****************************
     
+    private int walkSideAnim = Animator.StringToHash("WalkSide");
+    private int walkUpAnim = Animator.StringToHash("WalkUp");
+    private int walkDownAnim = Animator.StringToHash("WalkDown");
+
+    private int attackSideAnim = Animator.StringToHash("AttackSide");
+    private int attackUpAnim = Animator.StringToHash("AttackUp");
+    private int attackDownAnim = Animator.StringToHash("AttackDown");
+    
     public class Enemy : Entity {
         public EnemyData data;
         public Timer applyDamageTimer;
@@ -870,6 +878,8 @@ public class Game : MonoBehaviour {
         public PoisonSoulcard.InstanceData? poisoned;
         public SlowInstance? defaultSlow;
         public SlowInstance? slow;
+        public Vector2 moveDir;
+        public Limiter changeDirLimiter;
     }
     
     private void UpdateEnemies() {
@@ -878,13 +888,37 @@ public class Game : MonoBehaviour {
             enemy.applyDamageTimer.Tick();
 
             float distFromPlayer = Vector2.Distance(player.Center, enemy.Center);
+            Vector2 dirToPlayer = (player.position - enemy.position).normalized;
 
-            if (!enemy.poisoned.HasValue && distFromPlayer < 0.35f && !enemy.animator.Playing("Attack")) {
-                enemy.animator.Play("Attack");
+            Vector2 graphicalEnemyDir;
+            if (enemy.animator.Playing(walkSideAnim)) {
+                graphicalEnemyDir = enemy.spriteRenderer.flipX ? Vector2.left : Vector2.right;
+            }
+            else if (enemy.animator.Playing(walkUpAnim)) {
+                graphicalEnemyDir = Vector2.up;
+            }
+            else {
+                graphicalEnemyDir = Vector2.down;
+            }
+
+            if (!enemy.poisoned.HasValue && distFromPlayer < 0.25f && !EnemyPlayingAttackAnimation(enemy) 
+                && Vector2.Dot(graphicalEnemyDir, dirToPlayer) >= 0.5f) 
+            {
+                switch (CardinalDirFromVector(enemy.moveDir)) {
+                    case CardinalDir.Right:
+                    case CardinalDir.Left:
+                        enemy.animator.Play(attackSideAnim);
+                        break;
+                    case CardinalDir.Up:
+                        enemy.animator.Play(attackUpAnim);
+                        break;
+                    case CardinalDir.Down:
+                        enemy.animator.Play(attackDownAnim);
+                        break;
+                }
                 enemy.applyDamageTimer.SetTime(0.31f);
                 enemy.applyDamageTimer.EndAction = () => {
-                    Vector3 dirToPlayer = (player.Center - enemy.Center).normalized;
-                    Vector2 attackCheckPos = enemy.Center + dirToPlayer * 0.15f;
+                    Vector2 attackCheckPos = enemy.Center.ToVector2() + dirToPlayer * 0.15f;
                     Collider2D col = Physics2D.OverlapCircle(attackCheckPos, 0.15f, Masks.PlayerMask);
                     if (col != null) {
                         DamagePlayer(enemy.data.damage,enemy.data.changeToCauseBleed);
@@ -963,24 +997,46 @@ public class Game : MonoBehaviour {
                 }
             }
             speed = Mathf.Clamp(speed * Mathf.Clamp01(1f - totalSlowPercentage), 0.05f, enemy.data.speed);
-            
-            AnimatorStateInfo animStateInfo = enemy.animator.GetCurrentAnimatorStateInfo(0);
-            if (animStateInfo.IsName("Attack")) {
-                if (animStateInfo.normalizedTime > 1f) {
-                    enemy.animator.Play("Walk");        
-                }
-                else {
-                    speed = 0f;
-                }
+
+            bool enemyIsAttacking = EnemyPlayingAttackAnimation(enemy);
+            if (enemyIsAttacking) {
+                speed = 0f;
             }
             
-            Vector2 moveDir = raidStateData.currentMap.grid.GetFlowFieldDirection(enemy.position);
-            enemy.rigidbody.linearVelocity = moveDir * speed;
+            enemy.moveDir = raidStateData.currentMap.grid.GetFlowFieldDirection(enemy.position);
+            enemy.rigidbody.linearVelocity = enemy.moveDir * speed;
 
-            enemy.spriteRenderer.flipX = player.position.x < enemy.position.x;
+            if (!enemyIsAttacking && enemy.changeDirLimiter.TimeHasPassed(0.15f)) {
+                switch (CardinalDirFromVector(enemy.moveDir)) {
+                    case CardinalDir.Right:
+                        enemy.animator.PlayIfNotAlready(walkSideAnim);
+                        enemy.spriteRenderer.flipX = false;
+                        break;
+                    case CardinalDir.Left:
+                        enemy.animator.PlayIfNotAlready(walkSideAnim);
+                        enemy.spriteRenderer.flipX = true;
+                        break;
+                    case CardinalDir.Up:
+                        enemy.animator.PlayIfNotAlready(walkUpAnim);
+                        enemy.spriteRenderer.flipX = false;
+                        break;
+                    case CardinalDir.Down:
+                        enemy.animator.PlayIfNotAlready(walkDownAnim);
+                        enemy.spriteRenderer.flipX = false;
+                        break;
+                }
+            }
         }
     }
 
+    private bool EnemyPlayingAttackAnimation(Enemy enemy) {
+        var stateInfo = enemy.animator.GetCurrentAnimatorStateInfo(0);
+        int animStateHash = stateInfo.shortNameHash;
+        bool playingAttackAnim = animStateHash == attackSideAnim || animStateHash == attackUpAnim || animStateHash == attackDownAnim;
+        bool clipIsNotFinished = stateInfo.normalizedTime <= 1f;
+        return playingAttackAnim && clipIsNotFinished;
+    }
+    
     public class EnemySpawnManager {
         public float timeInPhase;
         public float totalTimeLeft;
@@ -1077,6 +1133,7 @@ public class Game : MonoBehaviour {
             Enemy enemy = SpawnEntity<Enemy>(enemyToSpawn.enemyPrefab, randomSpawnPos, Quaternion.identity);
             enemy.health = enemyToSpawn.health;
             enemy.data = enemyToSpawn;
+            enemy.animator.runtimeAnimatorController = enemyToSpawn.animatorOverride;
             enemies.Add(enemy);
             
             sm.spawnTimeIndex++;
@@ -3511,10 +3568,6 @@ public class Game : MonoBehaviour {
         return $"<color=#{ColorUtility.ToHtmlStringRGBA(color)}>{text}</color>";
     }
 
-    private Color GetRarityColor(InventoryItem inventoryItem) {
-        return GetColorForRarity(inventoryItem.ItemRef.GetRarity());
-    }
-
     private Color GetColorForRarity(Item.Rarity rarity) {
         return rarity switch {
             Item.Rarity.Common    => styles.commonTextColor,
@@ -3524,5 +3577,15 @@ public class Game : MonoBehaviour {
             _                     => styles.commonTextColor,
         };
     }
-    
+
+    private enum CardinalDir { Right, Left, Up, Down }
+
+    private CardinalDir CardinalDirFromVector(Vector2 vector) {
+        float dot = Vector2.Dot(Vector2.right, vector);
+        if (Mathf.Abs(dot) >= 0.2f) {
+            return vector.x > 0 ? CardinalDir.Right : CardinalDir.Left;
+        } 
+        return vector.y > 0 ? CardinalDir.Up : CardinalDir.Down;
+    }
+
 }

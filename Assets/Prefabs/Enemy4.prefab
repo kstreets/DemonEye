@@ -66,8 +66,8 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Radius: 0.07
+  m_Offset: {x: 0.012115508, y: 0}
+  m_Radius: 0.09011552
 --- !u!1 &7814119993517076521
 GameObject:
   m_ObjectHideFlags: 0
@@ -82,7 +82,7 @@ GameObject:
   - component: {fileID: 733346025984146055}
   - component: {fileID: 9177208732824714665}
   m_Layer: 6
-  m_Name: Enemy
+  m_Name: Enemy4
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -173,7 +173,7 @@ SpriteRenderer:
   m_SortingLayerID: 1394232625
   m_SortingLayer: 2
   m_SortingOrder: 0
-  m_Sprite: {fileID: 1623119349, guid: 2c39cfc7a15d6794f899f854d4493a2a, type: 3}
+  m_Sprite: {fileID: -640234811, guid: 49446b09c2c9d404d8538b7de5c06a19, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -245,6 +245,6 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0.14}
-  m_Size: {x: 0.108501956, y: 0.3290453}
+  m_Offset: {x: 0.019863486, y: 0.10553044}
+  m_Size: {x: 0.15804029, y: 0.2601062}
   m_Direction: 0

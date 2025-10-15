@@ -79,9 +79,14 @@ public static class Extensions {
         value = nullableStruct.GetValueOrDefault();
         return nullableStruct.HasValue;
     }
+
+    public static void PlayIfNotAlready(this Animator animator, int animHash) {
+        if (animator.Playing(animHash)) return;
+        animator.Play(animHash);
+    }
     
-    public static bool Playing(this Animator animator, string animName) {
-        return animator.GetCurrentAnimatorStateInfo(0).IsName(animName);
+    public static bool Playing(this Animator animator, int animHash) {
+        return animator.GetCurrentAnimatorStateInfo(0).shortNameHash == animHash;
     }
 
 }
