@@ -75,12 +75,12 @@ public class Game : MonoBehaviour {
     [EndFoldout]
     
     [Foldout("UI/Prefabs")]
-    public GameObject inventoryItemPrefab;
     public GameObject inventorySlotPrefab;
+    public GameObject eyeForgeSlotPrefab;
     public GameObject rockSmokePrefab;
     public GameObject damageNumberPrefab;
     [EndFoldout]
-    
+
     [Foldout("UI/MiscRefs")]
     public ItemDescPopup itemDescPopup;
     public MechanicDescPopup mechanicDescPopup;
@@ -125,6 +125,9 @@ public class Game : MonoBehaviour {
     public RectTransform crucibleParent;
     public Button crucibleForgeButton;
     public Button crucibleUpgradeButton;
+    public Image pentagramFillImage;
+    public AnimationCurve pentagramFillCurve;
+    public AnimationCurve itemShakeCurve;
     [EndFoldout]
     
     [Foldout("UI/TraderPanel")]
@@ -137,6 +140,12 @@ public class Game : MonoBehaviour {
     public TextMeshProUGUI traderLevelText;
     public TextMeshProUGUI traderRemainingXpText;
     public Button traderDealButton;
+    [EndFoldout]
+
+    [Foldout("UI/MapSelectionPanel")]
+    public RectTransform mapSelectionPanel;
+    public Button easyMapButton;
+    public Button mediumMapButton;
     [EndFoldout]
 
     [Foldout("UI/InRaid")]
@@ -237,6 +246,7 @@ public class Game : MonoBehaviour {
             };
         }
 
+        Tween.Init();
         CreateRunDropPools();
         
         InitInventory();
@@ -275,6 +285,7 @@ public class Game : MonoBehaviour {
     private void Update() {
         UpdateDelayedEntitiesToDestroy();
         gameStateMachine.Tick();
+        Tween.Update();
         foreach (Inventory inventory in allInventories) {
             RefreshInventoryDisplay(inventory);
         }
@@ -282,8 +293,8 @@ public class Game : MonoBehaviour {
 
     private void FixedUpdate() {
         if (!InRaid) return;
-        raidStateData.currentMap.grid.CompleteFlowFieldCalculation();
-        raidStateData.currentMap.grid.ScheduleFlowFieldCalculation(player.position);
+        currentMap.grid.CompleteFlowFieldCalculation();
+        currentMap.grid.ScheduleFlowFieldCalculation(player.position);
         FixedUpdateEnemies();
     }
 
@@ -295,7 +306,7 @@ public class Game : MonoBehaviour {
         SaveInventory(playerInventory);
         SaveInventory(stashInventory);
         SavePlayerData();
-        raidStateData.currentMap.grid.Deinit();
+        currentMap.grid.Deinit();
     }
 
     private void UpdateTimers() {
@@ -304,14 +315,11 @@ public class Game : MonoBehaviour {
     }
 
     private void OnHideoutStateEnter() {
-        string nextMapScene = raidStateData.mapSceneNames[raidStateData.raidDifficulty];
-        LoadMapAsync(nextMapScene);
-        
-        if (raidStateData.raidDifficulty == 0 && GetInventoryWeight(playerInventory) == 0) {
+        // if (raidStateData.raidDifficulty == 0 && GetInventoryWeight(playerInventory) == 0) {
             foreach (StartingItemsConfig.ItemConfig config in startingItems.configs) {
                 TryAddItemToInventory(playerInventory, config.item, config.count);
             }
-        }
+        // }
         
         Cursor.visible = true;
         ShowRaidUI(false); 
@@ -329,20 +337,22 @@ public class Game : MonoBehaviour {
     private void OnRaidStateEnter() {
         ShowRaidUI(true);
         
-        Map curMap = raidStateData.currentMap;
-        curMap.gameObject.SetActive(true);
-        curMap.grid.Init();
+        currentMap.gameObject.SetActive(true);
+        currentMap.grid.Init();
 
-        int randomSpawnIndex = Random.Range(0, curMap.spawnPositionsParent.childCount);
-        Vector2 randomSpawnPos = curMap.spawnPositionsParent.GetChild(randomSpawnIndex).position;
+        int randomSpawnIndex = Random.Range(0, currentMap.spawnPositionsParent.childCount);
+        Vector2 randomSpawnPos = currentMap.spawnPositionsParent.GetChild(randomSpawnIndex).position;
         
         player.gameObject.SetActive(true);
         player.position = randomSpawnPos;
+        
+        Vector3 cameraWarpTarget = new(player.position.x, player.position.y, cinemachineCamera.transform.position.z);
+        cinemachineCamera.ForceCameraPosition(cameraWarpTarget, Quaternion.identity);
         cinemachineCamera.Follow = player.trans;
         
         InitExitPortal();
-        InitSpawnManager(curMap.waves);
-        SpawnResources(curMap.resourceParent);
+        InitSpawnManager(currentMap.waves);
+        SpawnResources(currentMap.resourceParent);
     }
 
     private void OnRaidStateExit() {
@@ -350,7 +360,7 @@ public class Game : MonoBehaviour {
             LeaveRaid();
             raidStateData.raidDifficulty++;
         }
-        raidStateData.currentMap.grid.Deinit();
+        currentMap.grid.Deinit();
         UnloadCurrentMapAsync();
     }
 
@@ -389,7 +399,7 @@ public class Game : MonoBehaviour {
     private void LeaveRaid() {
         DestroyLevelEntities();
         ClearProjectiles();
-        raidStateData.currentMap.gameObject.SetActive(false);
+        currentMap.gameObject.SetActive(false);
         playerBarsPanel.gameObject.SetActive(false);
         player.gameObject.SetActive(false);
     }
@@ -818,20 +828,18 @@ public class Game : MonoBehaviour {
     }
 
 
-    public enum TweenCurve { Linear, EaseOut, EaseIn, EaseInOut }
-
     public struct TweenPosition {
         public Vector2 startPos;
         public Vector2 endPos;
         public Timer timer;
-        public TweenCurve curve;
+        public Tween.Curve curve;
     }
 
-    private void AddTweenPosition(Entity entity, Vector2 endPos, float duration, TweenCurve curve = TweenCurve.Linear) {
+    private void AddTweenPosition(Entity entity, Vector2 endPos, float duration, Tween.Curve curve = Tween.Curve.Linear) {
         TweenPosition tween = new() {
             startPos = entity.position,
             endPos = endPos,
-            curve = curve
+            curve = curve,
         };
         tween.timer.SetTime(duration);
         entity.tweenPosition = tween;
@@ -841,20 +849,7 @@ public class Game : MonoBehaviour {
         if (!entity.tweenPosition.TryGetValue(out var tween)) return;
 
         tween.timer.Tick();
-        float comp = tween.timer.Comp();
-        
-        switch (tween.curve) {
-            case TweenCurve.EaseOut:
-                comp = 1 - Mathf.Pow(1 - comp, 3);
-                break;
-            case TweenCurve.EaseIn:
-                comp = Mathf.Pow(comp, 3);
-                break;
-            case TweenCurve.EaseInOut:
-                comp = Mathf.SmoothStep(0f, 1f, comp);
-                break;
-        }
-        
+        float comp = Tween.ConvertCompletion(tween.timer.Comp(), tween.curve);
         entity.position = Vector2.Lerp(tween.startPos, tween.endPos, comp);
         entity.tweenPosition = tween;
     }
@@ -872,6 +867,7 @@ public class Game : MonoBehaviour {
     private int attackDownAnim = Animator.StringToHash("AttackDown");
     
     public class Enemy : Entity {
+        public float teleportTime;
         public EnemyData data;
         public Timer applyDamageTimer;
         public BleedModInstance? bleed;
@@ -887,7 +883,17 @@ public class Game : MonoBehaviour {
             Enemy enemy = enemies[i];
             enemy.applyDamageTimer.Tick();
 
+            enemy.teleportTime += Time.deltaTime;
+            
             float distFromPlayer = Vector2.Distance(player.Center, enemy.Center);
+
+            // if (enemy.teleportTime >= 10f && distFromPlayer > 2.3f) {
+            //     CoolerGrid.GridCell randomSpawnGridPos = raidStateData.currentMap.grid.GetSpawnPosition(player.position);
+            //     enemy.position = randomSpawnGridPos.position;
+            //     distFromPlayer = Vector2.Distance(player.Center, enemy.Center);
+            //     enemy.teleportTime = 0f;
+            // }
+            
             Vector2 dirToPlayer = (player.position - enemy.position).normalized;
 
             Vector2 graphicalEnemyDir;
@@ -1003,7 +1009,7 @@ public class Game : MonoBehaviour {
                 speed = 0f;
             }
             
-            enemy.moveDir = raidStateData.currentMap.grid.GetFlowFieldDirection(enemy.position);
+            enemy.moveDir = currentMap.grid.GetFlowFieldDirection(enemy.position);
             enemy.rigidbody.linearVelocity = enemy.moveDir * speed;
 
             if (!enemyIsAttacking && enemy.changeDirLimiter.TimeHasPassed(0.15f)) {
@@ -1126,7 +1132,7 @@ public class Game : MonoBehaviour {
         if (sm.spawnEvents.Count <= 0) return;
         
         while (sm.spawnEvents.IndexInRange(sm.spawnTimeIndex) && sm.spawnEvents[sm.spawnTimeIndex].time <= sm.timeInPhase) {
-            CoolerGrid.GridCell randomSpawnGridPos = raidStateData.currentMap.grid.GetSpawnPosition(player.position);
+            CoolerGrid.GridCell randomSpawnGridPos = currentMap.grid.GetSpawnPosition(player.position);
             Vector2 randomSpawnPos = randomSpawnGridPos.position;
 
             EnemyData enemyToSpawn = sm.spawnEvents[sm.spawnTimeIndex].enemy;
@@ -1237,16 +1243,16 @@ public class Game : MonoBehaviour {
         SpawnUiSlots(traderInventoryParent, traderInventorySize);
         traderInventory = CreateInventory(traderInventoryParent, traderInventorySize);
         
-        const int transactionInventorySize = 20;
+        const int transactionInventorySize = 25;
         SpawnUiSlots(traderTransactionInventoryParent, transactionInventorySize);
         transactionInventory = CreateInventory(traderTransactionInventoryParent, transactionInventorySize);
 
-        const int crucibleInventorySize = 9;
+        const int crucibleInventorySize = 6;
         // Spawn crucible slots
         { 
             const int crucibleVeinSize = crucibleInventorySize - 1;
             Vector2 crucibleCenter = crucibleParent.position;
-            GameObject centerSlot = Instantiate(inventorySlotPrefab, crucibleCenter, Quaternion.identity, crucibleParent);
+            GameObject centerSlot = Instantiate(eyeForgeSlotPrefab, crucibleCenter, Quaternion.identity, crucibleParent);
 
             InventorySlotUI centerSlotUi = centerSlot.GetComponent<InventorySlotUI>();
             centerSlotUi.disallowItemStacking = true;
@@ -1255,7 +1261,7 @@ public class Game : MonoBehaviour {
             for (int i = 0; i < crucibleVeinSize; i++) {
                 float deg = 360f / crucibleVeinSize * i;
                 Vector2 spawnDir = (Quaternion.AngleAxis(deg, Vector3.forward) * Vector2.up) * 150f;
-                GameObject slot = Instantiate(inventorySlotPrefab, crucibleCenter + spawnDir, Quaternion.identity, crucibleParent);
+                GameObject slot = Instantiate(eyeForgeSlotPrefab, crucibleCenter + spawnDir, Quaternion.identity, crucibleParent);
                 InventorySlotUI veinSlot = slot.GetComponent<InventorySlotUI>();
                 
                 if (i != 0 && i > hideoutStateData.crucibleLevel) {
@@ -2565,7 +2571,7 @@ public class Game : MonoBehaviour {
         if (isCriticalStrike) {
             damageNumber.textMesh.color = criticalStrikeColor;
         }
-        AddTweenPosition(damageNumber, endDamageNumPos, 0.3f, TweenCurve.EaseOut); 
+        AddTweenPosition(damageNumber, endDamageNumPos, 0.3f, Tween.Curve.EaseOut); 
         DestroyEntity(damageNumber, 0.3f);
     }
     
@@ -2949,6 +2955,7 @@ public class Game : MonoBehaviour {
         eyeForgePanel.gameObject.SetActive(false);
         traderInventoryPanel.gameObject.SetActive(false);
         traderTransactionPanel.gameObject.SetActive(false);
+        mapSelectionPanel.gameObject.SetActive(false);
         lootInventoryPanel.gameObject.SetActive(false);
     }
 
@@ -2962,6 +2969,7 @@ public class Game : MonoBehaviour {
         eyeForgePanel.gameObject.SetActive(false);
         traderInventoryPanel.gameObject.SetActive(false);
         traderTransactionPanel.gameObject.SetActive(false);
+        mapSelectionPanel.gameObject.SetActive(false);
         lootInventoryPanel.gameObject.SetActive(false);
     }
 
@@ -3043,23 +3051,25 @@ public class Game : MonoBehaviour {
                 if (crucibleInventory.slots[i].item != null) break;
                 if (i == crucibleInventory.slots.Length - 1) return;
             }
-
-            InventoryItem newDemonEyeItem = new() {
-                modifierUuids = new(),
-            };
-
-            foreach (InventorySlot slot in crucibleInventory.slots) {
-                if (slot.item == null) continue;
-                
-                if (slot.ui.OnlyAcceptsType(soulcardType)) {
-                    newDemonEyeItem.modifierUuids.Add(slot.item.ItemRef.uuid);
-                }
-                slot.item = null;
-            }
-
-            BuildAndRegisterEye(newDemonEyeItem);
             
-            crucibleInventory.slots[eyeSlotIndex].item = newDemonEyeItem;
+            DoEyeForgeAnimation(() => {
+                InventoryItem newDemonEyeItem = new() {
+                    modifierUuids = new(),
+                };
+
+                foreach (InventorySlot slot in crucibleInventory.slots) {
+                    if (slot.item == null) continue;
+                    
+                    if (slot.ui.OnlyAcceptsType(soulcardType)) {
+                        newDemonEyeItem.modifierUuids.Add(slot.item.ItemRef.uuid);
+                    }
+                    slot.item = null;
+                }
+
+                BuildAndRegisterEye(newDemonEyeItem);
+                
+                crucibleInventory.slots[eyeSlotIndex].item = newDemonEyeItem;
+            });
         });
         
         crucibleUpgradeButton.onClick.AddListener(() => {
@@ -3149,8 +3159,64 @@ public class Game : MonoBehaviour {
         });
         
         enterNextRaidButton.onClick.AddListener(() => {
-            gameStateMachine.SetStateIfNotCurrent(raidState);
+            ToggleSlimPlayerPanel(false);
+            playerPanel.gameObject.SetActive(true);
+            mapSelectionPanel.gameObject.SetActive(true);
+            hideoutTabsParent.gameObject.SetActive(false);
+            stashPanel.gameObject.SetActive(false);
+            eyeForgePanel.gameObject.SetActive(false);
+            traderInventoryPanel.gameObject.SetActive(false);
+            traderTransactionPanel.gameObject.SetActive(false);
         });
+        
+        easyMapButton.onClick.AddListener(() => {
+            LoadMapAsync("Lighthouse", () => {
+                gameStateMachine.SetStateIfNotCurrent(raidState);
+            });
+        });
+        
+        mediumMapButton.onClick.AddListener(() => {
+            LoadMapAsync("Customs", () => {
+                gameStateMachine.SetStateIfNotCurrent(raidState);
+            });
+        });
+    }
+
+    private int fillParamProperty = Shader.PropertyToID("_Fill");
+    
+    private void DoEyeForgeAnimation(Action onAnimationEndCallback) {
+        List<Tween.TweenObject> pentagramSequence = Tween.CreateSequence(out _);
+        pentagramSequence.Add(Tween.TweenCustom(5f, comp => {
+            pentagramFillImage.material.SetFloat(fillParamProperty, pentagramFillCurve.Evaluate(comp));
+        }));
+        pentagramSequence.Add(Tween.Callback(onAnimationEndCallback));
+        
+        foreach (InventorySlot slot in crucibleInventory.slots) {
+            if (slot.item == null) continue;
+            
+            RectTransform rectTransform = slot.ui.itemUI.rectTransform;
+            rectTransform.DoTweenShake(10f, 3.3f, 5f, itemShakeCurve);
+            
+            List<Tween.TweenObject> sequence = Tween.CreateSequence(out _);
+            sequence.Add(Tween.TweenDelay(1f));
+            
+            if (slot.item.ItemRef.type == eyeType) {
+                sequence.Add(Tween.TweenScale(rectTransform, 1f, 1.25f, 2f, Tween.Curve.EaseInOut));
+                sequence.Add(Tween.TweenDelay(3f));
+                sequence.Add(Tween.TweenScale(rectTransform, 1.45f, 1f, 0.15f, Tween.Curve.EaseInOut));
+            }
+            else {
+                sequence.Add(Tween.TweenScale(rectTransform, 1f, 0.87f, 2f, Tween.Curve.EaseInOut));
+                sequence.Add(Tween.TweenDelay(3f));
+                sequence.Add(Tween.TweenScale(rectTransform, 0.87f, 1f, 0.15f, Tween.Curve.EaseInOut));
+                sequence.Add(Tween.Callback(() => {
+                    slot.item = null;
+                    slot.ui.ClearItem();
+                    rectTransform.anchoredPosition = Vector2.zero;
+                    rectTransform.localScale = Vector3.one;
+                }));
+            }
+        }
     }
 
     private void UpdateInRaidUi() {
@@ -3359,8 +3425,9 @@ public class Game : MonoBehaviour {
     [NonSerialized] public string loadedMapName;
     [NonSerialized] public string activelyLoadingMapName;
     [NonSerialized] public string activelyUnloadingMapName;
+    [NonSerialized] public Map currentMap;
 
-    public void LoadMapAsync(string sceneName) {
+    public void LoadMapAsync(string sceneName, Action onLoadedCallback) {
         if (LoadingMapInProgress()) return;
 
         AsyncOperation loadOperation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
@@ -3383,19 +3450,20 @@ public class Game : MonoBehaviour {
             
             foreach (GameObject root in loadedMapRoots) {
                 if (!root.TryGetComponent(out Map map)) continue;
-                raidStateData.currentMap = map;
+                currentMap = map;
                 map.gameObject.SetActive(false);
                 break;
             }
             
             ListPool<GameObject>.Release(loadedMapRoots);
+            onLoadedCallback?.Invoke();
         }
     }
 
     public void UnloadCurrentMapAsync() {
         if (UnloadingMapInProgress()) return;
             
-        raidStateData.currentMap.gameObject.SetActive(false); 
+        currentMap.gameObject.SetActive(false); 
         
         Scene loadedMap = SceneManager.GetSceneByName(loadedMapName);
         AsyncOperation unloadOperation = SceneManager.UnloadSceneAsync(loadedMap);

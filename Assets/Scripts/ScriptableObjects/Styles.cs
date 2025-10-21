@@ -12,4 +12,7 @@ public class Styles : ScriptableObject {
     public Vector4 nonSelectedHideoutTabMargin;
     public Vector4 selectedHideoutTabMargin;
 
+    public Vector4 normalButtonTextMargin;
+    public Vector4 pressedButtonTextMargin;
+
 }

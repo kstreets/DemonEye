@@ -19,3 +19,5 @@ MonoBehaviour:
   rarityFontSize: 22
   nonSelectedHideoutTabMargin: {x: 0, y: 0, z: 0, w: 6}
   selectedHideoutTabMargin: {x: 0, y: 0, z: 0, w: 0}
+  normalButtonTextMargin: {x: 0, y: 0, z: 0, w: 7}
+  pressedButtonTextMargin: {x: 0, y: 0, z: 0, w: 3}

@@ -89,6 +89,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f36e975da9ee6b849a12ca1ecb1f190b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemUI
+  rectTransform: {fileID: 6352755194111612605}
   image: {fileID: 6300235184742368939}
   countText: {fileID: 1253270400355161173}
 --- !u!1 &6629419323779652318

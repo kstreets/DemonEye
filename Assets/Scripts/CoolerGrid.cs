@@ -63,7 +63,7 @@ public class CoolerGrid : MonoBehaviour {
                 return null;
             }
 
-            UpdateDataForSpawnCells(playerCell, 4, 10);
+            UpdateDataForSpawnCells(playerCell, 12, 20);
         }
 
         float rand = Random.value * totalSpawnCellsWeight;
@@ -422,7 +422,11 @@ public class CoolerGrid : MonoBehaviour {
         return neighbors;
     }
     
+    public bool drawGizmos;
+    
     private void OnDrawGizmos() {
+        if (!drawGizmos) return;
+        
         Color nonGeneratedColor = new(175f / 255f, 66f / 255f, 26f / 255f);
         Color gridColor = new(154f / 255f, 1f, 0f, 0.1f);
         Color gridFill = new(45f / 255f, 1f, 0f, 0.2f);

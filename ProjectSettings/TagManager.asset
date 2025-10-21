@@ -49,6 +49,9 @@ TagManager:
   - name: Level
     uniqueID: 4221791799
     locked: 0
+  - name: DecorationsSmall
+    uniqueID: 2694366861
+    locked: 0
   - name: Entity
     uniqueID: 1394232625
     locked: 0

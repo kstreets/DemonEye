@@ -92,7 +92,6 @@ MonoBehaviour:
   disallowItemStacking: 0
   onlyAcceptedItemType: {fileID: 0}
   slotImage: {fileID: 2399182519088167438}
-  rarityOverlayImage: {fileID: 0}
   activeSlotSprite: {fileID: 823751994, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
   inactiveSlotSprite: {fileID: 957642039, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
   itemUI: {fileID: 6890701791358644999}
