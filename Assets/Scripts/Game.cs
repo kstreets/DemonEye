@@ -21,8 +21,8 @@ public class Game : MonoBehaviour {
     
     public TraderConfig traderConfig;
     public StartingItemsConfig startingItems;
-    public List<Scene> mapSequence;
     public Styles styles;
+    public List<QuestLine> questLines;
 
     [Foldout("Pooling Prefabs")]
     public GameObject baseProjectilePrefab;
@@ -72,6 +72,7 @@ public class Game : MonoBehaviour {
     [Foldout("Effects")]
     public AnimationCurve hitFlashCurve;
     public AnimationCurve bounceCurve;
+    public AnimationCurve shakeCurve;
     [EndFoldout]
     
     [Foldout("UI/Prefabs")]
@@ -79,6 +80,7 @@ public class Game : MonoBehaviour {
     public GameObject eyeForgeSlotPrefab;
     public GameObject rockSmokePrefab;
     public GameObject damageNumberPrefab;
+    public GameObject questPrefab;
     [EndFoldout]
 
     [Foldout("UI/MiscRefs")]
@@ -98,9 +100,11 @@ public class Game : MonoBehaviour {
     public Button characterTabButton;
     public Button eyeForgeTabButton;
     public Button traderTabButton;
+    public Button questsTabButton;
     public TextMeshProUGUI characterTabText;
     public TextMeshProUGUI eyeForgeTabText;
     public TextMeshProUGUI traderTabText;
+    public TextMeshProUGUI questsTabText;
     [EndFoldout]
 
     [Foldout("UI/PlayerPanel")]
@@ -147,6 +151,11 @@ public class Game : MonoBehaviour {
     public Button easyMapButton;
     public Button mediumMapButton;
     [EndFoldout]
+    
+    [Foldout("UI/QuestsPanel")]
+    public RectTransform questsPanel;
+    public RectTransform questsParent;
+    [EndFoldout]
 
     [Foldout("UI/InRaid")]
     public RectTransform lootInventoryPanel;
@@ -192,7 +201,6 @@ public class Game : MonoBehaviour {
     
     [NonSerialized] public List<Entity> entities = new();
     [NonSerialized] public Dictionary<GameObject, Entity> entityLookup = new();
-    [NonSerialized] public List<Projectile> projectiles = new();
     [NonSerialized] public List<Enemy> enemies = new();
     
     public static Dictionary<int, Item> itemLookup = new();
@@ -215,6 +223,8 @@ public class Game : MonoBehaviour {
 
     private HideoutStateData hideoutStateData;
     private RaidStateData raidStateData;
+
+    public static Action<Enemy> onEnemyDeath;
     
     private void Start() {
         instance = this;
@@ -234,18 +244,6 @@ public class Game : MonoBehaviour {
         player.gameObject.SetActive(false);
         LoadAndAssignPlayerSaveData(player);
 
-        List<string> mapSceneNames = new();
-        mapSceneNames.Add("Lighthouse");
-        mapSceneNames.Add("Customs");
-        
-        // Temporary for now
-        {
-            raidStateData = new() {
-                raidDifficulty = 0,
-                mapSceneNames = mapSceneNames,
-            };
-        }
-
         Tween.Init();
         CreateRunDropPools();
         
@@ -255,6 +253,7 @@ public class Game : MonoBehaviour {
         InitButtonCallbacks();
         InitTrader();
         SetStashValue(0);
+        InitQuests();
         
         bloodDropPool = CreateEntityPool<Entity>(bloodDropPrefab, 10, null);
         projectilePool = CreateEntityPool<Projectile>(baseProjectilePrefab, 20, OnSpawnProjectile);
@@ -286,6 +285,7 @@ public class Game : MonoBehaviour {
         UpdateDelayedEntitiesToDestroy();
         gameStateMachine.Tick();
         Tween.Update();
+        UpdateQuests();
         foreach (Inventory inventory in allInventories) {
             RefreshInventoryDisplay(inventory);
         }
@@ -306,7 +306,7 @@ public class Game : MonoBehaviour {
         SaveInventory(playerInventory);
         SaveInventory(stashInventory);
         SavePlayerData();
-        currentMap.grid.Deinit();
+        SaveQuestStates();
     }
 
     private void UpdateTimers() {
@@ -315,15 +315,9 @@ public class Game : MonoBehaviour {
     }
 
     private void OnHideoutStateEnter() {
-        // if (raidStateData.raidDifficulty == 0 && GetInventoryWeight(playerInventory) == 0) {
-            foreach (StartingItemsConfig.ItemConfig config in startingItems.configs) {
-                TryAddItemToInventory(playerInventory, config.item, config.count);
-            }
-        // }
-        
         Cursor.visible = true;
         ShowRaidUI(false); 
-        InitHideoutUI(); 
+        InitHideoutUI();
     }
 
     private void OnHideoutStateExit() {
@@ -358,7 +352,6 @@ public class Game : MonoBehaviour {
     private void OnRaidStateExit() {
         if (player.health > 0) {
             LeaveRaid();
-            raidStateData.raidDifficulty++;
         }
         currentMap.grid.Deinit();
         UnloadCurrentMapAsync();
@@ -398,7 +391,6 @@ public class Game : MonoBehaviour {
 
     private void LeaveRaid() {
         DestroyLevelEntities();
-        ClearProjectiles();
         currentMap.gameObject.SetActive(false);
         playerBarsPanel.gameObject.SetActive(false);
         player.gameObject.SetActive(false);
@@ -426,6 +418,7 @@ public class Game : MonoBehaviour {
         public List<T> inUseList = new();
 
         public void ReleaseEntity(Entity entity) {
+            Assert.IsFalse(standbyList.Contains((T)entity), "Already released this entity!");
             entity.gameObject.SetActive(false);
             standbyList.Add((T)entity);
             inUseList.Remove((T)entity);
@@ -472,6 +465,7 @@ public class Game : MonoBehaviour {
         public BounceEffect? bounceEffect;
         public ParentToEntity? parentEffect;
         public TweenPosition? tweenPosition;
+        public ShakeEffect? shakeEffect;
         
         public Vector3 position {
             get => trans.position;
@@ -542,23 +536,34 @@ public class Game : MonoBehaviour {
         DestroyEntity(entityLookup[gameObj]);
     }
     
-    private void DestroyEntity(Entity entity) {
-        RemoveHitFlashEffect(entity);
-        RemovePoisonedEffect(entity);
-        entity.parentEffect = null;
-        
-        entityLookup.Remove(entity.gameObject);
-        entities.Remove(entity);
-        DestroyOrReleaseEntitysGameObject(entity);
-    }
-    
     private void DestroyEntityAtIndex(int entityIndex) {
         Entity entity = entities[entityIndex];
         entityLookup.Remove(entity.gameObject);
         entities.RemoveAt(entityIndex);
+        DestroyEntity(entity);
+    }
+    
+    private void DestroyEntity(Entity entity) {
+        RemoveHitFlashEffect(entity);
+        RemovePoisonedEffect(entity);
+        entity.parentEffect = null;
+
+        // Remove from delay list here to prevent possible double frees
+        if (entitiesWaitingToBeDestroyed.Contains(entity)) {
+            int index = delayedEntitiesToDestroy.FindIndex(x => x.Item1 == entity);
+            delayedEntitiesToDestroy.RemoveAt(index);
+            entitiesWaitingToBeDestroyed.Remove(entity);
+        }
+        
+        // May be removed already from DestroyAtIndex which is faster than Remove
+        bool enemyWasInLookup = entityLookup.Remove(entity.gameObject, out _);
+        if (enemyWasInLookup) {
+            entities.Remove(entity);
+        }
+        
         DestroyOrReleaseEntitysGameObject(entity);
     }
-
+    
     private void DestroyOrReleaseEntitysGameObject(Entity entity) {
         if (entity.entityPool == null) {
             Destroy(entity.gameObject);
@@ -568,37 +573,37 @@ public class Game : MonoBehaviour {
         entity.entityPool.ReleaseEntity(entity);
     }
 
-    private List<(Entity entity, float delay)> delayedEntitiesToDestroy = new();
+    private List<(Entity, float)> delayedEntitiesToDestroy = new(20);
+    private HashSet<Entity> entitiesWaitingToBeDestroyed = new(20);
     
     private void DestroyEntity(Entity entity, float delay) {
+        Assert.IsFalse(entitiesWaitingToBeDestroyed.Contains(entity), "Already added entity to be destroyed");
+        entitiesWaitingToBeDestroyed.Add(entity);
         delayedEntitiesToDestroy.Add((entity, delay));
     }
 
     private void UpdateDelayedEntitiesToDestroy() {
         for (int i = delayedEntitiesToDestroy.Count - 1; i >= 0; i--) {
-            (Entity entity, float delay) tuple = delayedEntitiesToDestroy[i];
-            tuple.delay -= Time.deltaTime;
-            if (tuple.delay < 0) {
-                if (tuple.entity.IsValid) { // Could already be cleaned up on gameover
-                    DestroyEntity(tuple.entity);
-                }
-                delayedEntitiesToDestroy.RemoveAt(i);
+            (Entity entity, float time) = delayedEntitiesToDestroy[i];
+            time -= Time.deltaTime;
+            if (time <= 0f) {
+                DestroyEntity(entity);
+                continue;
             }
-            else {
-                delayedEntitiesToDestroy[i] = tuple;
-            }
+            delayedEntitiesToDestroy[i] = (entity, time);
         }
     }
     
     private void UpdateEntityEffects() {
         foreach (Entity entity in entities) {
-            UpdateShakeEffect(entity);
+            UpdateSpringShakeEffect(entity);
             UpdateScaleEffect(entity);
             UpdateHitFlashEffect(entity);
             UpdatePoisonedEffect(entity);
             UpdateBounceEffect(entity);
             UpdateParentEffect(entity);
             UpdateTweenPosition(entity);
+            UpdateShakeEffect(entity);
         }
     }
     
@@ -628,7 +633,7 @@ public class Game : MonoBehaviour {
         entity.springShake = shake;
     }
 
-    private void UpdateShakeEffect(Entity entity) {
+    private void UpdateSpringShakeEffect(Entity entity) {
         if (!entity.springShake.TryGetValue(out var shake)) return;
         
         float dt = Time.deltaTime;
@@ -853,6 +858,42 @@ public class Game : MonoBehaviour {
         entity.position = Vector2.Lerp(tween.startPos, tween.endPos, comp);
         entity.tweenPosition = tween;
     }
+
+    
+    public struct ShakeEffect {
+        public float jitter;
+        public float magnitude;
+        public AnimationCurve animCurve;
+        public Vector2 randomSeed;
+        public Vector3 entityStartPos;
+        public Timer timer;
+        public float noisePos;
+    }
+
+    private void AddShakeEffect(Entity entity, float jitter, float magnitude, float time, AnimationCurve animCurve) {
+        entity.shakeEffect = new() {
+            jitter = jitter,
+            magnitude = magnitude,
+            animCurve = animCurve,
+            randomSeed = new(Random.Range(int.MinValue, int.MaxValue), Random.Range(int.MinValue, int.MaxValue)),
+            timer = new(time),
+            noisePos = 0f,
+            entityStartPos = entity.position,
+        }; 
+    }
+    
+    private void UpdateShakeEffect(Entity entity) {
+        if (!entity.shakeEffect.TryGetValue(out var shakeEffect)) return;
+
+        shakeEffect.timer.Tick(); 
+        float magnitude = shakeEffect.animCurve.Evaluate(shakeEffect.timer.Comp()) * shakeEffect.magnitude;
+        shakeEffect.noisePos = (shakeEffect.noisePos + shakeEffect.jitter * Time.deltaTime) % 1f;
+        float x = (Mathf.PerlinNoise(shakeEffect.randomSeed.x, shakeEffect.noisePos) - 0.5f) * 2f;
+        float y = (Mathf.PerlinNoise(shakeEffect.randomSeed.y, shakeEffect.noisePos + 100f) - 0.5f) * 2f;
+        Vector3 targetVector = new Vector3(x, y, entity.position.z) * magnitude;
+        entity.position = shakeEffect.entityStartPos + targetVector;
+        entity.shakeEffect = shakeEffect.timer.IsFinished ? null : shakeEffect;
+    }
     
     // *****************************
     // Enemy 
@@ -978,6 +1019,8 @@ public class Game : MonoBehaviour {
                     }
                     
                 }
+                
+                onEnemyDeath?.Invoke(enemy);
 
                 DestroyEntity(enemies[i]);
                 enemies.RemoveAt(i);
@@ -1211,8 +1254,8 @@ public class Game : MonoBehaviour {
     private const int playerEquipmentSize = 3;
     private int DefaultPlayerInventorySize => playerPocketSize + playerEquipmentSize;
 
-    private const int traderInventoryColCount = 5;
-    private const int traderInventoryRowCount = 5;
+    private const int traderInventoryColCount = 6;
+    private const int traderInventoryRowCount = 4;
 
     private Timer discoverLootTimer;
     private int discoverLootIndex;
@@ -2058,7 +2101,7 @@ public class Game : MonoBehaviour {
         }
     }
 
-    private int GetInventoryItemCount(Inventory inventory) {
+    public int GetInventoryItemCount(Inventory inventory) {
         int count = 0;
         foreach (InventorySlot slot in inventory.slots) {
             if (slot.item == null) continue;
@@ -2067,7 +2110,7 @@ public class Game : MonoBehaviour {
         return count;
     }
 
-    private int GetItemCountInInventory(Inventory inventory, Item item) {
+    public int GetItemCountInInventory(Inventory inventory, Item item) {
         int count = 0;
         foreach (InventorySlot slot in inventory.slots) {
             if (slot.item == null) continue;
@@ -2078,7 +2121,7 @@ public class Game : MonoBehaviour {
         return count;
     }
 
-    private int GetInventoryWeight(Inventory inventory) {
+    public int GetInventoryWeight(Inventory inventory) {
         int weight = 0;
         foreach (InventorySlot slot in inventory.slots) {
             if (slot.item == null) continue;
@@ -2481,6 +2524,8 @@ public class Game : MonoBehaviour {
     // Projectiles
     // *******************************
 
+    [NonSerialized] public List<Projectile> projectiles = new();
+    
     public class Projectile : Entity {
         public float curTimeAlive;
         public float lifeTimeDuration;
@@ -2549,13 +2594,6 @@ public class Game : MonoBehaviour {
         return alreadyPenetratedCount <= pen.goThroughCount;
     }
 
-    private void ClearProjectiles() {
-        foreach (Projectile projectile in projectiles) {
-            DestroyEntity(projectile);
-        }
-        projectiles.Clear();
-    }
-    
     // ***********************************
     // Damage Handling 
     // ***********************************
@@ -2635,8 +2673,8 @@ public class Game : MonoBehaviour {
             }
             else {
                 AddFlashHitEffect(entity);
-                AddSpringShakeEffect(entity, projectile.velocity);
-                AddScaleEffect(entity, 0.88f, 0.15f);
+                AddShakeEffect(entity, 8f, 0.038f, 0.35f, shakeCurve);
+                AddScaleEffect(entity, 1.1f, 0.2f);
             }
         }
     }
@@ -2794,17 +2832,13 @@ public class Game : MonoBehaviour {
         deadBodySlotsLookup.Clear();
         activeAltars.Clear();
         enemies.Clear();
+        projectiles.Clear();
     }
 
     // ***************************
     // Saving and Loading
     // ***************************
 
-    [Serializable]
-    private class SaveData {
-        
-    }
-    
     [Serializable]
     private class RaidStateData {
         public int raidDifficulty;
@@ -2826,6 +2860,7 @@ public class Game : MonoBehaviour {
     private string hideoutDataSavePath;
     private string raidDataSavePath;
     private string playerSavePath;
+    private string questSavePath;
     private List<InventoryItem> cachedInventoryForSaving = new(50);
     
     private void BuildSavePaths() {
@@ -2835,6 +2870,7 @@ public class Game : MonoBehaviour {
         hideoutDataSavePath = $"{Application.persistentDataPath}/hideoutData"; 
         raidDataSavePath = $"{Application.persistentDataPath}/raidStateData";
         playerSavePath = $"{Application.persistentDataPath}/player";
+        questSavePath = $"{Application.persistentDataPath}/quests";
     }
 
     private string GetSavePath(Inventory inventory) {
@@ -2877,6 +2913,7 @@ public class Game : MonoBehaviour {
     }
     
     private void SaveToFile(string path, object obj) {
+        if (obj == null) return;
         BinaryFormatter bf = new();
         using FileStream file = File.Create(path);
         bf.Serialize(file, obj);
@@ -2938,39 +2975,20 @@ public class Game : MonoBehaviour {
     // ************************************
     
     private void InitHideoutUI() {
-        characterTabButton.image.sprite = tabSelectedSprite;
-        eyeForgeTabButton.image.sprite = tabNonSelectedSprite;
-        traderTabButton.image.sprite = tabNonSelectedSprite;
-        
-        characterTabText.margin = styles.selectedHideoutTabMargin;
-        eyeForgeTabText.margin = styles.nonSelectedHideoutTabMargin;
-        traderTabText.margin = styles.nonSelectedHideoutTabMargin;
-        
+        ToggleHideoutTab(characterTabButton, characterTabText);
+        ToggleHideoutPanels(playerPanel, stashPanel);
         hideoutBackground.gameObject.SetActive(true);
         hideoutHeaderParent.gameObject.SetActive(true);
         hideoutRaidPanel.gameObject.SetActive(true);
         hideoutTabsParent.gameObject.SetActive(true);
-        playerPanel.gameObject.SetActive(true);
-        stashPanel.gameObject.SetActive(true);
-        eyeForgePanel.gameObject.SetActive(false);
-        traderInventoryPanel.gameObject.SetActive(false);
-        traderTransactionPanel.gameObject.SetActive(false);
-        mapSelectionPanel.gameObject.SetActive(false);
-        lootInventoryPanel.gameObject.SetActive(false);
     }
 
     private void CloseHideoutUI() {
+        ToggleHideoutPanels();
         hideoutBackground.gameObject.SetActive(false);
         hideoutHeaderParent.gameObject.SetActive(false);
         hideoutRaidPanel.gameObject.SetActive(false);
         hideoutTabsParent.gameObject.SetActive(false);
-        playerPanel.gameObject.SetActive(false);
-        stashPanel.gameObject.SetActive(false);
-        eyeForgePanel.gameObject.SetActive(false);
-        traderInventoryPanel.gameObject.SetActive(false);
-        traderTransactionPanel.gameObject.SetActive(false);
-        mapSelectionPanel.gameObject.SetActive(false);
-        lootInventoryPanel.gameObject.SetActive(false);
     }
 
     private void ShowRaidUI(bool show) {
@@ -2980,56 +2998,58 @@ public class Game : MonoBehaviour {
         playerBarsPanel.gameObject.SetActive(show);
         raidTimerText.gameObject.SetActive(show);
     }
+
+    private void ToggleHideoutTab(Button button, TextMeshProUGUI text) {
+        characterTabButton.image.sprite = tabNonSelectedSprite;
+        eyeForgeTabButton.image.sprite = tabNonSelectedSprite;
+        traderTabButton.image.sprite = tabNonSelectedSprite;
+        questsTabButton.image.sprite = tabNonSelectedSprite;
+        
+        characterTabText.margin = styles.nonSelectedHideoutTabMargin;
+        eyeForgeTabText.margin = styles.nonSelectedHideoutTabMargin;
+        traderTabText.margin = styles.nonSelectedHideoutTabMargin;
+        questsTabText.margin = styles.nonSelectedHideoutTabMargin;
+        
+        button.image.sprite = tabSelectedSprite;
+        text.margin = styles.selectedHideoutTabMargin;
+    }
+
+    private void ToggleHideoutPanels(params RectTransform[] panels) {
+        playerPanel.gameObject.SetActive(false);
+        stashPanel.gameObject.SetActive(false);
+        eyeForgePanel.gameObject.SetActive(false);
+        lootInventoryPanel.gameObject.SetActive(false);
+        traderInventoryPanel.gameObject.SetActive(false);
+        traderTransactionPanel.gameObject.SetActive(false);
+        questsPanel.gameObject.SetActive(false);
+        mapSelectionPanel.gameObject.SetActive(false);
+        
+        foreach (RectTransform rect in panels) {
+            rect.gameObject.SetActive(true);
+        }
+    }
     
     private void InitButtonCallbacks() {
         characterTabButton.onClick.AddListener(() => {
-            characterTabButton.image.sprite = tabSelectedSprite;
-            eyeForgeTabButton.image.sprite = tabNonSelectedSprite;
-            traderTabButton.image.sprite = tabNonSelectedSprite;
-            
-            characterTabText.margin = styles.selectedHideoutTabMargin;
-            eyeForgeTabText.margin = styles.nonSelectedHideoutTabMargin;
-            traderTabText.margin = styles.nonSelectedHideoutTabMargin;
-            
+            ToggleHideoutTab(characterTabButton, characterTabText);
             ToggleSlimPlayerPanel(false);
-            playerPanel.gameObject.SetActive(true);
-            stashPanel.gameObject.SetActive(true);
-            eyeForgePanel.gameObject.SetActive(false);
-            traderInventoryPanel.gameObject.SetActive(false);
-            traderTransactionPanel.gameObject.SetActive(false);
+            ToggleHideoutPanels(playerPanel, stashPanel);
         });
         
         eyeForgeTabButton.onClick.AddListener(() => {
-            characterTabButton.image.sprite = tabNonSelectedSprite;
-            eyeForgeTabButton.image.sprite = tabSelectedSprite;
-            traderTabButton.image.sprite = tabNonSelectedSprite;
-            
-            characterTabText.margin = styles.nonSelectedHideoutTabMargin;
-            eyeForgeTabText.margin = styles.selectedHideoutTabMargin;
-            traderTabText.margin = styles.nonSelectedHideoutTabMargin;
-            
+            ToggleHideoutTab(eyeForgeTabButton, eyeForgeTabText);
             ToggleSlimPlayerPanel(true);
-            playerPanel.gameObject.SetActive(true);
-            stashPanel.gameObject.SetActive(true);
-            eyeForgePanel.gameObject.SetActive(true);
-            traderInventoryPanel.gameObject.SetActive(false);
-            traderTransactionPanel.gameObject.SetActive(false);
+            ToggleHideoutPanels(playerPanel, eyeForgePanel, stashPanel);
         });
         
         traderTabButton.onClick.AddListener(() => {
-            characterTabButton.image.sprite = tabNonSelectedSprite;
-            eyeForgeTabButton.image.sprite = tabNonSelectedSprite;
-            traderTabButton.image.sprite = tabSelectedSprite;
-            
-            characterTabText.margin = styles.nonSelectedHideoutTabMargin;
-            eyeForgeTabText.margin = styles.nonSelectedHideoutTabMargin;
-            traderTabText.margin = styles.selectedHideoutTabMargin;
-            
-            playerPanel.gameObject.SetActive(false);
-            stashPanel.gameObject.SetActive(true);
-            eyeForgePanel.gameObject.SetActive(false);
-            traderInventoryPanel.gameObject.SetActive(true);
-            traderTransactionPanel.gameObject.SetActive(true);
+            ToggleHideoutTab(traderTabButton, traderTabText);
+            ToggleHideoutPanels(traderInventoryPanel, traderTransactionPanel, stashPanel);
+        });
+        
+        questsTabButton.onClick.AddListener(() => {
+            ToggleHideoutTab(questsTabButton, questsTabText);
+            ToggleHideoutPanels(questsPanel);
         });
         
         crucibleForgeButton.onClick.AddListener(() => {
@@ -3160,13 +3180,9 @@ public class Game : MonoBehaviour {
         
         enterNextRaidButton.onClick.AddListener(() => {
             ToggleSlimPlayerPanel(false);
-            playerPanel.gameObject.SetActive(true);
-            mapSelectionPanel.gameObject.SetActive(true);
+            ToggleHideoutPanels(playerPanel, mapSelectionPanel);
             hideoutTabsParent.gameObject.SetActive(false);
-            stashPanel.gameObject.SetActive(false);
-            eyeForgePanel.gameObject.SetActive(false);
-            traderInventoryPanel.gameObject.SetActive(false);
-            traderTransactionPanel.gameObject.SetActive(false);
+            hideoutRaidPanel.gameObject.SetActive(false);
         });
         
         easyMapButton.onClick.AddListener(() => {
@@ -3294,6 +3310,9 @@ public class Game : MonoBehaviour {
         
         // This is temporary because we eventually need to load prev saved run items
         AddItemsToTraderInventory(0); 
+        AddItemsToTraderInventory(1); 
+        AddItemsToTraderInventory(2); 
+        AddItemsToTraderInventory(3); 
     }
     
     private void IncreaseTraderLevel(int xpGain) {
@@ -3330,6 +3349,62 @@ public class Game : MonoBehaviour {
     
     private bool ReachedTraderMaxLevel() {
         return !traderLevels.totalXpToNextLevel.IndexInRange(hideoutStateData.traderLevel);
+    }
+    
+    // ************************
+    // Quests 
+    // ************************
+
+    private const int activeQuestCount = 3;
+    private Quest[] activeQuests = new Quest[activeQuestCount];
+    private QuestUI[] questUIs = new QuestUI[activeQuestCount];
+    
+    [Serializable]
+    private class QuestlineStateData {
+        public Quest.SaveState[] questSaveStates = new Quest.SaveState[activeQuestCount];
+        public int[] questLineIndicies = new int[activeQuestCount];
+    }
+    
+    private QuestlineStateData questlineState;
+    
+    private void SaveQuestStates() {
+        for (int i = 0; i < activeQuestCount; i++) {
+            questlineState.questSaveStates[i] = activeQuests[i]?.GetSaveState();
+        }
+        SaveToFile(questSavePath, questlineState);
+    }
+    
+    private void InitQuests() {
+        questlineState = LoadFromFile<QuestlineStateData>(questSavePath) ?? new QuestlineStateData();
+        
+        for (int i = 0; i < activeQuestCount; i++) {
+            Quest quest = questLines[i].quests[questlineState.questLineIndicies[i]];
+            activeQuests[i] = quest;
+            
+            Quest.SaveState saveState = questlineState.questSaveStates[i];
+            if (saveState != null) {
+                quest.LoadSaveState(saveState);     
+            }
+            quest.Init(questLines[i].questGiver);
+
+            QuestUI ui = Instantiate(questPrefab, questsParent).GetComponent<QuestUI>();
+            questUIs[i] = ui;
+            
+            int callbackIndex = i;
+            ui.completeButton.onClick.AddListener(() => OnQuestCompleteClicked(callbackIndex));
+            ui.Set(quest);
+        }
+    }
+
+    private void OnQuestCompleteClicked(int activeQuestIndex) {
+        
+    }
+
+    private void UpdateQuests() {
+        for (int i = 0; i < activeQuests.Length; i++) {
+            activeQuests[i].UpdateQuest(this);
+            questUIs[i].Set(activeQuests[i]);
+        }
     }
 
     // ************************
@@ -3491,6 +3566,9 @@ public class Game : MonoBehaviour {
         return !string.IsNullOrEmpty(activelyUnloadingMapName);
     }
 
+    // ************************
+    // Item Dropping
+    // ************************
 
     private enum DropOrigin { Rock, Body, Trader }
 
@@ -3519,7 +3597,7 @@ public class Game : MonoBehaviour {
                 curRunTraderDropPool.items.Add(item);
                 Assert.IsFalse(traderConfig.persistentItems.Contains(item), 
                     $"{item.name} is a default trader item and should not be apart of future item unlocks, set trader chance to spawn to 0");
-            }    
+            } 
         }
     }
 
@@ -3546,7 +3624,7 @@ public class Game : MonoBehaviour {
         return dropPool.items[^1];
     }
 
-    private void GetUniqueItemsFromDropPool(DropPool dropPool, int count, List<Item> items, float raritySkew = 0f) {
+    private void GetUniqueItemsFromDropPool(DropPool dropPool, int maxCount, List<Item> items, float raritySkew = 0f) {
         foreach (Item item in dropPool.items) {
             float itemDropChance = GetDropChanceOfItem(item, dropPool.dropOrigin) + raritySkew;
             if (itemDropChance > 1f) continue;
@@ -3555,15 +3633,13 @@ public class Game : MonoBehaviour {
                 items.Add(item);
             }
         }
-        
-        Assert.IsTrue(items.Count >= count, $"Could not produce up to {count} items");
-        
-        for (int i = 0; i < items.Count; i++) {
-            int randomIndex = Random.Range(i, items.Count);
-            (items[i], items[randomIndex]) = (items[randomIndex], items[i]);
-        }
 
-        items.RemoveRange(count, items.Count - count);
+        items.Shuffle();
+
+        bool itemListNeedsTrimming = items.Count > maxCount;
+        if (itemListNeedsTrimming) {
+            items.RemoveRange(maxCount, items.Count - maxCount);
+        }
     }
 
     private float GetDropChanceOfItem(Item item, DropOrigin origin) {

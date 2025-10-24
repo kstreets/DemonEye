@@ -16,7 +16,7 @@ MonoBehaviour:
   uncommonTextColor: {r: 0.51993585, g: 0.7987421, b: 0.51993585, a: 1}
   rareTextColor: {r: 0.836478, g: 0.27093455, b: 0.27424183, a: 1}
   legendaryTextColor: {r: 1, g: 0.6470588, b: 0, a: 1}
-  rarityFontSize: 22
+  rarityFontSize: 25
   nonSelectedHideoutTabMargin: {x: 0, y: 0, z: 0, w: 6}
   selectedHideoutTabMargin: {x: 0, y: 0, z: 0, w: 0}
   normalButtonTextMargin: {x: 0, y: 0, z: 0, w: 7}

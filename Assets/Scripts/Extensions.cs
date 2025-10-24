@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 public static class Extensions {
 
@@ -59,6 +59,13 @@ public static class Extensions {
         T lastItem = list[^1];
         list.RemoveAt(list.Count - 1);
         return lastItem;
+    }
+    
+    public static void Shuffle<T>(this List<T> list) {
+        for (int i = 0; i < list.Count; i++) {
+            int randomIndex = Random.Range(i, list.Count);
+            (list[i], list[randomIndex]) = (list[randomIndex], list[i]);
+        }
     }
 
     public static void InitalizeWithDefault<T>(this T[] array) where T : new() {

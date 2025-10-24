@@ -10,6 +10,10 @@ public struct Timer {
     private float startTime;
 
     public bool IsFinished => CurTime <= 0f;
+
+    public Timer (float time) : this() {
+        SetTime(time);
+    }
     
     public bool Tick() {
         if (CurTime <= 0f) return true;
