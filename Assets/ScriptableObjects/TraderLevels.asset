@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5703a2b02b1fc2147b2fcd772faee457, type: 3}
   m_Name: TraderLevels
   m_EditorClassIdentifier: 
-  totalXpToNextLevel: 2c01000058020000b004000078050000
+  prefixedSumRepForLevel: 00000000f4010000a4060000800c0000

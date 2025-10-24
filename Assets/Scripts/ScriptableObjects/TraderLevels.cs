@@ -4,6 +4,6 @@ using UnityEngine;
 public class TraderLevels : ScriptableObject {
 
     public const int numTraderLevels = 3;
-    public int[] totalXpToNextLevel = new int[numTraderLevels];
+    public int[] prefixedSumRepForLevel = new int[numTraderLevels];
 
 }

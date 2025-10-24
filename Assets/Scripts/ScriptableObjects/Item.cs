@@ -7,9 +7,10 @@ public class Item : UuidScriptableObject {
     public string displayName;
     public Sprite inventorySprite;
     public ItemType type;
-    
+
     [Space]
-    
+
+    public Trader associatedTrader;
     public int buyPrice;
     public int sellPrice;
     public int traderXp;

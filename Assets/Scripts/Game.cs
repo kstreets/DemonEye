@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using TMPro;
 using Unity.Cinemachine;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.InputSystem;
@@ -24,6 +25,12 @@ public class Game : MonoBehaviour {
     public Styles styles;
     public List<QuestLine> questLines;
 
+    [Foldout("Traders")]
+    public Trader potionManTrader;
+    public Trader armsDealerTrader;
+    public Trader hatManTrader;
+    [EndFoldout]
+    
     [Foldout("Pooling Prefabs")]
     public GameObject baseProjectilePrefab;
     public GameObject stoppingPowerProjectilePrefab;
@@ -144,6 +151,9 @@ public class Game : MonoBehaviour {
     public TextMeshProUGUI traderLevelText;
     public TextMeshProUGUI traderRemainingXpText;
     public Button traderDealButton;
+    public TraderButton potionManTraderButton;
+    public TraderButton armsDealerTraderButton;
+    public TraderButton hatManTraderButton;
     [EndFoldout]
 
     [Foldout("UI/MapSelectionPanel")]
@@ -238,7 +248,7 @@ public class Game : MonoBehaviour {
         InitHideoutUI();
         
         BuildSavePaths();
-        hideoutStateData = LoadFromFile<HideoutStateData>(hideoutDataSavePath) ?? new HideoutStateData();
+        hideoutStateData = LoadFromFileOrCreateNew<HideoutStateData>(hideoutDataSavePath);
         // raidStateData = LoadFromFile<RaidStateData>(raidDataSavePath) ?? new RaidStateData();
         player = SpawnEntity<Player>(playerPrefab, Vector3.zero, Quaternion.identity, null, EntityLifetime.Global);
         player.gameObject.SetActive(false);
@@ -251,7 +261,7 @@ public class Game : MonoBehaviour {
         LoadInventory(playerInventory);
         LoadInventory(stashInventory);
         InitButtonCallbacks();
-        InitTrader();
+        InitTraders();
         SetStashValue(0);
         InitQuests();
         
@@ -1245,8 +1255,8 @@ public class Game : MonoBehaviour {
     [NonSerialized] public Inventory playerInventory;
     [NonSerialized] public Inventory stashInventory;
     [NonSerialized] private Inventory crucibleInventory;
-    [NonSerialized] private Inventory traderInventory;
     [NonSerialized] private Inventory transactionInventory;
+    [NonSerialized] private Inventory traderInventoryPtr;
     [NonSerialized] private Inventory lootInvetoryPtr;
     [NonSerialized] private List<Inventory> allInventories = new();
     
@@ -1284,7 +1294,7 @@ public class Game : MonoBehaviour {
         
         const int traderInventorySize = traderInventoryRowCount * traderInventoryColCount;
         SpawnUiSlots(traderInventoryParent, traderInventorySize);
-        traderInventory = CreateInventory(traderInventoryParent, traderInventorySize);
+        traderInventoryPtr = CreateInventory(traderInventoryParent, traderInventorySize);
         
         const int transactionInventorySize = 25;
         SpawnUiSlots(traderTransactionInventoryParent, transactionInventorySize);
@@ -1488,12 +1498,12 @@ public class Game : MonoBehaviour {
         }
         else if (OnTradingTab) {
             if (transactionState == TransactionState.Buying) {
-                if (hoveredInventory == traderInventory) {
+                if (hoveredInventory == traderInventoryPtr) {
                     destinationInventory = transactionInventory;
                     moveOption = MoveItemOption.Single;
                 }
                 else if (hoveredInventory == transactionInventory) {
-                    destinationInventory = traderInventory;
+                    destinationInventory = traderInventoryPtr;
                 }
             }
             else if (transactionState == TransactionState.Selling) {
@@ -1505,7 +1515,7 @@ public class Game : MonoBehaviour {
                 }
             }
             else {
-                if (hoveredInventory == traderInventory) {
+                if (hoveredInventory == traderInventoryPtr) {
                     destinationInventory = transactionInventory;
                     moveOption = MoveItemOption.Single;
                 }
@@ -1659,29 +1669,6 @@ public class Game : MonoBehaviour {
 
     }
 
-    private void AddItemsToTraderInventory(int traderLevel) {
-        if (traderLevel == 0) {
-            foreach (Item item in traderConfig.persistentItems) {
-                TryAddItemToInventory(traderInventory, item, 99);
-            }
-            return;
-        }
-
-        float raritySkew = traderLevel switch {
-            1 => 0.1f,
-            2 => 0.20f,
-            3 => 0.40f,
-            4 => 0.50f,
-            _ => 0f,
-        };
-        
-        using var autoRelease = ListPool<Item>.Get(out List<Item> items);
-        GetUniqueItemsFromDropPool(curRunTraderDropPool, traderInventoryColCount, items, raritySkew);
-        foreach (Item item in items) {
-            TryAddItemToInventory(traderInventory, item, item.MaxStackCount);
-        }
-    }
-    
     public struct InventoryHoverInfo {
         public Inventory inventory;
         public int slotIndex;
@@ -1746,17 +1733,17 @@ public class Game : MonoBehaviour {
         }
 
         // We don't allow trader items to be picked up
-        if (hoverInfo.inventory == traderInventory && !IsDraggingItem) {
+        if (hoverInfo.inventory == traderInventoryPtr && !IsDraggingItem) {
             if (transactionState != TransactionState.Selling) {
-                MoveItemBetweenInventories(traderInventory, transactionInventory, hoverInfo.slotIndex, MoveItemOption.Single);
-                UpdateTraderTransactionState(traderInventory); 
+                MoveItemBetweenInventories(traderInventoryPtr, transactionInventory, hoverInfo.slotIndex, MoveItemOption.Single);
+                UpdateTraderTransactionState(traderInventoryPtr); 
             }
             return IsDraggingItem;
         }
 
         // If we are putting trader items back, then we also don't want to pick up the items
         if (!IsDraggingItem && hoverInfo.inventory == transactionInventory && transactionState == TransactionState.Buying) {
-            MoveItemBetweenInventories(transactionInventory, traderInventory, hoverInfo.slotIndex, MoveItemOption.Single);
+            MoveItemBetweenInventories(transactionInventory, traderInventoryPtr, hoverInfo.slotIndex, MoveItemOption.Single);
             UpdateTraderTransactionState(null); 
             return IsDraggingItem;
         }
@@ -1798,7 +1785,7 @@ public class Game : MonoBehaviour {
         if (placingItem && placeInputUsed) {
             bool droppingItemInHideout = hoverInfo.inventory == null && InHideout;
             bool tryingToPlaceItemToSellWhileBuying = hoverInfo.inventory == transactionInventory && transactionState == TransactionState.Buying;
-            bool tryingToPlaceInTraderInventory = hoverInfo.inventory == traderInventory;
+            bool tryingToPlaceInTraderInventory = hoverInfo.inventory == traderInventoryPtr;
             
             if (droppingItemInHideout || tryingToPlaceItemToSellWhileBuying || tryingToPlaceInTraderInventory) {
                 TryAddItemToInventory(startDragInfo.inventory, dragItem, startDragInfo.slotIndex);
@@ -1926,7 +1913,7 @@ public class Game : MonoBehaviour {
     public InventoryAddResult TryAddItemToInventory(Inventory inventory, InventoryItem item, int slotIndex = -1) {
         InventoryAddResult result = new() { type = InventoryAddResult.ResultType.Failure };
 
-        bool allowInfiniteStacking = inventory == traderInventory;
+        bool allowInfiniteStacking = inventory == traderInventoryPtr;
         bool droppingItemInSpecificSlot = slotIndex != -1;
 
         using var autoDispose = ListPool<InventorySlot>.Get(out List<InventorySlot> availableSlots);
@@ -2861,6 +2848,7 @@ public class Game : MonoBehaviour {
     private string raidDataSavePath;
     private string playerSavePath;
     private string questSavePath;
+    private string traderSavePath;
     private List<InventoryItem> cachedInventoryForSaving = new(50);
     
     private void BuildSavePaths() {
@@ -2871,6 +2859,7 @@ public class Game : MonoBehaviour {
         raidDataSavePath = $"{Application.persistentDataPath}/raidStateData";
         playerSavePath = $"{Application.persistentDataPath}/player";
         questSavePath = $"{Application.persistentDataPath}/quests";
+        traderSavePath = $"{Application.persistentDataPath}/traders";
     }
 
     private string GetSavePath(Inventory inventory) {
@@ -2917,6 +2906,10 @@ public class Game : MonoBehaviour {
         BinaryFormatter bf = new();
         using FileStream file = File.Create(path);
         bf.Serialize(file, obj);
+    }
+
+    private T LoadFromFileOrCreateNew<T>(string path) where T : class, new() {
+        return LoadFromFile<T>(path) ?? new T();
     }
 
     private T LoadFromFile<T>(string path) where T : class {
@@ -3051,6 +3044,10 @@ public class Game : MonoBehaviour {
             ToggleHideoutTab(questsTabButton, questsTabText);
             ToggleHideoutPanels(questsPanel);
         });
+
+        potionManTraderButton.button.onClick.AddListener(() => OnTraderButtonPressed(potionManTrader));
+        armsDealerTraderButton.button.onClick.AddListener(() => OnTraderButtonPressed(armsDealerTrader));
+        hatManTraderButton.button.onClick.AddListener(() => OnTraderButtonPressed(hatManTrader));
         
         crucibleForgeButton.onClick.AddListener(() => {
             int eyeSlotIndex = 0;
@@ -3169,7 +3166,7 @@ public class Game : MonoBehaviour {
             }
             else if (transactionState == TransactionState.Selling) {
                 int xpGain = GetInventoryValue(transactionInventory, InventoryValueType.Xp);
-                IncreaseTraderLevel(xpGain);
+                IncreaseTraderRep(GetCurrentlySelectedTrader(), xpGain);
                 SetStashValue(stashValue + price);
                 ClearInventory(transactionInventory);
                 transactionState = TransactionState.Empty;
@@ -3267,7 +3264,7 @@ public class Game : MonoBehaviour {
         if (!OnTradingTab) return;
         
         if (sourceInventory != null && transactionState == TransactionState.Empty) {
-            if (sourceInventory == traderInventory) {
+            if (sourceInventory == traderInventoryPtr) {
                 transactionState = TransactionState.Buying;
             }
             else if (sourceInventory == stashInventory) {
@@ -3298,57 +3295,192 @@ public class Game : MonoBehaviour {
             traderTransactionInfoText.text = $"Sell for {sellPrice}\n Gain {xpGain} trader experience";
         }
     }
+    
+    // ************************
+    // Traders
+    // ************************
 
-    private void InitTrader() {
-        int totalXpForLevel = traderLevels.totalXpToNextLevel[hideoutStateData.traderLevel];
-        while (hideoutStateData.curTraderXpForLevel > totalXpForLevel) {
-            hideoutStateData.traderLevel++;
-            hideoutStateData.curTraderXpForLevel -= totalXpForLevel;
-            totalXpForLevel = traderLevels.totalXpToNextLevel[hideoutStateData.traderLevel];
-        }
-        UpdateTraderXpBar();
-        
-        // This is temporary because we eventually need to load prev saved run items
-        AddItemsToTraderInventory(0); 
-        AddItemsToTraderInventory(1); 
-        AddItemsToTraderInventory(2); 
-        AddItemsToTraderInventory(3); 
+    [Serializable]
+    public class TradersSaveData {
+        public int potionManRep;
+        public int armsDealerRep;
+        public int hatManRep;
     }
     
-    private void IncreaseTraderLevel(int xpGain) {
-        if (ReachedTraderMaxLevel()) return;
-        
-        hideoutStateData.curTraderXpForLevel += xpGain;
-        
-        int totalXpForLevel = traderLevels.totalXpToNextLevel[hideoutStateData.traderLevel];
-        while (!ReachedTraderMaxLevel() && hideoutStateData.curTraderXpForLevel > totalXpForLevel) {
-            hideoutStateData.traderLevel++;
-            hideoutStateData.curTraderXpForLevel -= totalXpForLevel;
-            if (traderLevels.totalXpToNextLevel.IndexInRange(hideoutStateData.traderLevel)) {
-                totalXpForLevel = traderLevels.totalXpToNextLevel[hideoutStateData.traderLevel];
-            }
-            AddItemsToTraderInventory(hideoutStateData.traderLevel);
-        }
+    private TradersSaveData traderSaveData;
 
-        UpdateTraderXpBar();
+    private void SaveTraders() {
+        SaveToFile(traderSavePath, traderSaveData);
     }
 
-    private void UpdateTraderXpBar() {
-        if (ReachedTraderMaxLevel()) {
-            traderXpLevelFill.fillAmount = 0f;
+    private InventorySlot[] potionManSlots;
+    private InventorySlot[] armsDealerSlots;
+    private InventorySlot[] hatManSlots;
+
+    private void InitTraders() {
+        traderSaveData = LoadFromFileOrCreateNew<TradersSaveData>(traderSavePath);
+
+        const int traderInventorySize = traderInventoryRowCount * traderInventoryColCount;
+        potionManSlots = new InventorySlot[traderInventorySize];
+        armsDealerSlots = new InventorySlot[traderInventorySize];
+        hatManSlots = new InventorySlot[traderInventorySize];
+        
+        potionManSlots.InitalizeWithDefault();
+        armsDealerSlots.InitalizeWithDefault();
+        hatManSlots.InitalizeWithDefault();
+
+        for (int i = 0; i < traderInventorySize; i++) {
+            potionManSlots[i].ui = traderInventoryPtr.slots[i].ui;
+            armsDealerSlots[i].ui = traderInventoryPtr.slots[i].ui;
+            hatManSlots[i].ui = traderInventoryPtr.slots[i].ui;
+        }
+        
+        OnTraderButtonPressed(potionManTrader); // Toggle default trader
+
+        // int totalXpForLevel = traderLevels.totalXpToNextLevel[hideoutStateData.traderLevel];
+        // while (hideoutStateData.curTraderXpForLevel > totalXpForLevel) {
+        //     hideoutStateData.traderLevel++;
+        //     hideoutStateData.curTraderXpForLevel -= totalXpForLevel;
+        //     totalXpForLevel = traderLevels.totalXpToNextLevel[hideoutStateData.traderLevel];
+        // }
+        // UpdateTraderXpBar();
+        
+        AddItemsToTraderSlots(0, potionManSlots); 
+        AddItemsToTraderSlots(0, armsDealerSlots); 
+        AddItemsToTraderSlots(0, hatManSlots); 
+    }
+    
+    private void IncreaseTraderRep(Trader trader, int repGain) {
+        if (ReachedTraderMaxRep(trader)) return;
+        
+        AddToTraderRep(trader, repGain);
+        if (trader == GetCurrentlySelectedTrader()) { 
+            SetTraderRepBar(trader);
+        }
+    }
+
+    private void SetTraderRepBar(Trader trader) {
+        int levelIndex = GetTraderRepLevelIndex(trader);
+        
+        if (ReachedTraderMaxRep(trader)) {
+            traderXpLevelFill.fillAmount = 1f;
             traderRemainingXpText.text = string.Empty;
-            traderLevelText.text = $"Level {hideoutStateData.traderLevel + 1} (Max)";
+            traderLevelText.text = $"Level {levelIndex + 1} (Max)";
             return;
         }
         
-        int totalXp = traderLevels.totalXpToNextLevel[hideoutStateData.traderLevel];
-        traderXpLevelFill.fillAmount = hideoutStateData.curTraderXpForLevel / (float)totalXp;
-        traderRemainingXpText.text = $"{totalXp - hideoutStateData.curTraderXpForLevel} XP Left";
-        traderLevelText.text = $"Level {hideoutStateData.traderLevel + 1}";
+        int prefixedSumAtCurLevel = traderLevels.prefixedSumRepForLevel[levelIndex];
+        int prefixedSumAtPrevLevel = traderLevels.prefixedSumRepForLevel[levelIndex - 1];
+        int repNeededForThisLevel = prefixedSumAtCurLevel - prefixedSumAtPrevLevel;
+
+        int traderRep = GetTraderRep(trader);
+        int repCompletedAtCurLevel = traderRep - prefixedSumAtPrevLevel;
+        int repLeftToGo = prefixedSumAtCurLevel - traderRep;
+        
+        traderXpLevelFill.fillAmount = repCompletedAtCurLevel / (float)repNeededForThisLevel;
+        traderRemainingXpText.text = $"{repLeftToGo} Rep Left";
+        traderLevelText.text = $"Level {levelIndex}";
+    }
+
+    private int GetTraderRep(Trader trader) {
+        if (trader == potionManTrader) {
+            return traderSaveData.potionManRep;
+        }
+        if (trader == armsDealerTrader) {
+            return traderSaveData.armsDealerRep;
+        }
+        if (trader == hatManTrader) {
+            return traderSaveData.hatManRep;
+        }
+        return -1;
+    }
+
+    private void AddToTraderRep(Trader trader, int repGain) {
+        if (trader == potionManTrader) {
+            traderSaveData.potionManRep += repGain;
+        }
+        if (trader == armsDealerTrader) {
+            traderSaveData.armsDealerRep += repGain;
+        }
+        if (trader == hatManTrader) {
+            traderSaveData.hatManRep += repGain;
+        }
+        SaveTraders();
+    }
+
+    private int GetTraderRepLevelIndex(Trader trader) {
+        int rep = GetTraderRep(trader);
+        for (int i = 0; i < traderLevels.prefixedSumRepForLevel.Length; i++) {
+            if (rep < traderLevels.prefixedSumRepForLevel[i]) {
+                return i;
+            }
+        }
+        return traderLevels.prefixedSumRepForLevel.Length - 1;
+    }
+
+    private Trader GetCurrentlySelectedTrader() {
+        if (traderInventoryPtr.slots == potionManSlots) {
+            return potionManTrader;
+        }
+        if (traderInventoryPtr.slots == armsDealerSlots) {
+            return armsDealerTrader;
+        }
+        if (traderInventoryPtr.slots == hatManSlots) {
+            return hatManTrader;
+        }
+        return null;
     }
     
-    private bool ReachedTraderMaxLevel() {
-        return !traderLevels.totalXpToNextLevel.IndexInRange(hideoutStateData.traderLevel);
+    private void AddItemsToTraderSlots(int traderLevel, InventorySlot[] traderSlots) {
+        // We highjack the trader invetory temporarily to safely add items to it
+        // but restore it at the end of this method so its as if nothing changed ;)
+        InventorySlot[] slotsToRestore = traderInventoryPtr.slots;
+        traderInventoryPtr.slots = traderSlots;
+        
+        float raritySkew = traderLevel switch {
+            1 => 0.1f,
+            2 => 0.20f,
+            3 => 0.40f,
+            4 => 0.50f,
+            _ => 0f,
+        };
+        
+        using var autoRelease = ListPool<Item>.Get(out List<Item> items);
+        GetUniqueItemsFromDropPool(curRunTraderDropPool, traderInventoryColCount, items, raritySkew);
+        foreach (Item item in items) {
+            TryAddItemToInventory(traderInventoryPtr, item, item.MaxStackCount);
+        }
+        
+        traderInventoryPtr.slots = slotsToRestore;
+    }
+    
+    private bool ReachedTraderMaxRep(Trader trader) {
+        int rep = GetTraderRep(trader);
+        return rep >= traderLevels.prefixedSumRepForLevel[^1];
+    }
+    
+    private void OnTraderButtonPressed(Trader selectedTrader) {
+        ClearInventory(transactionInventory);
+        UpdateTraderTransactionState(null);
+        
+        potionManTraderButton.Toggle(false);
+        armsDealerTraderButton.Toggle(false);
+        hatManTraderButton.Toggle(false);
+        
+        if (selectedTrader == potionManTrader) {
+            traderInventoryPtr.slots = potionManSlots;
+            potionManTraderButton.Toggle(true);
+        }
+        if (selectedTrader == armsDealerTrader) {
+            traderInventoryPtr.slots = armsDealerSlots;
+            armsDealerTraderButton.Toggle(true);
+        }
+        if (selectedTrader == hatManTrader) {
+            traderInventoryPtr.slots = hatManSlots;
+            hatManTraderButton.Toggle(true);
+        }
+        
+        SetTraderRepBar(selectedTrader);
     }
     
     // ************************
@@ -3375,7 +3507,7 @@ public class Game : MonoBehaviour {
     }
     
     private void InitQuests() {
-        questlineState = LoadFromFile<QuestlineStateData>(questSavePath) ?? new QuestlineStateData();
+        questlineState = LoadFromFileOrCreateNew<QuestlineStateData>(questSavePath);
         
         for (int i = 0; i < activeQuestCount; i++) {
             Quest quest = questLines[i].quests[questlineState.questLineIndicies[i]];

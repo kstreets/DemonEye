@@ -15,4 +15,8 @@ public class Styles : ScriptableObject {
     public Vector4 normalButtonTextMargin;
     public Vector4 pressedButtonTextMargin;
 
+    public Color nonSelectedTraderBackground;
+    public Color selectedTraderBackground;
+    public Color nonSelectedTraderHeadshotTint;
+
 }
