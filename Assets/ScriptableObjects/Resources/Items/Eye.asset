@@ -16,11 +16,13 @@ MonoBehaviour:
   displayName: Eyeball
   inventorySprite: {fileID: -12894388, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   type: {fileID: 11400000, guid: 5cca30c9ef87dc746b52b824dea7ceca, type: 2}
+  associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
   buyPrice: 15
   sellPrice: 8
   traderXp: 0
+  spawnsOnMaps: []
   chanceToSpawnOnBody: 0.1
-  chanceToSpawnOnTrader: 0
+  chanceToSpawnOnTrader: 1
   chanceToSpawnFromRock: 0
   modifiesStats: 0
   agilityStatAdjustment: 0

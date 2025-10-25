@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 [Serializable]
-public class Map : MonoBehaviour {
+public class MapInstance : MonoBehaviour {
 
     public Transform spawnPositionsParent;
     public Transform resourceParent;

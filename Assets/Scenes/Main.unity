@@ -6100,6 +6100,9 @@ MonoBehaviour:
   potionManTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
   armsDealerTrader: {fileID: 11400000, guid: b04e05a2cdc85404fbe24578a1868a5d, type: 2}
   hatManTrader: {fileID: 11400000, guid: bb3b083a03a70c147a32c54d43dd6569, type: 2}
+  lighthouseMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
+  customsMap: {fileID: 11400000, guid: 9353817006d76f54fb1273b8ced36a68, type: 2}
+  terminalMap: {fileID: 0}
   baseProjectilePrefab: {fileID: 2758590605051147821, guid: 490c322ccae8e8149a6dddb96650a50e, type: 3}
   stoppingPowerProjectilePrefab: {fileID: 4682860730991365088, guid: 5fa01c7df64854b40996c60725181067, type: 3}
   bloodDropPrefab: {fileID: 2835100544158664230, guid: a3700393b2b39cc44a28e9dee1a285c8, type: 3}

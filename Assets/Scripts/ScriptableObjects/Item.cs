@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using VInspector;
 
@@ -14,9 +15,10 @@ public class Item : UuidScriptableObject {
     public int buyPrice;
     public int sellPrice;
     public int traderXp;
-    
+
     [Space]
-    
+
+    public List<MapData> spawnsOnMaps;
     [Range(0f, 1f)] public float chanceToSpawnOnBody;
     [Range(0f, 1f)] public float chanceToSpawnOnTrader;
     [Range(0f, 1f)] public float chanceToSpawnFromRock;

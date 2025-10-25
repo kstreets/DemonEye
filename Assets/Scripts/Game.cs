@@ -6,7 +6,6 @@ using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using TMPro;
 using Unity.Cinemachine;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.InputSystem;
@@ -29,6 +28,12 @@ public class Game : MonoBehaviour {
     public Trader potionManTrader;
     public Trader armsDealerTrader;
     public Trader hatManTrader;
+    [EndFoldout]
+
+    [Foldout("Maps")]
+    public MapData lighthouseMap;
+    public MapData customsMap;
+    public MapData terminalMap;
     [EndFoldout]
     
     [Foldout("Pooling Prefabs")]
@@ -303,8 +308,8 @@ public class Game : MonoBehaviour {
 
     private void FixedUpdate() {
         if (!InRaid) return;
-        currentMap.grid.CompleteFlowFieldCalculation();
-        currentMap.grid.ScheduleFlowFieldCalculation(player.position);
+        currentMapInstance.grid.CompleteFlowFieldCalculation();
+        currentMapInstance.grid.ScheduleFlowFieldCalculation(player.position);
         FixedUpdateEnemies();
     }
 
@@ -341,11 +346,11 @@ public class Game : MonoBehaviour {
     private void OnRaidStateEnter() {
         ShowRaidUI(true);
         
-        currentMap.gameObject.SetActive(true);
-        currentMap.grid.Init();
+        currentMapInstance.gameObject.SetActive(true);
+        currentMapInstance.grid.Init();
 
-        int randomSpawnIndex = Random.Range(0, currentMap.spawnPositionsParent.childCount);
-        Vector2 randomSpawnPos = currentMap.spawnPositionsParent.GetChild(randomSpawnIndex).position;
+        int randomSpawnIndex = Random.Range(0, currentMapInstance.spawnPositionsParent.childCount);
+        Vector2 randomSpawnPos = currentMapInstance.spawnPositionsParent.GetChild(randomSpawnIndex).position;
         
         player.gameObject.SetActive(true);
         player.position = randomSpawnPos;
@@ -355,15 +360,15 @@ public class Game : MonoBehaviour {
         cinemachineCamera.Follow = player.trans;
         
         InitExitPortal();
-        InitSpawnManager(currentMap.waves);
-        SpawnResources(currentMap.resourceParent);
+        InitSpawnManager(currentMapInstance.waves);
+        SpawnResources(currentMapInstance.resourceParent);
     }
 
     private void OnRaidStateExit() {
         if (player.health > 0) {
             LeaveRaid();
         }
-        currentMap.grid.Deinit();
+        currentMapInstance.grid.Deinit();
         UnloadCurrentMapAsync();
     }
 
@@ -401,7 +406,7 @@ public class Game : MonoBehaviour {
 
     private void LeaveRaid() {
         DestroyLevelEntities();
-        currentMap.gameObject.SetActive(false);
+        currentMapInstance.gameObject.SetActive(false);
         playerBarsPanel.gameObject.SetActive(false);
         player.gameObject.SetActive(false);
     }
@@ -1062,7 +1067,7 @@ public class Game : MonoBehaviour {
                 speed = 0f;
             }
             
-            enemy.moveDir = currentMap.grid.GetFlowFieldDirection(enemy.position);
+            enemy.moveDir = currentMapInstance.grid.GetFlowFieldDirection(enemy.position);
             enemy.rigidbody.linearVelocity = enemy.moveDir * speed;
 
             if (!enemyIsAttacking && enemy.changeDirLimiter.TimeHasPassed(0.15f)) {
@@ -1185,7 +1190,7 @@ public class Game : MonoBehaviour {
         if (sm.spawnEvents.Count <= 0) return;
         
         while (sm.spawnEvents.IndexInRange(sm.spawnTimeIndex) && sm.spawnEvents[sm.spawnTimeIndex].time <= sm.timeInPhase) {
-            CoolerGrid.GridCell randomSpawnGridPos = currentMap.grid.GetSpawnPosition(player.position);
+            CoolerGrid.GridCell randomSpawnGridPos = currentMapInstance.grid.GetSpawnPosition(player.position);
             Vector2 randomSpawnPos = randomSpawnGridPos.position;
 
             EnemyData enemyToSpawn = sm.spawnEvents[sm.spawnTimeIndex].enemy;
@@ -2830,7 +2835,7 @@ public class Game : MonoBehaviour {
     private class RaidStateData {
         public int raidDifficulty;
         public List<string> mapSceneNames;
-        [NonSerialized] public Map currentMap;
+        [NonSerialized] public MapInstance CurrentMapInstance;
     }
     
     [Serializable]
@@ -3183,13 +3188,13 @@ public class Game : MonoBehaviour {
         });
         
         easyMapButton.onClick.AddListener(() => {
-            LoadMapAsync("Lighthouse", () => {
+            LoadMapAsync(lighthouseMap, () => {
                 gameStateMachine.SetStateIfNotCurrent(raidState);
             });
         });
         
         mediumMapButton.onClick.AddListener(() => {
-            LoadMapAsync("Customs", () => {
+            LoadMapAsync(customsMap, () => {
                 gameStateMachine.SetStateIfNotCurrent(raidState);
             });
         });
@@ -3345,9 +3350,9 @@ public class Game : MonoBehaviour {
         // }
         // UpdateTraderXpBar();
         
-        AddItemsToTraderSlots(0, potionManSlots); 
-        AddItemsToTraderSlots(0, armsDealerSlots); 
-        AddItemsToTraderSlots(0, hatManSlots); 
+        FillTraderSlotsWithItems(potionManTrader, potionManSlots); 
+        FillTraderSlotsWithItems(armsDealerTrader, armsDealerSlots); 
+        FillTraderSlotsWithItems(hatManTrader, hatManSlots); 
     }
     
     private void IncreaseTraderRep(Trader trader, int repGain) {
@@ -3431,22 +3436,35 @@ public class Game : MonoBehaviour {
         return null;
     }
     
-    private void AddItemsToTraderSlots(int traderLevel, InventorySlot[] traderSlots) {
+    private void FillTraderSlotsWithItems(Trader trader, InventorySlot[] traderSlots) {
         // We highjack the trader invetory temporarily to safely add items to it
         // but restore it at the end of this method so its as if nothing changed ;)
         InventorySlot[] slotsToRestore = traderInventoryPtr.slots;
         traderInventoryPtr.slots = traderSlots;
+
+        int traderRepLevel = GetTraderRepLevelIndex(trader);
         
-        float raritySkew = traderLevel switch {
-            1 => 0.1f,
+        float raritySkew = traderRepLevel switch {
+            1 => 0.0f,
             2 => 0.20f,
             3 => 0.40f,
             4 => 0.50f,
             _ => 0f,
         };
+
+        DropPool traderDropPool;
+        if (trader == potionManTrader) {
+            traderDropPool = potionManTraderDropPool;
+        }
+        else if (trader == armsDealerTrader) {
+            traderDropPool = armsDealerTraderDropPool;
+        }
+        else {
+            traderDropPool = hatManTraderDropPool;
+        }
         
         using var autoRelease = ListPool<Item>.Get(out List<Item> items);
-        GetUniqueItemsFromDropPool(curRunTraderDropPool, traderInventoryColCount, items, raritySkew);
+        GetUniqueItemsFromDropPool(traderDropPool, traderInventoryColCount, items, raritySkew);
         foreach (Item item in items) {
             TryAddItemToInventory(traderInventoryPtr, item, item.MaxStackCount);
         }
@@ -3629,35 +3647,37 @@ public class Game : MonoBehaviour {
     // Scene Management 
     // ************************
 
-    [NonSerialized] public string loadedMapName;
-    [NonSerialized] public string activelyLoadingMapName;
-    [NonSerialized] public string activelyUnloadingMapName;
-    [NonSerialized] public Map currentMap;
+    private enum MapLoadingState { Unloaded, Loaded, Loading, Unloading }
+    private MapLoadingState mapLoadingState;
 
-    public void LoadMapAsync(string sceneName, Action onLoadedCallback) {
+    [NonSerialized] public MapData loadedMapData;
+    [NonSerialized] public MapInstance currentMapInstance;
+
+    public void LoadMapAsync(MapData mapData, Action onLoadedCallback) {
         if (LoadingMapInProgress()) return;
 
-        AsyncOperation loadOperation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+        AsyncOperation loadOperation = SceneManager.LoadSceneAsync(mapData.sceneReference, LoadSceneMode.Additive);
         if (loadOperation == null) return;
-        
-        activelyLoadingMapName = sceneName;
+
+        mapLoadingState = MapLoadingState.Loading;
         StartCoroutine(WaitForSceneToLoad());
 
         IEnumerator WaitForSceneToLoad() {
             while (!loadOperation.isDone) {
                 yield return null;
             }
-            activelyLoadingMapName = string.Empty;
-            loadedMapName = sceneName;
+            
+            mapLoadingState = MapLoadingState.Loaded;
+            loadedMapData = mapData;
 
             List<GameObject> loadedMapRoots = ListPool<GameObject>.Get();
             
-            Scene loadedMapScene = SceneManager.GetSceneByName(sceneName);
+            Scene loadedMapScene = SceneManager.GetSceneByName(mapData.sceneReference);
             loadedMapScene.GetRootGameObjects(loadedMapRoots);
             
             foreach (GameObject root in loadedMapRoots) {
-                if (!root.TryGetComponent(out Map map)) continue;
-                currentMap = map;
+                if (!root.TryGetComponent(out MapInstance map)) continue;
+                currentMapInstance = map;
                 map.gameObject.SetActive(false);
                 break;
             }
@@ -3670,15 +3690,15 @@ public class Game : MonoBehaviour {
     public void UnloadCurrentMapAsync() {
         if (UnloadingMapInProgress()) return;
             
-        currentMap.gameObject.SetActive(false); 
+        currentMapInstance.gameObject.SetActive(false); 
         
-        Scene loadedMap = SceneManager.GetSceneByName(loadedMapName);
+        Scene loadedMap = SceneManager.GetSceneByName(loadedMapData.sceneReference);
         AsyncOperation unloadOperation = SceneManager.UnloadSceneAsync(loadedMap);
 
         if (unloadOperation == null) return;
         
-        activelyUnloadingMapName = loadedMapName;
-        loadedMapName = string.Empty;
+        mapLoadingState = MapLoadingState.Unloading;
+        loadedMapData = null;
         
         StartCoroutine(WaitForSceneToLoad());
 
@@ -3686,16 +3706,16 @@ public class Game : MonoBehaviour {
             while (!unloadOperation.isDone) {
                 yield return null;
             }
-            activelyUnloadingMapName = string.Empty;
+            mapLoadingState = MapLoadingState.Unloaded;
         }
     } 
     
     public bool LoadingMapInProgress() {
-        return !string.IsNullOrEmpty(activelyLoadingMapName);
+        return mapLoadingState == MapLoadingState.Loading;
     }
     
     public bool UnloadingMapInProgress() {
-        return !string.IsNullOrEmpty(activelyUnloadingMapName);
+        return mapLoadingState == MapLoadingState.Unloading;
     }
 
     // ************************
@@ -3711,12 +3731,16 @@ public class Game : MonoBehaviour {
 
     private DropPool curRunRockDropPool;
     private DropPool curRunBodyDropPool;
-    private DropPool curRunTraderDropPool;
+    private DropPool potionManTraderDropPool;
+    private DropPool armsDealerTraderDropPool;
+    private DropPool hatManTraderDropPool;
 
     private void CreateRunDropPools() {
         curRunRockDropPool = new() { items = new(), dropOrigin = DropOrigin.Rock };
         curRunBodyDropPool = new() { items = new(), dropOrigin = DropOrigin.Body };
-        curRunTraderDropPool = new() { items = new(), dropOrigin = DropOrigin.Trader };
+        potionManTraderDropPool = new() { items = new(), dropOrigin = DropOrigin.Trader };
+        armsDealerTraderDropPool = new() { items = new(), dropOrigin = DropOrigin.Trader };
+        hatManTraderDropPool = new() { items = new(), dropOrigin = DropOrigin.Trader };
 
         foreach ((int _, Item item) in itemLookup) {
             if (item.chanceToSpawnFromRock > 0f) {
@@ -3726,9 +3750,15 @@ public class Game : MonoBehaviour {
                 curRunBodyDropPool.items.Add(item);
             }    
             if (item.chanceToSpawnOnTrader > 0f) {
-                curRunTraderDropPool.items.Add(item);
-                Assert.IsFalse(traderConfig.persistentItems.Contains(item), 
-                    $"{item.name} is a default trader item and should not be apart of future item unlocks, set trader chance to spawn to 0");
+                if (item.associatedTrader == potionManTrader) {
+                    potionManTraderDropPool.items.Add(item);
+                }
+                if (item.associatedTrader == armsDealerTrader) {
+                    armsDealerTraderDropPool.items.Add(item);
+                }
+                if (item.associatedTrader == hatManTrader) {
+                    hatManTraderDropPool.items.Add(item);
+                }
             } 
         }
     }

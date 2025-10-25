@@ -16,11 +16,13 @@ MonoBehaviour:
   displayName: Demon Bone
   inventorySprite: {fileID: 1537612735, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   type: {fileID: 0}
+  associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
   buyPrice: 0
   sellPrice: 45
   traderXp: 0
+  spawnsOnMaps: []
   chanceToSpawnOnBody: 0.5
-  chanceToSpawnOnTrader: 0
+  chanceToSpawnOnTrader: 0.5
   chanceToSpawnFromRock: 0
   modifiesStats: 0
   agilityStatAdjustment: 0

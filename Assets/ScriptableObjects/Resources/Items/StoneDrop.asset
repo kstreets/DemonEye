@@ -16,9 +16,11 @@ MonoBehaviour:
   displayName: Demonic Stone
   inventorySprite: {fileID: 1172067732, guid: f5f130e61e73c674ba01af3a5a5f58ea, type: 3}
   type: {fileID: 0}
+  associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
   buyPrice: 5
   sellPrice: 3
   traderXp: 2
+  spawnsOnMaps: []
   chanceToSpawnOnBody: 0.2
   chanceToSpawnOnTrader: 0
   chanceToSpawnFromRock: 1

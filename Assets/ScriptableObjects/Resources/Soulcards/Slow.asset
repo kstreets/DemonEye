@@ -16,9 +16,11 @@ MonoBehaviour:
   displayName: Slow
   inventorySprite: {fileID: -1427259993, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
   type: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
+  associatedTrader: {fileID: 11400000, guid: b04e05a2cdc85404fbe24578a1868a5d, type: 2}
   buyPrice: 150
   sellPrice: 50
   traderXp: 5
+  spawnsOnMaps: []
   chanceToSpawnOnBody: 0.8
   chanceToSpawnOnTrader: 0.8
   chanceToSpawnFromRock: 0
