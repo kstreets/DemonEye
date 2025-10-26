@@ -2112,6 +2112,15 @@ public class Game : MonoBehaviour {
                 }
             }
         }
+        if (OnEyeForgeTab) {
+            foreach (InventorySlot slot in stashInventory.slots) {
+                if (slot.item == null) continue;
+                Item item = slot.item.ItemRef;
+                if (item.type != eyeType && item.type != soulcardType) {
+                    slot.ui.itemUI.ToggleGray();
+                }
+            }
+        }
     }
 
     public int GetInventoryItemCount(Inventory inventory) {
