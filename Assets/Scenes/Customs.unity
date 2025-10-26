@@ -33228,7 +33228,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 890915382}
-  - component: {fileID: 890915381}
+  - component: {fileID: 890915383}
   m_Layer: 0
   m_Name: Customs
   m_TagString: Untagged
@@ -33236,22 +33236,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &890915381
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 890915380}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c92b53c9d5ffa2a40bb3e7238a1dbe34, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  spawnPositionsParent: {fileID: 1839404864}
-  resourceParent: {fileID: 820981750}
-  waves: {fileID: 11400000, guid: 00bb5e40b3873e94c825c58138a262ae, type: 2}
-  grid: {fileID: 1315907621}
 --- !u!4 &890915382
 Transform:
   m_ObjectHideFlags: 0
@@ -33273,6 +33257,22 @@ Transform:
   - {fileID: 1839404864}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &890915383
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 890915380}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 256d0b3a9e0b13149808bb22e764b7b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MapInstance
+  spawnPositionsParent: {fileID: 1839404864}
+  resourceParent: {fileID: 820981750}
+  waves: {fileID: 11400000, guid: 849f4ebb1ddf7fa4cb4721ec615c44ab, type: 2}
+  grid: {fileID: 1315907621}
 --- !u!1001 &901271614
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -46590,6 +46590,7 @@ MonoBehaviour:
   height: 70
   cellSize: 0.16
   sourcePosForTesting: {fileID: 0}
+  drawGizmos: 0
 --- !u!4 &1315907622
 Transform:
   m_ObjectHideFlags: 0

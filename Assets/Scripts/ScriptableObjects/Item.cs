@@ -7,6 +7,8 @@ public class Item : UuidScriptableObject {
 
     public string displayName;
     public Sprite inventorySprite;
+    public Sprite dropSprite;
+    public float pickupRadius = 0.07f;
     public ItemType type;
 
     [Space]

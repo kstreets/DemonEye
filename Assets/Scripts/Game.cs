@@ -37,6 +37,7 @@ public class Game : MonoBehaviour {
     [EndFoldout]
     
     [Foldout("Pooling Prefabs")]
+    public GameObject itemDropPrefab;
     public GameObject baseProjectilePrefab;
     public GameObject stoppingPowerProjectilePrefab;
     public GameObject bloodDropPrefab;
@@ -220,11 +221,11 @@ public class Game : MonoBehaviour {
     
     public static Dictionary<int, Item> itemLookup = new();
     public static Dictionary<int, Soulcard> eyeModifierLookup = new();
-    public static Dictionary<Item, GameObject> itemPrefabLookup = new();
 
     private Timer exitPortalTimer;
     private int consecutiveCriticalHits;
 
+    private EntityPool<Entity> itemDropPool;
     private EntityPool<Entity> bloodDropPool;
     private EntityPool<Projectile> projectilePool;
     private EntityPool<Projectile> stoppingPowerProjectilePool;
@@ -260,7 +261,7 @@ public class Game : MonoBehaviour {
         LoadAndAssignPlayerSaveData(player);
 
         Tween.Init();
-        CreateRunDropPools();
+        CreateDropPools();
         
         InitInventory();
         LoadInventory(playerInventory);
@@ -270,6 +271,7 @@ public class Game : MonoBehaviour {
         SetStashValue(0);
         InitQuests();
         
+        itemDropPool = CreateEntityPool<Entity>(itemDropPrefab, 20, null);
         bloodDropPool = CreateEntityPool<Entity>(bloodDropPrefab, 10, null);
         projectilePool = CreateEntityPool<Projectile>(baseProjectilePrefab, 20, OnSpawnProjectile);
         stoppingPowerProjectilePool = CreateEntityPool<Projectile>(stoppingPowerProjectilePrefab, 20, OnSpawnProjectile);
@@ -304,6 +306,7 @@ public class Game : MonoBehaviour {
         foreach (Inventory inventory in allInventories) {
             RefreshInventoryDisplay(inventory);
         }
+        UpdateGraySlots();
     }
 
     private void FixedUpdate() {
@@ -341,6 +344,7 @@ public class Game : MonoBehaviour {
 
     private void OnHideoutStateUpdate() {
         UpdateInventory();
+        UpdateTraderTransactionState();
     }
 
     private void OnRaidStateEnter() {
@@ -393,15 +397,8 @@ public class Game : MonoBehaviour {
         player.health = 100;
         SavePlayerData();
         LeaveRaid();
-
         ClearInventory(playerInventory);
-        ClearInventory(stashInventory);
         SaveInventory(playerInventory);
-        SaveInventory(stashInventory);
-        ResetCrucibleUpgrades();
-        raidStateData.raidDifficulty = 0;
-        hideoutStateData.stashLevel = 0;
-        SaveToFile(hideoutDataSavePath, hideoutStateData);
     }
 
     private void LeaveRaid() {
@@ -411,13 +408,6 @@ public class Game : MonoBehaviour {
         player.gameObject.SetActive(false);
     }
 
-    private void ResetCrucibleUpgrades() {
-        hideoutStateData.crucibleLevel = 0;
-        for (int i = 1; i < crucibleInventory.slots.Length; i++) {
-            crucibleInventory.slots[i].ui.MakeSlotInactive();
-        }
-    }
-    
     // *****************************
     // Entity
     // *****************************
@@ -491,6 +481,12 @@ public class Game : MonoBehaviour {
         public bool IsValid => trans;
         public GameObject gameObject => trans.gameObject;
     }
+
+    private Entity SpawnItemAsEntity(Item item, int count, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level) {
+        Entity entity = SpawnEntity(itemDropPool, position, rotation, parent, lifetime);
+        entity.gameObject.GetComponent<ItemDrop>().Init(item, count);
+        return entity;
+    }
     
     private T SpawnEntity<T>(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level) where T : Entity, new() {
         GameObject obj = Instantiate(prefab, position, rotation, parent);
@@ -499,7 +495,7 @@ public class Game : MonoBehaviour {
         RegisterEntity(entity);
         return entity;
     }
-
+    
     private T SpawnEntity<T>(EntityPool<T> pool, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level) where T : Entity, new() {
         T entity;
         if (pool.standbyList.Count > 0) {
@@ -1216,6 +1212,7 @@ public class Game : MonoBehaviour {
         public int count = 1;
 
         [NonSerialized] public bool notDiscovered;
+        [NonSerialized] public bool traderOwned;
         [NonSerialized] public Item _itemRef; // Used for items created at runtime, like demon eyes
 
         public Item ItemRef => _itemRef ? _itemRef : itemLookup[itemDataUuid];
@@ -1232,6 +1229,7 @@ public class Game : MonoBehaviour {
                 itemDataUuid = itemDataUuid,
                 count = count,
                 notDiscovered = notDiscovered,
+                traderOwned = traderOwned,
                 _itemRef = ItemRef,
             };
 
@@ -1352,7 +1350,7 @@ public class Game : MonoBehaviour {
                 return;
             }
         }
-
+        
         InventoryHoverInfo invHoverInfo = UpdateInventoryHover();
         CheckToMoveItem(invHoverInfo);
 
@@ -1367,7 +1365,7 @@ public class Game : MonoBehaviour {
         UpdatePlayerPanelUI();
         CheckForEquipmentChange();
     }
-    
+
     private void UpdateItemDescPopup(InventoryHoverInfo invHoverInfo) {
         bool hoveringOverItem = TryGetItemFromHoverInfo(invHoverInfo, out InventoryItem _);
         
@@ -1466,7 +1464,8 @@ public class Game : MonoBehaviour {
         if (hoveredInventory == null) return;
 
         if (!TryGetItemFromHoverInfo(invHoverInfo, out InventoryItem hoveredItem)) return;
-
+        if (IsHoveredItemGrayedOut(invHoverInfo)) return;
+        
         bool clickedOnEquipedBackpack = IsEquipmentSlot(hoveredInventory, invHoverInfo.slotIndex) && hoveredItem.ItemRef.type == backpackType;
         if (clickedOnEquipedBackpack && EquipedBackpackHasItems()) return;
 
@@ -1533,7 +1532,6 @@ public class Game : MonoBehaviour {
         if (destinationInventory == null) return;
         
         MoveItemBetweenInventories(hoveredInventory, destinationInventory, invHoverInfo.slotIndex, moveOption);
-        UpdateTraderTransactionState(hoveredInventory); 
     }
 
     private void CheckToConsumeItem(InventoryHoverInfo invHoverInfo) {
@@ -1578,7 +1576,16 @@ public class Game : MonoBehaviour {
         
         hoveredItem = hoveredInventory.slots[hoveredSlot].item;
         return true;
-    } 
+    }
+
+    private bool IsHoveredItemGrayedOut(InventoryHoverInfo invHoverInfo) {
+        Assert.IsTrue(TryGetItemFromHoverInfo(invHoverInfo, out _), 
+            $"Method requires that you're hovering over an item, call {nameof(TryGetItemFromHoverInfo)} before to make sure.");
+        
+        int hoveredSlot = invHoverInfo.slotIndex;
+        Inventory hoveredInventory = invHoverInfo.inventory;
+        return hoveredInventory.slots[hoveredSlot].ui.itemUI.IsGrayedOut;
+    }
     
     private void SpawnUiSlots(RectTransform parent, int numSlots) {
         for (int i = 0; i < numSlots; i++) {
@@ -1741,7 +1748,6 @@ public class Game : MonoBehaviour {
         if (hoverInfo.inventory == traderInventoryPtr && !IsDraggingItem) {
             if (transactionState != TransactionState.Selling) {
                 MoveItemBetweenInventories(traderInventoryPtr, transactionInventory, hoverInfo.slotIndex, MoveItemOption.Single);
-                UpdateTraderTransactionState(traderInventoryPtr); 
             }
             return IsDraggingItem;
         }
@@ -1749,13 +1755,16 @@ public class Game : MonoBehaviour {
         // If we are putting trader items back, then we also don't want to pick up the items
         if (!IsDraggingItem && hoverInfo.inventory == transactionInventory && transactionState == TransactionState.Buying) {
             MoveItemBetweenInventories(transactionInventory, traderInventoryPtr, hoverInfo.slotIndex, MoveItemOption.Single);
-            UpdateTraderTransactionState(null); 
             return IsDraggingItem;
         }
         
         bool pickingUpItem = dragItem == null;
         if (pickingUpItem && pickupInputUsed) {
             if (!TryGetItemFromHoverInfo(hoverInfo, out InventoryItem item)) {
+                return IsDraggingItem;
+            }
+
+            if (IsHoveredItemGrayedOut(hoverInfo)) {
                 return IsDraggingItem;
             }
             
@@ -1782,8 +1791,6 @@ public class Game : MonoBehaviour {
             startDragInfo = hoverInfo;
             dragAndDropItemUI.gameObject.SetActive(true);
             dragAndDropItemUI.SetItem(dragItem.ItemRef, dragItem.count);
-            
-            UpdateTraderTransactionState(null);
         }
 
         bool placingItem = !pickingUpItem;
@@ -1823,6 +1830,10 @@ public class Game : MonoBehaviour {
                 swappingItems = itemsCanSwap && selectItemInputAction.WasPressedThisFrame();
             }
             
+            if (swappingItems && IsHoveredItemGrayedOut(hoverInfo)) {
+                return IsDraggingItem;
+            }
+            
             if (swappingItems) {
                 InventorySlot targetSlot = hoverInfo.inventory.slots[hoverInfo.slotIndex];
                 if (targetSlot.ui.disallowItemStacking && dragItem.count > 1) {
@@ -1836,8 +1847,6 @@ public class Game : MonoBehaviour {
                 dragItem = swapItem;
                 dragAndDropItemUI.SetItem(dragItem.ItemRef, dragItem.count);
 
-                UpdateTraderTransactionState(startDragInfo.inventory);
-                
                 return IsDraggingItem;
             }
 
@@ -1852,8 +1861,6 @@ public class Game : MonoBehaviour {
                 else {
                     dragAndDropItemUI.SetItem(dragItem.ItemRef, dragItem.count);
                 }
-                
-                UpdateTraderTransactionState(startDragInfo.inventory);
             }
 
             bool placingEntireStack = !placingSingleItemFromStack;
@@ -1867,8 +1874,6 @@ public class Game : MonoBehaviour {
                     dragItem.count -= result.addedCount;
                     dragAndDropItemUI.SetItem(dragItem.ItemRef, dragItem.count);
                 }
-                
-                UpdateTraderTransactionState(startDragInfo.inventory);
             }
         }
 
@@ -1876,18 +1881,15 @@ public class Game : MonoBehaviour {
     }
 
     private void DropItemFromInventory(InventoryItem inventoryItem, int count = -1) {
-        GameObject prefab = itemPrefabLookup[inventoryItem.ItemRef];
-
         Vector2 mouseWorldPos = mainCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
         Vector2 dropDir = (mouseWorldPos - player.position.ToVector2()).normalized;
         
-        Vector3 endPos = player.position + RandomizeVectorAngle(dropDir, 20f) * 0.2f;
-        Entity itemDrop = SpawnEntity<Entity>(prefab, player.position, Quaternion.identity);
-
         int dropCount = count <= 0 ? inventoryItem.count : count;
-        itemDrop.gameObject.GetComponent<ItemReference>().dropCount = dropCount;
         
-        AddBounceEffect(itemDrop, endPos, 0.8f);
+        Vector3 endPos = player.position + RandomizeVectorAngle(dropDir, 20f) * 0.2f;
+        Entity itemDropEntity = SpawnItemAsEntity(inventoryItem.ItemRef, dropCount, player.position, Quaternion.identity);
+        
+        AddBounceEffect(itemDropEntity, endPos, 0.8f);
     }
 
     private void UpdateDragAndDropItemToCursor() {
@@ -1917,11 +1919,11 @@ public class Game : MonoBehaviour {
 
     public InventoryAddResult TryAddItemToInventory(Inventory inventory, InventoryItem item, int slotIndex = -1) {
         InventoryAddResult result = new() { type = InventoryAddResult.ResultType.Failure };
-
+        
         bool allowInfiniteStacking = inventory == traderInventoryPtr;
         bool droppingItemInSpecificSlot = slotIndex != -1;
 
-        using var autoDispose = ListPool<InventorySlot>.Get(out List<InventorySlot> availableSlots);
+        using var _ = ListPool<InventorySlot>.Get(out List<InventorySlot> availableSlots);
         
         if (droppingItemInSpecificSlot) {
             availableSlots.Add(inventory.slots[slotIndex]);
@@ -2025,6 +2027,13 @@ public class Game : MonoBehaviour {
         return moveResult.type == InventoryAddResult.ResultType.Success;
     }
 
+    private void MoveEntireInventory(Inventory fromInventory, Inventory toInventory) {
+        for (int i = 0; i < fromInventory.slots.Length; i++) {
+            if (fromInventory.slots[i].item == null) continue;
+            MoveEntireItemStack(fromInventory, toInventory, i);
+        }
+    }
+
     private void ClearInventory(Inventory inventory) {
         for (int i = 0; i < inventory.slots.Length; i++) {
             RemoveItemFromInventory(inventory, i);
@@ -2090,6 +2099,18 @@ public class Game : MonoBehaviour {
             InventoryItem item = inventory.slots[i].item;
             if (item == null || item.notDiscovered) continue;
             inventory.slots[i].ui.SetItem(item.ItemRef, item.count);
+        }
+    }
+    
+    private void UpdateGraySlots() {
+        if (OnTradingTab) {
+            Trader curTrader = GetCurrentlySelectedTrader();
+            foreach (InventorySlot slot in stashInventory.slots) {
+                if (slot.item == null) continue;
+                if (slot.item.ItemRef.associatedTrader != curTrader) {
+                    slot.ui.itemUI.ToggleGray();
+                }
+            }
         }
     }
 
@@ -2481,13 +2502,13 @@ public class Game : MonoBehaviour {
             if (col.CompareTag(Tags.Pickup)) {
                 EnableInteractionPrompt(col.transform.position);
                 if (interactInputAction.WasPressedThisFrame()) {
-                    ItemReference itemReference = col.GetComponent<ItemReference>();
-                    InventoryAddResult result = TryAddItemToInventory(playerInventory, itemReference.item, itemReference.dropCount);
+                    ItemDrop itemDrop = col.GetComponent<ItemDrop>();
+                    InventoryAddResult result = TryAddItemToInventory(playerInventory, itemDrop.item, itemDrop.dropCount);
                     if (result.type == InventoryAddResult.ResultType.Success) {
                         DestroyEntity(col.gameObject);
                     }
                     else if (result.type == InventoryAddResult.ResultType.FailureToAddAll) {
-                        itemReference.dropCount -= result.addedCount;
+                        itemDrop.dropCount -= result.addedCount;
                     }
                 }
             }
@@ -2659,7 +2680,7 @@ public class Game : MonoBehaviour {
                 for (int i = 0; i < dropCount; i++) {
                     float randomAngle = (angleDeltaPerDrop * i) + Random.Range(-randomRangePerDrop, randomRangePerDrop);
                     Vector3 endPos = entity.position + RotationVector(randomAngle, 0.18f, 0.25f);
-                    Entity rockDrop = SpawnEntity<Entity>(GetPrefabFromDropPool(curRunRockDropPool), entity.position, Quaternion.identity);
+                    Entity rockDrop = SpawnItemAsEntity(GetItemFromDropPool(rockDropPool), 1, entity.position, Quaternion.identity);
                     AddBounceEffect(rockDrop, endPos, 0.8f);
                 }
             }
@@ -2773,7 +2794,7 @@ public class Game : MonoBehaviour {
             using var autoRelease = ListPool<Item>.Get(out List<Item> deadBodyItems);
             
             int maxDeadBodyItemCount = Random.Range(2, 6);
-            GetUniqueItemsFromDropPool(curRunBodyDropPool, maxDeadBodyItemCount, deadBodyItems);
+            GetUniqueItemsFromDropPool(bodyDropPool, maxDeadBodyItemCount, deadBodyItems);
             
             InventorySlot[] deadBodySlots = new InventorySlot[deadBodyItems.Count];
             for (int j = 0; j < deadBodyItems.Count; j++) {
@@ -2941,12 +2962,6 @@ public class Game : MonoBehaviour {
                 eyeModifierLookup.Add(mod.uuid, mod);
             }
             itemLookup.Add(item.uuid, item);
-        }
-
-        GameObject[] itemGameObjects = Resources.LoadAll<GameObject>(string.Empty);
-        foreach (GameObject itemGameObject in itemGameObjects) {
-            if (!itemGameObject.TryGetComponent(out ItemReference itemRef)) continue;
-            itemPrefabLookup[itemRef.item] = itemGameObject;
         }
     }
 
@@ -3155,7 +3170,6 @@ public class Game : MonoBehaviour {
             // SaveToFile(hideoutDataSavePath, hideoutStateData);
             //
             // ChangeInventorySize(stashInventory, stashInventory.slots.Length + stashUpgradeSlotIncrease);
-            // RefreshInventoryDisplay(stashInventory);
         // });
         
         traderDealButton.onClick.AddListener(() => {
@@ -3166,6 +3180,11 @@ public class Game : MonoBehaviour {
                 SetStashValue(stashValue - price); 
                 for (int i = 0; i < transactionInventory.slots.Length; i++) { 
                     MoveEntireItemStack(transactionInventory, stashInventory, i);
+                }
+                // After buying items we just make sure all items in stash are no longer trader owned
+                foreach (InventorySlot slot in stashInventory.slots) {
+                    if (slot.item == null) continue;
+                    slot.item.traderOwned = false;
                 }
                 transactionState = TransactionState.Empty;
             }
@@ -3190,12 +3209,14 @@ public class Game : MonoBehaviour {
         easyMapButton.onClick.AddListener(() => {
             LoadMapAsync(lighthouseMap, () => {
                 gameStateMachine.SetStateIfNotCurrent(raidState);
+                CreateDropPoolsForMap(lighthouseMap);
             });
         });
         
         mediumMapButton.onClick.AddListener(() => {
             LoadMapAsync(customsMap, () => {
                 gameStateMachine.SetStateIfNotCurrent(raidState);
+                CreateDropPoolsForMap(customsMap);
             });
         });
     }
@@ -3265,22 +3286,22 @@ public class Game : MonoBehaviour {
     private enum TransactionState { Empty, Buying, Selling }
     private TransactionState transactionState;
     
-    private void UpdateTraderTransactionState(Inventory sourceInventory) {
+    private void UpdateTraderTransactionState() {
         if (!OnTradingTab) return;
-        
-        if (sourceInventory != null && transactionState == TransactionState.Empty) {
-            if (sourceInventory == traderInventoryPtr) {
-                transactionState = TransactionState.Buying;
-            }
-            else if (sourceInventory == stashInventory) {
-                transactionState = TransactionState.Selling;
-            }
-        }
         
         if (GetInventoryItemCount(transactionInventory) <= 0) {
             transactionState = TransactionState.Empty;
+            RefreshTransactionUI();
+            return;
         }
         
+        bool itemsAreTraderOwned = false;
+        foreach (InventorySlot slot in transactionInventory.slots) {
+            if (slot.item == null) continue;
+            itemsAreTraderOwned = slot.item.traderOwned;
+        }
+
+        transactionState = itemsAreTraderOwned ? TransactionState.Buying : TransactionState.Selling;
         RefreshTransactionUI();
     }
     
@@ -3342,35 +3363,29 @@ public class Game : MonoBehaviour {
         
         OnTraderButtonPressed(potionManTrader); // Toggle default trader
 
-        // int totalXpForLevel = traderLevels.totalXpToNextLevel[hideoutStateData.traderLevel];
-        // while (hideoutStateData.curTraderXpForLevel > totalXpForLevel) {
-        //     hideoutStateData.traderLevel++;
-        //     hideoutStateData.curTraderXpForLevel -= totalXpForLevel;
-        //     totalXpForLevel = traderLevels.totalXpToNextLevel[hideoutStateData.traderLevel];
-        // }
-        // UpdateTraderXpBar();
-        
-        FillTraderSlotsWithItems(potionManTrader, potionManSlots); 
-        FillTraderSlotsWithItems(armsDealerTrader, armsDealerSlots); 
-        FillTraderSlotsWithItems(hatManTrader, hatManSlots); 
+        RefillTraderSlotsWithItems(potionManTrader); 
+        RefillTraderSlotsWithItems(armsDealerTrader); 
+        RefillTraderSlotsWithItems(hatManTrader); 
     }
     
     private void IncreaseTraderRep(Trader trader, int repGain) {
         if (ReachedTraderMaxRep(trader)) return;
-        
-        AddToTraderRep(trader, repGain);
+
+        if (AddToTraderRep(trader, repGain, out int repLevel)) {
+            FillTraderRowWithItems(trader, repLevel - 1);
+        }
         if (trader == GetCurrentlySelectedTrader()) { 
             SetTraderRepBar(trader);
         }
     }
 
     private void SetTraderRepBar(Trader trader) {
-        int levelIndex = GetTraderRepLevelIndex(trader);
+        int levelIndex = GetTraderRepLevel(trader);
         
         if (ReachedTraderMaxRep(trader)) {
             traderXpLevelFill.fillAmount = 1f;
             traderRemainingXpText.text = string.Empty;
-            traderLevelText.text = $"Level {levelIndex + 1} (Max)";
+            traderLevelText.text = $"Level {levelIndex} (Max)";
             return;
         }
         
@@ -3400,7 +3415,9 @@ public class Game : MonoBehaviour {
         return -1;
     }
 
-    private void AddToTraderRep(Trader trader, int repGain) {
+    private bool AddToTraderRep(Trader trader, int repGain, out int repLevel) {
+        int prevLevel = GetTraderRepLevel(trader);
+        
         if (trader == potionManTrader) {
             traderSaveData.potionManRep += repGain;
         }
@@ -3411,16 +3428,19 @@ public class Game : MonoBehaviour {
             traderSaveData.hatManRep += repGain;
         }
         SaveTraders();
+
+        repLevel = GetTraderRepLevel(trader);
+        return prevLevel < repLevel;
     }
 
-    private int GetTraderRepLevelIndex(Trader trader) {
+    private int GetTraderRepLevel(Trader trader) {
         int rep = GetTraderRep(trader);
         for (int i = 0; i < traderLevels.prefixedSumRepForLevel.Length; i++) {
             if (rep < traderLevels.prefixedSumRepForLevel[i]) {
                 return i;
             }
         }
-        return traderLevels.prefixedSumRepForLevel.Length - 1;
+        return traderLevels.prefixedSumRepForLevel.Length;
     }
 
     private Trader GetCurrentlySelectedTrader() {
@@ -3435,23 +3455,33 @@ public class Game : MonoBehaviour {
         }
         return null;
     }
+
+    private InventorySlot[] GetTraderInventorySlots(Trader trader) {
+        if (trader == potionManTrader) {
+            return potionManSlots;
+        }
+        if (trader == armsDealerTrader) {
+            return armsDealerSlots;
+        }
+        if (trader == hatManTrader) {
+            return hatManSlots;
+        }
+        return null;
+    }
     
-    private void FillTraderSlotsWithItems(Trader trader, InventorySlot[] traderSlots) {
+    private void RefillTraderSlotsWithItems(Trader trader) {
+        int traderRepLevel = GetTraderRepLevel(trader);
+        for (int i = 0; i < traderRepLevel; i++) {
+            FillTraderRowWithItems(trader, i);
+        }
+    }
+
+    private void FillTraderRowWithItems(Trader trader, int rowIndex) {
         // We highjack the trader invetory temporarily to safely add items to it
         // but restore it at the end of this method so its as if nothing changed ;)
         InventorySlot[] slotsToRestore = traderInventoryPtr.slots;
-        traderInventoryPtr.slots = traderSlots;
-
-        int traderRepLevel = GetTraderRepLevelIndex(trader);
+        traderInventoryPtr.slots = GetTraderInventorySlots(trader);
         
-        float raritySkew = traderRepLevel switch {
-            1 => 0.0f,
-            2 => 0.20f,
-            3 => 0.40f,
-            4 => 0.50f,
-            _ => 0f,
-        };
-
         DropPool traderDropPool;
         if (trader == potionManTrader) {
             traderDropPool = potionManTraderDropPool;
@@ -3463,10 +3493,18 @@ public class Game : MonoBehaviour {
             traderDropPool = hatManTraderDropPool;
         }
         
-        using var autoRelease = ListPool<Item>.Get(out List<Item> items);
-        GetUniqueItemsFromDropPool(traderDropPool, traderInventoryColCount, items, raritySkew);
+        Span<float> raritySkews = stackalloc float[] { 0f, 0.20f, 0.40f, 0.50f };
+        
+        using var _ = ListPool<Item>.Get(out List<Item> items);
+        GetUniqueItemsFromDropPool(traderDropPool, traderInventoryColCount, items, raritySkews[rowIndex]);
         foreach (Item item in items) {
             TryAddItemToInventory(traderInventoryPtr, item, item.MaxStackCount);
+        }
+        
+        // Mark all items as trader owned
+        foreach (InventorySlot slot in traderInventoryPtr.slots) {
+            if (slot.item == null) continue;
+            slot.item.traderOwned = true;
         }
         
         traderInventoryPtr.slots = slotsToRestore;
@@ -3478,8 +3516,7 @@ public class Game : MonoBehaviour {
     }
     
     private void OnTraderButtonPressed(Trader selectedTrader) {
-        ClearInventory(transactionInventory);
-        UpdateTraderTransactionState(null);
+        Trader prevTrader = GetCurrentlySelectedTrader();
         
         potionManTraderButton.Toggle(false);
         armsDealerTraderButton.Toggle(false);
@@ -3497,8 +3534,17 @@ public class Game : MonoBehaviour {
             traderInventoryPtr.slots = hatManSlots;
             hatManTraderButton.Toggle(true);
         }
-        
-        SetTraderRepBar(selectedTrader);
+
+        bool switchedTraders = GetCurrentlySelectedTrader() != prevTrader;
+        if (switchedTraders) {
+            if (transactionState == TransactionState.Buying) {
+                MoveEntireInventory(transactionInventory, traderInventoryPtr);
+            }
+            else if (transactionState == TransactionState.Selling) {
+                MoveEntireInventory(transactionInventory, stashInventory);
+            }
+            SetTraderRepBar(selectedTrader);
+        }
     }
     
     // ************************
@@ -3729,26 +3775,20 @@ public class Game : MonoBehaviour {
         public DropOrigin dropOrigin;
     }
 
-    private DropPool curRunRockDropPool;
-    private DropPool curRunBodyDropPool;
+    private DropPool rockDropPool;
+    private DropPool bodyDropPool;
     private DropPool potionManTraderDropPool;
     private DropPool armsDealerTraderDropPool;
     private DropPool hatManTraderDropPool;
 
-    private void CreateRunDropPools() {
-        curRunRockDropPool = new() { items = new(), dropOrigin = DropOrigin.Rock };
-        curRunBodyDropPool = new() { items = new(), dropOrigin = DropOrigin.Body };
+    private void CreateDropPools() {
+        rockDropPool = new() { items = new(), dropOrigin = DropOrigin.Rock };
+        bodyDropPool = new() { items = new(), dropOrigin = DropOrigin.Body };
         potionManTraderDropPool = new() { items = new(), dropOrigin = DropOrigin.Trader };
         armsDealerTraderDropPool = new() { items = new(), dropOrigin = DropOrigin.Trader };
         hatManTraderDropPool = new() { items = new(), dropOrigin = DropOrigin.Trader };
 
         foreach ((int _, Item item) in itemLookup) {
-            if (item.chanceToSpawnFromRock > 0f) {
-                curRunRockDropPool.items.Add(item);
-            }    
-            if (item.chanceToSpawnOnBody > 0f) {
-                curRunBodyDropPool.items.Add(item);
-            }    
             if (item.chanceToSpawnOnTrader > 0f) {
                 if (item.associatedTrader == potionManTrader) {
                     potionManTraderDropPool.items.Add(item);
@@ -3762,9 +3802,20 @@ public class Game : MonoBehaviour {
             } 
         }
     }
-
-    private GameObject GetPrefabFromDropPool(DropPool dropPool) {
-        return itemPrefabLookup[GetItemFromDropPool(dropPool)];
+    
+    private void CreateDropPoolsForMap(MapData map) { 
+        rockDropPool.items.Clear();
+        bodyDropPool.items.Clear();
+        foreach ((int _, Item item) in itemLookup) {
+            if (item.chanceToSpawnFromRock > 0f && item.spawnsOnMaps.Contains(map)) {
+                rockDropPool.items.Add(item);
+            }
+            if (item.chanceToSpawnOnBody > 0f && item.spawnsOnMaps.Contains(map)) {
+                bodyDropPool.items.Add(item);
+            }
+        }
+        Assert.IsFalse(rockDropPool.items.Count == 0, "No items to drop for rocks");
+        Assert.IsFalse(bodyDropPool.items.Count == 0, "No items to drop for bodies");
     }
 
     private Item GetItemFromDropPool(DropPool dropPool) {

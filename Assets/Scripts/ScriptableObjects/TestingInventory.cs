@@ -36,7 +36,6 @@ public class TestingInventory : ScriptableObject {
         Game gameManager = FindAnyObjectByType(typeof(Game)) as Game;
         foreach (TestInventoryItem inventoryItem in items) {
             gameManager?.TryAddItemToInventory(gameManager.stashInventory, inventoryItem.item, inventoryItem.count);
-            gameManager?.RefreshInventoryDisplay(gameManager.stashInventory);
         }
     }
 

@@ -19,4 +19,6 @@ public class Styles : ScriptableObject {
     public Color selectedTraderBackground;
     public Color nonSelectedTraderHeadshotTint;
 
+    public Color grayedOutItemTint;
+
 }
