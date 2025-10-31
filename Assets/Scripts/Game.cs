@@ -52,6 +52,7 @@ public class Game : MonoBehaviour {
     public ItemType demonEyeType;
     public ItemType trinketType;
     public ItemType soulcardType;
+    public ItemType passiveType;
     [EndFoldout]
 
     [Foldout("Item Refs")]
@@ -1425,9 +1426,37 @@ public class Game : MonoBehaviour {
         TextMeshProUGUI descText = itemDescPopup.descText;
 
         Item.Rarity itemRarity = hoveredSlot.item.ItemRef.GetRarity();
-        string coloredRarityText = ColorText($"({itemRarity.ToString()})", GetColorForRarity(itemRarity));
-        coloredRarityText = SizeText(coloredRarityText, styles.rarityFontSize);
-        nameText.text = $"{hoveredSlot.item.ItemRef.displayName} {coloredRarityText}";
+        Color itemRarityColor = styles.GetColorForRarity(itemRarity);
+        float tagTextPadding = styles.tagTextPadding;
+
+        itemDescPopup.tag1.gameObject.SetActive(true);
+        itemDescPopup.tag1.color = itemRarityColor;
+        
+        if (hoveredSlot.item.ItemRef.type == consumableType) {
+            itemDescPopup.tag1Text.text = "Consumable";
+        } 
+        else if (hoveredSlot.item.ItemRef.type == soulcardType) {
+            itemDescPopup.tag1Text.text = "Eye Upgrade";
+        }
+        else if (hoveredSlot.item.ItemRef.type == passiveType) {
+            itemDescPopup.tag1Text.text = "Passive Item";
+        }
+        else if (hoveredSlot.item.ItemRef.type == backpackType) {
+            itemDescPopup.tag1Text.text = "Backpack";
+        }
+        else {
+            itemDescPopup.tag1.gameObject.SetActive(false);
+        }
+        
+        itemDescPopup.tag1ContentFitter.ForceRecalculate();
+        itemDescPopup.tag1.rectTransform.ResizeWidth(itemDescPopup.tag1Text.rectTransform.rect.width + tagTextPadding);
+        
+        itemDescPopup.tag2.color = itemRarityColor;
+        itemDescPopup.tag2Text.text = itemRarity.ToString();
+        itemDescPopup.tag2ContentFitter.ForceRecalculate();
+        itemDescPopup.tag2.rectTransform.ResizeWidth(itemDescPopup.tag2Text.rectTransform.rect.width + tagTextPadding);
+        
+        nameText.text = hoveredSlot.item.ItemRef.displayName;
         
         // Set description
         if (hoveredSlot.item.ItemRef.type == demonEyeType) {
@@ -1443,14 +1472,20 @@ public class Game : MonoBehaviour {
         }
 
         // Set popup position
-        Vector2 center = hoveredSlot.ui.rectTransform.WorldRect().center;
-        Vector2 popupPos = center + new Vector2(40, 40);
-        itemDescPopup.transform.position = popupPos;
+        Vector2 hoveredSlotCenter = hoveredSlot.ui.rectTransform.WorldRect().center;
+        float halfPopupWidth = itemDescPopup.rectTransform.rect.width / 2f;
+        Vector2 popupOffset = new(32 + halfPopupWidth, 40);
+        if (hoveredSlotCenter.x < ScreenCenter.x) {
+            itemDescPopup.transform.position = hoveredSlotCenter + popupOffset;
+        }
+        else {
+            itemDescPopup.transform.position = hoveredSlotCenter + new Vector2(-popupOffset.x, popupOffset.y);
+        }
 
         // Fit popup size to text elements
         itemDescPopup.nameContentFitter.ForceRecalculate();
         itemDescPopup.descContentFitter.ForceRecalculate();
-        FitPopupSize(itemDescPopup.rectTransform, itemDescPopup.nameText, itemDescPopup.descText);
+        FitPopupSize(itemDescPopup.rectTransform, itemDescPopup.tagsParent.rect, itemDescPopup.nameText.rectTransform.rect, itemDescPopup.descText.rectTransform.rect);
         
         // Add mechanic desctiption if necessary
         if (hoveredSlot.item.ItemRef.type == soulcardType) {
@@ -1463,21 +1498,21 @@ public class Game : MonoBehaviour {
                 
                 mechanicDescPopup.nameFitter.ForceRecalculate();
                 mechanicDescPopup.descFitter.ForceRecalculate();
-                FitPopupSize(mechanicDescPopup.rectTransform, mechanicDescPopup.nameText, mechanicDescPopup.descText);
+                FitPopupSize(mechanicDescPopup.rectTransform, mechanicDescPopup.nameText.rectTransform.rect, mechanicDescPopup.descText.rectTransform.rect);
             } 
         }
     }
 
-    private void FitPopupSize(RectTransform popupRect, params TextMeshProUGUI[] texts) {
+    private void FitPopupSize(RectTransform popupRect, params Rect[] rects) {
         float height = 0f;
-        foreach (TextMeshProUGUI text in texts) {
-            height += text.rectTransform.rect.height;
+        foreach (Rect rect in rects) {
+            height += rect.height;
         }
         
         const int minHeight = 80;
-        Rect rect = popupRect.rect;
-        rect.height = Mathf.Clamp(height, minHeight, Mathf.Infinity);
-        popupRect.sizeDelta = new(rect.width, rect.height);
+        Rect newPopupRect = popupRect.rect;
+        newPopupRect.height = Mathf.Clamp(height, minHeight, Mathf.Infinity);
+        popupRect.sizeDelta = new(newPopupRect.width, newPopupRect.height);
     }
 
     private void HideItemDescPopup() {
@@ -2339,9 +2374,8 @@ public class Game : MonoBehaviour {
         }
         
         if (AimingWithController()) {
-            Vector2 screenCenter = new(Screen.width / 2f, Screen.height / 2f);
             Vector2 stick = lookInputAction.ReadValue<Vector2>();
-            crosshairTrans.position = screenCenter + stick.normalized * 250f; 
+            crosshairTrans.position = ScreenCenter + stick.normalized * 250f; 
         }
         else {
             Vector2 mousePos = Mouse.current.position.ReadValue();
@@ -4036,7 +4070,9 @@ public class Game : MonoBehaviour {
     public static bool RollProbability(float probability) {
         return Random.value < probability;
     }
-
+    
+    private Vector2 ScreenCenter => new(Screen.width / 2f, Screen.height / 2f);
+    
     private bool InHideout => gameStateMachine.CurState == hideoutState;
     
     private bool InRaid => gameStateMachine.CurState == raidState;
@@ -4093,16 +4129,6 @@ public class Game : MonoBehaviour {
     
     private string ColorText(string text, Color color) {
         return $"<color=#{ColorUtility.ToHtmlStringRGBA(color)}>{text}</color>";
-    }
-
-    private Color GetColorForRarity(Item.Rarity rarity) {
-        return rarity switch {
-            Item.Rarity.Common    => styles.commonTextColor,
-            Item.Rarity.Uncommon  => styles.uncommonTextColor,
-            Item.Rarity.Rare      => styles.rareTextColor,
-            Item.Rarity.Legendary => styles.legendaryTextColor,
-            _                     => styles.commonTextColor,
-        };
     }
 
     private enum CardinalDir { Right, Left, Up, Down }

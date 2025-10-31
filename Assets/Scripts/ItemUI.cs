@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class ItemUI : MonoBehaviour {
-
+    
     public Styles styles;
     public RectTransform rectTransform;
     public Image image;

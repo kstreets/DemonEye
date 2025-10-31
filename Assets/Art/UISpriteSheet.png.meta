@@ -172,7 +172,7 @@ TextureImporter:
         height: 32
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 7, y: 7, z: 7, w: 7}
       customData: 
       outline: []
       physicsShape: []
@@ -1152,6 +1152,28 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: Tag
+      rect:
+        serializedVersion: 2
+        x: 397
+        y: 306
+        width: 35
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 2, y: 4, z: 2, w: 3}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8f3d6a3f07682a54a94ce950560403c9
+      internalID: 1808523087
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -1167,6 +1189,7 @@ TextureImporter:
       entries: []
     nameFileIdTable:
       AttackRune1_0: 637263459462573385
+      Tag: 1554644581
       UISpriteSheet_0: 432214621
       UISpriteSheet_1: 11644242
       UISpriteSheet_10: -1931529749
@@ -1206,7 +1229,6 @@ TextureImporter:
       UISpriteSheet_41: 815896414
       UISpriteSheet_42: 764932500
       UISpriteSheet_43: 1129690133
-      UISpriteSheet_44: 1554644581
       UISpriteSheet_45: -510367084
       UISpriteSheet_46: -998722681
       UISpriteSheet_47: 275925045

@@ -8,7 +8,6 @@ public class Styles : ScriptableObject {
     public Color rareTextColor;
     public Color legendaryTextColor;
 
-    public int rarityFontSize;
     public Vector4 nonSelectedHideoutTabMargin;
     public Vector4 selectedHideoutTabMargin;
 
@@ -25,5 +24,18 @@ public class Styles : ScriptableObject {
     public Color critDamageColor;
     public Color bleedDamageColor;
     public Color poisonDamageColor;
+
+    public float tagTextPadding;
+    
+    public Color GetColorForRarity(Item.Rarity rarity) {
+        return rarity switch {
+            Item.Rarity.Common    => commonTextColor,
+            Item.Rarity.Uncommon  => uncommonTextColor,
+            Item.Rarity.Rare      => rareTextColor,
+            Item.Rarity.Legendary => legendaryTextColor,
+            _                     => commonTextColor,
+        };
+    }
+
 
 }
