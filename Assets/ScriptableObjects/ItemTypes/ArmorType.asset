@@ -10,5 +10,5 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 21dd62ff50f53794eaa17276c7a5bdad, type: 3}
-  m_Name: DemonEyeType
-  m_EditorClassIdentifier: Assembly-CSharp::DemonEyeType
+  m_Name: ArmorType
+  m_EditorClassIdentifier: Assembly-CSharp::TrinketType

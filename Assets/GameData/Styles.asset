@@ -22,6 +22,10 @@ MonoBehaviour:
   normalButtonTextMargin: {x: 0, y: 0, z: 0, w: 7}
   pressedButtonTextMargin: {x: 0, y: 0, z: 0, w: 3}
   nonSelectedTraderBackground: {r: 0, g: 0, b: 0, a: 1}
-  selectedTraderBackground: {r: 0.11764707, g: 0.10588236, b: 0.098039225, a: 1}
+  selectedTraderBackground: {r: 0.18431373, g: 0.14901961, b: 0.14509805, a: 1}
   nonSelectedTraderHeadshotTint: {r: 0.57861626, g: 0.57861626, b: 0.57861626, a: 1}
   grayedOutItemTint: {r: 1, g: 1, b: 1, a: 0.23529412}
+  normalDamageColor: {r: 1, g: 1, b: 1, a: 1}
+  critDamageColor: {r: 0.89411765, g: 0.6901961, b: 0.1882353, a: 1}
+  bleedDamageColor: {r: 0.6415094, g: 0.16743796, b: 0.17073022, a: 1}
+  poisonDamageColor: {r: 0.3576005, g: 0.7735849, b: 0.3576005, a: 1}

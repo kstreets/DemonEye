@@ -7,10 +7,14 @@ public class TraderButton : MonoBehaviour {
     public Button button;
     public Image traderImage;
     public Image backgroundImage;
+    public Image borderImage;
+    public Sprite highlightedBorderSprite;
+    public Sprite nonSelectedBorderSprite;
 
     public void Toggle(bool state) {
         traderImage.color = state? Color.white : styles.nonSelectedTraderHeadshotTint;
         backgroundImage.color = state? styles.selectedTraderBackground : styles.nonSelectedTraderBackground;
+        borderImage.sprite = state ? highlightedBorderSprite : nonSelectedBorderSprite; 
     }
 
 }

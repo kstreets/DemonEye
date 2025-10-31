@@ -453,12 +453,12 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 224
-        width: 80
-        height: 64
+        y: 222
+        width: 82
+        height: 66
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 13, y: 6, z: 18, w: 7}
+      border: {x: 19, y: 19, z: 19, w: 19}
       customData: 
       outline: []
       physicsShape: []
@@ -475,12 +475,12 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 160
-        width: 80
-        height: 64
+        y: 156
+        width: 82
+        height: 66
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 14, y: 14, z: 14, w: 14}
+      border: {x: 19, y: 19, z: 19, w: 19}
       customData: 
       outline: []
       physicsShape: []
@@ -738,13 +738,13 @@ TextureImporter:
       name: UISpriteSheet_30
       rect:
         serializedVersion: 2
-        x: 398
-        y: 337
-        width: 34
-        height: 14
+        x: 396
+        y: 336
+        width: 36
+        height: 16
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 2, y: 3, z: 2, w: 3}
+      border: {x: 3, y: 4, z: 3, w: 4}
       customData: 
       outline: []
       physicsShape: []
@@ -761,12 +761,12 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 432
-        y: 337
-        width: 34
-        height: 14
+        y: 336
+        width: 36
+        height: 16
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 2, y: 3, z: 2, w: 3}
+      border: {x: 3, y: 4, z: 3, w: 4}
       customData: 
       outline: []
       physicsShape: []
@@ -1046,13 +1046,13 @@ TextureImporter:
       name: UISpriteSheet_29
       rect:
         serializedVersion: 2
-        x: 0
-        y: 95
-        width: 80
-        height: 65
+        x: 15
+        y: 129
+        width: 19
+        height: 15
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 14, y: 12, z: 14, w: 11}
+      border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
@@ -1065,23 +1065,89 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: UISpriteSheet_44
+      name: UISpriteSheet_45
       rect:
         serializedVersion: 2
-        x: 80
-        y: 272
-        width: 16
+        x: 396
+        y: 319
+        width: 36
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 2, y: 2, z: 2, w: 2}
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 3, y: 4, z: 3, w: 4}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 93a488967363a0c4cbcae46fbfd6e261
-      internalID: 1554644581
+      spriteID: c1df675de86ebd84baede1bf98879ba4
+      internalID: -510367084
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UISpriteSheet_46
+      rect:
+        serializedVersion: 2
+        x: 432
+        y: 319
+        width: 36
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 3, y: 4, z: 3, w: 4}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0d32dfdde5ad7664091c61cd92c10597
+      internalID: -998722681
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UISpriteSheet_47
+      rect:
+        serializedVersion: 2
+        x: 468
+        y: 319
+        width: 36
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 3, y: 4, z: 3, w: 4}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dd308c3d855df5645ad8139cd9c833d7
+      internalID: 275925045
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UISpriteSheet_48
+      rect:
+        serializedVersion: 2
+        x: 468
+        y: 336
+        width: 36
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 3, y: 4, z: 3, w: 4}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9948bc7fa479a6e4ab6efd30aa18853b
+      internalID: 2002655375
       vertices: []
       indices: 
       edges: []
@@ -1141,6 +1207,10 @@ TextureImporter:
       UISpriteSheet_42: 764932500
       UISpriteSheet_43: 1129690133
       UISpriteSheet_44: 1554644581
+      UISpriteSheet_45: -510367084
+      UISpriteSheet_46: -998722681
+      UISpriteSheet_47: 275925045
+      UISpriteSheet_48: 2002655375
       UISpriteSheet_5: 896199210
       UISpriteSheet_6: 1504484193
       UISpriteSheet_7: 1135578465

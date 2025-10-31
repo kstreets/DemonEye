@@ -30,7 +30,7 @@ public class CoolerGrid : MonoBehaviour {
     private float totalSpawnCellsWeight;
     private float lastUpdateTime;
     
-    private JobHandle flowFieldJobHandle;
+    private JobHandle? flowFieldJobHandle;
     private NativeArray<int> nativeDistances;
     private NativeArray<bool> nativeTraversables; 
     private NativeArray<Vector2> nativePositions;
@@ -46,7 +46,7 @@ public class CoolerGrid : MonoBehaviour {
     }
 
     public void Deinit() {
-        flowFieldJobHandle.Complete();
+        flowFieldJobHandle?.Complete();
         nativeDistances.Dispose();
         nativeTraversables.Dispose();
         nativePositions.Dispose();
@@ -112,9 +112,9 @@ public class CoolerGrid : MonoBehaviour {
     }
     
     public void CompleteFlowFieldCalculation() {
-        if (flowFieldJobHandle == default) return;
+        if (!flowFieldJobHandle.HasValue) return;
         
-        flowFieldJobHandle.Complete();
+        flowFieldJobHandle?.Complete();
         
         flowField.Clear();
         foreach (Vector2 result in flowFieldJobResults) {

@@ -15,12 +15,16 @@ MonoBehaviour:
   uuid: 13165646
   displayName: Poison
   inventorySprite: {fileID: 541499864, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
+  dropSprite: {fileID: 0}
+  pickupRadius: 0.07
   type: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
   associatedTrader: {fileID: 11400000, guid: b04e05a2cdc85404fbe24578a1868a5d, type: 2}
   buyPrice: 170
   sellPrice: 100
   traderXp: 0
-  spawnsOnMaps: []
+  spawnsOnAllMaps: 1
+  spawnsOnMaps:
+  - {fileID: 11400000, guid: 9353817006d76f54fb1273b8ced36a68, type: 2}
   chanceToSpawnOnBody: 0.35
   chanceToSpawnOnTrader: 0
   chanceToSpawnFromRock: 0

@@ -236,7 +236,7 @@ MonoBehaviour:
   m_Transition: 1
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_HighlightedColor: {r: 1, g: 1, b: 1, a: 1}
     m_PressedColor: {r: 1, g: 1, b: 1, a: 1}
     m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
     m_DisabledColor: {r: 1, g: 1, b: 1, a: 1}
@@ -275,3 +275,4 @@ MonoBehaviour:
   text: {fileID: 8582787485506474109}
   pressedSprite: {fileID: 1684691031, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
   unpressedSprite: {fileID: -1996136508, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
+  highlightedSprite: {fileID: 2002655375, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}

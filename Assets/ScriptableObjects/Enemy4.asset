@@ -14,21 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyPrefab: {fileID: 7814119993517076521, guid: 4b73114a9fc8cf54b8ff78222ba7c93c, type: 3}
   animatorOverride: {fileID: 22100000, guid: eea5b74bb62af0842893cca5dab41b1f, type: 2}
-  itemDrops:
-  - itemPrefab: {fileID: 6950097619826054733, guid: 76c9a684a511a5c4a996987d87f8cd8d, type: 3}
-    dropChance: 0.05
-  - itemPrefab: {fileID: 6950097619826054733, guid: 9cea9400936b17f43add27a45baaff9b, type: 3}
-    dropChance: 0.01
-  - itemPrefab: {fileID: 6950097619826054733, guid: 2ae76fce84f2b7247ae2063b6b7c1932, type: 3}
-    dropChance: 0.01
-  - itemPrefab: {fileID: 6950097619826054733, guid: bf48b85ca7d0c88488abe5159719f63e, type: 3}
-    dropChance: 0.01
-  - itemPrefab: {fileID: 6950097619826054733, guid: 00762a1275691f041a402f798b859d0d, type: 3}
-    dropChance: 0.01
-  - itemPrefab: {fileID: 6950097619826054733, guid: f23711f79db83674aac4143def8592e1, type: 3}
-    dropChance: 0.01
-  - itemPrefab: {fileID: 6950097619826054733, guid: a8a55e80f0a09cb40aba82ca194c1525, type: 3}
-    dropChance: 0.01
+  itemDrops: []
   speed: 0.35
   health: 100
   damage: 8

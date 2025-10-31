@@ -15,15 +15,19 @@ MonoBehaviour:
   uuid: -2140294230
   displayName: Travel Damage
   inventorySprite: {fileID: 541499864, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
+  dropSprite: {fileID: 0}
+  pickupRadius: 0.07
   type: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
   associatedTrader: {fileID: 11400000, guid: b04e05a2cdc85404fbe24578a1868a5d, type: 2}
   buyPrice: 80
   sellPrice: 40
   traderXp: 0
-  spawnsOnMaps: []
+  spawnsOnAllMaps: 1
+  spawnsOnMaps:
+  - {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
   chanceToSpawnOnBody: 0.65
   chanceToSpawnOnTrader: 0.65
-  chanceToSpawnFromRock: 0
+  chanceToSpawnFromRock: 0.055
   modifiesStats: 0
   agilityStatAdjustment: 0
   strengthStatAdjustment: 0
@@ -32,4 +36,4 @@ MonoBehaviour:
   weight: 0
   description: 
   relativeMechanicDesc: {fileID: 0}
-  damageIncreasePerUnitTraveled: 10
+  damageIncreasePerUnitTraveled: 2

@@ -111,6 +111,17 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 2811135917984389911}
   m_SourcePrefab: {fileID: 100100000, guid: 148c63531e54a9741842afca4421fe21, type: 3}
+--- !u!114 &143827543920988993 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8831369619652947919, guid: 148c63531e54a9741842afca4421fe21, type: 3}
+  m_PrefabInstance: {fileID: 8895077120276233358}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
 --- !u!114 &1941157901601226704 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7026118243037659998, guid: 148c63531e54a9741842afca4421fe21, type: 3}
@@ -160,9 +171,9 @@ MonoBehaviour:
   m_Transition: 1
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_HighlightedColor: {r: 1, g: 1, b: 1, a: 1}
+    m_PressedColor: {r: 1, g: 1, b: 1, a: 1}
+    m_SelectedColor: {r: 1, g: 1, b: 1, a: 1}
     m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
@@ -198,3 +209,6 @@ MonoBehaviour:
   button: {fileID: 6529223612066670494}
   traderImage: {fileID: 1941157901601226704}
   backgroundImage: {fileID: 4477360668479923000}
+  borderImage: {fileID: 143827543920988993}
+  highlightedBorderSprite: {fileID: -403899735, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
+  nonSelectedBorderSprite: {fileID: -1896232688, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}

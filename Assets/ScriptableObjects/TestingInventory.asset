@@ -13,5 +13,35 @@ MonoBehaviour:
   m_Name: TestingInventory
   m_EditorClassIdentifier: 
   items:
-  - item: {fileID: 11400000, guid: 080b4f634b61c1d49a235bcf9b6ae110, type: 2}
+  - item: {fileID: 11400000, guid: 9285ab41e291784449187596580ae02c, type: 2}
     count: 15
+  - item: {fileID: 11400000, guid: 813a59de02795ad40bfd5fccf7ddc415, type: 2}
+    count: 15
+  - item: {fileID: 11400000, guid: cea129577223ece4186c069f38857591, type: 2}
+    count: 3
+  - item: {fileID: 11400000, guid: 3663bc49c2abaee43b142fa80eb566bd, type: 2}
+    count: 8
+  - item: {fileID: 11400000, guid: 813a59de02795ad40bfd5fccf7ddc415, type: 2}
+    count: 6
+  - item: {fileID: 11400000, guid: 080b4f634b61c1d49a235bcf9b6ae110, type: 2}
+    count: 22
+  - item: {fileID: 11400000, guid: 416d6e8ae11f1d14ea5c9c8d31ed0a65, type: 2}
+    count: 2
+  - item: {fileID: 11400000, guid: cd2654388b5ebf84bb80fbb822a8960a, type: 2}
+    count: 10
+  - item: {fileID: 11400000, guid: dd59441e955a1cc49ba1c1e14f358d3f, type: 2}
+    count: 6
+  - item: {fileID: 11400000, guid: 4b4b5e09fc52bd540ba56dee61244ccb, type: 2}
+    count: 8
+  - item: {fileID: 11400000, guid: 80f19e812bb183b498023f74d3bbef97, type: 2}
+    count: 3
+  - item: {fileID: 11400000, guid: f4ec3ce7fab7c414c8756a876d17988e, type: 2}
+    count: 3
+  - item: {fileID: 11400000, guid: 90a9c4698fb11e84eab82e2adc29f8fd, type: 2}
+    count: 3
+  - item: {fileID: 11400000, guid: 3846f52121da03e4a87d0c80d7d6eb7c, type: 2}
+    count: 3
+  - item: {fileID: 11400000, guid: 8a1342e3b7302de4c897cb310bc19b12, type: 2}
+    count: 3
+  - item: {fileID: 11400000, guid: 3505426df7dc8164caf246c28362eb53, type: 2}
+    count: 3

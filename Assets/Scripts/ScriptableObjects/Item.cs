@@ -20,7 +20,10 @@ public class Item : UuidScriptableObject {
 
     [Space]
 
+    public bool spawnsOnAllMaps;
+    [ShowIf(nameof(spawnsOnAllMaps), false)]
     public List<MapData> spawnsOnMaps;
+    [EndIf] 
     [Range(0f, 1f)] public float chanceToSpawnOnBody;
     [Range(0f, 1f)] public float chanceToSpawnOnTrader;
     [Range(0f, 1f)] public float chanceToSpawnFromRock;
@@ -53,9 +56,9 @@ public class Item : UuidScriptableObject {
             chanceToSpawnOnTrader > 0 ? chanceToSpawnOnTrader : float.MinValue,
             chanceToSpawnFromRock > 0 ? chanceToSpawnFromRock : float.MinValue
         );
-        if (minRarity <= 0.10) return Rarity.Legendary;
-        if (minRarity <= 0.25) return Rarity.Rare;
-        if (minRarity <= 0.50) return Rarity.Uncommon;
+        if (minRarity <= 0.02f) return Rarity.Legendary;
+        if (minRarity <= 0.10f) return Rarity.Rare;
+        if (minRarity <= 0.25f) return Rarity.Uncommon;
         return Rarity.Common;
     }
 

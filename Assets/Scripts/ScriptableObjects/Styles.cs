@@ -21,4 +21,9 @@ public class Styles : ScriptableObject {
 
     public Color grayedOutItemTint;
 
+    public Color normalDamageColor;
+    public Color critDamageColor;
+    public Color bleedDamageColor;
+    public Color poisonDamageColor;
+
 }

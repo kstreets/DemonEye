@@ -9,6 +9,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5bfc999be762c324ba81ba921abe7ccc, type: 3}
+  m_Script: {fileID: 11500000, guid: 21dd62ff50f53794eaa17276c7a5bdad, type: 3}
   m_Name: BackpackType
   m_EditorClassIdentifier: Assembly-CSharp::BackpackType

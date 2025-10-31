@@ -60,6 +60,7 @@ public class Game : MonoBehaviour {
     public Item demonSteakItem;
     public Item pouchItem;
     public Item ruckSackItem;
+    public DemonClaw demonClawItem;
     [EndFoldout]
     
     [Foldout("Gameplay Variables")]
@@ -70,7 +71,6 @@ public class Game : MonoBehaviour {
     public Camera mainCamera;
     public CinemachineCamera cinemachineCamera;
     public RectTransform crosshairTrans;
-    public Transform exitPortalSpawnParent;
 
     public GameObject playerPrefab;
     public GameObject gemRockPrefab;
@@ -87,6 +87,12 @@ public class Game : MonoBehaviour {
     public AnimationCurve bounceCurve;
     public AnimationCurve shakeCurve;
     [EndFoldout]
+
+    [Foldout("Main Menu")]
+    public RectTransform mainMenuParent;
+    public Button mainMenuPlayButton;
+    public Button mainMenuHideoutButton;
+    [EndFoldout]
     
     [Foldout("UI/Prefabs")]
     public GameObject inventorySlotPrefab;
@@ -94,16 +100,18 @@ public class Game : MonoBehaviour {
     public GameObject rockSmokePrefab;
     public GameObject damageNumberPrefab;
     public GameObject questPrefab;
+    public GameObject portalArrow;
     [EndFoldout]
 
     [Foldout("UI/MiscRefs")]
     public ItemDescPopup itemDescPopup;
     public MechanicDescPopup mechanicDescPopup;
     public Button enterNextRaidButton;
+    public RectTransform hideoutParent;
     public RectTransform hideoutHeaderParent;
     public RectTransform hideoutRaidPanel;
-    public RectTransform hideoutBackground;
     public ItemUI dragAndDropItemUI;
+    public GameObject menuBackground;
     [EndFoldout]
     
     [Foldout("UI/HideoutTabs")]
@@ -186,7 +194,6 @@ public class Game : MonoBehaviour {
 
     [Foldout("UI/DamageNumbers")]
     public RectTransform damageNumbersParent;
-    public Color criticalStrikeColor;
     [EndFoldout]
     
     [Foldout("UpgradePaths")]
@@ -206,6 +213,7 @@ public class Game : MonoBehaviour {
     [EndFoldout]
     
     private InputAction moveInputAction;
+    private InputAction lookInputAction;
     private InputAction attackInputAction;
     private InputAction interactInputAction;
     private InputAction inventoryInputAction;
@@ -214,6 +222,7 @@ public class Game : MonoBehaviour {
     private InputAction useItemInputAction;
     private InputAction moveStackInputAction;
     private InputAction splitStackInputAction;
+    private InputAction escapeInputAction;
     
     [NonSerialized] public List<Entity> entities = new();
     [NonSerialized] public Dictionary<GameObject, Entity> entityLookup = new();
@@ -232,9 +241,11 @@ public class Game : MonoBehaviour {
     private EntityPool<Entity> poisonDebuffPool;
     private EntityPool<Entity> explosionPool;
     
+    private State mainMenuState;
     private State hideoutState;
     private State raidState;
     private State gameOverState;
+    private State gameWinState;
     private StateMachine gameStateMachine = new();
 
     private HideoutStateData hideoutStateData;
@@ -251,11 +262,10 @@ public class Game : MonoBehaviour {
         
         LoadAllItems();
         InitAudio();
-        InitHideoutUI();
         
         BuildSavePaths();
         hideoutStateData = LoadFromFileOrCreateNew<HideoutStateData>(hideoutDataSavePath);
-        // raidStateData = LoadFromFile<RaidStateData>(raidDataSavePath) ?? new RaidStateData();
+        raidStateData = LoadFromFileOrCreateNew<RaidStateData>(raidDataSavePath);
         player = SpawnEntity<Player>(playerPrefab, Vector3.zero, Quaternion.identity, null, EntityLifetime.Global);
         player.gameObject.SetActive(false);
         LoadAndAssignPlayerSaveData(player);
@@ -281,6 +291,7 @@ public class Game : MonoBehaviour {
         equipedEye = new() { coreAttack = defaultAttack };
         
         moveInputAction = InputSystem.actions.FindAction("Move");
+        lookInputAction = InputSystem.actions.FindAction("Look");
         attackInputAction = InputSystem.actions.FindAction("Attack");
         interactInputAction = InputSystem.actions.FindAction("Interact");
         inventoryInputAction = InputSystem.actions.FindAction("Inventory");
@@ -289,13 +300,18 @@ public class Game : MonoBehaviour {
         splitStackInputAction = InputSystem.actions.FindAction("SplitStack");
         moveStackInputAction = InputSystem.actions.FindAction("MoveStack");
         useItemInputAction = InputSystem.actions.FindAction("UseItem");
+        escapeInputAction = InputSystem.actions.FindAction("Escape");
 
+        escapeInputAction.performed += OnEscapePressed;
+
+        mainMenuState = gameStateMachine.CreateState(null, OnMainMenuStateEnter, OnMainMenuStateExit);
         hideoutState = gameStateMachine.CreateState(OnHideoutStateUpdate, OnHideoutStateEnter, OnHideoutStateExit);
         raidState = gameStateMachine.CreateState(OnRaidStateUpdate, OnRaidStateEnter, OnRaidStateExit);
+        gameWinState = gameStateMachine.CreateState(null, OnGameWinEnter, OnGameWinExit);
         gameOverState = gameStateMachine.CreateState(null, OnGameOverEnter, OnGameOverExit);
         
         raidState.To(gameOverState).When(() => player.health <= 0);
-        gameOverState.To(hideoutState).When(() => true).AfterSeconds(3f);
+        gameOverState.To(mainMenuState).When(() => true).AfterSeconds(3f);
     }
 
     private void Update() {
@@ -332,9 +348,15 @@ public class Game : MonoBehaviour {
         discoverLootTimer.Tick();
     }
 
+    private void OnMainMenuStateEnter() {
+        InitMainMenuUI();
+    }
+
+    private void OnMainMenuStateExit() {
+        CloseMainMenuUI();
+    }
+
     private void OnHideoutStateEnter() {
-        Cursor.visible = true;
-        ShowRaidUI(false); 
         InitHideoutUI();
     }
 
@@ -348,7 +370,7 @@ public class Game : MonoBehaviour {
     }
 
     private void OnRaidStateEnter() {
-        ShowRaidUI(true);
+        InitRaidUI();
         
         currentMapInstance.gameObject.SetActive(true);
         currentMapInstance.grid.Init();
@@ -363,18 +385,12 @@ public class Game : MonoBehaviour {
         cinemachineCamera.ForceCameraPosition(cameraWarpTarget, Quaternion.identity);
         cinemachineCamera.Follow = player.trans;
         
-        InitExitPortal();
         InitSpawnManager(currentMapInstance.waves);
         SpawnResources(currentMapInstance.resourceParent);
+        InitExitPortals(currentMapInstance.exitPortalsParent, currentMapInstance.waves.timeBeforeExitPortalsSpawn);
     }
 
-    private void OnRaidStateExit() {
-        if (player.health > 0) {
-            LeaveRaid();
-        }
-        currentMapInstance.grid.Deinit();
-        UnloadCurrentMapAsync();
-    }
+    private void OnRaidStateExit() { }
 
     private void OnRaidStateUpdate() {
         UpdateTimers();
@@ -386,26 +402,46 @@ public class Game : MonoBehaviour {
         UpdateEnemies();
         UpdateEntityEffects();
         UpdateInRaidUi();
-        if (spawnManager.totalTimeLeft <= 0f) {
-            gameStateMachine.SetState(hideoutState);
-        }
     }
+
+    private void OnGameWinEnter() {
+        raidStateData.raidDifficulty++;
+        SaveToFile(raidDataSavePath, raidStateData);
+        OnLeaveRaid();
+        gameStateMachine.SetStateIfNotCurrent(hideoutState);
+    }
+
+    private void OnGameWinExit() { }
 
     private void OnGameOverEnter() { }
 
     private void OnGameOverExit() {
         player.health = 100;
         SavePlayerData();
-        LeaveRaid();
+        
+        raidStateData.raidDifficulty = 0;
+        SaveToFile(raidDataSavePath, raidStateData);
+        
         ClearInventory(playerInventory);
         SaveInventory(playerInventory);
+        
+        ClearInventory(stashInventory);
+        SaveInventory(stashInventory);
+        
+        OnLeaveRaid();
     }
 
-    private void LeaveRaid() {
+    private void OnLeaveRaid() {
+        currentMapInstance.grid.Deinit();
+        
         DestroyLevelEntities();
-        currentMapInstance.gameObject.SetActive(false);
+        UnloadCurrentMapAsync();
         playerBarsPanel.gameObject.SetActive(false);
         player.gameObject.SetActive(false);
+        
+        RefillTraderSlotsWithItems(potionManTrader);
+        RefillTraderSlotsWithItems(armsDealerTrader);
+        RefillTraderSlotsWithItems(hatManTrader);
     }
 
     // *****************************
@@ -920,11 +956,11 @@ public class Game : MonoBehaviour {
     
     public class Enemy : Entity {
         public float teleportTime;
+        public Collider2D enemySpacerCollider;
         public EnemyData data;
         public Timer applyDamageTimer;
         public BleedModInstance? bleed;
         public PoisonSoulcard.InstanceData? poisoned;
-        public SlowInstance? defaultSlow;
         public SlowInstance? slow;
         public Vector2 moveDir;
         public Limiter changeDirLimiter;
@@ -939,12 +975,12 @@ public class Game : MonoBehaviour {
             
             float distFromPlayer = Vector2.Distance(player.Center, enemy.Center);
 
-            // if (enemy.teleportTime >= 10f && distFromPlayer > 2.3f) {
-            //     CoolerGrid.GridCell randomSpawnGridPos = raidStateData.currentMap.grid.GetSpawnPosition(player.position);
-            //     enemy.position = randomSpawnGridPos.position;
-            //     distFromPlayer = Vector2.Distance(player.Center, enemy.Center);
-            //     enemy.teleportTime = 0f;
-            // }
+            if (enemy.teleportTime >= 10f && distFromPlayer > 2.3f) {
+                CoolerGrid.GridCell randomSpawnGridPos = currentMapInstance.grid.GetSpawnPosition(player.position);
+                enemy.position = randomSpawnGridPos.position;
+                distFromPlayer = Vector2.Distance(player.Center, enemy.Center);
+                enemy.teleportTime = 0f;
+            }
             
             Vector2 dirToPlayer = (player.position - enemy.position).normalized;
 
@@ -986,26 +1022,33 @@ public class Game : MonoBehaviour {
             
             if (enemy.bleed.TryGetValue(out var bleed)) {
                 if (Time.time - bleed.lastBleedTime > bleed.bleedInterval) {
-                    enemy.health -= bleed.bleedDamage;
+                    
+                    int bleedDamage = bleed.bleedDamage;
+                    if (CarryingPassiveItem(demonClawItem, out int count)) {
+                        bleedDamage += demonClawItem.GetBleedDamageIncrease(count);
+                    }
+                    
+                    enemy.health -= bleedDamage;
                     bleed.lastBleedTime = Time.time;
                     enemy.bleed = bleed;
                     Entity bloodDrop = SpawnEntity(bloodDropPool, OffsetY(enemy.position, 0.015f), Quaternion.identity);
                     AddParentEffect(bloodDrop, enemy, 0.4f);
                     DestroyEntity(bloodDrop, 0.8f);
+                    SpawnDamageNumber(EnemyDamageNumberSpawnPos(enemy), bleedDamage, DamageColor.Blood);
                 }
             }
 
             if (enemy.health <= 0) {
                 // Drop items from enemy 
                 {
-                    EnemyData.ItemDrop[] itemDrops = enemy.data.itemDrops;
-                    foreach (EnemyData.ItemDrop itemDrop in itemDrops) {
-                        float randomChance = Random.value;
-                        if (randomChance < itemDrop.dropChance) {
-                            SpawnEntity<Entity>(itemDrop.itemPrefab, enemy.position, Quaternion.identity);
-                            break;
-                        }
-                    }
+                    // EnemyData.ItemDrop[] itemDrops = enemy.data.itemDrops;
+                    // foreach (EnemyData.ItemDrop itemDrop in itemDrops) {
+                    //     float randomChance = Random.value;
+                    //     if (randomChance < itemDrop.dropChance) {
+                    //         SpawnEntity<Entity>(itemDrop.itemPrefab, enemy.position, Quaternion.identity);
+                    //         break;
+                    //     }
+                    // }
                 }
 
                 // Add enemy soul to nearby altar
@@ -1044,15 +1087,11 @@ public class Game : MonoBehaviour {
             float speed = enemy.data.speed;
             
             float totalSlowPercentage = 0f;
-            if (enemy.defaultSlow.TryGetValue(out var defaultSlow)) {
-                totalSlowPercentage += defaultSlow.speedReductionPercent;
-                if (Time.time > defaultSlow.activationTime + defaultSlow.duration) {
-                    enemy.defaultSlow = null;
-                }
-            }
             if (enemy.slow.TryGetValue(out var slow)) {
                 totalSlowPercentage += slow.speedReductionPercent;
+                enemy.enemySpacerCollider.excludeLayers = Masks.EnemySpacerMask;
                 if (Time.time > slow.activationTime + slow.duration) {
+                    enemy.enemySpacerCollider.excludeLayers = 0;
                     enemy.slow = null;
                 }
             }
@@ -1194,6 +1233,7 @@ public class Game : MonoBehaviour {
             enemy.health = enemyToSpawn.health;
             enemy.data = enemyToSpawn;
             enemy.animator.runtimeAnimatorController = enemyToSpawn.animatorOverride;
+            enemy.enemySpacerCollider = enemy.trans.GetChild(0).GetComponent<Collider2D>();
             enemies.Add(enemy);
             
             sm.spawnTimeIndex++;
@@ -1263,7 +1303,7 @@ public class Game : MonoBehaviour {
     [NonSerialized] private Inventory lootInvetoryPtr;
     [NonSerialized] private List<Inventory> allInventories = new();
     
-    private const int playerPocketSize = 12;
+    private const int playerPocketSize = 8;
     private const int playerEquipmentSize = 3;
     private int DefaultPlayerInventorySize => playerPocketSize + playerEquipmentSize;
 
@@ -1319,11 +1359,6 @@ public class Game : MonoBehaviour {
                 Vector2 spawnDir = (Quaternion.AngleAxis(deg, Vector3.forward) * Vector2.up) * 150f;
                 GameObject slot = Instantiate(eyeForgeSlotPrefab, crucibleCenter + spawnDir, Quaternion.identity, crucibleParent);
                 InventorySlotUI veinSlot = slot.GetComponent<InventorySlotUI>();
-                
-                if (i != 0 && i > hideoutStateData.crucibleLevel) {
-                    veinSlot.MakeSlotInactive();
-                }
-                
                 veinSlot.disallowItemStacking = true;
                 veinSlot.onlyAcceptedItemType = soulcardType;
             }
@@ -2040,6 +2075,13 @@ public class Game : MonoBehaviour {
         }
     }
 
+    private void ClearInventory(InventorySlot[] inventorySlots) {
+        foreach (InventorySlot slot in inventorySlots) {
+            slot.item = null;
+            slot.ui.ClearItem();
+        }
+    }
+
     private void RemoveItemFromInventory(Inventory inventory, int slotIndex) {
         inventory.slots[slotIndex].item = null;
         inventory.slots[slotIndex].ui.ClearItem();
@@ -2141,6 +2183,11 @@ public class Game : MonoBehaviour {
             }
         }
         return count;
+    }
+
+    public bool CarryingPassiveItem(PassiveItem item, out int count) {
+        count = GetItemCountInInventory(playerInventory, item);
+        return count > 0;
     }
 
     public int GetInventoryWeight(Inventory inventory) {
@@ -2273,7 +2320,9 @@ public class Game : MonoBehaviour {
             player.spriteRenderer.flipX = player.nextIdleDir < 0;
         }
         
-        if (moveInput.x != 0) {
+        bool movingProdominatelyVertical = Mathf.Abs(Vector2.Dot(Vector2.up, moveInput)) > 0.9f;
+        
+        if (moveInput.magnitude > 0.1f && !movingProdominatelyVertical) {
             player.animator.Play(PlayerRunSideHash);
             player.nextIdleAnimHash = PlayerIdleSide;
         }
@@ -2289,12 +2338,31 @@ public class Game : MonoBehaviour {
             player.animator.Play(player.nextIdleAnimHash);
         }
         
-        Vector2 mousePos = Mouse.current.position.ReadValue();
-        crosshairTrans.position = mousePos;
+        if (AimingWithController()) {
+            Vector2 screenCenter = new(Screen.width / 2f, Screen.height / 2f);
+            Vector2 stick = lookInputAction.ReadValue<Vector2>();
+            crosshairTrans.position = screenCenter + stick.normalized * 250f; 
+        }
+        else {
+            Vector2 mousePos = Mouse.current.position.ReadValue();
+            crosshairTrans.position = mousePos;
+        }
 
-        if (attackInputAction.IsPressed() && CanShoot()) {
+        bool shootInput = false;
+        Vector2 targetScreenPos = Vector2.zero;
+        
+        if (AimingWithController()) {
+            shootInput = lookInputAction.ReadValue<Vector2>().magnitude > 0.1f;
+            targetScreenPos = crosshairTrans.position;
+        }
+        else {
+            shootInput = attackInputAction.IsPressed();
+            targetScreenPos = Mouse.current.position.ReadValue();
+        }
+
+        if (shootInput && CanShoot()) {
             PlayAudioClip(shootClip, player.position, 1f);
-            ShootProjectile();
+            ShootProjectile(targetScreenPos);
         }
     }
 
@@ -2303,10 +2371,9 @@ public class Game : MonoBehaviour {
     }
 
     private void DamagePlayer(int damage, float chanceToBleed = 0f) {
-        return;
-        if (RollProbability(chanceToBleed)) {
-            player.bleeding = true;
-        }
+        // if (RollProbability(chanceToBleed)) {
+        //     player.bleeding = true;
+        // }
         player.health -= damage;
         AddFlashHitEffect(player);
     }
@@ -2446,9 +2513,8 @@ public class Game : MonoBehaviour {
         return attackLimiter.TimeHasPassed(attackDelay);
     }
 
-    private void ShootProjectile() {
-        Vector2 mousePos = Mouse.current.position.ReadValue();
-        Vector2 mouseWorldPos = mainCamera.ScreenToWorldPoint(mousePos);
+    private void ShootProjectile(Vector2 targetScreenPos) {
+        Vector2 targetWorldPos = mainCamera.ScreenToWorldPoint(targetScreenPos);
 
         const float maxInaccuracyAngle = 18f;
         float maxAccuracyAngle = maxInaccuracyAngle * (1f - equipedEye.coreAttack.accuracy);
@@ -2459,7 +2525,7 @@ public class Game : MonoBehaviour {
             projectileSpeed *= 1f - stoppingPower.percentSpeedReduction;
         }
         
-        Vector2 dir = (mouseWorldPos - player.trans.PositionV2()).normalized;
+        Vector2 dir = (targetWorldPos - player.trans.PositionV2()).normalized;
         dir = Quaternion.AngleAxis(accuracyAngle, Vector3.forward) * dir;
         Vector2 velocity = dir * projectileSpeed; 
         SpawnProjectile(velocity);
@@ -2532,7 +2598,10 @@ public class Game : MonoBehaviour {
             }
 
             if (col.CompareTag(Tags.ExitPortal)) {
-                gameStateMachine.SetStateIfNotCurrent(hideoutState);
+                EnableInteractionPrompt(col.transform.position);
+                if (interactInputAction.WasPressedThisFrame()) {
+                    gameStateMachine.SetStateIfNotCurrent(gameWinState);
+                }
             }
         });
     }
@@ -2623,16 +2692,7 @@ public class Game : MonoBehaviour {
     private void DamageEnemy(Entity enemy, int damage, bool isCriticalStrike) {
         enemy.health -= damage;
         AddFlashHitEffect(enemy);
-
-        Vector2 startDamageNumPos = OffsetY(enemy.position, 0.28f);
-        Vector2 endDamageNumPos = OffsetY(enemy.position, 0.36f);
-        Entity damageNumber = SpawnEntity<Entity>(damageNumberPrefab, startDamageNumPos, Quaternion.identity, damageNumbersParent);
-        damageNumber.textMesh.text = damage.ToString();
-        if (isCriticalStrike) {
-            damageNumber.textMesh.color = criticalStrikeColor;
-        }
-        AddTweenPosition(damageNumber, endDamageNumPos, 0.3f, Tween.Curve.EaseOut); 
-        DestroyEntity(damageNumber, 0.3f);
+        SpawnDamageNumber(EnemyDamageNumberSpawnPos(enemy), damage, isCriticalStrike ? DamageColor.Crit : DamageColor.Normal);
     }
     
     private void HandleDamage(Projectile projectile, Entity entity) {
@@ -2662,8 +2722,6 @@ public class Game : MonoBehaviour {
                 Vector2 expSpawnPos = projectile.position + (enemy.position - projectile.position) / 2f;
                 SpawnExplosion(explosion, expSpawnPos);
             }
-            
-            enemy.defaultSlow = new() { activationTime = Time.time, duration = 0.1f, speedReductionPercent = eyeInstance.coreAttack.enemySpeedReductionPercent };
         }
         else {
             entity.damageAccumilation += eyeInstance.coreAttack.damage;
@@ -2685,11 +2743,14 @@ public class Game : MonoBehaviour {
                 int dropCount = Random.Range(3, 6);
                 float angleDeltaPerDrop = 360f / dropCount;
                 float randomRangePerDrop = angleDeltaPerDrop * 0.25f;
+
+                int upgradeDropIndex = Random.Range(0, 10);
                 
                 for (int i = 0; i < dropCount; i++) {
                     float randomAngle = (angleDeltaPerDrop * i) + Random.Range(-randomRangePerDrop, randomRangePerDrop);
                     Vector3 endPos = entity.position + RotationVector(randomAngle, 0.18f, 0.25f);
-                    Entity rockDrop = SpawnItemAsEntity(GetItemFromDropPool(rockDropPool), 1, entity.position, Quaternion.identity);
+                    Item dropItem = i == upgradeDropIndex ? GetItemFromDropPool(rockUpgradesDropPool) : GetItemFromDropPool(rockStonesDropPool);
+                    Entity rockDrop = SpawnItemAsEntity(dropItem, 1, entity.position, Quaternion.identity);
                     AddBounceEffect(rockDrop, endPos, 0.8f);
                 }
             }
@@ -2753,16 +2814,49 @@ public class Game : MonoBehaviour {
             DamageEnemy(entityLookup[col.gameObject], explosion.damage, false);
         });
     }
+
+    private enum DamageColor { Normal, Crit, Blood, Poison }
+
+    private void SpawnDamageNumber(Vector3 spawnPos, int damage, DamageColor damageColor) {
+        Entity damageNumber = SpawnEntity<Entity>(damageNumberPrefab, spawnPos, Quaternion.identity, damageNumbersParent);
+        damageNumber.textMesh.text = damage.ToString();
+        
+        switch (damageColor) {
+            case DamageColor.Normal:
+                damageNumber.textMesh.color = styles.normalDamageColor;
+                break;
+            case DamageColor.Crit:
+                damageNumber.textMesh.color = styles.critDamageColor;
+                break;
+            case DamageColor.Blood:
+                damageNumber.textMesh.color = styles.bleedDamageColor;
+                break;
+            case DamageColor.Poison:
+                damageNumber.textMesh.color = styles.poisonDamageColor;
+                break;
+        }
+        
+        Vector2 endDamageNumPos = OffsetY(spawnPos, 0.08f);
+        AddTweenPosition(damageNumber, endDamageNumPos, 0.3f, Tween.Curve.EaseOut); 
+        DestroyEntity(damageNumber, 0.3f);
+    }
+
+    private Vector3 EnemyDamageNumberSpawnPos(Entity entity) {
+        return OffsetY(entity.position, 0.28f);
+    }
     
     // ***************************
-    // Spawning Map Items
+    // Exit Portals 
     // ***************************
 
-    private void InitExitPortal() {
-        exitPortalTimer.SetTime(Random.Range(1f, 2f));
-        // exitPortalTimer.SetTime(Random.Range(35f, 45f));
+    private void InitExitPortals(Transform exitPortalParent, float timeBeforePortalsSpawn) {
+        foreach (Transform portal in exitPortalParent) {
+            portal.gameObject.SetActive(false);
+        }
         
-        exitPortalTimer.UpdateAction ??= () => {
+        exitPortalTimer.SetTime(timeBeforePortalsSpawn);
+        
+        exitPortalTimer.UpdateAction = () => {
             int totalSeconds = (int)exitPortalTimer.CurTime;
             int minutes = totalSeconds / 60;
             int seconds = totalSeconds % 60;
@@ -2770,14 +2864,16 @@ public class Game : MonoBehaviour {
             exitPortalStatusText.text = $"Exit Portal Countdown: {formattedTime}";
         };
         
-        exitPortalTimer.EndAction ??= () => {
-            int randomSpawnIndex = Random.Range(0, exitPortalSpawnParent.childCount);
-            Transform exitPortalParent = exitPortalSpawnParent.GetChild(randomSpawnIndex);
-            SpawnEntity<Entity>(exitPortalPrefab, exitPortalParent.position, Quaternion.identity, exitPortalParent);
-            exitPortalStatusText.text = $"Exit Portal: { exitPortalParent.name }";
+        exitPortalTimer.EndAction = () => {
+            int randomSpawnIndex = Random.Range(0, exitPortalParent.childCount);
+            Transform exitPortal = exitPortalParent.GetChild(randomSpawnIndex);
+            exitPortal.gameObject.SetActive(true);
         };
     }
-    
+
+    // ***************************
+    // Spawning Map Items
+    // ***************************
     
     private class Altar : Entity {
         public float soulCompletion;
@@ -2996,10 +3092,27 @@ public class Game : MonoBehaviour {
     // UI 
     // ************************************
     
+    private void InitMainMenuUI() {
+        Cursor.visible = true;
+        CloseHideoutUI();
+        CloseRaidUI();
+        hideoutParent.gameObject.SetActive(true);
+        menuBackground.gameObject.SetActive(true);
+        mainMenuParent.gameObject.SetActive(true);
+    }
+
+    private void CloseMainMenuUI() {
+        menuBackground.gameObject.SetActive(false);
+        mainMenuParent.gameObject.SetActive(false);
+    }
+    
     private void InitHideoutUI() {
+        Cursor.visible = true;
+        CloseRaidUI();
         ToggleHideoutTab(characterTabButton, characterTabText);
         ToggleHideoutPanels(playerPanel, stashPanel);
-        hideoutBackground.gameObject.SetActive(true);
+        ToggleSlimPlayerPanel(false);
+        menuBackground.gameObject.SetActive(true);
         hideoutHeaderParent.gameObject.SetActive(true);
         hideoutRaidPanel.gameObject.SetActive(true);
         hideoutTabsParent.gameObject.SetActive(true);
@@ -3007,18 +3120,26 @@ public class Game : MonoBehaviour {
 
     private void CloseHideoutUI() {
         ToggleHideoutPanels();
-        hideoutBackground.gameObject.SetActive(false);
+        menuBackground.gameObject.SetActive(false);
         hideoutHeaderParent.gameObject.SetActive(false);
         hideoutRaidPanel.gameObject.SetActive(false);
         hideoutTabsParent.gameObject.SetActive(false);
     }
 
-    private void ShowRaidUI(bool show) {
-        if (!show) {
-            interactPrompt.gameObject.SetActive(false);
-        }
-        playerBarsPanel.gameObject.SetActive(show);
-        raidTimerText.gameObject.SetActive(show);
+    private void InitRaidUI() {
+        Cursor.visible = false;
+        CloseMainMenuUI();
+        CloseHideoutUI();
+        playerBarsPanel.gameObject.SetActive(true);
+        raidTimerText.gameObject.SetActive(true);
+        crosshairTrans.gameObject.SetActive(true);
+    }
+
+    private void CloseRaidUI() {
+        crosshairTrans.gameObject.SetActive(false);
+        interactPrompt.gameObject.SetActive(false);
+        playerBarsPanel.gameObject.SetActive(false);
+        raidTimerText.gameObject.SetActive(false);
     }
 
     private void ToggleHideoutTab(Button button, TextMeshProUGUI text) {
@@ -3050,8 +3171,25 @@ public class Game : MonoBehaviour {
             rect.gameObject.SetActive(true);
         }
     }
+
+    private void OnEscapePressed(InputAction.CallbackContext context) {
+        bool onMapSelectionScreen = mapSelectionPanel.gameObject.activeInHierarchy;
+        if (onMapSelectionScreen || InHideout) {
+            gameStateMachine.SetState(mainMenuState);
+        }
+    }
     
     private void InitButtonCallbacks() {
+        mainMenuPlayButton.onClick.AddListener(() => {
+            CloseMainMenuUI();
+            ToggleHideoutPanels(playerPanel, mapSelectionPanel);
+            ToggleSlimPlayerPanel(false);
+        });
+        
+        mainMenuHideoutButton.onClick.AddListener(() => {
+            gameStateMachine.SetStateIfNotCurrent(hideoutState);
+        });
+        
         characterTabButton.onClick.AddListener(() => {
             ToggleHideoutTab(characterTabButton, characterTabText);
             ToggleSlimPlayerPanel(false);
@@ -3208,12 +3346,7 @@ public class Game : MonoBehaviour {
             RefreshTransactionUI();
         });
         
-        enterNextRaidButton.onClick.AddListener(() => {
-            ToggleSlimPlayerPanel(false);
-            ToggleHideoutPanels(playerPanel, mapSelectionPanel);
-            hideoutTabsParent.gameObject.SetActive(false);
-            hideoutRaidPanel.gameObject.SetActive(false);
-        });
+        enterNextRaidButton.onClick.AddListener(InitMainMenuUI);
         
         easyMapButton.onClick.AddListener(() => {
             LoadMapAsync(lighthouseMap, () => {
@@ -3479,6 +3612,8 @@ public class Game : MonoBehaviour {
     }
     
     private void RefillTraderSlotsWithItems(Trader trader) {
+        ClearInventory(GetTraderInventorySlots(trader));
+        
         int traderRepLevel = GetTraderRepLevel(trader);
         for (int i = 0; i < traderRepLevel; i++) {
             FillTraderRowWithItems(trader, i);
@@ -3784,14 +3919,16 @@ public class Game : MonoBehaviour {
         public DropOrigin dropOrigin;
     }
 
-    private DropPool rockDropPool;
+    private DropPool rockStonesDropPool;
+    private DropPool rockUpgradesDropPool;
     private DropPool bodyDropPool;
     private DropPool potionManTraderDropPool;
     private DropPool armsDealerTraderDropPool;
     private DropPool hatManTraderDropPool;
 
     private void CreateDropPools() {
-        rockDropPool = new() { items = new(), dropOrigin = DropOrigin.Rock };
+        rockStonesDropPool = new() { items = new(), dropOrigin = DropOrigin.Rock };
+        rockUpgradesDropPool = new() { items = new(), dropOrigin = DropOrigin.Rock };
         bodyDropPool = new() { items = new(), dropOrigin = DropOrigin.Body };
         potionManTraderDropPool = new() { items = new(), dropOrigin = DropOrigin.Trader };
         armsDealerTraderDropPool = new() { items = new(), dropOrigin = DropOrigin.Trader };
@@ -3813,18 +3950,23 @@ public class Game : MonoBehaviour {
     }
     
     private void CreateDropPoolsForMap(MapData map) { 
-        rockDropPool.items.Clear();
+        rockStonesDropPool.items.Clear();
+        rockUpgradesDropPool.items.Clear();
         bodyDropPool.items.Clear();
+        
         foreach ((int _, Item item) in itemLookup) {
-            if (item.chanceToSpawnFromRock > 0f && item.spawnsOnMaps.Contains(map)) {
-                rockDropPool.items.Add(item);
+            bool spawnsOnCurrentMap = item.spawnsOnAllMaps || item.spawnsOnMaps.Contains(map);
+            if (!spawnsOnCurrentMap) continue;
+            
+            if (item.chanceToSpawnFromRock > 0f) {
+                List<Item> itemsForRock = item.type == soulcardType ? rockUpgradesDropPool.items : rockStonesDropPool.items;
+                itemsForRock.Add(item);
             }
-            if (item.chanceToSpawnOnBody > 0f && item.spawnsOnMaps.Contains(map)) {
+            
+            if (item.chanceToSpawnOnBody > 0f) {
                 bodyDropPool.items.Add(item);
             }
         }
-        Assert.IsFalse(rockDropPool.items.Count == 0, "No items to drop for rocks");
-        Assert.IsFalse(bodyDropPool.items.Count == 0, "No items to drop for bodies");
     }
 
     private Item GetItemFromDropPool(DropPool dropPool) {
@@ -3873,6 +4015,23 @@ public class Game : MonoBehaviour {
         };
     }
     
+    // ************************
+    // Controls
+    // ************************
+    
+    private InputDevice lastDeviceToGiveAimInput;
+    
+    public bool AimingWithController() {
+        if (lookInputAction.activeControl != null) {
+            lastDeviceToGiveAimInput = lookInputAction.activeControl.device;
+        }
+        
+        if (!ControllerPluggedIn) {
+            return false;
+        }
+        
+        return lastDeviceToGiveAimInput is Gamepad;
+    }
     
     public static bool RollProbability(float probability) {
         return Random.value < probability;
@@ -3881,6 +4040,8 @@ public class Game : MonoBehaviour {
     private bool InHideout => gameStateMachine.CurState == hideoutState;
     
     private bool InRaid => gameStateMachine.CurState == raidState;
+
+    public bool ControllerPluggedIn => Gamepad.current != null;
 
     private Vector3 RotationVector360(float minDist, float maxDist) {
         return Quaternion.AngleAxis(Random.Range(0, 360), Vector3.forward) * Vector3.right * Random.Range(minDist, maxDist);
