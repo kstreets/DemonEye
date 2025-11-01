@@ -8,6 +8,7 @@ using TMPro;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.Pool;
 using UnityEngine.SceneManagement;
@@ -64,6 +65,13 @@ public class Game : MonoBehaviour {
     public DemonClaw demonClawItem;
     [EndFoldout]
     
+    [Foldout("Stat Upgrade Paths")]
+    public StatUpgradePath agilityUpgradePath;
+    public StatUpgradePath corruptionUpgradePath;
+    public StatUpgradePath healthUpgradePath;
+    public StatUpgradePath strengthUpgradePath;
+    [EndFoldout]
+    
     [Foldout("Gameplay Variables")]
     [Range(0f, 1f)] public float defaultCriticalStrikeChange;
     public float defaultCriticalStrikeMultiplier;
@@ -77,7 +85,6 @@ public class Game : MonoBehaviour {
     public GameObject gemRockPrefab;
     public GameObject altarPrefab;
     public GameObject deadBodyPrefab;
-    public GameObject exitPortalPrefab;
 
     public BaseCharacterStats baseStats;
     public CoreAttack defaultAttack;
@@ -107,12 +114,13 @@ public class Game : MonoBehaviour {
     [Foldout("UI/MiscRefs")]
     public ItemDescPopup itemDescPopup;
     public MechanicDescPopup mechanicDescPopup;
-    public Button enterNextRaidButton;
     public RectTransform hideoutParent;
     public RectTransform hideoutHeaderParent;
-    public RectTransform hideoutRaidPanel;
     public ItemUI dragAndDropItemUI;
     public GameObject menuBackground;
+    public GameObject currenciesParent;
+    public TextMeshProUGUI soulsCurrencyText;
+    public TextMeshProUGUI coinCurrencyText;
     [EndFoldout]
     
     [Foldout("UI/HideoutTabs")]
@@ -123,10 +131,12 @@ public class Game : MonoBehaviour {
     public Button eyeForgeTabButton;
     public Button traderTabButton;
     public Button questsTabButton;
+    public Button levelupTabButton;
     public TextMeshProUGUI characterTabText;
     public TextMeshProUGUI eyeForgeTabText;
     public TextMeshProUGUI traderTabText;
     public TextMeshProUGUI questsTabText;
+    public TextMeshProUGUI levelupTabText;
     [EndFoldout]
 
     [Foldout("UI/PlayerPanel")]
@@ -180,6 +190,14 @@ public class Game : MonoBehaviour {
     [Foldout("UI/QuestsPanel")]
     public RectTransform questsPanel;
     public RectTransform questsParent;
+    [EndFoldout]
+    
+    [Foldout("UI/LevelupPanel")]
+    public RectTransform levelupPanel;
+    public ButtonFeel agilityUpgradeButton;
+    public ButtonFeel corruptionUpgradeButton;
+    public ButtonFeel healthUpgradeButton;
+    public ButtonFeel strengthUpgradeButton;
     [EndFoldout]
 
     [Foldout("UI/InRaid")]
@@ -335,6 +353,12 @@ public class Game : MonoBehaviour {
 
     private void LateUpdate() {
         UpdateDragAndDropItemToCursor();
+        if (currenciesParent.activeInHierarchy) {
+            UpdateCurrencyNumbers();
+        }
+        if (InRaid) {
+            UpdateInRaidUi();
+        }
     }
 
     private void OnApplicationQuit() {
@@ -359,6 +383,7 @@ public class Game : MonoBehaviour {
 
     private void OnHideoutStateEnter() {
         InitHideoutUI();
+        RefreshLevelUpPossibilities();
     }
 
     private void OnHideoutStateExit() {
@@ -402,7 +427,6 @@ public class Game : MonoBehaviour {
         UpdateSpawnManager();
         UpdateEnemies();
         UpdateEntityEffects();
-        UpdateInRaidUi();
     }
 
     private void OnGameWinEnter() {
@@ -1305,7 +1329,7 @@ public class Game : MonoBehaviour {
     [NonSerialized] private List<Inventory> allInventories = new();
     
     private const int playerPocketSize = 8;
-    private const int playerEquipmentSize = 3;
+    private const int playerEquipmentSize = 6;
     private int DefaultPlayerInventorySize => playerPocketSize + playerEquipmentSize;
 
     private const int traderInventoryColCount = 6;
@@ -2323,6 +2347,14 @@ public class Game : MonoBehaviour {
         public int nextIdleAnimHash;
         public int nextIdleDir;
         public Limiter bleedLimiter;
+        
+        public int soulCurrency;
+        public int coinCurrency;
+        
+        public int agilityLevel;
+        public int corruptionLevel;
+        public int healthLevel;
+        public int strengthLevel;
     }
 
     private Player player;
@@ -3107,11 +3139,23 @@ public class Game : MonoBehaviour {
     [Serializable]
     private class PlayerSaveData {
         public int health;
+        public int soulCurrency;
+        public int coinCurrency;
+        public int agilityLevel;
+        public int corruptionLevel;
+        public int healthLevel;
+        public int strengthLevel;
     }
 
     private void SavePlayerData() {
         PlayerSaveData data = new() {
             health = player.health,
+            soulCurrency = player.soulCurrency,
+            coinCurrency = player.coinCurrency,
+            agilityLevel = player.agilityLevel,
+            corruptionLevel = player.corruptionLevel,
+            healthLevel = player.healthLevel,
+            strengthLevel = player.strengthLevel,
         };
         SaveToFile(playerSavePath, data);
     }
@@ -3120,6 +3164,12 @@ public class Game : MonoBehaviour {
         PlayerSaveData data = LoadFromFile<PlayerSaveData>(playerSavePath);
         if (data == null) return;
         instancedPlayer.health = data.health;
+        instancedPlayer.soulCurrency = data.soulCurrency;
+        instancedPlayer.coinCurrency = data.coinCurrency;
+        instancedPlayer.agilityLevel = data.agilityLevel;
+        instancedPlayer.corruptionLevel = data.corruptionLevel;
+        instancedPlayer.healthLevel = data.healthLevel;
+        instancedPlayer.strengthLevel = data.strengthLevel;
     }
 
     // ************************************
@@ -3146,17 +3196,18 @@ public class Game : MonoBehaviour {
         ToggleHideoutTab(characterTabButton, characterTabText);
         ToggleHideoutPanels(playerPanel, stashPanel);
         ToggleSlimPlayerPanel(false);
+        currenciesParent.gameObject.SetActive(true);
         menuBackground.gameObject.SetActive(true);
         hideoutHeaderParent.gameObject.SetActive(true);
-        hideoutRaidPanel.gameObject.SetActive(true);
         hideoutTabsParent.gameObject.SetActive(true);
     }
 
     private void CloseHideoutUI() {
         ToggleHideoutPanels();
+        HideItemDescPopup(); 
+        currenciesParent.gameObject.SetActive(false);
         menuBackground.gameObject.SetActive(false);
         hideoutHeaderParent.gameObject.SetActive(false);
-        hideoutRaidPanel.gameObject.SetActive(false);
         hideoutTabsParent.gameObject.SetActive(false);
     }
 
@@ -3164,12 +3215,15 @@ public class Game : MonoBehaviour {
         Cursor.visible = false;
         CloseMainMenuUI();
         CloseHideoutUI();
+        currenciesParent.gameObject.SetActive(true);
         playerBarsPanel.gameObject.SetActive(true);
         raidTimerText.gameObject.SetActive(true);
         crosshairTrans.gameObject.SetActive(true);
     }
 
     private void CloseRaidUI() {
+        HideItemDescPopup(); 
+        currenciesParent.gameObject.SetActive(false);
         crosshairTrans.gameObject.SetActive(false);
         interactPrompt.gameObject.SetActive(false);
         playerBarsPanel.gameObject.SetActive(false);
@@ -3181,11 +3235,13 @@ public class Game : MonoBehaviour {
         eyeForgeTabButton.image.sprite = tabNonSelectedSprite;
         traderTabButton.image.sprite = tabNonSelectedSprite;
         questsTabButton.image.sprite = tabNonSelectedSprite;
+        levelupTabButton.image.sprite = tabNonSelectedSprite;
         
         characterTabText.margin = styles.nonSelectedHideoutTabMargin;
         eyeForgeTabText.margin = styles.nonSelectedHideoutTabMargin;
         traderTabText.margin = styles.nonSelectedHideoutTabMargin;
         questsTabText.margin = styles.nonSelectedHideoutTabMargin;
+        levelupTabText.margin = styles.nonSelectedHideoutTabMargin;
         
         button.image.sprite = tabSelectedSprite;
         text.margin = styles.selectedHideoutTabMargin;
@@ -3199,6 +3255,7 @@ public class Game : MonoBehaviour {
         traderInventoryPanel.gameObject.SetActive(false);
         traderTransactionPanel.gameObject.SetActive(false);
         questsPanel.gameObject.SetActive(false);
+        levelupPanel.gameObject.SetActive(false);
         mapSelectionPanel.gameObject.SetActive(false);
         
         foreach (RectTransform rect in panels) {
@@ -3245,10 +3302,21 @@ public class Game : MonoBehaviour {
             ToggleHideoutTab(questsTabButton, questsTabText);
             ToggleHideoutPanels(questsPanel);
         });
+        
+        levelupTabButton.onClick.AddListener(() => {
+            ToggleHideoutTab(levelupTabButton, levelupTabText);
+            ToggleSlimPlayerPanel(true);
+            ToggleHideoutPanels(playerPanel, levelupPanel);
+        });
 
         potionManTraderButton.button.onClick.AddListener(() => OnTraderButtonPressed(potionManTrader));
         armsDealerTraderButton.button.onClick.AddListener(() => OnTraderButtonPressed(armsDealerTrader));
         hatManTraderButton.button.onClick.AddListener(() => OnTraderButtonPressed(hatManTrader));
+        
+        agilityUpgradeButton.button.onClick.AddListener(() => OnLevelupButtonPressed(agilityUpgradePath, player.agilityLevel));
+        corruptionUpgradeButton.button.onClick.AddListener(() => OnLevelupButtonPressed(corruptionUpgradePath, player.corruptionLevel));
+        healthUpgradeButton.button.onClick.AddListener(() => OnLevelupButtonPressed(healthUpgradePath, player.healthLevel));
+        strengthUpgradeButton.button.onClick.AddListener(() => OnLevelupButtonPressed(strengthUpgradePath, player.strengthLevel));
         
         crucibleForgeButton.onClick.AddListener(() => {
             int eyeSlotIndex = 0;
@@ -3380,8 +3448,6 @@ public class Game : MonoBehaviour {
             RefreshTransactionUI();
         });
         
-        enterNextRaidButton.onClick.AddListener(InitMainMenuUI);
-        
         easyMapButton.onClick.AddListener(() => {
             LoadMapAsync(lighthouseMap, () => {
                 gameStateMachine.SetStateIfNotCurrent(raidState);
@@ -3457,6 +3523,21 @@ public class Game : MonoBehaviour {
         
         playerPocketsBackpackParent.gameObject.SetActive(true);
         playerPanel.GetComponent<LayoutElement>().preferredWidth = playerPanelWidth;
+    }
+
+    // Here just so that we don't allocate strings every frame
+    private int prevSoulCurrency = int.MinValue;
+    private int prevCoinCurrency = int.MinValue;
+    
+    private void UpdateCurrencyNumbers() {
+        if (prevSoulCurrency != player.soulCurrency) {
+            soulsCurrencyText.text = player.soulCurrency.ToString();
+        }
+        if (prevCoinCurrency != player.coinCurrency) {
+            coinCurrencyText.text = player.coinCurrency.ToString();
+        }
+        prevSoulCurrency = player.soulCurrency;
+        prevCoinCurrency = player.coinCurrency;
     }
 
     private enum TransactionState { Empty, Buying, Selling }
@@ -3780,7 +3861,71 @@ public class Game : MonoBehaviour {
             questUIs[i].Set(activeQuests[i]);
         }
     }
+    
+    // ************************
+    // Leveling Up
+    // ************************
 
+    private void OnLevelupButtonPressed(StatUpgradePath upgradePath, int playerStatLevel) {
+        UpgradeStatResult result = CanUpgradeStat(upgradePath, playerStatLevel);
+        if (result == UpgradeStatResult.CantAfford || result == UpgradeStatResult.AtMaxLevel) return;
+        
+        player.soulCurrency -= upgradePath.soulsNeededPerLevel[playerStatLevel];
+
+        if (upgradePath == agilityUpgradePath) {
+            player.agilityLevel++;
+        }
+        else if (upgradePath == corruptionUpgradePath) {
+            player.corruptionLevel++;
+        }
+        else if (upgradePath == healthUpgradePath) {
+            player.healthLevel++;
+        }
+        else if (upgradePath == strengthUpgradePath) {
+            player.strengthLevel++;
+        }
+        
+        SavePlayerData();
+        RefreshLevelUpPossibilities();
+    }
+    
+    private void RefreshLevelUpPossibilities() {
+        ToggleStatUpgradeButton(agilityUpgradeButton, agilityUpgradePath, player.agilityLevel);
+        ToggleStatUpgradeButton(corruptionUpgradeButton, corruptionUpgradePath, player.corruptionLevel);
+        ToggleStatUpgradeButton(healthUpgradeButton, healthUpgradePath, player.healthLevel);
+        ToggleStatUpgradeButton(strengthUpgradeButton, strengthUpgradePath, player.strengthLevel);
+    }
+
+    private void ToggleStatUpgradeButton(ButtonFeel button, StatUpgradePath upgradePath, int playerStatLevel) {
+        UpgradeStatResult result = CanUpgradeStat(upgradePath, playerStatLevel);
+        switch (result) {
+            case UpgradeStatResult.CantAfford:
+                button.Disable();
+                button.text.text = $"{upgradePath.soulsNeededPerLevel[playerStatLevel]} Souls";
+                break;
+            case UpgradeStatResult.Affordable:
+                button.Enable();
+                button.text.text = $"{upgradePath.soulsNeededPerLevel[playerStatLevel]} Souls";
+                break;
+            case UpgradeStatResult.AtMaxLevel:
+                button.Disable();
+                button.text.text = "Max";
+                break;
+        }
+    }
+
+    private enum UpgradeStatResult { CantAfford, Affordable, AtMaxLevel }
+    
+    private UpgradeStatResult CanUpgradeStat(StatUpgradePath upgradePath, int playerStatLevel) {
+        if (!upgradePath.soulsNeededPerLevel.IndexInRange(playerStatLevel)) {
+            return UpgradeStatResult.AtMaxLevel;
+        }
+        if (player.soulCurrency >= upgradePath.soulsNeededPerLevel[playerStatLevel]) {
+            return UpgradeStatResult.Affordable;    
+        }
+        return UpgradeStatResult.CantAfford;
+    }
+    
     // ************************
     // Audio
     // ************************

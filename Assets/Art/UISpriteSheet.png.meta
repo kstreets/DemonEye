@@ -1174,6 +1174,116 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: UISpriteSheet_44
+      rect:
+        serializedVersion: 2
+        x: 129
+        y: 361
+        width: 14
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a60b480a6fe801b4fb7df258be6a3650
+      internalID: 458169748
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Coin
+      rect:
+        serializedVersion: 2
+        x: 34
+        y: 98
+        width: 11
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 08b560f50f9ce1d4d8a53f0d32a48e74
+      internalID: 1564196794
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Soul
+      rect:
+        serializedVersion: 2
+        x: 52
+        y: 98
+        width: 10
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fe8fb1c84b898cf42833912fda20b869
+      internalID: -927471816
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: GrayedOutButton
+      rect:
+        serializedVersion: 2
+        x: 395
+        y: 288
+        width: 36
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 3, y: 4, z: 3, w: 4}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1368ecc3b75ce874db530c08e31464d7
+      internalID: 1226795369
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HighlightedGrayedOutButton
+      rect:
+        serializedVersion: 2
+        x: 432
+        y: 288
+        width: 36
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 3, y: 4, z: 3, w: 4}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d363f8ee81ad5c14eb2ce1bdf829a96a
+      internalID: -870479080
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -1189,6 +1299,10 @@ TextureImporter:
       entries: []
     nameFileIdTable:
       AttackRune1_0: 637263459462573385
+      Coin: 1564196794
+      GrayedOutButton: 1226795369
+      HighlightedGrayedOutButton: -870479080
+      Soul: -927471816
       Tag: 1554644581
       UISpriteSheet_0: 432214621
       UISpriteSheet_1: 11644242
@@ -1229,6 +1343,7 @@ TextureImporter:
       UISpriteSheet_41: 815896414
       UISpriteSheet_42: 764932500
       UISpriteSheet_43: 1129690133
+      UISpriteSheet_44: 458169748
       UISpriteSheet_45: -510367084
       UISpriteSheet_46: -998722681
       UISpriteSheet_47: 275925045
