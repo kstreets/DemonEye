@@ -8,6 +8,8 @@ public class Styles : ScriptableObject {
     public Color rareTextColor;
     public Color legendaryTextColor;
 
+    public Color coinCurrencyColor;
+
     public Vector4 nonSelectedHideoutTabMargin;
     public Vector4 selectedHideoutTabMargin;
 

@@ -16,6 +16,10 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
     public Sprite highlightedDisabledSprite;
     public bool isDisabled;
 
+    private void OnDisable() {
+        OnPointerExit(null);
+    }
+
     public void OnPointerDown(PointerEventData eventData) {
         if (isDisabled) return;
         image.sprite = pressedSprite;

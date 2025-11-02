@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
 using TMPro;
 using Unity.Cinemachine;
 using UnityEngine;
@@ -261,6 +262,7 @@ public class Game : MonoBehaviour {
     private EntityPool<Entity> explosionPool;
     
     private State mainMenuState;
+    private State mapSelectionState;
     private State hideoutState;
     private State raidState;
     private State gameOverState;
@@ -274,10 +276,6 @@ public class Game : MonoBehaviour {
     
     private void Start() {
         instance = this;
-        
-        #if UNITY_EDITOR
-        Application.targetFrameRate = 0;
-        #endif
         
         LoadAllItems();
         InitAudio();
@@ -295,10 +293,13 @@ public class Game : MonoBehaviour {
         InitInventory();
         LoadInventory(playerInventory);
         LoadInventory(stashInventory);
+        LoadInventory(crucibleInventory);
         InitButtonCallbacks();
         InitTraders();
-        SetStashValue(0);
         InitQuests();
+        
+        Cursor.visible = true;
+        OnGameStartInitUI();
         
         itemDropPool = CreateEntityPool<Entity>(itemDropPrefab, 20, null);
         bloodDropPool = CreateEntityPool<Entity>(bloodDropPrefab, 10, null);
@@ -325,6 +326,7 @@ public class Game : MonoBehaviour {
 
         mainMenuState = gameStateMachine.CreateState(null, OnMainMenuStateEnter, OnMainMenuStateExit);
         hideoutState = gameStateMachine.CreateState(OnHideoutStateUpdate, OnHideoutStateEnter, OnHideoutStateExit);
+        mapSelectionState = gameStateMachine.CreateState(null, OnMapSelectionEnter, OnMapSelectionExit);
         raidState = gameStateMachine.CreateState(OnRaidStateUpdate, OnRaidStateEnter, OnRaidStateExit);
         gameWinState = gameStateMachine.CreateState(null, OnGameWinEnter, OnGameWinExit);
         gameOverState = gameStateMachine.CreateState(null, OnGameOverEnter, OnGameOverExit);
@@ -357,15 +359,11 @@ public class Game : MonoBehaviour {
             UpdateCurrencyNumbers();
         }
         if (InRaid) {
-            UpdateInRaidUi();
+            UpdateInRaidUI();
         }
-    }
-
-    private void OnApplicationQuit() {
-        SaveInventory(playerInventory);
-        SaveInventory(stashInventory);
-        SavePlayerData();
-        SaveQuestStates();
+        if (InHideout || InRaid) {
+            UpdatePlayerPanelUI();
+        }
     }
 
     private void UpdateTimers() {
@@ -374,7 +372,7 @@ public class Game : MonoBehaviour {
     }
 
     private void OnMainMenuStateEnter() {
-        InitMainMenuUI();
+        ShowMainMenuUI();
     }
 
     private void OnMainMenuStateExit() {
@@ -382,12 +380,15 @@ public class Game : MonoBehaviour {
     }
 
     private void OnHideoutStateEnter() {
-        InitHideoutUI();
+        ShowHideoutUI();
         RefreshLevelUpPossibilities();
     }
 
     private void OnHideoutStateExit() {
         CloseHideoutUI();
+        SaveInventory(playerInventory);
+        SaveInventory(stashInventory);
+        SaveInventory(crucibleInventory);
     }
 
     private void OnHideoutStateUpdate() {
@@ -395,8 +396,19 @@ public class Game : MonoBehaviour {
         UpdateTraderTransactionState();
     }
 
+    private void OnMapSelectionEnter() {
+        ShowMapSelectionUI();
+        // Make sure to update player's inventory! 
+        CheckForEquipmentChange();
+    }
+
+    private void OnMapSelectionExit() {
+        CloseMapSelectionUI();
+    }
+
     private void OnRaidStateEnter() {
-        InitRaidUI();
+        Cursor.visible = false;
+        ShowRaidUI();
         
         currentMapInstance.gameObject.SetActive(true);
         currentMapInstance.grid.Init();
@@ -416,7 +428,10 @@ public class Game : MonoBehaviour {
         InitExitPortals(currentMapInstance.exitPortalsParent, currentMapInstance.waves.timeBeforeExitPortalsSpawn);
     }
 
-    private void OnRaidStateExit() { }
+    private void OnRaidStateExit() {
+        Cursor.visible = true;
+        CloseRaidUI();
+    }
 
     private void OnRaidStateUpdate() {
         UpdateTimers();
@@ -430,33 +445,25 @@ public class Game : MonoBehaviour {
     }
 
     private void OnGameWinEnter() {
-        raidStateData.raidDifficulty++;
-        SaveToFile(raidDataSavePath, raidStateData);
-        OnLeaveRaid();
+        OnSaveWhenRaidIsOver();
         gameStateMachine.SetStateIfNotCurrent(hideoutState);
     }
 
-    private void OnGameWinExit() { }
-
-    private void OnGameOverEnter() { }
-
-    private void OnGameOverExit() {
-        player.health = 100;
-        SavePlayerData();
-        
-        raidStateData.raidDifficulty = 0;
-        SaveToFile(raidDataSavePath, raidStateData);
-        
-        ClearInventory(playerInventory);
-        SaveInventory(playerInventory);
-        
-        ClearInventory(stashInventory);
-        SaveInventory(stashInventory);
-        
-        OnLeaveRaid();
+    private void OnGameWinExit() {
+        DeinitRaid();
     }
 
-    private void OnLeaveRaid() {
+    private void OnGameOverEnter() {
+        player.health = 100;
+        ClearInventory(playerInventory);
+        OnSaveWhenRaidIsOver();
+    }
+
+    private void OnGameOverExit() {
+        DeinitRaid();
+    }
+
+    private void DeinitRaid() {
         currentMapInstance.grid.Deinit();
         
         DestroyLevelEntities();
@@ -1422,7 +1429,6 @@ public class Game : MonoBehaviour {
             CheckToConsumeItem(invHoverInfo);
         }
         
-        UpdatePlayerPanelUI();
         CheckForEquipmentChange();
     }
 
@@ -2057,6 +2063,7 @@ public class Game : MonoBehaviour {
             slot.item.count += remainingItemCount;
             result.addedCount += remainingItemCount;
             result.type = InventoryAddResult.ResultType.Success;
+            
             return result;
         }
 
@@ -2076,6 +2083,7 @@ public class Game : MonoBehaviour {
             
             bool movedEntireStack = newItemCount == remainingItemCount;
             result.type = movedEntireStack ? InventoryAddResult.ResultType.Success : InventoryAddResult.ResultType.FailureToAddAll;
+            
             return result;
         }
         
@@ -2330,11 +2338,6 @@ public class Game : MonoBehaviour {
     private void CloseLootInventory() {
         lootInventoryPanel.gameObject.SetActive(false);
         discoverLootTimer.Stop();
-    }
-    
-    private void SetStashValue(int value) {
-        stashValue = value;
-        stashValueText.text = stashValue.ToString();
     }
     
     // **********************************
@@ -3105,6 +3108,12 @@ public class Game : MonoBehaviour {
         bf.Serialize(file, obj);
     }
 
+    private void OnSaveWhenRaidIsOver() {
+        SaveInventory(playerInventory);
+        SavePlayerData();
+        SaveQuestStates();
+    }
+
     private T LoadFromFileOrCreateNew<T>(string path) where T : class, new() {
         return LoadFromFile<T>(path) ?? new T();
     }
@@ -3175,11 +3184,14 @@ public class Game : MonoBehaviour {
     // ************************************
     // UI 
     // ************************************
-    
-    private void InitMainMenuUI() {
-        Cursor.visible = true;
+
+    private void OnGameStartInitUI() {
         CloseHideoutUI();
         CloseRaidUI();
+        ShowMainMenuUI();
+    }
+    
+    private void ShowMainMenuUI() {
         hideoutParent.gameObject.SetActive(true);
         menuBackground.gameObject.SetActive(true);
         mainMenuParent.gameObject.SetActive(true);
@@ -3189,10 +3201,19 @@ public class Game : MonoBehaviour {
         menuBackground.gameObject.SetActive(false);
         mainMenuParent.gameObject.SetActive(false);
     }
+
+    private void ShowMapSelectionUI() {
+        ShowHideoutUI();
+        hideoutHeaderParent.gameObject.SetActive(false);
+        hideoutTabsParent.gameObject.SetActive(false);
+        ToggleHideoutPanels(playerPanel, mapSelectionPanel);
+    }
+
+    private void CloseMapSelectionUI() {
+        CloseHideoutUI();
+    }
     
-    private void InitHideoutUI() {
-        Cursor.visible = true;
-        CloseRaidUI();
+    private void ShowHideoutUI() {
         ToggleHideoutTab(characterTabButton, characterTabText);
         ToggleHideoutPanels(playerPanel, stashPanel);
         ToggleSlimPlayerPanel(false);
@@ -3211,10 +3232,7 @@ public class Game : MonoBehaviour {
         hideoutTabsParent.gameObject.SetActive(false);
     }
 
-    private void InitRaidUI() {
-        Cursor.visible = false;
-        CloseMainMenuUI();
-        CloseHideoutUI();
+    private void ShowRaidUI() {
         currenciesParent.gameObject.SetActive(true);
         playerBarsPanel.gameObject.SetActive(true);
         raidTimerText.gameObject.SetActive(true);
@@ -3264,17 +3282,14 @@ public class Game : MonoBehaviour {
     }
 
     private void OnEscapePressed(InputAction.CallbackContext context) {
-        bool onMapSelectionScreen = mapSelectionPanel.gameObject.activeInHierarchy;
-        if (onMapSelectionScreen || InHideout) {
+        if (InMapSelection || InHideout) {
             gameStateMachine.SetState(mainMenuState);
         }
     }
     
     private void InitButtonCallbacks() {
         mainMenuPlayButton.onClick.AddListener(() => {
-            CloseMainMenuUI();
-            ToggleHideoutPanels(playerPanel, mapSelectionPanel);
-            ToggleSlimPlayerPanel(false);
+            gameStateMachine.SetStateIfNotCurrent(mapSelectionState);
         });
         
         mainMenuHideoutButton.onClick.AddListener(() => {
@@ -3423,13 +3438,17 @@ public class Game : MonoBehaviour {
         
         traderDealButton.onClick.AddListener(() => {
             InventoryValueType valueType = transactionState == TransactionState.Buying ? InventoryValueType.Buy : InventoryValueType.Sell;
+            if (GetInventoryItemCount(transactionInventory) <= 0) return;
+            
             int price = GetInventoryValue(transactionInventory, valueType);
             
-            if (transactionState == TransactionState.Buying && stashValue >= price) {
-                SetStashValue(stashValue - price); 
+            if (transactionState == TransactionState.Buying && player.coinCurrency >= price) {
+                player.coinCurrency -= price;
+                
                 for (int i = 0; i < transactionInventory.slots.Length; i++) { 
                     MoveEntireItemStack(transactionInventory, stashInventory, i);
                 }
+                
                 // After buying items we just make sure all items in stash are no longer trader owned
                 foreach (InventorySlot slot in stashInventory.slots) {
                     if (slot.item == null) continue;
@@ -3438,12 +3457,16 @@ public class Game : MonoBehaviour {
                 transactionState = TransactionState.Empty;
             }
             else if (transactionState == TransactionState.Selling) {
+                player.coinCurrency += price;
+                
                 int xpGain = GetInventoryValue(transactionInventory, InventoryValueType.Xp);
                 IncreaseTraderRep(GetCurrentlySelectedTrader(), xpGain);
-                SetStashValue(stashValue + price);
                 ClearInventory(transactionInventory);
                 transactionState = TransactionState.Empty;
             }
+            
+            SavePlayerData();
+            SaveInventory(stashInventory);
 
             RefreshTransactionUI();
         });
@@ -3500,7 +3523,7 @@ public class Game : MonoBehaviour {
         }
     }
 
-    private void UpdateInRaidUi() {
+    private void UpdateInRaidUI() {
         healthBarFillImage.fillAmount = player.health / 100f;
         weightBarFillImage.fillAmount = GetTotalWeightCompletion();
         
@@ -3570,12 +3593,14 @@ public class Game : MonoBehaviour {
         
         if (transactionState == TransactionState.Buying) {
             int buyPrice = GetInventoryValue(transactionInventory, InventoryValueType.Buy);
-            traderTransactionInfoText.text = $"Purchase for {buyPrice}";
+            string buyPriceString = ColorText(buyPrice.ToString(), styles.coinCurrencyColor);
+            traderTransactionInfoText.text = $"Purchase for <sprite=0>{buyPriceString}";
         }
         else if (transactionState == TransactionState.Selling) {
             int sellPrice = GetInventoryValue(transactionInventory, InventoryValueType.Sell);
             int xpGain = GetInventoryValue(transactionInventory, InventoryValueType.Xp);
-            traderTransactionInfoText.text = $"Sell for {sellPrice}\n Gain {xpGain} trader experience";
+            string sellPriceString = ColorText(sellPrice.ToString(), styles.coinCurrencyColor);
+            traderTransactionInfoText.text = $"Sell for <sprite=0>{sellPriceString}\n Gain {xpGain} trader experience";
         }
     }
     
@@ -4219,6 +4244,8 @@ public class Game : MonoBehaviour {
     private Vector2 ScreenCenter => new(Screen.width / 2f, Screen.height / 2f);
     
     private bool InHideout => gameStateMachine.CurState == hideoutState;
+    
+    private bool InMapSelection => gameStateMachine.CurState == mapSelectionState;
     
     private bool InRaid => gameStateMachine.CurState == raidState;
 
