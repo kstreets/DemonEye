@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Pool;
 using Random = UnityEngine.Random;
 
-public static class Tween {
+public static class DemonEyeTween {
     
     public enum Curve { Linear, EaseOut, EaseIn, EaseInOut }
     public enum Type { Scale, Shake, Delay, Callback, Custom, }

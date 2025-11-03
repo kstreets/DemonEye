@@ -19,6 +19,7 @@ public class ItemDrop : MonoBehaviour {
         item = applyItem;
         spriteRenderer.sprite = applyItem.dropSprite == null ? applyItem.inventorySprite : applyItem.dropSprite;
         circleCollider.radius = applyItem.pickupRadius;
+        circleCollider.enabled = true;
     }
     
 }

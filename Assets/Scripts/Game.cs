@@ -4,12 +4,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
+using PrimeTween;
 using TMPro;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.Pool;
 using UnityEngine.SceneManagement;
@@ -45,6 +44,7 @@ public class Game : MonoBehaviour {
     public GameObject bloodDropPrefab;
     public GameObject poisonDebuffPrefab;
     public GameObject explosionPrefab;
+    public GameObject projectileImpactPrefab;
     [EndFoldout]
     
     [Foldout("Item Type Refs")]
@@ -260,6 +260,7 @@ public class Game : MonoBehaviour {
     private EntityPool<Projectile> stoppingPowerProjectilePool;
     private EntityPool<Entity> poisonDebuffPool;
     private EntityPool<Entity> explosionPool;
+    private EntityPool<Entity> projectileImpactPool;
     
     private State mainMenuState;
     private State mapSelectionState;
@@ -287,7 +288,7 @@ public class Game : MonoBehaviour {
         player.gameObject.SetActive(false);
         LoadAndAssignPlayerSaveData(player);
 
-        Tween.Init();
+        DemonEyeTween.Init();
         CreateDropPools();
         
         InitInventory();
@@ -307,6 +308,8 @@ public class Game : MonoBehaviour {
         stoppingPowerProjectilePool = CreateEntityPool<Projectile>(stoppingPowerProjectilePrefab, 20, OnSpawnProjectile);
         poisonDebuffPool = CreateEntityPool<Entity>(poisonDebuffPrefab, 10, null);
         explosionPool = CreateEntityPool<Entity>(explosionPrefab, 5, null);
+        projectileImpactPool = CreateEntityPool<Entity>(projectileImpactPrefab, 20, null);
+        
 
         equipedEye = new() { coreAttack = defaultAttack };
         
@@ -338,7 +341,7 @@ public class Game : MonoBehaviour {
     private void Update() {
         UpdateDelayedEntitiesToDestroy();
         gameStateMachine.Tick();
-        Tween.Update();
+        DemonEyeTween.Update();
         UpdateQuests();
         foreach (Inventory inventory in allInventories) {
             RefreshInventoryDisplay(inventory);
@@ -531,7 +534,6 @@ public class Game : MonoBehaviour {
         public int health;
         public int damageAccumilation;
         
-        public SpringShake? springShake;
         public ScaleEffect? scaleEffect;
         public HitFlashEffect? hitFlashEffect;
         public PoisonedEffect? poisonedEffect;
@@ -600,6 +602,7 @@ public class Game : MonoBehaviour {
 
     private void ResetEntity<T>(T entity) where T : Entity {
         entity.health = 100;
+        entity.trans.localScale = Vector3.one;
         entity.animator?.Rebind();
         if (entity.gameObject.activeInHierarchy) {
             entity.animator?.Update(0);
@@ -625,6 +628,7 @@ public class Game : MonoBehaviour {
     private void DestroyEntity(Entity entity) {
         RemoveHitFlashEffect(entity);
         RemovePoisonedEffect(entity);
+        entity.bounceEffect = null;
         entity.parentEffect = null;
 
         // Remove from delay list here to prevent possible double frees
@@ -675,7 +679,6 @@ public class Game : MonoBehaviour {
     
     private void UpdateEntityEffects() {
         foreach (Entity entity in entities) {
-            UpdateSpringShakeEffect(entity);
             UpdateScaleEffect(entity);
             UpdateHitFlashEffect(entity);
             UpdatePoisonedEffect(entity);
@@ -685,70 +688,6 @@ public class Game : MonoBehaviour {
             UpdateShakeEffect(entity);
         }
     }
-    
-    
-    public struct SpringShake {
-        public float stiffness;
-        public float damping; 
-        public Vector2 velocity;
-        public Vector2 offset;
-        public Vector2 targetPos;
-    }
-
-    private void AddSpringShakeEffect(Entity entity, Vector2 velocity) {
-        const float stiffness = 2000f;
-        const float damping = 4f;
-        
-        SpringShake shake = new() {
-            stiffness = stiffness,
-            damping = damping,
-            targetPos = entity.trans.localPosition,
-        };
-
-        const float randomVelocityAngle = 15f;
-        const float shakeMagnitude = 0.025f;
-        shake.offset = (Quaternion.AngleAxis(Random.Range(-randomVelocityAngle, randomVelocityAngle), Vector3.forward) * velocity.normalized * shakeMagnitude).ToVector2();
-        
-        entity.springShake = shake;
-    }
-
-    private void UpdateSpringShakeEffect(Entity entity) {
-        if (!entity.springShake.TryGetValue(out var shake)) return;
-        
-        float dt = Time.deltaTime;
-        float k = shake.stiffness;
-        float c = shake.damping;
-
-        Vector2 x = shake.offset;
-        Vector2 v = shake.velocity;
-
-        // Derived constants
-        float omega = Mathf.Sqrt(k);
-        float zeta = c / (2f * omega);
-
-        if (zeta < 1f) // underdamped
-        {
-            float expTerm = Mathf.Exp(-zeta * omega * dt);
-            float c1 = expTerm * (Mathf.Cos(omega * Mathf.Sqrt(1f - zeta * zeta) * dt));
-            float c2 = expTerm * (Mathf.Sin(omega * Mathf.Sqrt(1f - zeta * zeta) * dt));
-
-            // Combine into matrix form for performance
-            Vector2 newX = c1 * x + (dt * c2) * v;
-            Vector2 newV = (-omega * zeta * c1 * x) + (c1 * v - omega * c2 * x);
-            shake.offset = newX;
-            shake.velocity = newV;
-        }
-        else // critically/overdamped
-        {
-            float expTerm = Mathf.Exp(-omega * dt);
-            shake.offset = expTerm * (x + v * dt);
-            shake.velocity = expTerm * (v - omega * x * dt);
-        }
-
-        entity.trans.localPosition = shake.targetPos + shake.offset;
-        entity.springShake = shake;
-    }
-
     
     public struct ScaleEffect {
         public Vector3 targetScale;
@@ -885,7 +824,7 @@ public class Game : MonoBehaviour {
         entity.position = new(entity.position.x, entity.position.y + yPos, entity.position.y);
         entity.bounceEffect = bounce;
     }
-    
+
     
     public struct ParentToEntity {
         public Entity parentEntity;
@@ -916,10 +855,10 @@ public class Game : MonoBehaviour {
         public Vector2 startPos;
         public Vector2 endPos;
         public Timer timer;
-        public Tween.Curve curve;
+        public DemonEyeTween.Curve curve;
     }
 
-    private void AddTweenPosition(Entity entity, Vector2 endPos, float duration, Tween.Curve curve = Tween.Curve.Linear) {
+    private void AddTweenPosition(Entity entity, Vector2 endPos, float duration, DemonEyeTween.Curve curve = DemonEyeTween.Curve.Linear) {
         TweenPosition tween = new() {
             startPos = entity.position,
             endPos = endPos,
@@ -933,7 +872,7 @@ public class Game : MonoBehaviour {
         if (!entity.tweenPosition.TryGetValue(out var tween)) return;
 
         tween.timer.Tick();
-        float comp = Tween.ConvertCompletion(tween.timer.Comp(), tween.curve);
+        float comp = DemonEyeTween.ConvertCompletion(tween.timer.Comp(), tween.curve);
         entity.position = Vector2.Lerp(tween.startPos, tween.endPos, comp);
         entity.tweenPosition = tween;
     }
@@ -2629,6 +2568,9 @@ public class Game : MonoBehaviour {
         projectile.velocity = velocity;
         projectile.eyeInstanceSpawnedFrom = equipedEye;
         projectiles.Add(projectile);
+
+        projectile.trans.localScale = Vector3.zero;
+        Tween.Scale(projectile.trans, Vector3.one, 0.025f, Ease.InBounce);
         
         return projectile;
     }
@@ -2647,9 +2589,12 @@ public class Game : MonoBehaviour {
                 EnableInteractionPrompt(col.transform.position);
                 if (interactInputAction.WasPressedThisFrame()) {
                     ItemDrop itemDrop = col.GetComponent<ItemDrop>();
+                    itemDrop.circleCollider.enabled = false;
+                    
                     InventoryAddResult result = TryAddItemToInventory(playerInventory, itemDrop.item, itemDrop.dropCount);
                     if (result.type == InventoryAddResult.ResultType.Success) {
-                        DestroyEntity(col.gameObject);
+                        Entity droppedEntity = entityLookup[itemDrop.gameObject];
+                        PickupDroppedItem(droppedEntity); 
                     }
                     else if (result.type == InventoryAddResult.ResultType.FailureToAddAll) {
                         itemDrop.dropCount -= result.addedCount;
@@ -2673,6 +2618,42 @@ public class Game : MonoBehaviour {
                 }
             }
         });
+    }
+
+    private void PickupDroppedItem(Entity droppedEntity) {
+        Vector3 playerPickupTarget = new(0f, 0.07f, 0f);
+        
+        droppedEntity.bounceEffect = null;
+        droppedEntity.trans.SetParent(player.trans, true);
+        
+        TweenSettings horizontalSettings = new() {
+            duration = 0.15f,
+            ease = Ease.InQuart,
+        };
+        
+        TweenSettings verticalSettings = new() {
+            duration = 0.09f,
+            ease = Ease.InQuart,
+        };
+        
+        TweenSettings itemScaleSettings = new() {
+            startDelay = 0.03f,
+            duration = 0.15f,
+            ease = Ease.InCubic,
+        };
+        
+        ShakeSettings playerScaleSettings = new() {
+            startDelay = 0.1f,
+            duration = 0.08f,
+            strength = Vector2.one * 0.15f,
+            frequency = 5f,
+        };
+        
+        Tween.LocalPositionX(droppedEntity.trans, playerPickupTarget.x, horizontalSettings)
+        .Group(Tween.LocalPositionY(droppedEntity.trans, playerPickupTarget.y, verticalSettings))
+        .Group(Tween.Scale(droppedEntity.trans, 0f,itemScaleSettings))
+        .Group(Tween.PunchScale(player.trans, playerScaleSettings))
+        .OnComplete(() => DestroyEntity(droppedEntity));
     }
 
     private void EnableInteractionPrompt(Vector3 position) {
@@ -2710,13 +2691,15 @@ public class Game : MonoBehaviour {
     }
     
     private void UpdateProjectiles() {
+        const float projectileRadius = 0.035f;
+        
         for (int i = projectiles.Count - 1; i >= 0; i--) {
             Projectile proj = projectiles[i];
             proj.curTimeAlive += Time.deltaTime;
             proj.trans.position += proj.velocity.ToVector3() * Time.deltaTime;
             proj.distTraveled += proj.velocity.magnitude * Time.deltaTime;
             
-            Collider2D col = Physics2D.OverlapCircle(proj.trans.position, 0.1f, Masks.DamagableMask);
+            Collider2D col = Physics2D.OverlapCircle(proj.trans.position, projectileRadius, Masks.DamagableMask);
             if (!col) continue;
             
             Entity entity = entityLookup[col.gameObject];
@@ -2727,13 +2710,18 @@ public class Game : MonoBehaviour {
 
             if (entity is Enemy && ProjectileShouldPassThrough(proj, entity)) continue;
             
+            Entity impact = SpawnEntity(projectileImpactPool, proj.position, RandomRotation());
+            DestroyEntity(impact, CurrentClipLength(impact.animator));
+            
             DestroyEntity(projectiles[i]);
             projectiles.RemoveAt(i);
         }
 
         for (int i = projectiles.Count - 1; i >= 0; i--) {
             if (projectiles[i].curTimeAlive > projectiles[i].lifeTimeDuration) {
-                DestroyEntity(projectiles[i]);
+                const float despawnTime = 0.1f;
+                Tween.Scale(projectiles[i].trans, 0f, despawnTime, Ease.OutBounce);
+                DestroyEntity(projectiles[i], despawnTime);
                 projectiles.RemoveAt(i);
             }
         }
@@ -2762,6 +2750,7 @@ public class Game : MonoBehaviour {
         enemy.health -= damage;
         AddFlashHitEffect(enemy);
         SpawnDamageNumber(EnemyDamageNumberSpawnPos(enemy), damage, isCriticalStrike ? DamageColor.Crit : DamageColor.Normal);
+        Tween.PunchScale(enemy.trans, Vector3.one * 0.15f, 0.1f, 15f);
     }
     
     private void HandleDamage(Projectile projectile, Entity entity) {
@@ -2890,6 +2879,10 @@ public class Game : MonoBehaviour {
         Entity damageNumber = SpawnEntity<Entity>(damageNumberPrefab, spawnPos, Quaternion.identity, damageNumbersParent);
         damageNumber.textMesh.text = damage.ToString();
         
+        Vector3 startSize = Vector3.one * 0.8f;
+        Vector3 endSize = Vector3.one * (damageColor == DamageColor.Crit ? 1.25f : 1f);
+        Vector2 endDamageNumPos = OffsetY(OffsetX(spawnPos, Random.Range(-0.04f, 0.04f)), Random.Range(0.06f, 0.08f));
+        
         switch (damageColor) {
             case DamageColor.Normal:
                 damageNumber.textMesh.color = styles.normalDamageColor;
@@ -2904,10 +2897,15 @@ public class Game : MonoBehaviour {
                 damageNumber.textMesh.color = styles.poisonDamageColor;
                 break;
         }
+
+        const float moveDuration = 0.3f;
+        const float scaleUpDuration = 0.15f;
+        const float popOutDuration = 0.09f;
         
-        Vector2 endDamageNumPos = OffsetY(spawnPos, 0.08f);
-        AddTweenPosition(damageNumber, endDamageNumPos, 0.3f, Tween.Curve.EaseOut); 
-        DestroyEntity(damageNumber, 0.3f);
+        Tween.Position(damageNumber.trans, endDamageNumPos, moveDuration, Ease.OutCirc)
+        .Group(Tween.Scale(damageNumber.trans, startSize, endSize, scaleUpDuration, Ease.InOutBounce))
+        .Chain(Tween.Scale(damageNumber.trans, 0f, popOutDuration, Ease.InBounce));
+        DestroyEntity(damageNumber, moveDuration + popOutDuration);
     }
 
     private Vector3 EnemyDamageNumberSpawnPos(Entity entity) {
@@ -3489,36 +3487,47 @@ public class Game : MonoBehaviour {
     private int fillParamProperty = Shader.PropertyToID("_Fill");
     
     private void DoEyeForgeAnimation(Action onAnimationEndCallback) {
-        List<Tween.TweenObject> pentagramSequence = Tween.CreateSequence(out _);
-        pentagramSequence.Add(Tween.TweenCustom(5f, comp => {
-            pentagramFillImage.material.SetFloat(fillParamProperty, pentagramFillCurve.Evaluate(comp));
-        }));
-        pentagramSequence.Add(Tween.Callback(onAnimationEndCallback));
+        Tween.Custom(target: this, 0f, 1f, 5f, (target, val) => {
+            target.pentagramFillImage.material.SetFloat(target.fillParamProperty, target.pentagramFillCurve.Evaluate(val));
+        }, Ease.Linear)
+        .OnComplete(onAnimationEndCallback);
         
         foreach (InventorySlot slot in crucibleInventory.slots) {
             if (slot.item == null) continue;
             
             RectTransform rectTransform = slot.ui.itemUI.rectTransform;
+            
+            // Use our own shake because prime tween shake's curve does not work
             rectTransform.DoTweenShake(10f, 3.3f, 5f, itemShakeCurve);
             
-            List<Tween.TweenObject> sequence = Tween.CreateSequence(out _);
-            sequence.Add(Tween.TweenDelay(1f));
+            Sequence sequence = Sequence.Create();
+            sequence.ChainDelay(1f);
             
             if (slot.item.ItemRef.type == eyeType) {
-                sequence.Add(Tween.TweenScale(rectTransform, 1f, 1.25f, 2f, Tween.Curve.EaseInOut));
-                sequence.Add(Tween.TweenDelay(3f));
-                sequence.Add(Tween.TweenScale(rectTransform, 1.45f, 1f, 0.15f, Tween.Curve.EaseInOut));
+                sequence.Chain(Tween.Scale(rectTransform, Vector3.one, Vector3.one * 1.25f, new() {
+                    duration = 4f,
+                    ease = Ease.InCubic,
+                }));
+                sequence.Chain(Tween.Scale(rectTransform, Vector3.one * 1.45f, Vector3.one, new() {
+                    duration = 0.15f,
+                    ease = Ease.InOutBounce,
+                }));
             }
             else {
-                sequence.Add(Tween.TweenScale(rectTransform, 1f, 0.87f, 2f, Tween.Curve.EaseInOut));
-                sequence.Add(Tween.TweenDelay(3f));
-                sequence.Add(Tween.TweenScale(rectTransform, 0.87f, 1f, 0.15f, Tween.Curve.EaseInOut));
-                sequence.Add(Tween.Callback(() => {
+                sequence.Chain(Tween.Scale(rectTransform, Vector3.one, Vector3.one * 0.87f, new() {
+                    duration = 4f,
+                    ease = Ease.InCubic,
+                }));
+                sequence.Chain(Tween.Scale(rectTransform, Vector3.one * 0.87f, Vector3.one, new() {
+                    duration = 0.15f,
+                    ease = Ease.InOutBounce,
+                }));
+                sequence.ChainCallback(() => {
                     slot.item = null;
                     slot.ui.ClearItem();
                     rectTransform.anchoredPosition = Vector2.zero;
                     rectTransform.localScale = Vector3.one;
-                }));
+                });
             }
         }
     }
@@ -4262,13 +4271,17 @@ public class Game : MonoBehaviour {
     private Vector3 RandomizeVectorAngle(Vector3 vector, float degreeDelta) {
         return Quaternion.AngleAxis(Random.Range(-degreeDelta, degreeDelta), Vector3.forward) * vector;
     }
+
+    private Quaternion RandomRotation() {
+        return Quaternion.AngleAxis(Random.Range(0f, 360f), Vector3.forward);
+    }
     
     private Vector2 OffsetY(Vector2 pos, float yOffset) {
         return new(pos.x, pos.y + yOffset);
     }
     
     private Vector2 OffsetX(Vector2 pos, float xOffset) {
-        return new(pos.x, pos.y + xOffset);
+        return new(pos.x + xOffset, pos.y);
     }
 
     private float CurrentClipLength(Animator anim) {
