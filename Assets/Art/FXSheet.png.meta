@@ -184,6 +184,226 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: SpawnFire_0
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 996
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.08}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 210a0f48879239c4bb3753e441a70266
+      internalID: -1755378423
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpawnFire_1
+      rect:
+        serializedVersion: 2
+        x: 160
+        y: 996
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.08}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 755807010b4866d40ac67965367f2eb0
+      internalID: -1131178160
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpawnFire_2
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 996
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.08}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: db81445b9e602434381a930509637513
+      internalID: 1842784519
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpawnFire_3
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 996
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.08}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7c47e1a9a9ed33649a5b714626d5feb5
+      internalID: -304876362
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpawnFire_4
+      rect:
+        serializedVersion: 2
+        x: 256
+        y: 996
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.08}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 121f600e5ab529f40a173bac032c3698
+      internalID: 970055064
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpawnFire_5
+      rect:
+        serializedVersion: 2
+        x: 288
+        y: 996
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.08}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fed276d6569fed94a9d31b9cf5c2ff5b
+      internalID: -364545573
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpawnFire_6
+      rect:
+        serializedVersion: 2
+        x: 320
+        y: 996
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.08}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 531ace99c3a9638419e38d7f04fc7b9f
+      internalID: 1623221016
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpawnFire_7
+      rect:
+        serializedVersion: 2
+        x: 352
+        y: 996
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.08}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 527b70e0ac487984c9ac90668c14b526
+      internalID: -395985569
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpawnFire_8
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 996
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.08}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c0c1998d32c6627409de37fca4ef7d59
+      internalID: 673419661
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SpawnFire_9
+      rect:
+        serializedVersion: 2
+        x: 416
+        y: 996
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.5, y: 0.08}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3995f338d3d926e46bed9af9267bea8d
+      internalID: 813426950
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -199,11 +419,20 @@ TextureImporter:
       entries: []
     nameFileIdTable:
       AttackRune1_0: 637263459462573385
-      FXSheet_0: 1959416440
       Impact_0: -105159269
       Impact_1: 960664873
       Impact_2: -636486116
       Impact_3: 1663724738
+      SpawnFire_0: 1959416440
+      SpawnFire_1: -1131178160
+      SpawnFire_2: 1842784519
+      SpawnFire_3: -304876362
+      SpawnFire_4: 970055064
+      SpawnFire_5: -364545573
+      SpawnFire_6: 1623221016
+      SpawnFire_7: -395985569
+      SpawnFire_8: 673419661
+      SpawnFire_9: 813426950
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

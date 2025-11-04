@@ -45,6 +45,8 @@ public class Game : MonoBehaviour {
     public GameObject poisonDebuffPrefab;
     public GameObject explosionPrefab;
     public GameObject projectileImpactPrefab;
+    public GameObject teleportInPrefab;
+    public GameObject teleportOutPrefab;
     [EndFoldout]
     
     [Foldout("Item Type Refs")]
@@ -261,6 +263,8 @@ public class Game : MonoBehaviour {
     private EntityPool<Entity> poisonDebuffPool;
     private EntityPool<Entity> explosionPool;
     private EntityPool<Entity> projectileImpactPool;
+    private EntityPool<Entity> teleportInPool;
+    private EntityPool<Entity> teleportOutPool;
     
     private State mainMenuState;
     private State mapSelectionState;
@@ -309,7 +313,8 @@ public class Game : MonoBehaviour {
         poisonDebuffPool = CreateEntityPool<Entity>(poisonDebuffPrefab, 10, null);
         explosionPool = CreateEntityPool<Entity>(explosionPrefab, 5, null);
         projectileImpactPool = CreateEntityPool<Entity>(projectileImpactPrefab, 20, null);
-        
+        teleportInPool = CreateEntityPool<Entity>(teleportInPrefab, 20, null);
+        teleportOutPool = CreateEntityPool<Entity>(teleportOutPrefab, 20, null);
 
         equipedEye = new() { coreAttack = defaultAttack };
         
@@ -940,17 +945,18 @@ public class Game : MonoBehaviour {
     private void UpdateEnemies() {
         for (int i = enemies.Count - 1; i >= 0; i--) {
             Enemy enemy = enemies[i];
+            
+            if (!enemy.gameObject.activeInHierarchy) continue;
+            
             enemy.applyDamageTimer.Tick();
 
             enemy.teleportTime += Time.deltaTime;
-            
             float distFromPlayer = Vector2.Distance(player.Center, enemy.Center);
 
             if (enemy.teleportTime >= 10f && distFromPlayer > 2.3f) {
                 CoolerGrid.GridCell randomSpawnGridPos = currentMapInstance.grid.GetSpawnPosition(player.position);
-                enemy.position = randomSpawnGridPos.position;
-                distFromPlayer = Vector2.Distance(player.Center, enemy.Center);
-                enemy.teleportTime = 0f;
+                TeleportEnemy(enemy, randomSpawnGridPos.position, TeleportType.Reposition);
+                continue;
             }
             
             Vector2 dirToPlayer = (player.position - enemy.position).normalized;
@@ -1106,6 +1112,29 @@ public class Game : MonoBehaviour {
         bool clipIsNotFinished = stateInfo.normalizedTime <= 1f;
         return playingAttackAnim && clipIsNotFinished;
     }
+
+    private enum TeleportType { Spawn, Reposition }
+
+    private void TeleportEnemy(Enemy enemy, Vector3 position, TeleportType teleportType) {
+        if (teleportType == TeleportType.Reposition) {
+            Entity outEntity = SpawnEntity(teleportOutPool, enemy.position, Quaternion.identity);
+            DestroyEntity(outEntity, CurrentClipLength(outEntity.animator));
+        }
+        
+        enemy.position = position;
+        enemy.gameObject.SetActive(false);
+        
+        Entity inEntity = SpawnEntity(teleportInPool, enemy.position, Quaternion.identity);
+        float spawnAnimDuration = CurrentClipLength(inEntity.animator);
+        DestroyEntity(inEntity, spawnAnimDuration);
+
+        Tween.Delay(target: enemy, spawnAnimDuration * 0.7f, (enemy) => {
+            // Only teleport in if we are still in the raid
+            if (enemy == null || !InRaid) return;
+            enemy.gameObject.SetActive(true);
+            enemy.teleportTime = 0f;
+        });
+    }
     
     public class EnemySpawnManager {
         public float timeInPhase;
@@ -1207,9 +1236,10 @@ public class Game : MonoBehaviour {
             enemy.enemySpacerCollider = enemy.trans.GetChild(0).GetComponent<Collider2D>();
             enemies.Add(enemy);
             
+            TeleportEnemy(enemy, randomSpawnPos, TeleportType.Spawn);
+
             sm.spawnTimeIndex++;
         }
-
     }
 
     // *******************************
