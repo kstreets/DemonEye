@@ -47,6 +47,7 @@ public class Game : MonoBehaviour {
     public GameObject projectileImpactPrefab;
     public GameObject teleportInPrefab;
     public GameObject teleportOutPrefab;
+    public GameObject bloodSplatterPrefab;
     [EndFoldout]
     
     [Foldout("Item Type Refs")]
@@ -265,6 +266,7 @@ public class Game : MonoBehaviour {
     private EntityPool<Entity> projectileImpactPool;
     private EntityPool<Entity> teleportInPool;
     private EntityPool<Entity> teleportOutPool;
+    private EntityPool<Entity> bloodSplatterPool;
     
     private State mainMenuState;
     private State mapSelectionState;
@@ -315,6 +317,7 @@ public class Game : MonoBehaviour {
         projectileImpactPool = CreateEntityPool<Entity>(projectileImpactPrefab, 20, null);
         teleportInPool = CreateEntityPool<Entity>(teleportInPrefab, 20, null);
         teleportOutPool = CreateEntityPool<Entity>(teleportOutPrefab, 20, null);
+        bloodSplatterPool = CreateEntityPool<Entity>(bloodSplatterPrefab, 20, null);
 
         equipedEye = new() { coreAttack = defaultAttack };
         
@@ -1052,6 +1055,9 @@ public class Game : MonoBehaviour {
                 }
                 
                 onEnemyDeath?.Invoke(enemy);
+                
+                Entity bloodSplatterEntity = SpawnEntity(bloodSplatterPool, enemy.position, Quaternion.identity);
+                DestroyEntity(bloodSplatterEntity, CurrentClipLength(bloodSplatterEntity.animator));
 
                 DestroyEntity(enemies[i]);
                 enemies.RemoveAt(i);
@@ -3348,7 +3354,7 @@ public class Game : MonoBehaviour {
         
         levelupTabButton.onClick.AddListener(() => {
             ToggleHideoutTab(levelupTabButton, levelupTabText);
-            ToggleSlimPlayerPanel(true);
+            ToggleSlimPlayerPanel(false);
             ToggleHideoutPanels(playerPanel, levelupPanel);
         });
 
