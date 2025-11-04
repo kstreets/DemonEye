@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
@@ -98,6 +99,17 @@ public static class Extensions {
     
     public static bool Playing(this Animator animator, int animHash) {
         return animator.GetCurrentAnimatorStateInfo(0).shortNameHash == animHash;
+    }
+
+    public static int CurrentFrameNumber(this Animator animator) {
+        using var _ = ListPool<AnimatorClipInfo>.Get(out List<AnimatorClipInfo> clipInfos);
+        
+        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+        animator.GetCurrentAnimatorClipInfo(0, clipInfos);
+        AnimationClip clip = clipInfos[0].clip; 
+
+        float normalizedTime = stateInfo.normalizedTime % 1f;
+        return Mathf.RoundToInt(normalizedTime * clip.frameRate * clip.length);
     }
 
 }

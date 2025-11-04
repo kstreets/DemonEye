@@ -48,6 +48,7 @@ public class Game : MonoBehaviour {
     public GameObject teleportInPrefab;
     public GameObject teleportOutPrefab;
     public GameObject bloodSplatterPrefab;
+    public GameObject runSmokePrefab;
     [EndFoldout]
     
     [Foldout("Item Type Refs")]
@@ -267,6 +268,7 @@ public class Game : MonoBehaviour {
     private EntityPool<Entity> teleportInPool;
     private EntityPool<Entity> teleportOutPool;
     private EntityPool<Entity> bloodSplatterPool;
+    private EntityPool<Entity> runSmokePool;
     
     private State mainMenuState;
     private State mapSelectionState;
@@ -318,6 +320,7 @@ public class Game : MonoBehaviour {
         teleportInPool = CreateEntityPool<Entity>(teleportInPrefab, 20, null);
         teleportOutPool = CreateEntityPool<Entity>(teleportOutPrefab, 20, null);
         bloodSplatterPool = CreateEntityPool<Entity>(bloodSplatterPrefab, 20, null);
+        runSmokePool = CreateEntityPool<Entity>(runSmokePrefab, 5, null);
 
         equipedEye = new() { coreAttack = defaultAttack };
         
@@ -2336,6 +2339,7 @@ public class Game : MonoBehaviour {
     }
 
     private Player player;
+    private int lastStepSmokeFrame = -1;
     
     private int PlayerRunSideHash = Animator.StringToHash("PlayerRunSide");
     private int PlayerRunUpHash = Animator.StringToHash("PlayerRunUp");
@@ -2381,6 +2385,15 @@ public class Game : MonoBehaviour {
         }
         else {
             player.animator.Play(player.nextIdleAnimHash);
+        }
+        
+        if (moveInput != Vector2.zero) {
+            int frameNumber = player.animator.CurrentFrameNumber();
+            if (lastStepSmokeFrame != frameNumber && (frameNumber == 0 || frameNumber == 4)) {
+                Entity runSmokeEntity = SpawnEntity(runSmokePool, OffsetY(player.position, 0.01f), Quaternion.identity);
+                DestroyEntity(runSmokeEntity, CurrentClipLength(runSmokeEntity.animator));
+                lastStepSmokeFrame = frameNumber;
+            }
         }
         
         if (AimingWithController()) {
