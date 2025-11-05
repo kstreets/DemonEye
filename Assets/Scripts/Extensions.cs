@@ -111,5 +111,5 @@ public static class Extensions {
         float normalizedTime = stateInfo.normalizedTime % 1f;
         return Mathf.RoundToInt(normalizedTime * clip.frameRate * clip.length);
     }
-
+    
 }

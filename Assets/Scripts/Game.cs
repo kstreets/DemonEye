@@ -146,9 +146,11 @@ public class Game : MonoBehaviour {
 
     [Foldout("UI/PlayerPanel")]
     public RectTransform playerPanel;
+    public RectTransform playerEquipmentParent;
     public RectTransform playerPocketParent;
     public RectTransform playerBackpackParent;
     public RectTransform playerPocketsBackpackParent;
+    public RectTransform playerPassiveParent;
     public RectTransform playerInventoryParent;
     public TextMeshProUGUI playerPanelHealthText;
     public TextMeshProUGUI playerPanelWeightText;
@@ -299,10 +301,7 @@ public class Game : MonoBehaviour {
         DemonEyeTween.Init();
         CreateDropPools();
         
-        InitInventory();
-        LoadInventory(playerInventory);
-        LoadInventory(stashInventory);
-        LoadInventory(crucibleInventory);
+        InitInventories();
         InitButtonCallbacks();
         InitTraders();
         InitQuests();
@@ -400,7 +399,7 @@ public class Game : MonoBehaviour {
 
     private void OnHideoutStateExit() {
         CloseHideoutUI();
-        SaveInventory(playerInventory);
+        SavePlayerInventories();
         SaveInventory(stashInventory);
         SaveInventory(crucibleInventory);
     }
@@ -412,8 +411,6 @@ public class Game : MonoBehaviour {
 
     private void OnMapSelectionEnter() {
         ShowMapSelectionUI();
-        // Make sure to update player's inventory! 
-        CheckForEquipmentChange();
     }
 
     private void OnMapSelectionExit() {
@@ -469,7 +466,7 @@ public class Game : MonoBehaviour {
 
     private void OnGameOverEnter() {
         player.health = 100;
-        ClearInventory(playerInventory);
+        ClearInventory(playerEquipmentInventory);
         OnSaveWhenRaidIsOver();
     }
 
@@ -488,6 +485,12 @@ public class Game : MonoBehaviour {
         RefillTraderSlotsWithItems(potionManTrader);
         RefillTraderSlotsWithItems(armsDealerTrader);
         RefillTraderSlotsWithItems(hatManTrader);
+    }
+    
+    private void OnSaveWhenRaidIsOver() {
+        SavePlayerInventories();
+        SavePlayerData();
+        SaveQuestStates();
     }
 
     // *****************************
@@ -1305,7 +1308,10 @@ public class Game : MonoBehaviour {
         public RectTransform parent;
     }
     
-    [NonSerialized] public Inventory playerInventory;
+    [NonSerialized] public Inventory playerEquipmentInventory;
+    [NonSerialized] public Inventory playerPocketsInventory;
+    [NonSerialized] public Inventory playerPassivesInventory;
+    [NonSerialized] public Inventory playerBackpackInventory;
     [NonSerialized] public Inventory stashInventory;
     [NonSerialized] private Inventory crucibleInventory;
     [NonSerialized] private Inventory transactionInventory;
@@ -1313,9 +1319,10 @@ public class Game : MonoBehaviour {
     [NonSerialized] private Inventory lootInvetoryPtr;
     [NonSerialized] private List<Inventory> allInventories = new();
     
-    private const int playerPocketSize = 8;
-    private const int playerEquipmentSize = 6;
-    private int DefaultPlayerInventorySize => playerPocketSize + playerEquipmentSize;
+    private const int playerPocketSize = 6;
+    private const int playerEquipmentSize = 3;
+    private int MaxPlayerPassiveSize => corruptionUpgradePath.soulsNeededPerLevel.Count;
+    private int EnabledPassiveSlotsSize => player.corruptionLevel + 4;
 
     private const int traderInventoryColCount = 6;
     private const int traderInventoryRowCount = 4;
@@ -1332,19 +1339,37 @@ public class Game : MonoBehaviour {
     private bool OnEyeForgeTab => eyeForgeTabButton.image.sprite == tabSelectedSprite;
     private bool OnTradingTab => traderTabButton.image.sprite == tabSelectedSprite;
     
-    private void InitInventory() {
-        SpawnUiSlots(playerPocketParent, playerPocketSize);
-        SpawnUiSlots(playerBackpackParent, 20);
-        playerInventory = CreateInventory(playerInventoryParent, DefaultPlayerInventorySize); 
+    private void InitInventories() {
+        playerEquipmentInventory = CreateInventory(playerEquipmentParent, playerEquipmentSize); 
+        LoadInventory(playerEquipmentInventory);
         
+        SpawnUiSlots(playerPassiveParent, MaxPlayerPassiveSize);
+        playerPassivesInventory = CreateInventory(playerPassiveParent, EnabledPassiveSlotsSize);
+        foreach (InventorySlot slot in playerPassivesInventory.slots) {
+            slot.ui.onlyAcceptedItemType = passiveType;
+        }
+        LoadInventory(playerPassivesInventory);
+        
+        SpawnUiSlots(playerPocketParent, playerPocketSize);
+        playerPocketsInventory = CreateInventory(playerPocketParent, playerPocketSize);
+        LoadInventory(playerPocketsInventory);
+
+        const int maxBackpackSize = 30;
+        SpawnUiSlots(playerBackpackParent, maxBackpackSize);
+        playerBackpackInventory = CreateInventory(playerBackpackParent, maxBackpackSize);
+        LoadInventory(playerBackpackInventory);
+        
+        CheckForEquipmentChange(); // Check for equipment change to resize backpacks if needed
+        
+        int stashInventorySize = 40;
+        SpawnUiSlots(stashInventoryParent, stashInventorySize);
+        stashInventory = CreateInventory(stashInventoryParent, stashInventorySize);
+        LoadInventory(stashInventory);
+       
         const int cachedLootInventorySize = 12;
         SpawnUiSlots(lootInventoryParent, cachedLootInventorySize); 
         lootInvetoryPtr = CreateInventory(lootInventoryParent, cachedLootInventorySize);
 
-        int stashInventorySize = 40;
-        SpawnUiSlots(stashInventoryParent, stashInventorySize);
-        stashInventory = CreateInventory(stashInventoryParent, stashInventorySize);
-        
         const int traderInventorySize = traderInventoryRowCount * traderInventoryColCount;
         SpawnUiSlots(traderInventoryParent, traderInventorySize);
         traderInventoryPtr = CreateInventory(traderInventoryParent, traderInventorySize);
@@ -1374,6 +1399,58 @@ public class Game : MonoBehaviour {
             }
         }
         crucibleInventory = CreateInventory(crucibleParent, crucibleInventorySize);
+        LoadInventory(crucibleInventory);
+    }
+    
+    private void SaveInventory(Inventory inventory) {
+        cachedInventoryForSaving.Clear();
+        foreach (InventorySlot slot in inventory.slots) {
+            cachedInventoryForSaving.Add(slot.item); 
+        }
+        SaveToFile(GetInventorySavePath(inventory), cachedInventoryForSaving);
+    }
+
+    private void LoadInventory(Inventory inventory) {
+        List<InventoryItem> items = LoadFromFile<List<InventoryItem>>(GetInventorySavePath(inventory));
+        if (items == null) return;
+
+        // Items can be null because we save all inventory slots, including empty ones
+        foreach (InventoryItem item in items) {
+            bool isDemonEye = item?.modifierUuids != null;
+            if (isDemonEye) {
+                BuildAndRegisterEye(item);
+            }
+        }
+        
+        CopyItemsToInventory(items, inventory);
+    }
+    
+    private void CopyItemsToInventory(List<InventoryItem> items, Inventory toInventory) {
+        if (items == null || toInventory == null) return;
+        
+        for (int i = 0; i < toInventory.slots.Length; i++) {
+            if (!toInventory.slots.IndexInRange(i) || !items.IndexInRange(i)) break;
+            toInventory.slots[i].item = items[i];
+        }
+    }
+
+    private void SavePlayerInventories() {
+        SaveInventory(playerEquipmentInventory);
+        SaveInventory(playerPassivesInventory);
+        SaveInventory(playerPocketsInventory);
+        SaveInventory(playerBackpackInventory);
+    }
+
+    private bool IsApartOfPlayerInventory(Inventory inventory) {
+        if (inventory == playerEquipmentInventory) return true;
+        if (inventory == playerPassivesInventory) return true;
+        if (inventory == playerPocketsInventory) return true;
+        if (inventory == playerBackpackInventory) return true;
+        return false;
+    }
+
+    private Inventory CreatePlayerSuperInventory() {
+        return CombineInventories(playerEquipmentInventory, playerPassivesInventory, playerPocketsInventory, playerBackpackInventory);
     }
     
     private void UpdateInventory() {
@@ -1543,38 +1620,36 @@ public class Game : MonoBehaviour {
 
         if (!TryGetItemFromHoverInfo(invHoverInfo, out InventoryItem hoveredItem)) return;
         if (IsHoveredItemGrayedOut(invHoverInfo)) return;
-        
-        bool clickedOnEquipedBackpack = IsEquipmentSlot(hoveredInventory, invHoverInfo.slotIndex) && hoveredItem.ItemRef.type == backpackType;
-        if (clickedOnEquipedBackpack && EquipedBackpackHasItems()) return;
+        if (ClickedOnEquipedBackpackWithItems(invHoverInfo.inventory, invHoverInfo.slotIndex)) return;
 
         MoveItemOption moveOption = MoveItemOption.FullStack;
         Inventory destinationInventory = null;
-
+        
         if (InRaid) {
-            if (hoveredInventory == playerInventory && LootInventoryIsOpen) {
+            if (IsApartOfPlayerInventory(hoveredInventory) && LootInventoryIsOpen) {
                 destinationInventory = lootInvetoryPtr;
             }
             else if (hoveredInventory == lootInvetoryPtr) {
-                destinationInventory = playerInventory;
+                destinationInventory = CreatePlayerSuperInventory();
             }
         }
         else if (OnCharacterTab) {
-            if (hoveredInventory == playerInventory) {
+            if (IsApartOfPlayerInventory(hoveredInventory)) {
                 destinationInventory = stashInventory;
             }
             else if (hoveredInventory == stashInventory) {
-                destinationInventory = playerInventory;
+                destinationInventory = CreatePlayerSuperInventory();
             }
         }
         else if (OnEyeForgeTab) {
             if (hoveredInventory == stashInventory) {
                 bool hoveredItemIsDemonEye = hoveredItem.ItemRef.type == demonEyeType;
-                destinationInventory = hoveredItemIsDemonEye ? playerInventory : crucibleInventory;
+                destinationInventory = hoveredItemIsDemonEye ? CreatePlayerSuperInventory() : crucibleInventory;
             }
             else if (hoveredInventory == crucibleInventory) {
                 destinationInventory = stashInventory;
             }
-            else if (hoveredInventory == playerInventory) {
+            else if (IsApartOfPlayerInventory(hoveredInventory)) {
                 destinationInventory = stashInventory;
             }
         }
@@ -1636,7 +1711,7 @@ public class Game : MonoBehaviour {
     private void UpdatePlayerPanelUI() {
         playerPanelHealthText.text = $"<color=#5CF25B>{player.health}</color><size=22>/100";
 
-        int inventoryWeight = GetInventoryWeight(playerInventory);
+        int inventoryWeight = GetPlayerInventoryWeight();
         GetEncumberingWeightRange(out int startEncumberingWeight, out _);
         playerPanelWeightText.text = $"<color=#98C5CC>{inventoryWeight}</color><size=22>/{startEncumberingWeight}";
     }
@@ -1674,7 +1749,7 @@ public class Game : MonoBehaviour {
     private Inventory CreateInventory(RectTransform uiParent, int slotCount) {
         Inventory inventory = new() {
             parent = uiParent,
-            slots = new InventorySlot[slotCount]
+            slots = new InventorySlot[slotCount],
         };
         inventory.slots.InitalizeWithDefault();
         LinkInventoryWithUiSlots(inventory);
@@ -1700,35 +1775,45 @@ public class Game : MonoBehaviour {
         InventorySlot[] oldSlots = inventory.slots;
         inventory.slots = new InventorySlot[newSlotCount];
         inventory.slots.InitalizeWithDefault();
-        LinkInventoryWithUiSlots(inventory);
 
+        LinkInventoryWithUiSlots(inventory);
         int copyLength = expanding ? oldSlots.Length : inventory.slots.Length;
         for (int i = 0; i < copyLength; i++) {
             inventory.slots[i] = oldSlots[i];
         }
     }
 
-    private bool IsEquipmentSlot(Inventory inventory, int slotIndex) {
-        return inventory == playerInventory && slotIndex < playerEquipmentSize;
-    }
-    
-    private bool EquipedBackpackHasItems() {
-        int startingIndex = DefaultPlayerInventorySize;
-        for (int i = startingIndex; i < playerInventory.slots.Length; i++) {
-            if (playerInventory.slots[i].item != null) {
-                return true;
-            }
-        }
-        return false;
+    private bool ClickedOnEquipedBackpackWithItems(Inventory inventory, int slotIndex) {
+        if (inventory.slots[slotIndex].item.ItemRef.type != backpackType) return false;
+        return inventory == playerEquipmentInventory && GetInventoryItemCount(playerBackpackInventory) > 0;
     }
 
+    private Inventory CombineInventories(params Inventory[] inventories) {
+        int totalSize = 0;
+        foreach (Inventory inventory in inventories) {
+            totalSize += inventory.slots.Length;
+        }
+        
+        Inventory superInventory = new() {
+            slots = new InventorySlot[totalSize],
+        };
+        
+        int superIndex = 0;
+        foreach (Inventory inventory in inventories) {
+            int inventoryLength = inventory.slots.Length;
+            Array.Copy(inventory.slots, 0, superInventory.slots, superIndex, inventoryLength);
+            superIndex += inventoryLength;
+        }
+
+        return superInventory;
+    }
     
     private InventoryItem prevEquippedEyeItem;
     private InventoryItem prevEquippedBackpackItem;
     
     private void CheckForEquipmentChange() {
-        InventoryItem curEyeItem = playerInventory.slots[0].item;
-        InventoryItem curBackpackItem = playerInventory.slots[2].item;
+        InventoryItem curEyeItem = playerEquipmentInventory.slots[0].item;
+        InventoryItem curBackpackItem = playerEquipmentInventory.slots[2].item;
 
         if (prevEquippedEyeItem != curEyeItem) {
             prevEquippedEyeItem = curEyeItem;
@@ -1750,10 +1835,10 @@ public class Game : MonoBehaviour {
                 else if (curBackpackItem.ItemRef == ruckSackItem) {
                     backpackSize = 12;
                 }
-                ChangeInventorySize(playerInventory, DefaultPlayerInventorySize + backpackSize);
+                ChangeInventorySize(playerBackpackInventory, backpackSize);
             }
             else {
-                ChangeInventorySize(playerInventory, DefaultPlayerInventorySize);
+                ChangeInventorySize(playerBackpackInventory, 0);
             }
         }
 
@@ -1846,8 +1931,7 @@ public class Game : MonoBehaviour {
                 return IsDraggingItem;
             }
             
-            bool clickedOnEquipedBackpack = IsEquipmentSlot(hoverInfo.inventory, hoverInfo.slotIndex) && item.ItemRef.type == backpackType;
-            if (clickedOnEquipedBackpack && EquipedBackpackHasItems()) {
+            if (ClickedOnEquipedBackpackWithItems(hoverInfo.inventory, hoverInfo.slotIndex)) {
                 return IsDraggingItem;
             }
 
@@ -2231,11 +2315,20 @@ public class Game : MonoBehaviour {
     }
 
     public bool CarryingPassiveItem(PassiveItem item, out int count) {
-        count = GetItemCountInInventory(playerInventory, item);
+        count = GetItemCountInInventory(playerEquipmentInventory, item);
         return count > 0;
     }
 
-    public int GetInventoryWeight(Inventory inventory) {
+    private int GetPlayerInventoryWeight() {
+        int total = 0;
+        total += GetInventoryWeight(playerEquipmentInventory);
+        total += GetInventoryWeight(playerPassivesInventory);
+        total += GetInventoryWeight(playerPocketsInventory);
+        total += GetInventoryWeight(playerBackpackInventory);
+        return total;
+    }
+
+    private int GetInventoryWeight(Inventory inventory) {
         int weight = 0;
         foreach (InventorySlot slot in inventory.slots) {
             if (slot.item == null) continue;
@@ -2446,7 +2539,7 @@ public class Game : MonoBehaviour {
     private float GetPlayerSpeedBasedOnStats() {
         int agilityStat = baseStats.agility;
         for (int i = 0; i < playerEquipmentSize; i++) {
-            InventoryItem item = playerInventory.slots[i].item;
+            InventoryItem item = playerEquipmentInventory.slots[i].item;
             if (item == null) continue;
             if (item.ItemRef.modifiesStats && item.ItemRef.agilityStatAdjustment != 0) {
                 agilityStat += item.ItemRef.agilityStatAdjustment;
@@ -2464,7 +2557,7 @@ public class Game : MonoBehaviour {
     private int GetStrengthStat() {
         int strengthStat = baseStats.strength;
         for (int i = 0; i < playerEquipmentSize; i++) {
-            InventoryItem item = playerInventory.slots[i].item;
+            InventoryItem item = playerEquipmentInventory.slots[i].item;
             if (item == null) continue;
             if (item.ItemRef.modifiesStats && item.ItemRef.strengthStatAdjustment != 0) {
                 strengthStat += item.ItemRef.strengthStatAdjustment;
@@ -2481,13 +2574,13 @@ public class Game : MonoBehaviour {
 
     private float GetTotalWeightCompletion() {
         GetEncumberingWeightRange(out int _, out int endingEncumberingWeight);
-        int inventoryWeight = GetInventoryWeight(playerInventory);
+        int inventoryWeight = GetPlayerInventoryWeight();
         return Mathf.Clamp01(inventoryWeight / (float)endingEncumberingWeight);
     }
 
     private float GetOverweightCompletion() {
         GetEncumberingWeightRange(out int startingEncumberingWeight, out int endingEncumberingWeight);
-        int inventoryWeight = GetInventoryWeight(playerInventory);
+        int inventoryWeight = GetPlayerInventoryWeight();
         int overWeightAmount = Mathf.Clamp(inventoryWeight - startingEncumberingWeight, 0, int.MaxValue);
         float overWeightComp = overWeightAmount / (float)endingEncumberingWeight;
         return Mathf.Clamp01(overWeightComp);
@@ -2564,7 +2657,7 @@ public class Game : MonoBehaviour {
     private bool CanShoot() {
         float attackDelay = equipedEye.coreAttack.attackDelay;
         if (equipedEye.firerate.TryGetValue(out var firerate)) {
-            attackDelay -= firerate.reduction;
+            attackDelay -= attackDelay * firerate.rateIncrasePercentage;
             attackDelay = Mathf.Clamp(attackDelay, equipedEye.coreAttack.cappedMinAttackDelay, equipedEye.coreAttack.attackDelay);
         }
         return attackLimiter.TimeHasPassed(attackDelay);
@@ -2640,7 +2733,7 @@ public class Game : MonoBehaviour {
                     ItemDrop itemDrop = col.GetComponent<ItemDrop>();
                     itemDrop.circleCollider.enabled = false;
                     
-                    InventoryAddResult result = TryAddItemToInventory(playerInventory, itemDrop.item, itemDrop.dropCount);
+                    InventoryAddResult result = TryAddItemToInventory(playerEquipmentInventory, itemDrop.item, itemDrop.dropCount);
                     if (result.type == InventoryAddResult.ResultType.Success) {
                         Entity droppedEntity = entityLookup[itemDrop.gameObject];
                         PickupDroppedItem(droppedEntity); 
@@ -3088,7 +3181,10 @@ public class Game : MonoBehaviour {
         public int curTraderXpForLevel;
     }
     
-    private string inventorySavePath;
+    private string playerEquipmentSavePath;
+    private string playerPassivesSavePath;
+    private string playerPocketsSavePath;
+    private string playerBackpackSavePath;
     private string stashSavePath;
     private string crucibleSavePath;
     private string hideoutDataSavePath;
@@ -3099,7 +3195,10 @@ public class Game : MonoBehaviour {
     private List<InventoryItem> cachedInventoryForSaving = new(50);
     
     private void BuildSavePaths() {
-        inventorySavePath = $"{Application.persistentDataPath}/inventory";
+        playerEquipmentSavePath = $"{Application.persistentDataPath}/equipment";
+        playerPassivesSavePath = $"{Application.persistentDataPath}/passives";
+        playerPocketsSavePath = $"{Application.persistentDataPath}/pockets";
+        playerBackpackSavePath = $"{Application.persistentDataPath}/backpack";
         stashSavePath = $"{Application.persistentDataPath}/stash";
         crucibleSavePath = $"{Application.persistentDataPath}/crucible";
         hideoutDataSavePath = $"{Application.persistentDataPath}/hideoutData"; 
@@ -3109,56 +3208,22 @@ public class Game : MonoBehaviour {
         traderSavePath = $"{Application.persistentDataPath}/traders";
     }
 
-    private string GetSavePath(Inventory inventory) {
-        if (inventory == playerInventory)   return inventorySavePath;
-        if (inventory == stashInventory)    return stashSavePath;
+    private string GetInventorySavePath(Inventory inventory) {
+        if (inventory == playerEquipmentInventory) return playerEquipmentSavePath;
+        if (inventory == playerPassivesInventory) return playerPassivesSavePath;
+        if (inventory == playerPocketsInventory) return playerPocketsSavePath;
+        if (inventory == playerBackpackInventory) return playerBackpackSavePath;
+        if (inventory == stashInventory) return stashSavePath;
         if (inventory == crucibleInventory) return crucibleSavePath;
+        Assert.IsTrue(false, "Inventory does not have associated save path");
         return string.Empty;
     }
-    
-    private void SaveInventory(Inventory inventory) {
-        cachedInventoryForSaving.Clear();
-        foreach (InventorySlot slot in inventory.slots) {
-            cachedInventoryForSaving.Add(slot.item); 
-        }
-        SaveToFile(GetSavePath(inventory), cachedInventoryForSaving);
-    }
 
-    private void LoadInventory(Inventory inventory) {
-        List<InventoryItem> items = LoadFromFile<List<InventoryItem>>(GetSavePath(inventory));
-        if (items == null) return;
-
-        // Items can be null because we save all inventory slots, including empty ones
-        foreach (InventoryItem item in items) {
-            bool isDemonEye = item != null && item.modifierUuids != null;
-            if (isDemonEye) {
-                BuildAndRegisterEye(item);
-            }
-        }
-        
-        CopyItemsToInventory(items, inventory);
-    }
-
-    private void CopyItemsToInventory(List<InventoryItem> items, Inventory toInventory) {
-        if (items == null || toInventory == null) return;
-        
-        for (int i = 0; i < toInventory.slots.Length; i++) {
-            if (!toInventory.slots.IndexInRange(i) || !items.IndexInRange(i)) break;
-            toInventory.slots[i].item = items[i];
-        }
-    }
-    
     private void SaveToFile(string path, object obj) {
         if (obj == null) return;
         BinaryFormatter bf = new();
         using FileStream file = File.Create(path);
         bf.Serialize(file, obj);
-    }
-
-    private void OnSaveWhenRaidIsOver() {
-        SaveInventory(playerInventory);
-        SavePlayerData();
-        SaveQuestStates();
     }
 
     private T LoadFromFileOrCreateNew<T>(string path) where T : class, new() {
@@ -3427,7 +3492,7 @@ public class Game : MonoBehaviour {
             foreach (UpgradePath.Requirement requirement in requirements.requirements) {
                 int itemCount = 0;
                 itemCount += GetItemCountInInventory(stashInventory, requirement.item);
-                itemCount += GetItemCountInInventory(playerInventory, requirement.item);
+                itemCount += GetItemCountInInventory(playerEquipmentInventory, requirement.item);
                 
                 if (itemCount < requirement.count) {
                     canUpgrade = false;
@@ -3440,7 +3505,7 @@ public class Game : MonoBehaviour {
             foreach (UpgradePath.Requirement requirement in requirements.requirements) {
                 int stashRemoveCount = RemoveNumberOfItemsFromInventory(stashInventory, requirement.item, requirement.count);
                 if (stashRemoveCount == requirement.count) continue;
-                RemoveNumberOfItemsFromInventory(playerInventory, requirement.item, requirement.count - stashRemoveCount);
+                RemoveNumberOfItemsFromInventory(playerEquipmentInventory, requirement.item, requirement.count - stashRemoveCount);
             }
             
             hideoutStateData.crucibleLevel++;
@@ -4357,11 +4422,11 @@ public class Game : MonoBehaviour {
         ListPool<Collider2D>.Release(cols);
     }
 
-    private string SizeText(string text, int fontSize) {
+    private static string SizeText(string text, int fontSize) {
         return $"<size={fontSize}>{text}</size>";
     }
     
-    private string ColorText(string text, Color color) {
+    public static string ColorText(string text, Color color) {
         return $"<color=#{ColorUtility.ToHtmlStringRGBA(color)}>{text}</color>";
     }
 

@@ -16,7 +16,7 @@ public class BackwardsShotSoulcard : Soulcard {
     }
     
     public override string GetStackDescription(int stackCount) {
-        return $"{DisplayProbability(GetProbability(stackCount))} chance to shoot a projectile out the back of your head.";
+        return $"{DisplayProb(GetProbability(stackCount))} chance to shoot an additional projectile backwards";
     }
 
     private float GetProbability(int stackCount) {

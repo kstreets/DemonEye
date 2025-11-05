@@ -16,7 +16,7 @@ public class DoubleCritSoulcard : Soulcard {
     }
     
     public override string GetStackDescription(int stackCount) {
-        return $"Landing 2 critical strikes in a row adds a {GetDamageMultiplier(stackCount)} multiplier.";
+        return $"{DisplayMultiplier(GetDamageMultiplier(stackCount))} damage when landing {DisplayNumber(2)} critical strikes in a row";
     }
 
     private float GetDamageMultiplier(int stackCount) {

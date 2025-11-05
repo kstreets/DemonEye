@@ -42,7 +42,7 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 0
     enemyBatches:
-    - enemyCount: 30
+    - enemyCount: 15
       enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
   - phaseDuration: 60
     spawnDuration: 10

@@ -22,7 +22,7 @@ public class ExplosionSoulcard : Soulcard {
     }
     
     public override string GetStackDescription(int stackCount) {
-        return $"{DisplayProbability(GetProbability(stackCount))} chance for a projectile to explode on impact causing {damage} damage.";
+        return $"{DisplayProb(GetProbability(stackCount))} chance for a projectile to explode on impact causing {DisplayNumber(damage)} damage";
     }
 
     private float GetProbability(int stackCount) {

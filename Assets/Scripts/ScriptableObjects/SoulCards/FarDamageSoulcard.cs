@@ -16,7 +16,7 @@ public class FarDamageSoulcard : Soulcard {
     }
     
     public override string GetStackDescription(int stackCount) {
-        return $"Adds an additional {GetDamageIncrease(stackCount)} damage per unit a projectile travels.";
+        return $"{DisplayIncrease(GetDamageIncrease(stackCount))} damage per unit a projectile travels";
     }
 
     private int GetDamageIncrease(int stackCount) {

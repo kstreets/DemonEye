@@ -17,8 +17,7 @@ public class TrishotSoulcard : Soulcard {
     }
 
     public override string GetStackDescription(int stackCount) {
-        string displayProb = DisplayProbability(GetProbability(stackCount));
-        return $"{displayProb} chance that an attack splits into 3";
+        return $"{DisplayProb(GetProbability(stackCount))} chance that an attack splits into {DisplayNumber(3)}";
     }
 
     private float GetProbability(int stackCount) {

@@ -29,4 +29,6 @@ MonoBehaviour:
   critDamageColor: {r: 1, g: 0.8286626, b: 0.22327036, a: 1}
   bleedDamageColor: {r: 0.6415094, g: 0.16743796, b: 0.17073022, a: 1}
   poisonDamageColor: {r: 0.3576005, g: 0.7735849, b: 0.3576005, a: 1}
+  increaseDescColor: {r: 0.35686275, g: 0.7725491, b: 0.35686275, a: 1}
+  decreaseDescColor: {r: 0.8352942, g: 0.27058825, b: 0.27450982, a: 1}
   tagTextPadding: 20

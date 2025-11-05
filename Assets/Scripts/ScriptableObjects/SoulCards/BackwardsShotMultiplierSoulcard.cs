@@ -17,7 +17,7 @@ public class BackwardsShotMultiplierSoulcard : Soulcard {
     }
     
     public override string GetStackDescription(int stackCount) {
-        return $"Backwards shots have a {GetDamageMultiplier(stackCount)} damage multiplier.";
+        return $"{DisplayMultiplier(GetDamageMultiplier(stackCount))} damage for backwards shots";
     }
 
     private float GetDamageMultiplier(int stackCount) {

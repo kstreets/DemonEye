@@ -30,7 +30,7 @@ public class PoisonSoulcard : Soulcard {
     }
     
     public override string GetStackDescription(int stackCount) {
-        return $"{DisplayProbability(GetProbability(stackCount))} chance for a projectile to poison an enemy for {GetDuration(stackCount)} seconds.";
+        return $"{DisplayProb(GetProbability(stackCount))} chance for a projectile to poison an enemy for {GetDuration(stackCount)} seconds";
     }
 
     private float GetProbability(int stackCount) {

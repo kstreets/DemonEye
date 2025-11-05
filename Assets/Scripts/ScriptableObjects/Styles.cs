@@ -27,6 +27,9 @@ public class Styles : ScriptableObject {
     public Color bleedDamageColor;
     public Color poisonDamageColor;
 
+    public Color increaseDescColor;
+    public Color decreaseDescColor;
+
     public float tagTextPadding;
     
     public Color GetColorForRarity(Item.Rarity rarity) {

@@ -16,8 +16,7 @@ public class BleedCritSoulcard : Soulcard {
     }
     
     public override string GetStackDescription(int stackCount) {
-        string displayProb = DisplayProbability(GetProbability(stackCount)); 
-        return $"Increases chance for critical strike by {displayProb} on a bleeding enemy";
+        return $"{DisplayProbIncrease(GetProbability(stackCount))} critical strike chance on a bleeding enemy";
     }
     
     private float GetProbability(int stackCount) {

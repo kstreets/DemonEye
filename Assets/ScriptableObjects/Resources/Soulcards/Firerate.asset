@@ -36,4 +36,4 @@ MonoBehaviour:
   weight: 0
   description: 
   relativeMechanicDesc: {fileID: 0}
-  reduction: 0.05
+  rateIncreasePercentage: 0.25

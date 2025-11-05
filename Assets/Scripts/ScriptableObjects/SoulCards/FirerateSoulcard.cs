@@ -4,24 +4,24 @@ using UnityEngine;
 public class FirerateSoulcard : Soulcard {
 
     public struct InstanceData {
-        public float reduction;
+        public float rateIncrasePercentage;
     }
     
-    public float reduction;
+    public float rateIncreasePercentage;
     
     public override void AddInstanceToEye(Game.DemonEyeInstance eyeInstance, int stackCount) {
         InstanceData instance = new() {
-            reduction = GetReduction(stackCount) 
+            rateIncrasePercentage = GetReductionPercentage(stackCount), 
         };
         eyeInstance.firerate = instance;
     }
 
     public override string GetStackDescription(int stackCount) {
-        return $"Reduces attack cooldown by {GetReduction(stackCount)}s";
+        return $"{DisplayProbIncrease(GetReductionPercentage(stackCount))} rate of fire";
     }
 
-    private float GetReduction(int stackCount) {
-        return reduction * stackCount;
+    private float GetReductionPercentage(int stackCount) {
+        return rateIncreasePercentage * stackCount;
     }
     
 }

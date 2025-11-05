@@ -12,7 +12,7 @@ public class FetchQuest : Quest {
         bool haveAllItemsNeeded = true;
         
         foreach (ItemWithCount itemWithCount in itemsToFetch) {
-            int count = game.GetItemCountInInventory(game.playerInventory, itemWithCount.item);
+            int count = game.GetItemCountInInventory(game.playerEquipmentInventory, itemWithCount.item);
             count += game.GetItemCountInInventory(game.stashInventory, itemWithCount.item);
             if (count < itemWithCount.count) {
                 haveAllItemsNeeded = false;
