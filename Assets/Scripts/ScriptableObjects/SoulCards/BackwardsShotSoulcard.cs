@@ -1,4 +1,5 @@
 using UnityEngine;
+using static Game;
 
 [CreateAssetMenu(fileName = "BackwardsShotSoulcard", menuName = "Scriptable Objects/Soulcards/BackwardsShotSoulcard")]
 public class BackwardsShotSoulcard : Soulcard {

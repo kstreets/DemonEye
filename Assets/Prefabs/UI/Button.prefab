@@ -271,6 +271,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ButtonFeel
   styles: {fileID: 11400000, guid: f4b4ae74a1e122340bf1d9d4fa5ab586, type: 2}
+  rectTransform: {fileID: 5498981127109160898}
   button: {fileID: 4226107318604776011}
   image: {fileID: 4425501928664159082}
   text: {fileID: 8582787485506474109}

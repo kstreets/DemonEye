@@ -1,4 +1,5 @@
 using UnityEngine;
+using static Game;
 
 [CreateAssetMenu(fileName = "ExplosionSoulcard", menuName = "Scriptable Objects/Soulcards/ExplosionSoulcard")]
 public class ExplosionSoulcard : Soulcard {

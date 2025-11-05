@@ -1,4 +1,5 @@
 using UnityEngine;
+using static Game;
 
 public struct SlowInstance {
     public float speedReductionPercent;

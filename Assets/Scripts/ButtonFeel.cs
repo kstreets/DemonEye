@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler {
 
     public Styles styles;
+    public RectTransform rectTransform;
     public Button button;
     public Image image;
     public TextMeshProUGUI text;

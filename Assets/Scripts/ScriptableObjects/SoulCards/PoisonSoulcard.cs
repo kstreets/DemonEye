@@ -1,4 +1,5 @@
 using UnityEngine;
+using static Game;
 
 [CreateAssetMenu(fileName = "PoisonSoulcard", menuName = "Scriptable Objects/Soulcards/PoisonSoulcard")]
 public class PoisonSoulcard : Soulcard {
@@ -13,12 +14,12 @@ public class PoisonSoulcard : Soulcard {
 
     public override void AddInstanceToEnemy(Game.Enemy enemy, int stackCount) {
         float prob = GetProbability(stackCount);
-        if (Game.RollProbability(prob)) {
+        if (RollProbability(prob)) {
             enemy.poisoned = new() {
                 probability = GetProbability(stackCount),
                 duration = GetDuration(stackCount),
             };
-            Game.instance.AddPoisonedEffect(enemy, enemy.poisoned.Value.duration);
+            instance.AddPoisonedEffect(enemy, enemy.poisoned.Value.duration);
         }
     }
     

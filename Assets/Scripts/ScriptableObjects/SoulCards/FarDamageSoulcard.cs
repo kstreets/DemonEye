@@ -1,4 +1,5 @@
 using UnityEngine;
+using static Game;
 
 [CreateAssetMenu(fileName = "FarDamageSoulcard", menuName = "Scriptable Objects/Soulcards/FarDamageSoulcard")]
 public class FarDamageSoulcard : Soulcard {

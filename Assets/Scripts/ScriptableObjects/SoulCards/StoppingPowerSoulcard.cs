@@ -1,4 +1,5 @@
 using UnityEngine;
+using static Game;
 
 [CreateAssetMenu(fileName = "StoppingPowerSoulcard", menuName = "Scriptable Objects/Soulcards/StoppingPowerSoulcard")]
 public class StoppingPowerSoulcard : Soulcard {

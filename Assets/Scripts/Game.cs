@@ -119,6 +119,7 @@ public class Game : MonoBehaviour {
     [Foldout("UI/MiscRefs")]
     public ItemDescPopup itemDescPopup;
     public MechanicDescPopup mechanicDescPopup;
+    public UIElementPopup uiElementPopup;
     public RectTransform hideoutParent;
     public RectTransform hideoutHeaderParent;
     public ItemUI dragAndDropItemUI;
@@ -166,8 +167,8 @@ public class Game : MonoBehaviour {
     [Foldout("UI/EyeForgePanel")]
     public RectTransform eyeForgePanel;
     public RectTransform crucibleParent;
-    public Button crucibleForgeButton;
-    public Button crucibleUpgradeButton;
+    public ButtonFeel forgeEyeButton;
+    public ButtonFeel upgradeForgeButton;
     public Image pentagramFillImage;
     public AnimationCurve pentagramFillCurve;
     public AnimationCurve itemShakeCurve;
@@ -280,9 +281,6 @@ public class Game : MonoBehaviour {
     private State gameWinState;
     private StateMachine gameStateMachine = new();
 
-    private HideoutStateData hideoutStateData;
-    private RaidStateData raidStateData;
-
     public static Action<Enemy> onEnemyDeath;
     
     private void Start() {
@@ -292,8 +290,6 @@ public class Game : MonoBehaviour {
         InitAudio();
         
         BuildSavePaths();
-        hideoutStateData = LoadFromFileOrCreateNew<HideoutStateData>(hideoutDataSavePath);
-        raidStateData = LoadFromFileOrCreateNew<RaidStateData>(raidDataSavePath);
         player = SpawnEntity<Player>(playerPrefab, Vector3.zero, Quaternion.identity, null, EntityLifetime.Global);
         player.gameObject.SetActive(false);
         LoadAndAssignPlayerSaveData(player);
@@ -407,6 +403,7 @@ public class Game : MonoBehaviour {
     private void OnHideoutStateUpdate() {
         UpdateInventory();
         UpdateTraderTransactionState();
+        UpdateCrucibleState();
     }
 
     private void OnMapSelectionEnter() {
@@ -1378,28 +1375,53 @@ public class Game : MonoBehaviour {
         SpawnUiSlots(traderTransactionInventoryParent, transactionInventorySize);
         transactionInventory = CreateInventory(traderTransactionInventoryParent, transactionInventorySize);
 
-        const int crucibleInventorySize = 6;
+        const int maxCrucibleInventorySize = 13;
+        const int startingCrucibleInventorySize = 6;
         // Spawn crucible slots
         { 
-            const int crucibleVeinSize = crucibleInventorySize - 1;
-            Vector2 crucibleCenter = crucibleParent.position;
-            GameObject centerSlot = Instantiate(eyeForgeSlotPrefab, crucibleCenter, Quaternion.identity, crucibleParent);
-
-            InventorySlotUI centerSlotUi = centerSlot.GetComponent<InventorySlotUI>();
-            centerSlotUi.disallowItemStacking = true;
-            centerSlotUi.onlyAcceptedItemType = eyeType;
+            SpawnUiSlots(crucibleParent, maxCrucibleInventorySize);
             
-            for (int i = 0; i < crucibleVeinSize; i++) {
-                float deg = 360f / crucibleVeinSize * i;
-                Vector2 spawnDir = (Quaternion.AngleAxis(deg, Vector3.forward) * Vector2.up) * 150f;
-                GameObject slot = Instantiate(eyeForgeSlotPrefab, crucibleCenter + spawnDir, Quaternion.identity, crucibleParent);
-                InventorySlotUI veinSlot = slot.GetComponent<InventorySlotUI>();
-                veinSlot.disallowItemStacking = true;
-                veinSlot.onlyAcceptedItemType = soulcardType;
-            }
+            int curCrucibleInventorySize = startingCrucibleInventorySize + player.crucibleLevel;
+            crucibleInventory = CreateInventory(crucibleParent, curCrucibleInventorySize);
+            ArrangeEyeCrucibleInventorySlots();
+
+            // Vector2 crucibleCenter = crucibleParent.position;
+            // GameObject centerSlot = Instantiate(eyeForgeSlotPrefab, crucibleCenter, Quaternion.identity, crucibleParent);
+            //
+            // InventorySlotUI centerSlotUi = centerSlot.GetComponent<InventorySlotUI>();
+            // centerSlotUi.disallowItemStacking = true;
+            // centerSlotUi.onlyAcceptedItemType = eyeType;
+            //
+            //
+            // for (int i = 0; i < curCrucibleInventorySize; i++) {
+            //     float deg = 360f / curCrucibleInventorySize * i;
+            //     Vector2 spawnDir = (Quaternion.AngleAxis(deg, Vector3.forward) * Vector2.up) * 180f;
+            //     GameObject slot = Instantiate(eyeForgeSlotPrefab, crucibleCenter + spawnDir, Quaternion.identity, crucibleParent);
+            //     InventorySlotUI upgradeSlot = slot.GetComponent<InventorySlotUI>();
+            //     upgradeSlot.disallowItemStacking = true;
+            //     upgradeSlot.onlyAcceptedItemType = soulcardType;
+            // }
         }
-        crucibleInventory = CreateInventory(crucibleParent, crucibleInventorySize);
+        // crucibleInventory = CreateInventory(crucibleParent, startingCrucibleInventorySize);
         LoadInventory(crucibleInventory);
+    }
+    
+    private void ArrangeEyeCrucibleInventorySlots() {
+        int inventoryLength = crucibleInventory.slots.Length;
+        for (int i = 0; i < inventoryLength; i++) {
+            InventorySlotUI slotUI = crucibleInventory.slots[i].ui;
+            slotUI.disallowItemStacking = true;
+            slotUI.onlyAcceptedItemType = i == 0 ? eyeType : soulcardType;
+
+            if (i == 0) {
+                slotUI.gameObject.transform.position = crucibleParent.position;
+                continue;
+            }
+            
+            float deg = 360f / (inventoryLength - 1) * (i - 1);
+            Vector3 spawnDir = (Quaternion.AngleAxis(deg, Vector3.forward) * Vector2.up) * 180f;
+            slotUI.gameObject.transform.position = crucibleParent.position + spawnDir;
+        }
     }
     
     private void SaveInventory(Inventory inventory) {
@@ -1478,10 +1500,12 @@ public class Game : MonoBehaviour {
 
         if (UpdateInventoryDragAndDrop(invHoverInfo)) {
             HideItemDescPopup();
+            HideUIElementPopup();
         }
         else {
             UpdateItemDescPopup(invHoverInfo);
             CheckToConsumeItem(invHoverInfo);
+            UpdateUIElementPopup();
         }
         
         CheckForEquipmentChange();
@@ -1610,6 +1634,75 @@ public class Game : MonoBehaviour {
         mechanicDescPopup.nameText.text = string.Empty;
         mechanicDescPopup.descText.text = string.Empty;
         mechanicDescPopup.gameObject.SetActive(false);
+    }
+
+    private void UpdateUIElementPopup() {
+        UIHoverInfo hoverInfo = UpdateUIHover();
+        
+        if (!hoverInfo.hoveringTransform) {
+            HideUIElementPopup();
+            return;
+        }
+        
+        const float hoverTimeUntilTooltip = 0.32f;
+        bool spentEnoughTimeHovering = hoverInfo.timeSpentHovering >= hoverTimeUntilTooltip;
+        
+        if (spentEnoughTimeHovering) {
+            ShowUIElementPopup(hoverInfo);
+        }
+        else {
+            HideUIElementPopup();
+        }
+    }
+
+    private void ShowUIElementPopup(UIHoverInfo hoverInfo) {
+        uiElementPopup.gameObject.SetActive(true);
+        
+        if (hoverInfo.hoveringTransform == upgradeForgeButton.rectTransform) {
+            if (crucibleState == CrucibleState.Upgrade) {
+                uiElementPopup.descText.text = "Add an additional slot to the pentagram!\nCosts:";
+                List<UpgradePath.Requirement> requirements = crucibleUpgradePath.pathUpgrades[player.crucibleLevel].requirements;
+                foreach (UpgradePath.Requirement req in requirements) {
+                    bool meetsSingleReq = MeetsSingleUpgradeRequirement(req); 
+                    Color textColor = meetsSingleReq ? styles.increaseDescColor : styles.decreaseDescColor; 
+                    uiElementPopup.descText.text += ColorText($"\n{req.item.displayName} x{req.count}", textColor);
+                }
+            }
+        }
+        
+        if (hoverInfo.hoveringTransform == forgeEyeButton.rectTransform) {
+            if (crucibleState == CrucibleState.Forging) {
+                uiElementPopup.descText.text = "Eye Preview";
+            }
+
+            Dictionary<Soulcard, int> allSoulCards = new();
+            
+            foreach (InventorySlot slot in crucibleInventory.slots) {
+                if (slot.item == null || slot.item.ItemRef.type != soulcardType) continue;    
+                Soulcard soulcard = itemLookup[slot.item.itemDataUuid] as Soulcard;
+                if (!allSoulCards.TryAdd(soulcard, 1)) {
+                    allSoulCards[soulcard]++;
+                }
+            }
+            
+            string eyeDescription = "";
+            foreach ((Soulcard soulcard, int count) in allSoulCards) {
+                eyeDescription += "\n" + soulcard.GetStackDescription(count);
+            }
+            uiElementPopup.descText.text += eyeDescription;
+        }
+        
+        uiElementPopup.descFitter.ForceRecalculate();
+        FitPopupSize(uiElementPopup.rectTransform, uiElementPopup.descText.rectTransform.rect);
+        
+        // Set popup position
+        Vector2 hoveredCenter = hoverInfo.hoveringTransform.WorldRect().center;
+        Vector2 popupOffset = new(0f, hoverInfo.hoveringTransform.rect.height);
+        uiElementPopup.transform.position = hoveredCenter + popupOffset;
+    }
+
+    private void HideUIElementPopup() {
+        uiElementPopup.gameObject.SetActive(false);
     }
     
     private void CheckToMoveItem(InventoryHoverInfo invHoverInfo) {
@@ -1782,7 +1875,7 @@ public class Game : MonoBehaviour {
             inventory.slots[i] = oldSlots[i];
         }
     }
-
+    
     private bool ClickedOnEquipedBackpackWithItems(Inventory inventory, int slotIndex) {
         if (inventory.slots[slotIndex].item.ItemRef.type != backpackType) return false;
         return inventory == playerEquipmentInventory && GetInventoryItemCount(playerBackpackInventory) > 0;
@@ -1850,7 +1943,7 @@ public class Game : MonoBehaviour {
         public float timeSpentHovering;
     }
 
-    private InventoryHoverInfo lastHoverInfo;
+    private InventoryHoverInfo lastInventoryHoverInfo;
     
     private InventoryHoverInfo UpdateInventoryHover() {
         InventoryHoverInfo info = new();
@@ -1866,9 +1959,9 @@ public class Game : MonoBehaviour {
             info.inventory = inventory;
             info.slotIndex = GetHoveredInventorySlot(inventory);
 
-            bool hoveringOverPrevSlot = info.inventory == lastHoverInfo.inventory && info.slotIndex == lastHoverInfo.slotIndex;
+            bool hoveringOverPrevSlot = info.inventory == lastInventoryHoverInfo.inventory && info.slotIndex == lastInventoryHoverInfo.slotIndex;
             if (hoveringOverPrevSlot && !IsDraggingItem) {
-                info.timeSpentHovering = lastHoverInfo.timeSpentHovering + Time.deltaTime;
+                info.timeSpentHovering = lastInventoryHoverInfo.timeSpentHovering + Time.deltaTime;
             }
             else {
                 info.timeSpentHovering = 0f;
@@ -1877,7 +1970,7 @@ public class Game : MonoBehaviour {
             break;
         }
 
-        lastHoverInfo = info;
+        lastInventoryHoverInfo = info;
         return info;
     }
     
@@ -1891,6 +1984,44 @@ public class Game : MonoBehaviour {
             }
         }
         return -1;
+    }
+
+
+    private List<RectTransform> hoverableUIElements = new();
+    
+    public struct UIHoverInfo {
+        public RectTransform hoveringTransform;
+        public float timeSpentHovering;
+    }
+    
+    private UIHoverInfo lastUIHoverInfo;
+
+    private UIHoverInfo UpdateUIHover() {
+        UIHoverInfo info = new();
+        Vector2 mousePos = Mouse.current.position.ReadValue();
+        
+        foreach (RectTransform element in hoverableUIElements) {
+            if (!element.gameObject.activeInHierarchy) continue;
+            
+            Vector2 localMousePos = element.InverseTransformPoint(mousePos);
+            Bounds localUiBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(element);
+            if (!localUiBounds.Contains(localMousePos)) continue;
+            
+            info.hoveringTransform = element;
+            
+            bool hoveringOverPrevElement = info.hoveringTransform == lastUIHoverInfo.hoveringTransform;
+            if (hoveringOverPrevElement) {
+                info.timeSpentHovering = lastUIHoverInfo.timeSpentHovering + Time.deltaTime;
+            }
+            else {
+                info.timeSpentHovering = 0f;
+            }
+            
+            break;
+        } 
+        
+        lastUIHoverInfo = info;
+        return info;
     }
 
 
@@ -2314,6 +2445,13 @@ public class Game : MonoBehaviour {
         return count;
     }
 
+    private bool MeetsSingleUpgradeRequirement(UpgradePath.Requirement req) {
+        int itemCount = 0;
+        itemCount += GetItemCountInInventory(stashInventory, req.item);
+        itemCount += GetItemCountInInventory(playerEquipmentInventory, req.item);
+        return itemCount >= req.count; 
+    }
+
     public bool CarryingPassiveItem(PassiveItem item, out int count) {
         count = GetItemCountInInventory(playerEquipmentInventory, item);
         return count > 0;
@@ -2422,9 +2560,9 @@ public class Game : MonoBehaviour {
         public int nextIdleDir;
         public Limiter bleedLimiter;
         
+        public int crucibleLevel;
         public int soulCurrency;
         public int coinCurrency;
-        
         public int agilityLevel;
         public int corruptionLevel;
         public int healthLevel;
@@ -2733,7 +2871,7 @@ public class Game : MonoBehaviour {
                     ItemDrop itemDrop = col.GetComponent<ItemDrop>();
                     itemDrop.circleCollider.enabled = false;
                     
-                    InventoryAddResult result = TryAddItemToInventory(playerEquipmentInventory, itemDrop.item, itemDrop.dropCount);
+                    InventoryAddResult result = TryAddItemToInventory(CreatePlayerSuperInventory(), itemDrop.item, itemDrop.dropCount);
                     if (result.type == InventoryAddResult.ResultType.Success) {
                         Entity droppedEntity = entityLookup[itemDrop.gameObject];
                         PickupDroppedItem(droppedEntity); 
@@ -3260,6 +3398,7 @@ public class Game : MonoBehaviour {
     [Serializable]
     private class PlayerSaveData {
         public int health;
+        public int crucibleLevel;
         public int soulCurrency;
         public int coinCurrency;
         public int agilityLevel;
@@ -3271,6 +3410,7 @@ public class Game : MonoBehaviour {
     private void SavePlayerData() {
         PlayerSaveData data = new() {
             health = player.health,
+            crucibleLevel = player.crucibleLevel,
             soulCurrency = player.soulCurrency,
             coinCurrency = player.coinCurrency,
             agilityLevel = player.agilityLevel,
@@ -3285,6 +3425,7 @@ public class Game : MonoBehaviour {
         PlayerSaveData data = LoadFromFile<PlayerSaveData>(playerSavePath);
         if (data == null) return;
         instancedPlayer.health = data.health;
+        instancedPlayer.crucibleLevel = data.crucibleLevel;
         instancedPlayer.soulCurrency = data.soulCurrency;
         instancedPlayer.coinCurrency = data.coinCurrency;
         instancedPlayer.agilityLevel = data.agilityLevel;
@@ -3301,6 +3442,7 @@ public class Game : MonoBehaviour {
         CloseHideoutUI();
         CloseRaidUI();
         ShowMainMenuUI();
+        
     }
     
     private void ShowMainMenuUI() {
@@ -3338,6 +3480,7 @@ public class Game : MonoBehaviour {
     private void CloseHideoutUI() {
         ToggleHideoutPanels();
         HideItemDescPopup(); 
+        HideUIElementPopup();
         currenciesParent.gameObject.SetActive(false);
         menuBackground.gameObject.SetActive(false);
         hideoutHeaderParent.gameObject.SetActive(false);
@@ -3353,6 +3496,7 @@ public class Game : MonoBehaviour {
 
     private void CloseRaidUI() {
         HideItemDescPopup(); 
+        HideUIElementPopup();
         currenciesParent.gameObject.SetActive(false);
         crosshairTrans.gameObject.SetActive(false);
         interactPrompt.gameObject.SetActive(false);
@@ -3416,8 +3560,7 @@ public class Game : MonoBehaviour {
         
         eyeForgeTabButton.onClick.AddListener(() => {
             ToggleHideoutTab(eyeForgeTabButton, eyeForgeTabText);
-            ToggleSlimPlayerPanel(true);
-            ToggleHideoutPanels(playerPanel, eyeForgePanel, stashPanel);
+            ToggleHideoutPanels(eyeForgePanel, stashPanel);
         });
         
         traderTabButton.onClick.AddListener(() => {
@@ -3445,7 +3588,7 @@ public class Game : MonoBehaviour {
         healthUpgradeButton.button.onClick.AddListener(() => OnLevelupButtonPressed(healthUpgradePath, player.healthLevel));
         strengthUpgradeButton.button.onClick.AddListener(() => OnLevelupButtonPressed(strengthUpgradePath, player.strengthLevel));
         
-        crucibleForgeButton.onClick.AddListener(() => {
+        forgeEyeButton.button.onClick.AddListener(() => {
             int eyeSlotIndex = 0;
             InventoryItem eyeItem = null;
 
@@ -3485,38 +3628,31 @@ public class Game : MonoBehaviour {
             });
         });
         
-        crucibleUpgradeButton.onClick.AddListener(() => {
-            UpgradePath.UpgradeRequirements requirements = crucibleUpgradePath.pathUpgrades[hideoutStateData.crucibleLevel];
+        upgradeForgeButton.button.onClick.AddListener(() => {
+            if (upgradeForgeButton.isDisabled) return;
+            
+            UpgradePath.UpgradeRequirements requirements = crucibleUpgradePath.pathUpgrades[player.crucibleLevel];
             
             bool canUpgrade = true;
             foreach (UpgradePath.Requirement requirement in requirements.requirements) {
-                int itemCount = 0;
-                itemCount += GetItemCountInInventory(stashInventory, requirement.item);
-                itemCount += GetItemCountInInventory(playerEquipmentInventory, requirement.item);
-                
-                if (itemCount < requirement.count) {
-                    canUpgrade = false;
-                    break;
-                }
+                if (MeetsSingleUpgradeRequirement(requirement)) continue;
+                canUpgrade = false;
+                break;
             }
-
+        
             if (!canUpgrade) return;
-
+        
             foreach (UpgradePath.Requirement requirement in requirements.requirements) {
                 int stashRemoveCount = RemoveNumberOfItemsFromInventory(stashInventory, requirement.item, requirement.count);
                 if (stashRemoveCount == requirement.count) continue;
                 RemoveNumberOfItemsFromInventory(playerEquipmentInventory, requirement.item, requirement.count - stashRemoveCount);
             }
             
-            hideoutStateData.crucibleLevel++;
-            SaveToFile(hideoutDataSavePath, hideoutStateData);
+            player.crucibleLevel++;
+            SavePlayerData();
             
-            foreach (InventorySlot slot in crucibleInventory.slots) {
-                if (slot.ui.SlotIsInactive) {
-                    slot.ui.MakeSlotActive();
-                    break;
-                }
-            }
+            ChangeInventorySize(crucibleInventory, crucibleInventory.slots.Length + 1);
+            ArrangeEyeCrucibleInventorySlots();
         });
         
         // stashUpgradeButton.onClick.AddListener(() => {
@@ -3597,7 +3733,7 @@ public class Game : MonoBehaviour {
             });
         });
     }
-
+    
     private int fillParamProperty = Shader.PropertyToID("_Fill");
     
     private void DoEyeForgeAnimation(Action onAnimationEndCallback) {
@@ -3645,7 +3781,7 @@ public class Game : MonoBehaviour {
             }
         }
     }
-
+    
     private void UpdateInRaidUI() {
         healthBarFillImage.fillAmount = player.health / 100f;
         weightBarFillImage.fillAmount = GetTotalWeightCompletion();
@@ -3684,6 +3820,30 @@ public class Game : MonoBehaviour {
         }
         prevSoulCurrency = player.soulCurrency;
         prevCoinCurrency = player.coinCurrency;
+    }
+
+
+    private enum CrucibleState { Upgrade, Forging }
+    private CrucibleState crucibleState;
+
+    private void UpdateCrucibleState() {
+        if (!OnEyeForgeTab) return;
+        
+        bool forging = GetInventoryItemCount(crucibleInventory) > 0;
+        crucibleState = forging ? CrucibleState.Forging : CrucibleState.Upgrade;
+
+        if (forging && forgeEyeButton.isDisabled) {
+            forgeEyeButton.Enable();
+            upgradeForgeButton.Disable();
+            hoverableUIElements.Add(forgeEyeButton.rectTransform);
+            hoverableUIElements.Remove(upgradeForgeButton.rectTransform);
+        }
+        if (!forging && !forgeEyeButton.isDisabled) {
+            forgeEyeButton.Disable();
+            upgradeForgeButton.Enable();
+            hoverableUIElements.Remove(forgeEyeButton.rectTransform);
+            hoverableUIElements.Add(upgradeForgeButton.rectTransform);
+        }
     }
 
     private enum TransactionState { Empty, Buying, Selling }
@@ -4428,6 +4588,40 @@ public class Game : MonoBehaviour {
     
     public static string ColorText(string text, Color color) {
         return $"<color=#{ColorUtility.ToHtmlStringRGBA(color)}>{text}</color>";
+    }
+    
+    public static string DisplayProb(float probability) {
+        return ColorText($"{Mathf.FloorToInt(probability * 100f)}%", instance.styles.increaseDescColor);
+    }
+    
+    public static string DisplayProbIncrease(float probability) {
+        return ColorText($"+{Mathf.FloorToInt(probability * 100f)}%", instance.styles.increaseDescColor);
+    }
+    
+    public static string DisplayProbDecrease(float probability) {
+        return ColorText($"-{Mathf.FloorToInt(probability * 100f)}%", instance.styles.decreaseDescColor);
+    }
+
+    
+    public static string DisplayNumber(int number) {
+        return ColorText(number.ToString(), instance.styles.increaseDescColor);
+    }
+    
+    public static string DisplayNumber(float number) {
+        return ColorText(number.ToString("0.00"), instance.styles.increaseDescColor);
+    }
+
+
+    public static string DisplayIncrease(int amount) {
+        return ColorText($"+{amount}", instance.styles.increaseDescColor);
+    }
+    
+    public static string DisplayIncrease(float amount) {
+        return ColorText($"+{amount:0.00}", instance.styles.increaseDescColor);
+    }
+    
+    public static string DisplayMultiplier(float multiplier) {
+        return ColorText($"{multiplier:0.00}x", instance.styles.increaseDescColor);
     }
 
     private enum CardinalDir { Right, Left, Up, Down }
