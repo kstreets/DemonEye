@@ -11,6 +11,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.InputSystem;
 using UnityEngine.Pool;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
@@ -84,6 +85,7 @@ public class Game : MonoBehaviour {
 
     public Camera mainCamera;
     public CinemachineCamera cinemachineCamera;
+    public PixelPerfectCamera pixelPerfectCamera;
     public RectTransform crosshairTrans;
 
     public GameObject playerPrefab;
@@ -101,12 +103,6 @@ public class Game : MonoBehaviour {
     public AnimationCurve shakeCurve;
     [EndFoldout]
 
-    [Foldout("Main Menu")]
-    public RectTransform mainMenuParent;
-    public Button mainMenuPlayButton;
-    public Button mainMenuHideoutButton;
-    [EndFoldout]
-    
     [Foldout("UI/Prefabs")]
     public GameObject inventorySlotPrefab;
     public GameObject eyeForgeSlotPrefab;
@@ -123,10 +119,20 @@ public class Game : MonoBehaviour {
     public RectTransform hideoutParent;
     public RectTransform hideoutHeaderParent;
     public ItemUI dragAndDropItemUI;
-    public GameObject menuBackground;
+    public Image menuBackgroundImage;
     public GameObject currenciesParent;
     public TextMeshProUGUI soulsCurrencyText;
     public TextMeshProUGUI coinCurrencyText;
+    public Image deathBackgroundImage;
+    [EndFoldout]
+    
+    [Foldout("UI/Main Menu")]
+    public RectTransform mainMenuParent;
+    public RectTransform mainMenuLogo;
+    public ButtonFeel mainMenuPlayButton;
+    public ButtonFeel mainMenuHideoutButton;
+    public ButtonFeel mainMenuSettingsButton;
+    public ButtonFeel mainMenuExitButton;
     [EndFoldout]
     
     [Foldout("UI/HideoutTabs")]
@@ -341,7 +347,6 @@ public class Game : MonoBehaviour {
         gameOverState = gameStateMachine.CreateState(null, OnGameOverEnter, OnGameOverExit);
         
         raidState.To(gameOverState).When(() => player.health <= 0);
-        gameOverState.To(mainMenuState).When(() => true).AfterSeconds(3f);
     }
 
     private void Update() {
@@ -417,6 +422,8 @@ public class Game : MonoBehaviour {
     private void OnRaidStateEnter() {
         Cursor.visible = false;
         ShowRaidUI();
+
+        deathBackgroundImage.enabled = false;
         
         currentMapInstance.gameObject.SetActive(true);
         currentMapInstance.grid.Init();
@@ -462,12 +469,70 @@ public class Game : MonoBehaviour {
     }
 
     private void OnGameOverEnter() {
-        player.health = 100;
         ClearInventory(playerEquipmentInventory);
         OnSaveWhenRaidIsOver();
-    }
+        
+        Tween.StopAll();
+        
+        foreach (Entity entity in entities) {
+            if (entity.rigidbody) {
+                entity.rigidbody.linearVelocity = Vector2.zero;
+            }
+            if (entity.animator) {
+                entity.animator.enabled = false;
+            }
+        }
+        
+        player.spriteRenderer.sortingLayerName = "DeathWipe";
+        
+        RemoveHitFlashEffect(player);
+        player.spriteRenderer.GetPropertyBlock(player.matPropertyBlock);
+        player.matPropertyBlock.SetFloat(damageFlashTintPropertyId, 1f);
+        player.spriteRenderer.SetPropertyBlock(player.matPropertyBlock);
+        
+        deathBackgroundImage.enabled = true;
+        deathBackgroundImage.fillAmount = 0f;
 
+        Sequence sequence = Sequence.Create();
+        sequence.ChainDelay(0.25f);
+        sequence.Chain(Tween.UIFillAmount(deathBackgroundImage, 1f, 1f, Ease.InOutQuad));
+        sequence.ChainCallback(() => {
+            player.animator.enabled = true;
+            player.animator.Play(PlayerDeathHash);
+        });
+        
+        sequence.Group(Tween.Custom(1f, 0f, 0.5f, val => {
+            player.spriteRenderer.GetPropertyBlock(player.matPropertyBlock);
+            player.matPropertyBlock.SetFloat(damageFlashTintPropertyId, val);
+            player.spriteRenderer.SetPropertyBlock(player.matPropertyBlock);
+        }, Ease.OutExpo));
+        
+        int initialRefResoultion = pixelPerfectCamera.refResolutionX;
+        
+        sequence.Group(Tween.Custom(pixelPerfectCamera.refResolutionX, 15, 0.8f, val => {
+            pixelPerfectCamera.refResolutionX = (int)val;
+            pixelPerfectCamera.refResolutionY = (int)val;
+        }, Ease.InOutQuad));
+        
+        sequence.ChainDelay(1f);
+
+        menuBackgroundImage.gameObject.SetActive(true);
+        menuBackgroundImage.color = new(1f, 1f, 1f, 0f);
+        sequence.Chain(Tween.Alpha(menuBackgroundImage, 0f, 1f, 1f, Ease.InCubic, startDelay: 0.5f));
+
+        sequence.Group(Tween.Scale(player.trans, Vector3.zero, 1.5f, Ease.InOutQuint));
+        
+        sequence.OnComplete(() => {
+            player.spriteRenderer.sortingLayerName = "Entity";
+            player.trans.localScale = Vector3.one;
+            pixelPerfectCamera.refResolutionX = initialRefResoultion;
+            pixelPerfectCamera.refResolutionY = initialRefResoultion;
+            gameStateMachine.SetStateIfNotCurrent(mainMenuState);
+        });
+    }
+    
     private void OnGameOverExit() {
+        player.health = FullPlayerHealth;
         DeinitRaid();
     }
 
@@ -614,7 +679,10 @@ public class Game : MonoBehaviour {
     private void ResetEntity<T>(T entity) where T : Entity {
         entity.health = 100;
         entity.trans.localScale = Vector3.one;
-        entity.animator?.Rebind();
+        if (entity.animator) {
+            entity.animator.enabled = true;
+            entity.animator.Rebind();
+        }
         if (entity.gameObject.activeInHierarchy) {
             entity.animator?.Update(0);
         }
@@ -1069,6 +1137,8 @@ public class Game : MonoBehaviour {
     }
     
     private void FixedUpdateEnemies() {
+        if (!InRaid) return;
+        
         foreach (Enemy enemy in enemies) {
             float speed = enemy.data.speed;
             
@@ -1377,32 +1447,9 @@ public class Game : MonoBehaviour {
 
         const int maxCrucibleInventorySize = 13;
         const int startingCrucibleInventorySize = 6;
-        // Spawn crucible slots
-        { 
-            SpawnUiSlots(crucibleParent, maxCrucibleInventorySize);
-            
-            int curCrucibleInventorySize = startingCrucibleInventorySize + player.crucibleLevel;
-            crucibleInventory = CreateInventory(crucibleParent, curCrucibleInventorySize);
-            ArrangeEyeCrucibleInventorySlots();
-
-            // Vector2 crucibleCenter = crucibleParent.position;
-            // GameObject centerSlot = Instantiate(eyeForgeSlotPrefab, crucibleCenter, Quaternion.identity, crucibleParent);
-            //
-            // InventorySlotUI centerSlotUi = centerSlot.GetComponent<InventorySlotUI>();
-            // centerSlotUi.disallowItemStacking = true;
-            // centerSlotUi.onlyAcceptedItemType = eyeType;
-            //
-            //
-            // for (int i = 0; i < curCrucibleInventorySize; i++) {
-            //     float deg = 360f / curCrucibleInventorySize * i;
-            //     Vector2 spawnDir = (Quaternion.AngleAxis(deg, Vector3.forward) * Vector2.up) * 180f;
-            //     GameObject slot = Instantiate(eyeForgeSlotPrefab, crucibleCenter + spawnDir, Quaternion.identity, crucibleParent);
-            //     InventorySlotUI upgradeSlot = slot.GetComponent<InventorySlotUI>();
-            //     upgradeSlot.disallowItemStacking = true;
-            //     upgradeSlot.onlyAcceptedItemType = soulcardType;
-            // }
-        }
-        // crucibleInventory = CreateInventory(crucibleParent, startingCrucibleInventorySize);
+        SpawnUiSlots(crucibleParent, maxCrucibleInventorySize, eyeForgeSlotPrefab);
+        crucibleInventory = CreateInventory(crucibleParent, startingCrucibleInventorySize + player.crucibleLevel);
+        ArrangeEyeCrucibleInventorySlots();
         LoadInventory(crucibleInventory);
     }
     
@@ -1802,7 +1849,7 @@ public class Game : MonoBehaviour {
     }
 
     private void UpdatePlayerPanelUI() {
-        playerPanelHealthText.text = $"<color=#5CF25B>{player.health}</color><size=22>/100";
+        playerPanelHealthText.text = $"<color=#5CF25B>{player.health}</color><size=22>/{FullPlayerHealth}";
 
         int inventoryWeight = GetPlayerInventoryWeight();
         GetEncumberingWeightRange(out int startEncumberingWeight, out _);
@@ -1833,9 +1880,9 @@ public class Game : MonoBehaviour {
         return hoveredInventory.slots[hoveredSlot].ui.itemUI.IsGrayedOut;
     }
     
-    private void SpawnUiSlots(RectTransform parent, int numSlots) {
+    private void SpawnUiSlots(RectTransform parent, int numSlots, GameObject slotPrefab = null) {
         for (int i = 0; i < numSlots; i++) {
-            Instantiate(inventorySlotPrefab, Vector3.zero, Quaternion.identity, parent);
+            Instantiate(slotPrefab ? slotPrefab : inventorySlotPrefab, Vector3.zero, Quaternion.identity, parent);
         }
     }
     
@@ -2578,6 +2625,7 @@ public class Game : MonoBehaviour {
     private int PlayerIdleSide = Animator.StringToHash("PlayerIdleSide");
     private int PlayerIdleUp = Animator.StringToHash("PlayerIdleUp");
     private int PlayerIdleDown = Animator.StringToHash("PlayerIdleDown");
+    private int PlayerDeathHash = Animator.StringToHash("PlayerDeath");
     
     private void UpdatePlayer() {
         if (player.bleeding && player.bleedLimiter.TimeHasPassed(3.5f)) {
@@ -2655,7 +2703,7 @@ public class Game : MonoBehaviour {
     }
 
     private void HealPlayer(int healing) {
-        player.health = Mathf.Clamp(player.health + healing, 0, 100);
+        player.health = Mathf.Clamp(player.health + healing, 0, FullPlayerHealth);
     }
 
     private void DamagePlayer(int damage, float chanceToBleed = 0f) {
@@ -2673,6 +2721,8 @@ public class Game : MonoBehaviour {
     private const int defaultStartingEncumberingWeight = 180;
     private const int maxEncumberedWeight = 280;
     private const float maxEncumberedSpeedReduction = 0.3f;
+
+    private int FullPlayerHealth => 100;
     
     private float GetPlayerSpeedBasedOnStats() {
         int agilityStat = baseStats.agility;
@@ -3432,6 +3482,9 @@ public class Game : MonoBehaviour {
         instancedPlayer.corruptionLevel = data.corruptionLevel;
         instancedPlayer.healthLevel = data.healthLevel;
         instancedPlayer.strengthLevel = data.strengthLevel;
+        
+        // We want to make sure that the player health is never <= zero
+        instancedPlayer.health = player.health <= 0f ? FullPlayerHealth : player.health;
     }
 
     // ************************************
@@ -3442,17 +3495,37 @@ public class Game : MonoBehaviour {
         CloseHideoutUI();
         CloseRaidUI();
         ShowMainMenuUI();
-        
     }
+
+    private Sequence mainMenuSequence;
     
+    private void AnimateInMainMenu() {
+        if (mainMenuSequence.isAlive) return;
+        
+        float halfScreenHeight = Screen.height / 2f;
+        
+        mainMenuSequence = Sequence.Create();
+        mainMenuSequence.Group(Tween.UIAnchoredPositionY(mainMenuLogo, halfScreenHeight, mainMenuLogo.anchoredPosition.y, 0.8f, Ease.OutExpo));
+        mainMenuSequence.Group(Tween.UIAnchoredPositionY(mainMenuPlayButton.rectTransform, -halfScreenHeight, mainMenuPlayButton.rectTransform.anchoredPosition.y, 0.8f, Ease.OutExpo));
+        mainMenuSequence.Group(Tween.UIAnchoredPositionY(mainMenuHideoutButton.rectTransform, -halfScreenHeight, mainMenuHideoutButton.rectTransform.anchoredPosition.y, 0.8f, Ease.OutExpo, startDelay: 0.1f));
+        mainMenuSequence.Group(Tween.UIAnchoredPositionY(mainMenuSettingsButton.rectTransform, -halfScreenHeight, mainMenuSettingsButton.rectTransform.anchoredPosition.y, 0.8f, Ease.OutExpo, startDelay: 0.2f));
+        mainMenuSequence.Group(Tween.UIAnchoredPositionY(mainMenuExitButton.rectTransform, -halfScreenHeight, mainMenuExitButton.rectTransform.anchoredPosition.y, 0.8f, Ease.OutExpo, startDelay: 0.3f));
+
+        mainMenuPlayButton.rectTransform.anchoredPosition = new(mainMenuPlayButton.rectTransform.anchoredPosition.x, -halfScreenHeight);
+        mainMenuHideoutButton.rectTransform.anchoredPosition = new(mainMenuHideoutButton.rectTransform.anchoredPosition.x, -halfScreenHeight);
+        mainMenuSettingsButton.rectTransform.anchoredPosition = new(mainMenuSettingsButton.rectTransform.anchoredPosition.x, -halfScreenHeight);
+        mainMenuExitButton.rectTransform.anchoredPosition = new(mainMenuExitButton.rectTransform.anchoredPosition.x, -halfScreenHeight);
+    }
+
     private void ShowMainMenuUI() {
         hideoutParent.gameObject.SetActive(true);
-        menuBackground.gameObject.SetActive(true);
+        menuBackgroundImage.gameObject.SetActive(true);
         mainMenuParent.gameObject.SetActive(true);
+        AnimateInMainMenu();
     }
 
     private void CloseMainMenuUI() {
-        menuBackground.gameObject.SetActive(false);
+        menuBackgroundImage.gameObject.SetActive(false);
         mainMenuParent.gameObject.SetActive(false);
     }
 
@@ -3472,7 +3545,7 @@ public class Game : MonoBehaviour {
         ToggleHideoutPanels(playerPanel, stashPanel);
         ToggleSlimPlayerPanel(false);
         currenciesParent.gameObject.SetActive(true);
-        menuBackground.gameObject.SetActive(true);
+        menuBackgroundImage.gameObject.SetActive(true);
         hideoutHeaderParent.gameObject.SetActive(true);
         hideoutTabsParent.gameObject.SetActive(true);
     }
@@ -3482,7 +3555,7 @@ public class Game : MonoBehaviour {
         HideItemDescPopup(); 
         HideUIElementPopup();
         currenciesParent.gameObject.SetActive(false);
-        menuBackground.gameObject.SetActive(false);
+        menuBackgroundImage.gameObject.SetActive(false);
         hideoutHeaderParent.gameObject.SetActive(false);
         hideoutTabsParent.gameObject.SetActive(false);
     }
@@ -3544,11 +3617,11 @@ public class Game : MonoBehaviour {
     }
     
     private void InitButtonCallbacks() {
-        mainMenuPlayButton.onClick.AddListener(() => {
+        mainMenuPlayButton.button.onClick.AddListener(() => {
             gameStateMachine.SetStateIfNotCurrent(mapSelectionState);
         });
         
-        mainMenuHideoutButton.onClick.AddListener(() => {
+        mainMenuHideoutButton.button.onClick.AddListener(() => {
             gameStateMachine.SetStateIfNotCurrent(hideoutState);
         });
         

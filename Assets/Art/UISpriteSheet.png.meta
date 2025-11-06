@@ -207,7 +207,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: UISpriteSheet_5
+      name: Square
       rect:
         serializedVersion: 2
         x: 160
@@ -1303,6 +1303,7 @@ TextureImporter:
       GrayedOutButton: 1226795369
       HighlightedGrayedOutButton: -870479080
       Soul: -927471816
+      Square: 896199210
       Tag: 1554644581
       UISpriteSheet_0: 432214621
       UISpriteSheet_1: 11644242
@@ -1348,7 +1349,6 @@ TextureImporter:
       UISpriteSheet_46: -998722681
       UISpriteSheet_47: 275925045
       UISpriteSheet_48: 2002655375
-      UISpriteSheet_5: 896199210
       UISpriteSheet_6: 1504484193
       UISpriteSheet_7: 1135578465
       UISpriteSheet_8: 2031374853

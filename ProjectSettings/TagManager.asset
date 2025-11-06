@@ -58,5 +58,8 @@ TagManager:
   - name: DamageNumbers
     uniqueID: 974457483
     locked: 0
+  - name: DeathWipe
+    uniqueID: 4139858489
+    locked: 0
   m_RenderingLayers:
   - Default
