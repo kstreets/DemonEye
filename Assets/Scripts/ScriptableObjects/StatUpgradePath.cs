@@ -5,5 +5,6 @@ using UnityEngine;
 public class StatUpgradePath : ScriptableObject {
 
     public List<int> soulsNeededPerLevel;
+    public int MaxLevel => soulsNeededPerLevel.Count;
 
 }

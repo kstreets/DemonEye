@@ -19,3 +19,4 @@ MonoBehaviour:
   health: 100
   damage: 8
   changeToCauseBleed: 0.1
+  soulWorthPerKill: 20

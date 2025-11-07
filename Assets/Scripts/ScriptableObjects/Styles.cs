@@ -10,6 +10,10 @@ public class Styles : ScriptableObject {
 
     public Color coinCurrencyColor;
 
+    public Color underWeightColor;
+    public Color startingOverWeightColor;
+    public Color endingOverWeightColor;
+
     public Vector4 nonSelectedHideoutTabMargin;
     public Vector4 selectedHideoutTabMargin;
 

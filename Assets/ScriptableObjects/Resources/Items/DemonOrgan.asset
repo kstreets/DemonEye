@@ -15,14 +15,17 @@ MonoBehaviour:
   uuid: 413746779
   displayName: Demon Organ
   inventorySprite: {fileID: 1915861382, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  dropSprite: {fileID: 0}
+  pickupRadius: 0.07
   type: {fileID: 0}
   associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
   buyPrice: 0
   sellPrice: 100
   traderXp: 0
+  spawnsOnAllMaps: 0
   spawnsOnMaps: []
   chanceToSpawnOnBody: 0.1
-  chanceToSpawnOnTrader: 0.5
+  chanceToSpawnOnTrader: 0
   chanceToSpawnFromRock: 0
   modifiesStats: 0
   agilityStatAdjustment: 0

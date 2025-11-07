@@ -90,7 +90,6 @@ public class Game : MonoBehaviour {
 
     public GameObject playerPrefab;
     public GameObject gemRockPrefab;
-    public GameObject altarPrefab;
     public GameObject deadBodyPrefab;
 
     public BaseCharacterStats baseStats;
@@ -161,6 +160,12 @@ public class Game : MonoBehaviour {
     public RectTransform playerInventoryParent;
     public TextMeshProUGUI playerPanelHealthText;
     public TextMeshProUGUI playerPanelWeightText;
+    public TextMeshProUGUI agilityStatValueText;
+    public TextMeshProUGUI armorStatValueText;
+    public TextMeshProUGUI bleedResStatValueText;
+    public TextMeshProUGUI healthStatValueText;
+    public TextMeshProUGUI luckStatValueText;
+    public TextMeshProUGUI strengthStatValueText;
     [EndFoldout]
     
     [Foldout("UI/StashPanel")]
@@ -212,6 +217,10 @@ public class Game : MonoBehaviour {
     public ButtonFeel corruptionUpgradeButton;
     public ButtonFeel healthUpgradeButton;
     public ButtonFeel strengthUpgradeButton;
+    public TextMeshProUGUI agilityUpgradeInfoText;
+    public TextMeshProUGUI healthUpgradeInfoText;
+    public TextMeshProUGUI luckUpgradeInfoText;
+    public TextMeshProUGUI strengthUpgradeInfoText;
     [EndFoldout]
 
     [Foldout("UI/InRaid")]
@@ -400,7 +409,7 @@ public class Game : MonoBehaviour {
 
     private void OnHideoutStateExit() {
         CloseHideoutUI();
-        SavePlayerInventories();
+        SaveInventory(playerInventory);
         SaveInventory(stashInventory);
         SaveInventory(crucibleInventory);
     }
@@ -444,6 +453,11 @@ public class Game : MonoBehaviour {
     }
 
     private void OnRaidStateExit() {
+        ClosePlayerInventory();
+        CloseLootInventory();
+        HideItemDescPopup();
+        HideUIElementPopup();
+        
         Cursor.visible = true;
         CloseRaidUI();
     }
@@ -469,7 +483,7 @@ public class Game : MonoBehaviour {
     }
 
     private void OnGameOverEnter() {
-        ClearInventory(playerEquipmentInventory);
+        ClearInventory(playerInventory);
         OnSaveWhenRaidIsOver();
         
         Tween.StopAll();
@@ -550,7 +564,7 @@ public class Game : MonoBehaviour {
     }
     
     private void OnSaveWhenRaidIsOver() {
-        SavePlayerInventories();
+        SaveInventory(playerInventory);
         SavePlayerData();
         SaveQuestStates();
     }
@@ -1090,41 +1104,12 @@ public class Game : MonoBehaviour {
             }
 
             if (enemy.health <= 0) {
-                // Drop items from enemy 
-                {
-                    // EnemyData.ItemDrop[] itemDrops = enemy.data.itemDrops;
-                    // foreach (EnemyData.ItemDrop itemDrop in itemDrops) {
-                    //     float randomChance = Random.value;
-                    //     if (randomChance < itemDrop.dropChance) {
-                    //         SpawnEntity<Entity>(itemDrop.itemPrefab, enemy.position, Quaternion.identity);
-                    //         break;
-                    //     }
-                    // }
+                if (Random.value < 0.05f) {
+                    Item dropItem = GetItemFromEnemyDropPool(enemy.data);
+                    SpawnItemAsEntity(dropItem, 1, enemy.position, Quaternion.identity);
                 }
 
-                // Add enemy soul to nearby altar
-                {
-                    Altar closestAltar = null;
-                    float closestDistance = float.MaxValue;
-                    foreach (Altar altar in activeAltars) {
-                        float dist = Vector2.Distance(altar.gameObject.transform.position, enemy.position);
-                        if (dist < closestDistance) {
-                            closestDistance = dist;
-                            closestAltar = altar;
-                        }
-                    }
-
-                    const float maxSoulDistFromAltar = 3f;
-                    if (closestAltar != null && closestDistance < maxSoulDistFromAltar) {
-                        closestAltar.soulCompletion += 0.025f;
-                        if (closestAltar.soulCompletion >= 1f) {
-                            // SpawnLevelEntity<Entity>(altarDropPool.GetDropFromPool(), closestAltar.gameObject.transform.position + new Vector3(0f, 0.3f, 0f), Quaternion.identity);
-                            activeAltars.Remove(closestAltar);
-                        }
-                    }
-                    
-                }
-                
+                player.soulCurrency += enemy.data.soulWorthPerKill;
                 onEnemyDeath?.Invoke(enemy);
                 
                 Entity bloodSplatterEntity = SpawnEntity(bloodSplatterPool, enemy.position, Quaternion.identity);
@@ -1375,10 +1360,7 @@ public class Game : MonoBehaviour {
         public RectTransform parent;
     }
     
-    [NonSerialized] public Inventory playerEquipmentInventory;
-    [NonSerialized] public Inventory playerPocketsInventory;
-    [NonSerialized] public Inventory playerPassivesInventory;
-    [NonSerialized] public Inventory playerBackpackInventory;
+    [NonSerialized] public Inventory playerInventory;
     [NonSerialized] public Inventory stashInventory;
     [NonSerialized] private Inventory crucibleInventory;
     [NonSerialized] private Inventory transactionInventory;
@@ -1387,9 +1369,9 @@ public class Game : MonoBehaviour {
     [NonSerialized] private List<Inventory> allInventories = new();
     
     private const int playerPocketSize = 6;
+    private const int playerQuickUseSize = 4;
     private const int playerEquipmentSize = 3;
-    private int MaxPlayerPassiveSize => corruptionUpgradePath.soulsNeededPerLevel.Count;
-    private int EnabledPassiveSlotsSize => player.corruptionLevel + 4;
+    private int NakedPlayerInventorySize => playerPocketSize + playerQuickUseSize + playerEquipmentSize;
 
     private const int traderInventoryColCount = 6;
     private const int traderInventoryRowCount = 4;
@@ -1407,26 +1389,12 @@ public class Game : MonoBehaviour {
     private bool OnTradingTab => traderTabButton.image.sprite == tabSelectedSprite;
     
     private void InitInventories() {
-        playerEquipmentInventory = CreateInventory(playerEquipmentParent, playerEquipmentSize); 
-        LoadInventory(playerEquipmentInventory);
-        
-        SpawnUiSlots(playerPassiveParent, MaxPlayerPassiveSize);
-        playerPassivesInventory = CreateInventory(playerPassiveParent, EnabledPassiveSlotsSize);
-        foreach (InventorySlot slot in playerPassivesInventory.slots) {
-            slot.ui.onlyAcceptedItemType = passiveType;
-        }
-        LoadInventory(playerPassivesInventory);
-        
-        SpawnUiSlots(playerPocketParent, playerPocketSize);
-        playerPocketsInventory = CreateInventory(playerPocketParent, playerPocketSize);
-        LoadInventory(playerPocketsInventory);
-
         const int maxBackpackSize = 30;
+        SpawnUiSlots(playerPassiveParent, playerQuickUseSize);
+        SpawnUiSlots(playerPocketParent, playerPocketSize);
         SpawnUiSlots(playerBackpackParent, maxBackpackSize);
-        playerBackpackInventory = CreateInventory(playerBackpackParent, maxBackpackSize);
-        LoadInventory(playerBackpackInventory);
-        
-        CheckForEquipmentChange(); // Check for equipment change to resize backpacks if needed
+        playerInventory = CreateInventory(playerInventoryParent, NakedPlayerInventorySize);
+        LoadInventory(playerInventory);
         
         int stashInventorySize = 40;
         SpawnUiSlots(stashInventoryParent, stashInventorySize);
@@ -1483,6 +1451,10 @@ public class Game : MonoBehaviour {
         List<InventoryItem> items = LoadFromFile<List<InventoryItem>>(GetInventorySavePath(inventory));
         if (items == null) return;
 
+        if (inventory == playerInventory && items.Count != inventory.slots.Length) {
+            ChangeInventorySize(inventory, items.Count);
+        }
+        
         // Items can be null because we save all inventory slots, including empty ones
         foreach (InventoryItem item in items) {
             bool isDemonEye = item?.modifierUuids != null;
@@ -1503,25 +1475,6 @@ public class Game : MonoBehaviour {
         }
     }
 
-    private void SavePlayerInventories() {
-        SaveInventory(playerEquipmentInventory);
-        SaveInventory(playerPassivesInventory);
-        SaveInventory(playerPocketsInventory);
-        SaveInventory(playerBackpackInventory);
-    }
-
-    private bool IsApartOfPlayerInventory(Inventory inventory) {
-        if (inventory == playerEquipmentInventory) return true;
-        if (inventory == playerPassivesInventory) return true;
-        if (inventory == playerPocketsInventory) return true;
-        if (inventory == playerBackpackInventory) return true;
-        return false;
-    }
-
-    private Inventory CreatePlayerSuperInventory() {
-        return CombineInventories(playerEquipmentInventory, playerPassivesInventory, playerPocketsInventory, playerBackpackInventory);
-    }
-    
     private void UpdateInventory() {
         if (InRaid) {
             if (inventoryInputAction.WasPressedThisFrame()) {
@@ -1766,30 +1719,30 @@ public class Game : MonoBehaviour {
         Inventory destinationInventory = null;
         
         if (InRaid) {
-            if (IsApartOfPlayerInventory(hoveredInventory) && LootInventoryIsOpen) {
+            if (hoveredInventory == playerInventory && LootInventoryIsOpen) {
                 destinationInventory = lootInvetoryPtr;
             }
             else if (hoveredInventory == lootInvetoryPtr) {
-                destinationInventory = CreatePlayerSuperInventory();
+                destinationInventory = playerInventory;
             }
         }
         else if (OnCharacterTab) {
-            if (IsApartOfPlayerInventory(hoveredInventory)) {
+            if (hoveredInventory == playerInventory) {
                 destinationInventory = stashInventory;
             }
             else if (hoveredInventory == stashInventory) {
-                destinationInventory = CreatePlayerSuperInventory();
+                destinationInventory = playerInventory;
             }
         }
         else if (OnEyeForgeTab) {
             if (hoveredInventory == stashInventory) {
                 bool hoveredItemIsDemonEye = hoveredItem.ItemRef.type == demonEyeType;
-                destinationInventory = hoveredItemIsDemonEye ? CreatePlayerSuperInventory() : crucibleInventory;
+                destinationInventory = hoveredItemIsDemonEye ? playerInventory : crucibleInventory;
             }
             else if (hoveredInventory == crucibleInventory) {
                 destinationInventory = stashInventory;
             }
-            else if (IsApartOfPlayerInventory(hoveredInventory)) {
+            else if (hoveredInventory == playerInventory) {
                 destinationInventory = stashInventory;
             }
         }
@@ -1851,9 +1804,14 @@ public class Game : MonoBehaviour {
     private void UpdatePlayerPanelUI() {
         playerPanelHealthText.text = $"<color=#5CF25B>{player.health}</color><size=22>/{FullPlayerHealth}";
 
-        int inventoryWeight = GetPlayerInventoryWeight();
+        int inventoryWeight = GetInventoryWeight(playerInventory);
         GetEncumberingWeightRange(out int startEncumberingWeight, out _);
         playerPanelWeightText.text = $"<color=#98C5CC>{inventoryWeight}</color><size=22>/{startEncumberingWeight}";
+        
+        agilityStatValueText.text = (player.agilityLevel + 1).ToString("0.0");
+        healthStatValueText.text = (player.healthLevel + 1).ToString("0.0");
+        luckStatValueText.text = (player.luckLevel + 1).ToString("0.0");
+        strengthStatValueText.text = (player.strengthLevel + 1).ToString("0.0");
     }
 
     private bool TryGetItemFromHoverInfo(InventoryHoverInfo invHoverInfo, out InventoryItem hoveredItem) {
@@ -1922,38 +1880,34 @@ public class Game : MonoBehaviour {
             inventory.slots[i] = oldSlots[i];
         }
     }
+
+    private bool IsEquipmentSlot(Inventory inventory, int slotIndex) {
+        return inventory == playerInventory && slotIndex < playerEquipmentSize;
+    }
+    
+    private bool EquipedBackpackHasItems() {
+        int startingIndex = NakedPlayerInventorySize;
+        for (int i = startingIndex; i < playerInventory.slots.Length; i++) {
+            if (playerInventory.slots[i].item != null) {
+                return true;
+            }
+        }
+        return false;
+    }
     
     private bool ClickedOnEquipedBackpackWithItems(Inventory inventory, int slotIndex) {
-        if (inventory.slots[slotIndex].item.ItemRef.type != backpackType) return false;
-        return inventory == playerEquipmentInventory && GetInventoryItemCount(playerBackpackInventory) > 0;
+        if (inventory.slots[slotIndex].item.ItemRef.type != backpackType) {
+            return false;
+        }
+        return IsEquipmentSlot(inventory, slotIndex) && EquipedBackpackHasItems();
     }
 
-    private Inventory CombineInventories(params Inventory[] inventories) {
-        int totalSize = 0;
-        foreach (Inventory inventory in inventories) {
-            totalSize += inventory.slots.Length;
-        }
-        
-        Inventory superInventory = new() {
-            slots = new InventorySlot[totalSize],
-        };
-        
-        int superIndex = 0;
-        foreach (Inventory inventory in inventories) {
-            int inventoryLength = inventory.slots.Length;
-            Array.Copy(inventory.slots, 0, superInventory.slots, superIndex, inventoryLength);
-            superIndex += inventoryLength;
-        }
-
-        return superInventory;
-    }
-    
     private InventoryItem prevEquippedEyeItem;
     private InventoryItem prevEquippedBackpackItem;
     
     private void CheckForEquipmentChange() {
-        InventoryItem curEyeItem = playerEquipmentInventory.slots[0].item;
-        InventoryItem curBackpackItem = playerEquipmentInventory.slots[2].item;
+        InventoryItem curEyeItem = playerInventory.slots[0].item;
+        InventoryItem curBackpackItem = playerInventory.slots[1].item;
 
         if (prevEquippedEyeItem != curEyeItem) {
             prevEquippedEyeItem = curEyeItem;
@@ -1975,10 +1929,10 @@ public class Game : MonoBehaviour {
                 else if (curBackpackItem.ItemRef == ruckSackItem) {
                     backpackSize = 12;
                 }
-                ChangeInventorySize(playerBackpackInventory, backpackSize);
+                ChangeInventorySize(playerInventory, NakedPlayerInventorySize + backpackSize);
             }
             else {
-                ChangeInventorySize(playerBackpackInventory, 0);
+                ChangeInventorySize(playerInventory, NakedPlayerInventorySize);
             }
         }
 
@@ -2380,6 +2334,9 @@ public class Game : MonoBehaviour {
         for (int i = 0; i < inventory.slots.Length; i++) {
             RemoveItemFromInventory(inventory, i);
         }
+        if (inventory == playerInventory) {
+            CheckForEquipmentChange();
+        }
     }
 
     private void ClearInventory(InventorySlot[] inventorySlots) {
@@ -2495,22 +2452,13 @@ public class Game : MonoBehaviour {
     private bool MeetsSingleUpgradeRequirement(UpgradePath.Requirement req) {
         int itemCount = 0;
         itemCount += GetItemCountInInventory(stashInventory, req.item);
-        itemCount += GetItemCountInInventory(playerEquipmentInventory, req.item);
+        itemCount += GetItemCountInInventory(playerInventory, req.item);
         return itemCount >= req.count; 
     }
 
     public bool CarryingPassiveItem(PassiveItem item, out int count) {
-        count = GetItemCountInInventory(playerEquipmentInventory, item);
+        count = GetItemCountInInventory(playerInventory, item);
         return count > 0;
-    }
-
-    private int GetPlayerInventoryWeight() {
-        int total = 0;
-        total += GetInventoryWeight(playerEquipmentInventory);
-        total += GetInventoryWeight(playerPassivesInventory);
-        total += GetInventoryWeight(playerPocketsInventory);
-        total += GetInventoryWeight(playerBackpackInventory);
-        return total;
     }
 
     private int GetInventoryWeight(Inventory inventory) {
@@ -2611,7 +2559,7 @@ public class Game : MonoBehaviour {
         public int soulCurrency;
         public int coinCurrency;
         public int agilityLevel;
-        public int corruptionLevel;
+        public int luckLevel;
         public int healthLevel;
         public int strengthLevel;
     }
@@ -2722,18 +2670,22 @@ public class Game : MonoBehaviour {
     private const int maxEncumberedWeight = 280;
     private const float maxEncumberedSpeedReduction = 0.3f;
 
-    private int FullPlayerHealth => 100;
+    private const int healthIncreasePerStatLevel = 10;
+    private int FullPlayerHealth => 100 + (healthIncreasePerStatLevel * player.healthLevel);
+
+    private const float luckPercentIncreasePerStatLevel = 0.01f;
+    private float RaritySkewIncreaseFromLuck => luckPercentIncreasePerStatLevel * player.luckLevel;
     
     private float GetPlayerSpeedBasedOnStats() {
-        int agilityStat = baseStats.agility;
+        int agilityStat = player.agilityLevel;
         for (int i = 0; i < playerEquipmentSize; i++) {
-            InventoryItem item = playerEquipmentInventory.slots[i].item;
+            InventoryItem item = playerInventory.slots[i].item;
             if (item == null) continue;
             if (item.ItemRef.modifiesStats && item.ItemRef.agilityStatAdjustment != 0) {
                 agilityStat += item.ItemRef.agilityStatAdjustment;
             }
         }
-        float playerSpeed = Mathf.Lerp(defaultPlayerSpeed, maxPlayerSpeed, (float)agilityStat / BaseCharacterStats.maxStatValue);
+        float playerSpeed = Mathf.Lerp(defaultPlayerSpeed, maxPlayerSpeed, (float)agilityStat / agilityUpgradePath.MaxLevel);
         
         float speedReductionFromWeight = Mathf.Lerp(0f, maxEncumberedSpeedReduction, GetOverweightCompletion());
         speedReductionFromWeight = Mathf.Clamp(speedReductionFromWeight, 0f, maxEncumberedSpeedReduction);
@@ -2743,9 +2695,9 @@ public class Game : MonoBehaviour {
     }
 
     private int GetStrengthStat() {
-        int strengthStat = baseStats.strength;
+        int strengthStat = player.strengthLevel;
         for (int i = 0; i < playerEquipmentSize; i++) {
-            InventoryItem item = playerEquipmentInventory.slots[i].item;
+            InventoryItem item = playerInventory.slots[i].item;
             if (item == null) continue;
             if (item.ItemRef.modifiesStats && item.ItemRef.strengthStatAdjustment != 0) {
                 strengthStat += item.ItemRef.strengthStatAdjustment;
@@ -2762,16 +2714,17 @@ public class Game : MonoBehaviour {
 
     private float GetTotalWeightCompletion() {
         GetEncumberingWeightRange(out int _, out int endingEncumberingWeight);
-        int inventoryWeight = GetPlayerInventoryWeight();
+        int inventoryWeight = GetInventoryWeight(playerInventory);
         return Mathf.Clamp01(inventoryWeight / (float)endingEncumberingWeight);
     }
 
     private float GetOverweightCompletion() {
         GetEncumberingWeightRange(out int startingEncumberingWeight, out int endingEncumberingWeight);
-        int inventoryWeight = GetPlayerInventoryWeight();
-        int overWeightAmount = Mathf.Clamp(inventoryWeight - startingEncumberingWeight, 0, int.MaxValue);
-        float overWeightComp = overWeightAmount / (float)endingEncumberingWeight;
-        return Mathf.Clamp01(overWeightComp);
+        int inventoryWeight = GetInventoryWeight(playerInventory);
+        int curOverweightAmount = Mathf.Clamp(inventoryWeight - startingEncumberingWeight, 0, int.MaxValue);
+        float maxOverweightAmount = (float)endingEncumberingWeight - startingEncumberingWeight;
+        float overweightComp = curOverweightAmount / maxOverweightAmount;
+        return Mathf.Clamp01(overweightComp);
     }
     
     // ************************ 
@@ -2921,7 +2874,7 @@ public class Game : MonoBehaviour {
                     ItemDrop itemDrop = col.GetComponent<ItemDrop>();
                     itemDrop.circleCollider.enabled = false;
                     
-                    InventoryAddResult result = TryAddItemToInventory(CreatePlayerSuperInventory(), itemDrop.item, itemDrop.dropCount);
+                    InventoryAddResult result = TryAddItemToInventory(playerInventory, itemDrop.item, itemDrop.dropCount);
                     if (result.type == InventoryAddResult.ResultType.Success) {
                         Entity droppedEntity = entityLookup[itemDrop.gameObject];
                         PickupDroppedItem(droppedEntity); 
@@ -3272,11 +3225,6 @@ public class Game : MonoBehaviour {
     // Spawning Map Items
     // ***************************
     
-    private class Altar : Entity {
-        public float soulCompletion;
-    }
-   
-    private List<Altar> activeAltars = new();
     private Dictionary<GameObject, InventorySlot[]> deadBodySlotsLookup = new();
 
     private void SpawnResources(Transform resourceSpawnParent) {
@@ -3316,12 +3264,6 @@ public class Game : MonoBehaviour {
             deadBodySlotsLookup.Add(body.gameObject, deadBodySlots);
         }
         
-        int altarsToSpawn = Random.Range(1, 2);
-        for (int i = 0; i < altarsToSpawn; i++) {
-            Altar altarEntity = SpawnResource<Altar>(altarPrefab, true);
-            activeAltars.Add(altarEntity);
-        }
-
         T SpawnResource<T>(GameObject resourcePrefab, bool cutsNavmesh) where T : Entity, new() {
             int randomIndex = Random.Range(0, spawnPoints.Count);
             Transform spawnTrans = spawnPoints[randomIndex];
@@ -3345,7 +3287,6 @@ public class Game : MonoBehaviour {
         }
 
         deadBodySlotsLookup.Clear();
-        activeAltars.Clear();
         enemies.Clear();
         projectiles.Clear();
     }
@@ -3369,10 +3310,7 @@ public class Game : MonoBehaviour {
         public int curTraderXpForLevel;
     }
     
-    private string playerEquipmentSavePath;
-    private string playerPassivesSavePath;
-    private string playerPocketsSavePath;
-    private string playerBackpackSavePath;
+    private string playerInventorySavePath;
     private string stashSavePath;
     private string crucibleSavePath;
     private string hideoutDataSavePath;
@@ -3383,10 +3321,7 @@ public class Game : MonoBehaviour {
     private List<InventoryItem> cachedInventoryForSaving = new(50);
     
     private void BuildSavePaths() {
-        playerEquipmentSavePath = $"{Application.persistentDataPath}/equipment";
-        playerPassivesSavePath = $"{Application.persistentDataPath}/passives";
-        playerPocketsSavePath = $"{Application.persistentDataPath}/pockets";
-        playerBackpackSavePath = $"{Application.persistentDataPath}/backpack";
+        playerInventorySavePath = $"{Application.persistentDataPath}/inventory";
         stashSavePath = $"{Application.persistentDataPath}/stash";
         crucibleSavePath = $"{Application.persistentDataPath}/crucible";
         hideoutDataSavePath = $"{Application.persistentDataPath}/hideoutData"; 
@@ -3397,10 +3332,7 @@ public class Game : MonoBehaviour {
     }
 
     private string GetInventorySavePath(Inventory inventory) {
-        if (inventory == playerEquipmentInventory) return playerEquipmentSavePath;
-        if (inventory == playerPassivesInventory) return playerPassivesSavePath;
-        if (inventory == playerPocketsInventory) return playerPocketsSavePath;
-        if (inventory == playerBackpackInventory) return playerBackpackSavePath;
+        if (inventory == playerInventory) return playerInventorySavePath;
         if (inventory == stashInventory) return stashSavePath;
         if (inventory == crucibleInventory) return crucibleSavePath;
         Assert.IsTrue(false, "Inventory does not have associated save path");
@@ -3452,7 +3384,7 @@ public class Game : MonoBehaviour {
         public int soulCurrency;
         public int coinCurrency;
         public int agilityLevel;
-        public int corruptionLevel;
+        public int luckLevel;
         public int healthLevel;
         public int strengthLevel;
     }
@@ -3464,7 +3396,7 @@ public class Game : MonoBehaviour {
             soulCurrency = player.soulCurrency,
             coinCurrency = player.coinCurrency,
             agilityLevel = player.agilityLevel,
-            corruptionLevel = player.corruptionLevel,
+            luckLevel = player.luckLevel,
             healthLevel = player.healthLevel,
             strengthLevel = player.strengthLevel,
         };
@@ -3479,7 +3411,7 @@ public class Game : MonoBehaviour {
         instancedPlayer.soulCurrency = data.soulCurrency;
         instancedPlayer.coinCurrency = data.coinCurrency;
         instancedPlayer.agilityLevel = data.agilityLevel;
-        instancedPlayer.corruptionLevel = data.corruptionLevel;
+        instancedPlayer.luckLevel = data.luckLevel;
         instancedPlayer.healthLevel = data.healthLevel;
         instancedPlayer.strengthLevel = data.strengthLevel;
         
@@ -3495,6 +3427,16 @@ public class Game : MonoBehaviour {
         CloseHideoutUI();
         CloseRaidUI();
         ShowMainMenuUI();
+
+        // Set the stat upgrade info once at startup because each increase is the same
+        {
+            const float speedRange = maxPlayerSpeed - defaultPlayerSpeed;
+            float speedPercentIncreasePerLevel = (speedRange / agilityUpgradePath.MaxLevel) / defaultPlayerSpeed;
+            agilityUpgradeInfoText.text = $"+{(speedPercentIncreasePerLevel * 100f):0}% Speed";
+            healthUpgradeInfoText.text = $"+{healthIncreasePerStatLevel} Health";
+            luckUpgradeInfoText.text = $"+{(luckPercentIncreasePerStatLevel * 100f):0}% Luck";
+            strengthUpgradeInfoText.text = $"+{encumberingIncreasePerStrengthPoint} Carry Capacity";
+        }
     }
 
     private Sequence mainMenuSequence;
@@ -3657,7 +3599,7 @@ public class Game : MonoBehaviour {
         hatManTraderButton.button.onClick.AddListener(() => OnTraderButtonPressed(hatManTrader));
         
         agilityUpgradeButton.button.onClick.AddListener(() => OnLevelupButtonPressed(agilityUpgradePath, player.agilityLevel));
-        corruptionUpgradeButton.button.onClick.AddListener(() => OnLevelupButtonPressed(corruptionUpgradePath, player.corruptionLevel));
+        corruptionUpgradeButton.button.onClick.AddListener(() => OnLevelupButtonPressed(corruptionUpgradePath, player.luckLevel));
         healthUpgradeButton.button.onClick.AddListener(() => OnLevelupButtonPressed(healthUpgradePath, player.healthLevel));
         strengthUpgradeButton.button.onClick.AddListener(() => OnLevelupButtonPressed(strengthUpgradePath, player.strengthLevel));
         
@@ -3718,7 +3660,7 @@ public class Game : MonoBehaviour {
             foreach (UpgradePath.Requirement requirement in requirements.requirements) {
                 int stashRemoveCount = RemoveNumberOfItemsFromInventory(stashInventory, requirement.item, requirement.count);
                 if (stashRemoveCount == requirement.count) continue;
-                RemoveNumberOfItemsFromInventory(playerEquipmentInventory, requirement.item, requirement.count - stashRemoveCount);
+                RemoveNumberOfItemsFromInventory(playerInventory, requirement.item, requirement.count - stashRemoveCount);
             }
             
             player.crucibleLevel++;
@@ -3858,6 +3800,15 @@ public class Game : MonoBehaviour {
     private void UpdateInRaidUI() {
         healthBarFillImage.fillAmount = player.health / 100f;
         weightBarFillImage.fillAmount = GetTotalWeightCompletion();
+        
+        float overweightComp = GetOverweightCompletion();
+        if (overweightComp > 0f) {
+            weightBarFillImage.color = Color.Lerp(styles.startingOverWeightColor, styles.endingOverWeightColor, overweightComp);
+        }
+        else {
+            weightBarFillImage.color = styles.underWeightColor;
+        }
+
         
         float totalTimeLeft = Mathf.Clamp(spawnManager.totalTimeLeft, 0f, float.MaxValue);
         int minutesLeftInRaid = Mathf.FloorToInt(totalTimeLeft / 60f);
@@ -4257,7 +4208,7 @@ public class Game : MonoBehaviour {
             player.agilityLevel++;
         }
         else if (upgradePath == corruptionUpgradePath) {
-            player.corruptionLevel++;
+            player.luckLevel++;
         }
         else if (upgradePath == healthUpgradePath) {
             player.healthLevel++;
@@ -4272,7 +4223,7 @@ public class Game : MonoBehaviour {
     
     private void RefreshLevelUpPossibilities() {
         ToggleStatUpgradeButton(agilityUpgradeButton, agilityUpgradePath, player.agilityLevel);
-        ToggleStatUpgradeButton(corruptionUpgradeButton, corruptionUpgradePath, player.corruptionLevel);
+        ToggleStatUpgradeButton(corruptionUpgradeButton, corruptionUpgradePath, player.luckLevel);
         ToggleStatUpgradeButton(healthUpgradeButton, healthUpgradePath, player.healthLevel);
         ToggleStatUpgradeButton(strengthUpgradeButton, strengthUpgradePath, player.strengthLevel);
     }
@@ -4472,7 +4423,7 @@ public class Game : MonoBehaviour {
     // Item Dropping
     // ************************
 
-    private enum DropOrigin { Rock, Body, Trader }
+    private enum DropOrigin { Rock, Body, Trader, Enemy }
 
     private struct DropPool {
         public List<Item> items;
@@ -4485,6 +4436,7 @@ public class Game : MonoBehaviour {
     private DropPool potionManTraderDropPool;
     private DropPool armsDealerTraderDropPool;
     private DropPool hatManTraderDropPool;
+    private DropPool enemyDropPool;
 
     private void CreateDropPools() {
         rockStonesDropPool = new() { items = new(), dropOrigin = DropOrigin.Rock };
@@ -4493,6 +4445,7 @@ public class Game : MonoBehaviour {
         potionManTraderDropPool = new() { items = new(), dropOrigin = DropOrigin.Trader };
         armsDealerTraderDropPool = new() { items = new(), dropOrigin = DropOrigin.Trader };
         hatManTraderDropPool = new() { items = new(), dropOrigin = DropOrigin.Trader };
+        enemyDropPool = new() { items = new(), dropOrigin = DropOrigin.Enemy };
 
         foreach ((int _, Item item) in itemLookup) {
             if (item.chanceToSpawnOnTrader > 0f) {
@@ -4505,7 +4458,11 @@ public class Game : MonoBehaviour {
                 if (item.associatedTrader == hatManTrader) {
                     hatManTraderDropPool.items.Add(item);
                 }
-            } 
+            }
+
+            if (item.chanceToSpawnFromEnemy > 0f) {
+                enemyDropPool.items.Add(item);
+            }
         }
     }
     
@@ -4529,7 +4486,26 @@ public class Game : MonoBehaviour {
         }
     }
 
+    private Item GetItemFromEnemyDropPool(EnemyData enemy) {
+        DropPool tempEnemyPool = new() {
+            items = ListPool<Item>.Get(),
+            dropOrigin = DropOrigin.Enemy,
+        };
+        
+        foreach (Item enemyItem in enemyDropPool.items) {
+            if (enemyItem.spawnsFromEnemies.Contains(enemy)) {
+                tempEnemyPool.items.Add(enemyItem);
+            }
+        }
+        
+        Item item = GetItemFromDropPool(tempEnemyPool);
+        ListPool<Item>.Release(tempEnemyPool.items);
+        return item;
+    }
+
     private Item GetItemFromDropPool(DropPool dropPool) {
+        Assert.IsFalse(dropPool.items == enemyDropPool.items, $"Use {nameof(GetItemFromEnemyDropPool)} for enemies");
+        
         float dropTotal = 0f;
         foreach (Item drop in dropPool.items) {
             dropTotal += GetDropChanceOfItem(drop, dropPool.dropOrigin);
@@ -4567,11 +4543,24 @@ public class Game : MonoBehaviour {
     }
 
     private float GetDropChanceOfItem(Item item, DropOrigin origin) {
+        float addChanceToSpawnFromLuck = 0f;
+        
+        if (origin != DropOrigin.Trader) {
+            addChanceToSpawnFromLuck = item.GetRarity() switch {
+                // Scaling the luck increase exponentionally (the adding/subtracting 1 is because rarity skew from luck is a decimal)
+                Item.Rarity.Uncommon  => Mathf.Pow(1f + RaritySkewIncreaseFromLuck, 1.1f) - 1f,
+                Item.Rarity.Rare      => Mathf.Pow(1f + RaritySkewIncreaseFromLuck, 1.2f) - 1f,
+                Item.Rarity.Legendary => Mathf.Pow(1f + RaritySkewIncreaseFromLuck, 1.3f) - 1f,
+                _                     => 0f,
+            };
+        }
+        
         return origin switch {
-            DropOrigin.Rock => item.chanceToSpawnFromRock,
-            DropOrigin.Body => item.chanceToSpawnOnBody,
-            DropOrigin.Trader => item.chanceToSpawnOnTrader,
-            _ => 0f
+            DropOrigin.Rock => Mathf.Clamp01(item.chanceToSpawnFromRock + addChanceToSpawnFromLuck),
+            DropOrigin.Body => Mathf.Clamp01(item.chanceToSpawnOnBody + addChanceToSpawnFromLuck),
+            DropOrigin.Trader => Mathf.Clamp01(item.chanceToSpawnOnTrader + addChanceToSpawnFromLuck),
+            DropOrigin.Enemy => Mathf.Clamp01(item.chanceToSpawnFromEnemy + addChanceToSpawnFromLuck),
+            _ => 0f,
         };
     }
     

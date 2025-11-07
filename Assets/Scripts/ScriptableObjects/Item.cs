@@ -27,6 +27,11 @@ public class Item : UuidScriptableObject {
     [Range(0f, 1f)] public float chanceToSpawnOnBody;
     [Range(0f, 1f)] public float chanceToSpawnOnTrader;
     [Range(0f, 1f)] public float chanceToSpawnFromRock;
+    [Range(0f, 1f)] public float chanceToSpawnFromEnemy;
+
+    [HideIf(nameof(chanceToSpawnFromEnemy), 0f)]
+    public List<EnemyData> spawnsFromEnemies;
+    [EndIf]
 
     [Space]
     
@@ -54,7 +59,8 @@ public class Item : UuidScriptableObject {
         float minRarity = Mathf.Max(
             chanceToSpawnOnBody   > 0 ? chanceToSpawnOnBody   : float.MinValue,
             chanceToSpawnOnTrader > 0 ? chanceToSpawnOnTrader : float.MinValue,
-            chanceToSpawnFromRock > 0 ? chanceToSpawnFromRock : float.MinValue
+            chanceToSpawnFromRock > 0 ? chanceToSpawnFromRock : float.MinValue,
+            chanceToSpawnFromEnemy > 0 ? chanceToSpawnFromEnemy : float.MinValue
         );
         if (minRarity <= 0.02f) return Rarity.Legendary;
         if (minRarity <= 0.10f) return Rarity.Rare;

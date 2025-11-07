@@ -17,5 +17,6 @@ public class EnemyData : ScriptableObject {
     public int health;
     public int damage;
     public float changeToCauseBleed;
+    public int soulWorthPerKill;
 
 }
