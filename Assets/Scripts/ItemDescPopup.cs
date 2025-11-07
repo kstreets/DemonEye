@@ -7,6 +7,7 @@ public class ItemDescPopup : MonoBehaviour {
     public RectTransform rectTransform;
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI descText;
+    public TextMeshProUGUI metaInfoText;
     public ContentSizeFitter nameContentFitter;
     public ContentSizeFitter descContentFitter;
     public RectTransform tagsParent;

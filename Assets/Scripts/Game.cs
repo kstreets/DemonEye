@@ -1532,8 +1532,9 @@ public class Game : MonoBehaviour {
         
         InventorySlot hoveredSlot = info.inventory.slots[info.slotIndex];
         TextMeshProUGUI nameText = itemDescPopup.nameText;
+        TextMeshProUGUI metaInfoText = itemDescPopup.metaInfoText;
         TextMeshProUGUI descText = itemDescPopup.descText;
-
+        
         Item.Rarity itemRarity = hoveredSlot.item.ItemRef.GetRarity();
         Color itemRarityColor = styles.GetColorForRarity(itemRarity);
         float tagTextPadding = styles.tagTextPadding;
@@ -1565,7 +1566,18 @@ public class Game : MonoBehaviour {
         itemDescPopup.tag2ContentFitter.ForceRecalculate();
         itemDescPopup.tag2.rectTransform.ResizeWidth(itemDescPopup.tag2Text.rectTransform.rect.width + tagTextPadding);
         
-        nameText.text = hoveredSlot.item.ItemRef.displayName;
+        Item item = hoveredSlot.item.ItemRef;
+        
+        bool itemIsOwnedByTrader = info.inventory.slots[info.slotIndex].item.traderOwned;
+        int sellOrBuyPrice = itemIsOwnedByTrader ? item.buyPrice : item.sellPrice;
+                             
+        nameText.text = item.displayName;
+        string coinText = $"<sprite=0>{ColorText(sellOrBuyPrice.ToString(), styles.coinCurrencyColor)}";
+        
+        string tintedWeightSprite = $"<sprite=2 color=#{ColorUtility.ToHtmlStringRGBA(styles.underWeightColor)}>";
+        string weightText = tintedWeightSprite + ColorText(item.Weight.ToString(), styles.underWeightColor);
+        
+        metaInfoText.text = coinText + "  " + weightText;
         
         // Set description
         if (hoveredSlot.item.ItemRef.type == demonEyeType) {
@@ -3435,7 +3447,7 @@ public class Game : MonoBehaviour {
             agilityUpgradeInfoText.text = $"+{(speedPercentIncreasePerLevel * 100f):0}% Speed";
             healthUpgradeInfoText.text = $"+{healthIncreasePerStatLevel} Health";
             luckUpgradeInfoText.text = $"+{(luckPercentIncreasePerStatLevel * 100f):0}% Luck";
-            strengthUpgradeInfoText.text = $"+{encumberingIncreasePerStrengthPoint} Carry Capacity";
+            strengthUpgradeInfoText.text = $"+{encumberingIncreasePerStrengthPoint} Weight Carry Capacity";
         }
     }
 
