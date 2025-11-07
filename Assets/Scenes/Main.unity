@@ -2076,7 +2076,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &446889158
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2116,7 +2116,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 0:00
+  m_text: 'Final Wave
+
+    0:00'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 31844db4c6b2cad4caf85f9ed094c6c4, type: 2}
   m_sharedMaterial: {fileID: 2756513496863385145, guid: 31844db4c6b2cad4caf85f9ed094c6c4, type: 2}
@@ -2206,6 +2208,112 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1001 &492797812
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 848481703}
+    m_Modifications:
+    - target: {fileID: 1046082098823623568, guid: af2ef8ac54f84444690409fe91088fcf, type: 3}
+      propertyPath: m_Pivot.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1046082098823623568, guid: af2ef8ac54f84444690409fe91088fcf, type: 3}
+      propertyPath: m_Pivot.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1046082098823623568, guid: af2ef8ac54f84444690409fe91088fcf, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1046082098823623568, guid: af2ef8ac54f84444690409fe91088fcf, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1046082098823623568, guid: af2ef8ac54f84444690409fe91088fcf, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1046082098823623568, guid: af2ef8ac54f84444690409fe91088fcf, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1046082098823623568, guid: af2ef8ac54f84444690409fe91088fcf, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 59.375
+      objectReference: {fileID: 0}
+    - target: {fileID: 1046082098823623568, guid: af2ef8ac54f84444690409fe91088fcf, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 46.875
+      objectReference: {fileID: 0}
+    - target: {fileID: 1046082098823623568, guid: af2ef8ac54f84444690409fe91088fcf, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1046082098823623568, guid: af2ef8ac54f84444690409fe91088fcf, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1046082098823623568, guid: af2ef8ac54f84444690409fe91088fcf, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1046082098823623568, guid: af2ef8ac54f84444690409fe91088fcf, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1046082098823623568, guid: af2ef8ac54f84444690409fe91088fcf, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1046082098823623568, guid: af2ef8ac54f84444690409fe91088fcf, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1046082098823623568, guid: af2ef8ac54f84444690409fe91088fcf, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1046082098823623568, guid: af2ef8ac54f84444690409fe91088fcf, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1046082098823623568, guid: af2ef8ac54f84444690409fe91088fcf, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1046082098823623568, guid: af2ef8ac54f84444690409fe91088fcf, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1046082098823623568, guid: af2ef8ac54f84444690409fe91088fcf, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1046082098823623568, guid: af2ef8ac54f84444690409fe91088fcf, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7847990969214218511, guid: af2ef8ac54f84444690409fe91088fcf, type: 3}
+      propertyPath: m_Name
+      value: PortalArrow
+      objectReference: {fileID: 0}
+    - target: {fileID: 7847990969214218511, guid: af2ef8ac54f84444690409fe91088fcf, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: af2ef8ac54f84444690409fe91088fcf, type: 3}
+--- !u!224 &492797813 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 1046082098823623568, guid: af2ef8ac54f84444690409fe91088fcf, type: 3}
+  m_PrefabInstance: {fileID: 492797812}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -3833,6 +3941,7 @@ RectTransform:
   - {fileID: 1508474435}
   - {fileID: 997770961}
   - {fileID: 950174150}
+  - {fileID: 492797813}
   - {fileID: 223198397}
   - {fileID: 1081968204}
   - {fileID: 446889158}
@@ -7072,7 +7181,7 @@ MonoBehaviour:
   rockSmokePrefab: {fileID: 5935938718941175970, guid: d08dafda554f85a4db705e94aa604f77, type: 3}
   damageNumberPrefab: {fileID: 5909869051241108679, guid: 50a717d9d3a10204da7d29b281113572, type: 3}
   questPrefab: {fileID: 7601280925113951189, guid: a542f2fd657b8f44d925aa64fa59b3fd, type: 3}
-  portalArrow: {fileID: 0}
+  mainCanvasRectTransform: {fileID: 848481703}
   itemDescPopup: {fileID: 570121183}
   mechanicDescPopup: {fileID: 775932238}
   uiElementPopup: {fileID: 8720132374794845543}
@@ -7084,6 +7193,7 @@ MonoBehaviour:
   soulsCurrencyText: {fileID: 1120086858}
   coinCurrencyText: {fileID: 1361707815}
   deathBackgroundImage: {fileID: 1795314868}
+  portalArrow: {fileID: 492797813}
   mainMenuParent: {fileID: 245440995}
   mainMenuLogo: {fileID: 876120830}
   mainMenuPlayButton: {fileID: 1332264258}

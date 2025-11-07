@@ -108,10 +108,10 @@ public class Game : MonoBehaviour {
     public GameObject rockSmokePrefab;
     public GameObject damageNumberPrefab;
     public GameObject questPrefab;
-    public GameObject portalArrow;
     [EndFoldout]
 
     [Foldout("UI/MiscRefs")]
+    public RectTransform mainCanvasRectTransform;
     public ItemDescPopup itemDescPopup;
     public MechanicDescPopup mechanicDescPopup;
     public UIElementPopup uiElementPopup;
@@ -123,6 +123,7 @@ public class Game : MonoBehaviour {
     public TextMeshProUGUI soulsCurrencyText;
     public TextMeshProUGUI coinCurrencyText;
     public Image deathBackgroundImage;
+    public RectTransform portalArrow;
     [EndFoldout]
     
     [Foldout("UI/Main Menu")]
@@ -383,6 +384,7 @@ public class Game : MonoBehaviour {
         }
         if (InRaid) {
             UpdateInRaidUI();
+            UpdateExitPortalArrowUI();
         }
         if (InHideout || InRaid) {
             UpdatePlayerPanelUI();
@@ -1203,6 +1205,7 @@ public class Game : MonoBehaviour {
     public class EnemySpawnManager {
         public float timeInPhase;
         public float totalTimeLeft;
+        public float timeUntilFinalWave;
         public int curPhaseIndex;
         public RaidSpawnPattern spawnPattern;
         
@@ -1223,6 +1226,7 @@ public class Game : MonoBehaviour {
         foreach (RaidSpawnPattern.SpawnPhase phase in spawnManager.spawnPattern.spawnPhases) {
             spawnManager.totalTimeLeft += phase.phaseDuration;
         }
+        spawnManager.timeUntilFinalWave = spawnManager.totalTimeLeft - spawnManager.spawnPattern.spawnPhases[^1].phaseDuration;
     }
     
     private void UpdateSpawnManager() {
@@ -1232,6 +1236,7 @@ public class Game : MonoBehaviour {
         
         sm.timeInPhase += Time.deltaTime;
         sm.totalTimeLeft -= Time.deltaTime;
+        sm.timeUntilFinalWave -= Time.deltaTime;
         
         float waveDuration = sm.curPhaseIndex == -1 ? 
             sm.spawnPattern.timeBeforeFirstPhase : 
@@ -3210,8 +3215,13 @@ public class Game : MonoBehaviour {
     // ***************************
     // Exit Portals 
     // ***************************
+    
+    private Transform activeExitPortal;
 
     private void InitExitPortals(Transform exitPortalParent, float timeBeforePortalsSpawn) {
+        activeExitPortal = null;
+        portalArrow.gameObject.SetActive(false);
+        
         foreach (Transform portal in exitPortalParent) {
             portal.gameObject.SetActive(false);
         }
@@ -3228,9 +3238,67 @@ public class Game : MonoBehaviour {
         
         exitPortalTimer.EndAction = () => {
             int randomSpawnIndex = Random.Range(0, exitPortalParent.childCount);
-            Transform exitPortal = exitPortalParent.GetChild(randomSpawnIndex);
-            exitPortal.gameObject.SetActive(true);
+            activeExitPortal = exitPortalParent.GetChild(randomSpawnIndex);
+            activeExitPortal.gameObject.SetActive(true);
         };
+    }
+
+    private void UpdateExitPortalArrowUI() {
+        if (!activeExitPortal) return;
+        
+        Vector3 portalPosInScreenSpace = mainCamera.WorldToScreenPoint(activeExitPortal.position);
+
+        // Handle behind-camera targets by mirroring the direction
+        if (portalPosInScreenSpace.z < 0) {
+            portalPosInScreenSpace.x = Screen.width - portalPosInScreenSpace.x;
+            portalPosInScreenSpace.y = Screen.height - portalPosInScreenSpace.y;
+        }
+
+        Vector2 screenCenter = new(Screen.width / 2f, Screen.height / 2f);
+        Vector2 dirFromScreenCenter = ((Vector2)portalPosInScreenSpace - screenCenter).normalized;
+
+        bool portalIsOnScreen = portalPosInScreenSpace.x > 0f && portalPosInScreenSpace.x < Screen.width 
+                                && portalPosInScreenSpace.y > 0f && portalPosInScreenSpace.y < Screen.height;
+
+        if (portalIsOnScreen) {
+            portalArrow.gameObject.SetActive(false);
+            return;
+        }
+        
+        portalArrow.gameObject.SetActive(true);
+        
+        const float distFromScreenEdge = 50f;
+        const float extraTopPadding = 0f;
+        
+        float minX = distFromScreenEdge;
+        float maxX = Screen.width - distFromScreenEdge;
+        float minY = distFromScreenEdge;
+        float maxY = Screen.height - extraTopPadding - distFromScreenEdge;
+        
+        // Find where direction hits edge
+        Vector2 edgePos = screenCenter;
+        float slope = dirFromScreenCenter.y / dirFromScreenCenter.x;
+
+        edgePos.x = dirFromScreenCenter.x > 0 ? maxX : minX;
+        edgePos.y = screenCenter.y + (edgePos.x - screenCenter.x) * slope;
+
+        // Clamp vertically with padding
+        if (edgePos.y > maxY) {
+            edgePos.y = maxY;
+            edgePos.x = screenCenter.x + (edgePos.y - screenCenter.y) / slope;
+        }
+        else if (edgePos.y < minY) {
+            edgePos.y = minY;
+            edgePos.x = screenCenter.x + (edgePos.y - screenCenter.y) / slope;
+        }
+
+        // Convert to canvas-local coordinates (camera passed as null because canvas is set to screen overlay)
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(mainCanvasRectTransform, edgePos, null, out Vector2 canvasPos);
+        portalArrow.anchoredPosition = canvasPos;
+
+        // Rotate to face toward target
+        float angle = Mathf.Atan2(dirFromScreenCenter.y, dirFromScreenCenter.x) * Mathf.Rad2Deg - 90f;
+        portalArrow.localRotation = Quaternion.Euler(0, 0, angle);
     }
 
     // ***************************
@@ -3822,10 +3890,10 @@ public class Game : MonoBehaviour {
         }
 
         
-        float totalTimeLeft = Mathf.Clamp(spawnManager.totalTimeLeft, 0f, float.MaxValue);
-        int minutesLeftInRaid = Mathf.FloorToInt(totalTimeLeft / 60f);
-        int secondsLeftInRaid = Mathf.FloorToInt(totalTimeLeft % 60f);
-        raidTimerText.text = $"{minutesLeftInRaid:0}:{secondsLeftInRaid:00}";
+        float timeUntilFinalWave = Mathf.Clamp(spawnManager.timeUntilFinalWave, 0f, float.MaxValue);
+        int minutesLeft = Mathf.FloorToInt(timeUntilFinalWave / 60f);
+        int secondsLeft = Mathf.FloorToInt(timeUntilFinalWave % 60f);
+        raidTimerText.text = $"{minutesLeft:0}:{secondsLeft:00}";
     }
 
     // Its better just to have these as constants because the canvas layout recalculates in LateUpdate
