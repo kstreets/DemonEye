@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: LighthouseWaves
   m_EditorClassIdentifier: 
   timeBeforeFirstPhase: 40
-  timeBeforeExitPortalsSpawn: 5
+  timeBeforeExitPortalsSpawn: 100
   spawnPhases:
   - phaseDuration: 30
     spawnDuration: 10
@@ -71,7 +71,7 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 0
     enemyBatches:
-    - enemyCount: 20
+    - enemyCount: 35
       enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
   - phaseDuration: 50
     spawnDuration: 20
@@ -100,7 +100,7 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 0
     enemyBatches:
-    - enemyCount: 40
+    - enemyCount: 50
       enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
   - phaseDuration: 40
     spawnDuration: 20
@@ -129,8 +129,10 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 0
     enemyBatches:
-    - enemyCount: 80
+    - enemyCount: 60
       enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
+    - enemyCount: 15
+      enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
   - phaseDuration: 40
     spawnDuration: 20
     spawnRateCurve:
@@ -158,34 +160,7 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 0
     enemyBatches:
-    - enemyCount: 120
+    - enemyCount: 90
       enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
-  - phaseDuration: 30
-    spawnDuration: 20
-    spawnRateCurve:
-      serializedVersion: 2
-      m_Curve:
-      - serializedVersion: 3
-        time: 0
-        value: 1
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 34
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      - serializedVersion: 3
-        time: 1
-        value: 1
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 34
-        weightedMode: 0
-        inWeight: 0
-        outWeight: 0
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 0
-    enemyBatches:
-    - enemyCount: 150
-      enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
+    - enemyCount: 30
+      enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}

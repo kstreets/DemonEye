@@ -62,9 +62,9 @@ public class Item : UuidScriptableObject {
             chanceToSpawnFromRock > 0 ? chanceToSpawnFromRock : float.MinValue,
             chanceToSpawnFromEnemy > 0 ? chanceToSpawnFromEnemy : float.MinValue
         );
-        if (minRarity <= 0.02f) return Rarity.Legendary;
-        if (minRarity <= 0.10f) return Rarity.Rare;
-        if (minRarity <= 0.25f) return Rarity.Uncommon;
+        if (minRarity <= 0.08f) return Rarity.Legendary;
+        if (minRarity <= 0.20f) return Rarity.Rare;
+        if (minRarity <= 0.50f) return Rarity.Uncommon;
         return Rarity.Common;
     }
 

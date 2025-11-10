@@ -20,13 +20,15 @@ MonoBehaviour:
   type: {fileID: 0}
   associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
   buyPrice: 5
-  sellPrice: 25
+  sellPrice: 15
   traderXp: 30
   spawnsOnAllMaps: 1
   spawnsOnMaps: []
   chanceToSpawnOnBody: 0
   chanceToSpawnOnTrader: 0
-  chanceToSpawnFromRock: 0.25
+  chanceToSpawnFromRock: 0.5
+  chanceToSpawnFromEnemy: 0
+  spawnsFromEnemies: []
   modifiesStats: 0
   agilityStatAdjustment: 0
   strengthStatAdjustment: 0

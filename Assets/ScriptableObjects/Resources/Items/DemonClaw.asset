@@ -22,7 +22,7 @@ MonoBehaviour:
   buyPrice: 30
   sellPrice: 15
   traderXp: 0
-  spawnsOnAllMaps: 0
+  spawnsOnAllMaps: 1
   spawnsOnMaps: []
   chanceToSpawnOnBody: 0.119
   chanceToSpawnOnTrader: 0

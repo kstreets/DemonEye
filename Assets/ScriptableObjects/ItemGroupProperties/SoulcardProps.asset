@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: SoulcardProps
   m_EditorClassIdentifier: Assembly-CSharp::ItemGroupProperties
   maxStackCount: 3
-  weight: 2
+  weight: 8
   description: Used to enhance demon eyes in the eye forge.

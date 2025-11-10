@@ -288,6 +288,7 @@ public class Game : MonoBehaviour {
     private EntityPool<Entity> teleportOutPool;
     private EntityPool<Entity> bloodSplatterPool;
     private EntityPool<Entity> runSmokePool;
+    private EntityPool<Entity> damageNumberPool;
     
     private State mainMenuState;
     private State mapSelectionState;
@@ -332,6 +333,7 @@ public class Game : MonoBehaviour {
         teleportOutPool = CreateEntityPool<Entity>(teleportOutPrefab, 20, null);
         bloodSplatterPool = CreateEntityPool<Entity>(bloodSplatterPrefab, 20, null);
         runSmokePool = CreateEntityPool<Entity>(runSmokePrefab, 5, null);
+        damageNumberPool = CreateEntityPool<Entity>(damageNumberPrefab, 20, null);
 
         equipedEye = new() { coreAttack = defaultAttack };
         
@@ -378,6 +380,7 @@ public class Game : MonoBehaviour {
     }
 
     private void LateUpdate() {
+        UpdatePlayerPanelUI();
         UpdateDragAndDropItemToCursor();
         if (currenciesParent.activeInHierarchy) {
             UpdateCurrencyNumbers();
@@ -385,9 +388,6 @@ public class Game : MonoBehaviour {
         if (InRaid) {
             UpdateInRaidUI();
             UpdateExitPortalArrowUI();
-        }
-        if (InHideout || InRaid) {
-            UpdatePlayerPanelUI();
         }
     }
 
@@ -720,28 +720,42 @@ public class Game : MonoBehaviour {
         DestroyEntity(entity);
     }
     
-    private void DestroyEntity(Entity entity) {
-        RemoveHitFlashEffect(entity);
-        RemovePoisonedEffect(entity);
-        entity.bounceEffect = null;
-        entity.parentEffect = null;
+    private void DestroyEntity(Entity rootEntity) {
+        using var autoRelease = ListPool<Entity>.Get(out List<Entity> entityHierarchy); 
+        GetEntityHierarchy(rootEntity.trans, entityHierarchy);
 
-        // Remove from delay list here to prevent possible double frees
-        if (entitiesWaitingToBeDestroyed.Contains(entity)) {
-            int index = delayedEntitiesToDestroy.FindIndex(x => x.Item1 == entity);
-            delayedEntitiesToDestroy.RemoveAt(index);
-            entitiesWaitingToBeDestroyed.Remove(entity);
+        foreach (Entity entity in entityHierarchy) {
+            RemoveHitFlashEffect(entity);
+            RemovePoisonedEffect(entity);
+            entity.bounceEffect = null;
+            entity.parentEffect = null;
+            
+            // Remove from delay list here to prevent possible double frees
+            if (entitiesWaitingToBeDestroyed.Contains(entity)) {
+                int index = delayedEntitiesToDestroy.FindIndex(x => x.Item1 == entity);
+                delayedEntitiesToDestroy.RemoveAt(index);
+                entitiesWaitingToBeDestroyed.Remove(entity);
+            }
+            
+            // May be removed already from DestroyAtIndex which is faster than Remove
+            bool enemyWasInLookup = entityLookup.Remove(entity.gameObject, out _);
+            if (enemyWasInLookup) {
+                entities.Remove(entity);
+            }
+            
+            DestroyOrReleaseEntitysGameObject(entity);
         }
-        
-        // May be removed already from DestroyAtIndex which is faster than Remove
-        bool enemyWasInLookup = entityLookup.Remove(entity.gameObject, out _);
-        if (enemyWasInLookup) {
-            entities.Remove(entity);
-        }
-        
-        DestroyOrReleaseEntitysGameObject(entity);
     }
-    
+
+    private void GetEntityHierarchy(Transform root, List<Entity> entityHierarchy) {
+        if (entityLookup.TryGetValue(root.gameObject, out Entity associatedEntity)) {
+            entityHierarchy.Add(associatedEntity);
+        }
+        foreach (Transform trans in root) {
+            GetEntityHierarchy(trans, entityHierarchy);
+        }
+    }
+
     private void DestroyOrReleaseEntitysGameObject(Entity entity) {
         if (entity.entityPool == null) {
             Destroy(entity.gameObject);
@@ -889,7 +903,10 @@ public class Game : MonoBehaviour {
         entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
         entity.matPropertyBlock.SetFloat(poisonedPropertyId, 0);
         entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
-        DestroyEntity(entity.poisonedEffect.Value.poisonDebuff);
+        
+        // We need to delay it by a frame because we are iterating over the list of
+        // entites from the caller and can't modify the list while its iterating
+        DestroyEntity(entity.poisonedEffect.Value.poisonDebuff, float.Epsilon);
         entity.poisonedEffect = null;
     }
     
@@ -1108,7 +1125,9 @@ public class Game : MonoBehaviour {
             if (enemy.health <= 0) {
                 if (Random.value < 0.05f) {
                     Item dropItem = GetItemFromEnemyDropPool(enemy.data);
-                    SpawnItemAsEntity(dropItem, 1, enemy.position, Quaternion.identity);
+                    if (dropItem) {
+                        SpawnItemAsEntity(dropItem, 1, enemy.position, Quaternion.identity);
+                    }
                 }
 
                 player.soulCurrency += enemy.data.soulWorthPerKill;
@@ -1219,6 +1238,7 @@ public class Game : MonoBehaviour {
     [NonSerialized] private EnemySpawnManager spawnManager = new();
     
     private void InitSpawnManager(RaidSpawnPattern pattern) {
+        spawnManager.spawnEvents.Clear();
         spawnManager.spawnPattern = pattern;
         spawnManager.curPhaseIndex = -1;
         spawnManager.timeInPhase = 0f;
@@ -1228,6 +1248,8 @@ public class Game : MonoBehaviour {
         }
         spawnManager.timeUntilFinalWave = spawnManager.totalTimeLeft - spawnManager.spawnPattern.spawnPhases[^1].phaseDuration;
     }
+    
+    private Limiter spawnLimiterForEnemyBatching;
     
     private void UpdateSpawnManager() {
         EnemySpawnManager sm = spawnManager;
@@ -1292,6 +1314,8 @@ public class Game : MonoBehaviour {
         }
 
         if (sm.spawnEvents.Count <= 0) return;
+
+        if (!spawnLimiterForEnemyBatching.TimeHasPassed(5f)) return;
         
         while (sm.spawnEvents.IndexInRange(sm.spawnTimeIndex) && sm.spawnEvents[sm.spawnTimeIndex].time <= sm.timeInPhase) {
             CoolerGrid.GridCell randomSpawnGridPos = currentMapInstance.grid.GetSpawnPosition(player.position);
@@ -1373,7 +1397,7 @@ public class Game : MonoBehaviour {
     [NonSerialized] private Inventory lootInvetoryPtr;
     [NonSerialized] private List<Inventory> allInventories = new();
     
-    private const int playerPocketSize = 6;
+    private const int playerPocketSize = 8;
     private const int playerQuickUseSize = 4;
     private const int playerEquipmentSize = 3;
     private int NakedPlayerInventorySize => playerPocketSize + playerQuickUseSize + playerEquipmentSize;
@@ -1419,7 +1443,7 @@ public class Game : MonoBehaviour {
         transactionInventory = CreateInventory(traderTransactionInventoryParent, transactionInventorySize);
 
         const int maxCrucibleInventorySize = 13;
-        const int startingCrucibleInventorySize = 6;
+        const int startingCrucibleInventorySize = 2;
         SpawnUiSlots(crucibleParent, maxCrucibleInventorySize, eyeForgeSlotPrefab);
         crucibleInventory = CreateInventory(crucibleParent, startingCrucibleInventorySize + player.crucibleLevel);
         ArrangeEyeCrucibleInventorySlots();
@@ -1807,11 +1831,11 @@ public class Game : MonoBehaviour {
             player.bleeding = false;
         }
         else if (hoveredItem.ItemRef == healthPotionItem) {
-            if (player.health >= 100f) return;
+            if (player.health >= FullPlayerHealth) return;
             HealPlayer(25);
         }
         else if (hoveredItem.ItemRef == demonSteakItem) {
-            if (player.health >= 100f) return;
+            if (player.health >= FullPlayerHealth) return;
             HealPlayer(15);
         }
         
@@ -1819,6 +1843,8 @@ public class Game : MonoBehaviour {
     }
 
     private void UpdatePlayerPanelUI() {
+        if (!playerInventoryParent.gameObject.activeInHierarchy) return;
+            
         playerPanelHealthText.text = $"<color=#5CF25B>{player.health}</color><size=22>/{FullPlayerHealth}";
 
         int inventoryWeight = GetInventoryWeight(playerInventory);
@@ -2521,44 +2547,95 @@ public class Game : MonoBehaviour {
         EndDragAndDropItem();
     }
 
+    private Sequence searchSequence;
+    private Tween searchCirclePopInTween;
+    
     private void OpenLootInventory() {
+        if (lootInventoryPanel.gameObject.activeInHierarchy) return;
+        
         discoverLootIndex = -1;
         lootInventoryPanel.gameObject.SetActive(true);
         
-        foreach (Transform child in lootInventoryParent.transform) {
-            child.GetComponentInChildren<InventorySlotUI>()?.ClearItem();
+        foreach (InventorySlot slot in lootInvetoryPtr.slots) {
+            slot.ui?.ClearItem();
+            slot.ui?.MakeSlotActive();
         }
-        
+
         for (int i = 0; i < lootInvetoryPtr.slots.Length; i++) {
             if (lootInvetoryPtr.slots[i].item == null) continue;
+            
+            InventorySlotUI slotUI = lootInvetoryPtr.slots[i].ui;
+            
             if (lootInvetoryPtr.slots[i].item.notDiscovered) {
-                discoverLootIndex = i;
-                break;
+                discoverLootIndex = discoverLootIndex == -1 ? i : discoverLootIndex;
             }
-            InventoryItem item = lootInvetoryPtr.slots[i].item;
-            lootInventoryParent.GetChild(i).GetComponentInChildren<InventorySlotUI>().SetItem(item.ItemRef, item.count);
+            else {
+                InventoryItem item = lootInvetoryPtr.slots[i].item;
+                slotUI.SetItem(item.ItemRef, item.count);
+            }
         }
 
         bool alreadyDiscoveredAll = discoverLootIndex == -1;
         if (alreadyDiscoveredAll) return;
+
+        searchSequence = Sequence.Create();
         
-        discoverLootTimer.SetTime(1f);
+        for (int i = 0; i < lootInvetoryPtr.slots.Length; i++) {
+            if (lootInvetoryPtr.slots[i].item == null) continue;
+            
+            InventorySlotUI slotUI = lootInvetoryPtr.slots[i].ui;
+            
+            if (lootInvetoryPtr.slots[i].item.notDiscovered) {
+                searchSequence.Chain(Tween.PunchScale(slotUI.rectTransform, Vector3.one * 2f, 0.1f, 2f, startDelay: 0.01f * i));
+                searchSequence.ChainCallback(slotUI, (target) => target.MakeSlotInactive());
+            }
+        }
+
+        searchSequence.ChainDelay(0.15f);
+
+        searchSequence.ChainCallback(target: this, (target) => {
+            InventorySlotUI slotUI = target.lootInvetoryPtr.slots[target.discoverLootIndex].ui;
+            target.AnimateSlotSearch(slotUI);
+            target.discoverLootTimer.SetTime(1f);
+        });
+        
         discoverLootTimer.EndAction ??= () => {
             InventoryItem item = lootInvetoryPtr.slots[discoverLootIndex].item;
-            
             item.notDiscovered = false;
-            lootInventoryParent.GetChild(discoverLootIndex).GetComponentInChildren<InventorySlotUI>().SetItem(item.ItemRef, item.count);
+            
+            InventorySlotUI slotUI = lootInvetoryPtr.slots[discoverLootIndex].ui;
+            slotUI.MakeSlotActive();
+            slotUI.StopSlotSearching();
+            slotUI.SetItem(item.ItemRef, item.count);
+
+            Tween.PunchScale(slotUI.itemUI.image.rectTransform, Vector3.one * 4f, 0.1f, 2f); 
             
             discoverLootIndex++;
+            
             if (discoverLootIndex < lootInvetoryPtr.slots.Length) {
+                slotUI = lootInvetoryPtr.slots[discoverLootIndex].ui;
+                AnimateSlotSearch(slotUI);
                 discoverLootTimer.SetTime(1f);
             }
         };
     }
 
+    private void AnimateSlotSearch(InventorySlotUI slotUI) {
+        slotUI.MakeSlotSearching();
+        searchCirclePopInTween = Tween.Scale(slotUI.searchingCircle.transform, Vector3.one * 0.2f, Vector3.one * 1f, 0.25f, Ease.OutElastic); 
+    }
+
     private void CloseLootInventory() {
         lootInventoryPanel.gameObject.SetActive(false);
         discoverLootTimer.Stop();
+        searchSequence.Stop();
+        searchCirclePopInTween.Stop();
+        
+        // Reset all tweening properties because the animations might have stopped while playing 
+        foreach (InventorySlot slot in lootInvetoryPtr.slots) {
+            slot.ui.rectTransform.localScale = Vector3.one;
+            slot.ui.StopSlotSearching();
+        }
     }
     
     // **********************************
@@ -2679,13 +2756,13 @@ public class Game : MonoBehaviour {
         AddFlashHitEffect(player);
     }
     
-    private const float defaultPlayerSpeed = 0.55f;
-    private const float maxPlayerSpeed = 0.85f;
+    private const float defaultPlayerSpeed = 0.52f;
+    private const float maxPlayerSpeed = 0.61f;
 
     private const int encumberingIncreasePerStrengthPoint = 50;
-    private const int defaultStartingEncumberingWeight = 180;
-    private const int maxEncumberedWeight = 280;
-    private const float maxEncumberedSpeedReduction = 0.3f;
+    private const int defaultStartingEncumberingWeight = 130;
+    private const int maxEncumberedWeight = 180;
+    private const float maxEncumberedSpeedReduction = 0.2f;
 
     private const int healthIncreasePerStatLevel = 10;
     private int FullPlayerHealth => 100 + (healthIncreasePerStatLevel * player.healthLevel);
@@ -3019,8 +3096,8 @@ public class Game : MonoBehaviour {
 
         for (int i = projectiles.Count - 1; i >= 0; i--) {
             if (projectiles[i].curTimeAlive > projectiles[i].lifeTimeDuration) {
-                const float despawnTime = 0.1f;
-                Tween.Scale(projectiles[i].trans, 0f, despawnTime, Ease.OutBounce);
+                const float despawnTime = 0.2f;
+                Tween.Scale(projectiles[i].trans, 0f, despawnTime, Ease.InOutBounce);
                 DestroyEntity(projectiles[i], despawnTime);
                 projectiles.RemoveAt(i);
             }
@@ -3176,12 +3253,12 @@ public class Game : MonoBehaviour {
     private enum DamageColor { Normal, Crit, Blood, Poison }
 
     private void SpawnDamageNumber(Vector3 spawnPos, int damage, DamageColor damageColor) {
-        Entity damageNumber = SpawnEntity<Entity>(damageNumberPrefab, spawnPos, Quaternion.identity, damageNumbersParent);
+        Entity damageNumber = SpawnEntity(damageNumberPool, spawnPos, Quaternion.identity, damageNumbersParent);
         damageNumber.textMesh.text = damage.ToString();
         
         Vector3 startSize = Vector3.one * 0.8f;
         Vector3 endSize = Vector3.one * (damageColor == DamageColor.Crit ? 1.25f : 1f);
-        Vector2 endDamageNumPos = OffsetY(OffsetX(spawnPos, Random.Range(-0.04f, 0.04f)), Random.Range(0.06f, 0.08f));
+        Vector2 endDamageNumPos = OffsetY(OffsetX(spawnPos, Random.Range(-0.08f, 0.08f)), Random.Range(0.06f, 0.2f));
         
         switch (damageColor) {
             case DamageColor.Normal:
@@ -3268,7 +3345,7 @@ public class Game : MonoBehaviour {
         portalArrow.gameObject.SetActive(true);
         
         const float distFromScreenEdge = 50f;
-        const float extraTopPadding = 0f;
+        const float extraTopPadding = 100f;
         
         float minX = distFromScreenEdge;
         float maxX = Screen.width - distFromScreenEdge;
@@ -3485,15 +3562,16 @@ public class Game : MonoBehaviour {
 
     private void LoadAndAssignPlayerSaveData(Player instancedPlayer) {
         PlayerSaveData data = LoadFromFile<PlayerSaveData>(playerSavePath);
-        if (data == null) return;
-        instancedPlayer.health = data.health;
-        instancedPlayer.crucibleLevel = data.crucibleLevel;
-        instancedPlayer.soulCurrency = data.soulCurrency;
-        instancedPlayer.coinCurrency = data.coinCurrency;
-        instancedPlayer.agilityLevel = data.agilityLevel;
-        instancedPlayer.luckLevel = data.luckLevel;
-        instancedPlayer.healthLevel = data.healthLevel;
-        instancedPlayer.strengthLevel = data.strengthLevel;
+        if (data != null) {
+            instancedPlayer.health = data.health;
+            instancedPlayer.crucibleLevel = data.crucibleLevel;
+            instancedPlayer.soulCurrency = data.soulCurrency;
+            instancedPlayer.coinCurrency = data.coinCurrency;
+            instancedPlayer.agilityLevel = data.agilityLevel;
+            instancedPlayer.luckLevel = data.luckLevel;
+            instancedPlayer.healthLevel = data.healthLevel;
+            instancedPlayer.strengthLevel = data.strengthLevel;
+        }
         
         // We want to make sure that the player health is never <= zero
         instancedPlayer.health = player.health <= 0f ? FullPlayerHealth : player.health;
@@ -3597,6 +3675,7 @@ public class Game : MonoBehaviour {
         interactPrompt.gameObject.SetActive(false);
         playerBarsPanel.gameObject.SetActive(false);
         raidTimerText.gameObject.SetActive(false);
+        portalArrow.gameObject.SetActive(false);
     }
 
     private void ToggleHideoutTab(Button button, TextMeshProUGUI text) {
@@ -4041,7 +4120,7 @@ public class Game : MonoBehaviour {
         if (ReachedTraderMaxRep(trader)) return;
 
         if (AddToTraderRep(trader, repGain, out int repLevel)) {
-            FillTraderRowWithItems(trader, repLevel - 1);
+            FillTraderInventoryWithItems(trader);
         }
         if (trader == GetCurrentlySelectedTrader()) { 
             SetTraderRepBar(trader);
@@ -4140,14 +4219,10 @@ public class Game : MonoBehaviour {
     
     private void RefillTraderSlotsWithItems(Trader trader) {
         ClearInventory(GetTraderInventorySlots(trader));
-        
-        int traderRepLevel = GetTraderRepLevel(trader);
-        for (int i = 0; i < traderRepLevel; i++) {
-            FillTraderRowWithItems(trader, i);
-        }
+        FillTraderInventoryWithItems(trader);
     }
 
-    private void FillTraderRowWithItems(Trader trader, int rowIndex) {
+    private void FillTraderInventoryWithItems(Trader trader) {
         // We highjack the trader invetory temporarily to safely add items to it
         // but restore it at the end of this method so its as if nothing changed ;)
         InventorySlot[] slotsToRestore = traderInventoryPtr.slots;
@@ -4163,11 +4238,17 @@ public class Game : MonoBehaviour {
         else {
             traderDropPool = hatManTraderDropPool;
         }
-        
-        Span<float> raritySkews = stackalloc float[] { 0f, 0.20f, 0.40f, 0.50f };
+
+        float raritySkew = GetTraderRepLevel(trader) switch { 
+            0 => 0f, 
+            1 => 0.20f, 
+            2 => 0.40f,
+            3 => 0.50f,
+            _ => 0.60f,
+        };
         
         using var _ = ListPool<Item>.Get(out List<Item> items);
-        GetUniqueItemsFromDropPool(traderDropPool, traderInventoryColCount, items, raritySkews[rowIndex]);
+        GetUniqueItemsFromDropPool(traderDropPool, traderInventoryColCount * traderInventoryRowCount, items, raritySkew);
         foreach (Item item in items) {
             TryAddItemToInventory(traderInventoryPtr, item, item.MaxStackCount);
         }
@@ -4291,7 +4372,10 @@ public class Game : MonoBehaviour {
             player.luckLevel++;
         }
         else if (upgradePath == healthUpgradePath) {
+            int prevFullPlayerHealth = FullPlayerHealth;
             player.healthLevel++;
+            int newFullPlayerHealth = FullPlayerHealth;
+            player.health += newFullPlayerHealth - prevFullPlayerHealth;
         }
         else if (upgradePath == strengthUpgradePath) {
             player.strengthLevel++;
@@ -4577,26 +4661,26 @@ public class Game : MonoBehaviour {
                 tempEnemyPool.items.Add(enemyItem);
             }
         }
+
+        if (tempEnemyPool.items.Count <= 0) {
+            ListPool<Item>.Release(tempEnemyPool.items);
+            return null;
+        }
         
         Item item = GetItemFromDropPool(tempEnemyPool);
         ListPool<Item>.Release(tempEnemyPool.items);
         return item;
     }
-
+    
+    
     private Item GetItemFromDropPool(DropPool dropPool) {
         Assert.IsFalse(dropPool.items == enemyDropPool.items, $"Use {nameof(GetItemFromEnemyDropPool)} for enemies");
         
-        float dropTotal = 0f;
-        foreach (Item drop in dropPool.items) {
-            dropTotal += GetDropChanceOfItem(drop, dropPool.dropOrigin);
-        }
-
-        float randomChance = Random.Range(0f, dropTotal);
-        float prefixSum = 0f;
+        dropPool.items.Shuffle();
         
         foreach (Item drop in dropPool.items) {
-            prefixSum += GetDropChanceOfItem(drop, dropPool.dropOrigin);
-            if (randomChance < prefixSum) {
+            float dropChance = GetDropChanceOfItem(drop, dropPool.dropOrigin);
+            if (Random.value < dropChance) {
                 return drop;
             }
         }
@@ -4604,18 +4688,37 @@ public class Game : MonoBehaviour {
         return dropPool.items[^1];
     }
 
+    // private Item GetItemFromDropPool(DropPool dropPool) {
+    //     Assert.IsFalse(dropPool.items == enemyDropPool.items, $"Use {nameof(GetItemFromEnemyDropPool)} for enemies");
+    //     
+    //     float dropTotal = 0f;
+    //     foreach (Item drop in dropPool.items) {
+    //         dropTotal += GetDropChanceOfItem(drop, dropPool.dropOrigin);
+    //     }
+    //
+    //     float randomChance = Random.Range(0f, dropTotal);
+    //     float prefixSum = 0f;
+    //     
+    //     foreach (Item drop in dropPool.items) {
+    //         prefixSum += GetDropChanceOfItem(drop, dropPool.dropOrigin);
+    //         if (randomChance < prefixSum) {
+    //             return drop;
+    //         }
+    //     }
+    //     
+    //     return dropPool.items[^1];
+    // }
+
     private void GetUniqueItemsFromDropPool(DropPool dropPool, int maxCount, List<Item> items, float raritySkew = 0f) {
+        dropPool.items.Shuffle();
+        
         foreach (Item item in dropPool.items) {
             float itemDropChance = GetDropChanceOfItem(item, dropPool.dropOrigin) + raritySkew;
-            if (itemDropChance > 1f) continue;
-            
             if (Random.value < itemDropChance) {
                 items.Add(item);
             }
         }
-
-        items.Shuffle();
-
+        
         bool itemListNeedsTrimming = items.Count > maxCount;
         if (itemListNeedsTrimming) {
             items.RemoveRange(maxCount, items.Count - maxCount);

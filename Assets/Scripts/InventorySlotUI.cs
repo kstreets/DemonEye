@@ -9,6 +9,7 @@ public class InventorySlotUI : MonoBehaviour {
     public Sprite activeSlotSprite;
     public Sprite inactiveSlotSprite;
     public ItemUI itemUI;
+    public GameObject searchingCircle;
     
     public bool SlotIsInactive => slotImage.sprite == inactiveSlotSprite;
     public bool AcceptsAllTypes => onlyAcceptedItemType == null;
@@ -45,7 +46,17 @@ public class InventorySlotUI : MonoBehaviour {
     public void MakeSlotInactive() {
         slotImage.sprite = inactiveSlotSprite;
     }
-    
+
+    public void MakeSlotSearching() {
+        slotImage.sprite = inactiveSlotSprite;
+        searchingCircle.SetActive(true);
+    }
+
+    public void StopSlotSearching() {
+        slotImage.sprite = activeSlotSprite;     
+        searchingCircle.SetActive(false);
+    }
+
     public void SetItem(Item data, int count) {
         itemUI.SetItem(data, count);
     }

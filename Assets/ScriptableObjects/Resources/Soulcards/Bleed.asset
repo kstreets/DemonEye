@@ -26,8 +26,10 @@ MonoBehaviour:
   spawnsOnMaps:
   - {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
   chanceToSpawnOnBody: 0.45
-  chanceToSpawnOnTrader: 0.45
-  chanceToSpawnFromRock: 0.055
+  chanceToSpawnOnTrader: 0.647
+  chanceToSpawnFromRock: 0.23
+  chanceToSpawnFromEnemy: 0
+  spawnsFromEnemies: []
   modifiesStats: 0
   agilityStatAdjustment: 0
   strengthStatAdjustment: 0

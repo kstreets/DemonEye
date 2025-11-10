@@ -14,9 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyPrefab: {fileID: 7814119993517076521, guid: 4b73114a9fc8cf54b8ff78222ba7c93c, type: 3}
   animatorOverride: {fileID: 22100000, guid: eea5b74bb62af0842893cca5dab41b1f, type: 2}
-  itemDrops: []
   speed: 0.35
   health: 100
-  damage: 8
+  damage: 15
   changeToCauseBleed: 0.1
-  soulWorthPerKill: 20
+  soulWorthPerKill: 4
