@@ -53,29 +53,31 @@ public class CoolerGrid : MonoBehaviour {
         flowFieldJobResults.Dispose();
     }
     
-    public GridCell GetSpawnPosition(Vector2 playerPosition) {
+    public Vector3 GetSpawnPosition(Vector2 playerPosition) {
         bool needToRecalculate = lastUpdateTime != Time.time;
         lastUpdateTime = Time.time;
 
         if (needToRecalculate) {
             GridCell playerCell = GetCellAtPosition(playerPosition);
             if (playerCell == null) {
-                return null;
+                return Vector3.zero;
             }
 
             UpdateDataForSpawnCells(playerCell, 12, 20);
         }
 
+        Vector2 slightRandomOffset = Random.insideUnitCircle * (cellSize * 0.90f);
+
         float rand = Random.value * totalSpawnCellsWeight;
         for (int i = 0; i < spawnCells.Count; i++) {
             if (rand < spawnCellWeights[i]) {
-                return spawnCells[i];
+                return spawnCells[i].position + slightRandomOffset;
             }
 
             rand -= spawnCellWeights[i];
         }
 
-        return spawnCells[0];
+        return spawnCells[0].position + slightRandomOffset;
     }
     
     public void ScheduleFlowFieldCalculation(Vector2 sourcePosition) {
@@ -224,8 +226,8 @@ public class CoolerGrid : MonoBehaviour {
                     int neighborIndex = GetNeighborIndex(gridWitdh, gridHeight, curCell.indexIntoArrays, i);
                     if (neighborIndex == -1 || !traversable[neighborIndex]) continue;
                     
-                    bool neighborIsDiagonal = i == 0 || i == 2 || i == 5 || i == 7;
-                    int dist = neighborIsDiagonal ? 1 : 1;
+                    bool neighborIsDiagonal = i == 0 || i == 2 || i == 6 || i == 8;
+                    int dist = neighborIsDiagonal ? 10 : 7; // Approximate ratio
                         
                     int distFromCurToNeighbor = distances[curCell.indexIntoArrays] + dist;
                     if (distFromCurToNeighbor < distances[neighborIndex]) {
@@ -352,7 +354,7 @@ public class CoolerGrid : MonoBehaviour {
                 Vector2 pos = CalculateCellPosition(x, y);
                 
                 bool traversable = true;
-                if (Physics2D.OverlapBox(pos, traversableTestBoxSize, 0f)) {
+                if (Physics2D.OverlapBox(pos, traversableTestBoxSize, 0f, Masks.StaticLevelMask)) {
                     traversable = false;
                 }
 
@@ -436,7 +438,7 @@ public class CoolerGrid : MonoBehaviour {
                 Vector2 flowDir = flowField[i];
                 if (flowDir == Vector2.zero) continue;
                 Vector2 cellPos = cells[i].position;
-                DebugExtension.DrawArrow(cellPos, flowDir * 0.16f);
+                DebugExtension.DrawArrow(cellPos, flowDir * 0.05f);
             }
             return;
         }

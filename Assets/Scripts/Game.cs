@@ -1032,6 +1032,7 @@ public class Game : MonoBehaviour {
     
     public class Enemy : Entity {
         public float teleportTime;
+        public int perlinSeed;
         public Collider2D enemySpacerCollider;
         public EnemyData data;
         public Timer applyDamageTimer;
@@ -1054,8 +1055,8 @@ public class Game : MonoBehaviour {
             float distFromPlayer = Vector2.Distance(player.Center, enemy.Center);
 
             if (enemy.teleportTime >= 10f && distFromPlayer > 2.3f) {
-                CoolerGrid.GridCell randomSpawnGridPos = currentMapInstance.grid.GetSpawnPosition(player.position);
-                TeleportEnemy(enemy, randomSpawnGridPos.position, TeleportType.Reposition);
+                Vector2 randomSpawnGridPos = currentMapInstance.grid.GetSpawnPosition(player.position);
+                TeleportEnemy(enemy, randomSpawnGridPos, TeleportType.Reposition);
                 continue;
             }
             
@@ -1195,20 +1196,22 @@ public class Game : MonoBehaviour {
 
     private void TeleportEnemy(Enemy enemy, Vector3 position, TeleportType teleportType) {
         if (teleportType == TeleportType.Reposition) {
-            Entity outEntity = SpawnEntity(teleportOutPool, enemy.position, Quaternion.identity);
-            DestroyEntity(outEntity, CurrentClipLength(outEntity.animator));
+            Entity outTeleportFxEntity = SpawnEntity(teleportOutPool, enemy.position, Quaternion.identity);
+            DestroyEntity(outTeleportFxEntity, CurrentClipLength(outTeleportFxEntity.animator));
         }
         
         enemy.position = position;
         enemy.gameObject.SetActive(false);
         
-        Entity inEntity = SpawnEntity(teleportInPool, enemy.position, Quaternion.identity);
-        float spawnAnimDuration = CurrentClipLength(inEntity.animator);
-        DestroyEntity(inEntity, spawnAnimDuration);
+        Entity inTeleportFxEntity = SpawnEntity(teleportInPool, enemy.position, Quaternion.identity);
+        float spawnAnimDuration = CurrentClipLength(inTeleportFxEntity.animator);
+        DestroyEntity(inTeleportFxEntity, spawnAnimDuration);
 
-        Tween.Delay(target: enemy, spawnAnimDuration * 0.7f, (enemy) => {
+        float spawnDelay = spawnAnimDuration * 0.7f;
+        
+        Tween.Delay(target: enemy, spawnDelay, static (enemy) => {
             // Only teleport in if we are still in the raid
-            if (enemy == null || !InRaid) return;
+            if (enemy == null || !instance.InRaid) return;
             enemy.gameObject.SetActive(true);
             enemy.teleportTime = 0f;
         });
@@ -1315,13 +1318,13 @@ public class Game : MonoBehaviour {
         if (!spawnLimiterForEnemyBatching.TimeHasPassed(5f)) return;
         
         while (sm.spawnEvents.IndexInRange(sm.spawnTimeIndex) && sm.spawnEvents[sm.spawnTimeIndex].time <= sm.timeInPhase) {
-            CoolerGrid.GridCell randomSpawnGridPos = currentMapInstance.grid.GetSpawnPosition(player.position);
-            Vector2 randomSpawnPos = randomSpawnGridPos.position;
+             Vector2 randomSpawnPos = currentMapInstance.grid.GetSpawnPosition(player.position);
 
             EnemyData enemyToSpawn = sm.spawnEvents[sm.spawnTimeIndex].enemy;
             Enemy enemy = SpawnEntity<Enemy>(enemyToSpawn.enemyPrefab, randomSpawnPos, Quaternion.identity);
             enemy.health = enemyToSpawn.health;
             enemy.data = enemyToSpawn;
+            enemy.perlinSeed = Random.Range(int.MinValue, int.MaxValue);
             enemy.animator.runtimeAnimatorController = enemyToSpawn.animatorOverride;
             enemy.enemySpacerCollider = enemy.trans.GetChild(0).GetComponent<Collider2D>();
             enemies.Add(enemy);
@@ -4784,7 +4787,7 @@ public class Game : MonoBehaviour {
     
     private bool InMapSelection => gameStateMachine.CurState == mapSelectionState;
     
-    private bool InRaid => gameStateMachine.CurState == raidState;
+    public bool InRaid => gameStateMachine.CurState == raidState;
 
     public bool ControllerPluggedIn => Gamepad.current != null;
 

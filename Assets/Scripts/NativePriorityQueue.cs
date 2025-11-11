@@ -231,7 +231,7 @@ namespace StagPoint.Collections
 				if (item.Equals(m_Buffer[i])) 
 				{
 					m_Buffer[i] = item;
-					heapifyUp( i, item );
+					heapifyUp(i, item );
 					break;
 				}
 			}
