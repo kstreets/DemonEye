@@ -713,13 +713,6 @@ public class Game : MonoBehaviour {
         DestroyEntity(entityLookup[gameObj]);
     }
     
-    private void DestroyEntityAtIndex(int entityIndex) {
-        Entity entity = entities[entityIndex];
-        entityLookup.Remove(entity.gameObject);
-        entities.RemoveAt(entityIndex);
-        DestroyEntity(entity);
-    }
-    
     private void DestroyEntity(Entity rootEntity) {
         using var autoRelease = ListPool<Entity>.Get(out List<Entity> entityHierarchy); 
         GetEntityHierarchy(rootEntity.trans, entityHierarchy);
@@ -1271,11 +1264,13 @@ public class Game : MonoBehaviour {
 
             RaidSpawnPattern.SpawnPhase curPhase = sm.spawnPattern.spawnPhases[sm.curPhaseIndex];
 
+            #if UNITY_EDITOR
             foreach (RaidSpawnPattern.EnemyBatch batch in curPhase.enemyBatches) {
                 if (batch.enemyCount >= EnemySpawnManager.prefixedSumResolution) {
                     Debug.LogError($"Wave cannot have more enemies than {nameof(EnemySpawnManager.prefixedSumResolution)}");
                 }
             }
+            #endif
             
             sm.timeInPhase = 0f;
             sm.spawnTimeIndex = 0;
@@ -1311,6 +1306,8 @@ public class Game : MonoBehaviour {
                 // Due to the way we add elements we need to sort by time so its chronologically ordered 
                 sm.spawnEvents.Sort((x, y) => x.time.CompareTo(y.time));
             }
+            
+            spawnLimiterForEnemyBatching.MakeCurrent();
         }
 
         if (sm.spawnEvents.Count <= 0) return;
@@ -2557,8 +2554,8 @@ public class Game : MonoBehaviour {
         lootInventoryPanel.gameObject.SetActive(true);
         
         foreach (InventorySlot slot in lootInvetoryPtr.slots) {
-            slot.ui?.ClearItem();
-            slot.ui?.MakeSlotActive();
+            slot.ui.ClearItem();
+            slot.ui.MakeSlotActive();
         }
 
         for (int i = 0; i < lootInvetoryPtr.slots.Length; i++) {
@@ -2594,9 +2591,11 @@ public class Game : MonoBehaviour {
         searchSequence.ChainDelay(0.15f);
 
         searchSequence.ChainCallback(target: this, (target) => {
-            InventorySlotUI slotUI = target.lootInvetoryPtr.slots[target.discoverLootIndex].ui;
-            target.AnimateSlotSearch(slotUI);
-            target.discoverLootTimer.SetTime(1f);
+            InventorySlot slot = target.lootInvetoryPtr.slots[target.discoverLootIndex];
+            if (slot.item != null) {
+                target.AnimateSlotSearch(slot.ui);
+                target.discoverLootTimer.SetTime(1f);
+            }
         });
         
         discoverLootTimer.EndAction ??= () => {
@@ -2612,7 +2611,7 @@ public class Game : MonoBehaviour {
             
             discoverLootIndex++;
             
-            if (discoverLootIndex < lootInvetoryPtr.slots.Length) {
+            if (discoverLootIndex < lootInvetoryPtr.slots.Length && lootInvetoryPtr.slots[discoverLootIndex].item != null) {
                 slotUI = lootInvetoryPtr.slots[discoverLootIndex].ui;
                 AnimateSlotSearch(slotUI);
                 discoverLootTimer.SetTime(1f);
@@ -3403,16 +3402,19 @@ public class Game : MonoBehaviour {
             int maxDeadBodyItemCount = Random.Range(2, 6);
             GetUniqueItemsFromDropPool(bodyDropPool, maxDeadBodyItemCount, deadBodyItems);
             
-            InventorySlot[] deadBodySlots = new InventorySlot[deadBodyItems.Count];
-            for (int j = 0; j < deadBodyItems.Count; j++) {
-                Item spawnItem = deadBodyItems[j];
-                InventoryItem lootItem = new() {
-                    itemDataUuid = spawnItem.uuid, 
-                    count = Random.Range(1, spawnItem.MaxStackCount / 3),
-                    notDiscovered = true,
-                };
+            InventorySlot[] deadBodySlots = new InventorySlot[lootInvetoryPtr.slots.Length];
+            for (int j = 0; j < deadBodySlots.Length; j++) {
+                InventoryItem inventoryItem = null;
+                if (deadBodyItems.IndexInRange(j)) {
+                    Item spawnItem = deadBodyItems[j];
+                    inventoryItem = new() {
+                        itemDataUuid = spawnItem.uuid, 
+                        count = Random.Range(1, spawnItem.MaxStackCount / 3),
+                        notDiscovered = true,
+                    };
+                }
                 deadBodySlots[j] = new() {
-                    item = lootItem,
+                    item = inventoryItem,
                     ui = lootInventorySlotUis[j],
                 };
             }
@@ -3439,7 +3441,7 @@ public class Game : MonoBehaviour {
     private void DestroyLevelEntities() {
         for (int i = entities.Count - 1; i >= 0; i--) {
             if (entities[i].lifetime == EntityLifetime.Level) {
-                DestroyEntityAtIndex(i);    
+                DestroyEntity(entities[i]);
             }
         }
 
@@ -3968,11 +3970,18 @@ public class Game : MonoBehaviour {
             weightBarFillImage.color = styles.underWeightColor;
         }
 
-        
-        float timeUntilFinalWave = Mathf.Clamp(spawnManager.timeUntilFinalWave, 0f, float.MaxValue);
-        int minutesLeft = Mathf.FloorToInt(timeUntilFinalWave / 60f);
-        int secondsLeft = Mathf.FloorToInt(timeUntilFinalWave % 60f);
-        raidTimerText.text = $"{minutesLeft:0}:{secondsLeft:00}";
+        if (spawnManager.timeUntilFinalWave >= 0f) {
+            float timeUntilFinalWave = Mathf.Clamp(spawnManager.timeUntilFinalWave, 0f, float.MaxValue);
+            int minutesLeft = Mathf.FloorToInt(timeUntilFinalWave / 60f);
+            int secondsLeft = Mathf.FloorToInt(timeUntilFinalWave % 60f);
+            raidTimerText.text = $"{minutesLeft:0}:{secondsLeft:00}";
+        }
+        else if (spawnManager.spawnEvents.IndexInRange(spawnManager.spawnTimeIndex) || enemies.Count > 0) {
+            raidTimerText.text = "Survive";
+        }
+        else {
+            raidTimerText.text = "Extract";
+        }
     }
 
     // Its better just to have these as constants because the canvas layout recalculates in LateUpdate
