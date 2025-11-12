@@ -16,7 +16,7 @@ MonoBehaviour:
   timeBeforeExitPortalsSpawn: 150
   spawnPhases:
   - phaseDuration: 60
-    spawnDuration: 15
+    spawnDuration: 20
     spawnRateCurve:
       serializedVersion: 2
       m_Curve:
@@ -104,10 +104,12 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 0
     enemyBatches:
-    - enemyCount: 100
+    - enemyCount: 90
       enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
     - enemyCount: 35
       enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
+    - enemyCount: 15
+      enemyData: {fileID: 11400000, guid: cc0cbb56eaca641408b7d1856ed0d048, type: 2}
   - phaseDuration: 100
     spawnDuration: 30
     spawnRateCurve:
@@ -135,7 +137,9 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 0
     enemyBatches:
-    - enemyCount: 130
+    - enemyCount: 120
       enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
-    - enemyCount: 45
+    - enemyCount: 30
       enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
+    - enemyCount: 20
+      enemyData: {fileID: 11400000, guid: cc0cbb56eaca641408b7d1856ed0d048, type: 2}

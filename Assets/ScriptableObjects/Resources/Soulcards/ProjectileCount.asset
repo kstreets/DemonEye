@@ -9,34 +9,31 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 54dcc99deb2df7d4caf9825aeeaf1694, type: 3}
-  m_Name: TriShot
-  m_EditorClassIdentifier: 
-  uuid: 2008728135
-  displayName: Tripple Shot
+  m_Script: {fileID: 11500000, guid: 3be3ba45cdaa0584d87281c861ed2cdf, type: 3}
+  m_Name: ProjectileCount
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectileCountSoulcard
+  uuid: 1989409110
+  displayName: Projectile Count
   inventorySprite: {fileID: 541499864, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
   dropSprite: {fileID: 0}
   pickupRadius: 0.07
   type: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
   associatedTrader: {fileID: 11400000, guid: b04e05a2cdc85404fbe24578a1868a5d, type: 2}
-  buyPrice: 350
-  sellPrice: 150
-  traderXp: 5
+  buyPrice: 100
+  sellPrice: 5
+  traderXp: 0
   spawnsOnAllMaps: 1
-  spawnsOnMaps:
-  - {fileID: 11400000, guid: 9353817006d76f54fb1273b8ced36a68, type: 2}
-  chanceToSpawnOnBody: 0.05
-  chanceToSpawnOnTrader: 0.402
-  chanceToSpawnFromRock: 0.048
+  spawnsOnMaps: []
+  chanceToSpawnOnBody: 0.085
+  chanceToSpawnOnTrader: 0.114
+  chanceToSpawnFromRock: 0.098
   chanceToSpawnFromEnemy: 0
   spawnsFromEnemies: []
   modifiesStats: 0
   agilityStatAdjustment: 0
   strengthStatAdjustment: 0
   itemGroupProps: {fileID: 11400000, guid: 78826f3a685555a4896655f4c68ef737, type: 2}
-  maxStackCount: 3
+  maxStackCount: 0
   weight: 0
   description: 
   relativeMechanicDesc: {fileID: 0}
-  probability: 0.25
-  reducedDamageMultiplier: 0.65

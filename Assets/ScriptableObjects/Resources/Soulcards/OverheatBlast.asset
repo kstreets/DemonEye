@@ -9,25 +9,24 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 89cf4b0ee9babad459332597304a99be, type: 3}
-  m_Name: BackwardsShotMultiplier
-  m_EditorClassIdentifier: Assembly-CSharp::BackwardsShotMultiplierSoulcard
-  uuid: 1497826800
-  displayName: Backwards Shot Multi
+  m_Script: {fileID: 11500000, guid: 786dd86775fca7943ae15159b1a2b88e, type: 3}
+  m_Name: OverheatBlast
+  m_EditorClassIdentifier: Assembly-CSharp::BlastSoulcard
+  uuid: 381296761
+  displayName: Overheat Blast
   inventorySprite: {fileID: 541499864, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
   dropSprite: {fileID: 0}
   pickupRadius: 0.07
   type: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
   associatedTrader: {fileID: 11400000, guid: b04e05a2cdc85404fbe24578a1868a5d, type: 2}
-  buyPrice: 30
-  sellPrice: 30
+  buyPrice: 200
+  sellPrice: 20
   traderXp: 0
   spawnsOnAllMaps: 1
-  spawnsOnMaps:
-  - {fileID: 11400000, guid: 9353817006d76f54fb1273b8ced36a68, type: 2}
-  chanceToSpawnOnBody: 0.5
-  chanceToSpawnOnTrader: 0.545
-  chanceToSpawnFromRock: 0.108
+  spawnsOnMaps: []
+  chanceToSpawnOnBody: 0.156
+  chanceToSpawnOnTrader: 0.189
+  chanceToSpawnFromRock: 0.173
   chanceToSpawnFromEnemy: 0
   spawnsFromEnemies: []
   modifiesStats: 0
@@ -38,4 +37,6 @@ MonoBehaviour:
   weight: 0
   description: 
   relativeMechanicDesc: {fileID: 0}
-  damageMultiplier: 2.5
+  numShotsUntilOverheat: 15
+  damage: 100
+  radius: 0.6
