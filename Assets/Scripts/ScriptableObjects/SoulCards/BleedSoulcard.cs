@@ -13,7 +13,7 @@ public class BleedSoulcard : Soulcard {
     public int bleedDamage;
     public float bleedInterval;
     
-    public override void AddInstanceToEnemy(Game.Enemy enemy, int stackCount) {
+    public override void AddInstanceToEnemy(Enemy enemy, int stackCount) {
         if (enemy.bleed.TryGetValue(out BleedModInstance bleed)) {
             bleed.bleedDamage = GetBleedDamage(stackCount);
             bleed.bleedInterval = bleedInterval;
@@ -30,11 +30,11 @@ public class BleedSoulcard : Soulcard {
     }
 
     public override string GetStackDescription(int stackCount) {
-        return $"{DisplayNumber(GetBleedDamage(stackCount))} damage per bleed every {bleedInterval}s";
+        return $"{DisplayNumber(GetBleedDamage(stackCount))} damage per bleed every {DisplayNumber(bleedInterval)}s";
     }
 
     private int GetBleedDamage(int stackCount) {
-        return bleedDamage * stackCount;
+        return TaperInteger(bleedDamage, stackCount, 0.75f);
     }
     
 }

@@ -25,8 +25,10 @@ MonoBehaviour:
   spawnsOnAllMaps: 0
   spawnsOnMaps: []
   chanceToSpawnOnBody: 0.2
-  chanceToSpawnOnTrader: 0.5
+  chanceToSpawnOnTrader: 1
   chanceToSpawnFromRock: 0
+  chanceToSpawnFromEnemy: 0
+  spawnsFromEnemies: []
   modifiesStats: 0
   agilityStatAdjustment: 0
   strengthStatAdjustment: 0

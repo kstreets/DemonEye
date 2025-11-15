@@ -20,12 +20,12 @@ MonoBehaviour:
   type: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
   associatedTrader: {fileID: 11400000, guid: b04e05a2cdc85404fbe24578a1868a5d, type: 2}
   buyPrice: 100
-  sellPrice: 33
+  sellPrice: 65
   traderXp: 5
   spawnsOnAllMaps: 1
   spawnsOnMaps:
   - {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
-  chanceToSpawnOnBody: 0.45
+  chanceToSpawnOnBody: 0.391
   chanceToSpawnOnTrader: 0.647
   chanceToSpawnFromRock: 0.23
   chanceToSpawnFromEnemy: 0
@@ -38,5 +38,5 @@ MonoBehaviour:
   weight: 0
   description: 
   relativeMechanicDesc: {fileID: 0}
-  bleedDamage: 5
+  bleedDamage: 10
   bleedInterval: 0.5

@@ -22,9 +22,9 @@ MonoBehaviour:
   buyPrice: 18
   sellPrice: 10
   traderXp: 0
-  spawnsOnAllMaps: 0
+  spawnsOnAllMaps: 1
   spawnsOnMaps: []
-  chanceToSpawnOnBody: 0
+  chanceToSpawnOnBody: 0.22
   chanceToSpawnOnTrader: 1
   chanceToSpawnFromRock: 0
   chanceToSpawnFromEnemy: 0
@@ -33,6 +33,6 @@ MonoBehaviour:
   agilityStatAdjustment: 0
   strengthStatAdjustment: 0
   itemGroupProps: {fileID: 0}
-  maxStackCount: 3
+  maxStackCount: 6
   weight: 1
   description: Stops bleeding.

@@ -27,8 +27,9 @@ MonoBehaviour:
   chanceToSpawnOnBody: 0.1
   chanceToSpawnOnTrader: 0
   chanceToSpawnFromRock: 0
-  chanceToSpawnFromEnemy: 0
-  spawnsFromEnemies: []
+  chanceToSpawnFromEnemy: 0.256
+  spawnsFromEnemies:
+  - {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
   modifiesStats: 0
   agilityStatAdjustment: 0
   strengthStatAdjustment: 0

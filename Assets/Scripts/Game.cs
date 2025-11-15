@@ -16,6 +16,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 using VInspector;
+using Vector3 = UnityEngine.Vector3;
 
 public class Game : MonoBehaviour {
 
@@ -50,6 +51,7 @@ public class Game : MonoBehaviour {
     public GameObject teleportOutPrefab;
     public GameObject bloodSplatterPrefab;
     public GameObject runSmokePrefab;
+    public GameObject blastPrefab;
     [EndFoldout]
     
     [Foldout("Item Type Refs")]
@@ -73,7 +75,7 @@ public class Game : MonoBehaviour {
     
     [Foldout("Stat Upgrade Paths")]
     public StatUpgradePath agilityUpgradePath;
-    public StatUpgradePath corruptionUpgradePath;
+    public StatUpgradePath luckUpgradePath;
     public StatUpgradePath healthUpgradePath;
     public StatUpgradePath strengthUpgradePath;
     [EndFoldout]
@@ -86,7 +88,6 @@ public class Game : MonoBehaviour {
     public Camera mainCamera;
     public CinemachineCamera cinemachineCamera;
     public PixelPerfectCamera pixelPerfectCamera;
-    public RectTransform crosshairTrans;
 
     public GameObject playerPrefab;
     public GameObject gemRockPrefab;
@@ -119,11 +120,7 @@ public class Game : MonoBehaviour {
     public RectTransform hideoutHeaderParent;
     public ItemUI dragAndDropItemUI;
     public Image menuBackgroundImage;
-    public GameObject currenciesParent;
-    public TextMeshProUGUI soulsCurrencyText;
-    public TextMeshProUGUI coinCurrencyText;
     public Image deathBackgroundImage;
-    public RectTransform portalArrow;
     [EndFoldout]
     
     [Foldout("UI/Main Menu")]
@@ -224,17 +221,35 @@ public class Game : MonoBehaviour {
     public TextMeshProUGUI strengthUpgradeInfoText;
     [EndFoldout]
 
+    [Foldout("UI/Health&Currency")]
+    public GameObject playerInfoParent;
+    public GameObject healthBarParent;
+    public GameObject weightBarParent;
+    public GameObject soulsCurrencyParent;
+    public GameObject coinsCurrencyParent;
+    public TextMeshProUGUI soulsCurrencyText;
+    public TextMeshProUGUI coinCurrencyText;
+    [EndFoldout]
+    
     [Foldout("UI/InRaid")]
     public RectTransform lootInventoryPanel;
     public RectTransform lootInventoryParent;
-    public RectTransform playerBarsPanel;
     public Image healthBarFillImage;
     public Image weightBarFillImage;
     public GameObject interactPrompt;
-    public TextMeshProUGUI exitPortalStatusText;
-    public TextMeshProUGUI raidTimerText;
+    public RectTransform portalArrow;
     [EndFoldout]
 
+    [Foldout("UI/RaidInfoPanel")]
+    public GameObject raidInfoPanelParent;
+    public GameObject timeUntilFinalWaveParent;
+    public TextMeshProUGUI timeUntilFinalWaveText;
+    public GameObject exitPortalInfoParent;
+    public TextMeshProUGUI exitPortalInfoText;
+    public GameObject exitPortalAvailableParent;
+    public GameObject finalWaveActiveParent;
+    [EndFoldout]
+    
     [Foldout("UI/DamageNumbers")]
     public RectTransform damageNumbersParent;
     [EndFoldout]
@@ -289,6 +304,7 @@ public class Game : MonoBehaviour {
     private EntityPool<Entity> bloodSplatterPool;
     private EntityPool<Entity> runSmokePool;
     private EntityPool<Entity> damageNumberPool;
+    private EntityPool<Entity> blastPool;
     
     private State mainMenuState;
     private State mapSelectionState;
@@ -334,6 +350,7 @@ public class Game : MonoBehaviour {
         bloodSplatterPool = CreateEntityPool<Entity>(bloodSplatterPrefab, 20, null);
         runSmokePool = CreateEntityPool<Entity>(runSmokePrefab, 5, null);
         damageNumberPool = CreateEntityPool<Entity>(damageNumberPrefab, 20, null);
+        blastPool = CreateEntityPool<Entity>(blastPrefab, 5, null);
 
         equipedEye = new() { coreAttack = defaultAttack };
         
@@ -382,9 +399,7 @@ public class Game : MonoBehaviour {
     private void LateUpdate() {
         UpdatePlayerPanelUI();
         UpdateDragAndDropItemToCursor();
-        if (currenciesParent.activeInHierarchy) {
-            UpdateCurrencyNumbers();
-        }
+        UpdateCurrencyNumbers();
         if (InRaid) {
             UpdateInRaidUI();
             UpdateExitPortalArrowUI();
@@ -557,7 +572,6 @@ public class Game : MonoBehaviour {
         
         DestroyLevelEntities();
         UnloadCurrentMapAsync();
-        playerBarsPanel.gameObject.SetActive(false);
         player.gameObject.SetActive(false);
         
         RefillTraderSlotsWithItems(potionManTrader);
@@ -1032,7 +1046,7 @@ public class Game : MonoBehaviour {
     
     public class Enemy : Entity {
         public float teleportTime;
-        public int perlinSeed;
+        public float flowFieldAcc;
         public Collider2D enemySpacerCollider;
         public EnemyData data;
         public Timer applyDamageTimer;
@@ -1158,7 +1172,8 @@ public class Game : MonoBehaviour {
                 speed = 0f;
             }
             
-            enemy.moveDir = currentMapInstance.grid.GetFlowFieldDirection(enemy.position);
+            Vector3 targetDir = currentMapInstance.grid.GetFlowFieldDirection(enemy.position);
+            enemy.moveDir = Vector3.Lerp(enemy.moveDir, targetDir, enemy.flowFieldAcc * Time.fixedDeltaTime);
             enemy.rigidbody.linearVelocity = enemy.moveDir * speed;
 
             if (!enemyIsAttacking && enemy.changeDirLimiter.TimeHasPassed(0.15f)) {
@@ -1315,7 +1330,7 @@ public class Game : MonoBehaviour {
 
         if (sm.spawnEvents.Count <= 0) return;
 
-        if (!spawnLimiterForEnemyBatching.TimeHasPassed(5f)) return;
+        if (!spawnLimiterForEnemyBatching.TimeHasPassed(3f)) return;
         
         while (sm.spawnEvents.IndexInRange(sm.spawnTimeIndex) && sm.spawnEvents[sm.spawnTimeIndex].time <= sm.timeInPhase) {
              Vector2 randomSpawnPos = currentMapInstance.grid.GetSpawnPosition(player.position);
@@ -1324,9 +1339,9 @@ public class Game : MonoBehaviour {
             Enemy enemy = SpawnEntity<Enemy>(enemyToSpawn.enemyPrefab, randomSpawnPos, Quaternion.identity);
             enemy.health = enemyToSpawn.health;
             enemy.data = enemyToSpawn;
-            enemy.perlinSeed = Random.Range(int.MinValue, int.MaxValue);
             enemy.animator.runtimeAnimatorController = enemyToSpawn.animatorOverride;
             enemy.enemySpacerCollider = enemy.trans.GetChild(0).GetComponent<Collider2D>();
+            enemy.flowFieldAcc = Random.Range(2.5f, 3.5f);
             enemies.Add(enemy);
             
             TeleportEnemy(enemy, randomSpawnPos, TeleportType.Spawn);
@@ -1341,7 +1356,7 @@ public class Game : MonoBehaviour {
     
     [Serializable]
     public class InventoryItem {
-        public int itemDataUuid;
+        public int itemOrInstanceUuid;
         public List<int> modifierUuids;
         public int count = 1;
 
@@ -1349,18 +1364,18 @@ public class Game : MonoBehaviour {
         [NonSerialized] public bool traderOwned;
         [NonSerialized] public Item _itemRef; // Used for items created at runtime, like demon eyes
 
-        public Item ItemRef => _itemRef ? _itemRef : itemLookup[itemDataUuid];
+        public Item ItemRef => _itemRef ? _itemRef : itemLookup[itemOrInstanceUuid];
         public bool IsFullStack => count == ItemRef.MaxStackCount;
 
         public InventoryItem(Item item = null, int count = 1) {
             if (item == null) return;
-            this.itemDataUuid = item.uuid;
+            this.itemOrInstanceUuid = item.uuid;
             this.count = count;
         }
         
         public InventoryItem Clone() {
             InventoryItem clonedItem = new() {
-                itemDataUuid = itemDataUuid,
+                itemOrInstanceUuid = itemOrInstanceUuid,
                 count = count,
                 notDiscovered = notDiscovered,
                 traderOwned = traderOwned,
@@ -1424,6 +1439,11 @@ public class Game : MonoBehaviour {
         SpawnUiSlots(playerBackpackParent, maxBackpackSize);
         playerInventory = CreateInventory(playerInventoryParent, NakedPlayerInventorySize);
         LoadInventory(playerInventory);
+
+        InventorySlotUI[] quickUseSlots = playerPassiveParent.GetComponentsInChildren<InventorySlotUI>();
+        foreach (InventorySlotUI slotUI in quickUseSlots) {
+            slotUI.onlyAcceptedItemType = consumableType;
+        }
         
         int stashInventorySize = 40;
         SpawnUiSlots(stashInventoryParent, stashInventorySize);
@@ -1505,6 +1525,8 @@ public class Game : MonoBehaviour {
     }
 
     private void UpdateInventory() {
+        CheckForEquipmentChange();
+        
         if (InRaid) {
             if (inventoryInputAction.WasPressedThisFrame()) {
                 if (!InventoryIsOpen) {
@@ -1536,8 +1558,6 @@ public class Game : MonoBehaviour {
             CheckToConsumeItem(invHoverInfo);
             UpdateUIElementPopup();
         }
-        
-        CheckForEquipmentChange();
     }
 
     private void UpdateItemDescPopup(InventoryHoverInfo invHoverInfo) {
@@ -1596,11 +1616,17 @@ public class Game : MonoBehaviour {
         itemDescPopup.tag2.rectTransform.ResizeWidth(itemDescPopup.tag2Text.rectTransform.rect.width + tagTextPadding);
         
         Item item = hoveredSlot.item.ItemRef;
-        
-        bool itemIsOwnedByTrader = info.inventory.slots[info.slotIndex].item.traderOwned;
-        int sellOrBuyPrice = itemIsOwnedByTrader ? item.buyPrice : item.sellPrice;
-                             
         nameText.text = item.displayName;
+
+        int sellOrBuyPrice = 0;
+        if (item.type == demonEyeType) { 
+            sellOrBuyPrice = GetDemonEyeSellPrice(hoveredSlot.item);
+        }
+        else {
+            bool itemIsOwnedByTrader = info.inventory.slots[info.slotIndex].item.traderOwned;
+            sellOrBuyPrice = itemIsOwnedByTrader ? item.buyPrice : item.sellPrice;
+        }
+                             
         string coinText = $"<sprite=0>{ColorText(sellOrBuyPrice.ToString(), styles.coinCurrencyColor)}";
         
         string tintedWeightSprite = $"<sprite=2 color=#{ColorUtility.ToHtmlStringRGBA(styles.underWeightColor)}>";
@@ -1610,7 +1636,7 @@ public class Game : MonoBehaviour {
         
         // Set description
         if (hoveredSlot.item.ItemRef.type == demonEyeType) {
-            DemonEyeInstance eyeInstance = eyeInstanceFromItemId[hoveredSlot.item.itemDataUuid];
+            DemonEyeInstance eyeInstance = eyeInstanceFromItemId[hoveredSlot.item.itemOrInstanceUuid];
             string eyeDescription = "";
             foreach (EquipedModInstance modInstance in eyeInstance.modInstances) {
                 eyeDescription += modInstance.GetDescriptionForEye() + "\n";
@@ -1680,7 +1706,7 @@ public class Game : MonoBehaviour {
     private void UpdateUIElementPopup() {
         UIHoverInfo hoverInfo = UpdateUIHover();
         
-        if (!hoverInfo.hoveringTransform) {
+        if (!hoverInfo.hoveringTransform || hoverInfo.shouldNotShow) {
             HideUIElementPopup();
             return;
         }
@@ -1700,7 +1726,7 @@ public class Game : MonoBehaviour {
         uiElementPopup.gameObject.SetActive(true);
         
         if (hoverInfo.hoveringTransform == upgradeForgeButton.rectTransform) {
-            if (crucibleState == CrucibleState.Upgrade) {
+            if (crucibleMode == CrucibleMode.Upgrade) {
                 uiElementPopup.descText.text = "Add an additional slot to the pentagram!\nCosts:";
                 List<UpgradePath.Requirement> requirements = crucibleUpgradePath.pathUpgrades[player.crucibleLevel].requirements;
                 foreach (UpgradePath.Requirement req in requirements) {
@@ -1712,7 +1738,7 @@ public class Game : MonoBehaviour {
         }
         
         if (hoverInfo.hoveringTransform == forgeEyeButton.rectTransform) {
-            if (crucibleState == CrucibleState.Forging) {
+            if (crucibleMode == CrucibleMode.Forging) {
                 uiElementPopup.descText.text = "Eye Preview";
             }
 
@@ -1720,7 +1746,7 @@ public class Game : MonoBehaviour {
             
             foreach (InventorySlot slot in crucibleInventory.slots) {
                 if (slot.item == null || slot.item.ItemRef.type != soulcardType) continue;    
-                Soulcard soulcard = itemLookup[slot.item.itemDataUuid] as Soulcard;
+                Soulcard soulcard = itemLookup[slot.item.itemOrInstanceUuid] as Soulcard;
                 if (!allSoulCards.TryAdd(soulcard, 1)) {
                     allSoulCards[soulcard]++;
                 }
@@ -1751,9 +1777,9 @@ public class Game : MonoBehaviour {
 
         Inventory hoveredInventory = invHoverInfo.inventory;
         if (hoveredInventory == null) return;
-
+        
         if (!TryGetItemFromHoverInfo(invHoverInfo, out InventoryItem hoveredItem)) return;
-        if (IsHoveredItemGrayedOut(invHoverInfo)) return;
+        if (NotAllowedToMoveOrPickupItem(invHoverInfo)) return;
         if (ClickedOnEquipedBackpackWithItems(invHoverInfo.inventory, invHoverInfo.slotIndex)) return;
 
         MoveItemOption moveOption = MoveItemOption.FullStack;
@@ -1881,6 +1907,16 @@ public class Game : MonoBehaviour {
         return hoveredInventory.slots[hoveredSlot].ui.itemUI.IsGrayedOut;
     }
     
+    private bool NotAllowedToMoveOrPickupItem(InventoryHoverInfo info) {
+        if (IsHoveredItemGrayedOut(info)) {
+            return true;
+        }
+        if (info.inventory == crucibleInventory && PlayingForgeAnimation) {
+            return true;
+        }
+        return false;
+    }
+    
     private void SpawnUiSlots(RectTransform parent, int numSlots, GameObject slotPrefab = null) {
         for (int i = 0; i < numSlots; i++) {
             Instantiate(slotPrefab ? slotPrefab : inventorySlotPrefab, Vector3.zero, Quaternion.identity, parent);
@@ -1944,7 +1980,7 @@ public class Game : MonoBehaviour {
         }
         return IsEquipmentSlot(inventory, slotIndex) && EquipedBackpackHasItems();
     }
-
+    
     private InventoryItem prevEquippedEyeItem;
     private InventoryItem prevEquippedBackpackItem;
     
@@ -1958,7 +1994,7 @@ public class Game : MonoBehaviour {
                 equipedEye = new() { coreAttack = defaultAttack };
             }
             else {
-                equipedEye = eyeInstanceFromItemId[curEyeItem.itemDataUuid];
+                equipedEye = eyeInstanceFromItemId[curEyeItem.itemOrInstanceUuid];
             }
         }
         
@@ -2032,10 +2068,12 @@ public class Game : MonoBehaviour {
 
 
     private List<RectTransform> hoverableUIElements = new();
+    private RectTransform toggledOffHoverableUIElement;
     
     public struct UIHoverInfo {
         public RectTransform hoveringTransform;
         public float timeSpentHovering;
+        public bool shouldNotShow;
     }
     
     private UIHoverInfo lastUIHoverInfo;
@@ -2062,7 +2100,15 @@ public class Game : MonoBehaviour {
             }
             
             break;
-        } 
+        }
+
+        if (info.hoveringTransform == toggledOffHoverableUIElement) {
+            info.shouldNotShow = true;
+        }
+        else {
+            info.shouldNotShow = false;
+            toggledOffHoverableUIElement = null;
+        }
         
         lastUIHoverInfo = info;
         return info;
@@ -2102,7 +2148,7 @@ public class Game : MonoBehaviour {
                 return IsDraggingItem;
             }
 
-            if (IsHoveredItemGrayedOut(hoverInfo)) {
+            if (NotAllowedToMoveOrPickupItem(hoverInfo)) {
                 return IsDraggingItem;
             }
             
@@ -2163,7 +2209,7 @@ public class Game : MonoBehaviour {
 
             bool swappingItems = false;
             if (TryGetItemFromHoverInfo(hoverInfo, out InventoryItem swapItem)) {
-                bool itemsCanSwap = swapItem.itemDataUuid != dragItem.itemDataUuid || (swapItem.IsFullStack || dragItem.IsFullStack);
+                bool itemsCanSwap = swapItem.itemOrInstanceUuid != dragItem.itemOrInstanceUuid || (swapItem.IsFullStack || dragItem.IsFullStack);
                 swappingItems = itemsCanSwap && selectItemInputAction.WasPressedThisFrame();
             }
             
@@ -2273,7 +2319,7 @@ public class Game : MonoBehaviour {
 
         // If we can stack the item then we just do that
         foreach (InventorySlot slot in availableSlots) {
-            if (slot.item == null || slot.ui.disallowItemStacking || slot.item.IsFullStack || slot.item.itemDataUuid != item.itemDataUuid) continue;
+            if (slot.item == null || slot.ui.disallowItemStacking || slot.item.IsFullStack || slot.item.itemOrInstanceUuid != item.itemOrInstanceUuid) continue;
 
             if (allowInfiniteStacking) {
                 slot.item.count += item.count;
@@ -2400,7 +2446,7 @@ public class Game : MonoBehaviour {
         
         for (int i = 0; i < inventory.slots.Length; i++) {
             InventorySlot slot = inventory.slots[i];
-            if (slot.item == null || slot.item.itemDataUuid != item.uuid) continue;
+            if (slot.item == null || slot.item.itemOrInstanceUuid != item.uuid) continue;
             
             if (slot.item.count >= count) {
                 removedCount += count;
@@ -2521,10 +2567,10 @@ public class Game : MonoBehaviour {
             if (slot.item == null) continue;
             switch (valueType) {
                 case InventoryValueType.Buy:
-                    value += slot.item.ItemRef.buyPrice * slot.item.count;
+                    value += slot.item.ItemRef.type == demonEyeType ? GetDemonEyeSellPrice(slot.item) : slot.item.ItemRef.buyPrice * slot.item.count;
                     break;
                 case InventoryValueType.Sell:
-                    value += slot.item.ItemRef.sellPrice * slot.item.count;
+                    value += slot.item.ItemRef.type == demonEyeType ? GetDemonEyeSellPrice(slot.item) : slot.item.ItemRef.sellPrice * slot.item.count;
                     break;
                 case InventoryValueType.Xp:
                     value += slot.item.ItemRef.traderXp * slot.item.count;
@@ -2536,13 +2582,11 @@ public class Game : MonoBehaviour {
 
     private void OpenPlayerInventory() {
         playerPanel.gameObject.SetActive(true);
-        crosshairTrans.gameObject.SetActive(false);
         Cursor.visible = true;
     }
 
     private void ClosePlayerInventory() {
         playerPanel.gameObject.SetActive(false);
-        crosshairTrans.gameObject.SetActive(true);
         Cursor.visible = false;
         EndDragAndDropItem();
     }
@@ -2670,6 +2714,9 @@ public class Game : MonoBehaviour {
     private int PlayerIdleUp = Animator.StringToHash("PlayerIdleUp");
     private int PlayerIdleDown = Animator.StringToHash("PlayerIdleDown");
     private int PlayerDeathHash = Animator.StringToHash("PlayerDeath");
+
+    private float lastShotTime;
+    private int consecutiveShotCount;
     
     private void UpdatePlayer() {
         if (player.bleeding && player.bleedLimiter.TimeHasPassed(3.5f)) {
@@ -2719,31 +2766,33 @@ public class Game : MonoBehaviour {
             }
         }
         
-        if (AimingWithController()) {
-            Vector2 stick = lookInputAction.ReadValue<Vector2>();
-            crosshairTrans.position = ScreenCenter + stick.normalized * 250f; 
-        }
-        else {
-            Vector2 mousePos = Mouse.current.position.ReadValue();
-            crosshairTrans.position = mousePos;
+        int targetCount = 1;
+        if (equipedEye.projectileCount.TryGetValue(out var projectileCount)) {
+            targetCount += projectileCount.extraProjectileCount;
         }
 
-        bool shootInput = false;
-        Vector2 targetScreenPos = Vector2.zero;
+        List<Vector3> attackTargets = GetAttackTargets(targetCount);
+
+        if (attackTargets.Count <= 0 || !CanShoot()) return;
         
-        if (AimingWithController()) {
-            shootInput = lookInputAction.ReadValue<Vector2>().magnitude > 0.1f;
-            targetScreenPos = crosshairTrans.position;
-        }
-        else {
-            shootInput = attackInputAction.IsPressed();
-            targetScreenPos = Mouse.current.position.ReadValue();
+        PlayAudioClip(shootClip, player.position, 1f);
+        foreach (Vector3 attackTarget in attackTargets) {
+            ShootProjectile(attackTarget);
         }
 
-        if (shootInput && CanShoot()) {
-            PlayAudioClip(shootClip, player.position, 1f);
-            ShootProjectile(targetScreenPos);
+        float consecutiveShotDelay = defaultAttack.attackDelay * 1.5f;
+        if (Time.time - lastShotTime <= consecutiveShotDelay) {
+            consecutiveShotCount++;
         }
+        else {
+            consecutiveShotCount = 0;
+        }
+        
+        if (equipedEye.blast.TryGetValue(out var blast) && consecutiveShotCount > 0 && consecutiveShotCount % blast.numshotsUntilOverheat == 0) {
+            SpawnExplosion(blastPool, OffsetY(player.position, 0.1f), blast.radius, blast.damage, 0.15f);
+        }
+            
+        lastShotTime = Time.time;
     }
 
     private void HealPlayer(int healing) {
@@ -2808,12 +2857,6 @@ public class Game : MonoBehaviour {
         startingWeight = defaultStartingEncumberingWeight + encumberingIncreaseFromStrength;
     }
 
-    private float GetTotalWeightCompletion() {
-        GetEncumberingWeightRange(out int _, out int endingEncumberingWeight);
-        int inventoryWeight = GetInventoryWeight(playerInventory);
-        return Mathf.Clamp01(inventoryWeight / (float)endingEncumberingWeight);
-    }
-
     private float GetOverweightCompletion() {
         GetEncumberingWeightRange(out int startingEncumberingWeight, out int endingEncumberingWeight);
         int inventoryWeight = GetInventoryWeight(playerInventory);
@@ -2849,10 +2892,11 @@ public class Game : MonoBehaviour {
         public PenetrationSoulcard.InstanceData? penetration;
         public DoubleCritSoulcard.InstanceData? doubleCrit;
         public BackwardsShotSoulcard.InstanceData? backwardShot;
-        public BackwardsShotMultiplierSoulcard.InstanceData? backwardsShotCrit;
         public PoisonSoulcard.InstanceData? poison;
         public ExplosionSoulcard.InstanceData? explosion;
+        public OverheatBlast.InstanceData? blast;
         public StoppingPowerSoulcard.InstanceData? stoppingPower;
+        public ProjectileCountSoulcard.InstanceData? projectileCount;
     }
 
     private Dictionary<int, DemonEyeInstance> eyeInstanceFromItemId = new();
@@ -2860,7 +2904,7 @@ public class Game : MonoBehaviour {
     private Limiter attackLimiter;
 
     private DemonEyeInstance BuildAndRegisterEye(InventoryItem item) {
-        item.itemDataUuid = GenerateNewItemUuid();
+        item.itemOrInstanceUuid = GenerateNewItemUuid();
         item._itemRef = demonEyeItem;
         
         Dictionary<int, int> eyeModCountFromId = new();
@@ -2887,8 +2931,42 @@ public class Game : MonoBehaviour {
             modInstance.ApplyToEye(newDemonEye); 
         }
         
-        eyeInstanceFromItemId.Add(item.itemDataUuid, newDemonEye);
+        eyeInstanceFromItemId.Add(item.itemOrInstanceUuid, newDemonEye);
         return newDemonEye;
+    }
+
+    private int GetDemonEyeSellPrice(InventoryItem demonEyeInventoryItem) {
+        // We need to use the InventoryItem's ID because the Item's ID is the demon eye Scriptable Object
+        DemonEyeInstance demonEye = eyeInstanceFromItemId[demonEyeInventoryItem.itemOrInstanceUuid]; 
+        
+        int sellPrice = 0;
+        foreach (EquipedModInstance modInstance in demonEye.modInstances) {
+            sellPrice += modInstance.Soulcard.sellPrice * modInstance.stackCount;
+        }
+        return sellPrice;
+    } 
+
+    private List<Vector3> GetAttackTargets(int targetCount) {
+        float overlapDist = GetProjectileSpeed() * GetProjectileLifeTimeSeconds();
+        List<Collider2D> cols = OverlapCircle(player.position, overlapDist, Masks.EnemyMask);
+        
+        if (cols.Count <= 0) {
+            cols = OverlapCircle(player.position, overlapDist, Masks.MineableMask);
+        }
+        
+        // Sort by distance from player
+        cols.Sort(static (a, b) => {
+            float da = Vector2.SqrMagnitude(a.transform.position - instance.player.position);
+            float db = Vector2.SqrMagnitude(b.transform.position - instance.player.position);
+            return da.CompareTo(db);
+        });
+        
+        int count = Mathf.Min(targetCount, cols.Count);
+        List<Vector3> targets = new();
+        for (int i = 0; i < count; i++) {
+            targets.Add(entityLookup[cols[i].gameObject].Center);
+        }
+        return targets;
     }
 
     private bool CanShoot() {
@@ -2900,19 +2978,13 @@ public class Game : MonoBehaviour {
         return attackLimiter.TimeHasPassed(attackDelay);
     }
 
-    private void ShootProjectile(Vector2 targetScreenPos) {
-        Vector2 targetWorldPos = mainCamera.ScreenToWorldPoint(targetScreenPos);
-
+    private void ShootProjectile(Vector2 targetPos) {
         const float maxInaccuracyAngle = 18f;
         float maxAccuracyAngle = maxInaccuracyAngle * (1f - equipedEye.coreAttack.accuracy);
         float accuracyAngle = Random.Range(-maxAccuracyAngle, maxAccuracyAngle);
 
-        float projectileSpeed = equipedEye.coreAttack.projectileSpeed;
-        if (equipedEye.stoppingPower.TryGetValue(out var stoppingPower)) {
-            projectileSpeed *= 1f - stoppingPower.percentSpeedReduction;
-        }
-        
-        Vector2 dir = (targetWorldPos - player.trans.PositionV2()).normalized;
+        float projectileSpeed = GetProjectileSpeed();
+        Vector2 dir = (targetPos - PlayerEyePos.ToVector2()).normalized;
         dir = Quaternion.AngleAxis(accuracyAngle, Vector3.forward) * dir;
         Vector2 velocity = dir * projectileSpeed; 
         SpawnProjectile(velocity);
@@ -2920,30 +2992,23 @@ public class Game : MonoBehaviour {
         if (equipedEye.trishot.TryGetValue(out var trishot) && RollProbability(trishot.probability)) {
             const float baseTriShotAngle = 8f;
             Vector2 secondShotVelocity = Quaternion.AngleAxis(baseTriShotAngle, Vector3.forward) * velocity;
-            SpawnProjectile(secondShotVelocity);
+            SpawnProjectile(secondShotVelocity).isTriShot = true;
             Vector2 thirdShotVelocity = Quaternion.AngleAxis(-baseTriShotAngle, Vector3.forward) * velocity;
-            SpawnProjectile(thirdShotVelocity);
+            SpawnProjectile(thirdShotVelocity).isTriShot = true;
         }
 
         if (equipedEye.backwardShot.TryGetValue(out var backShot) && RollProbability(backShot.probability)) {
-            Projectile projectile = SpawnProjectile(-velocity);
-            projectile.isBackwardsShot = true;
+            SpawnProjectile(-velocity).isBackwardsShot = true;
         }
     }
     
     private Projectile SpawnProjectile(Vector2 velocity) {
         float angle = Vector2.SignedAngle(Vector2.right, velocity.normalized);
         Quaternion projectileRotation = Quaternion.AngleAxis(angle, Vector3.forward);
-        
-        const float defaultTimeAlive = 0.65f;
-        float projLifeTime = defaultTimeAlive;
-        if (equipedEye.range.TryGetValue(out var rangeIncrease)) {
-            projLifeTime += rangeIncrease.timeAliveIncrease;
-        }
 
         EntityPool<Projectile> poolToSpawnFrom = equipedEye.stoppingPower.HasValue ? stoppingPowerProjectilePool : projectilePool;
-        Projectile projectile = SpawnEntity(poolToSpawnFrom, player.position + new Vector3(0f, 0.13f, 0f), projectileRotation);
-        projectile.lifeTimeDuration = projLifeTime;
+        Projectile projectile = SpawnEntity(poolToSpawnFrom, PlayerEyePos, projectileRotation);
+        projectile.lifeTimeDuration = GetProjectileLifeTimeSeconds();
         projectile.velocity = velocity;
         projectile.eyeInstanceSpawnedFrom = equipedEye;
         projectiles.Add(projectile);
@@ -2954,6 +3019,26 @@ public class Game : MonoBehaviour {
         return projectile;
     }
 
+    private float GetProjectileLifeTimeSeconds() {
+        const float defaultTimeAlive = 0.65f;
+        float projLifeTime = defaultTimeAlive;
+        if (equipedEye.range.TryGetValue(out var rangeIncrease)) {
+            projLifeTime += rangeIncrease.timeAliveIncrease;
+        }
+        return projLifeTime;
+    }
+
+    private float GetProjectileSpeed() {
+        float projectileSpeed = equipedEye.coreAttack.projectileSpeed;
+        if (equipedEye.stoppingPower.TryGetValue(out var stoppingPower)) {
+            projectileSpeed *= 1f - stoppingPower.percentSpeedReduction;
+        }
+        return projectileSpeed;
+    }
+    
+
+    private Vector3 PlayerEyePos => player.position + new Vector3(0f, 0.13f, 0f);
+
     // *******************************
     // Interactions 
     // *******************************
@@ -2962,8 +3047,9 @@ public class Game : MonoBehaviour {
         interactPrompt.SetActive(false);
         
         Vector2 checkCenter = player.position + new Vector3(0f, 0.05f, 0f);
+        List<Collider2D> cols = OverlapCircle(checkCenter, 0.1f, Masks.ItemMask);
         
-        ForCollidersInOverlapCircle(checkCenter, 0.1f, Masks.ItemMask, 10, col => {
+        foreach (Collider2D col in cols) {
             if (col.CompareTag(Tags.Pickup)) {
                 EnableInteractionPrompt(col.transform.position);
                 if (interactInputAction.WasPressedThisFrame()) {
@@ -2996,7 +3082,7 @@ public class Game : MonoBehaviour {
                     gameStateMachine.SetStateIfNotCurrent(gameWinState);
                 }
             }
-        });
+        }
     }
 
     private void PickupDroppedItem(Entity droppedEntity) {
@@ -3050,6 +3136,7 @@ public class Game : MonoBehaviour {
         public float curTimeAlive;
         public float lifeTimeDuration;
         public float distTraveled;
+        public bool isTriShot;
         public bool isBackwardsShot;
         public Vector2 velocity;
         public DemonEyeInstance eyeInstanceSpawnedFrom;
@@ -3061,6 +3148,7 @@ public class Game : MonoBehaviour {
         projectile.lifeTimeDuration = default;
         projectile.distTraveled = default;
         projectile.isBackwardsShot = default;
+        projectile.isTriShot = default;
         projectile.velocity = default;
         projectile.eyeInstanceSpawnedFrom = default;
         if (projectile.ignoreEntities != null) {
@@ -3157,7 +3245,7 @@ public class Game : MonoBehaviour {
             
             if (eyeInstance.explosion.TryGetValue(out var explosion) && RollProbability(explosion.probability)) {
                 Vector2 expSpawnPos = projectile.position + (enemy.position - projectile.position) / 2f;
-                SpawnExplosion(explosion, expSpawnPos);
+                SpawnExplosion(explosionPool, expSpawnPos, explosion.radius, explosion.damage, 0.1f);
             }
         }
         else {
@@ -3213,6 +3301,10 @@ public class Game : MonoBehaviour {
     private int GetBaseDamage(Projectile proj) {
         DemonEyeInstance eyeInstance = proj.eyeInstanceSpawnedFrom;
         int damage = eyeInstance.coreAttack.damage;
+
+        if (proj.isTriShot && eyeInstance.trishot.TryGetValue(out var triShot)) {
+            damage = Mathf.RoundToInt(damage * triShot.reducedDamageMultiplier);
+        }
         
         if (eyeInstance.farDamage.TryGetValue(out var farDamage)) {
             int increasedDamageFromDist = Mathf.RoundToInt(farDamage.damageIncreasePerUnitTraveled * proj.distTraveled);
@@ -3236,19 +3328,22 @@ public class Game : MonoBehaviour {
             }
         }
 
-        if (proj.isBackwardsShot && eyeInstance.backwardsShotCrit.TryGetValue(out var backShotCrit)) {
-            multiplier += backShotCrit.damageMultiplier;
+        if (proj.isBackwardsShot && eyeInstance.backwardShot.TryGetValue(out var backShot)) {
+            multiplier += backShot.damageMultiplier;
         }
 
         return multiplier;
     }
 
-    private void SpawnExplosion(ExplosionSoulcard.InstanceData explosion, Vector2 spawnPos) {
-        Entity expEntity = SpawnEntity(explosionPool, spawnPos, Quaternion.identity); 
+    private void SpawnExplosion(EntityPool<Entity> entityPool, Vector2 spawnPos, float radius, int damage, float damageDelay) {
+        Entity expEntity = SpawnEntity(entityPool, spawnPos, Quaternion.identity); 
         DestroyEntity(expEntity, CurrentClipLength(expEntity.animator));
         
-        ForCollidersInOverlapCircle(spawnPos, explosion.radius, Masks.EnemyMask, 30, col => {
-            DamageEnemy(entityLookup[col.gameObject], explosion.damage, false);
+        Tween.Delay(damageDelay, () => {
+            List<Collider2D> cols = OverlapCircle(spawnPos, radius, Masks.EnemyMask);
+            foreach (Collider2D col in cols) {
+                DamageEnemy(entityLookup[col.gameObject], damage, false);
+            }
         });
     }
 
@@ -3260,7 +3355,18 @@ public class Game : MonoBehaviour {
         
         Vector3 startSize = Vector3.one * 0.8f;
         Vector3 endSize = Vector3.one * (damageColor == DamageColor.Crit ? 1.25f : 1f);
-        Vector2 endDamageNumPos = OffsetY(OffsetX(spawnPos, Random.Range(-0.08f, 0.08f)), Random.Range(0.06f, 0.2f));
+        
+        float xOffset = Random.Range(-0.12f, 0.12f);
+        float yOffset = Random.Range(0.1f, 0.18f);
+        Vector2 endDamageNumPos;
+        
+        if (damageColor == DamageColor.Blood) {
+            endDamageNumPos = OffsetX(spawnPos, Random.Range(0.1f, 0.2f) * RandomSign());
+            endDamageNumPos = OffsetY(endDamageNumPos, yOffset * 0.5f);
+        }
+        else {
+            endDamageNumPos = OffsetY(OffsetX(spawnPos, xOffset), yOffset);
+        }
         
         switch (damageColor) {
             case DamageColor.Normal:
@@ -3277,7 +3383,7 @@ public class Game : MonoBehaviour {
                 break;
         }
 
-        const float moveDuration = 0.3f;
+        const float moveDuration = 0.24f;
         const float scaleUpDuration = 0.15f;
         const float popOutDuration = 0.09f;
         
@@ -3301,6 +3407,9 @@ public class Game : MonoBehaviour {
         activeExitPortal = null;
         portalArrow.gameObject.SetActive(false);
         
+        exitPortalInfoParent.SetActive(true);
+        exitPortalAvailableParent.SetActive(false);
+        
         foreach (Transform portal in exitPortalParent) {
             portal.gameObject.SetActive(false);
         }
@@ -3311,14 +3420,15 @@ public class Game : MonoBehaviour {
             int totalSeconds = (int)exitPortalTimer.CurTime;
             int minutes = totalSeconds / 60;
             int seconds = totalSeconds % 60;
-            string formattedTime = $"{minutes}:{seconds:D2}";
-            exitPortalStatusText.text = $"Exit Portal Countdown: {formattedTime}";
+            exitPortalInfoText.text = $"{minutes}:{seconds:D2}";
         };
         
         exitPortalTimer.EndAction = () => {
             int randomSpawnIndex = Random.Range(0, exitPortalParent.childCount);
             activeExitPortal = exitPortalParent.GetChild(randomSpawnIndex);
             activeExitPortal.gameObject.SetActive(true);
+            exitPortalInfoParent.SetActive(false);
+            exitPortalAvailableParent.SetActive(true);
         };
     }
 
@@ -3347,11 +3457,12 @@ public class Game : MonoBehaviour {
         portalArrow.gameObject.SetActive(true);
         
         const float distFromScreenEdge = 50f;
-        const float extraTopPadding = 100f;
+        const float extraTopPadding = 130f;
+        const float extraBottomPadding = 100f;
         
         float minX = distFromScreenEdge;
         float maxX = Screen.width - distFromScreenEdge;
-        float minY = distFromScreenEdge;
+        float minY = distFromScreenEdge + extraBottomPadding;
         float maxY = Screen.height - extraTopPadding - distFromScreenEdge;
         
         // Find where direction hits edge
@@ -3411,7 +3522,7 @@ public class Game : MonoBehaviour {
                 if (deadBodyItems.IndexInRange(j)) {
                     Item spawnItem = deadBodyItems[j];
                     inventoryItem = new() {
-                        itemDataUuid = spawnItem.uuid, 
+                        itemOrInstanceUuid = spawnItem.uuid, 
                         count = Random.Range(1, spawnItem.MaxStackCount / 3),
                         notDiscovered = true,
                     };
@@ -3638,6 +3749,7 @@ public class Game : MonoBehaviour {
         ShowHideoutUI();
         hideoutHeaderParent.gameObject.SetActive(false);
         hideoutTabsParent.gameObject.SetActive(false);
+        playerInfoParent.gameObject.SetActive(false);
         ToggleHideoutPanels(playerPanel, mapSelectionPanel);
     }
 
@@ -3649,7 +3761,11 @@ public class Game : MonoBehaviour {
         ToggleHideoutTab(characterTabButton, characterTabText);
         ToggleHideoutPanels(playerPanel, stashPanel);
         ToggleSlimPlayerPanel(false);
-        currenciesParent.gameObject.SetActive(true);
+        coinsCurrencyParent.gameObject.SetActive(true);
+        soulsCurrencyParent.gameObject.SetActive(true);
+        healthBarParent.gameObject.SetActive(false);
+        weightBarParent.gameObject.SetActive(false);
+        playerInfoParent.gameObject.SetActive(true);
         menuBackgroundImage.gameObject.SetActive(true);
         hideoutHeaderParent.gameObject.SetActive(true);
         hideoutTabsParent.gameObject.SetActive(true);
@@ -3659,27 +3775,27 @@ public class Game : MonoBehaviour {
         ToggleHideoutPanels();
         HideItemDescPopup(); 
         HideUIElementPopup();
-        currenciesParent.gameObject.SetActive(false);
+        playerInfoParent.gameObject.SetActive(false);
         menuBackgroundImage.gameObject.SetActive(false);
         hideoutHeaderParent.gameObject.SetActive(false);
         hideoutTabsParent.gameObject.SetActive(false);
     }
 
     private void ShowRaidUI() {
-        currenciesParent.gameObject.SetActive(true);
-        playerBarsPanel.gameObject.SetActive(true);
-        raidTimerText.gameObject.SetActive(true);
-        crosshairTrans.gameObject.SetActive(true);
+        healthBarParent.gameObject.SetActive(true);
+        weightBarParent.gameObject.SetActive(true);
+        coinsCurrencyParent.gameObject.SetActive(false);
+        soulsCurrencyParent.gameObject.SetActive(true);
+        playerInfoParent.gameObject.SetActive(true);
+        raidInfoPanelParent.SetActive(true);
     }
 
     private void CloseRaidUI() {
         HideItemDescPopup(); 
         HideUIElementPopup();
-        currenciesParent.gameObject.SetActive(false);
-        crosshairTrans.gameObject.SetActive(false);
         interactPrompt.gameObject.SetActive(false);
-        playerBarsPanel.gameObject.SetActive(false);
-        raidTimerText.gameObject.SetActive(false);
+        playerInfoParent.gameObject.SetActive(false);
+        raidInfoPanelParent.SetActive(false);
         portalArrow.gameObject.SetActive(false);
     }
 
@@ -3763,11 +3879,13 @@ public class Game : MonoBehaviour {
         hatManTraderButton.button.onClick.AddListener(() => OnTraderButtonPressed(hatManTrader));
         
         agilityUpgradeButton.button.onClick.AddListener(() => OnLevelupButtonPressed(agilityUpgradePath, player.agilityLevel));
-        corruptionUpgradeButton.button.onClick.AddListener(() => OnLevelupButtonPressed(corruptionUpgradePath, player.luckLevel));
+        corruptionUpgradeButton.button.onClick.AddListener(() => OnLevelupButtonPressed(luckUpgradePath, player.luckLevel));
         healthUpgradeButton.button.onClick.AddListener(() => OnLevelupButtonPressed(healthUpgradePath, player.healthLevel));
         strengthUpgradeButton.button.onClick.AddListener(() => OnLevelupButtonPressed(strengthUpgradePath, player.strengthLevel));
         
         forgeEyeButton.button.onClick.AddListener(() => {
+            if (PlayingForgeAnimation) return;
+            
             int eyeSlotIndex = 0;
             InventoryItem eyeItem = null;
 
@@ -3786,6 +3904,8 @@ public class Game : MonoBehaviour {
                 if (crucibleInventory.slots[i].item != null) break;
                 if (i == crucibleInventory.slots.Length - 1) return;
             }
+
+            toggledOffHoverableUIElement = forgeEyeButton.rectTransform;
             
             DoEyeForgeAnimation(() => {
                 InventoryItem newDemonEyeItem = new() {
@@ -3809,6 +3929,8 @@ public class Game : MonoBehaviour {
         
         upgradeForgeButton.button.onClick.AddListener(() => {
             if (upgradeForgeButton.isDisabled) return;
+            
+            toggledOffHoverableUIElement = upgradeForgeButton.rectTransform;
             
             UpgradePath.UpgradeRequirements requirements = crucibleUpgradePath.pathUpgrades[player.crucibleLevel];
             
@@ -3914,12 +4036,15 @@ public class Game : MonoBehaviour {
     }
     
     private int fillParamProperty = Shader.PropertyToID("_Fill");
+    private Tween eyeForgeTween;
+    private bool PlayingForgeAnimation => eyeForgeTween.isAlive;
     
     private void DoEyeForgeAnimation(Action onAnimationEndCallback) {
-        Tween.Custom(target: this, 0f, 1f, 5f, (target, val) => {
+        eyeForgeTween = Tween.Custom(this, 0f, 1f, 5f, ease: Ease.Linear, onValueChange: (target, val) => {
             target.pentagramFillImage.material.SetFloat(target.fillParamProperty, target.pentagramFillCurve.Evaluate(val));
-        }, Ease.Linear)
-        .OnComplete(onAnimationEndCallback);
+        });
+
+        eyeForgeTween.OnComplete(onAnimationEndCallback); 
         
         foreach (InventorySlot slot in crucibleInventory.slots) {
             if (slot.item == null) continue;
@@ -3962,8 +4087,11 @@ public class Game : MonoBehaviour {
     }
     
     private void UpdateInRaidUI() {
-        healthBarFillImage.fillAmount = player.health / 100f;
-        weightBarFillImage.fillAmount = GetTotalWeightCompletion();
+        healthBarFillImage.fillAmount = player.health / (float)FullPlayerHealth;
+        
+        GetEncumberingWeightRange(out int startingEncumberingWeight, out _);
+        int inventoryWeight = GetInventoryWeight(playerInventory);
+        weightBarFillImage.fillAmount = Mathf.Clamp01(inventoryWeight / (float)startingEncumberingWeight);
         
         float overweightComp = GetOverweightCompletion();
         if (overweightComp > 0f) {
@@ -3974,16 +4102,22 @@ public class Game : MonoBehaviour {
         }
 
         if (spawnManager.timeUntilFinalWave >= 0f) {
+            timeUntilFinalWaveParent.SetActive(true); 
+            finalWaveActiveParent.SetActive(false);
+            
             float timeUntilFinalWave = Mathf.Clamp(spawnManager.timeUntilFinalWave, 0f, float.MaxValue);
             int minutesLeft = Mathf.FloorToInt(timeUntilFinalWave / 60f);
             int secondsLeft = Mathf.FloorToInt(timeUntilFinalWave % 60f);
-            raidTimerText.text = $"{minutesLeft:0}:{secondsLeft:00}";
+            timeUntilFinalWaveText.text = $"{minutesLeft:0}:{secondsLeft:00}";
         }
         else if (spawnManager.spawnEvents.IndexInRange(spawnManager.spawnTimeIndex) || enemies.Count > 0) {
-            raidTimerText.text = "Survive";
+            timeUntilFinalWaveParent.SetActive(false); 
+            exitPortalAvailableParent.SetActive(false);
+            finalWaveActiveParent.SetActive(true);
         }
         else {
-            raidTimerText.text = "Extract";
+            timeUntilFinalWaveParent.SetActive(false); 
+            finalWaveActiveParent.SetActive(false);
         }
     }
 
@@ -4008,24 +4142,24 @@ public class Game : MonoBehaviour {
     
     private void UpdateCurrencyNumbers() {
         if (prevSoulCurrency != player.soulCurrency) {
-            soulsCurrencyText.text = player.soulCurrency.ToString();
+            soulsCurrencyText.text = player.soulCurrency.ToString("N0");
         }
         if (prevCoinCurrency != player.coinCurrency) {
-            coinCurrencyText.text = player.coinCurrency.ToString();
+            coinCurrencyText.text = player.coinCurrency.ToString("N0");
         }
         prevSoulCurrency = player.soulCurrency;
         prevCoinCurrency = player.coinCurrency;
     }
 
 
-    private enum CrucibleState { Upgrade, Forging }
-    private CrucibleState crucibleState;
+    private enum CrucibleMode { Upgrade, Forging }
+    private CrucibleMode crucibleMode;
 
     private void UpdateCrucibleState() {
         if (!OnEyeForgeTab) return;
         
         bool forging = GetInventoryItemCount(crucibleInventory) > 0;
-        crucibleState = forging ? CrucibleState.Forging : CrucibleState.Upgrade;
+        crucibleMode = forging ? CrucibleMode.Forging : CrucibleMode.Upgrade;
 
         if (forging && forgeEyeButton.isDisabled) {
             forgeEyeButton.Enable();
@@ -4071,13 +4205,13 @@ public class Game : MonoBehaviour {
         
         if (transactionState == TransactionState.Buying) {
             int buyPrice = GetInventoryValue(transactionInventory, InventoryValueType.Buy);
-            string buyPriceString = ColorText(buyPrice.ToString(), styles.coinCurrencyColor);
+            string buyPriceString = ColorText(buyPrice.ToString("N0"), styles.coinCurrencyColor);
             traderTransactionInfoText.text = $"Purchase for <sprite=0>{buyPriceString}";
         }
         else if (transactionState == TransactionState.Selling) {
             int sellPrice = GetInventoryValue(transactionInventory, InventoryValueType.Sell);
             int xpGain = GetInventoryValue(transactionInventory, InventoryValueType.Xp);
-            string sellPriceString = ColorText(sellPrice.ToString(), styles.coinCurrencyColor);
+            string sellPriceString = ColorText(sellPrice.ToString("N0"), styles.coinCurrencyColor);
             traderTransactionInfoText.text = $"Sell for <sprite=0>{sellPriceString}\n Gain {xpGain} trader experience";
         }
     }
@@ -4380,7 +4514,7 @@ public class Game : MonoBehaviour {
         if (upgradePath == agilityUpgradePath) {
             player.agilityLevel++;
         }
-        else if (upgradePath == corruptionUpgradePath) {
+        else if (upgradePath == luckUpgradePath) {
             player.luckLevel++;
         }
         else if (upgradePath == healthUpgradePath) {
@@ -4399,7 +4533,7 @@ public class Game : MonoBehaviour {
     
     private void RefreshLevelUpPossibilities() {
         ToggleStatUpgradeButton(agilityUpgradeButton, agilityUpgradePath, player.agilityLevel);
-        ToggleStatUpgradeButton(corruptionUpgradeButton, corruptionUpgradePath, player.luckLevel);
+        ToggleStatUpgradeButton(corruptionUpgradeButton, luckUpgradePath, player.luckLevel);
         ToggleStatUpgradeButton(healthUpgradeButton, healthUpgradePath, player.healthLevel);
         ToggleStatUpgradeButton(strengthUpgradeButton, strengthUpgradePath, player.strengthLevel);
     }
@@ -4759,24 +4893,6 @@ public class Game : MonoBehaviour {
         };
     }
     
-    // ************************
-    // Controls
-    // ************************
-    
-    private InputDevice lastDeviceToGiveAimInput;
-    
-    public bool AimingWithController() {
-        if (lookInputAction.activeControl != null) {
-            lastDeviceToGiveAimInput = lookInputAction.activeControl.device;
-        }
-        
-        if (!ControllerPluggedIn) {
-            return false;
-        }
-        
-        return lastDeviceToGiveAimInput is Gamepad;
-    }
-    
     public static bool RollProbability(float probability) {
         return Random.value < probability;
     }
@@ -4802,7 +4918,7 @@ public class Game : MonoBehaviour {
     private Vector3 RandomizeVectorAngle(Vector3 vector, float degreeDelta) {
         return Quaternion.AngleAxis(Random.Range(-degreeDelta, degreeDelta), Vector3.forward) * vector;
     }
-
+    
     private Quaternion RandomRotation() {
         return Quaternion.AngleAxis(Random.Range(0f, 360f), Vector3.forward);
     }
@@ -4815,28 +4931,28 @@ public class Game : MonoBehaviour {
         return new(pos.x + xOffset, pos.y);
     }
 
+    private float RandomSign() {
+        return Random.Range(-1, 2);
+    }
+
     private float CurrentClipLength(Animator anim) {
         return anim.GetCurrentAnimatorStateInfo(0).length;
     }
 
-    private void ForCollidersInOverlapCircle(Vector2 center, float radius, LayerMask mask, int maxColliders, Action<Collider2D> perItemCallback) {
+    private List<Collider2D> _overlapResults = new(1000);
+    
+    private List<Collider2D> OverlapCircle(Vector2 center, float radius, LayerMask mask) {
+        _overlapResults.Clear();
+        
         ContactFilter2D contactFilter = new() {
             layerMask = mask, 
             useLayerMask = true,
         };
         
-        List<Collider2D> cols = ListPool<Collider2D>.Get();
+        int count = Physics2D.OverlapCircle(center, radius, contactFilter, _overlapResults);
+        Assert.IsFalse(count > _overlapResults.Capacity);
         
-        if (cols.Capacity < maxColliders) {
-            cols.Capacity = maxColliders;
-        }
-        
-        int count = Physics2D.OverlapCircle(center, radius, contactFilter, cols);
-        for (int i = 0; i < count; i++) {
-            perItemCallback?.Invoke(cols[i]);
-        }
-        
-        ListPool<Collider2D>.Release(cols);
+        return _overlapResults;
     }
 
     private static string SizeText(string text, int fontSize) {
@@ -4877,8 +4993,13 @@ public class Game : MonoBehaviour {
         return ColorText($"+{amount:0.00}", instance.styles.increaseDescColor);
     }
     
+    public static string DisplayDecrease(float amount) {
+        return ColorText($"-{amount:0.00}", instance.styles.decreaseDescColor);
+    }
+    
     public static string DisplayMultiplier(float multiplier) {
-        return ColorText($"{multiplier:0.00}x", instance.styles.increaseDescColor);
+        Color textColor = multiplier >= 1f ? instance.styles.increaseDescColor : instance.styles.decreaseDescColor;
+        return ColorText($"{multiplier:0.00}x", textColor);
     }
 
     private enum CardinalDir { Right, Left, Up, Down }

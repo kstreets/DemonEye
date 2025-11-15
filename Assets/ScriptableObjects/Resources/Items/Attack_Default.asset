@@ -38,7 +38,7 @@ MonoBehaviour:
   description: 
   attackDelay: 0.25
   cappedMinAttackDelay: 0.1
-  damage: 28
+  damage: 20
   range: 1.2
   accuracy: 0.25
   enemySpeedReductionPercent: 0.2

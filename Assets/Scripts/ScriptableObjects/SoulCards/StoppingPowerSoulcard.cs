@@ -24,11 +24,11 @@ public class StoppingPowerSoulcard : Soulcard {
     }
 
     private int GetExtraDamage(int stackCount) {
-        return extraDamage * stackCount;
+        return TaperInteger(extraDamage, stackCount, 0.7f);
     }
     
     private float GetProjectileSpeedReduction(int stackCount) {
-        return percentSpeedReduction * stackCount;
+        return TaperFloat(percentSpeedReduction, stackCount, 0.15f);
     }
     
 }

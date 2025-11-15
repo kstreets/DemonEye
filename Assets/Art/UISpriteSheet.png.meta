@@ -1548,6 +1548,72 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: UISpriteSheet_59
+      rect:
+        serializedVersion: 2
+        x: 106
+        y: 346
+        width: 11
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 213b699c6c4318d4d926a9aca88a3949
+      internalID: 972882215
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UISpriteSheet_60
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 0
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f9aa81829ce72894ca53b298bc6fba41
+      internalID: -339932435
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UISpriteSheet_61
+      rect:
+        serializedVersion: 2
+        x: 131
+        y: 338
+        width: 9
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 85a0c20b6bda2cb4794b4e347a297f4b
+      internalID: -455868342
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -1632,7 +1698,10 @@ TextureImporter:
       UISpriteSheet_56: -1117989765
       UISpriteSheet_57: -349347071
       UISpriteSheet_58: 426551447
+      UISpriteSheet_59: 972882215
       UISpriteSheet_6: 1504484193
+      UISpriteSheet_60: -339932435
+      UISpriteSheet_61: -455868342
       UISpriteSheet_7: 1135578465
       UISpriteSheet_8: 2031374853
       UISpriteSheet_9: 1832339534

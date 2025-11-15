@@ -10,7 +10,7 @@ public class FirerateSoulcard : Soulcard {
     
     public float rateIncreasePercentage;
     
-    public override void AddInstanceToEye(Game.DemonEyeInstance eyeInstance, int stackCount) {
+    public override void AddInstanceToEye(DemonEyeInstance eyeInstance, int stackCount) {
         InstanceData instance = new() {
             rateIncrasePercentage = GetReductionPercentage(stackCount), 
         };
@@ -22,7 +22,7 @@ public class FirerateSoulcard : Soulcard {
     }
 
     private float GetReductionPercentage(int stackCount) {
-        return rateIncreasePercentage * stackCount;
+        return TaperFloat(rateIncreasePercentage, stackCount, 0.65f);
     }
     
 }

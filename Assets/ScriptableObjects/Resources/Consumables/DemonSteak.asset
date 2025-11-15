@@ -22,11 +22,14 @@ MonoBehaviour:
   buyPrice: 40
   sellPrice: 20
   traderXp: 0
-  spawnsOnAllMaps: 0
+  spawnsOnAllMaps: 1
   spawnsOnMaps: []
   chanceToSpawnOnBody: 0
   chanceToSpawnOnTrader: 0
   chanceToSpawnFromRock: 0
+  chanceToSpawnFromEnemy: 0.198
+  spawnsFromEnemies:
+  - {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
   modifiesStats: 0
   agilityStatAdjustment: 0
   strengthStatAdjustment: 0

@@ -6,23 +6,27 @@ public class TrishotSoulcard : Soulcard {
 
     public struct InstanceData {
         public float probability;
+        public float reducedDamageMultiplier;
     }
     
     public float probability;
+    public float reducedDamageMultiplier;
     
     public override void AddInstanceToEye(Game.DemonEyeInstance eyeInstance, int stackCount) {
         InstanceData instance = new() {
             probability = GetProbability(stackCount),
+            reducedDamageMultiplier = reducedDamageMultiplier,
         };
         eyeInstance.trishot = instance;
     }
 
     public override string GetStackDescription(int stackCount) {
-        return $"{DisplayProb(GetProbability(stackCount))} chance that an attack splits into {DisplayNumber(3)}";
+        return $"{DisplayProb(GetProbability(stackCount))} chance to split a projectile into {DisplayNumber(3)}, " +
+               $"each dealing {DisplayMultiplier(reducedDamageMultiplier)} damage";
     }
 
     private float GetProbability(int stackCount) {
-        return probability * stackCount;
+        return TaperFloat(probability, stackCount, 0.4f);
     }
     
 }

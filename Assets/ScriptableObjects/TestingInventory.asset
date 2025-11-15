@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: TestingInventory
   m_EditorClassIdentifier: 
   items:
-  - item: {fileID: 11400000, guid: 9285ab41e291784449187596580ae02c, type: 2}
+  - item: {fileID: 11400000, guid: 363ba89e00af17d4ea4faef47c515f35, type: 2}
     count: 15
   - item: {fileID: 11400000, guid: 813a59de02795ad40bfd5fccf7ddc415, type: 2}
     count: 15

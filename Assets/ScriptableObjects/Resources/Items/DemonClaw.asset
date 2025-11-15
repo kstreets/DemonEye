@@ -24,12 +24,13 @@ MonoBehaviour:
   traderXp: 0
   spawnsOnAllMaps: 1
   spawnsOnMaps: []
-  chanceToSpawnOnBody: 0.119
+  chanceToSpawnOnBody: 0.248
   chanceToSpawnOnTrader: 0
   chanceToSpawnFromRock: 0
-  chanceToSpawnFromEnemy: 0.227
+  chanceToSpawnFromEnemy: 0.507
   spawnsFromEnemies:
   - {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
+  - {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
   modifiesStats: 0
   agilityStatAdjustment: 0
   strengthStatAdjustment: 0

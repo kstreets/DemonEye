@@ -17,16 +17,21 @@ public class ExplosionSoulcard : Soulcard {
     public override void AddInstanceToEye(Game.DemonEyeInstance eyeInstance, int stackCount) {
         eyeInstance.explosion = new() {
             probability = GetProbability(stackCount),
-            damage = damage,
+            damage = GetDamage(stackCount),
             radius = radius,
         };
     }
     
     public override string GetStackDescription(int stackCount) {
-        return $"{DisplayProb(GetProbability(stackCount))} chance for a projectile to explode on impact causing {DisplayNumber(damage)} damage";
+        return $"{DisplayProb(GetProbability(stackCount))} chance for a projectile to explode on impact causing {DisplayNumber(GetDamage(stackCount))} damage";
     }
 
     private float GetProbability(int stackCount) {
-        return probability * stackCount;
+        return TaperFloat(probability, stackCount, 0.65f);
     }
+
+    private int GetDamage(int stackCount) {
+        return TaperInteger(damage, stackCount, 0.5f);
+    }
+    
 }

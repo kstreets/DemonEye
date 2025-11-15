@@ -6,6 +6,7 @@ public static class Masks {
     public static LayerMask PlayerMask { get; }
     public static LayerMask EnemyMask { get; }
     public static LayerMask DamagableMask { get; }
+    public static LayerMask MineableMask { get; }
     public static LayerMask ItemMask { get; }
     public static LayerMask EnemySpacerMask { get; }
     
@@ -14,6 +15,7 @@ public static class Masks {
         PlayerMask = CreateLayerMask("Player");
         EnemyMask = CreateLayerMask("Enemy");
         DamagableMask = CreateLayerMask("Enemy", "Mineable");
+        MineableMask = CreateLayerMask("Mineable");
         ItemMask = CreateLayerMask("Item");
         EnemySpacerMask = CreateLayerMask("EnemySpacers");
     }

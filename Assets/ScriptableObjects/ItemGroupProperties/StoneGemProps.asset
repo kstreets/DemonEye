@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: StoneGemProps
   m_EditorClassIdentifier: Assembly-CSharp::ItemGroupProperties
   maxStackCount: 15
-  weight: 6
+  weight: 3
   description: Demonic gem, traders buy this item to make their trinkets.

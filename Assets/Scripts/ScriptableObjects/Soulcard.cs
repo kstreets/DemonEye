@@ -1,4 +1,7 @@
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.Assertions;
+using VInspector;
 using static Game;
 
 [CreateAssetMenu(fileName = "EyeModifier", menuName = "Scriptable Objects/EyeModifier")]
@@ -17,5 +20,26 @@ public class Soulcard : Item {
         return "Modifier has no description";
     }
 
+    protected int TaperInteger(int value, int stackCount, float taper) {
+        Assert.IsFalse(taper >= 1f && taper <= 0f, "Taper needs to be between 0 and 1");
+        return Mathf.RoundToInt(value * Mathf.Pow(stackCount, taper));
+    }
+
+    protected float TaperFloat(float value, int stackCount, float taper) {
+        Assert.IsFalse(taper >= 1f && taper <= 0f, "Taper needs to be between 0 and 1");
+        return value * Mathf.Pow(stackCount, taper);
+    }
     
+#if UNITY_EDITOR
+    
+    [Button]
+    private void AutoCalculateSellPrice() {
+        sellPrice = Mathf.RoundToInt(buyPrice * 0.65f);     
+        EditorUtility.SetDirty(this);
+    }
+    
+#endif
+
+
+
 }
