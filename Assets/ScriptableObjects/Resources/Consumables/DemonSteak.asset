@@ -9,25 +9,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9bc23522601a56f4d89295cf565d360b, type: 3}
+  m_Script: {fileID: 11500000, guid: 6df5ff14159687148a293eaf73fadad6, type: 3}
   m_Name: DemonSteak
-  m_EditorClassIdentifier: Assembly-CSharp::Item
-  uuid: 1046711600
+  m_EditorClassIdentifier: Assembly-CSharp::ConsumableItem
+  uuid: -1156142153
   displayName: Demon Steak
   inventorySprite: {fileID: -1615384252, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   dropSprite: {fileID: 0}
   pickupRadius: 0.07
   type: {fileID: 11400000, guid: 229fbe8e9203e95499f73ff3b9ecfb68, type: 2}
   associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
-  buyPrice: 40
-  sellPrice: 20
+  buyPrice: 35
+  sellPrice: 22
   traderXp: 0
   spawnsOnAllMaps: 1
   spawnsOnMaps: []
-  chanceToSpawnOnBody: 0
+  chanceToSpawnOnBody: 0.241
   chanceToSpawnOnTrader: 0
   chanceToSpawnFromRock: 0
-  chanceToSpawnFromEnemy: 0.198
+  chanceToSpawnFromEnemy: 0.192
   spawnsFromEnemies:
   - {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
   modifiesStats: 0
@@ -36,4 +36,7 @@ MonoBehaviour:
   itemGroupProps: {fileID: 0}
   maxStackCount: 6
   weight: 2
-  description: Meat of a demon you can eat.
+  description: Meat of a demon you can eat to restore 35 health.
+  animationType: 1
+  healingAmount: 35
+  bandageAmount: 0

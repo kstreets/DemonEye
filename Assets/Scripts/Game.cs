@@ -8,7 +8,6 @@ using PrimeTween;
 using TMPro;
 using Unity.Cinemachine;
 using UnityEngine;
-using UnityEngine.Assertions;
 using UnityEngine.InputSystem;
 using UnityEngine.Pool;
 using UnityEngine.Rendering.Universal;
@@ -16,6 +15,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 using VInspector;
+using Assert = UnityEngine.Assertions.Assert;
 using Vector3 = UnityEngine.Vector3;
 
 public class Game : MonoBehaviour {
@@ -70,7 +70,6 @@ public class Game : MonoBehaviour {
     public Item demonSteakItem;
     public Item pouchItem;
     public Item ruckSackItem;
-    public DemonClaw demonClawItem;
     [EndFoldout]
     
     [Foldout("Stat Upgrade Paths")]
@@ -81,7 +80,7 @@ public class Game : MonoBehaviour {
     [EndFoldout]
     
     [Foldout("Gameplay Variables")]
-    [Range(0f, 1f)] public float defaultCriticalStrikeChange;
+    [UnityEngine.Range(0f, 1f)] public float defaultCriticalStrikeChange;
     public float defaultCriticalStrikeMultiplier;
     [EndFoldout]
 
@@ -118,6 +117,7 @@ public class Game : MonoBehaviour {
     public UIElementPopup uiElementPopup;
     public RectTransform hideoutParent;
     public RectTransform hideoutHeaderParent;
+    public RectTransform hotBarParent;
     public ItemUI dragAndDropItemUI;
     public Image menuBackgroundImage;
     public Image deathBackgroundImage;
@@ -164,6 +164,8 @@ public class Game : MonoBehaviour {
     public TextMeshProUGUI healthStatValueText;
     public TextMeshProUGUI luckStatValueText;
     public TextMeshProUGUI strengthStatValueText;
+    public Animator playerPreviewAnimator;
+    public Image playerPreviewImage;
     [EndFoldout]
     
     [Foldout("UI/StashPanel")]
@@ -281,6 +283,10 @@ public class Game : MonoBehaviour {
     private InputAction moveStackInputAction;
     private InputAction splitStackInputAction;
     private InputAction escapeInputAction;
+    private InputAction quickUse1Action;
+    private InputAction quickUse2Action;
+    private InputAction quickUse3Action;
+    private InputAction quickUse4Action;
     
     [NonSerialized] public List<Entity> entities = new();
     [NonSerialized] public Dictionary<GameObject, Entity> entityLookup = new();
@@ -324,7 +330,6 @@ public class Game : MonoBehaviour {
         
         BuildSavePaths();
         player = SpawnEntity<Player>(playerPrefab, Vector3.zero, Quaternion.identity, null, EntityLifetime.Global);
-        player.gameObject.SetActive(false);
         LoadAndAssignPlayerSaveData(player);
 
         DemonEyeTween.Init();
@@ -365,12 +370,16 @@ public class Game : MonoBehaviour {
         moveStackInputAction = InputSystem.actions.FindAction("MoveStack");
         useItemInputAction = InputSystem.actions.FindAction("UseItem");
         escapeInputAction = InputSystem.actions.FindAction("Escape");
+        quickUse1Action = InputSystem.actions.FindAction("QuickUse1");
+        quickUse2Action = InputSystem.actions.FindAction("QuickUse2");
+        quickUse3Action = InputSystem.actions.FindAction("QuickUse3");
+        quickUse4Action = InputSystem.actions.FindAction("QuickUse4");
 
         escapeInputAction.performed += OnEscapePressed;
 
         mainMenuState = gameStateMachine.CreateState(null, OnMainMenuStateEnter, OnMainMenuStateExit);
         hideoutState = gameStateMachine.CreateState(OnHideoutStateUpdate, OnHideoutStateEnter, OnHideoutStateExit);
-        mapSelectionState = gameStateMachine.CreateState(null, OnMapSelectionEnter, OnMapSelectionExit);
+        mapSelectionState = gameStateMachine.CreateState(OnMapSelectionUpdate, OnMapSelectionEnter, OnMapSelectionExit);
         raidState = gameStateMachine.CreateState(OnRaidStateUpdate, OnRaidStateEnter, OnRaidStateExit);
         gameWinState = gameStateMachine.CreateState(null, OnGameWinEnter, OnGameWinExit);
         gameOverState = gameStateMachine.CreateState(null, OnGameOverEnter, OnGameOverExit);
@@ -398,6 +407,7 @@ public class Game : MonoBehaviour {
 
     private void LateUpdate() {
         UpdatePlayerPanelUI();
+        UpdateHotBarUI();
         UpdateDragAndDropItemToCursor();
         UpdateCurrencyNumbers();
         if (InRaid) {
@@ -426,6 +436,7 @@ public class Game : MonoBehaviour {
 
     private void OnHideoutStateExit() {
         CloseHideoutUI();
+        SavePlayerData();
         SaveInventory(playerInventory);
         SaveInventory(stashInventory);
         SaveInventory(crucibleInventory);
@@ -445,6 +456,10 @@ public class Game : MonoBehaviour {
         CloseMapSelectionUI();
     }
 
+    private void OnMapSelectionUpdate() {
+        CheckForHotBarInteractions();
+    }
+
     private void OnRaidStateEnter() {
         Cursor.visible = false;
         ShowRaidUI();
@@ -457,7 +472,6 @@ public class Game : MonoBehaviour {
         int randomSpawnIndex = Random.Range(0, currentMapInstance.spawnPositionsParent.childCount);
         Vector2 randomSpawnPos = currentMapInstance.spawnPositionsParent.GetChild(randomSpawnIndex).position;
         
-        player.gameObject.SetActive(true);
         player.position = randomSpawnPos;
         
         Vector3 cameraWarpTarget = new(player.position.x, player.position.y, cinemachineCamera.transform.position.z);
@@ -482,6 +496,7 @@ public class Game : MonoBehaviour {
     private void OnRaidStateUpdate() {
         UpdateTimers();
         CheckForInteractions();
+        CheckForHotBarInteractions();
         UpdateInventory();
         UpdatePlayer();
         UpdateProjectiles();
@@ -529,7 +544,7 @@ public class Game : MonoBehaviour {
         sequence.Chain(Tween.UIFillAmount(deathBackgroundImage, 1f, 1f, Ease.InOutQuad));
         sequence.ChainCallback(() => {
             player.animator.enabled = true;
-            player.animator.Play(PlayerDeathHash);
+            player.animator.Play(playerDeathAnim);
         });
         
         sequence.Group(Tween.Custom(1f, 0f, 0.5f, val => {
@@ -1114,12 +1129,7 @@ public class Game : MonoBehaviour {
             
             if (enemy.bleed.TryGetValue(out var bleed)) {
                 if (Time.time - bleed.lastBleedTime > bleed.bleedInterval) {
-                    
                     int bleedDamage = bleed.bleedDamage;
-                    if (CarryingPassiveItem(demonClawItem, out int count)) {
-                        bleedDamage += demonClawItem.GetBleedDamageIncrease(count);
-                    }
-                    
                     enemy.health -= bleedDamage;
                     bleed.lastBleedTime = Time.time;
                     enemy.bleed = bleed;
@@ -1726,37 +1736,41 @@ public class Game : MonoBehaviour {
         uiElementPopup.gameObject.SetActive(true);
         
         if (hoverInfo.hoveringTransform == upgradeForgeButton.rectTransform) {
-            if (crucibleMode == CrucibleMode.Upgrade) {
-                uiElementPopup.descText.text = "Add an additional slot to the pentagram!\nCosts:";
-                List<UpgradePath.Requirement> requirements = crucibleUpgradePath.pathUpgrades[player.crucibleLevel].requirements;
-                foreach (UpgradePath.Requirement req in requirements) {
-                    bool meetsSingleReq = MeetsSingleUpgradeRequirement(req); 
-                    Color textColor = meetsSingleReq ? styles.increaseDescColor : styles.decreaseDescColor; 
-                    uiElementPopup.descText.text += ColorText($"\n{req.item.displayName} x{req.count}", textColor);
-                }
+            uiElementPopup.descText.text = "Add an additional slot to the pentagram!\nCosts:";
+            List<UpgradePath.Requirement> requirements = crucibleUpgradePath.pathUpgrades[player.crucibleLevel].requirements;
+            foreach (UpgradePath.Requirement req in requirements) {
+                bool meetsSingleReq = MeetsSingleUpgradeRequirement(req); 
+                Color textColor = meetsSingleReq ? styles.increaseDescColor : styles.decreaseDescColor; 
+                uiElementPopup.descText.text += ColorText($"\n{req.item.displayName} x{req.count}", textColor);
             }
         }
         
         if (hoverInfo.hoveringTransform == forgeEyeButton.rectTransform) {
-            if (crucibleMode == CrucibleMode.Forging) {
-                uiElementPopup.descText.text = "Eye Preview";
+            if (crucibleMode == CrucibleMode.Empty) {
+                uiElementPopup.descText.text = "Place an eyeball in the center to start the Demon Eye forging process";
             }
-
-            Dictionary<Soulcard, int> allSoulCards = new();
-            
-            foreach (InventorySlot slot in crucibleInventory.slots) {
-                if (slot.item == null || slot.item.ItemRef.type != soulcardType) continue;    
-                Soulcard soulcard = itemLookup[slot.item.itemOrInstanceUuid] as Soulcard;
-                if (!allSoulCards.TryAdd(soulcard, 1)) {
-                    allSoulCards[soulcard]++;
+            else if (crucibleMode == CrucibleMode.ForgingButJustEye) {
+                uiElementPopup.descText.text = $"Requires at least {DisplayNumber(1)} eye upgrade to forge a Demon Eye";
+            }
+            else {
+                uiElementPopup.descText.text = "Demon Eye Preview:";
+                
+                Dictionary<Soulcard, int> allSoulCards = new();
+                
+                foreach (InventorySlot slot in crucibleInventory.slots) {
+                    if (slot.item == null || slot.item.ItemRef.type != soulcardType) continue;    
+                    Soulcard soulcard = itemLookup[slot.item.itemOrInstanceUuid] as Soulcard;
+                    if (!allSoulCards.TryAdd(soulcard, 1)) {
+                        allSoulCards[soulcard]++;
+                    }
                 }
+                
+                string eyeDescription = "";
+                foreach ((Soulcard soulcard, int count) in allSoulCards) {
+                    eyeDescription += "\n" + soulcard.GetStackDescription(count);
+                }
+                uiElementPopup.descText.text += eyeDescription;
             }
-            
-            string eyeDescription = "";
-            foreach ((Soulcard soulcard, int count) in allSoulCards) {
-                eyeDescription += "\n" + soulcard.GetStackDescription(count);
-            }
-            uiElementPopup.descText.text += eyeDescription;
         }
         
         uiElementPopup.descFitter.ForceRecalculate();
@@ -1851,21 +1865,7 @@ public class Game : MonoBehaviour {
         if (!useItemInputAction.WasPressedThisFrame()) return;
         if (!TryGetItemFromHoverInfo(invHoverInfo, out InventoryItem hoveredItem)) return;
         if (hoveredItem.ItemRef.type != consumableType) return;
-
-        if (hoveredItem.ItemRef == bandageItem) {
-            if (!player.bleeding) return;
-            player.bleeding = false;
-        }
-        else if (hoveredItem.ItemRef == healthPotionItem) {
-            if (player.health >= FullPlayerHealth) return;
-            HealPlayer(25);
-        }
-        else if (hoveredItem.ItemRef == demonSteakItem) {
-            if (player.health >= FullPlayerHealth) return;
-            HealPlayer(15);
-        }
-        
-        ReduceItemCountInInventory(invHoverInfo.inventory, invHoverInfo.slotIndex);
+        HavePlayerConsumeItem(invHoverInfo.slotIndex);
     }
 
     private void UpdatePlayerPanelUI() {
@@ -2545,6 +2545,15 @@ public class Game : MonoBehaviour {
         return itemCount >= req.count; 
     }
 
+    private bool MeetsAllUpgradeRequirement(List<UpgradePath.Requirement> requirements) {
+        foreach (UpgradePath.Requirement req in requirements) {
+            if (!MeetsSingleUpgradeRequirement(req)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public bool CarryingPassiveItem(PassiveItem item, out int count) {
         count = GetItemCountInInventory(playerInventory, item);
         return count > 0;
@@ -2690,6 +2699,7 @@ public class Game : MonoBehaviour {
 
     public class Player : Entity {
         public bool bleeding;
+        
         public Vector2 velocity;
         public int nextIdleAnimHash;
         public int nextIdleDir;
@@ -2707,13 +2717,16 @@ public class Game : MonoBehaviour {
     private Player player;
     private int lastStepSmokeFrame = -1;
     
-    private int PlayerRunSideHash = Animator.StringToHash("PlayerRunSide");
-    private int PlayerRunUpHash = Animator.StringToHash("PlayerRunUp");
-    private int PlayerRunDownHash = Animator.StringToHash("PlayerRunDown");
-    private int PlayerIdleSide = Animator.StringToHash("PlayerIdleSide");
-    private int PlayerIdleUp = Animator.StringToHash("PlayerIdleUp");
-    private int PlayerIdleDown = Animator.StringToHash("PlayerIdleDown");
-    private int PlayerDeathHash = Animator.StringToHash("PlayerDeath");
+    private int playerRunSideAnim = Animator.StringToHash("PlayerRunSide");
+    private int playerRunUpAnim = Animator.StringToHash("PlayerRunUp");
+    private int playerRunDownAnim = Animator.StringToHash("PlayerRunDown");
+    private int playerIdleSideAnim = Animator.StringToHash("PlayerIdleSide");
+    private int playerIdleUpAnim = Animator.StringToHash("PlayerIdleUp");
+    private int playerIdleDownAnim = Animator.StringToHash("PlayerIdleDown");
+    private int playerDeathAnim = Animator.StringToHash("PlayerDeath");
+    private int playerDrinkAnim = Animator.StringToHash("PlayerDrink");
+    private int playerEatAnim = Animator.StringToHash("PlayerEat");
+    private int playerBandageAnim = Animator.StringToHash("PlayerBandage");
 
     private float lastShotTime;
     private int consecutiveShotCount;
@@ -2721,6 +2734,12 @@ public class Game : MonoBehaviour {
     private void UpdatePlayer() {
         if (player.bleeding && player.bleedLimiter.TimeHasPassed(3.5f)) {
             player.health -= 5;
+        }
+        
+        bool consumingItem = playerConsumingTween.isAlive;
+        if (consumingItem) {
+            player.nextIdleAnimHash = playerIdleDownAnim;
+            return;
         }
 
         if (InventoryIsOpen) return;
@@ -2742,16 +2761,16 @@ public class Game : MonoBehaviour {
         bool movingProdominatelyVertical = Mathf.Abs(Vector2.Dot(Vector2.up, moveInput)) > 0.9f;
         
         if (moveInput.magnitude > 0.1f && !movingProdominatelyVertical) {
-            player.animator.Play(PlayerRunSideHash);
-            player.nextIdleAnimHash = PlayerIdleSide;
+            player.animator.Play(playerRunSideAnim);
+            player.nextIdleAnimHash = playerIdleSideAnim;
         }
         else if (moveInput.y > 0) {
-            player.animator.Play(PlayerRunUpHash);
-            player.nextIdleAnimHash = PlayerIdleUp;
+            player.animator.Play(playerRunUpAnim);
+            player.nextIdleAnimHash = playerIdleUpAnim;
         }
         else if (moveInput.y < 0) {
-            player.animator.Play(PlayerRunDownHash);
-            player.nextIdleAnimHash = PlayerIdleDown;
+            player.animator.Play(playerRunDownAnim);
+            player.nextIdleAnimHash = playerIdleDownAnim;
         }
         else {
             player.animator.Play(player.nextIdleAnimHash);
@@ -2793,6 +2812,62 @@ public class Game : MonoBehaviour {
         }
             
         lastShotTime = Time.time;
+    }
+
+    private Tween playerConsumingTween;
+    private int consumingSlotIndex;
+    
+    private void HavePlayerConsumeItem(int slotIndex) {
+        if (playerConsumingTween.isAlive) return;
+        ConsumableItem item = playerInventory.slots[slotIndex].item.ItemRef as ConsumableItem;
+
+        if (!item) return;
+        if (item.healingAmount > 0f && player.health == FullPlayerHealth) return;
+        if (item.bandageAmount > 0f && !player.bleeding) return;
+        
+        const float additionalConsumeDelay = 0.15f;
+        const float performActionAtAnimationCompletion = 0.9f;
+        
+        int animationHash = item.animationType switch {
+            ConsumableItem.AnimationType.Drink   => playerDrinkAnim,
+            ConsumableItem.AnimationType.Eat     => playerEatAnim,
+            ConsumableItem.AnimationType.Bandage => playerBandageAnim,
+        };
+
+        player.animator.Play(animationHash);
+        player.animator.Update(0);
+
+        float animationLength = CurrentClipLength(player.animator); 
+        float actionDelay = animationLength * performActionAtAnimationCompletion;
+        float postActionDelay = animationLength * (1f - performActionAtAnimationCompletion);
+
+        // So we don't allocate any memory for the closure
+        consumingSlotIndex = slotIndex;
+        
+        playerConsumingTween = Tween.Delay(item, actionDelay, static (item) => {
+            if (item.healingAmount > 0) {
+                instance.HealPlayer(item.healingAmount);
+            }
+            else {
+                instance.player.bleeding = false;
+            }
+            instance.ReduceItemCountInInventory(instance.playerInventory, instance.consumingSlotIndex);
+        });
+        
+        playerConsumingTween.OnUpdate(this, static (_, _) => {
+            if (instance.playerPreviewImage.sprite != instance.player.spriteRenderer.sprite) {
+                instance.playerPreviewImage.sprite = instance.player.spriteRenderer.sprite;     
+            }
+        });
+        
+        playerConsumingTween.Chain(Tween.Delay(postActionDelay, static () => {
+            instance.player.animator.Play(instance.playerIdleDownAnim);
+            instance.player.animator.Update(0f);
+            if (instance.playerPreviewImage.sprite != instance.player.spriteRenderer.sprite) {
+                instance.playerPreviewImage.sprite = instance.player.spriteRenderer.sprite;     
+            }
+        }))
+        .Chain(Tween.Delay(additionalConsumeDelay));
     }
 
     private void HealPlayer(int healing) {
@@ -3126,6 +3201,52 @@ public class Game : MonoBehaviour {
         interactPrompt.transform.position = mainCamera.WorldToScreenPoint(position + new Vector3(0f, 0.1f, 0f));
     }
     
+    // *******************************
+    // Hot Bar 
+    // *******************************
+    
+    private InventorySlotUI[] hotBarItemUIs;
+    
+    private void UpdateHotBarUI() {
+        if (!hotBarParent.gameObject.activeInHierarchy) return;
+
+        hotBarItemUIs ??= hotBarParent.GetComponentsInChildren<InventorySlotUI>();
+        Assert.IsTrue(hotBarItemUIs.Length == playerQuickUseSize, "Make sure to match hot bar inventory UIs count with quick use count");
+
+        for (int i = 0; i < playerQuickUseSize; i++) {
+            int itemIndex = i + playerEquipmentSize;
+            hotBarItemUIs[i].ClearItem();
+
+            InventoryItem item = playerInventory.slots[itemIndex].item;
+            if (item != null) {
+                hotBarItemUIs[i].SetItem(item.ItemRef, item.count);
+            } 
+        }
+    }
+
+    private List<InputAction> quickUseActions;
+    
+    private void CheckForHotBarInteractions() {
+        Item itemToConsume = null;
+        
+        quickUseActions ??= new() {
+            quickUse1Action, quickUse2Action, quickUse3Action, quickUse4Action,
+        };
+
+        int playerInventorySlotIndex = playerEquipmentSize;
+        foreach (InputAction action in quickUseActions) {
+            if (action.WasPressedThisFrame()) {
+                itemToConsume = playerInventory.slots[playerInventorySlotIndex].item?.ItemRef;
+                break;
+            }
+            playerInventorySlotIndex++;
+        }
+
+        if (itemToConsume) {
+            HavePlayerConsumeItem(playerInventorySlotIndex);
+        }
+    }
+
     // *******************************
     // Projectiles
     // *******************************
@@ -3711,6 +3832,9 @@ public class Game : MonoBehaviour {
             luckUpgradeInfoText.text = $"+{(luckPercentIncreasePerStatLevel * 100f):0}% Luck";
             strengthUpgradeInfoText.text = $"+{encumberingIncreasePerStrengthPoint} Weight Carry Capacity";
         }
+        
+        hoverableUIElements.Add(forgeEyeButton.rectTransform);
+        hoverableUIElements.Add(upgradeForgeButton.rectTransform);
     }
 
     private Sequence mainMenuSequence;
@@ -3788,6 +3912,7 @@ public class Game : MonoBehaviour {
         soulsCurrencyParent.gameObject.SetActive(true);
         playerInfoParent.gameObject.SetActive(true);
         raidInfoPanelParent.SetActive(true);
+        hotBarParent.gameObject.SetActive(true);
     }
 
     private void CloseRaidUI() {
@@ -3797,6 +3922,7 @@ public class Game : MonoBehaviour {
         playerInfoParent.gameObject.SetActive(false);
         raidInfoPanelParent.SetActive(false);
         portalArrow.gameObject.SetActive(false);
+        hotBarParent.gameObject.SetActive(false);
     }
 
     private void ToggleHideoutTab(Button button, TextMeshProUGUI text) {
@@ -3907,7 +4033,14 @@ public class Game : MonoBehaviour {
 
             toggledOffHoverableUIElement = forgeEyeButton.rectTransform;
             
+            forgeEyeButton.KeepPressed();
+            string prevButtonText = forgeEyeButton.text.text;
+            forgeEyeButton.text.text = "Forging...";
+            
             DoEyeForgeAnimation(() => {
+                forgeEyeButton.StopKeepPressed();
+                forgeEyeButton.text.text = prevButtonText;
+                
                 InventoryItem newDemonEyeItem = new() {
                     modifierUuids = new(),
                 };
@@ -4152,26 +4285,39 @@ public class Game : MonoBehaviour {
     }
 
 
-    private enum CrucibleMode { Upgrade, Forging }
+    private enum CrucibleMode { Empty, Forging, ForgingButJustEye }
     private CrucibleMode crucibleMode;
 
     private void UpdateCrucibleState() {
         if (!OnEyeForgeTab) return;
-        
-        bool forging = GetInventoryItemCount(crucibleInventory) > 0;
-        crucibleMode = forging ? CrucibleMode.Forging : CrucibleMode.Upgrade;
 
+        int crucibleItemCount = GetInventoryItemCount(crucibleInventory);
+
+        if (crucibleItemCount <= 0) {
+            crucibleMode = CrucibleMode.Empty;
+        }
+        else if (crucibleItemCount == 1 && crucibleInventory.slots[0].item != null) {
+            crucibleMode = CrucibleMode.ForgingButJustEye;
+        }
+        else {
+            crucibleMode = CrucibleMode.Forging;
+        }
+
+        bool forging = crucibleMode is CrucibleMode.Forging or CrucibleMode.ForgingButJustEye;
         if (forging && forgeEyeButton.isDisabled) {
             forgeEyeButton.Enable();
-            upgradeForgeButton.Disable();
-            hoverableUIElements.Add(forgeEyeButton.rectTransform);
-            hoverableUIElements.Remove(upgradeForgeButton.rectTransform);
         }
-        if (!forging && !forgeEyeButton.isDisabled) {
+        else if (!forging && !forgeEyeButton.isDisabled) {
             forgeEyeButton.Disable();
+        }
+
+        List<UpgradePath.Requirement> upgradeReqs = crucibleUpgradePath.pathUpgrades[player.crucibleLevel].requirements;
+        bool meetsAllUpgradeRequirements = MeetsAllUpgradeRequirement(upgradeReqs);
+        if (upgradeForgeButton.isDisabled && meetsAllUpgradeRequirements) {
             upgradeForgeButton.Enable();
-            hoverableUIElements.Remove(forgeEyeButton.rectTransform);
-            hoverableUIElements.Add(upgradeForgeButton.rectTransform);
+        }
+        else if (!upgradeForgeButton.isDisabled && !meetsAllUpgradeRequirements) {
+            upgradeForgeButton.Disable();
         }
     }
 
@@ -4543,11 +4689,11 @@ public class Game : MonoBehaviour {
         switch (result) {
             case UpgradeStatResult.CantAfford:
                 button.Disable();
-                button.text.text = $"{upgradePath.soulsNeededPerLevel[playerStatLevel]} Souls";
+                button.text.text = $"{upgradePath.soulsNeededPerLevel[playerStatLevel]:N0} Souls";
                 break;
             case UpgradeStatResult.Affordable:
                 button.Enable();
-                button.text.text = $"{upgradePath.soulsNeededPerLevel[playerStatLevel]} Souls";
+                button.text.text = $"{upgradePath.soulsNeededPerLevel[playerStatLevel]:N0} Souls";
                 break;
             case UpgradeStatResult.AtMaxLevel:
                 button.Disable();

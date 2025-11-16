@@ -11,11 +11,15 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
     public Image image;
     public TextMeshProUGUI text;
     public Sprite pressedSprite;
+    public Sprite nonHighlightedPressedSprite;
     public Sprite unpressedSprite;
     public Sprite highlightedSprite;
     public Sprite disabledSprite;
     public Sprite highlightedDisabledSprite;
     public bool isDisabled;
+    public bool beingKeptPressed;
+
+    private bool beingHovered;
 
     private void OnDisable() {
         OnPointerExit(null);
@@ -28,21 +32,23 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
     }
     
     public void OnPointerUp(PointerEventData eventData) {
-        if (isDisabled) return;
-        image.sprite = highlightedSprite != null && eventData.hovered.Contains(gameObject) ? highlightedSprite : unpressedSprite;
+        if (isDisabled || beingKeptPressed) return;
+        image.sprite = highlightedSprite && beingHovered ? GetHighlightedSprite() : GetNonHighlightedSprite();
         text.margin = styles.normalButtonTextMargin;
     }
 
     public void OnPointerEnter(PointerEventData eventData) {
-        if (highlightedSprite == null) return;
-        image.sprite = isDisabled ? highlightedDisabledSprite : highlightedSprite;
-        text.margin = isDisabled ? styles.pressedButtonTextMargin : styles.normalButtonTextMargin;
+        beingHovered = true;
+        if (!highlightedSprite) return;
+        image.sprite = GetHighlightedSprite();
+        text.margin = isDisabled || beingKeptPressed ? styles.pressedButtonTextMargin : styles.normalButtonTextMargin;
     }
     
     public void OnPointerExit(PointerEventData eventData) {
-        if (highlightedSprite == null) return;
-        image.sprite = isDisabled ? disabledSprite : unpressedSprite;
-        text.margin = isDisabled ? text.margin : styles.normalButtonTextMargin;
+        beingHovered = false;
+        if (!highlightedSprite) return;
+        image.sprite = GetNonHighlightedSprite();
+        text.margin = isDisabled || beingKeptPressed ? text.margin : styles.normalButtonTextMargin;
     }
 
     public void Disable() {
@@ -56,5 +62,35 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
         image.sprite = unpressedSprite;
         text.margin = styles.normalButtonTextMargin;
     }
-    
+
+    public void KeepPressed() {
+        beingKeptPressed = true;
+        OnPointerDown(null);
+    }
+
+    public void StopKeepPressed() {
+        beingKeptPressed = false;
+        OnPointerUp(null);
+    }
+
+    private Sprite GetHighlightedSprite() {
+        if (isDisabled) {
+            return highlightedDisabledSprite;
+        }
+        if (beingKeptPressed) {
+            return pressedSprite;
+        }
+        return highlightedSprite;
+    }
+
+    private Sprite GetNonHighlightedSprite() {
+        if (isDisabled) {
+            return disabledSprite;
+        }
+        if (beingKeptPressed) {
+            return nonHighlightedPressedSprite;
+        }
+        return unpressedSprite;
+    }
+
 }

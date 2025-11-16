@@ -9,15 +9,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 51497fc8b48bf334e80793ece95b6c4b, type: 3}
+  m_Script: {fileID: 11500000, guid: 9bc23522601a56f4d89295cf565d360b, type: 3}
   m_Name: DemonClaw
-  m_EditorClassIdentifier: Assembly-CSharp::DemonClaw
-  uuid: 1677455724
+  m_EditorClassIdentifier: Assembly-CSharp::Item
+  uuid: 23868539
   displayName: Demon Claw
   inventorySprite: {fileID: 1568950830, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   dropSprite: {fileID: 0}
   pickupRadius: 0.07
-  type: {fileID: 11400000, guid: f96795548bb757142ae7b1c1aeda1f03, type: 2}
+  type: {fileID: 0}
   associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
   buyPrice: 30
   sellPrice: 15
@@ -37,5 +37,4 @@ MonoBehaviour:
   itemGroupProps: {fileID: 0}
   maxStackCount: 10
   weight: 2
-  description: 
-  bleedDamageIncreasePerItem: 2
+  description: A claw from a demon. Traders like to buy this.

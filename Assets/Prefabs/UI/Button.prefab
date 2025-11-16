@@ -276,8 +276,10 @@ MonoBehaviour:
   image: {fileID: 4425501928664159082}
   text: {fileID: 8582787485506474109}
   pressedSprite: {fileID: 1684691031, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
+  nonHighlightedPressedSprite: {fileID: -1740945645, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
   unpressedSprite: {fileID: -1996136508, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
   highlightedSprite: {fileID: 2002655375, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
   disabledSprite: {fileID: 1226795369, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
   highlightedDisabledSprite: {fileID: -870479080, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
   isDisabled: 0
+  keepPressed: 0
