@@ -1595,6 +1595,7 @@ public class Game : MonoBehaviour {
         if (itemDescPopup.gameObject.activeInHierarchy) return;
         
         itemDescPopup.gameObject.SetActive(true);
+        TweenPopUp(itemDescPopup.rectTransform);
         
         InventorySlot hoveredSlot = info.inventory.slots[info.slotIndex];
         TextMeshProUGUI nameText = itemDescPopup.nameText;
@@ -1692,6 +1693,8 @@ public class Game : MonoBehaviour {
                 mechanicDescPopup.nameFitter.ForceRecalculate();
                 mechanicDescPopup.descFitter.ForceRecalculate();
                 FitPopupSize(mechanicDescPopup.rectTransform, mechanicDescPopup.nameText.rectTransform.rect, mechanicDescPopup.descText.rectTransform.rect);
+                
+                TweenPopUp(mechanicDescPopup.rectTransform);
             } 
         }
     }
@@ -1711,6 +1714,14 @@ public class Game : MonoBehaviour {
         Rect newPopupRect = popupRect.rect;
         newPopupRect.height = Mathf.Clamp(height, minHeight, Mathf.Infinity);
         popupRect.sizeDelta = new(newPopupRect.width, newPopupRect.height);
+    }
+
+    private void TweenPopUp(RectTransform popupRectTransform) {
+        TweenSettings settings = new() {
+            duration = 0.065f,
+            ease = Ease.OutQuad,
+        };
+        Tween.Scale(popupRectTransform, Vector3.one * 0.75f, Vector3.one, settings);
     }
 
     private void HideItemDescPopup() {
@@ -1745,7 +1756,10 @@ public class Game : MonoBehaviour {
     }
 
     private void ShowUIElementPopup(UIHoverInfo hoverInfo) {
+        if (uiElementPopup.gameObject.activeInHierarchy) return;
+        
         uiElementPopup.gameObject.SetActive(true);
+        TweenPopUp(uiElementPopup.rectTransform);
         
         if (hoverInfo.hoveringTransform == upgradeForgeButton.rectTransform) {
             uiElementPopup.descText.text = "Add an additional slot to the pentagram!\nCosts:";
@@ -2194,6 +2208,7 @@ public class Game : MonoBehaviour {
             startDragInfo = hoverInfo;
             dragAndDropItemUI.gameObject.SetActive(true);
             dragAndDropItemUI.SetItem(dragItem.ItemRef, dragItem.count);
+            TweenItemMove(dragAndDropItemUI);
         }
 
         bool placingItem = !pickingUpItem;
@@ -2249,6 +2264,7 @@ public class Game : MonoBehaviour {
                 targetSlot.item = dragItem;
                 dragItem = swapItem;
                 dragAndDropItemUI.SetItem(dragItem.ItemRef, dragItem.count);
+                TweenItemMove(dragAndDropItemUI);
 
                 return IsDraggingItem;
             }
@@ -2263,6 +2279,7 @@ public class Game : MonoBehaviour {
                 }
                 else {
                     dragAndDropItemUI.SetItem(dragItem.ItemRef, dragItem.count);
+                    TweenItemMove(dragAndDropItemUI);
                 }
             }
 
@@ -2276,6 +2293,7 @@ public class Game : MonoBehaviour {
                 else if (result.type == InventoryAddResult.ResultType.FailureToAddAll) {
                     dragItem.count -= result.addedCount;
                     dragAndDropItemUI.SetItem(dragItem.ItemRef, dragItem.count);
+                    TweenItemMove(dragAndDropItemUI);
                 }
             }
         }
@@ -2341,6 +2359,8 @@ public class Game : MonoBehaviour {
         foreach (InventorySlot slot in availableSlots) {
             if (slot.item == null || slot.ui.disallowItemStacking || slot.item.IsFullStack || slot.item.itemOrInstanceUuid != item.itemOrInstanceUuid) continue;
 
+            TweenItemMove(slot.ui.itemUI);
+                
             if (allowInfiniteStacking) {
                 slot.item.count += item.count;
                 result.addedCount += item.count;
@@ -2383,6 +2403,8 @@ public class Game : MonoBehaviour {
             InventoryItem newItem = item.Clone();
             newItem.count = newItemCount;
             slot.item = newItem;
+            
+            TweenItemMove(slot.ui.itemUI);
             
             bool movedEntireStack = newItemCount == remainingItemCount;
             result.type = movedEntireStack ? InventoryAddResult.ResultType.Success : InventoryAddResult.ResultType.FailureToAddAll;
@@ -2437,6 +2459,10 @@ public class Game : MonoBehaviour {
             if (fromInventory.slots[i].item == null) continue;
             MoveEntireItemStack(fromInventory, toInventory, i);
         }
+    }
+
+    private void TweenItemMove(ItemUI itemUI) {
+        Tween.PunchScale(itemUI.rectTransform, Vector3.one * 0.15f, 0.135f);
     }
 
     private void ClearInventory(Inventory inventory) {
