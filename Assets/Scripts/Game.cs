@@ -123,6 +123,7 @@ public class Game : MonoBehaviour {
     public ItemUI dragAndDropItemUI;
     public Image menuBackgroundImage;
     public Image deathBackgroundImage;
+    public ButtonFeel menuBackButton;
     [EndFoldout]
     
     [Foldout("UI/Main Menu")]
@@ -3884,6 +3885,8 @@ public class Game : MonoBehaviour {
         CloseHideoutUI();
         CloseRaidUI();
         ShowMainMenuUI();
+        
+        menuBackButton.gameObject.SetActive(false);
 
         // Set the stat upgrade info once at startup because each increase is the same
         {
@@ -3949,6 +3952,7 @@ public class Game : MonoBehaviour {
         ToggleHideoutTab(characterTabButton, characterTabText);
         ToggleHideoutPanels(playerPanel, stashPanel);
         ToggleSlimPlayerPanel(false);
+        menuBackButton.gameObject.SetActive(true);
         coinsCurrencyParent.gameObject.SetActive(true);
         soulsCurrencyParent.gameObject.SetActive(true);
         healthBarParent.gameObject.SetActive(false);
@@ -3963,6 +3967,7 @@ public class Game : MonoBehaviour {
         ToggleHideoutPanels();
         HideItemDescPopup(); 
         HideUIElementPopup();
+        menuBackButton.gameObject.SetActive(false);
         playerInfoParent.gameObject.SetActive(false);
         menuBackgroundImage.gameObject.SetActive(false);
         hideoutHeaderParent.gameObject.SetActive(false);
@@ -4026,6 +4031,10 @@ public class Game : MonoBehaviour {
         if (InMapSelection || InHideout) {
             gameStateMachine.SetState(mainMenuState);
         }
+        if (InRaid && InventoryIsOpen) {
+            ClosePlayerInventory();
+            CloseLootInventory(); 
+        }
     }
     
     private void InitButtonCallbacks() {
@@ -4035,6 +4044,10 @@ public class Game : MonoBehaviour {
         
         mainMenuHideoutButton.button.onClick.AddListener(() => {
             gameStateMachine.SetStateIfNotCurrent(hideoutState);
+        });
+        
+        menuBackButton.button.onClick.AddListener(() => {
+            OnEscapePressed(new());
         });
         
         characterTabButton.onClick.AddListener(() => {
