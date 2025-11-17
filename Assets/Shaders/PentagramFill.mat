@@ -68,10 +68,10 @@ Material:
     m_Floats:
     - _ColorMask: 15
     - _EndRange: 0.28
-    - _Fill: 1
+    - _Fill: 0
     - _QueueControl: -1
     - _QueueOffset: 0
-    - _StartRange: 0.002
+    - _StartRange: -0.003
     - _Stencil: 0
     - _StencilComp: 8
     - _StencilOp: 0
@@ -81,6 +81,6 @@ Material:
     - _UIMaskSoftnessY: 1
     m_Colors:
     - _ClipRect: {r: 0, g: 0, b: 0, a: 0}
-    - _Color: {r: 0.8862745, g: 0.15343866, b: 0.10196078, a: 1}
+    - _Color: {r: 0.8862745, g: 0.15343863, b: 0.101960756, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

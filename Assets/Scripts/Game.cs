@@ -1656,7 +1656,7 @@ public class Game : MonoBehaviour {
             DemonEyeInstance eyeInstance = eyeInstanceFromItemId[hoveredSlot.item.itemOrInstanceUuid];
             string eyeDescription = "";
             foreach (EquipedModInstance modInstance in eyeInstance.modInstances) {
-                eyeDescription += modInstance.GetDescriptionForEye() + "\n";
+                eyeDescription += GetDemonEyeModDescription(modInstance.Soulcard, modInstance.stackCount);
             }
             descText.text = eyeDescription;
         }
@@ -1694,6 +1694,11 @@ public class Game : MonoBehaviour {
                 FitPopupSize(mechanicDescPopup.rectTransform, mechanicDescPopup.nameText.rectTransform.rect, mechanicDescPopup.descText.rectTransform.rect);
             } 
         }
+    }
+
+    private string GetDemonEyeModDescription(Soulcard soulcard, int count) {
+        string title = ColorText($"<size=105%>{soulcard.displayName}</size> <size=87%>x{count}</size>", styles.subHeaderTextColor);
+        return $"<line-height=85%>{title}\n{soulcard.GetStackDescription(count)}<line-height=135%>\n";
     }
 
     private void FitPopupSize(RectTransform popupRect, params Rect[] rects) {
@@ -1759,8 +1764,14 @@ public class Game : MonoBehaviour {
             else if (crucibleMode == CrucibleMode.ForgingButJustEye) {
                 uiElementPopup.descText.text = $"Requires at least {DisplayNumber(1)} eye upgrade to forge a Demon Eye";
             }
+            else if (crucibleMode == CrucibleMode.ForgingButWithoutEye) {
+                uiElementPopup.descText.text = $"Missing eyeball in the center";
+            }
+            else if (crucibleMode == CrucibleMode.NeedToRemoveDemonEye) {
+                uiElementPopup.descText.text = $"Need to remove Demon Eye before forging";
+            }
             else {
-                uiElementPopup.descText.text = "Demon Eye Preview:";
+                uiElementPopup.descText.text = ColorText("Demon Eye Preview:<line-height=135%>\n", styles.headerTextColor);
                 
                 Dictionary<Soulcard, int> allSoulCards = new();
                 
@@ -1771,10 +1782,12 @@ public class Game : MonoBehaviour {
                         allSoulCards[soulcard]++;
                     }
                 }
+
+                List<(Soulcard, int)> sortedSoulcards = SortSoulcardsFromDictionary(allSoulCards);
                 
                 string eyeDescription = "";
-                foreach ((Soulcard soulcard, int count) in allSoulCards) {
-                    eyeDescription += "\n" + soulcard.GetStackDescription(count);
+                foreach ((Soulcard soulcard, int count) in sortedSoulcards) {
+                    eyeDescription += GetDemonEyeModDescription(soulcard, count);
                 }
                 uiElementPopup.descText.text += eyeDescription;
             }
@@ -2965,7 +2978,6 @@ public class Game : MonoBehaviour {
         public Soulcard Soulcard => eyeModifierLookup[modId];
         public void ApplyToEnemy(Enemy enemy) => Soulcard.AddInstanceToEnemy(enemy, stackCount);
         public void ApplyToEye(DemonEyeInstance eyeInstance) => Soulcard.AddInstanceToEye(eyeInstance, stackCount);
-        public string GetDescriptionForEye() => Soulcard.GetStackDescription(stackCount);
     }
 
     public class DemonEyeInstance {
@@ -2991,22 +3003,25 @@ public class Game : MonoBehaviour {
     private DemonEyeInstance equipedEye;
     private Limiter attackLimiter;
 
-    private DemonEyeInstance BuildAndRegisterEye(InventoryItem item) {
+    private void BuildAndRegisterEye(InventoryItem item) {
         item.itemOrInstanceUuid = GenerateNewItemUuid();
         item._itemRef = demonEyeItem;
         
-        Dictionary<int, int> eyeModCountFromId = new();
+        Dictionary<Soulcard, int> eyeModCountFromSoulcard = new();
         foreach (int modUuid in item.modifierUuids) {
-            if (!eyeModCountFromId.TryAdd(modUuid, 1)) {
-                eyeModCountFromId[modUuid]++;
+            Soulcard soulcard = itemLookup[modUuid] as Soulcard;
+            if (!eyeModCountFromSoulcard.TryAdd((Soulcard)itemLookup[modUuid], 1)) {
+                eyeModCountFromSoulcard[soulcard]++;
             }
         }
+
+        List<(Soulcard, int)> sortedSoulcardsWithCount = SortSoulcardsFromDictionary(eyeModCountFromSoulcard);
         
         List<EquipedModInstance> eyeModifiers = new();
-        foreach (KeyValuePair<int, int> pair in eyeModCountFromId) {
+        foreach ((Soulcard soulcard, int stackCount) in sortedSoulcardsWithCount) {
             eyeModifiers.Add(new() {
-                modId = pair.Key,
-                stackCount = pair.Value,
+                modId = soulcard.uuid,
+                stackCount = stackCount,
             });
         }
         
@@ -3020,7 +3035,15 @@ public class Game : MonoBehaviour {
         }
         
         eyeInstanceFromItemId.Add(item.itemOrInstanceUuid, newDemonEye);
-        return newDemonEye;
+    }
+
+    private List<(Soulcard, int)> SortSoulcardsFromDictionary(Dictionary<Soulcard, int> soulcardsAndStackCount) {
+        List<(Soulcard, int)> eyeModifiers = new();
+        foreach (KeyValuePair<Soulcard, int> pair in soulcardsAndStackCount) {
+            eyeModifiers.Add(new(pair.Key, pair.Value));
+        }
+        eyeModifiers = eyeModifiers.OrderByDescending(m => m.Item1.GetRarity()).ThenBy(m => m.Item1.displayName).ToList();
+        return eyeModifiers;
     }
 
     private int GetDemonEyeSellPrice(InventoryItem demonEyeInventoryItem) {
@@ -3848,6 +3871,8 @@ public class Game : MonoBehaviour {
         
         hoverableUIElements.Add(forgeEyeButton.rectTransform);
         hoverableUIElements.Add(upgradeForgeButton.rectTransform);
+        
+        SetPentagramFill(0f);
     }
 
     private Sequence mainMenuSequence;
@@ -4023,7 +4048,7 @@ public class Game : MonoBehaviour {
         strengthUpgradeButton.button.onClick.AddListener(() => OnLevelupButtonPressed(strengthUpgradePath, player.strengthLevel));
         
         forgeEyeButton.button.onClick.AddListener(() => {
-            if (PlayingForgeAnimation) return;
+            if (forgeEyeButton.isDisabled || PlayingForgeAnimation) return;
             
             int eyeSlotIndex = 0;
             InventoryItem eyeItem = null;
@@ -4101,37 +4126,15 @@ public class Game : MonoBehaviour {
             player.crucibleLevel++;
             SavePlayerData();
             
-            DoForgeUpgradeAnimation(() => { });
+            upgradeForgeButton.KeepPressed();
+            string prevButtonText = upgradeForgeButton.text.text;
+            upgradeForgeButton.text.text = "Upgrading...";
+            
+            DoForgeUpgradeAnimation(() => {
+                upgradeForgeButton.StopKeepPressed();
+                upgradeForgeButton.text.text = prevButtonText;
+            });
         });
-        
-        // stashUpgradeButton.onClick.AddListener(() => {
-            // UpgradePath.UpgradeRequirements requirements = stashUpgradePath.pathUpgrades[hideoutStateData.stashLevel];
-            //
-            // bool canUpgrade = true;
-            // foreach (UpgradePath.Requirement requirement in requirements.requirements) {
-            //     int itemCount = 0;
-            //     itemCount += GetItemCountInInventory(stashInventory, requirement.item);
-            //     itemCount += GetItemCountInInventory(playerInventory, requirement.item);
-            //     
-            //     if (itemCount < requirement.count) {
-            //         canUpgrade = false;
-            //         break;
-            //     }
-            // }
-            //
-            // if (!canUpgrade) return;
-            //
-            // foreach (UpgradePath.Requirement requirement in requirements.requirements) {
-            //     int stashRemoveCount = RemoveNumberOfItemsFromInventory(stashInventory, requirement.item, requirement.count);
-            //     if (stashRemoveCount == requirement.count) continue;
-            //     RemoveNumberOfItemsFromInventory(playerInventory, requirement.item, requirement.count - stashRemoveCount);
-            // }
-            //
-            // hideoutStateData.stashLevel++;
-            // SaveToFile(hideoutDataSavePath, hideoutStateData);
-            //
-            // ChangeInventorySize(stashInventory, stashInventory.slots.Length + stashUpgradeSlotIncrease);
-        // });
         
         traderDealButton.onClick.AddListener(() => {
             InventoryValueType valueType = transactionState == TransactionState.Buying ? InventoryValueType.Buy : InventoryValueType.Sell;
@@ -4183,7 +4186,6 @@ public class Game : MonoBehaviour {
         });
     }
     
-    private int fillParamProperty = Shader.PropertyToID("_Fill");
     private Sequence eyeForgeSequence;
     private bool PlayingForgeAnimation => eyeForgeSequence.isAlive;
     
@@ -4194,9 +4196,13 @@ public class Game : MonoBehaviour {
 
         float upgradeExplosionsDuration = perUpgradeExplosionDelay * (GetInventoryItemCount(crucibleInventory) - 1);
         float totalAnimationDuration = fillDuration + upgradeExplosionsDuration + popOutDuration;
-        
+
         Tween.Custom(this, 0f, 1f, fillDuration, ease: Ease.Linear, onValueChange: (target, val) => {
-            target.pentagramFillImage.material.SetFloat(target.fillParamProperty, target.pentagramFillCurve.Evaluate(val));
+            target.SetPentagramFill(target.pentagramFillCurve.Evaluate(val));
+        });
+        
+        Tween.Custom(this, 1f, 0f, fillDuration * 0.3f, startDelay: totalAnimationDuration, ease: Ease.Linear, onValueChange: (target, val) => {
+            target.SetPentagramFill(target.pentagramFillCurve.Evaluate(val));
         });
 
         for (int i = 0; i < crucibleInventory.slots.Length; i++) {
@@ -4254,14 +4260,26 @@ public class Game : MonoBehaviour {
         }
     }
     
+    private int fillParamProperty = Shader.PropertyToID("_Fill");
+    
+    private void SetPentagramFill(float value) {
+        pentagramFillImage.material.SetFloat(fillParamProperty, value);
+    }
+    
+    private bool playingForgeUpgradeAnimation;
+    
     private void DoForgeUpgradeAnimation(Action onAnimationEndCallback) {
+        playingForgeUpgradeAnimation = true;
+        
+        const float explosionDelay = 0.1f;
+        
         Sequence sequence = Sequence.Create();
         sequence.ChainDelay(0.25f);
         
         for (int i = 1; i < crucibleInventory.slots.Length; i++) {
             RectTransform slotTransform = crucibleInventory.slots[i].ui.rectTransform;
-            sequence.Group(Tween.Scale(slotTransform, Vector3.one, Vector3.zero, 0.15f, Ease.InOutBounce, startDelay: 0.1f * i));
-            sequence.Group(Tween.PunchScale(eyeForgePanel, Vector3.one * 0.05f, 0.1f, 15f, startDelay: 0.1f * i));
+            sequence.Group(Tween.Scale(slotTransform, Vector3.one, Vector3.zero, 0.15f, Ease.InOutBounce, startDelay: explosionDelay * i));
+            sequence.Group(Tween.PunchScale(eyeForgePanel, Vector3.one * 0.05f, 0.1f, 15f, startDelay: explosionDelay * i));
             sequence.Group(Tween.Delay(0.1f * i, () => {
                 Entity forgeExplosion = SpawnEntity(forgeDustExplosionPool, OffsetY(slotTransform.position, 10f), Quaternion.identity, eyeForgePanel);
                 DestroyEntity(forgeExplosion, CurrentClipLength(forgeExplosion.animator));
@@ -4273,16 +4291,24 @@ public class Game : MonoBehaviour {
         sequence.ChainCallback(() => {
             ChangeInventorySize(crucibleInventory, crucibleInventory.slots.Length + 1);
             ArrangeEyeCrucibleInventorySlots();
-            crucibleInventory.slots[^1].ui.rectTransform.localScale = Vector3.zero; 
+            crucibleInventory.slots[^1].ui.rectTransform.localScale = Vector3.zero;
             
             for (int i = 1; i < crucibleInventory.slots.Length; i++) {
                 RectTransform slotTransform = crucibleInventory.slots[i].ui.rectTransform;
-                Tween.Scale(slotTransform, Vector3.zero, Vector3.one, 0.15f, Ease.InOutBounce, startDelay: 0.1f * i);
-                Tween.PunchScale(eyeForgePanel, Vector3.one * 0.05f, 0.1f, 15f, startDelay: 0.1f * i);
-                Tween.Delay(0.1f * i, () => {
+                Tween.Scale(slotTransform, Vector3.zero, Vector3.one, 0.15f, Ease.InOutBounce, startDelay: explosionDelay * i);
+                Tween.PunchScale(eyeForgePanel, Vector3.one * 0.05f, 0.1f, 15f, startDelay: explosionDelay * i);
+                Tween.Delay(explosionDelay * i, () => {
                     Entity forgeExplosion = SpawnEntity(forgeDustExplosionPool, OffsetY(slotTransform.position, 10f), Quaternion.identity, eyeForgePanel);
                     DestroyEntity(forgeExplosion, CurrentClipLength(forgeExplosion.animator));
                 });
+                
+                if (i == crucibleInventory.slots.Length - 1) {
+                    const float additionalCompletionDelay = 0.15f;
+                    Tween.Delay(this, explosionDelay * i + additionalCompletionDelay, (inst) => {
+                        inst.playingForgeUpgradeAnimation = false;
+                        onAnimationEndCallback?.Invoke();
+                    });
+                }
             }
         });
     }
@@ -4353,19 +4379,33 @@ public class Game : MonoBehaviour {
     }
 
 
-    private enum CrucibleMode { Empty, Forging, ForgingButJustEye }
+    private enum CrucibleMode { Empty, Forging, ForgingButJustEye, ForgingButWithoutEye, NeedToRemoveDemonEye }
     private CrucibleMode crucibleMode;
 
     private void UpdateCrucibleState() {
         if (!OnEyeForgeTab) return;
 
+        if (playingForgeUpgradeAnimation) {
+            if (!forgeEyeButton.isDisabled) {
+                forgeEyeButton.Disable();
+            }
+            return;
+        }
+
         int crucibleItemCount = GetInventoryItemCount(crucibleInventory);
+        InventoryItem eyeSlotItem = crucibleInventory.slots[0].item;
 
         if (crucibleItemCount <= 0) {
             crucibleMode = CrucibleMode.Empty;
         }
-        else if (crucibleItemCount == 1 && crucibleInventory.slots[0].item != null) {
+        else if (eyeSlotItem != null && eyeSlotItem.ItemRef.type == demonEyeType) {
+            crucibleMode = CrucibleMode.NeedToRemoveDemonEye;
+        }
+        else if (eyeSlotItem != null && crucibleItemCount == 1) {
             crucibleMode = CrucibleMode.ForgingButJustEye;
+        }
+        else if (eyeSlotItem == null) {
+            crucibleMode = CrucibleMode.ForgingButWithoutEye;
         }
         else {
             crucibleMode = CrucibleMode.Forging;

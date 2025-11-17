@@ -8,6 +8,9 @@ public class Styles : ScriptableObject {
     public Color rareTextColor;
     public Color legendaryTextColor;
 
+    public Color headerTextColor;
+    public Color subHeaderTextColor;
+    
     public Color coinCurrencyColor;
 
     public Color underWeightColor;
