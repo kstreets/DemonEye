@@ -80,7 +80,7 @@ public class Game : MonoBehaviour {
     [EndFoldout]
     
     [Foldout("Gameplay Variables")]
-    [UnityEngine.Range(0f, 1f)] public float defaultCriticalStrikeChange;
+    [Range(0f, 1f)] public float defaultCriticalStrikeChange;
     public float defaultCriticalStrikeMultiplier;
     [EndFoldout]
 
@@ -107,6 +107,8 @@ public class Game : MonoBehaviour {
     public GameObject eyeForgeSlotPrefab;
     public GameObject rockSmokePrefab;
     public GameObject damageNumberPrefab;
+    public GameObject forgeExplosionPrefab;
+    public GameObject forgeDustExplosionPrefab;
     public GameObject questPrefab;
     [EndFoldout]
 
@@ -236,6 +238,7 @@ public class Game : MonoBehaviour {
     [Foldout("UI/InRaid")]
     public RectTransform lootInventoryPanel;
     public RectTransform lootInventoryParent;
+    public GameObject lootSearchingText;
     public Image healthBarFillImage;
     public Image weightBarFillImage;
     public GameObject interactPrompt;
@@ -310,6 +313,8 @@ public class Game : MonoBehaviour {
     private EntityPool<Entity> bloodSplatterPool;
     private EntityPool<Entity> runSmokePool;
     private EntityPool<Entity> damageNumberPool;
+    private EntityPool<Entity> forgeExplosionPool;
+    private EntityPool<Entity> forgeDustExplosionPool;
     private EntityPool<Entity> blastPool;
     
     private State mainMenuState;
@@ -355,6 +360,8 @@ public class Game : MonoBehaviour {
         bloodSplatterPool = CreateEntityPool<Entity>(bloodSplatterPrefab, 20, null);
         runSmokePool = CreateEntityPool<Entity>(runSmokePrefab, 5, null);
         damageNumberPool = CreateEntityPool<Entity>(damageNumberPrefab, 20, null);
+        forgeExplosionPool = CreateEntityPool<Entity>(forgeExplosionPrefab, 10, null);
+        forgeDustExplosionPool = CreateEntityPool<Entity>(forgeDustExplosionPrefab, 10, null);
         blastPool = CreateEntityPool<Entity>(blastPrefab, 5, null);
 
         equipedEye = new() { coreAttack = defaultAttack };
@@ -2630,6 +2637,8 @@ public class Game : MonoBehaviour {
 
         bool alreadyDiscoveredAll = discoverLootIndex == -1;
         if (alreadyDiscoveredAll) return;
+        
+        lootSearchingText.SetActive(true);
 
         searchSequence = Sequence.Create();
         
@@ -2672,6 +2681,9 @@ public class Game : MonoBehaviour {
                 AnimateSlotSearch(slotUI);
                 discoverLootTimer.SetTime(1f);
             }
+            else {
+                lootSearchingText.SetActive(false);
+            }
         };
     }
 
@@ -2681,6 +2693,7 @@ public class Game : MonoBehaviour {
     }
 
     private void CloseLootInventory() {
+        lootSearchingText.SetActive(false);
         lootInventoryPanel.gameObject.SetActive(false);
         discoverLootTimer.Stop();
         searchSequence.Stop();
@@ -2821,9 +2834,9 @@ public class Game : MonoBehaviour {
         if (playerConsumingTween.isAlive) return;
         ConsumableItem item = playerInventory.slots[slotIndex].item.ItemRef as ConsumableItem;
 
-        if (!item) return;
-        if (item.healingAmount > 0f && player.health == FullPlayerHealth) return;
-        if (item.bandageAmount > 0f && !player.bleeding) return;
+        // if (!item) return;
+        // if (item.healingAmount > 0f && player.health == FullPlayerHealth) return;
+        // if (item.bandageAmount > 0f && !player.bleeding) return;
         
         const float additionalConsumeDelay = 0.15f;
         const float performActionAtAnimationCompletion = 0.9f;
@@ -4046,6 +4059,9 @@ public class Game : MonoBehaviour {
                 };
 
                 foreach (InventorySlot slot in crucibleInventory.slots) {
+                    slot.ui.itemUI.rectTransform.anchoredPosition = Vector2.zero;
+                    slot.ui.itemUI.rectTransform.localScale = Vector3.one;
+                    
                     if (slot.item == null) continue;
                     
                     if (slot.ui.OnlyAcceptsType(soulcardType)) {
@@ -4075,7 +4091,7 @@ public class Game : MonoBehaviour {
             }
         
             if (!canUpgrade) return;
-        
+            
             foreach (UpgradePath.Requirement requirement in requirements.requirements) {
                 int stashRemoveCount = RemoveNumberOfItemsFromInventory(stashInventory, requirement.item, requirement.count);
                 if (stashRemoveCount == requirement.count) continue;
@@ -4085,8 +4101,7 @@ public class Game : MonoBehaviour {
             player.crucibleLevel++;
             SavePlayerData();
             
-            ChangeInventorySize(crucibleInventory, crucibleInventory.slots.Length + 1);
-            ArrangeEyeCrucibleInventorySlots();
+            DoForgeUpgradeAnimation(() => { });
         });
         
         // stashUpgradeButton.onClick.AddListener(() => {
@@ -4169,54 +4184,107 @@ public class Game : MonoBehaviour {
     }
     
     private int fillParamProperty = Shader.PropertyToID("_Fill");
-    private Tween eyeForgeTween;
-    private bool PlayingForgeAnimation => eyeForgeTween.isAlive;
+    private Sequence eyeForgeSequence;
+    private bool PlayingForgeAnimation => eyeForgeSequence.isAlive;
     
     private void DoEyeForgeAnimation(Action onAnimationEndCallback) {
-        eyeForgeTween = Tween.Custom(this, 0f, 1f, 5f, ease: Ease.Linear, onValueChange: (target, val) => {
+        const float fillDuration = 4.5f;
+        const float perUpgradeExplosionDelay = 0.15f;
+        const float popOutDuration = 0.15f;
+
+        float upgradeExplosionsDuration = perUpgradeExplosionDelay * (GetInventoryItemCount(crucibleInventory) - 1);
+        float totalAnimationDuration = fillDuration + upgradeExplosionsDuration + popOutDuration;
+        
+        Tween.Custom(this, 0f, 1f, fillDuration, ease: Ease.Linear, onValueChange: (target, val) => {
             target.pentagramFillImage.material.SetFloat(target.fillParamProperty, target.pentagramFillCurve.Evaluate(val));
         });
 
-        eyeForgeTween.OnComplete(onAnimationEndCallback); 
-        
-        foreach (InventorySlot slot in crucibleInventory.slots) {
+        for (int i = 0; i < crucibleInventory.slots.Length; i++) {
+            InventorySlot slot = crucibleInventory.slots[i];
             if (slot.item == null) continue;
-            
+
             RectTransform rectTransform = slot.ui.itemUI.rectTransform;
-            
+
             // Use our own shake because prime tween shake's curve does not work
-            rectTransform.DoTweenShake(10f, 3.3f, 5f, itemShakeCurve);
-            
+            rectTransform.DoTweenShake(10f, 3.3f, totalAnimationDuration, itemShakeCurve);
+
             Sequence sequence = Sequence.Create();
-            sequence.ChainDelay(1f);
-            
+
             if (slot.item.ItemRef.type == eyeType) {
                 sequence.Chain(Tween.Scale(rectTransform, Vector3.one, Vector3.one * 1.25f, new() {
-                    duration = 4f,
+                    duration = fillDuration,
                     ease = Ease.InCubic,
                 }));
-                sequence.Chain(Tween.Scale(rectTransform, Vector3.one * 1.45f, Vector3.one, new() {
-                    duration = 0.15f,
+                
+                sequence.ChainDelay(upgradeExplosionsDuration + perUpgradeExplosionDelay);
+                
+                sequence.Chain(Tween.Scale(rectTransform, Vector3.one * 1.35f, Vector3.one, new() {
+                    duration = popOutDuration,
                     ease = Ease.InOutBounce,
                 }));
+                
+                sequence.Group(Tween.Delay(0f, () => {
+                    Entity forgeExplosion = SpawnEntity(forgeExplosionPool, slot.ui.rectTransform.position, Quaternion.identity, eyeForgePanel);
+                    DestroyEntity(forgeExplosion, CurrentClipLength(forgeExplosion.animator));
+                    Tween.PunchScale(eyeForgePanel, Vector3.one * 0.05f, 1f, 15f);
+                }));
+                
+                eyeForgeSequence = sequence;
+                eyeForgeSequence.OnComplete(onAnimationEndCallback);
             }
             else {
                 sequence.Chain(Tween.Scale(rectTransform, Vector3.one, Vector3.one * 0.87f, new() {
-                    duration = 4f,
+                    duration = fillDuration,
                     ease = Ease.InCubic,
                 }));
-                sequence.Chain(Tween.Scale(rectTransform, Vector3.one * 0.87f, Vector3.one, new() {
-                    duration = 0.15f,
-                    ease = Ease.InOutBounce,
+                
+                sequence.ChainDelay(perUpgradeExplosionDelay * i);
+                
+                sequence.Chain(Tween.Scale(rectTransform, Vector3.one * 0.87f, Vector3.zero, new() {
+                    duration = popOutDuration,
+                    ease = Ease.InBounce,
                 }));
-                sequence.ChainCallback(() => {
-                    slot.item = null;
-                    slot.ui.ClearItem();
-                    rectTransform.anchoredPosition = Vector2.zero;
-                    rectTransform.localScale = Vector3.one;
-                });
+                
+                sequence.Group(Tween.Delay(popOutDuration / 2f, () => {
+                    Entity forgeExplosion = SpawnEntity(forgeExplosionPool, slot.ui.rectTransform.position, Quaternion.identity, eyeForgePanel);
+                    DestroyEntity(forgeExplosion, CurrentClipLength(forgeExplosion.animator));
+                    Tween.PunchScale(eyeForgePanel, Vector3.one * 0.04f, 0.15f, 15f);
+                }));
             }
         }
+    }
+    
+    private void DoForgeUpgradeAnimation(Action onAnimationEndCallback) {
+        Sequence sequence = Sequence.Create();
+        sequence.ChainDelay(0.25f);
+        
+        for (int i = 1; i < crucibleInventory.slots.Length; i++) {
+            RectTransform slotTransform = crucibleInventory.slots[i].ui.rectTransform;
+            sequence.Group(Tween.Scale(slotTransform, Vector3.one, Vector3.zero, 0.15f, Ease.InOutBounce, startDelay: 0.1f * i));
+            sequence.Group(Tween.PunchScale(eyeForgePanel, Vector3.one * 0.05f, 0.1f, 15f, startDelay: 0.1f * i));
+            sequence.Group(Tween.Delay(0.1f * i, () => {
+                Entity forgeExplosion = SpawnEntity(forgeDustExplosionPool, OffsetY(slotTransform.position, 10f), Quaternion.identity, eyeForgePanel);
+                DestroyEntity(forgeExplosion, CurrentClipLength(forgeExplosion.animator));
+            }));
+        }
+        
+        sequence.ChainDelay(0.25f);
+        
+        sequence.ChainCallback(() => {
+            ChangeInventorySize(crucibleInventory, crucibleInventory.slots.Length + 1);
+            ArrangeEyeCrucibleInventorySlots();
+            crucibleInventory.slots[^1].ui.rectTransform.localScale = Vector3.zero; 
+            
+            for (int i = 1; i < crucibleInventory.slots.Length; i++) {
+                RectTransform slotTransform = crucibleInventory.slots[i].ui.rectTransform;
+                Tween.Scale(slotTransform, Vector3.zero, Vector3.one, 0.15f, Ease.InOutBounce, startDelay: 0.1f * i);
+                Tween.PunchScale(eyeForgePanel, Vector3.one * 0.05f, 0.1f, 15f, startDelay: 0.1f * i);
+                Tween.Delay(0.1f * i, () => {
+                    Entity forgeExplosion = SpawnEntity(forgeDustExplosionPool, OffsetY(slotTransform.position, 10f), Quaternion.identity, eyeForgePanel);
+                    DestroyEntity(forgeExplosion, CurrentClipLength(forgeExplosion.animator));
+                });
+            }
+        });
     }
     
     private void UpdateInRaidUI() {
@@ -4311,8 +4379,16 @@ public class Game : MonoBehaviour {
             forgeEyeButton.Disable();
         }
 
+        if (PlayingForgeAnimation) {
+            if (!upgradeForgeButton.isDisabled) {
+                upgradeForgeButton.Disable();
+            }
+            return;
+        }
+        
         List<UpgradePath.Requirement> upgradeReqs = crucibleUpgradePath.pathUpgrades[player.crucibleLevel].requirements;
         bool meetsAllUpgradeRequirements = MeetsAllUpgradeRequirement(upgradeReqs);
+
         if (upgradeForgeButton.isDisabled && meetsAllUpgradeRequirements) {
             upgradeForgeButton.Enable();
         }
