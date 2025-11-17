@@ -4045,7 +4045,8 @@ public class Game : MonoBehaviour {
         
         eyeForgeTabButton.onClick.AddListener(() => {
             ToggleHideoutTab(eyeForgeTabButton, eyeForgeTabText);
-            ToggleHideoutPanels(eyeForgePanel, stashPanel);
+            ToggleHideoutPanels(playerPanel, eyeForgePanel, stashPanel);
+            ToggleSlimPlayerPanel(true);
         });
         
         traderTabButton.onClick.AddListener(() => {
@@ -4376,12 +4377,12 @@ public class Game : MonoBehaviour {
 
     // Its better just to have these as constants because the canvas layout recalculates in LateUpdate
     private const float playerPanelWidth = 570f;
-    private const float playerPocketsBackpackWidth = 221.55f;
+    private const float playerPanelLeftHalfWidth = 290f;
     
     private void ToggleSlimPlayerPanel(bool toggle) {
         if (toggle) {
             playerPocketsBackpackParent.gameObject.SetActive(false);
-            playerPanel.GetComponent<LayoutElement>().preferredWidth = playerPanelWidth - playerPocketsBackpackWidth;
+            playerPanel.GetComponent<LayoutElement>().preferredWidth = playerPanelLeftHalfWidth;
             return;
         }
         
