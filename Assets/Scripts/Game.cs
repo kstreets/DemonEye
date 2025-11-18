@@ -1665,6 +1665,10 @@ public class Game : MonoBehaviour {
         else {
             descText.text = hoveredSlot.item.ItemRef.GetDescription();
         }
+        
+        if (hoveredSlot.item.ItemRef.type == consumableType) {
+            descText.text += $"<line-height=150%>\n<sprite=5 color=#{ColorUtility.ToHtmlStringRGBA(styles.inputIconTint)}> <size=80%>Right click to consume</size>";
+        } 
 
         // Set popup position
         Vector2 hoveredSlotCenter = hoveredSlot.ui.rectTransform.WorldRect().center;
@@ -1900,7 +1904,7 @@ public class Game : MonoBehaviour {
         if (!useItemInputAction.WasPressedThisFrame()) return;
         if (!TryGetItemFromHoverInfo(invHoverInfo, out InventoryItem hoveredItem)) return;
         if (hoveredItem.ItemRef.type != consumableType) return;
-        HavePlayerConsumeItem(invHoverInfo.slotIndex);
+        HavePlayerConsumeItem(invHoverInfo.inventory, invHoverInfo.slotIndex);
     }
 
     private void UpdatePlayerPanelUI() {
@@ -2868,15 +2872,16 @@ public class Game : MonoBehaviour {
     }
 
     private Tween playerConsumingTween;
+    private Inventory consumingInventory;
     private int consumingSlotIndex;
     
-    private void HavePlayerConsumeItem(int slotIndex) {
+    private void HavePlayerConsumeItem(Inventory fromInventory, int slotIndex) {
         if (playerConsumingTween.isAlive) return;
-        ConsumableItem item = playerInventory.slots[slotIndex].item.ItemRef as ConsumableItem;
+        ConsumableItem item = fromInventory.slots[slotIndex].item.ItemRef as ConsumableItem;
 
-        // if (!item) return;
-        // if (item.healingAmount > 0f && player.health == FullPlayerHealth) return;
-        // if (item.bandageAmount > 0f && !player.bleeding) return;
+        if (!item) return;
+        if (item.healingAmount > 0f && player.health == FullPlayerHealth) return;
+        if (item.bandageAmount > 0f && !player.bleeding) return;
         
         const float additionalConsumeDelay = 0.15f;
         const float performActionAtAnimationCompletion = 0.9f;
@@ -2896,6 +2901,7 @@ public class Game : MonoBehaviour {
 
         // So we don't allocate any memory for the closure
         consumingSlotIndex = slotIndex;
+        consumingInventory = fromInventory;
         
         playerConsumingTween = Tween.Delay(item, actionDelay, static (item) => {
             if (item.healingAmount > 0) {
@@ -2904,7 +2910,7 @@ public class Game : MonoBehaviour {
             else {
                 instance.player.bleeding = false;
             }
-            instance.ReduceItemCountInInventory(instance.playerInventory, instance.consumingSlotIndex);
+            instance.ReduceItemCountInInventory(instance.consumingInventory, instance.consumingSlotIndex);
         });
         
         playerConsumingTween.OnUpdate(this, static (_, _) => {
@@ -3306,7 +3312,7 @@ public class Game : MonoBehaviour {
         }
 
         if (itemToConsume) {
-            HavePlayerConsumeItem(playerInventorySlotIndex);
+            HavePlayerConsumeItem(playerInventory, playerInventorySlotIndex);
         }
     }
 

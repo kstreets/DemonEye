@@ -13285,6 +13285,14 @@ PrefabInstance:
       propertyPath: m_SizeDelta.x
       value: -19.594395
       objectReference: {fileID: 0}
+    - target: {fileID: 1623233847951479237, guid: 75ca691462fd6af468ac75e3d86cc0a2, type: 3}
+      propertyPath: m_text
+      value: This is the description.
+      objectReference: {fileID: 0}
+    - target: {fileID: 1623233847951479237, guid: 75ca691462fd6af468ac75e3d86cc0a2, type: 3}
+      propertyPath: m_spriteAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: b549577070cfd094d85d4b6347e012b3, type: 2}
     - target: {fileID: 1928052447148552071, guid: 75ca691462fd6af468ac75e3d86cc0a2, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5

@@ -1623,7 +1623,7 @@ TextureImporter:
         width: 36
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 3, y: 4, z: 3, w: 4}
       customData: 
       outline: []
@@ -1632,6 +1632,50 @@ TextureImporter:
       bones: []
       spriteID: 2b45a71a2a70c804095aaefeb2825d7b
       internalID: -1740945645
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UISpriteSheet_63
+      rect:
+        serializedVersion: 2
+        x: 208
+        y: 0
+        width: 16
+        height: 16
+      alignment: 9
+      pivot: {x: 0.53017426, y: 0.4973757}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 04474f64cd6e1de42b88d9be5b9d956b
+      internalID: 334853747
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UISpriteSheet_64
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 0
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ec6cfa88493299545b2ec458f7931c8d
+      internalID: 1059939964
       vertices: []
       indices: 
       edges: []
@@ -1725,6 +1769,8 @@ TextureImporter:
       UISpriteSheet_60: -339932435
       UISpriteSheet_61: -455868342
       UISpriteSheet_62: -1740945645
+      UISpriteSheet_63: 334853747
+      UISpriteSheet_64: 1059939964
       UISpriteSheet_7: 1135578465
       UISpriteSheet_8: 2031374853
       UISpriteSheet_9: 1832339534
