@@ -242,7 +242,8 @@ public class Game : MonoBehaviour {
     public GameObject lootSearchingText;
     public Image healthBarFillImage;
     public Image weightBarFillImage;
-    public GameObject interactPrompt;
+    public TextMeshProUGUI interactPrompt;
+    public TextMeshProUGUI interactionDetails;
     public RectTransform portalArrow;
     [EndFoldout]
 
@@ -1667,7 +1668,8 @@ public class Game : MonoBehaviour {
         }
         
         if (hoveredSlot.item.ItemRef.type == consumableType) {
-            descText.text += $"<line-height=150%>\n<sprite=5 color=#{ColorUtility.ToHtmlStringRGBA(styles.inputIconTint)}> <size=80%>Right click to consume</size>";
+            descText.text += $"<line-height=150%>\n<sprite=5 color=#{ColorUtility.ToHtmlStringRGBA(styles.inputIconTint)}> " +
+                             $"<size=80%>{ColorText("Right click to consume", styles.inputIconTint)}</size>";
         } 
 
         // Set popup position
@@ -3188,16 +3190,21 @@ public class Game : MonoBehaviour {
     // *******************************
     
     private void CheckForInteractions() { 
-        interactPrompt.SetActive(false);
+        interactPrompt.gameObject.SetActive(false);
+        interactionDetails.gameObject.SetActive(false);
         
         Vector2 checkCenter = player.position + new Vector3(0f, 0.05f, 0f);
         List<Collider2D> cols = OverlapCircle(checkCenter, 0.1f, Masks.ItemMask);
         
         foreach (Collider2D col in cols) {
             if (col.CompareTag(Tags.Pickup)) {
-                EnableInteractionPrompt(col.transform.position);
+                ItemDrop itemDrop = col.GetComponent<ItemDrop>();
+                
+                Color itemColor = styles.GetColorForRarity(itemDrop.item.GetRarity());
+                string details = ColorText($"{itemDrop.item.displayName} x{itemDrop.dropCount}", itemColor);
+                EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), details);
+                
                 if (interactInputAction.WasPressedThisFrame()) {
-                    ItemDrop itemDrop = col.GetComponent<ItemDrop>();
                     itemDrop.circleCollider.enabled = false;
                     
                     InventoryAddResult result = TryAddItemToInventory(playerInventory, itemDrop.item, itemDrop.dropCount);
@@ -3212,7 +3219,7 @@ public class Game : MonoBehaviour {
             }
 
             if (col.CompareTag(Tags.DeadBody)) {
-                EnableInteractionPrompt(col.transform.position);
+                EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), "Search Body");
                 if (interactInputAction.WasPressedThisFrame()) {
                     lootInvetoryPtr.slots = deadBodySlotsLookup[col.gameObject];
                     OpenPlayerInventory();
@@ -3221,7 +3228,7 @@ public class Game : MonoBehaviour {
             }
 
             if (col.CompareTag(Tags.ExitPortal)) {
-                EnableInteractionPrompt(col.transform.position);
+                EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Take Exit Portal");
                 if (interactInputAction.WasPressedThisFrame()) {
                     gameStateMachine.SetStateIfNotCurrent(gameWinState);
                 }
@@ -3265,9 +3272,13 @@ public class Game : MonoBehaviour {
         .OnComplete(() => DestroyEntity(droppedEntity));
     }
 
-    private void EnableInteractionPrompt(Vector3 position) {
-        interactPrompt.SetActive(true);
-        interactPrompt.transform.position = mainCamera.WorldToScreenPoint(position + new Vector3(0f, 0.1f, 0f));
+    private void EnableInteractionPrompt(Vector3 position, string detailsString) {
+        interactionDetails.gameObject.SetActive(true);
+        interactionDetails.text = detailsString;
+        
+        interactPrompt.gameObject.SetActive(true);
+        interactPrompt.text = $"<sprite=5 color=#{ColorUtility.ToHtmlStringRGBA(styles.inputIconTint)}>";
+        interactPrompt.transform.position = mainCamera.WorldToScreenPoint(position);
     }
     
     // *******************************
@@ -3994,6 +4005,7 @@ public class Game : MonoBehaviour {
         HideItemDescPopup(); 
         HideUIElementPopup();
         interactPrompt.gameObject.SetActive(false);
+        interactionDetails.gameObject.SetActive(false);
         playerInfoParent.gameObject.SetActive(false);
         raidInfoPanelParent.SetActive(false);
         portalArrow.gameObject.SetActive(false);

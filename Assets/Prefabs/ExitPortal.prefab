@@ -149,5 +149,5 @@ CapsuleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0.010127902, y: 0.0014066696}
-  m_Size: {x: 0.121943235, y: 0.2642963}
+  m_Size: {x: 0.29, y: 0.41}
   m_Direction: 0

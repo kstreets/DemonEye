@@ -287,6 +287,17 @@
                 },
                 {
                     "name": "",
+                    "id": "8f8f0158-8b10-4bc7-a1a8-14281db51c1c",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Interact",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "ee9a0421-93df-4efe-9722-147063183c75",
                     "path": "<Keyboard>/tab",
                     "interactions": "",
