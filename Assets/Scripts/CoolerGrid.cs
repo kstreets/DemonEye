@@ -52,7 +52,7 @@ public class CoolerGrid : MonoBehaviour {
         nativePositions.Dispose();
         flowFieldJobResults.Dispose();
     }
-    
+
     public Vector3 GetSpawnPosition(Vector2 playerPosition) {
         bool needToRecalculate = lastUpdateTime != Time.time;
         lastUpdateTime = Time.time;

@@ -34,6 +34,10 @@ public static class Extensions {
         rectTransform.sizeDelta = new(width, rectTransform.sizeDelta.y);
     }
 
+    public static Color Alpha(this Color color, float alpha) {
+        return new(color.r, color.g, color.b, alpha);
+    }
+
     public static bool ContainsCount<T>(this List<T> list, T item, out int count) {
         count = 0;
         

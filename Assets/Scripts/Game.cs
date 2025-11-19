@@ -124,6 +124,7 @@ public class Game : MonoBehaviour {
     public Image menuBackgroundImage;
     public Image deathBackgroundImage;
     public ButtonFeel menuBackButton;
+    public TextMeshProUGUI gameEndText;
     [EndFoldout]
     
     [Foldout("UI/Main Menu")]
@@ -167,7 +168,6 @@ public class Game : MonoBehaviour {
     public TextMeshProUGUI healthStatValueText;
     public TextMeshProUGUI luckStatValueText;
     public TextMeshProUGUI strengthStatValueText;
-    public Animator playerPreviewAnimator;
     public Image playerPreviewImage;
     [EndFoldout]
     
@@ -249,12 +249,13 @@ public class Game : MonoBehaviour {
 
     [Foldout("UI/RaidInfoPanel")]
     public GameObject raidInfoPanelParent;
-    public GameObject timeUntilFinalWaveParent;
-    public TextMeshProUGUI timeUntilFinalWaveText;
-    public GameObject exitPortalInfoParent;
-    public TextMeshProUGUI exitPortalInfoText;
-    public GameObject exitPortalAvailableParent;
-    public GameObject finalWaveActiveParent;
+    public GameObject finalWaveCountdownParent;
+    public TextMeshProUGUI finalWaveCountdownText;
+    public GameObject exitPortalCountdownParent;
+    public TextMeshProUGUI exitPortalCountdownText;
+    public GameObject exitPortalActiveNotifier;
+    public GameObject finalWaveActiveNotifier;
+    public GameObject finalExitPortalNotifier;
     [EndFoldout]
     
     [Foldout("UI/DamageNumbers")]
@@ -324,7 +325,8 @@ public class Game : MonoBehaviour {
     private State hideoutState;
     private State raidState;
     private State gameOverState;
-    private State gameWinState;
+    private State winExitState;
+    private State earlyExitState;
     private StateMachine gameStateMachine = new();
 
     public static Action<Enemy> onEnemyDeath;
@@ -390,8 +392,9 @@ public class Game : MonoBehaviour {
         hideoutState = gameStateMachine.CreateState(OnHideoutStateUpdate, OnHideoutStateEnter, OnHideoutStateExit);
         mapSelectionState = gameStateMachine.CreateState(OnMapSelectionUpdate, OnMapSelectionEnter, OnMapSelectionExit);
         raidState = gameStateMachine.CreateState(OnRaidStateUpdate, OnRaidStateEnter, OnRaidStateExit);
-        gameWinState = gameStateMachine.CreateState(null, OnGameWinEnter, OnGameWinExit);
         gameOverState = gameStateMachine.CreateState(null, OnGameOverEnter, OnGameOverExit);
+        earlyExitState = gameStateMachine.CreateState(null, OnEarlyExitEnter, OnEarlyExitExit);
+        winExitState = gameStateMachine.CreateState(null, OnWinExitEnter, OnWinExitExit);
         
         raidState.To(gameOverState).When(() => player.health <= 0);
     }
@@ -431,6 +434,7 @@ public class Game : MonoBehaviour {
     }
 
     private void OnMainMenuStateEnter() {
+        Cursor.visible = true;
         ShowMainMenuUI();
     }
 
@@ -470,26 +474,7 @@ public class Game : MonoBehaviour {
     }
 
     private void OnRaidStateEnter() {
-        Cursor.visible = false;
-        ShowRaidUI();
-
-        deathBackgroundImage.enabled = false;
-        
-        currentMapInstance.gameObject.SetActive(true);
-        currentMapInstance.grid.Init();
-
-        int randomSpawnIndex = Random.Range(0, currentMapInstance.spawnPositionsParent.childCount);
-        Vector2 randomSpawnPos = currentMapInstance.spawnPositionsParent.GetChild(randomSpawnIndex).position;
-        
-        player.position = randomSpawnPos;
-        
-        Vector3 cameraWarpTarget = new(player.position.x, player.position.y, cinemachineCamera.transform.position.z);
-        cinemachineCamera.ForceCameraPosition(cameraWarpTarget, Quaternion.identity);
-        cinemachineCamera.Follow = player.trans;
-        
-        InitSpawnManager(currentMapInstance.waves);
-        SpawnResources(currentMapInstance.resourceParent);
-        InitExitPortals(currentMapInstance.exitPortalsParent, currentMapInstance.waves.timeBeforeExitPortalsSpawn);
+        InitRaid();
     }
 
     private void OnRaidStateExit() {
@@ -497,12 +482,11 @@ public class Game : MonoBehaviour {
         CloseLootInventory();
         HideItemDescPopup();
         HideUIElementPopup();
-        
-        Cursor.visible = true;
         CloseRaidUI();
     }
 
     private void OnRaidStateUpdate() {
+        UpdateRaidState();
         UpdateTimers();
         CheckForInteractions();
         CheckForHotBarInteractions();
@@ -514,99 +498,33 @@ public class Game : MonoBehaviour {
         UpdateEntityEffects();
     }
 
-    private void OnGameWinEnter() {
+    private void OnEarlyExitEnter() {
         OnSaveWhenRaidIsOver();
-        gameStateMachine.SetStateIfNotCurrent(hideoutState);
+        AnimateEarlyExitSequence(() => gameStateMachine.SetStateIfNotCurrent(mainMenuState));
+    }
+    
+    private void OnEarlyExitExit() {
+        DeinitRaid();
+    }
+    
+    private void OnWinExitEnter() {
+        OnSaveWhenRaidIsOver();
+        AnimateGameWinSequence(() => gameStateMachine.SetStateIfNotCurrent(mainMenuState));
     }
 
-    private void OnGameWinExit() {
+    private void OnWinExitExit() {
         DeinitRaid();
     }
 
     private void OnGameOverEnter() {
         ClearInventory(playerInventory);
         OnSaveWhenRaidIsOver();
-        
-        Tween.StopAll();
-        
-        foreach (Entity entity in entities) {
-            if (entity.rigidbody) {
-                entity.rigidbody.linearVelocity = Vector2.zero;
-            }
-            if (entity.animator) {
-                entity.animator.enabled = false;
-            }
-        }
-        
-        player.spriteRenderer.sortingLayerName = "DeathWipe";
-        
-        RemoveHitFlashEffect(player);
-        player.spriteRenderer.GetPropertyBlock(player.matPropertyBlock);
-        player.matPropertyBlock.SetFloat(damageFlashTintPropertyId, 1f);
-        player.spriteRenderer.SetPropertyBlock(player.matPropertyBlock);
-        
-        deathBackgroundImage.enabled = true;
-        deathBackgroundImage.fillAmount = 0f;
-
-        Sequence sequence = Sequence.Create();
-        sequence.ChainDelay(0.25f);
-        sequence.Chain(Tween.UIFillAmount(deathBackgroundImage, 1f, 1f, Ease.InOutQuad));
-        sequence.ChainCallback(() => {
-            player.animator.enabled = true;
-            player.animator.Play(playerDeathAnim);
-        });
-        
-        sequence.Group(Tween.Custom(1f, 0f, 0.5f, val => {
-            player.spriteRenderer.GetPropertyBlock(player.matPropertyBlock);
-            player.matPropertyBlock.SetFloat(damageFlashTintPropertyId, val);
-            player.spriteRenderer.SetPropertyBlock(player.matPropertyBlock);
-        }, Ease.OutExpo));
-        
-        int initialRefResoultion = pixelPerfectCamera.refResolutionX;
-        
-        sequence.Group(Tween.Custom(pixelPerfectCamera.refResolutionX, 15, 0.8f, val => {
-            pixelPerfectCamera.refResolutionX = (int)val;
-            pixelPerfectCamera.refResolutionY = (int)val;
-        }, Ease.InOutQuad));
-        
-        sequence.ChainDelay(1f);
-
-        menuBackgroundImage.gameObject.SetActive(true);
-        menuBackgroundImage.color = new(1f, 1f, 1f, 0f);
-        sequence.Chain(Tween.Alpha(menuBackgroundImage, 0f, 1f, 1f, Ease.InCubic, startDelay: 0.5f));
-
-        sequence.Group(Tween.Scale(player.trans, Vector3.zero, 1.5f, Ease.InOutQuint));
-        
-        sequence.OnComplete(() => {
-            player.spriteRenderer.sortingLayerName = "Entity";
-            player.trans.localScale = Vector3.one;
-            pixelPerfectCamera.refResolutionX = initialRefResoultion;
-            pixelPerfectCamera.refResolutionY = initialRefResoultion;
-            gameStateMachine.SetStateIfNotCurrent(mainMenuState);
-        });
+        AnimateGameOverSequence(() => gameStateMachine.SetStateIfNotCurrent(mainMenuState)); 
     }
     
     private void OnGameOverExit() {
         player.health = FullPlayerHealth;
         DeinitRaid();
-    }
-
-    private void DeinitRaid() {
-        currentMapInstance.grid.Deinit();
-        
-        DestroyLevelEntities();
-        UnloadCurrentMapAsync();
-        player.gameObject.SetActive(false);
-        
-        RefillTraderSlotsWithItems(potionManTrader);
-        RefillTraderSlotsWithItems(armsDealerTrader);
-        RefillTraderSlotsWithItems(hatManTrader);
-    }
-    
-    private void OnSaveWhenRaidIsOver() {
-        SaveInventory(playerInventory);
-        SavePlayerData();
-        SaveQuestStates();
     }
 
     // *****************************
@@ -1368,6 +1286,341 @@ public class Game : MonoBehaviour {
             sm.spawnTimeIndex++;
         }
     }
+    
+    // *******************************
+    // Raid 
+    // *******************************
+    
+    private enum RaidState { None, InitialWaves, InitialWavesWithExit, FinalWave, PostFinalWave }
+    private RaidState curRaidState;
+    private bool raidStateSwitchedThisFrame;
+    private Sequence raidEnterSequence;
+    
+    private void InitRaid() {
+        curRaidState = RaidState.None;
+        
+        Cursor.visible = false;
+        ShowRaidUI();
+
+        deathBackgroundImage.enabled = false;
+        
+        currentMapInstance.gameObject.SetActive(true);
+        currentMapInstance.grid.Init();
+
+        int randomSpawnIndex = Random.Range(0, currentMapInstance.spawnPositionsParent.childCount);
+        Vector2 randomSpawnPos = currentMapInstance.spawnPositionsParent.GetChild(randomSpawnIndex).position;
+        
+        player.position = randomSpawnPos;
+        player.gameObject.SetActive(false);
+        
+        Vector3 cameraWarpTarget = new(player.position.x, player.position.y, cinemachineCamera.transform.position.z);
+        cinemachineCamera.ForceCameraPosition(cameraWarpTarget, Quaternion.identity);
+        cinemachineCamera.Follow = player.trans;
+        
+        InitSpawnManager(currentMapInstance.waves);
+        SpawnResources(currentMapInstance.resourceParent);
+        InitEarlyExitPortal(currentMapInstance.exitPortalsParent, currentMapInstance.waves.timeBeforeExitPortalsSpawn);
+
+        // Animation Sequence
+        {
+            int initialCamRefRes = pixelPerfectCamera.refResolutionX;
+            pixelPerfectCamera.refResolutionX = 24;
+            pixelPerfectCamera.refResolutionY = 24;
+            
+            raidEnterSequence = Sequence.Create();
+            
+            deathBackgroundImage.enabled = true;
+            deathBackgroundImage.fillAmount = 1f;
+            raidEnterSequence.Chain(Tween.Alpha(deathBackgroundImage, 1f, 0f, 0.5f, Ease.InCubic));
+            
+            raidEnterSequence.ChainDelay(0.25f);
+
+            raidEnterSequence.ChainCallback(() => {
+                Entity inTeleportEntity = SpawnEntity(teleportInPool, OffsetY(player.position, -0.05f), Quaternion.identity);
+                DestroyEntity(inTeleportEntity, CurrentClipLength(inTeleportEntity.animator));
+            });
+            
+            raidEnterSequence.ChainDelay(0.35f);
+            raidEnterSequence.ChainCallback(() => {
+                player.gameObject.SetActive(true);
+                player.animator.Play(playerIdleDownAnim);
+                player.nextIdleAnimHash = playerIdleDownAnim;
+            });
+            raidEnterSequence.Chain(Tween.Scale(player.trans, 0f, 1f, 0.2f, Ease.InOutBack));
+            
+            raidEnterSequence.ChainDelay(0.6f);
+            raidEnterSequence.Chain(Tween.Custom(pixelPerfectCamera.refResolutionX, initialCamRefRes, 0.15f, ease: Ease.OutQuad, onValueChange: val => {
+                pixelPerfectCamera.refResolutionX = (int)val;
+                pixelPerfectCamera.refResolutionY = (int)val;
+            }));
+        }
+    }
+
+    private void UpdateRaidState() {
+        RaidState prevState = curRaidState;
+        
+        if (spawnManager.timeUntilFinalWave >= 0f) {
+            curRaidState = activeExitPortal ? RaidState.InitialWavesWithExit : RaidState.InitialWaves;
+        }
+        else if (spawnManager.spawnEvents.IndexInRange(spawnManager.spawnTimeIndex) || enemies.Count > 0) {
+            curRaidState = RaidState.FinalWave;
+        }
+        else {
+            curRaidState = RaidState.PostFinalWave;
+        }
+
+        raidStateSwitchedThisFrame = prevState != curRaidState;
+        
+        if (raidStateSwitchedThisFrame && curRaidState == RaidState.FinalWave) {
+            DespawnEarlyExitPortal();
+        }
+
+        if (raidStateSwitchedThisFrame && curRaidState == RaidState.PostFinalWave) {
+            Tween.Delay(this, 0.25f, static (inst) => {
+                inst.AnimateLargeRaidText(ColorText("Map Cleared!", inst.styles.increaseDescColor));
+                inst.SpawnFinalExitPortal();
+            });
+        }
+    }
+    
+    private void DeinitRaid() {
+        currentMapInstance.grid.Deinit();
+        
+        DestroyLevelEntities();
+        UnloadCurrentMapAsync();
+        
+        RefillTraderSlotsWithItems(potionManTrader);
+        RefillTraderSlotsWithItems(armsDealerTrader);
+        RefillTraderSlotsWithItems(hatManTrader);
+    }
+    
+    private void OnSaveWhenRaidIsOver() {
+        SaveInventory(playerInventory);
+        SavePlayerData();
+        SaveQuestStates();
+    }
+
+    private void UpdateInRaidUI() {
+        healthBarFillImage.fillAmount = player.health / (float)FullPlayerHealth;
+        
+        GetEncumberingWeightRange(out int startingEncumberingWeight, out _);
+        int inventoryWeight = GetInventoryWeight(playerInventory);
+        weightBarFillImage.fillAmount = Mathf.Clamp01(inventoryWeight / (float)startingEncumberingWeight);
+        
+        float overweightComp = GetOverweightCompletion();
+        if (overweightComp > 0f) {
+            weightBarFillImage.color = Color.Lerp(styles.startingOverWeightColor, styles.endingOverWeightColor, overweightComp);
+        }
+        else {
+            weightBarFillImage.color = styles.underWeightColor;
+        }
+        
+        if (raidStateSwitchedThisFrame) {
+            if (curRaidState == RaidState.InitialWaves) {
+                finalWaveCountdownParent.SetActive(true); 
+                exitPortalCountdownParent.SetActive(true);
+                finalWaveActiveNotifier.SetActive(false);
+                exitPortalActiveNotifier.SetActive(false);
+                finalExitPortalNotifier.SetActive(false);
+            }
+            else if (curRaidState == RaidState.InitialWavesWithExit) {
+                exitPortalCountdownParent.SetActive(false);
+                exitPortalActiveNotifier.SetActive(true);
+                Tween.Scale(exitPortalActiveNotifier.transform, 0f, 1f, 0.5f, Ease.OutBack);
+            }
+            else if (curRaidState == RaidState.FinalWave) {
+                finalWaveCountdownParent.SetActive(false); 
+                exitPortalActiveNotifier.SetActive(false);
+                finalWaveActiveNotifier.SetActive(true);
+                Tween.Scale(finalWaveActiveNotifier.transform, 0f, 1f, 0.5f, Ease.OutBack);
+            }
+            else if (curRaidState == RaidState.PostFinalWave) {
+                finalWaveActiveNotifier.SetActive(false);
+                finalExitPortalNotifier.SetActive(true);
+                Tween.Scale(finalExitPortalNotifier.transform, 0f, 1f, 0.5f, Ease.OutBack);
+            }
+        }
+        
+        if (exitPortalCountdownText.gameObject.activeInHierarchy) {
+            exitPortalCountdownText.text = GetCountdownText(exitPortalTimer.CurTime);
+        }
+        if (finalWaveCountdownText.gameObject.activeInHierarchy) {
+            finalWaveCountdownText.text = GetCountdownText(spawnManager.timeUntilFinalWave);
+        }
+    }
+
+    private string GetCountdownText(float timeLeft) {
+        float time = Mathf.Clamp(timeLeft, 0f, float.MaxValue);
+        int minutesLeft = Mathf.FloorToInt(time / 60f);
+        int secondsLeft = Mathf.FloorToInt(time % 60f);
+        return $"{minutesLeft:00}:{secondsLeft:00}";
+    }
+
+    private void AnimateLargeRaidText(string text) {
+        gameEndText.gameObject.SetActive(true);
+        gameEndText.text = text;
+        
+        Sequence sequence = Sequence.Create(2, Sequence.SequenceCycleMode.Rewind);
+        sequence.Group(Tween.Custom(-gameEndText.text.Length / 2f, 0f, 0.9f, ease: Ease.OutBack, onValueChange: (val) => { 
+            gameEndText.characterSpacing = val;
+        }));
+
+        float startYPos = gameEndText.rectTransform.anchoredPosition.y - 170f;
+        sequence.Group(Tween.UIAnchoredPositionY(gameEndText.rectTransform, startYPos, gameEndText.rectTransform.anchoredPosition.y, 1.3f, Ease.OutBack));
+        
+        sequence.Group(Tween.TextFontSize(gameEndText, 0f, gameEndText.fontSize, 1f, Ease.OutBack));
+        sequence.ChainDelay(0.025f);
+
+        float initialFontSize = gameEndText.fontSize;
+        Vector3 initialAnchorPos = gameEndText.rectTransform.anchoredPosition;
+        sequence.OnComplete(() => {
+            gameEndText.rectTransform.anchoredPosition = initialAnchorPos;
+            gameEndText.fontSize = initialFontSize;
+            gameEndText.gameObject.SetActive(false);
+        });
+    }
+    
+    // *******************************
+    // Animation Sequences
+    // *******************************
+
+    private void AnimateGameOverSequence(Action onCompleteCallback) {
+        Tween.StopAll();
+        
+        foreach (Entity entity in entities) {
+            if (entity.rigidbody) {
+                entity.rigidbody.linearVelocity = Vector2.zero;
+            }
+            if (entity.animator) {
+                entity.animator.enabled = false;
+            }
+        }
+        
+        player.spriteRenderer.sortingLayerName = "DeathWipe";
+        
+        RemoveHitFlashEffect(player);
+        player.spriteRenderer.GetPropertyBlock(player.matPropertyBlock);
+        player.matPropertyBlock.SetFloat(damageFlashTintPropertyId, 1f);
+        player.spriteRenderer.SetPropertyBlock(player.matPropertyBlock);
+        
+        deathBackgroundImage.enabled = true;
+        deathBackgroundImage.fillAmount = 0f;
+        deathBackgroundImage.color = deathBackgroundImage.color.Alpha(1f);
+
+        Sequence sequence = Sequence.Create();
+        sequence.ChainDelay(0.25f);
+        sequence.Chain(Tween.UIFillAmount(deathBackgroundImage, 1f, 1f, Ease.InOutQuad));
+        sequence.ChainCallback(() => {
+            player.animator.enabled = true;
+            player.animator.Play(playerDeathAnim);
+        });
+        
+        sequence.Group(Tween.Custom(1f, 0f, 0.5f, val => {
+            player.spriteRenderer.GetPropertyBlock(player.matPropertyBlock);
+            player.matPropertyBlock.SetFloat(damageFlashTintPropertyId, val);
+            player.spriteRenderer.SetPropertyBlock(player.matPropertyBlock);
+        }, Ease.OutExpo));
+        
+        int initialRefResoultion = pixelPerfectCamera.refResolutionX;
+        
+        sequence.Group(Tween.Custom(pixelPerfectCamera.refResolutionX, 15, 0.8f, val => {
+            pixelPerfectCamera.refResolutionX = (int)val;
+            pixelPerfectCamera.refResolutionY = (int)val;
+        }, Ease.InOutQuad));
+
+        sequence.Group(Tween.Delay(0.25f, () => AnimateLargeRaidText(ColorText("YOU DIED", styles.decreaseDescColor))));
+        
+        sequence.ChainDelay(1f);
+
+        menuBackgroundImage.gameObject.SetActive(true);
+        menuBackgroundImage.color = new(1f, 1f, 1f, 0f);
+        sequence.Chain(Tween.Alpha(menuBackgroundImage, 0f, 1f, 1f, Ease.InCubic, startDelay: 0.5f));
+
+        sequence.Group(Tween.Scale(player.trans, Vector3.zero, 1.5f, Ease.InOutQuint, startDelay: 0.35f));
+        
+        sequence.OnComplete(() => {
+            player.spriteRenderer.sortingLayerName = "Entity";
+            player.trans.localScale = Vector3.one;
+            pixelPerfectCamera.refResolutionX = initialRefResoultion;
+            pixelPerfectCamera.refResolutionY = initialRefResoultion;
+            onCompleteCallback?.Invoke();
+        });
+    }
+    
+    private void AnimateGameWinSequence(Action onCompleteCallback) {
+        Entity outTeleportFxEntity = SpawnEntity(teleportOutPool, player.position, Quaternion.identity);
+        DestroyEntity(outTeleportFxEntity, CurrentClipLength(outTeleportFxEntity.animator));
+        player.gameObject.SetActive(false);
+        
+        Sequence sequence = Sequence.Create();
+
+        int initialRefResoultion = pixelPerfectCamera.refResolutionX;
+        sequence.Chain(Tween.Custom(pixelPerfectCamera.refResolutionX, 26, 0.2f, ease: Ease.InOutQuad, onValueChange: val => {
+            pixelPerfectCamera.refResolutionX = (int)val;
+            pixelPerfectCamera.refResolutionY = (int)val;
+        }));
+        
+        // There could be a rare case where an exit portal doesn't spawn, which is handled
+        if (activeExitPortal) {
+            sequence.ChainDelay(0.05f);
+            sequence.Chain(Tween.Scale(activeExitPortal, Vector3.zero, 0.25f, Ease.InOutBounce));
+        }
+        
+        sequence.ChainDelay(0.15f);
+        
+        deathBackgroundImage.enabled = true;
+        deathBackgroundImage.fillAmount = 1f;
+        sequence.Chain(Tween.Alpha(deathBackgroundImage, 0f, 1f, 0.75f, Ease.InOutQuad));
+        
+        menuBackgroundImage.gameObject.SetActive(true);
+        menuBackgroundImage.color = new(1f, 1f, 1f, 0f);
+        sequence.Group(Tween.Alpha(menuBackgroundImage, 0f, 1f, 1f, Ease.InCubic, startDelay: 0.1f));
+        sequence.ChainDelay(0.15f);
+
+        sequence.OnComplete(() => {
+            player.gameObject.SetActive(true);
+            pixelPerfectCamera.refResolutionX = initialRefResoultion;
+            pixelPerfectCamera.refResolutionY = initialRefResoultion;
+            onCompleteCallback?.Invoke();
+        });
+    }
+    
+    private void AnimateEarlyExitSequence(Action onCompleteCallback) {
+        Entity outTeleportFxEntity = SpawnEntity(teleportOutPool, player.position, Quaternion.identity);
+        DestroyEntity(outTeleportFxEntity, CurrentClipLength(outTeleportFxEntity.animator));
+        player.gameObject.SetActive(false);
+        
+        Sequence sequence = Sequence.Create();
+
+        int initialRefResoultion = pixelPerfectCamera.refResolutionX;
+        sequence.Chain(Tween.Custom(pixelPerfectCamera.refResolutionX, 26, 0.2f, ease: Ease.InOutQuad, onValueChange: val => {
+            pixelPerfectCamera.refResolutionX = (int)val;
+            pixelPerfectCamera.refResolutionY = (int)val;
+        }));
+        
+        sequence.ChainDelay(0.05f);
+        sequence.Chain(Tween.Scale(activeExitPortal.transform, Vector3.zero, 0.25f, Ease.InOutBounce));
+        
+        sequence.ChainDelay(0.15f);
+        
+        deathBackgroundImage.enabled = true;
+        deathBackgroundImage.fillAmount = 1f;
+        sequence.Chain(Tween.Alpha(deathBackgroundImage, 0f, 1f, 0.75f, Ease.InOutQuad));
+        
+        sequence.Group(Tween.Delay(0.35f, () => AnimateLargeRaidText(ColorText("EARLY EXIT TAKEN", styles.increaseDescColor))));
+        
+        menuBackgroundImage.gameObject.SetActive(true);
+        menuBackgroundImage.color = new(1f, 1f, 1f, 0f);
+        sequence.Group(Tween.Alpha(menuBackgroundImage, 0f, 1f, 1f, Ease.InCubic, startDelay: 0.1f));
+        sequence.ChainDelay(1.6f);
+
+        sequence.OnComplete(() => {
+            player.gameObject.SetActive(true);
+            pixelPerfectCamera.refResolutionX = initialRefResoultion;
+            pixelPerfectCamera.refResolutionY = initialRefResoultion;
+            onCompleteCallback?.Invoke();
+        });
+    }
 
     // *******************************
     // Inventory
@@ -1667,7 +1920,7 @@ public class Game : MonoBehaviour {
             descText.text = hoveredSlot.item.ItemRef.GetDescription();
         }
         
-        if (hoveredSlot.item.ItemRef.type == consumableType) {
+        if (hoveredSlot.item.ItemRef.type == consumableType && !hoveredSlot.item.traderOwned) {
             descText.text += $"<line-height=150%>\n<sprite=5 color=#{ColorUtility.ToHtmlStringRGBA(styles.inputIconTint)}> " +
                              $"<size=80%>{ColorText("Right click to consume", styles.inputIconTint)}</size>";
         } 
@@ -2791,6 +3044,8 @@ public class Game : MonoBehaviour {
     private int consecutiveShotCount;
     
     private void UpdatePlayer() {
+        if (raidEnterSequence.isAlive) return;
+        
         if (player.bleeding && player.bleedLimiter.TimeHasPassed(3.5f)) {
             player.health -= 5;
         }
@@ -3230,7 +3485,7 @@ public class Game : MonoBehaviour {
             if (col.CompareTag(Tags.ExitPortal)) {
                 EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Take Exit Portal");
                 if (interactInputAction.WasPressedThisFrame()) {
-                    gameStateMachine.SetStateIfNotCurrent(gameWinState);
+                    gameStateMachine.SetStateIfNotCurrent(curRaidState == RaidState.PostFinalWave ? winExitState : earlyExitState);
                 }
             }
         }
@@ -3604,37 +3859,57 @@ public class Game : MonoBehaviour {
     
     private Transform activeExitPortal;
 
-    private void InitExitPortals(Transform exitPortalParent, float timeBeforePortalsSpawn) {
+    private void InitEarlyExitPortal(Transform exitPortalParent, float timeBeforePortalsSpawn) {
         activeExitPortal = null;
-        portalArrow.gameObject.SetActive(false);
-        
-        exitPortalInfoParent.SetActive(true);
-        exitPortalAvailableParent.SetActive(false);
         
         foreach (Transform portal in exitPortalParent) {
             portal.gameObject.SetActive(false);
         }
         
         exitPortalTimer.SetTime(timeBeforePortalsSpawn);
-        
-        exitPortalTimer.UpdateAction = () => {
-            int totalSeconds = (int)exitPortalTimer.CurTime;
-            int minutes = totalSeconds / 60;
-            int seconds = totalSeconds % 60;
-            exitPortalInfoText.text = $"{minutes}:{seconds:D2}";
-        };
-        
         exitPortalTimer.EndAction = () => {
             int randomSpawnIndex = Random.Range(0, exitPortalParent.childCount);
             activeExitPortal = exitPortalParent.GetChild(randomSpawnIndex);
             activeExitPortal.gameObject.SetActive(true);
-            exitPortalInfoParent.SetActive(false);
-            exitPortalAvailableParent.SetActive(true);
+            Tween.Scale(activeExitPortal, 0f, 1f, 0.5f, Ease.OutBack);
         };
     }
 
+    private void DespawnEarlyExitPortal() {
+        activeExitPortal.GetComponent<Collider2D>().enabled = false;
+        
+        Sequence sequence = Sequence.Create();
+        sequence.Chain(Tween.Scale(activeExitPortal, 1f, 0f, 0.5f, Ease.InBack));
+        sequence.ChainCallback(this, static (inst) => {
+            inst.activeExitPortal.gameObject.SetActive(false);
+            inst.activeExitPortal = null;
+        });
+    }
+    
+    private void SpawnFinalExitPortal() {
+        for (int i = 0; i < 100; i++) {
+            Vector2 randomPos = player.position.ToVector2() + Random.insideUnitCircle * Random.Range(0.5f, 1.5f);
+            if (OverlapCircle(randomPos, 0.2f, Masks.StaticLevelMask).Count > 0) continue;
+            
+            Transform exitPortalParent = currentMapInstance.exitPortalsParent;
+            int randomSpawnIndex = Random.Range(0, exitPortalParent.childCount);
+            activeExitPortal = exitPortalParent.GetChild(randomSpawnIndex);
+            activeExitPortal.gameObject.SetActive(true);
+            activeExitPortal.GetComponent<Collider2D>().enabled = true;
+            activeExitPortal.position = randomPos;
+            Tween.Scale(activeExitPortal, 0f, 1f, 0.5f, Ease.OutBack);
+            return;
+        }
+        
+        // This is a fail safe incase we couldn't spawn the final portal
+        gameStateMachine.SetState(winExitState);
+    }
+
     private void UpdateExitPortalArrowUI() {
-        if (!activeExitPortal) return;
+        if (!activeExitPortal) {
+            portalArrow.gameObject.SetActive(false);
+            return;
+        }
         
         Vector3 portalPosInScreenSpace = mainCamera.WorldToScreenPoint(activeExitPortal.position);
 
@@ -3904,6 +4179,7 @@ public class Game : MonoBehaviour {
         ShowMainMenuUI();
         
         menuBackButton.gameObject.SetActive(false);
+        gameEndText.gameObject.SetActive(false);
 
         // Set the stat upgrade info once at startup because each increase is the same
         {
@@ -4369,41 +4645,6 @@ public class Game : MonoBehaviour {
                 }
             }
         });
-    }
-    
-    private void UpdateInRaidUI() {
-        healthBarFillImage.fillAmount = player.health / (float)FullPlayerHealth;
-        
-        GetEncumberingWeightRange(out int startingEncumberingWeight, out _);
-        int inventoryWeight = GetInventoryWeight(playerInventory);
-        weightBarFillImage.fillAmount = Mathf.Clamp01(inventoryWeight / (float)startingEncumberingWeight);
-        
-        float overweightComp = GetOverweightCompletion();
-        if (overweightComp > 0f) {
-            weightBarFillImage.color = Color.Lerp(styles.startingOverWeightColor, styles.endingOverWeightColor, overweightComp);
-        }
-        else {
-            weightBarFillImage.color = styles.underWeightColor;
-        }
-
-        if (spawnManager.timeUntilFinalWave >= 0f) {
-            timeUntilFinalWaveParent.SetActive(true); 
-            finalWaveActiveParent.SetActive(false);
-            
-            float timeUntilFinalWave = Mathf.Clamp(spawnManager.timeUntilFinalWave, 0f, float.MaxValue);
-            int minutesLeft = Mathf.FloorToInt(timeUntilFinalWave / 60f);
-            int secondsLeft = Mathf.FloorToInt(timeUntilFinalWave % 60f);
-            timeUntilFinalWaveText.text = $"{minutesLeft:0}:{secondsLeft:00}";
-        }
-        else if (spawnManager.spawnEvents.IndexInRange(spawnManager.spawnTimeIndex) || enemies.Count > 0) {
-            timeUntilFinalWaveParent.SetActive(false); 
-            exitPortalAvailableParent.SetActive(false);
-            finalWaveActiveParent.SetActive(true);
-        }
-        else {
-            timeUntilFinalWaveParent.SetActive(false); 
-            finalWaveActiveParent.SetActive(false);
-        }
     }
 
     // Its better just to have these as constants because the canvas layout recalculates in LateUpdate
