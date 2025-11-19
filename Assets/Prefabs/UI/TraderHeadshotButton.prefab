@@ -210,5 +210,5 @@ MonoBehaviour:
   traderImage: {fileID: 1941157901601226704}
   backgroundImage: {fileID: 4477360668479923000}
   borderImage: {fileID: 143827543920988993}
-  highlightedBorderSprite: {fileID: -403899735, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
+  highlightedBorderSprite: {fileID: -1896232688, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
   nonSelectedBorderSprite: {fileID: -1896232688, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
