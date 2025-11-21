@@ -8,6 +8,7 @@ using PrimeTween;
 using TMPro;
 using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.InputSystem;
 using UnityEngine.Pool;
 using UnityEngine.Rendering.Universal;
@@ -274,8 +275,11 @@ public class Game : MonoBehaviour {
     public DynamicClip shootClip;
     public DynamicClip stoneBreakClip;
     public DynamicClip stoneHitClip;
-    public DynamicClip enemyImpactClip;
+    public DynamicClip projectileImpact;
     public DynamicClip bloodBurstClip;
+    public DynamicClip footStepClip;
+    public AudioClip ambienceClip;
+    public AudioMixerGroup ambienceMixerGroup;
     [EndFoldout]
     
     private InputAction moveInputAction;
@@ -529,6 +533,7 @@ public class Game : MonoBehaviour {
 
     private void OnRaidStateEnter() {
         InitRaid();
+        PlayAmbience();
     }
 
     private void OnRaidStateExit() {
@@ -537,6 +542,7 @@ public class Game : MonoBehaviour {
         HideItemDescPopup();
         HideUIElementPopup();
         CloseRaidUI();
+        StopAmbience();
     }
 
     private void OnRaidStateUpdate() {
@@ -3052,7 +3058,6 @@ public class Game : MonoBehaviour {
     public class Player : Entity {
         public bool bleeding;
         
-        public Vector2 velocity;
         public int nextIdleAnimHash;
         public int nextIdleDir;
         public Limiter bleedLimiter;
@@ -3067,7 +3072,6 @@ public class Game : MonoBehaviour {
     }
 
     private Player player;
-    private int lastStepSmokeFrame = -1;
     
     private int playerRunSideAnim = Animator.StringToHash("PlayerRunSide");
     private int playerRunUpAnim = Animator.StringToHash("PlayerRunUp");
@@ -3082,6 +3086,7 @@ public class Game : MonoBehaviour {
 
     private float lastShotTime;
     private int consecutiveShotCount;
+    private float curStepDistance;
     
     private void UpdatePlayer() {
         if (raidEnterSequence.isAlive) return;
@@ -3099,10 +3104,11 @@ public class Game : MonoBehaviour {
         if (InventoryIsOpen) return;
         
         Vector2 moveInput = moveInputAction.ReadValue<Vector2>();
+        Vector2 prevPos = player.position;
         
         float speed = GetPlayerSpeedBasedOnStats();
         player.position += new Vector3(moveInput.x, moveInput.y, 0f) * (speed * Time.deltaTime);
-        player.velocity = new Vector3(moveInput.x, moveInput.y, 0f) * speed;
+        curStepDistance += Vector2.Distance(prevPos, player.position); 
 
         if (moveInput != Vector2.zero) {
             player.spriteRenderer.flipX = moveInput.x < 0;
@@ -3130,13 +3136,11 @@ public class Game : MonoBehaviour {
             player.animator.Play(player.nextIdleAnimHash);
         }
         
-        if (moveInput != Vector2.zero) {
-            int frameNumber = player.animator.CurrentFrameNumber();
-            if (lastStepSmokeFrame != frameNumber && (frameNumber == 0 || frameNumber == 4)) {
-                Entity runSmokeEntity = SpawnEntity(runSmokePool, OffsetY(player.position, 0.01f), Quaternion.identity);
-                DestroyEntity(runSmokeEntity, CurrentClipLength(runSmokeEntity.animator));
-                lastStepSmokeFrame = frameNumber;
-            }
+        if (moveInput != Vector2.zero && curStepDistance > 0.18f) {
+            Entity runSmokeEntity = SpawnEntity(runSmokePool, OffsetY(player.position, 0.01f), Quaternion.identity);
+            DestroyEntity(runSmokeEntity, CurrentClipLength(runSmokeEntity.animator));
+            PlayAudioClip(footStepClip, player.position);
+            curStepDistance = 0f;
         }
         
         int targetCount = 1;
@@ -3676,7 +3680,7 @@ public class Game : MonoBehaviour {
             Entity impact = SpawnEntity(projectileImpactPool, proj.position, RandomRotation());
             DestroyEntity(impact, CurrentClipLength(impact.animator));
             
-            PlayAudioClip(enemyImpactClip, proj.position, 1f);
+            PlayAudioClip(projectileImpact, proj.position);
             
             DestroyEntity(projectiles[i]);
             projectiles.RemoveAt(i);
@@ -5119,7 +5123,7 @@ public class Game : MonoBehaviour {
             sources.Enqueue(audioGo.GetComponent<AudioSource>());
         }
     }
-
+    
     private void PlayAudioClip(DynamicClip dynamicClip, Vector2 position, float volumeScaler = 1f) {
         if (ClipIsViolatingLocalArea(dynamicClip, position)) return;
         
@@ -5134,6 +5138,7 @@ public class Game : MonoBehaviour {
         source.pitch = Random.Range(dynamicClip.minPitch, dynamicClip.maxPitch);
         source.minDistance = dynamicClip.minDistance;
         source.maxDistance = dynamicClip.maxDistance;
+        source.loop = false;
         source.Play();
     }
 
@@ -5182,6 +5187,30 @@ public class Game : MonoBehaviour {
         });
 
         return false;
+    }
+
+    
+    private AudioSource ambienceAudioSource;
+    
+    private void PlayAmbience() {
+        ambienceAudioSource = sources.Dequeue();
+        ambienceAudioSource.transform.position = Vector3.zero;
+        ambienceAudioSource.volume = 1f;
+        ambienceAudioSource.pitch = 1f;
+        ambienceAudioSource.rolloffMode = AudioRolloffMode.Linear;
+        ambienceAudioSource.minDistance = 500;
+        ambienceAudioSource.maxDistance = 500;
+
+        ambienceAudioSource.loop = true;
+        ambienceAudioSource.clip = ambienceClip;
+        ambienceAudioSource.outputAudioMixerGroup = ambienceMixerGroup;
+        ambienceAudioSource.Play();
+    }
+
+    private void StopAmbience() {
+        ambienceAudioSource.Stop();
+        sources.Enqueue(ambienceAudioSource);
+        ambienceAudioSource = null;
     }
     
     // ************************

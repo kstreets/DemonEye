@@ -9816,8 +9816,11 @@ MonoBehaviour:
   shootClip: {fileID: 11400000, guid: 9e1e0626297e3fe40bec071766b0aa5d, type: 2}
   stoneBreakClip: {fileID: 11400000, guid: 7effee71000346c46ada8045e443ba43, type: 2}
   stoneHitClip: {fileID: 11400000, guid: 048e8b70676e65044af625cf517f47b8, type: 2}
-  enemyImpactClip: {fileID: 11400000, guid: 121d92ac61cb2e9479ca8010075584ed, type: 2}
+  projectileImpact: {fileID: 11400000, guid: 121d92ac61cb2e9479ca8010075584ed, type: 2}
   bloodBurstClip: {fileID: 11400000, guid: 8c9f3d4b007c26649988ddbf01957e28, type: 2}
+  footStepClip: {fileID: 11400000, guid: 698fec5a234992a419db48a118938612, type: 2}
+  ambienceClip: {fileID: 8300000, guid: 48ebfe4e6e022c34b90a2a7f3dde732f, type: 3}
+  ambienceMixerGroup: {fileID: -6469774076249759476, guid: 5d1188e598dcb514aa82b03e86c0c627, type: 2}
 --- !u!114 &2018473790
 MonoBehaviour:
   m_ObjectHideFlags: 0
