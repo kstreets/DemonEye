@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: Shoot
   m_EditorClassIdentifier: 
   clips:
-  - {fileID: 8300000, guid: a8dcffbd0c457594ba6b5666c4b86ddf, type: 3}
-  mixerGroup: {fileID: 0}
+  - {fileID: 8300000, guid: c90312be2517fb749a64e800ce614350, type: 3}
+  mixerGroup: {fileID: 8655066256422252388, guid: 5d1188e598dcb514aa82b03e86c0c627, type: 2}
   rolloffMode: 0
   minDistance: 1
   maxDistance: 500
-  minPitch: 1
-  maxPitch: 1
+  minPitch: 0.8
+  maxPitch: 1.2
   localAreaCooldownTime: 0
   localAreaDistance: 0

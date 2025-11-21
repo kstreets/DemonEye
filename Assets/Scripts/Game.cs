@@ -197,10 +197,8 @@ public class Game : MonoBehaviour {
     public Image traderXpLevelFill;
     public TextMeshProUGUI traderLevelText;
     public TextMeshProUGUI traderRemainingXpText;
+    public TextMeshProUGUI traderItemRefreshTimeText;
     public Button traderDealButton;
-    public TraderButton potionManTraderButton;
-    public TraderButton armsDealerTraderButton;
-    public TraderButton hatManTraderButton;
     [EndFoldout]
 
     [Foldout("UI/MapSelectionPanel")]
@@ -276,6 +274,8 @@ public class Game : MonoBehaviour {
     public DynamicClip shootClip;
     public DynamicClip stoneBreakClip;
     public DynamicClip stoneHitClip;
+    public DynamicClip enemyImpactClip;
+    public DynamicClip bloodBurstClip;
     [EndFoldout]
     
     private InputAction moveInputAction;
@@ -346,7 +346,7 @@ public class Game : MonoBehaviour {
         
         InitInventories();
         InitButtonCallbacks();
-        InitTraders();
+        InitTrader();
         InitQuests();
         
         Cursor.visible = true;
@@ -385,6 +385,9 @@ public class Game : MonoBehaviour {
         quickUse2Action = InputSystem.actions.FindAction("QuickUse2");
         quickUse3Action = InputSystem.actions.FindAction("QuickUse3");
         quickUse4Action = InputSystem.actions.FindAction("QuickUse4");
+        
+        var menuMove = InputSystem.actions.FindAction("MenuMove");
+        menuMove.performed += OnMoveInput;
 
         escapeInputAction.performed += OnEscapePressed;
 
@@ -399,10 +402,56 @@ public class Game : MonoBehaviour {
         raidState.To(gameOverState).When(() => player.health <= 0);
     }
 
+    
+    Vector2 controllerPos;
+    
+    private void OnMoveInput(InputAction.CallbackContext context) {
+        if (!context.performed) return;
+        
+        GameObject[,] mainMenuGrid = new GameObject[4, 1];
+        mainMenuGrid[0, 0] = mainMenuPlayButton.gameObject;
+        mainMenuGrid[1, 0] = mainMenuHideoutButton.gameObject;
+        mainMenuGrid[2, 0] = mainMenuSettingsButton.gameObject;
+        mainMenuGrid[3, 0] = mainMenuExitButton.gameObject;
+        
+        Vector2 dir = context.ReadValue<Vector2>();
+        dir = new(dir.x, -dir.y);
+        
+        if (gameStateMachine.CurState == mainMenuState) {
+            if (!mainMenuGrid.IndexInRange(controllerPos + dir)) return;
+            controllerPos += dir;
+            
+            GameObject selected = mainMenuGrid[(int)controllerPos.y, (int)controllerPos.x];
+            HightlightControllerSelection(selected);
+            print(selected.gameObject.name);
+        }
+    }
+
+    private GameObject currentlyHiglighted;
+    
+    private void HightlightControllerSelection(GameObject selectedGameObject) {
+        if (currentlyHiglighted) {
+            DehighlightControllerSelection(currentlyHiglighted);     
+        }
+        
+        if (selectedGameObject.TryGetComponent(out ButtonFeel button)) {
+            button.OnPointerEnter(null);
+        }
+        
+        currentlyHiglighted = selectedGameObject;
+    }
+    
+    private void DehighlightControllerSelection(GameObject selectedGameObject) {
+        if (selectedGameObject.TryGetComponent(out ButtonFeel button)) {
+            button.OnPointerExit(null);
+        }
+    }
+
     private void Update() {
         UpdateDelayedEntitiesToDestroy();
         gameStateMachine.Tick();
         DemonEyeTween.Update();
+        UpdateTrader();
         UpdateQuests();
         foreach (Inventory inventory in allInventories) {
             RefreshInventoryDisplay(inventory);
@@ -428,6 +477,10 @@ public class Game : MonoBehaviour {
         }
     }
 
+    private void OnApplicationQuit() {
+        SaveTrader();
+    }
+
     private void UpdateTimers() {
         exitPortalTimer.Tick();
         discoverLootTimer.Tick();
@@ -450,6 +503,7 @@ public class Game : MonoBehaviour {
     private void OnHideoutStateExit() {
         CloseHideoutUI();
         SavePlayerData();
+        SaveTrader();
         SaveInventory(playerInventory);
         SaveInventory(stashInventory);
         SaveInventory(crucibleInventory);
@@ -1080,6 +1134,8 @@ public class Game : MonoBehaviour {
                 
                 Entity bloodSplatterEntity = SpawnEntity(bloodSplatterPool, enemy.position, Quaternion.identity);
                 DestroyEntity(bloodSplatterEntity, CurrentClipLength(bloodSplatterEntity.animator));
+                
+                PlayAudioClip(bloodBurstClip, enemy.position);
 
                 DestroyEntity(enemies[i]);
                 enemies.RemoveAt(i);
@@ -1388,10 +1444,6 @@ public class Game : MonoBehaviour {
         
         DestroyLevelEntities();
         UnloadCurrentMapAsync();
-        
-        RefillTraderSlotsWithItems(potionManTrader);
-        RefillTraderSlotsWithItems(armsDealerTrader);
-        RefillTraderSlotsWithItems(hatManTrader);
     }
     
     private void OnSaveWhenRaidIsOver() {
@@ -1447,13 +1499,6 @@ public class Game : MonoBehaviour {
         if (finalWaveCountdownText.gameObject.activeInHierarchy) {
             finalWaveCountdownText.text = GetCountdownText(spawnManager.timeUntilFinalWave);
         }
-    }
-
-    private string GetCountdownText(float timeLeft) {
-        float time = Mathf.Clamp(timeLeft, 0f, float.MaxValue);
-        int minutesLeft = Mathf.FloorToInt(time / 60f);
-        int secondsLeft = Mathf.FloorToInt(time % 60f);
-        return $"{minutesLeft:00}:{secondsLeft:00}";
     }
 
     private void AnimateLargeRaidText(string text) {
@@ -1634,6 +1679,7 @@ public class Game : MonoBehaviour {
 
         [NonSerialized] public bool notDiscovered;
         [NonSerialized] public bool traderOwned;
+        [NonSerialized] public int traderSlotIndex;
         [NonSerialized] public Item _itemRef; // Used for items created at runtime, like demon eyes
 
         public Item ItemRef => _itemRef ? _itemRef : itemLookup[itemOrInstanceUuid];
@@ -1651,6 +1697,7 @@ public class Game : MonoBehaviour {
                 count = count,
                 notDiscovered = notDiscovered,
                 traderOwned = traderOwned,
+                traderSlotIndex = traderSlotIndex,
                 _itemRef = ItemRef,
             };
 
@@ -1680,7 +1727,7 @@ public class Game : MonoBehaviour {
     [NonSerialized] public Inventory stashInventory;
     [NonSerialized] private Inventory crucibleInventory;
     [NonSerialized] private Inventory transactionInventory;
-    [NonSerialized] private Inventory traderInventoryPtr;
+    [NonSerialized] private Inventory traderInventory;
     [NonSerialized] private Inventory lootInvetoryPtr;
     [NonSerialized] private List<Inventory> allInventories = new();
     
@@ -1728,7 +1775,8 @@ public class Game : MonoBehaviour {
 
         const int traderInventorySize = traderInventoryRowCount * traderInventoryColCount;
         SpawnUiSlots(traderInventoryParent, traderInventorySize);
-        traderInventoryPtr = CreateInventory(traderInventoryParent, traderInventorySize);
+        traderInventory = CreateInventory(traderInventoryParent, traderInventorySize);
+        LoadInventory(traderInventory);
         
         const int transactionInventorySize = 25;
         SpawnUiSlots(traderTransactionInventoryParent, transactionInventorySize);
@@ -2123,12 +2171,12 @@ public class Game : MonoBehaviour {
         }
         else if (OnTradingTab) {
             if (transactionState == TransactionState.Buying) {
-                if (hoveredInventory == traderInventoryPtr) {
+                if (hoveredInventory == traderInventory) {
                     destinationInventory = transactionInventory;
                     moveOption = MoveItemOption.Single;
                 }
                 else if (hoveredInventory == transactionInventory) {
-                    destinationInventory = traderInventoryPtr;
+                    destinationInventory = traderInventory;
                 }
             }
             else if (transactionState == TransactionState.Selling) {
@@ -2140,7 +2188,7 @@ public class Game : MonoBehaviour {
                 }
             }
             else {
-                if (hoveredInventory == traderInventoryPtr) {
+                if (hoveredInventory == traderInventory) {
                     destinationInventory = transactionInventory;
                     moveOption = MoveItemOption.Single;
                 }
@@ -2423,16 +2471,16 @@ public class Game : MonoBehaviour {
         }
 
         // We don't allow trader items to be picked up
-        if (hoverInfo.inventory == traderInventoryPtr && !IsDraggingItem) {
+        if (hoverInfo.inventory == traderInventory && !IsDraggingItem) {
             if (transactionState != TransactionState.Selling) {
-                MoveItemBetweenInventories(traderInventoryPtr, transactionInventory, hoverInfo.slotIndex, MoveItemOption.Single);
+                MoveItemBetweenInventories(traderInventory, transactionInventory, hoverInfo.slotIndex, MoveItemOption.Single);
             }
             return IsDraggingItem;
         }
 
         // If we are putting trader items back, then we also don't want to pick up the items
         if (!IsDraggingItem && hoverInfo.inventory == transactionInventory && transactionState == TransactionState.Buying) {
-            MoveItemBetweenInventories(transactionInventory, traderInventoryPtr, hoverInfo.slotIndex, MoveItemOption.Single);
+            MoveItemBetweenInventories(transactionInventory, traderInventory, hoverInfo.slotIndex, MoveItemOption.Single);
             return IsDraggingItem;
         }
         
@@ -2475,7 +2523,7 @@ public class Game : MonoBehaviour {
         if (placingItem && placeInputUsed) {
             bool droppingItemInHideout = hoverInfo.inventory == null && InHideout;
             bool tryingToPlaceItemToSellWhileBuying = hoverInfo.inventory == transactionInventory && transactionState == TransactionState.Buying;
-            bool tryingToPlaceInTraderInventory = hoverInfo.inventory == traderInventoryPtr;
+            bool tryingToPlaceInTraderInventory = hoverInfo.inventory == traderInventory;
             
             if (droppingItemInHideout || tryingToPlaceItemToSellWhileBuying || tryingToPlaceInTraderInventory) {
                 TryAddItemToInventory(startDragInfo.inventory, dragItem, startDragInfo.slotIndex);
@@ -2601,7 +2649,7 @@ public class Game : MonoBehaviour {
     public InventoryAddResult TryAddItemToInventory(Inventory inventory, InventoryItem item, int slotIndex = -1) {
         InventoryAddResult result = new() { type = InventoryAddResult.ResultType.Failure };
         
-        bool allowInfiniteStacking = inventory == traderInventoryPtr;
+        bool allowInfiniteStacking = inventory == traderInventory;
         bool droppingItemInSpecificSlot = slotIndex != -1;
 
         using var _ = ListPool<InventorySlot>.Get(out List<InventorySlot> availableSlots);
@@ -2680,12 +2728,17 @@ public class Game : MonoBehaviour {
     private void MoveItemBetweenInventories(Inventory fromInventory, Inventory toInventory, int slotIndex, MoveItemOption moveOption) {
         InventoryItem inventoryItem = GetInventoryItem(fromInventory, slotIndex);
         if (inventoryItem == null || inventoryItem.notDiscovered) return;
+
+        int specificSlotToMoveTo = -1;
+        if (fromInventory == transactionInventory && toInventory == traderInventory) {
+            specificSlotToMoveTo = inventoryItem.traderSlotIndex;
+        }
         
         if (moveOption == MoveItemOption.Single) {
             InventoryItem newItem = inventoryItem.Clone();
             newItem.count = 1;
             
-            InventoryAddResult result = TryAddItemToInventory(toInventory, newItem);
+            InventoryAddResult result = TryAddItemToInventory(toInventory, newItem, specificSlotToMoveTo);
             if (result.type is InventoryAddResult.ResultType.Success or InventoryAddResult.ResultType.FailureToAddAll) {
                 int keepItemCount = inventoryItem.count - result.addedCount;
                 AdjustItemCountInInventory(fromInventory, slotIndex, keepItemCount);
@@ -2693,25 +2746,21 @@ public class Game : MonoBehaviour {
             return;
         }
 
-        MoveEntireItemStack(fromInventory, toInventory, slotIndex);
+        MoveEntireItemStack(fromInventory, toInventory, slotIndex, specificSlotToMoveTo);
     }
 
-    private bool MoveEntireItemStack(Inventory fromInventory, Inventory toInventory, int slotIndex) {
-        InventoryItem inventoryItem = GetInventoryItem(fromInventory, slotIndex);
-        if (inventoryItem == null) {
-            return false;
-        }
+    private void MoveEntireItemStack(Inventory fromInventory, Inventory toInventory, int fromSlotIndex, int toSlotIndex = -1) {
+        InventoryItem inventoryItem = GetInventoryItem(fromInventory, fromSlotIndex);
+        if (inventoryItem == null) return;
         
-        InventoryAddResult moveResult = TryAddItemToInventory(toInventory, inventoryItem);
+        InventoryAddResult moveResult = TryAddItemToInventory(toInventory, inventoryItem, toSlotIndex);
         if (moveResult.type == InventoryAddResult.ResultType.Success) {
-            RemoveItemFromInventory(fromInventory, slotIndex);
+            RemoveItemFromInventory(fromInventory, fromSlotIndex);
         }
         else if (moveResult.type == InventoryAddResult.ResultType.FailureToAddAll) {
             int keepItemCount = inventoryItem.count - moveResult.addedCount;
-            AdjustItemCountInInventory(fromInventory, slotIndex, keepItemCount);
+            AdjustItemCountInInventory(fromInventory, fromSlotIndex, keepItemCount);
         }
-        
-        return moveResult.type == InventoryAddResult.ResultType.Success;
     }
 
     private void MoveEntireInventory(Inventory fromInventory, Inventory toInventory) {
@@ -2804,15 +2853,6 @@ public class Game : MonoBehaviour {
     }
     
     private void UpdateGraySlots() {
-        if (OnTradingTab) {
-            Trader curTrader = GetCurrentlySelectedTrader();
-            foreach (InventorySlot slot in stashInventory.slots) {
-                if (slot.item == null) continue;
-                if (slot.item.ItemRef.associatedTrader != curTrader) {
-                    slot.ui.itemUI.ToggleGray();
-                }
-            }
-        }
         if (OnEyeForgeTab) {
             foreach (InventorySlot slot in stashInventory.slots) {
                 if (slot.item == null) continue;
@@ -3108,7 +3148,7 @@ public class Game : MonoBehaviour {
 
         if (attackTargets.Count <= 0 || !CanShoot()) return;
         
-        PlayAudioClip(shootClip, player.position, 1f);
+        PlayAudioClip(shootClip, player.position);
         foreach (Vector3 attackTarget in attackTargets) {
             ShootProjectile(attackTarget);
         }
@@ -3636,6 +3676,8 @@ public class Game : MonoBehaviour {
             Entity impact = SpawnEntity(projectileImpactPool, proj.position, RandomRotation());
             DestroyEntity(impact, CurrentClipLength(impact.animator));
             
+            PlayAudioClip(enemyImpactClip, proj.position, 1f);
+            
             DestroyEntity(projectiles[i]);
             projectiles.RemoveAt(i);
         }
@@ -3712,14 +3754,14 @@ public class Game : MonoBehaviour {
                 entity.damageAccumilation = 0;
             }
 
-            PlayAudioClip(stoneHitClip, entity.position, 1f);
+            PlayAudioClip(stoneHitClip, entity.position);
                 
             if (entity.health <= 0) {
                 Entity smokeEntity = SpawnEntity<Entity>(rockSmokePrefab, entity.position, Quaternion.identity);
                 DestroyEntity(smokeEntity, 0.417f);
                 DestroyEntity(entity);
                 
-                PlayAudioClip(stoneBreakClip, entity.position, 1f);
+                PlayAudioClip(stoneBreakClip, entity.position);
 
                 int dropCount = Random.Range(3, 6);
                 float angleDeltaPerDrop = 360f / dropCount;
@@ -3757,6 +3799,9 @@ public class Game : MonoBehaviour {
     private int GetBaseDamage(Projectile proj) {
         DemonEyeInstance eyeInstance = proj.eyeInstanceSpawnedFrom;
         int damage = eyeInstance.coreAttack.damage;
+
+        int damageRange = Mathf.RoundToInt(damage * 0.1f);
+        damage += Random.Range(-damageRange, damageRange);
 
         if (proj.isTriShot && eyeInstance.trishot.TryGetValue(out var triShot)) {
             damage = Mathf.RoundToInt(damage * triShot.reducedDamageMultiplier);
@@ -3806,46 +3851,64 @@ public class Game : MonoBehaviour {
     private enum DamageColor { Normal, Crit, Blood, Poison }
 
     private void SpawnDamageNumber(Vector3 spawnPos, int damage, DamageColor damageColor) {
-        Entity damageNumber = SpawnEntity(damageNumberPool, spawnPos, Quaternion.identity, damageNumbersParent);
-        damageNumber.textMesh.text = damage.ToString();
-        
         Vector3 startSize = Vector3.one * 0.8f;
-        Vector3 endSize = Vector3.one * (damageColor == DamageColor.Crit ? 1.25f : 1f);
+        Vector3 endSize = Vector3.one * damageColor switch {
+            DamageColor.Normal => 1.0f,
+            DamageColor.Crit   => 1.25f,
+            DamageColor.Blood  => 0.8f,
+            DamageColor.Poison => 0.8f,
+            _                  => 1f,
+        };
         
-        float xOffset = Random.Range(-0.12f, 0.12f);
-        float yOffset = Random.Range(0.1f, 0.18f);
+        float xOffset = Random.Range(-0.08f, 0.08f);
+        float yOffset = Random.Range(0.05f, 0.08f);
         Vector2 endDamageNumPos;
         
         if (damageColor == DamageColor.Blood) {
-            endDamageNumPos = OffsetX(spawnPos, Random.Range(0.1f, 0.2f) * RandomSign());
-            endDamageNumPos = OffsetY(endDamageNumPos, yOffset * 0.5f);
+            spawnPos = OffsetY(spawnPos, 0.05f);
+            endDamageNumPos = OffsetY(spawnPos, yOffset * 2.3f);
         }
         else {
             endDamageNumPos = OffsetY(OffsetX(spawnPos, xOffset), yOffset);
         }
         
+        Entity damageNumber = SpawnEntity(damageNumberPool, spawnPos, Quaternion.identity, damageNumbersParent);
+        damageNumber.textMesh.text = damage.ToString();
+        
+        const float alpha = 0.72f;
         switch (damageColor) {
             case DamageColor.Normal:
-                damageNumber.textMesh.color = styles.normalDamageColor;
+                damageNumber.textMesh.color = styles.normalDamageColor.Alpha(alpha);
                 break;
             case DamageColor.Crit:
-                damageNumber.textMesh.color = styles.critDamageColor;
+                damageNumber.textMesh.color = styles.critDamageColor.Alpha(alpha);
                 break;
             case DamageColor.Blood:
-                damageNumber.textMesh.color = styles.bleedDamageColor;
+                damageNumber.textMesh.color = styles.bleedDamageColor.Alpha(alpha);
                 break;
             case DamageColor.Poison:
-                damageNumber.textMesh.color = styles.poisonDamageColor;
+                damageNumber.textMesh.color = styles.poisonDamageColor.Alpha(alpha);
                 break;
         }
 
-        const float moveDuration = 0.24f;
-        const float scaleUpDuration = 0.15f;
-        const float popOutDuration = 0.09f;
-        
-        Tween.Position(damageNumber.trans, endDamageNumPos, moveDuration, Ease.OutCirc)
-        .Group(Tween.Scale(damageNumber.trans, startSize, endSize, scaleUpDuration, Ease.InOutBounce))
-        .Chain(Tween.Scale(damageNumber.trans, 0f, popOutDuration, Ease.InBounce));
+        if (damageColor == DamageColor.Blood) {
+            const float bloodMoveDuration = 0.65f;
+            const float bloodScaleUpDuration = 0.25f;
+            const float bloodPopOutDuration = 0.3f;
+            Tween.Position(damageNumber.trans, endDamageNumPos, bloodMoveDuration, Ease.OutCubic)
+            .Group(Tween.Scale(damageNumber.trans, startSize, endSize, bloodScaleUpDuration, Ease.InOutBack))
+            .Chain(Tween.Scale(damageNumber.trans, 0f, bloodPopOutDuration, Ease.InBack));
+            DestroyEntity(damageNumber, bloodMoveDuration + bloodPopOutDuration);
+            return;
+        }
+
+        float moveDuration = damageColor == DamageColor.Crit ? Random.Range(0.37f, 0.4f) : Random.Range(0.3f, 0.35f);
+        const float scaleUpDuration = 0.25f;
+        const float popOutDuration = 0.3f;
+
+        Tween.Position(damageNumber.trans, endDamageNumPos, moveDuration, Ease.OutBack)
+        .Group(Tween.Scale(damageNumber.trans, startSize, endSize, scaleUpDuration, Ease.InOutBack))
+        .Chain(Tween.Scale(damageNumber.trans, 0f, popOutDuration, Ease.InBack));
         DestroyEntity(damageNumber, moveDuration + popOutDuration);
     }
 
@@ -4067,6 +4130,7 @@ public class Game : MonoBehaviour {
     private string playerSavePath;
     private string questSavePath;
     private string traderSavePath;
+    private string traderInventorySavePath;
     private List<InventoryItem> cachedInventoryForSaving = new(50);
     
     private void BuildSavePaths() {
@@ -4078,12 +4142,14 @@ public class Game : MonoBehaviour {
         playerSavePath = $"{Application.persistentDataPath}/player";
         questSavePath = $"{Application.persistentDataPath}/quests";
         traderSavePath = $"{Application.persistentDataPath}/traders";
+        traderInventorySavePath = $"{Application.persistentDataPath}/traderInventory";
     }
 
     private string GetInventorySavePath(Inventory inventory) {
         if (inventory == playerInventory) return playerInventorySavePath;
         if (inventory == stashInventory) return stashSavePath;
         if (inventory == crucibleInventory) return crucibleSavePath;
+        if (inventory == traderInventory) return traderInventorySavePath;
         Assert.IsTrue(false, "Inventory does not have associated save path");
         return string.Empty;
     }
@@ -4372,10 +4438,6 @@ public class Game : MonoBehaviour {
             ToggleHideoutPanels(playerPanel, levelupPanel);
         });
 
-        potionManTraderButton.button.onClick.AddListener(() => OnTraderButtonPressed(potionManTrader));
-        armsDealerTraderButton.button.onClick.AddListener(() => OnTraderButtonPressed(armsDealerTrader));
-        hatManTraderButton.button.onClick.AddListener(() => OnTraderButtonPressed(hatManTrader));
-        
         agilityUpgradeButton.button.onClick.AddListener(() => OnLevelupButtonPressed(agilityUpgradePath, player.agilityLevel));
         corruptionUpgradeButton.button.onClick.AddListener(() => OnLevelupButtonPressed(luckUpgradePath, player.luckLevel));
         healthUpgradeButton.button.onClick.AddListener(() => OnLevelupButtonPressed(healthUpgradePath, player.healthLevel));
@@ -4484,25 +4546,18 @@ public class Game : MonoBehaviour {
                 }
                 
                 // After buying items we just make sure all items in stash are no longer trader owned
-                foreach (InventorySlot slot in stashInventory.slots) {
-                    if (slot.item == null) continue;
-                    slot.item.traderOwned = false;
-                }
-                transactionState = TransactionState.Empty;
+                ClearItemsAsTraderOwned(stashInventory);
             }
             else if (transactionState == TransactionState.Selling) {
                 player.coinCurrency += price;
                 
                 int xpGain = GetInventoryValue(transactionInventory, InventoryValueType.Xp);
-                IncreaseTraderRep(GetCurrentlySelectedTrader(), xpGain);
+                IncreaseTraderRep(xpGain);
                 ClearInventory(transactionInventory);
-                transactionState = TransactionState.Empty;
             }
             
             SavePlayerData();
             SaveInventory(stashInventory);
-
-            RefreshTransactionUI();
         });
         
         easyMapButton.onClick.AddListener(() => {
@@ -4760,7 +4815,7 @@ public class Game : MonoBehaviour {
     
     private void RefreshTransactionUI() {
         if (transactionState == TransactionState.Empty) {
-            traderTransactionInfoText.text = string.Empty;
+            traderTransactionInfoText.text = "Place an item to begin transaction";
             return;
         }
         
@@ -4781,63 +4836,55 @@ public class Game : MonoBehaviour {
     // Traders
     // ************************
 
+    private const float traderItemRefreshTime = 480f;
+    
     [Serializable]
     public class TradersSaveData {
-        public int potionManRep;
-        public int armsDealerRep;
-        public int hatManRep;
+        public int traderRep;
+        public float refreshItemsTime;
     }
     
     private TradersSaveData traderSaveData;
 
-    private void SaveTraders() {
+    private void SaveTrader() {
         SaveToFile(traderSavePath, traderSaveData);
+        SaveInventory(traderInventory);
     }
 
-    private InventorySlot[] potionManSlots;
-    private InventorySlot[] armsDealerSlots;
-    private InventorySlot[] hatManSlots;
-
-    private void InitTraders() {
+    private void InitTrader() {
         traderSaveData = LoadFromFileOrCreateNew<TradersSaveData>(traderSavePath);
+        MarkTraderItemsAsTraderOwned();
+        SetTraderRepBar();
+    }
 
-        const int traderInventorySize = traderInventoryRowCount * traderInventoryColCount;
-        potionManSlots = new InventorySlot[traderInventorySize];
-        armsDealerSlots = new InventorySlot[traderInventorySize];
-        hatManSlots = new InventorySlot[traderInventorySize];
+    private void UpdateTrader() {
+        traderSaveData.refreshItemsTime -= Time.deltaTime;
         
-        potionManSlots.InitalizeWithDefault();
-        armsDealerSlots.InitalizeWithDefault();
-        hatManSlots.InitalizeWithDefault();
-
-        for (int i = 0; i < traderInventorySize; i++) {
-            potionManSlots[i].ui = traderInventoryPtr.slots[i].ui;
-            armsDealerSlots[i].ui = traderInventoryPtr.slots[i].ui;
-            hatManSlots[i].ui = traderInventoryPtr.slots[i].ui;
+        if (OnTradingTab) {
+            traderItemRefreshTimeText.text = $"Items Refresh In: {GetCountdownText(traderSaveData.refreshItemsTime)}";
         }
         
-        OnTraderButtonPressed(potionManTrader); // Toggle default trader
-
-        RefillTraderSlotsWithItems(potionManTrader); 
-        RefillTraderSlotsWithItems(armsDealerTrader); 
-        RefillTraderSlotsWithItems(hatManTrader); 
+        if (traderSaveData.refreshItemsTime <= 0f) {
+            ClearTraderItemsFromTransactionInventory();
+            FillTraderInventoryWithItems();
+            traderSaveData.refreshItemsTime = traderItemRefreshTime;
+            SaveTrader();
+        }
     }
     
-    private void IncreaseTraderRep(Trader trader, int repGain) {
-        if (ReachedTraderMaxRep(trader)) return;
+    private void IncreaseTraderRep(int repGain) {
+        if (ReachedTraderMaxRep()) return;
 
-        if (AddToTraderRep(trader, repGain, out int repLevel)) {
-            FillTraderInventoryWithItems(trader);
+        if (AddToTraderRep(repGain)) {
+            FillTraderInventoryWithItems();
         }
-        if (trader == GetCurrentlySelectedTrader()) { 
-            SetTraderRepBar(trader);
-        }
+        SetTraderRepBar();
     }
 
-    private void SetTraderRepBar(Trader trader) {
-        int levelIndex = GetTraderRepLevel(trader);
+    private void SetTraderRepBar() {
+        int levelIndex = GetTraderRepLevel();
         
-        if (ReachedTraderMaxRep(trader)) {
+        if (ReachedTraderMaxRep()) {
             traderXpLevelFill.fillAmount = 1f;
             traderRemainingXpText.text = string.Empty;
             traderLevelText.text = $"Level {levelIndex} (Max)";
@@ -4848,7 +4895,7 @@ public class Game : MonoBehaviour {
         int prefixedSumAtPrevLevel = traderLevels.prefixedSumRepForLevel[levelIndex - 1];
         int repNeededForThisLevel = prefixedSumAtCurLevel - prefixedSumAtPrevLevel;
 
-        int traderRep = GetTraderRep(trader);
+        int traderRep = traderSaveData.traderRep;
         int repCompletedAtCurLevel = traderRep - prefixedSumAtPrevLevel;
         int repLeftToGo = prefixedSumAtCurLevel - traderRep;
         
@@ -4857,39 +4904,16 @@ public class Game : MonoBehaviour {
         traderLevelText.text = $"Level {levelIndex}";
     }
 
-    private int GetTraderRep(Trader trader) {
-        if (trader == potionManTrader) {
-            return traderSaveData.potionManRep;
-        }
-        if (trader == armsDealerTrader) {
-            return traderSaveData.armsDealerRep;
-        }
-        if (trader == hatManTrader) {
-            return traderSaveData.hatManRep;
-        }
-        return -1;
-    }
-
-    private bool AddToTraderRep(Trader trader, int repGain, out int repLevel) {
-        int prevLevel = GetTraderRepLevel(trader);
-        
-        if (trader == potionManTrader) {
-            traderSaveData.potionManRep += repGain;
-        }
-        if (trader == armsDealerTrader) {
-            traderSaveData.armsDealerRep += repGain;
-        }
-        if (trader == hatManTrader) {
-            traderSaveData.hatManRep += repGain;
-        }
-        SaveTraders();
-
-        repLevel = GetTraderRepLevel(trader);
+    private bool AddToTraderRep(int repGain) {
+        int prevLevel = traderSaveData.traderRep;
+        traderSaveData.traderRep += repGain;
+        SaveTrader();
+        int repLevel = GetTraderRepLevel();
         return prevLevel < repLevel;
     }
 
-    private int GetTraderRepLevel(Trader trader) {
-        int rep = GetTraderRep(trader);
+    private int GetTraderRepLevel() {
+        int rep = traderSaveData.traderRep;
         for (int i = 0; i < traderLevels.prefixedSumRepForLevel.Length; i++) {
             if (rep < traderLevels.prefixedSumRepForLevel[i]) {
                 return i;
@@ -4898,55 +4922,10 @@ public class Game : MonoBehaviour {
         return traderLevels.prefixedSumRepForLevel.Length;
     }
 
-    private Trader GetCurrentlySelectedTrader() {
-        if (traderInventoryPtr.slots == potionManSlots) {
-            return potionManTrader;
-        }
-        if (traderInventoryPtr.slots == armsDealerSlots) {
-            return armsDealerTrader;
-        }
-        if (traderInventoryPtr.slots == hatManSlots) {
-            return hatManTrader;
-        }
-        return null;
-    }
-
-    private InventorySlot[] GetTraderInventorySlots(Trader trader) {
-        if (trader == potionManTrader) {
-            return potionManSlots;
-        }
-        if (trader == armsDealerTrader) {
-            return armsDealerSlots;
-        }
-        if (trader == hatManTrader) {
-            return hatManSlots;
-        }
-        return null;
-    }
-    
-    private void RefillTraderSlotsWithItems(Trader trader) {
-        ClearInventory(GetTraderInventorySlots(trader));
-        FillTraderInventoryWithItems(trader);
-    }
-
-    private void FillTraderInventoryWithItems(Trader trader) {
-        // We highjack the trader invetory temporarily to safely add items to it
-        // but restore it at the end of this method so its as if nothing changed ;)
-        InventorySlot[] slotsToRestore = traderInventoryPtr.slots;
-        traderInventoryPtr.slots = GetTraderInventorySlots(trader);
+    private void FillTraderInventoryWithItems() {
+        ClearInventory(traderInventory);
         
-        DropPool traderDropPool;
-        if (trader == potionManTrader) {
-            traderDropPool = potionManTraderDropPool;
-        }
-        else if (trader == armsDealerTrader) {
-            traderDropPool = armsDealerTraderDropPool;
-        }
-        else {
-            traderDropPool = hatManTraderDropPool;
-        }
-
-        float raritySkew = GetTraderRepLevel(trader) switch { 
+        float raritySkew = GetTraderRepLevel() switch { 
             0 => 0f, 
             1 => 0.20f, 
             2 => 0.40f,
@@ -4956,54 +4935,44 @@ public class Game : MonoBehaviour {
         
         using var _ = ListPool<Item>.Get(out List<Item> items);
         GetUniqueItemsFromDropPool(traderDropPool, traderInventoryColCount * traderInventoryRowCount, items, raritySkew);
+        
+        items = items.OrderBy(x => x.type.name).ThenBy(x => x.GetRarity()).ToList();
+        
         foreach (Item item in items) {
-            TryAddItemToInventory(traderInventoryPtr, item, item.MaxStackCount);
+            TryAddItemToInventory(traderInventory, item, item.MaxStackCount);
         }
         
-        // Mark all items as trader owned
-        foreach (InventorySlot slot in traderInventoryPtr.slots) {
+        MarkTraderItemsAsTraderOwned();
+    }
+    
+    private void MarkTraderItemsAsTraderOwned() {
+        for (int i = 0; i < traderInventory.slots.Length; i++) {
+            InventorySlot slot = traderInventory.slots[i];
             if (slot.item == null) continue;
             slot.item.traderOwned = true;
+            slot.item.traderSlotIndex = i;
         }
-        
-        traderInventoryPtr.slots = slotsToRestore;
     }
-    
-    private bool ReachedTraderMaxRep(Trader trader) {
-        int rep = GetTraderRep(trader);
-        return rep >= traderLevels.prefixedSumRepForLevel[^1];
-    }
-    
-    private void OnTraderButtonPressed(Trader selectedTrader) {
-        Trader prevTrader = GetCurrentlySelectedTrader();
-        
-        potionManTraderButton.Toggle(false);
-        armsDealerTraderButton.Toggle(false);
-        hatManTraderButton.Toggle(false);
-        
-        if (selectedTrader == potionManTrader) {
-            traderInventoryPtr.slots = potionManSlots;
-            potionManTraderButton.Toggle(true);
-        }
-        if (selectedTrader == armsDealerTrader) {
-            traderInventoryPtr.slots = armsDealerSlots;
-            armsDealerTraderButton.Toggle(true);
-        }
-        if (selectedTrader == hatManTrader) {
-            traderInventoryPtr.slots = hatManSlots;
-            hatManTraderButton.Toggle(true);
-        }
 
-        bool switchedTraders = GetCurrentlySelectedTrader() != prevTrader;
-        if (switchedTraders) {
-            if (transactionState == TransactionState.Buying) {
-                MoveEntireInventory(transactionInventory, traderInventoryPtr);
-            }
-            else if (transactionState == TransactionState.Selling) {
-                MoveEntireInventory(transactionInventory, stashInventory);
-            }
-            SetTraderRepBar(selectedTrader);
+    private void ClearItemsAsTraderOwned(Inventory inventory) {
+        foreach (InventorySlot slot in inventory.slots) {
+            if (slot.item == null) continue;
+            slot.item.traderOwned = false;
+            slot.item.traderSlotIndex = -1;
         }
+    }
+    
+    private void ClearTraderItemsFromTransactionInventory() {
+        for (int i = 0; i < transactionInventory.slots.Length; i++) {
+            InventorySlot slot = transactionInventory.slots[i];
+            if (slot.item == null || !slot.item.traderOwned) continue;
+            RemoveItemFromInventory(transactionInventory, i);
+        }
+    }
+    
+    private bool ReachedTraderMaxRep() {
+        int rep = traderSaveData.traderRep;
+        return rep >= traderLevels.prefixedSumRepForLevel[^1];
     }
     
     // ************************
@@ -5151,7 +5120,7 @@ public class Game : MonoBehaviour {
         }
     }
 
-    private void PlayAudioClip(DynamicClip dynamicClip, Vector2 position, float volumeScaler) {
+    private void PlayAudioClip(DynamicClip dynamicClip, Vector2 position, float volumeScaler = 1f) {
         if (ClipIsViolatingLocalArea(dynamicClip, position)) return;
         
         AudioSource source = sources.Dequeue();
@@ -5304,31 +5273,19 @@ public class Game : MonoBehaviour {
     private DropPool rockStonesDropPool;
     private DropPool rockUpgradesDropPool;
     private DropPool bodyDropPool;
-    private DropPool potionManTraderDropPool;
-    private DropPool armsDealerTraderDropPool;
-    private DropPool hatManTraderDropPool;
+    private DropPool traderDropPool;
     private DropPool enemyDropPool;
 
     private void CreateDropPools() {
         rockStonesDropPool = new() { items = new(), dropOrigin = DropOrigin.Rock };
         rockUpgradesDropPool = new() { items = new(), dropOrigin = DropOrigin.Rock };
         bodyDropPool = new() { items = new(), dropOrigin = DropOrigin.Body };
-        potionManTraderDropPool = new() { items = new(), dropOrigin = DropOrigin.Trader };
-        armsDealerTraderDropPool = new() { items = new(), dropOrigin = DropOrigin.Trader };
-        hatManTraderDropPool = new() { items = new(), dropOrigin = DropOrigin.Trader };
+        traderDropPool = new() { items = new(), dropOrigin = DropOrigin.Trader };
         enemyDropPool = new() { items = new(), dropOrigin = DropOrigin.Enemy };
 
         foreach ((int _, Item item) in itemLookup) {
             if (item.chanceToSpawnOnTrader > 0f) {
-                if (item.associatedTrader == potionManTrader) {
-                    potionManTraderDropPool.items.Add(item);
-                }
-                if (item.associatedTrader == armsDealerTrader) {
-                    armsDealerTraderDropPool.items.Add(item);
-                }
-                if (item.associatedTrader == hatManTrader) {
-                    hatManTraderDropPool.items.Add(item);
-                }
+                traderDropPool.items.Add(item); 
             }
 
             if (item.chanceToSpawnFromEnemy > 0f) {
@@ -5395,27 +5352,6 @@ public class Game : MonoBehaviour {
         return dropPool.items[^1];
     }
 
-    // private Item GetItemFromDropPool(DropPool dropPool) {
-    //     Assert.IsFalse(dropPool.items == enemyDropPool.items, $"Use {nameof(GetItemFromEnemyDropPool)} for enemies");
-    //     
-    //     float dropTotal = 0f;
-    //     foreach (Item drop in dropPool.items) {
-    //         dropTotal += GetDropChanceOfItem(drop, dropPool.dropOrigin);
-    //     }
-    //
-    //     float randomChance = Random.Range(0f, dropTotal);
-    //     float prefixSum = 0f;
-    //     
-    //     foreach (Item drop in dropPool.items) {
-    //         prefixSum += GetDropChanceOfItem(drop, dropPool.dropOrigin);
-    //         if (randomChance < prefixSum) {
-    //             return drop;
-    //         }
-    //     }
-    //     
-    //     return dropPool.items[^1];
-    // }
-
     private void GetUniqueItemsFromDropPool(DropPool dropPool, int maxCount, List<Item> items, float raritySkew = 0f) {
         dropPool.items.Shuffle();
         
@@ -5430,6 +5366,7 @@ public class Game : MonoBehaviour {
         if (itemListNeedsTrimming) {
             items.RemoveRange(maxCount, items.Count - maxCount);
         }
+
     }
 
     private float GetDropChanceOfItem(Item item, DropOrigin origin) {
@@ -5514,6 +5451,13 @@ public class Game : MonoBehaviour {
         Assert.IsFalse(count > _overlapResults.Capacity);
         
         return _overlapResults;
+    }
+    
+    private string GetCountdownText(float timeLeft) {
+        float time = Mathf.Clamp(timeLeft, 0f, float.MaxValue);
+        int minutesLeft = Mathf.FloorToInt(time / 60f);
+        int secondsLeft = Mathf.FloorToInt(time % 60f);
+        return $"{minutesLeft:00}:{secondsLeft:00}";
     }
 
     private static string SizeText(string text, int fontSize) {

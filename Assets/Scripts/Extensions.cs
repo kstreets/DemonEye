@@ -86,6 +86,12 @@ public static class Extensions {
     public static bool IndexInRange<T>(this T[] array, int index) {
         return index >= 0 && index < array.Length;
     }
+
+    public static bool IndexInRange<T>(this T[,] array, Vector2 index) {
+        int x = (int)index.x;
+        int y = (int)index.y;
+        return x >= 0 && y >= 0 && y < array.GetLength(0) && x < array.GetLength(1);
+    }
     
     public static bool IndexInRange<T>(this List<T> list, int index) {
         return index >= 0 && index < list.Count;
