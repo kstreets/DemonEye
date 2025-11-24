@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5e56437f219ae4841ab3b84d57a9f86e, type: 3}
-  m_Name: ProjectileImpact
+  m_Name: TeleportOut
   m_EditorClassIdentifier: 
   clips:
-  - {fileID: 8300000, guid: f71a9026a585088429d136e0cf5b24c1, type: 3}
-  mixerGroup: {fileID: -4270814360348751033, guid: 5d1188e598dcb514aa82b03e86c0c627, type: 2}
-  rolloffMode: 0
-  minDistance: 1
-  maxDistance: 500
-  minPitch: 0.85
-  maxPitch: 1.15
+  - {fileID: 8300000, guid: 7b5c40e495eb4c54e9473b853896ae48, type: 3}
+  mixerGroup: {fileID: -2303880761268983241, guid: 5d1188e598dcb514aa82b03e86c0c627, type: 2}
+  rolloffMode: 1
+  minDistance: 0
+  maxDistance: 3.2
+  minPitch: 0.9
+  maxPitch: 1.1
   localAreaCooldownTime: 0.1
-  localAreaDistance: 0.5
+  localAreaDistance: 1

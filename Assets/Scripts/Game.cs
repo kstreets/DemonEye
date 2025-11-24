@@ -231,6 +231,7 @@ public class Game : MonoBehaviour {
     public GameObject weightBarParent;
     public GameObject soulsCurrencyParent;
     public GameObject coinsCurrencyParent;
+    public GameObject bleedDebuffIcon;
     public TextMeshProUGUI soulsCurrencyText;
     public TextMeshProUGUI coinCurrencyText;
     [EndFoldout]
@@ -278,6 +279,11 @@ public class Game : MonoBehaviour {
     public DynamicClip projectileImpact;
     public DynamicClip bloodBurstClip;
     public DynamicClip footStepClip;
+    public DynamicClip teleportInClip;
+    public DynamicClip teleportOutClip;
+    public DynamicClip portalSpawnClip;
+    public DynamicClip portalDespawnClip;
+    public DynamicClip finalWaveStingerClip;
     public AudioClip ambienceClip;
     public AudioMixerGroup ambienceMixerGroup;
     [EndFoldout]
@@ -1128,22 +1134,25 @@ public class Game : MonoBehaviour {
             }
 
             if (enemy.health <= 0) {
-                if (Random.value < 0.05f) {
-                    Item dropItem = GetItemFromEnemyDropPool(enemy.data);
-                    if (dropItem) {
-                        SpawnItemAsEntity(dropItem, 1, enemy.position, Quaternion.identity);
+                Enemy deadEnemy = enemies[i];
+                Tween.Delay(deadEnemy, 0.12f, static (deadEnemy) => {
+                    if (Random.value < 0.05f) {
+                        Item dropItem = instance.GetItemFromEnemyDropPool(deadEnemy.data);
+                        if (dropItem) {
+                            instance.SpawnItemAsEntity(dropItem, 1, deadEnemy.position, Quaternion.identity);
+                        }
                     }
-                }
 
-                player.soulCurrency += enemy.data.soulWorthPerKill;
-                onEnemyDeath?.Invoke(enemy);
-                
-                Entity bloodSplatterEntity = SpawnEntity(bloodSplatterPool, enemy.position, Quaternion.identity);
-                DestroyEntity(bloodSplatterEntity, CurrentClipLength(bloodSplatterEntity.animator));
-                
-                PlayAudioClip(bloodBurstClip, enemy.position);
+                    instance.player.soulCurrency += deadEnemy.data.soulWorthPerKill;
+                    onEnemyDeath?.Invoke(deadEnemy);
+                    
+                    Entity bloodSplatterEntity = instance.SpawnEntity(instance.bloodSplatterPool, deadEnemy.position, Quaternion.identity);
+                    instance.DestroyEntity(bloodSplatterEntity, instance.CurrentClipLength(bloodSplatterEntity.animator));
+                    
+                    instance.PlayAudioClip(instance.bloodBurstClip, deadEnemy.position);
 
-                DestroyEntity(enemies[i]);
+                    instance.DestroyEntity(deadEnemy);
+                });
                 enemies.RemoveAt(i);
             }
         }
@@ -1172,6 +1181,10 @@ public class Game : MonoBehaviour {
             }
             
             Vector3 targetDir = currentMapInstance.grid.GetFlowFieldDirection(enemy.position);
+            if (targetDir == Vector3.zero) {
+                targetDir = (player.position - enemy.position).normalized;
+            }
+            
             enemy.moveDir = Vector3.Lerp(enemy.moveDir, targetDir, enemy.flowFieldAcc * Time.fixedDeltaTime);
             enemy.rigidbody.linearVelocity = enemy.moveDir * speed;
 
@@ -1212,6 +1225,7 @@ public class Game : MonoBehaviour {
         if (teleportType == TeleportType.Reposition) {
             Entity outTeleportFxEntity = SpawnEntity(teleportOutPool, enemy.position, Quaternion.identity);
             DestroyEntity(outTeleportFxEntity, CurrentClipLength(outTeleportFxEntity.animator));
+            PlayAudioClip(teleportOutClip, outTeleportFxEntity.position);
         }
         
         enemy.position = position;
@@ -1220,6 +1234,8 @@ public class Game : MonoBehaviour {
         Entity inTeleportFxEntity = SpawnEntity(teleportInPool, enemy.position, Quaternion.identity);
         float spawnAnimDuration = CurrentClipLength(inTeleportFxEntity.animator);
         DestroyEntity(inTeleportFxEntity, spawnAnimDuration);
+        
+        PlayAudioClip(teleportInClip, inTeleportFxEntity.position);
 
         float spawnDelay = spawnAnimDuration * 0.7f;
         
@@ -1237,6 +1253,7 @@ public class Game : MonoBehaviour {
         public float timeUntilFinalWave;
         public int curPhaseIndex;
         public RaidSpawnPattern spawnPattern;
+        public bool isFinishedSpawning;
         
         public const int prefixedSumResolution = 500;
         public float[] prefixedSums = new float[prefixedSumResolution];
@@ -1246,9 +1263,10 @@ public class Game : MonoBehaviour {
     }
 
     [NonSerialized] private EnemySpawnManager spawnManager = new();
-    
+
     private void InitSpawnManager(RaidSpawnPattern pattern) {
         spawnManager.spawnEvents.Clear();
+        spawnManager.isFinishedSpawning = false;
         spawnManager.spawnPattern = pattern;
         spawnManager.curPhaseIndex = -1;
         spawnManager.timeInPhase = 0f;
@@ -1264,7 +1282,7 @@ public class Game : MonoBehaviour {
     private void UpdateSpawnManager() {
         EnemySpawnManager sm = spawnManager;
         
-        if (sm.curPhaseIndex >= sm.spawnPattern.spawnPhases.Count) return;
+        if (sm.isFinishedSpawning) return;
         
         sm.timeInPhase += Time.deltaTime;
         sm.totalTimeLeft -= Time.deltaTime;
@@ -1277,7 +1295,6 @@ public class Game : MonoBehaviour {
         bool startNextWave = sm.timeInPhase >= waveDuration;
         if (startNextWave) {
             sm.curPhaseIndex++;
-            if (!sm.spawnPattern.spawnPhases.IndexInRange(sm.curPhaseIndex)) return;
 
             RaidSpawnPattern.SpawnPhase curPhase = sm.spawnPattern.spawnPhases[sm.curPhaseIndex];
 
@@ -1332,7 +1349,7 @@ public class Game : MonoBehaviour {
         if (!spawnLimiterForEnemyBatching.TimeHasPassed(3f)) return;
         
         while (sm.spawnEvents.IndexInRange(sm.spawnTimeIndex) && sm.spawnEvents[sm.spawnTimeIndex].time <= sm.timeInPhase) {
-             Vector2 randomSpawnPos = currentMapInstance.grid.GetSpawnPosition(player.position);
+            Vector2 randomSpawnPos = currentMapInstance.grid.GetSpawnPosition(player.position);
 
             EnemyData enemyToSpawn = sm.spawnEvents[sm.spawnTimeIndex].enemy;
             Enemy enemy = SpawnEntity<Enemy>(enemyToSpawn.enemyPrefab, randomSpawnPos, Quaternion.identity);
@@ -1346,6 +1363,13 @@ public class Game : MonoBehaviour {
             TeleportEnemy(enemy, randomSpawnPos, TeleportType.Spawn);
 
             sm.spawnTimeIndex++;
+        }
+
+        bool outOfSpawnsInPhase = !sm.spawnEvents.IndexInRange(sm.spawnTimeIndex);
+        bool onLastPhase = sm.spawnPattern.spawnPhases.Count - 1 == sm.curPhaseIndex;
+
+        if (outOfSpawnsInPhase && onLastPhase) {
+            sm.isFinishedSpawning = true;
         }
     }
     
@@ -1385,9 +1409,8 @@ public class Game : MonoBehaviour {
 
         // Animation Sequence
         {
-            int initialCamRefRes = pixelPerfectCamera.refResolutionX;
-            pixelPerfectCamera.refResolutionX = 24;
-            pixelPerfectCamera.refResolutionY = 24;
+            int initialPPU = pixelPerfectCamera.assetsPPU;
+            pixelPerfectCamera.assetsPPU = 80;
             
             raidEnterSequence = Sequence.Create();
             
@@ -1400,6 +1423,7 @@ public class Game : MonoBehaviour {
             raidEnterSequence.ChainCallback(() => {
                 Entity inTeleportEntity = SpawnEntity(teleportInPool, OffsetY(player.position, -0.05f), Quaternion.identity);
                 DestroyEntity(inTeleportEntity, CurrentClipLength(inTeleportEntity.animator));
+                PlayAudioClip(teleportInClip, inTeleportEntity.position);
             });
             
             raidEnterSequence.ChainDelay(0.35f);
@@ -1411,9 +1435,8 @@ public class Game : MonoBehaviour {
             raidEnterSequence.Chain(Tween.Scale(player.trans, 0f, 1f, 0.2f, Ease.InOutBack));
             
             raidEnterSequence.ChainDelay(0.6f);
-            raidEnterSequence.Chain(Tween.Custom(pixelPerfectCamera.refResolutionX, initialCamRefRes, 0.15f, ease: Ease.OutQuad, onValueChange: val => {
-                pixelPerfectCamera.refResolutionX = (int)val;
-                pixelPerfectCamera.refResolutionY = (int)val;
+            raidEnterSequence.Chain(Tween.Custom(pixelPerfectCamera.assetsPPU, initialPPU, 0.25f, ease: Ease.OutQuad, onValueChange: val => {
+                pixelPerfectCamera.assetsPPU = (int)val;
             }));
         }
     }
@@ -1424,7 +1447,7 @@ public class Game : MonoBehaviour {
         if (spawnManager.timeUntilFinalWave >= 0f) {
             curRaidState = activeExitPortal ? RaidState.InitialWavesWithExit : RaidState.InitialWaves;
         }
-        else if (spawnManager.spawnEvents.IndexInRange(spawnManager.spawnTimeIndex) || enemies.Count > 0) {
+        else if (!spawnManager.isFinishedSpawning || enemies.Count > 0) {
             curRaidState = RaidState.FinalWave;
         }
         else {
@@ -1435,6 +1458,7 @@ public class Game : MonoBehaviour {
         
         if (raidStateSwitchedThisFrame && curRaidState == RaidState.FinalWave) {
             DespawnEarlyExitPortal();
+            PlayAudioClip(finalWaveStingerClip, player.position);
         }
 
         if (raidStateSwitchedThisFrame && curRaidState == RaidState.PostFinalWave) {
@@ -1572,11 +1596,10 @@ public class Game : MonoBehaviour {
             player.spriteRenderer.SetPropertyBlock(player.matPropertyBlock);
         }, Ease.OutExpo));
         
-        int initialRefResoultion = pixelPerfectCamera.refResolutionX;
+        int initialPPU = pixelPerfectCamera.assetsPPU;
         
-        sequence.Group(Tween.Custom(pixelPerfectCamera.refResolutionX, 15, 0.8f, val => {
-            pixelPerfectCamera.refResolutionX = (int)val;
-            pixelPerfectCamera.refResolutionY = (int)val;
+        sequence.Group(Tween.Custom(pixelPerfectCamera.assetsPPU, 80, 0.8f, val => {
+            pixelPerfectCamera.assetsPPU = (int)val;
         }, Ease.InOutQuad));
 
         sequence.Group(Tween.Delay(0.25f, () => AnimateLargeRaidText(ColorText("YOU DIED", styles.decreaseDescColor))));
@@ -1592,8 +1615,7 @@ public class Game : MonoBehaviour {
         sequence.OnComplete(() => {
             player.spriteRenderer.sortingLayerName = "Entity";
             player.trans.localScale = Vector3.one;
-            pixelPerfectCamera.refResolutionX = initialRefResoultion;
-            pixelPerfectCamera.refResolutionY = initialRefResoultion;
+            pixelPerfectCamera.assetsPPU = initialPPU;
             onCompleteCallback?.Invoke();
         });
     }
@@ -1601,19 +1623,22 @@ public class Game : MonoBehaviour {
     private void AnimateGameWinSequence(Action onCompleteCallback) {
         Entity outTeleportFxEntity = SpawnEntity(teleportOutPool, player.position, Quaternion.identity);
         DestroyEntity(outTeleportFxEntity, CurrentClipLength(outTeleportFxEntity.animator));
+        PlayAudioClip(teleportOutClip, outTeleportFxEntity.position);
         player.gameObject.SetActive(false);
         
         Sequence sequence = Sequence.Create();
 
-        int initialRefResoultion = pixelPerfectCamera.refResolutionX;
-        sequence.Chain(Tween.Custom(pixelPerfectCamera.refResolutionX, 26, 0.2f, ease: Ease.InOutQuad, onValueChange: val => {
-            pixelPerfectCamera.refResolutionX = (int)val;
-            pixelPerfectCamera.refResolutionY = (int)val;
+        int initialPPU = pixelPerfectCamera.assetsPPU;
+        sequence.Chain(Tween.Custom(pixelPerfectCamera.assetsPPU, 80, 0.5f, ease: Ease.InOutQuad, onValueChange: val => {
+            pixelPerfectCamera.assetsPPU = (int)val;
         }));
         
         // There could be a rare case where an exit portal doesn't spawn, which is handled
         if (activeExitPortal) {
             sequence.ChainDelay(0.05f);
+            sequence.ChainCallback(static () => {
+                instance.PlayAudioClip(instance.portalDespawnClip, instance.activeExitPortal.position);
+            });
             sequence.Chain(Tween.Scale(activeExitPortal, Vector3.zero, 0.25f, Ease.InOutBounce));
         }
         
@@ -1630,8 +1655,7 @@ public class Game : MonoBehaviour {
 
         sequence.OnComplete(() => {
             player.gameObject.SetActive(true);
-            pixelPerfectCamera.refResolutionX = initialRefResoultion;
-            pixelPerfectCamera.refResolutionY = initialRefResoultion;
+            pixelPerfectCamera.assetsPPU = initialPPU;
             onCompleteCallback?.Invoke();
         });
     }
@@ -1639,14 +1663,14 @@ public class Game : MonoBehaviour {
     private void AnimateEarlyExitSequence(Action onCompleteCallback) {
         Entity outTeleportFxEntity = SpawnEntity(teleportOutPool, player.position, Quaternion.identity);
         DestroyEntity(outTeleportFxEntity, CurrentClipLength(outTeleportFxEntity.animator));
+        PlayAudioClip(teleportOutClip, outTeleportFxEntity.position);
         player.gameObject.SetActive(false);
         
         Sequence sequence = Sequence.Create();
 
-        int initialRefResoultion = pixelPerfectCamera.refResolutionX;
-        sequence.Chain(Tween.Custom(pixelPerfectCamera.refResolutionX, 26, 0.2f, ease: Ease.InOutQuad, onValueChange: val => {
-            pixelPerfectCamera.refResolutionX = (int)val;
-            pixelPerfectCamera.refResolutionY = (int)val;
+        int initialPPU = pixelPerfectCamera.assetsPPU;
+        sequence.Chain(Tween.Custom(pixelPerfectCamera.assetsPPU, 80, 0.5f, ease: Ease.InOutQuad, onValueChange: val => {
+            pixelPerfectCamera.assetsPPU = (int)val;
         }));
         
         sequence.ChainDelay(0.05f);
@@ -1667,8 +1691,7 @@ public class Game : MonoBehaviour {
 
         sequence.OnComplete(() => {
             player.gameObject.SetActive(true);
-            pixelPerfectCamera.refResolutionX = initialRefResoultion;
-            pixelPerfectCamera.refResolutionY = initialRefResoultion;
+            pixelPerfectCamera.assetsPPU = initialPPU;
             onCompleteCallback?.Invoke();
         });
     }
@@ -3056,6 +3079,7 @@ public class Game : MonoBehaviour {
     // **********************************
 
     public class Player : Entity {
+        public Vector3 velocity;
         public bool bleeding;
         
         public int nextIdleAnimHash;
@@ -3089,10 +3113,18 @@ public class Game : MonoBehaviour {
     private float curStepDistance;
     
     private void UpdatePlayer() {
+        bleedDebuffIcon.gameObject.SetActive(player.bleeding);
+        
         if (raidEnterSequence.isAlive) return;
         
         if (player.bleeding && player.bleedLimiter.TimeHasPassed(3.5f)) {
-            player.health -= 5;
+            const int bleedDamage = 5;
+            player.health -= bleedDamage;
+            Entity bloodDrop = SpawnEntity(bloodDropPool, OffsetY(player.position, -0.1f), Quaternion.identity);
+            AddParentEffect(bloodDrop, player, 0.4f);
+            DestroyEntity(bloodDrop, 0.8f);
+            SpawnDamageNumber(OffsetY(player.position, 0.05f), bleedDamage, DamageColor.Blood);
+            AddFlashHitEffect(player);
         }
         
         bool consumingItem = playerConsumingTween.isAlive;
@@ -3107,7 +3139,12 @@ public class Game : MonoBehaviour {
         Vector2 prevPos = player.position;
         
         float speed = GetPlayerSpeedBasedOnStats();
-        player.position += new Vector3(moveInput.x, moveInput.y, 0f) * (speed * Time.deltaTime);
+        Vector3 frameVelocity = new Vector3(moveInput.x, moveInput.y, 0f) * speed;
+
+        const float acceleration = 14f;
+        player.velocity = Vector3.Lerp(player.velocity, frameVelocity, acceleration * Time.deltaTime);
+        
+        player.position += player.velocity * Time.deltaTime;
         curStepDistance += Vector2.Distance(prevPos, player.position); 
 
         if (moveInput != Vector2.zero) {
@@ -3235,9 +3272,9 @@ public class Game : MonoBehaviour {
     }
 
     private void DamagePlayer(int damage, float chanceToBleed = 0f) {
-        // if (RollProbability(chanceToBleed)) {
-        //     player.bleeding = true;
-        // }
+        if (!player.bleeding && RollProbability(chanceToBleed)) {
+            player.bleeding = true;
+        }
         player.health -= damage;
         AddFlashHitEffect(player);
     }
@@ -3669,6 +3706,8 @@ public class Game : MonoBehaviour {
             Collider2D col = Physics2D.OverlapCircle(proj.trans.position, projectileRadius, Masks.DamagableMask);
             if (!col) continue;
             
+            PlayAudioClip(projectileImpact, proj.position);
+            
             Entity entity = entityLookup[col.gameObject];
                     
             if (proj.ignoreEntities == null || !proj.ignoreEntities.Contains(entity)) {
@@ -3679,8 +3718,6 @@ public class Game : MonoBehaviour {
             
             Entity impact = SpawnEntity(projectileImpactPool, proj.position, RandomRotation());
             DestroyEntity(impact, CurrentClipLength(impact.animator));
-            
-            PlayAudioClip(projectileImpact, proj.position);
             
             DestroyEntity(projectiles[i]);
             projectiles.RemoveAt(i);
@@ -3939,11 +3976,13 @@ public class Game : MonoBehaviour {
             activeExitPortal = exitPortalParent.GetChild(randomSpawnIndex);
             activeExitPortal.gameObject.SetActive(true);
             Tween.Scale(activeExitPortal, 0f, 1f, 0.5f, Ease.OutBack);
+            PlayAudioClip(portalSpawnClip, activeExitPortal.position);
         };
     }
 
     private void DespawnEarlyExitPortal() {
         activeExitPortal.GetComponent<Collider2D>().enabled = false;
+        PlayAudioClip(portalDespawnClip, activeExitPortal.position);
         
         Sequence sequence = Sequence.Create();
         sequence.Chain(Tween.Scale(activeExitPortal, 1f, 0f, 0.5f, Ease.InBack));
@@ -3965,6 +4004,7 @@ public class Game : MonoBehaviour {
             activeExitPortal.GetComponent<Collider2D>().enabled = true;
             activeExitPortal.position = randomPos;
             Tween.Scale(activeExitPortal, 0f, 1f, 0.5f, Ease.OutBack);
+            PlayAudioClip(portalSpawnClip, activeExitPortal.position);
             return;
         }
         
@@ -5106,7 +5146,7 @@ public class Game : MonoBehaviour {
     // Audio
     // ************************
     
-    private Dictionary<int, List<DynamicClipRecord>> clipRecords;
+    private Dictionary<int, List<DynamicClipRecord>> clipRecords = new(50);
     private Queue<AudioSource> sources;
     
     private struct DynamicClipRecord {
@@ -5129,12 +5169,16 @@ public class Game : MonoBehaviour {
         
         AudioSource source = sources.Dequeue();
         sources.Enqueue(source);
+
+        float distFromPlayer = Vector2.Distance(player.position, position);
+        float volumeLerp = distFromPlayer / dynamicClip.maxDistance;
+        float volume = Mathf.Lerp(1f, 0f, volumeLerp) * volumeScaler;
         
         source.transform.position = position;
         source.rolloffMode = dynamicClip.rolloffMode;
         source.clip = dynamicClip.clips[Random.Range(0, dynamicClip.clips.Length)];
         source.outputAudioMixerGroup = dynamicClip.mixerGroup;
-        source.volume = volumeScaler;
+        source.volume = volume;
         source.pitch = Random.Range(dynamicClip.minPitch, dynamicClip.maxPitch);
         source.minDistance = dynamicClip.minDistance;
         source.maxDistance = dynamicClip.maxDistance;

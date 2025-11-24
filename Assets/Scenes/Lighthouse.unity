@@ -42167,7 +42167,7 @@ MonoBehaviour:
   spawnPositionsParent: {fileID: 499255181}
   resourceParent: {fileID: 820981750}
   exitPortalsParent: {fileID: 583104844}
-  waves: {fileID: 11400000, guid: 00bb5e40b3873e94c825c58138a262ae, type: 2}
+  waves: {fileID: 11400000, guid: fc5ffb6aa5ec9674a9182a29a069e54c, type: 2}
   grid: {fileID: 1315907621}
 --- !u!1001 &901271614
 PrefabInstance:
