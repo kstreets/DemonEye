@@ -17,5 +17,5 @@ MonoBehaviour:
   speed: 0.28
   health: 80
   damage: 12
-  changeToCauseBleed: 0.1
+  changeToCauseBleed: 0.15
   soulWorthPerKill: 2

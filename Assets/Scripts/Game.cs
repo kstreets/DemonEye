@@ -44,6 +44,7 @@ public class Game : MonoBehaviour {
     public GameObject itemDropPrefab;
     public GameObject baseProjectilePrefab;
     public GameObject stoppingPowerProjectilePrefab;
+    public GameObject boneShatterProjectilePrefab;
     public GameObject bloodDropPrefab;
     public GameObject poisonDebuffPrefab;
     public GameObject explosionPrefab;
@@ -318,6 +319,7 @@ public class Game : MonoBehaviour {
     private EntityPool<Entity> bloodDropPool;
     private EntityPool<Projectile> projectilePool;
     private EntityPool<Projectile> stoppingPowerProjectilePool;
+    private EntityPool<Projectile> boneShatterProjectilePool;
     private EntityPool<Entity> poisonDebuffPool;
     private EntityPool<Entity> explosionPool;
     private EntityPool<Entity> projectileImpactPool;
@@ -366,6 +368,7 @@ public class Game : MonoBehaviour {
         bloodDropPool = CreateEntityPool<Entity>(bloodDropPrefab, 10, null);
         projectilePool = CreateEntityPool<Projectile>(baseProjectilePrefab, 20, OnSpawnProjectile);
         stoppingPowerProjectilePool = CreateEntityPool<Projectile>(stoppingPowerProjectilePrefab, 20, OnSpawnProjectile);
+        boneShatterProjectilePool = CreateEntityPool<Projectile>(boneShatterProjectilePrefab, 20, OnSpawnProjectile);
         poisonDebuffPool = CreateEntityPool<Entity>(poisonDebuffPrefab, 10, null);
         explosionPool = CreateEntityPool<Entity>(explosionPrefab, 5, null);
         projectileImpactPool = CreateEntityPool<Entity>(projectileImpactPrefab, 20, null);
@@ -543,6 +546,7 @@ public class Game : MonoBehaviour {
     }
 
     private void OnRaidStateExit() {
+        DeinitPlayer();
         ClosePlayerInventory();
         CloseLootInventory();
         HideItemDescPopup();
@@ -646,7 +650,8 @@ public class Game : MonoBehaviour {
         public MaterialPropertyBlock matPropertyBlock = new();
         public IEntityPooler entityPool;
         public int health;
-        public int damageAccumilation;
+        public int obstacleCellRadius;
+        public Vector2 obstaclePosition;
         
         public ScaleEffect? scaleEffect;
         public HitFlashEffect? hitFlashEffect;
@@ -1115,7 +1120,7 @@ public class Game : MonoBehaviour {
                     Vector2 attackCheckPos = enemy.Center.ToVector2() + dirToPlayer * 0.15f;
                     Collider2D col = Physics2D.OverlapCircle(attackCheckPos, 0.15f, Masks.PlayerMask);
                     if (col != null) {
-                        DamagePlayer(enemy.data.damage,enemy.data.changeToCauseBleed);
+                        DamagePlayer(enemy.data.damage, enemy.data.changeToCauseBleed);
                     }
                 };
             }
@@ -1429,8 +1434,7 @@ public class Game : MonoBehaviour {
             raidEnterSequence.ChainDelay(0.35f);
             raidEnterSequence.ChainCallback(() => {
                 player.gameObject.SetActive(true);
-                player.animator.Play(playerIdleDownAnim);
-                player.nextIdleAnimHash = playerIdleDownAnim;
+                InitPlayer();
             });
             raidEnterSequence.Chain(Tween.Scale(player.trans, 0f, 1f, 0.2f, Ease.InOutBack));
             
@@ -3111,6 +3115,20 @@ public class Game : MonoBehaviour {
     private float lastShotTime;
     private int consecutiveShotCount;
     private float curStepDistance;
+
+    private Sprite defaultPlayerPreviewSprite;
+    private Tween bleedPulseTween;
+
+    private void InitPlayer() {
+        player.animator.Play(playerIdleDownAnim);
+        player.nextIdleAnimHash = playerIdleDownAnim;
+        defaultPlayerPreviewSprite ??= playerPreviewImage.sprite;
+    }
+    
+    private void DeinitPlayer() {
+        player.bleeding = false;
+        playerPreviewImage.sprite = defaultPlayerPreviewSprite;
+    }
     
     private void UpdatePlayer() {
         bleedDebuffIcon.gameObject.SetActive(player.bleeding);
@@ -3120,11 +3138,18 @@ public class Game : MonoBehaviour {
         if (player.bleeding && player.bleedLimiter.TimeHasPassed(3.5f)) {
             const int bleedDamage = 5;
             player.health -= bleedDamage;
-            Entity bloodDrop = SpawnEntity(bloodDropPool, OffsetY(player.position, -0.1f), Quaternion.identity);
+            
+            Entity bloodDrop = SpawnEntity(bloodDropPool, OffsetY(player.position, 0.11f), Quaternion.identity);
             AddParentEffect(bloodDrop, player, 0.4f);
             DestroyEntity(bloodDrop, 0.8f);
+            
             SpawnDamageNumber(OffsetY(player.position, 0.05f), bleedDamage, DamageColor.Blood);
             AddFlashHitEffect(player);
+            Tween.PunchScale(bleedDebuffIcon.transform, Vector3.one * 0.8f, 0.25f, 5f);
+
+            if (PlayerHealthIsAtAutoBleedStop()) {
+                player.bleeding = false;
+            }
         }
         
         bool consumingItem = playerConsumingTween.isAlive;
@@ -3208,7 +3233,7 @@ public class Game : MonoBehaviour {
             
         lastShotTime = Time.time;
     }
-
+    
     private Tween playerConsumingTween;
     private Inventory consumingInventory;
     private int consumingSlotIndex;
@@ -3266,17 +3291,22 @@ public class Game : MonoBehaviour {
         }))
         .Chain(Tween.Delay(additionalConsumeDelay));
     }
-
+    
     private void HealPlayer(int healing) {
         player.health = Mathf.Clamp(player.health + healing, 0, FullPlayerHealth);
     }
 
     private void DamagePlayer(int damage, float chanceToBleed = 0f) {
-        if (!player.bleeding && RollProbability(chanceToBleed)) {
+        if (!player.bleeding && !PlayerHealthIsAtAutoBleedStop() && RollProbability(chanceToBleed)) {
             player.bleeding = true;
         }
         player.health -= damage;
         AddFlashHitEffect(player);
+    }
+    
+    private bool PlayerHealthIsAtAutoBleedStop() {
+        const float percentageOfHealthBleedingStops = 0.10f;
+        return player.health <= FullPlayerHealth * percentageOfHealthBleedingStops;
     }
     
     private const float defaultPlayerSpeed = 0.52f;
@@ -3366,6 +3396,7 @@ public class Game : MonoBehaviour {
         public PoisonSoulcard.InstanceData? poison;
         public ExplosionSoulcard.InstanceData? explosion;
         public OverheatBlast.InstanceData? blast;
+        public BoneShatterSoulcard.InstanceData? boneShatter;
         public StoppingPowerSoulcard.InstanceData? stoppingPower;
         public ProjectileCountSoulcard.InstanceData? projectileCount;
     }
@@ -3461,6 +3492,8 @@ public class Game : MonoBehaviour {
     }
 
     private void ShootProjectile(Vector2 targetPos) {
+        EntityPool<Projectile> poolToSpawnFrom = equipedEye.stoppingPower.HasValue ? stoppingPowerProjectilePool : projectilePool;
+        
         const float maxInaccuracyAngle = 18f;
         float maxAccuracyAngle = maxInaccuracyAngle * (1f - equipedEye.coreAttack.accuracy);
         float accuracyAngle = Random.Range(-maxAccuracyAngle, maxAccuracyAngle);
@@ -3469,27 +3502,26 @@ public class Game : MonoBehaviour {
         Vector2 dir = (targetPos - PlayerEyePos.ToVector2()).normalized;
         dir = Quaternion.AngleAxis(accuracyAngle, Vector3.forward) * dir;
         Vector2 velocity = dir * projectileSpeed; 
-        SpawnProjectile(velocity);
+        SpawnProjectile(PlayerEyePos, velocity, poolToSpawnFrom);
 
         if (equipedEye.trishot.TryGetValue(out var trishot) && RollProbability(trishot.probability)) {
             const float baseTriShotAngle = 8f;
             Vector2 secondShotVelocity = Quaternion.AngleAxis(baseTriShotAngle, Vector3.forward) * velocity;
-            SpawnProjectile(secondShotVelocity).isTriShot = true;
+            SpawnProjectile(PlayerEyePos, secondShotVelocity, poolToSpawnFrom).isTriShot = true;
             Vector2 thirdShotVelocity = Quaternion.AngleAxis(-baseTriShotAngle, Vector3.forward) * velocity;
-            SpawnProjectile(thirdShotVelocity).isTriShot = true;
+            SpawnProjectile(PlayerEyePos, thirdShotVelocity, poolToSpawnFrom).isTriShot = true;
         }
 
         if (equipedEye.backwardShot.TryGetValue(out var backShot) && RollProbability(backShot.probability)) {
-            SpawnProjectile(-velocity).isBackwardsShot = true;
+            SpawnProjectile(PlayerEyePos, -velocity, poolToSpawnFrom).isBackwardsShot = true;
         }
     }
     
-    private Projectile SpawnProjectile(Vector2 velocity) {
+    private Projectile SpawnProjectile(Vector2 spawnPos, Vector2 velocity, EntityPool<Projectile> pool) {
         float angle = Vector2.SignedAngle(Vector2.right, velocity.normalized);
         Quaternion projectileRotation = Quaternion.AngleAxis(angle, Vector3.forward);
 
-        EntityPool<Projectile> poolToSpawnFrom = equipedEye.stoppingPower.HasValue ? stoppingPowerProjectilePool : projectilePool;
-        Projectile projectile = SpawnEntity(poolToSpawnFrom, PlayerEyePos, projectileRotation);
+        Projectile projectile = SpawnEntity(pool, spawnPos, projectileRotation);
         projectile.lifeTimeDuration = GetProjectileLifeTimeSeconds();
         projectile.velocity = velocity;
         projectile.eyeInstanceSpawnedFrom = equipedEye;
@@ -3676,6 +3708,8 @@ public class Game : MonoBehaviour {
         public bool isTriShot;
         public bool isBackwardsShot;
         public Vector2 velocity;
+        public int simpleDamage;
+        public int enemyPenetrationCount;
         public DemonEyeInstance eyeInstanceSpawnedFrom;
         public List<Entity> ignoreEntities;
     }
@@ -3687,6 +3721,8 @@ public class Game : MonoBehaviour {
         projectile.isBackwardsShot = default;
         projectile.isTriShot = default;
         projectile.velocity = default;
+        projectile.simpleDamage = default;
+        projectile.enemyPenetrationCount = default;
         projectile.eyeInstanceSpawnedFrom = default;
         if (projectile.ignoreEntities != null) {
             ListPool<Entity>.Release(projectile.ignoreEntities);
@@ -3706,12 +3742,11 @@ public class Game : MonoBehaviour {
             Collider2D col = Physics2D.OverlapCircle(proj.trans.position, projectileRadius, Masks.DamagableMask);
             if (!col) continue;
             
-            PlayAudioClip(projectileImpact, proj.position);
-            
             Entity entity = entityLookup[col.gameObject];
                     
             if (proj.ignoreEntities == null || !proj.ignoreEntities.Contains(entity)) {
                 HandleDamage(proj, entity);
+                PlayAudioClip(projectileImpact, proj.position);
             }
 
             if (entity is Enemy && ProjectileShouldPassThrough(proj, entity)) continue;
@@ -3734,18 +3769,25 @@ public class Game : MonoBehaviour {
     }
 
     private bool ProjectileShouldPassThrough(Projectile proj, Entity entity) {
-        if (!proj.eyeInstanceSpawnedFrom.penetration.TryGetValue(out var pen)) {
+        if (proj.ignoreEntities != null && proj.ignoreEntities.Contains(entity)) {
+            return true;
+        }
+        
+        if (proj.enemyPenetrationCount <= 0) {
             return false;
         }
         
+        ProjectileIgnoreEntity(proj, entity);
+        int alreadyPenetratedCount = proj.ignoreEntities?.Count ?? 0;
+        return alreadyPenetratedCount <= proj.enemyPenetrationCount;
+    }
+
+    private void ProjectileIgnoreEntity(Projectile proj, Entity entity) {
         bool alreadyContainsEntity = proj.ignoreEntities?.Contains(entity) ?? false;
         if (entity.IsValid && !alreadyContainsEntity) {
             proj.ignoreEntities ??= ListPool<Entity>.Get();
             proj.ignoreEntities.Add(entity);
         }
-        
-        int alreadyPenetratedCount = proj.ignoreEntities?.Count ?? 0;
-        return alreadyPenetratedCount <= pen.goThroughCount;
     }
 
     // ***********************************
@@ -3765,7 +3807,12 @@ public class Game : MonoBehaviour {
         DemonEyeInstance eyeInstance = projectile.eyeInstanceSpawnedFrom;
         
         if (entity.gameObject.CompareTag(Tags.Enemy)) {
-            Enemy enemy = entityLookup[entity.gameObject] as Enemy;
+            if (entityLookup[entity.gameObject] is not Enemy enemy) return;
+
+            if (projectile.simpleDamage != 0) {
+                DamageEnemy(enemy, projectile.simpleDamage, false);
+                return;
+            }
             
             bool isCriticalStrike = RollProbability(GetCriticalStrikeProbability(projectile, enemy));
             if (isCriticalStrike) {
@@ -3786,25 +3833,33 @@ public class Game : MonoBehaviour {
                 Vector2 expSpawnPos = projectile.position + (enemy.position - projectile.position) / 2f;
                 SpawnExplosion(explosionPool, expSpawnPos, explosion.radius, explosion.damage, 0.1f);
             }
+            
+            if (equipedEye.boneShatter.TryGetValue(out var boneShatter) && RollProbability(boneShatter.probability)) {
+                for (int i = 0; i < boneShatter.shardsCount; i++) {
+                    Vector2 boneShatterVelocity = RandomizeVectorAngle(projectile.velocity / 1.5f, 40f);
+                    Projectile boneShatterProj = SpawnProjectile(enemy.position, boneShatterVelocity, boneShatterProjectilePool);
+                    boneShatterProj.simpleDamage = boneShatter.perShardDamage;
+                    ProjectileIgnoreEntity(boneShatterProj, enemy);
+                }
+            }
         }
         else {
-            entity.damageAccumilation += eyeInstance.coreAttack.damage;
             entity.health -= eyeInstance.coreAttack.damage;
-
-            if (entity.damageAccumilation > 50) {
-                entity.damageAccumilation = 0;
-            }
 
             PlayAudioClip(stoneHitClip, entity.position);
                 
             if (entity.health <= 0) {
+                if (entity.obstacleCellRadius > 0) {
+                    currentMapInstance.grid.ClearObstacle(entity.obstaclePosition, entity.obstacleCellRadius);
+                }
+                
                 Entity smokeEntity = SpawnEntity<Entity>(rockSmokePrefab, entity.position, Quaternion.identity);
                 DestroyEntity(smokeEntity, 0.417f);
                 DestroyEntity(entity);
                 
                 PlayAudioClip(stoneBreakClip, entity.position);
 
-                int dropCount = Random.Range(3, 6);
+                int dropCount = Random.Range(3, 5);
                 float angleDeltaPerDrop = 360f / dropCount;
                 float randomRangePerDrop = angleDeltaPerDrop * 0.25f;
 
@@ -4086,8 +4141,8 @@ public class Game : MonoBehaviour {
         
         int gemRocksToSpawn = Random.Range(6, 10);
         for (int i = 0; i < gemRocksToSpawn; i++) {
-            Entity mineableRockEntity = SpawnResource<Entity>(gemRockPrefab, true);
-            mineableRockEntity.health = 350;
+            Entity mineableRockEntity = SpawnResource<Entity>(gemRockPrefab, spawnPoints, 1);
+            mineableRockEntity.health = 300;
         }
         
         int deadBodiesToSpawn = Random.Range(3, 5);
@@ -4116,23 +4171,26 @@ public class Game : MonoBehaviour {
                 };
             }
             
-            Entity body = SpawnResource<Entity>(deadBodyPrefab, false);
+            Entity body = SpawnResource<Entity>(deadBodyPrefab, spawnPoints);
             deadBodySlotsLookup.Add(body.gameObject, deadBodySlots);
         }
         
-        T SpawnResource<T>(GameObject resourcePrefab, bool cutsNavmesh) where T : Entity, new() {
-            int randomIndex = Random.Range(0, spawnPoints.Count);
-            Transform spawnTrans = spawnPoints[randomIndex];
-            spawnPoints.RemoveAt(randomIndex);
-            
-            T resource = SpawnEntity<T>(resourcePrefab, spawnTrans.position, spawnTrans.rotation);
+    }
+    
+    private T SpawnResource<T>(GameObject resourcePrefab, List<Transform> spawnPoints, int obstacleCellRadius = 0) where T : Entity, new() {
+        int randomIndex = Random.Range(0, spawnPoints.Count);
+        Transform spawnTrans = spawnPoints[randomIndex];
+        spawnPoints.RemoveAt(randomIndex);
+        
+        T resource = SpawnEntity<T>(resourcePrefab, spawnTrans.position, spawnTrans.rotation);
 
-            if (cutsNavmesh) {
-                // AstarPath.active.UpdateGraphs(resource.collider.bounds);
-            }
-
-            return resource;
+        if (obstacleCellRadius > 0) {
+            currentMapInstance.grid.AddObstacle(resource.position, obstacleCellRadius);
+            resource.obstacleCellRadius = obstacleCellRadius;
+            resource.obstaclePosition = resource.position;
         }
+
+        return resource;
     }
 
     private void DestroyLevelEntities() {

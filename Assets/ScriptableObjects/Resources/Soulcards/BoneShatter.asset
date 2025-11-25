@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7da0178fad797554ba325f35616c26a8, type: 3}
+  m_Name: BoneShatter
+  m_EditorClassIdentifier: Assembly-CSharp::BoneShatterSoulcard
+  uuid: -1370080524
+  displayName: Bone Shatter
+  inventorySprite: {fileID: -1606368622, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
+  dropSprite: {fileID: 0}
+  pickupRadius: 0.07
+  type: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
+  associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
+  buyPrice: 220
+  sellPrice: 143
+  traderXp: 0
+  spawnsOnAllMaps: 1
+  spawnsOnMaps: []
+  chanceToSpawnOnBody: 0.173
+  chanceToSpawnOnTrader: 0.175
+  chanceToSpawnFromRock: 0.254
+  chanceToSpawnFromEnemy: 0
+  spawnsFromEnemies: []
+  modifiesStats: 0
+  agilityStatAdjustment: 0
+  strengthStatAdjustment: 0
+  itemGroupProps: {fileID: 11400000, guid: 78826f3a685555a4896655f4c68ef737, type: 2}
+  maxStackCount: 0
+  weight: 0
+  description: 
+  relativeMechanicDesc: {fileID: 0}
+  probability: 1
+  shardsCount: 6
+  perShardDamage: 8

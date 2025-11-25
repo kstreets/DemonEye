@@ -18,6 +18,7 @@ public class CoolerGrid : MonoBehaviour {
         // These values get updated during runtime
         [NonSerialized] public Vector2 flowDir;
         [NonSerialized] public int distFromPlayerCell;
+        [NonSerialized] public bool isObstacleObstructed;
     }
 
     [HideInInspector] public List<GridCell> cells;
@@ -51,11 +52,36 @@ public class CoolerGrid : MonoBehaviour {
     }
 
     public void Deinit() {
+        foreach (GridCell cell in cells) {
+            cell.isObstacleObstructed = false;
+        }
         flowFieldJobHandle?.Complete();
         nativeDistances.Dispose();
         nativeTraversables.Dispose();
         nativePositions.Dispose();
         flowFieldJobResults.Dispose();
+    }
+
+    public void AddObstacle(Vector2 position, int cellRadius) {
+        for (int y = -cellRadius; y <= cellRadius; y++) {
+            for (int x = -cellRadius; x <= cellRadius; x++) {
+                Vector2 offset = new Vector2(x, y) * cellSize;
+                GridCell cell = GetCellAtPosition(position + offset);
+                if (cell == null) continue;
+                cell.isObstacleObstructed = true;
+            }
+        }
+    }
+
+    public void ClearObstacle(Vector2 position, int cellRadius) {
+        for (int y = -cellRadius; y <= cellRadius; y++) {
+            for (int x = -cellRadius; x <= cellRadius; x++) {
+                Vector2 offset = new Vector2(x, y) * cellSize;
+                GridCell cell = GetCellAtPosition(position + offset);
+                if (cell == null) continue;
+                cell.isObstacleObstructed = false;
+            }
+        }
     }
 
     public Vector3 GetSpawnPosition(Vector2 playerPosition) {
@@ -92,7 +118,7 @@ public class CoolerGrid : MonoBehaviour {
         for (int i = 0; i < cells.Count; i++) {
             GridCell cell = cells[i];
             nativeDistances[i] = cell == sourceNode ? 0 : int.MaxValue;
-            nativeTraversables[i] = cell.traversable;
+            nativeTraversables[i] = cell.isObstacleObstructed ? false : cell.traversable;
             nativePositions[i] = cell.position;
             flowFieldJobResults[i] = Vector2.zero;
         }
@@ -162,7 +188,7 @@ public class CoolerGrid : MonoBehaviour {
 
                 Vector2 neighborPos = cell.position + new Vector2(x, y) * cellSize;
                 GridCell neighbor = GetCellAtPosition(neighborPos);
-                if (neighbor == null || !neighbor.traversable) continue;
+                if (neighbor == null || !neighbor.traversable || neighbor.isObstacleObstructed) continue;
 
                 // Convert dijkstra distance into world distance
                 float distFromPlayer = (neighbor.distFromPlayerCell / (float)dijkstraOrthogonalDist) * cellSize;
@@ -464,12 +490,13 @@ public class CoolerGrid : MonoBehaviour {
 
         if (cells != null && !showFlowField) {
             foreach (GridCell cell in cells) {
-                if (!cell.traversable) continue;
+                if (!cell.traversable || cell.isObstacleObstructed) continue;
                 
                 Bounds bounds = new() {
                     center = cell.position,
                     size = Vector3.one * cellSize,
                 };
+                
                 DebugExtension.DrawBounds(bounds, gridColor);
                 Gizmos.color = gridFill;
                 Gizmos.DrawCube(cell.position, Vector3.one * cellSize);
