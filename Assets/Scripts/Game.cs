@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
-using JetBrains.Annotations;
 using PrimeTween;
 using TMPro;
 using Unity.Cinemachine;
@@ -22,7 +21,7 @@ using Vector3 = UnityEngine.Vector3;
 
 public class Game : MonoBehaviour {
 
-    public static Game instance;
+    public static Game inst;
     
     public TraderConfig traderConfig;
     public StartingItemsConfig startingItems;
@@ -55,6 +54,7 @@ public class Game : MonoBehaviour {
     public GameObject teleportOutPrefab;
     public GameObject bloodSplatterPrefab;
     public GameObject runSmokePrefab;
+    public GameObject slamSmokePrefab;
     public GameObject blastPrefab;
     [EndFoldout]
     
@@ -347,7 +347,7 @@ public class Game : MonoBehaviour {
     public static Action<Enemy> onEnemyDeath;
     
     private void Start() {
-        instance = this;
+        inst = this;
         
         LoadAllItems();
         InitAudio();
@@ -1071,6 +1071,7 @@ public class Game : MonoBehaviour {
         public PoisonSoulcard.InstanceData? poisoned;
         public SlowInstance? slow;
         public Vector2 moveDir;
+        public Vector2 graphicalDir;
         public Limiter changeDirLimiter;
     }
     
@@ -1091,25 +1092,27 @@ public class Game : MonoBehaviour {
                 continue;
             }
             
+            bool playingAttackAnimation = EnemyPlayingAttackAnimation(enemy);
             Vector2 dirToPlayer = (player.position - enemy.position).normalized;
 
-            Vector2 graphicalEnemyDir;
-            if (enemy.animator.Playing(walkSideAnim)) {
-                graphicalEnemyDir = enemy.spriteRenderer.flipX ? Vector2.left : Vector2.right;
-            }
-            else if (enemy.animator.Playing(walkUpAnim)) {
-                graphicalEnemyDir = Vector2.up;
-            }
-            else {
-                graphicalEnemyDir = Vector2.down;
+            if (!playingAttackAnimation) {
+                if (enemy.animator.Playing(walkSideAnim)) {
+                    enemy.graphicalDir = enemy.spriteRenderer.flipX ? Vector2.left : Vector2.right;
+                }
+                else if (enemy.animator.Playing(walkUpAnim)) {
+                    enemy.graphicalDir = Vector2.up;
+                }
+                else {
+                    enemy.graphicalDir = Vector2.down;
+                }
             }
 
-            bool canStartAttack = !enemy.poisoned.HasValue && !EnemyPlayingAttackAnimation(enemy);
+            bool canStartAttack = !enemy.poisoned.HasValue && !playingAttackAnimation;
             bool withinAttackDist = distFromPlayer < enemy.data.attackDistance;
-            bool facingPlayer = Vector2.Dot(graphicalEnemyDir, dirToPlayer) >= 0.5f;
+            bool facingPlayer = Vector2.Dot(enemy.graphicalDir, dirToPlayer) >= 0.5f;
             
             if (canStartAttack && withinAttackDist && facingPlayer) {
-                switch (CardinalDirFromVector(enemy.moveDir)) {
+                switch (CardinalDirFromVector(enemy.graphicalDir)) {
                     case CardinalDir.Right:
                     case CardinalDir.Left:
                         enemy.animator.Play(attackSideAnim);
@@ -1132,8 +1135,8 @@ public class Game : MonoBehaviour {
 
                         for (int i = 0; i <  projectileCount; i++) {
                             float randomAngle = (angleDeltaPerDrop * i) + Random.Range(-randomRangePerDrop, randomRangePerDrop);
-                            Vector3 velocity = instance.RotationVector(randomAngle) * 0.62f;
-                            Projectile proj = instance.SpawnProjectile(instance.OffsetY(enemy.position, 0.2f), velocity, instance.gooProjectilePool, Masks.PlayerHurtMask);
+                            Vector3 velocity = inst.RotationVector(randomAngle) * 0.62f;
+                            Projectile proj = inst.SpawnProjectile(inst.OffsetY(enemy.position, 0.2f), velocity, inst.gooProjectilePool, Masks.PlayerHurtMask);
                             proj.simpleDamage = enemy.data.damage;
                             proj.lifeTimeDuration = 2f;
                         }
@@ -1145,11 +1148,31 @@ public class Game : MonoBehaviour {
                     Tween.Delay(enemy, enemy.data.attackDamageDelay, static (enemy) => {
                         if (!enemy.IsValid) return;
                         
-                        Vector2 dirToPlayer = (instance.player.position - enemy.position).normalized;
-                        Vector2 attackCheckPos = enemy.Center.ToVector2() + dirToPlayer * enemy.data.attackReach;
+                        Vector2 attackCheckPos = enemy.position;
+                        switch (inst.CardinalDirFromVector(enemy.graphicalDir)) {
+                            case CardinalDir.Right:
+                                attackCheckPos += enemy.data.sideAttackOffset;
+                                break;
+                            case CardinalDir.Left:
+                                attackCheckPos += new Vector2(-enemy.data.sideAttackOffset.x, enemy.data.sideAttackOffset.y);
+                                break;
+                            case CardinalDir.Up:
+                                attackCheckPos += enemy.data.upAttackOffset;
+                                break;
+                            case CardinalDir.Down:
+                                attackCheckPos += enemy.data.donwAttackOffset;
+                                break;
+                        }
+                        
                         Collider2D col = Physics2D.OverlapCircle(attackCheckPos, enemy.data.attackRadius, Masks.PlayerHurtMask);
+                        
+                        if (enemy.data.type == EnemyData.EnemyType.Doughmon) {
+                            Entity smokeSlam = inst.SpawnEntity<Entity>(inst.slamSmokePrefab, attackCheckPos, Quaternion.identity);
+                            inst.DestroyEntity(smokeSlam, inst.CurrentClipLength(smokeSlam.animator));
+                        }
+                        
                         if (col) {
-                            instance.DamagePlayer(enemy.data.damage, enemy.data.changeToCauseBleed);
+                            inst.DamagePlayer(enemy.data.damage, enemy.data.changeToCauseBleed);
                         }
                     });
                 }
@@ -1173,21 +1196,21 @@ public class Game : MonoBehaviour {
                 const float deathDelay = 0.12f;
                 Tween.Delay(deadEnemy, deathDelay, static (deadEnemy) => {
                     if (RollProbability(deadEnemy.data.chanceToDropItem)) {
-                        Item dropItem = instance.GetItemFromEnemyDropPool(deadEnemy.data);
+                        Item dropItem = inst.GetItemFromEnemyDropPool(deadEnemy.data);
                         if (dropItem) {
-                            instance.SpawnItemAsEntity(dropItem, 1, deadEnemy.position, Quaternion.identity);
+                            inst.SpawnItemAsEntity(dropItem, 1, deadEnemy.position, Quaternion.identity);
                         }
                     }
 
-                    instance.player.soulCurrency += deadEnemy.data.soulWorthPerKill;
+                    inst.player.soulCurrency += deadEnemy.data.soulWorthPerKill;
                     onEnemyDeath?.Invoke(deadEnemy);
                     
-                    Entity bloodSplatterEntity = instance.SpawnEntity(instance.bloodSplatterPool, deadEnemy.position, Quaternion.identity);
-                    instance.DestroyEntity(bloodSplatterEntity, instance.CurrentClipLength(bloodSplatterEntity.animator));
+                    Entity bloodSplatterEntity = inst.SpawnEntity(inst.bloodSplatterPool, deadEnemy.position, Quaternion.identity);
+                    inst.DestroyEntity(bloodSplatterEntity, inst.CurrentClipLength(bloodSplatterEntity.animator));
                     
-                    instance.PlayAudioClip(instance.bloodBurstClip, deadEnemy.position);
+                    inst.PlayAudioClip(inst.bloodBurstClip, deadEnemy.position);
 
-                    instance.DestroyEntity(deadEnemy);
+                    inst.DestroyEntity(deadEnemy);
                 });
                 enemies.RemoveAt(i);
             }
@@ -1280,7 +1303,7 @@ public class Game : MonoBehaviour {
         
         Tween.Delay(target: enemy, spawnDelay, static (enemy) => {
             // Only teleport in if we are still in the raid
-            if (enemy == null || !instance.InRaid) return;
+            if (enemy == null || !inst.InRaid) return;
             enemy.gameObject.SetActive(true);
             enemy.teleportTime = 0f;
         });
@@ -1676,7 +1699,7 @@ public class Game : MonoBehaviour {
         if (activeExitPortal) {
             sequence.ChainDelay(0.05f);
             sequence.ChainCallback(static () => {
-                instance.PlayAudioClip(instance.portalDespawnClip, instance.activeExitPortal.position);
+                inst.PlayAudioClip(inst.portalDespawnClip, inst.activeExitPortal.position);
             });
             sequence.Chain(Tween.Scale(activeExitPortal, Vector3.zero, 0.25f, Ease.InOutBounce));
         }
@@ -3240,6 +3263,8 @@ public class Game : MonoBehaviour {
             curStepDistance = 0f;
         }
         
+        return;
+        
         int targetCount = 1;
         if (equipedEye.projectileCount.TryGetValue(out var projectileCount)) {
             targetCount += projectileCount.extraProjectileCount;
@@ -3303,25 +3328,25 @@ public class Game : MonoBehaviour {
         
         playerConsumingTween = Tween.Delay(item, actionDelay, static (item) => {
             if (item.healingAmount > 0) {
-                instance.HealPlayer(item.healingAmount);
+                inst.HealPlayer(item.healingAmount);
             }
             else {
-                instance.player.bleeding = false;
+                inst.player.bleeding = false;
             }
-            instance.ReduceItemCountInInventory(instance.consumingInventory, instance.consumingSlotIndex);
+            inst.ReduceItemCountInInventory(inst.consumingInventory, inst.consumingSlotIndex);
         });
         
         playerConsumingTween.OnUpdate(this, static (_, _) => {
-            if (instance.playerPreviewImage.sprite != instance.player.spriteRenderer.sprite) {
-                instance.playerPreviewImage.sprite = instance.player.spriteRenderer.sprite;     
+            if (inst.playerPreviewImage.sprite != inst.player.spriteRenderer.sprite) {
+                inst.playerPreviewImage.sprite = inst.player.spriteRenderer.sprite;     
             }
         });
         
         playerConsumingTween.Chain(Tween.Delay(postActionDelay, static () => {
-            instance.player.animator.Play(instance.playerIdleDownAnim);
-            instance.player.animator.Update(0f);
-            if (instance.playerPreviewImage.sprite != instance.player.spriteRenderer.sprite) {
-                instance.playerPreviewImage.sprite = instance.player.spriteRenderer.sprite;     
+            inst.player.animator.Play(inst.playerIdleDownAnim);
+            inst.player.animator.Update(0f);
+            if (inst.playerPreviewImage.sprite != inst.player.spriteRenderer.sprite) {
+                inst.playerPreviewImage.sprite = inst.player.spriteRenderer.sprite;     
             }
         }))
         .Chain(Tween.Delay(additionalConsumeDelay));
@@ -3504,8 +3529,8 @@ public class Game : MonoBehaviour {
         
         // Sort by distance from player
         cols.Sort(static (a, b) => {
-            float da = Vector2.SqrMagnitude(a.transform.position - instance.player.position);
-            float db = Vector2.SqrMagnitude(b.transform.position - instance.player.position);
+            float da = Vector2.SqrMagnitude(a.transform.position - inst.player.position);
+            float db = Vector2.SqrMagnitude(b.transform.position - inst.player.position);
             return da.CompareTo(db);
         });
         
@@ -5656,52 +5681,62 @@ public class Game : MonoBehaviour {
     }
     
     public static string DisplayProb(float probability) {
-        return ColorText($"{Mathf.FloorToInt(probability * 100f)}%", instance.styles.increaseDescColor);
+        return ColorText($"{Mathf.FloorToInt(probability * 100f)}%", inst.styles.increaseDescColor);
     }
     
     public static string DisplayProbIncrease(float probability) {
-        return ColorText($"+{Mathf.FloorToInt(probability * 100f)}%", instance.styles.increaseDescColor);
+        return ColorText($"+{Mathf.FloorToInt(probability * 100f)}%", inst.styles.increaseDescColor);
     }
     
     public static string DisplayProbDecrease(float probability) {
-        return ColorText($"-{Mathf.FloorToInt(probability * 100f)}%", instance.styles.decreaseDescColor);
+        return ColorText($"-{Mathf.FloorToInt(probability * 100f)}%", inst.styles.decreaseDescColor);
     }
 
     
     public static string DisplayNumber(int number) {
-        return ColorText(number.ToString(), instance.styles.increaseDescColor);
+        return ColorText(number.ToString(), inst.styles.increaseDescColor);
     }
     
     public static string DisplayNumber(float number) {
-        return ColorText(number.ToString("0.00"), instance.styles.increaseDescColor);
+        return ColorText(number.ToString("0.00"), inst.styles.increaseDescColor);
     }
 
 
     public static string DisplayIncrease(int amount) {
-        return ColorText($"+{amount}", instance.styles.increaseDescColor);
+        return ColorText($"+{amount}", inst.styles.increaseDescColor);
     }
     
     public static string DisplayIncrease(float amount) {
-        return ColorText($"+{amount:0.00}", instance.styles.increaseDescColor);
+        return ColorText($"+{amount:0.00}", inst.styles.increaseDescColor);
     }
     
     public static string DisplayDecrease(float amount) {
-        return ColorText($"-{amount:0.00}", instance.styles.decreaseDescColor);
+        return ColorText($"-{amount:0.00}", inst.styles.decreaseDescColor);
     }
     
     public static string DisplayMultiplier(float multiplier) {
-        Color textColor = multiplier >= 1f ? instance.styles.increaseDescColor : instance.styles.decreaseDescColor;
+        Color textColor = multiplier >= 1f ? inst.styles.increaseDescColor : inst.styles.decreaseDescColor;
         return ColorText($"{multiplier:0.00}x", textColor);
     }
 
     private enum CardinalDir { Right, Left, Up, Down }
 
     private CardinalDir CardinalDirFromVector(Vector2 vector) {
-        float dot = Vector2.Dot(Vector2.right, vector);
+        float dot = Vector2.Dot(Vector2.right, vector.normalized);
         if (Mathf.Abs(dot) >= 0.2f) {
             return vector.x > 0 ? CardinalDir.Right : CardinalDir.Left;
         } 
         return vector.y > 0 ? CardinalDir.Up : CardinalDir.Down;
+    }
+    
+    private Vector2 SnapToCardinalDir(Vector2 vector) {
+        return CardinalDirFromVector(vector) switch {
+            CardinalDir.Right => Vector2.right,
+            CardinalDir.Left  => Vector2.left,
+            CardinalDir.Up    => Vector2.up,
+            CardinalDir.Down  => Vector2.down,
+            _                 => Vector2.zero,
+        };
     }
 
 }

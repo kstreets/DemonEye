@@ -20,11 +20,14 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   attackDistance: 0.2
-  attackDamageDelay: 0.31
-  attackReach: 0.1
-  attackRadius: 0.1
+  attackDamageDelay: 0.5
+  attackRadius: 0.11
+  sideAttackOffset: {x: 0.138, y: 0.131}
+  upAttackOffset: {x: 0, y: 0.205}
+  donwAttackOffset: {x: 0, y: 0.073}
   speed: 0.35
   health: 300
   damage: 15
   changeToCauseBleed: 0.15
+  chanceToDropItem: 0
   soulWorthPerKill: 4

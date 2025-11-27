@@ -19,12 +19,15 @@ MonoBehaviour:
   excludeCollisionLayers:
     serializedVersion: 2
     m_Bits: 0
-  attackDistance: 0.2
-  attackDamageDelay: 0.31
-  attackReach: 0.1
-  attackRadius: 0.1
+  attackDistance: 0.35
+  attackDamageDelay: 0.4
+  attackRadius: 0.15
+  sideAttackOffset: {x: 0.172, y: 0.065}
+  upAttackOffset: {x: 0, y: 0.257}
+  donwAttackOffset: {x: 0, y: -0.045}
   speed: 0.35
   health: 100
   damage: 15
   changeToCauseBleed: 0.15
+  chanceToDropItem: 0
   soulWorthPerKill: 4

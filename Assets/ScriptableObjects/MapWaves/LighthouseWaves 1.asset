@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6be7b725e872d8544a676cc6767aad0a, type: 3}
   m_Name: LighthouseWaves 1
   m_EditorClassIdentifier: 
-  timeBeforeFirstPhase: 8
-  timeBeforeExitPortalsSpawn: 5
+  timeBeforeFirstPhase: 2
+  timeBeforeExitPortalsSpawn: 1
   spawnPhases:
   - phaseDuration: 30
     spawnDuration: 10
@@ -42,5 +42,5 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 0
     enemyBatches:
-    - enemyCount: 20
+    - enemyCount: 1
       enemyData: {fileID: 11400000, guid: c955cc90bf6af754abb6438085c0d619, type: 2}

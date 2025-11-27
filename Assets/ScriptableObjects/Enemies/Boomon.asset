@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a5df0d022d54a7488a42b771db86189, type: 3}
   m_Name: Boomon
   m_EditorClassIdentifier: 
-  type: 1
+  type: 2
   enemyPrefab: {fileID: 7814119993517076521, guid: 1858a054640053244b9e501228b481d5, type: 3}
   animatorOverride: {fileID: 22100000, guid: be54a215789aaea43a7649a1a98c558d, type: 2}
   usesFlowField: 1
@@ -20,9 +20,11 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   attackDistance: 1.12
-  attackDamageDelay: 0.31
-  attackReach: 0.1
+  attackDamageDelay: 0.4
   attackRadius: 0.1
+  sideAttackOffset: {x: 0, y: 0}
+  upAttackOffset: {x: 0, y: 0}
+  donwAttackOffset: {x: 0, y: 0}
   speed: 0.45
   health: 300
   damage: 15

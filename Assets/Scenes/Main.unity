@@ -9537,6 +9537,7 @@ MonoBehaviour:
   teleportOutPrefab: {fileID: 6668224194367103619, guid: f2492c473fe22234f8435f7a2fe2718d, type: 3}
   bloodSplatterPrefab: {fileID: 6976199733450676790, guid: 0254a536d11a93d4098c129b54678c27, type: 3}
   runSmokePrefab: {fileID: 4378626395619131299, guid: 6bdba9655f698ac44b5a53bb65691265, type: 3}
+  slamSmokePrefab: {fileID: 5935938718941175970, guid: 4171e8b273ae10f42a6b38c11eb7bc66, type: 3}
   blastPrefab: {fileID: 7981613312970761855, guid: e7be5f74a1a834f478c26f3db82143c1, type: 3}
   consumableType: {fileID: 11400000, guid: 229fbe8e9203e95499f73ff3b9ecfb68, type: 2}
   backpackType: {fileID: 11400000, guid: b4838a3d7e08dae4fbca579b80e09e71, type: 2}

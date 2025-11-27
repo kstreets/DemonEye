@@ -1548,6 +1548,116 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: FXSheet_52
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 772
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e73984f51efa4d94d888b214f50ff4c1
+      internalID: -100153142
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FXSheet_53
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 772
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 45d5727d036e7de41924add0db304a63
+      internalID: 1670940876
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FXSheet_54
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 772
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c1bb24384d864294cbdaa3776137d4aa
+      internalID: 37290114
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FXSheet_55
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 772
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 54a9b4468dc79b84d81c0ebde73eda5e
+      internalID: 1345313558
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FXSheet_56
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 772
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5fade0f7ad6c09140988bd911cefc46a
+      internalID: 1601034354
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -1612,6 +1722,10 @@ TextureImporter:
       FXSheet_50: 1737707228
       FXSheet_51: -1899303899
       FXSheet_52: -100153142
+      FXSheet_53: 1670940876
+      FXSheet_54: 37290114
+      FXSheet_55: 1345313558
+      FXSheet_56: 1601034354
       FXSheet_6: 197705684
       FXSheet_7: 1421366056
       FXSheet_8: 1104700031

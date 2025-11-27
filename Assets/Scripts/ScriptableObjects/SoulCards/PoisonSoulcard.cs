@@ -19,7 +19,7 @@ public class PoisonSoulcard : Soulcard {
                 probability = GetProbability(stackCount),
                 duration = GetDuration(stackCount),
             };
-            instance.AddPoisonedEffect(enemy, enemy.poisoned.Value.duration);
+            inst.AddPoisonedEffect(enemy, enemy.poisoned.Value.duration);
         }
     }
     
