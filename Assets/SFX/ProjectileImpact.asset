@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ProjectileImpact
   m_EditorClassIdentifier: 
   clips:
-  - {fileID: 8300000, guid: f71a9026a585088429d136e0cf5b24c1, type: 3}
+  - {fileID: 8300000, guid: 7dda4bfe74cf6bc4098050cc09e45f59, type: 3}
   mixerGroup: {fileID: -4270814360348751033, guid: 5d1188e598dcb514aa82b03e86c0c627, type: 2}
   rolloffMode: 0
   minDistance: 1

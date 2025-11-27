@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BoneShatterSoulcard
   uuid: -1370080524
   displayName: Bone Shatter
-  inventorySprite: {fileID: -1606368622, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
+  inventorySprite: {fileID: -628616051, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   dropSprite: {fileID: 0}
   pickupRadius: 0.07
   type: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
@@ -37,6 +37,7 @@ MonoBehaviour:
   weight: 0
   description: 
   relativeMechanicDesc: {fileID: 0}
-  probability: 1
-  shardsCount: 6
+  probability: 0.15
+  shardsCount: 5
   perShardDamage: 8
+  projectileLifetime: 0.4

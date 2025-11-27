@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a5df0d022d54a7488a42b771db86189, type: 3}
+  m_Name: Enemy3
+  m_EditorClassIdentifier: 
+  type: 0
+  enemyPrefab: {fileID: 7814119993517076521, guid: 4d3dddfafc2b5cd4bb5e914c3843ce54, type: 3}
+  animatorOverride: {fileID: 22100000, guid: 212710a56cb9fc24294c6682b61cee39, type: 2}
+  usesFlowField: 1
+  excludeCollisionLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  attackDistance: 0.2
+  attackDamageDelay: 0.31
+  attackReach: 0.1
+  attackRadius: 0.1
+  speed: 0.25
+  health: 200
+  damage: 20
+  changeToCauseBleed: 0
+  soulWorthPerKill: 3

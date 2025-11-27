@@ -15,7 +15,7 @@ MonoBehaviour:
   uuid: 23868539
   displayName: Demon Claw
   inventorySprite: {fileID: 1568950830, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
-  dropSprite: {fileID: 0}
+  dropSprite: {fileID: 1152316714, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   pickupRadius: 0.07
   type: {fileID: 0}
   associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}

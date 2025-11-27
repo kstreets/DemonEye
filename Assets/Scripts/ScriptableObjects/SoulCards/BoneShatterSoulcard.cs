@@ -8,22 +8,26 @@ public class BoneShatterSoulcard : Soulcard {
         public int shardsCount;
         public int perShardDamage;
         public float probability;
+        public float lifeTime;
     }
 
     public float probability;
     public int shardsCount;
     public int perShardDamage;
+    public float projectileLifetime;
     
     public override void AddInstanceToEye(DemonEyeInstance eyeInstance, int stackCount) {
         eyeInstance.boneShatter = new() {
             shardsCount = shardsCount,
             probability = probability,
             perShardDamage = perShardDamage,
+            lifeTime = projectileLifetime,
         };
     }
     
     public override string GetStackDescription(int stackCount) {
-        return $"{DisplayProb(GetProbability(stackCount))} chance to shatter an enemy's bone, sending out {DisplayNumber(shardsCount)} bone fragments, each dealing {DisplayNumber(GetDamage(stackCount))}";
+        return $"{DisplayProb(GetProbability(stackCount))} chance to shatter an enemy's bone, " +
+               $"sending out {DisplayNumber(shardsCount)} bone fragments, each dealing {DisplayNumber(GetDamage(stackCount))} damage";
     }
 
     private int GetDamage(int stackCount) {

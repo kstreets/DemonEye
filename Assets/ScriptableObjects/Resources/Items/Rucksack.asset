@@ -15,7 +15,7 @@ MonoBehaviour:
   uuid: 774802289
   displayName: Rucksack
   inventorySprite: {fileID: -1596758184, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
-  dropSprite: {fileID: 0}
+  dropSprite: {fileID: 564901494, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   pickupRadius: 0.07
   type: {fileID: 11400000, guid: b4838a3d7e08dae4fbca579b80e09e71, type: 2}
   associatedTrader: {fileID: 11400000, guid: bb3b083a03a70c147a32c54d43dd6569, type: 2}

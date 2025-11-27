@@ -9526,11 +9526,12 @@ MonoBehaviour:
   terminalMap: {fileID: 0}
   itemDropPrefab: {fileID: 6950097619826054733, guid: 76730055c1712874c9ac1c6f28f45cde, type: 3}
   baseProjectilePrefab: {fileID: 2758590605051147821, guid: 490c322ccae8e8149a6dddb96650a50e, type: 3}
-  stoppingPowerProjectilePrefab: {fileID: 4682860730991365088, guid: 5fa01c7df64854b40996c60725181067, type: 3}
   boneShatterProjectilePrefab: {fileID: 2758590605051147821, guid: f7b19a83567c00a4da11c9ce9c266d1f, type: 3}
   bloodDropPrefab: {fileID: 2835100544158664230, guid: a3700393b2b39cc44a28e9dee1a285c8, type: 3}
   poisonDebuffPrefab: {fileID: 9042913863694245120, guid: b52083b254543e949b6579beea5aef46, type: 3}
   explosionPrefab: {fileID: 1132575347036418292, guid: 97edbac11773f6b4d8f88d6785f366e1, type: 3}
+  boomonExplosionPrefab: {fileID: 1132575347036418292, guid: 5807414c1cfb26b468b88be1b10a569d, type: 3}
+  gooProjectilePrefab: {fileID: 2758590605051147821, guid: f6c4b75dd44ae6b48a2058ea0b780741, type: 3}
   projectileImpactPrefab: {fileID: 1029373551851069770, guid: 4e9a043ef50fe0146ac2f805702ce90f, type: 3}
   teleportInPrefab: {fileID: 3234620779380181516, guid: c3ff9460cbebf9d488affacfb6e9f421, type: 3}
   teleportOutPrefab: {fileID: 6668224194367103619, guid: f2492c473fe22234f8435f7a2fe2718d, type: 3}

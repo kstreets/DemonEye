@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   uuid: -205166182
   displayName: Bleed
-  inventorySprite: {fileID: 619219371, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
-  dropSprite: {fileID: 0}
+  inventorySprite: {fileID: -1219428220, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  dropSprite: {fileID: 1914876813, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   pickupRadius: 0.07
   type: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
   associatedTrader: {fileID: 11400000, guid: b04e05a2cdc85404fbe24578a1868a5d, type: 2}

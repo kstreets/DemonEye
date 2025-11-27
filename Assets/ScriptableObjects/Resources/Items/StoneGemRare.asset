@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   uuid: -2122329079
   displayName: Stone Gem
-  inventorySprite: {fileID: -51953114, guid: e8c060798270e294cbe61712f9919ecc, type: 3}
-  dropSprite: {fileID: 0}
+  inventorySprite: {fileID: -1372813652, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  dropSprite: {fileID: 2049078021, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   pickupRadius: 0.07
   type: {fileID: 0}
   associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}

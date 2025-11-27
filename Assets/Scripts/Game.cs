@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
+using JetBrains.Annotations;
 using PrimeTween;
 using TMPro;
 using Unity.Cinemachine;
@@ -43,11 +44,12 @@ public class Game : MonoBehaviour {
     [Foldout("Pooling Prefabs")]
     public GameObject itemDropPrefab;
     public GameObject baseProjectilePrefab;
-    public GameObject stoppingPowerProjectilePrefab;
     public GameObject boneShatterProjectilePrefab;
     public GameObject bloodDropPrefab;
     public GameObject poisonDebuffPrefab;
     public GameObject explosionPrefab;
+    public GameObject boomonExplosionPrefab;
+    public GameObject gooProjectilePrefab;
     public GameObject projectileImpactPrefab;
     public GameObject teleportInPrefab;
     public GameObject teleportOutPrefab;
@@ -318,10 +320,11 @@ public class Game : MonoBehaviour {
     private EntityPool<Entity> itemDropPool;
     private EntityPool<Entity> bloodDropPool;
     private EntityPool<Projectile> projectilePool;
-    private EntityPool<Projectile> stoppingPowerProjectilePool;
     private EntityPool<Projectile> boneShatterProjectilePool;
+    private EntityPool<Projectile> gooProjectilePool;
     private EntityPool<Entity> poisonDebuffPool;
     private EntityPool<Entity> explosionPool;
+    private EntityPool<Entity> boomonExplosionPool;
     private EntityPool<Entity> projectileImpactPool;
     private EntityPool<Entity> teleportInPool;
     private EntityPool<Entity> teleportOutPool;
@@ -367,10 +370,11 @@ public class Game : MonoBehaviour {
         itemDropPool = CreateEntityPool<Entity>(itemDropPrefab, 20, null);
         bloodDropPool = CreateEntityPool<Entity>(bloodDropPrefab, 10, null);
         projectilePool = CreateEntityPool<Projectile>(baseProjectilePrefab, 20, OnSpawnProjectile);
-        stoppingPowerProjectilePool = CreateEntityPool<Projectile>(stoppingPowerProjectilePrefab, 20, OnSpawnProjectile);
         boneShatterProjectilePool = CreateEntityPool<Projectile>(boneShatterProjectilePrefab, 20, OnSpawnProjectile);
+        gooProjectilePool = CreateEntityPool<Projectile>(gooProjectilePrefab, 20, OnSpawnProjectile);
         poisonDebuffPool = CreateEntityPool<Entity>(poisonDebuffPrefab, 10, null);
         explosionPool = CreateEntityPool<Entity>(explosionPrefab, 5, null);
+        boomonExplosionPool = CreateEntityPool<Entity>(boomonExplosionPrefab, 5, null);
         projectileImpactPool = CreateEntityPool<Entity>(projectileImpactPrefab, 20, null);
         teleportInPool = CreateEntityPool<Entity>(teleportInPrefab, 20, null);
         teleportOutPool = CreateEntityPool<Entity>(teleportOutPrefab, 20, null);
@@ -1100,9 +1104,11 @@ public class Game : MonoBehaviour {
                 graphicalEnemyDir = Vector2.down;
             }
 
-            if (!enemy.poisoned.HasValue && distFromPlayer < 0.25f && !EnemyPlayingAttackAnimation(enemy) 
-                && Vector2.Dot(graphicalEnemyDir, dirToPlayer) >= 0.5f) 
-            {
+            bool canStartAttack = !enemy.poisoned.HasValue && !EnemyPlayingAttackAnimation(enemy);
+            bool withinAttackDist = distFromPlayer < enemy.data.attackDistance;
+            bool facingPlayer = Vector2.Dot(graphicalEnemyDir, dirToPlayer) >= 0.5f;
+            
+            if (canStartAttack && withinAttackDist && facingPlayer) {
                 switch (CardinalDirFromVector(enemy.moveDir)) {
                     case CardinalDir.Right:
                     case CardinalDir.Left:
@@ -1115,14 +1121,38 @@ public class Game : MonoBehaviour {
                         enemy.animator.Play(attackDownAnim);
                         break;
                 }
-                enemy.applyDamageTimer.SetTime(0.31f);
-                enemy.applyDamageTimer.EndAction = () => {
-                    Vector2 attackCheckPos = enemy.Center.ToVector2() + dirToPlayer * 0.15f;
-                    Collider2D col = Physics2D.OverlapCircle(attackCheckPos, 0.15f, Masks.PlayerMask);
-                    if (col != null) {
-                        DamagePlayer(enemy.data.damage, enemy.data.changeToCauseBleed);
-                    }
-                };
+                
+                if (enemy.data.type == EnemyData.EnemyType.Boomon) {
+                    Tween.Delay(enemy, enemy.data.attackDamageDelay, static (enemy) => {
+                        if (!enemy.IsValid) return;
+                        
+                        const int projectileCount = 3;
+                        const float angleDeltaPerDrop = 360f /  projectileCount;
+                        const float randomRangePerDrop = angleDeltaPerDrop * 0.25f;
+
+                        for (int i = 0; i <  projectileCount; i++) {
+                            float randomAngle = (angleDeltaPerDrop * i) + Random.Range(-randomRangePerDrop, randomRangePerDrop);
+                            Vector3 velocity = instance.RotationVector(randomAngle) * 0.62f;
+                            Projectile proj = instance.SpawnProjectile(instance.OffsetY(enemy.position, 0.2f), velocity, instance.gooProjectilePool, Masks.PlayerHurtMask);
+                            proj.simpleDamage = enemy.data.damage;
+                            proj.lifeTimeDuration = 2f;
+                        }
+                        
+                        enemy.health = 0;
+                    });
+                }
+                else {
+                    Tween.Delay(enemy, enemy.data.attackDamageDelay, static (enemy) => {
+                        if (!enemy.IsValid) return;
+                        
+                        Vector2 dirToPlayer = (instance.player.position - enemy.position).normalized;
+                        Vector2 attackCheckPos = enemy.Center.ToVector2() + dirToPlayer * enemy.data.attackReach;
+                        Collider2D col = Physics2D.OverlapCircle(attackCheckPos, enemy.data.attackRadius, Masks.PlayerHurtMask);
+                        if (col) {
+                            instance.DamagePlayer(enemy.data.damage, enemy.data.changeToCauseBleed);
+                        }
+                    });
+                }
             }
             
             if (enemy.bleed.TryGetValue(out var bleed)) {
@@ -1140,8 +1170,9 @@ public class Game : MonoBehaviour {
 
             if (enemy.health <= 0) {
                 Enemy deadEnemy = enemies[i];
-                Tween.Delay(deadEnemy, 0.12f, static (deadEnemy) => {
-                    if (Random.value < 0.05f) {
+                const float deathDelay = 0.12f;
+                Tween.Delay(deadEnemy, deathDelay, static (deadEnemy) => {
+                    if (RollProbability(deadEnemy.data.chanceToDropItem)) {
                         Item dropItem = instance.GetItemFromEnemyDropPool(deadEnemy.data);
                         if (dropItem) {
                             instance.SpawnItemAsEntity(dropItem, 1, deadEnemy.position, Quaternion.identity);
@@ -1184,8 +1215,11 @@ public class Game : MonoBehaviour {
             if (enemyIsAttacking) {
                 speed = 0f;
             }
-            
-            Vector3 targetDir = currentMapInstance.grid.GetFlowFieldDirection(enemy.position);
+
+            Vector3 targetDir = Vector3.zero;
+            if (enemy.data.usesFlowField) {
+                targetDir = currentMapInstance.grid.GetFlowFieldDirection(enemy.position);
+            }
             if (targetDir == Vector3.zero) {
                 targetDir = (player.position - enemy.position).normalized;
             }
@@ -1362,6 +1396,7 @@ public class Game : MonoBehaviour {
             enemy.data = enemyToSpawn;
             enemy.animator.runtimeAnimatorController = enemyToSpawn.animatorOverride;
             enemy.enemySpacerCollider = enemy.trans.GetChild(0).GetComponent<Collider2D>();
+            enemy.enemySpacerCollider.excludeLayers = enemyToSpawn.excludeCollisionLayers;
             enemy.flowFieldAcc = Random.Range(2.5f, 3.5f);
             enemies.Add(enemy);
             
@@ -3166,7 +3201,7 @@ public class Game : MonoBehaviour {
         float speed = GetPlayerSpeedBasedOnStats();
         Vector3 frameVelocity = new Vector3(moveInput.x, moveInput.y, 0f) * speed;
 
-        const float acceleration = 14f;
+        const float acceleration = 18f;
         player.velocity = Vector3.Lerp(player.velocity, frameVelocity, acceleration * Time.deltaTime);
         
         player.position += player.velocity * Time.deltaTime;
@@ -3209,7 +3244,7 @@ public class Game : MonoBehaviour {
         if (equipedEye.projectileCount.TryGetValue(out var projectileCount)) {
             targetCount += projectileCount.extraProjectileCount;
         }
-
+        
         List<Vector3> attackTargets = GetAttackTargets(targetCount);
 
         if (attackTargets.Count <= 0 || !CanShoot()) return;
@@ -3228,7 +3263,7 @@ public class Game : MonoBehaviour {
         }
         
         if (equipedEye.blast.TryGetValue(out var blast) && consecutiveShotCount > 0 && consecutiveShotCount % blast.numshotsUntilOverheat == 0) {
-            SpawnExplosion(blastPool, OffsetY(player.position, 0.1f), blast.radius, blast.damage, 0.15f);
+            SpawnExplosion(blastPool, OffsetY(player.position, 0.1f), blast.radius, blast.damage, Masks.EnemyMask, 0.15f);
         }
             
         lastShotTime = Time.time;
@@ -3492,8 +3527,6 @@ public class Game : MonoBehaviour {
     }
 
     private void ShootProjectile(Vector2 targetPos) {
-        EntityPool<Projectile> poolToSpawnFrom = equipedEye.stoppingPower.HasValue ? stoppingPowerProjectilePool : projectilePool;
-        
         const float maxInaccuracyAngle = 18f;
         float maxAccuracyAngle = maxInaccuracyAngle * (1f - equipedEye.coreAttack.accuracy);
         float accuracyAngle = Random.Range(-maxAccuracyAngle, maxAccuracyAngle);
@@ -3502,22 +3535,22 @@ public class Game : MonoBehaviour {
         Vector2 dir = (targetPos - PlayerEyePos.ToVector2()).normalized;
         dir = Quaternion.AngleAxis(accuracyAngle, Vector3.forward) * dir;
         Vector2 velocity = dir * projectileSpeed; 
-        SpawnProjectile(PlayerEyePos, velocity, poolToSpawnFrom);
+        SpawnProjectile(PlayerEyePos, velocity, projectilePool);
 
         if (equipedEye.trishot.TryGetValue(out var trishot) && RollProbability(trishot.probability)) {
             const float baseTriShotAngle = 8f;
             Vector2 secondShotVelocity = Quaternion.AngleAxis(baseTriShotAngle, Vector3.forward) * velocity;
-            SpawnProjectile(PlayerEyePos, secondShotVelocity, poolToSpawnFrom).isTriShot = true;
+            SpawnProjectile(PlayerEyePos, secondShotVelocity, projectilePool).isTriShot = true;
             Vector2 thirdShotVelocity = Quaternion.AngleAxis(-baseTriShotAngle, Vector3.forward) * velocity;
-            SpawnProjectile(PlayerEyePos, thirdShotVelocity, poolToSpawnFrom).isTriShot = true;
+            SpawnProjectile(PlayerEyePos, thirdShotVelocity, projectilePool).isTriShot = true;
         }
 
         if (equipedEye.backwardShot.TryGetValue(out var backShot) && RollProbability(backShot.probability)) {
-            SpawnProjectile(PlayerEyePos, -velocity, poolToSpawnFrom).isBackwardsShot = true;
+            SpawnProjectile(PlayerEyePos, -velocity, projectilePool).isBackwardsShot = true;
         }
     }
     
-    private Projectile SpawnProjectile(Vector2 spawnPos, Vector2 velocity, EntityPool<Projectile> pool) {
+    private Projectile SpawnProjectile(Vector2 spawnPos, Vector2 velocity, EntityPool<Projectile> pool, LayerMask mask = default) {
         float angle = Vector2.SignedAngle(Vector2.right, velocity.normalized);
         Quaternion projectileRotation = Quaternion.AngleAxis(angle, Vector3.forward);
 
@@ -3525,6 +3558,7 @@ public class Game : MonoBehaviour {
         projectile.lifeTimeDuration = GetProjectileLifeTimeSeconds();
         projectile.velocity = velocity;
         projectile.eyeInstanceSpawnedFrom = equipedEye;
+        projectile.layerMask = mask == default ? Masks.DamagableMask : mask;
         projectiles.Add(projectile);
 
         projectile.trans.localScale = Vector3.zero;
@@ -3710,6 +3744,7 @@ public class Game : MonoBehaviour {
         public Vector2 velocity;
         public int simpleDamage;
         public int enemyPenetrationCount;
+        public LayerMask layerMask;
         public DemonEyeInstance eyeInstanceSpawnedFrom;
         public List<Entity> ignoreEntities;
     }
@@ -3723,6 +3758,7 @@ public class Game : MonoBehaviour {
         projectile.velocity = default;
         projectile.simpleDamage = default;
         projectile.enemyPenetrationCount = default;
+        projectile.layerMask = default;
         projectile.eyeInstanceSpawnedFrom = default;
         if (projectile.ignoreEntities != null) {
             ListPool<Entity>.Release(projectile.ignoreEntities);
@@ -3739,8 +3775,15 @@ public class Game : MonoBehaviour {
             proj.trans.position += proj.velocity.ToVector3() * Time.deltaTime;
             proj.distTraveled += proj.velocity.magnitude * Time.deltaTime;
             
-            Collider2D col = Physics2D.OverlapCircle(proj.trans.position, projectileRadius, Masks.DamagableMask);
+            Collider2D col = Physics2D.OverlapCircle(proj.trans.position, projectileRadius, proj.layerMask);
             if (!col) continue;
+
+            if (proj.layerMask == Masks.PlayerHurtMask) {
+                DamagePlayer(proj.simpleDamage);
+                DestroyEntity(projectiles[i]);
+                projectiles.RemoveAt(i);
+                continue;
+            }
             
             Entity entity = entityLookup[col.gameObject];
                     
@@ -3831,14 +3874,16 @@ public class Game : MonoBehaviour {
             
             if (eyeInstance.explosion.TryGetValue(out var explosion) && RollProbability(explosion.probability)) {
                 Vector2 expSpawnPos = projectile.position + (enemy.position - projectile.position) / 2f;
-                SpawnExplosion(explosionPool, expSpawnPos, explosion.radius, explosion.damage, 0.1f);
+                SpawnExplosion(explosionPool, expSpawnPos, explosion.radius, explosion.damage, Masks.EnemyMask, 0.1f);
             }
             
             if (equipedEye.boneShatter.TryGetValue(out var boneShatter) && RollProbability(boneShatter.probability)) {
                 for (int i = 0; i < boneShatter.shardsCount; i++) {
                     Vector2 boneShatterVelocity = RandomizeVectorAngle(projectile.velocity / 1.5f, 40f);
                     Projectile boneShatterProj = SpawnProjectile(enemy.position, boneShatterVelocity, boneShatterProjectilePool);
+                    boneShatterProj.trans.rotation = RandomRotation();
                     boneShatterProj.simpleDamage = boneShatter.perShardDamage;
+                    boneShatterProj.lifeTimeDuration = boneShatter.lifeTime;
                     ProjectileIgnoreEntity(boneShatterProj, enemy);
                 }
             }
@@ -3932,14 +3977,21 @@ public class Game : MonoBehaviour {
         return multiplier;
     }
 
-    private void SpawnExplosion(EntityPool<Entity> entityPool, Vector2 spawnPos, float radius, int damage, float damageDelay) {
+    private void SpawnExplosion(EntityPool<Entity> entityPool, Vector2 spawnPos, float radius, int damage, LayerMask mask, float damageDelay) {
         Entity expEntity = SpawnEntity(entityPool, spawnPos, Quaternion.identity); 
         DestroyEntity(expEntity, CurrentClipLength(expEntity.animator));
         
         Tween.Delay(damageDelay, () => {
-            List<Collider2D> cols = OverlapCircle(spawnPos, radius, Masks.EnemyMask);
+            List<Collider2D> cols = OverlapCircle(spawnPos, radius, mask);
             foreach (Collider2D col in cols) {
-                DamageEnemy(entityLookup[col.gameObject], damage, false);
+                if (mask == Masks.PlayerHurtMask) {
+                    DamagePlayer(damage);
+                    continue;
+                }
+                Entity entity = entityLookup[col.gameObject];
+                if (entity is Enemy) {
+                    DamageEnemy(entityLookup[col.gameObject], damage, false);
+                }
             }
         });
     }
@@ -3956,8 +4008,8 @@ public class Game : MonoBehaviour {
             _                  => 1f,
         };
         
-        float xOffset = Random.Range(-0.08f, 0.08f);
-        float yOffset = Random.Range(0.05f, 0.08f);
+        float xOffset = Random.Range(-0.1f, 0.1f);
+        float yOffset = Random.Range(0.05f, 0.22f);
         Vector2 endDamageNumPos;
         
         if (damageColor == DamageColor.Blood) {
@@ -3971,7 +4023,7 @@ public class Game : MonoBehaviour {
         Entity damageNumber = SpawnEntity(damageNumberPool, spawnPos, Quaternion.identity, damageNumbersParent);
         damageNumber.textMesh.text = damage.ToString();
         
-        const float alpha = 0.72f;
+        const float alpha = 0.68f;
         switch (damageColor) {
             case DamageColor.Normal:
                 damageNumber.textMesh.color = styles.normalDamageColor.Alpha(alpha);
@@ -5538,6 +5590,10 @@ public class Game : MonoBehaviour {
 
     private Vector3 RotationVector360(float minDist, float maxDist) {
         return Quaternion.AngleAxis(Random.Range(0, 360), Vector3.forward) * Vector3.right * Random.Range(minDist, maxDist);
+    }
+    
+    private Vector3 RotationVector(float degrees) {
+        return Quaternion.AngleAxis(degrees, Vector3.forward) * Vector3.right;
     }
     
     private Vector3 RotationVector(float degrees, float minDist, float maxDist) {

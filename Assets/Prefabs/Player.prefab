@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7875053436633375145}
   - component: {fileID: 4028521661663767246}
-  m_Layer: 7
+  m_Layer: 12
   m_Name: HurtBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -48,7 +48,7 @@ CapsuleCollider2D:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 0
   m_LayerOverridePriority: 0
   m_ForceSendLayers:
     serializedVersion: 2
