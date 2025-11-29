@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a5df0d022d54a7488a42b771db86189, type: 3}
   m_Name: Meatbalmon
   m_EditorClassIdentifier: 
-  type: 0
+  type: 3
   enemyPrefab: {fileID: 7814119993517076521, guid: 2cf698d61875ef147b2f262d4b2b73ca, type: 3}
   animatorOverride: {fileID: 22100000, guid: c9959f5d8ae2e8a4b969b6516e0f67e2, type: 2}
   usesFlowField: 0
@@ -25,9 +25,9 @@ MonoBehaviour:
   sideAttackOffset: {x: 0.138, y: 0.131}
   upAttackOffset: {x: 0, y: 0.205}
   donwAttackOffset: {x: 0, y: 0.073}
-  speed: 0.35
-  health: 300
+  speed: 0.4
+  health: 15
   damage: 15
   changeToCauseBleed: 0.15
-  chanceToDropItem: 0
+  chanceToDropItem: 0.05
   soulWorthPerKill: 4

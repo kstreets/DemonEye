@@ -18,6 +18,7 @@ using Random = UnityEngine.Random;
 using VInspector;
 using Assert = UnityEngine.Assertions.Assert;
 using Vector3 = UnityEngine.Vector3;
+using EffectsIndicies = Game.Entity.EffectsIndicies;
 
 public class Game : MonoBehaviour {
 
@@ -26,6 +27,7 @@ public class Game : MonoBehaviour {
     public TraderConfig traderConfig;
     public StartingItemsConfig startingItems;
     public Styles styles;
+    public GameplayConfig gameplayConfig;
     public List<QuestLine> questLines;
 
     [Foldout("Traders")]
@@ -68,14 +70,6 @@ public class Game : MonoBehaviour {
     public ItemType passiveType;
     [EndFoldout]
 
-    [Foldout("Item Refs")]
-    public Item bandageItem;
-    public Item healthPotionItem;
-    public Item demonSteakItem;
-    public Item pouchItem;
-    public Item ruckSackItem;
-    [EndFoldout]
-    
     [Foldout("Stat Upgrade Paths")]
     public StatUpgradePath agilityUpgradePath;
     public StatUpgradePath luckUpgradePath;
@@ -315,7 +309,6 @@ public class Game : MonoBehaviour {
     public static Dictionary<int, Soulcard> eyeModifierLookup = new();
 
     private Timer exitPortalTimer;
-    private int consecutiveCriticalHits;
 
     private EntityPool<Entity> itemDropPool;
     private EntityPool<Entity> bloodDropPool;
@@ -465,7 +458,6 @@ public class Game : MonoBehaviour {
     }
 
     private void Update() {
-        UpdateDelayedEntitiesToDestroy();
         gameStateMachine.Tick();
         DemonEyeTween.Update();
         UpdateTrader();
@@ -569,7 +561,6 @@ public class Game : MonoBehaviour {
         UpdateProjectiles();
         UpdateSpawnManager();
         UpdateEnemies();
-        UpdateEntityEffects();
     }
 
     private void OnEarlyExitEnter() {
@@ -613,13 +604,11 @@ public class Game : MonoBehaviour {
         public Action<T> OnSpawnCallback;
         public GameObject prefab;
         public List<T> standbyList = new();
-        public List<T> inUseList = new();
 
         public void ReleaseEntity(Entity entity) {
             Assert.IsFalse(standbyList.Contains((T)entity), "Already released this entity!");
             entity.gameObject.SetActive(false);
             standbyList.Add((T)entity);
-            inUseList.Remove((T)entity);
         }
     }
     
@@ -651,19 +640,19 @@ public class Game : MonoBehaviour {
         public TextMeshProUGUI textMesh;
         public EntityLifetime lifetime;
         
-        public MaterialPropertyBlock matPropertyBlock = new();
+        public readonly MaterialPropertyBlock matPropertyBlock = new();
         public IEntityPooler entityPool;
         public int health;
         public int obstacleCellRadius;
         public Vector2 obstaclePosition;
         
-        public ScaleEffect? scaleEffect;
-        public HitFlashEffect? hitFlashEffect;
-        public PoisonedEffect? poisonedEffect;
-        public BounceEffect? bounceEffect;
-        public ParentToEntity? parentEffect;
-        public TweenPosition? tweenPosition;
-        public ShakeEffect? shakeEffect;
+        public PoisonedEffect poisonedEffect;
+        public BounceEffect bounceEffect;
+        public ParentToEntity parentEffect;
+        public ShakeEffect shakeEffect;
+
+        public enum EffectsIndicies { HitFlash, Poisoned, Bounce, Parent, Shake }
+        public readonly Tween[] tweenEffects = new Tween[5];
         
         public Vector3 position {
             get => trans.position;
@@ -671,8 +660,13 @@ public class Game : MonoBehaviour {
         }
 
         public Vector3 Center => collider.bounds.center;
-        public bool IsValid => trans;
         public GameObject gameObject => trans.gameObject;
+        public Tween GetEffect(EffectsIndicies effectIndex) => tweenEffects[(int)effectIndex];
+        public void SetEffect(EffectsIndicies effectIndex, Tween tween) => tweenEffects[(int)effectIndex] = tween;
+    }
+
+    private bool EntityIsValid(Entity entity) {
+        return entity.trans && inst.entityLookup.ContainsKey(entity.gameObject);
     }
 
     private Entity SpawnItemAsEntity(Item item, int count, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level) {
@@ -705,7 +699,6 @@ public class Game : MonoBehaviour {
         }
         
         entity.gameObject.SetActive(true);
-        pool.inUseList.Add(entity);
         pool.OnSpawnCallback?.Invoke(entity);
         return entity;
     }
@@ -740,28 +733,15 @@ public class Game : MonoBehaviour {
         entityLookup.Add(entity.gameObject, entity);
     }
     
-    private void DestroyEntity(GameObject gameObj) {
-        DestroyEntity(entityLookup[gameObj]);
-    }
-    
     private void DestroyEntity(Entity rootEntity) {
         using var autoRelease = ListPool<Entity>.Get(out List<Entity> entityHierarchy); 
         GetEntityHierarchy(rootEntity.trans, entityHierarchy);
 
         foreach (Entity entity in entityHierarchy) {
-            RemoveHitFlashEffect(entity);
-            RemovePoisonedEffect(entity);
-            entity.bounceEffect = null;
-            entity.parentEffect = null;
-            
-            // Remove from delay list here to prevent possible double frees
-            if (entitiesWaitingToBeDestroyed.Contains(entity)) {
-                int index = delayedEntitiesToDestroy.FindIndex(x => x.Item1 == entity);
-                delayedEntitiesToDestroy.RemoveAt(index);
-                entitiesWaitingToBeDestroyed.Remove(entity);
+            for (int i = 0; i < entity.tweenEffects.Length; i++) {
+                entity.tweenEffects[i].Complete();
             }
             
-            // May be removed already from DestroyAtIndex which is faster than Remove
             bool enemyWasInLookup = entityLookup.Remove(entity.gameObject, out _);
             if (enemyWasInLookup) {
                 entities.Remove(entity);
@@ -789,238 +769,107 @@ public class Game : MonoBehaviour {
         entity.entityPool.ReleaseEntity(entity);
     }
 
-    private List<(Entity, float)> delayedEntitiesToDestroy = new(20);
-    private HashSet<Entity> entitiesWaitingToBeDestroyed = new(20);
-    
     private void DestroyEntity(Entity entity, float delay) {
-        Assert.IsFalse(entitiesWaitingToBeDestroyed.Contains(entity), "Already added entity to be destroyed");
-        entitiesWaitingToBeDestroyed.Add(entity);
-        delayedEntitiesToDestroy.Add((entity, delay));
+        Delay(entity, delay, static entity => inst.DestroyEntity(entity));
     }
 
-    private void UpdateDelayedEntitiesToDestroy() {
-        for (int i = delayedEntitiesToDestroy.Count - 1; i >= 0; i--) {
-            (Entity entity, float time) = delayedEntitiesToDestroy[i];
-            time -= Time.deltaTime;
-            if (time <= 0f) {
-                DestroyEntity(entity);
-                continue;
-            }
-            delayedEntitiesToDestroy[i] = (entity, time);
-        }
-    }
+    private static int damageFlashTintPropertyId = Shader.PropertyToID("_DamageFlashTint");
     
-    private void UpdateEntityEffects() {
-        foreach (Entity entity in entities) {
-            UpdateScaleEffect(entity);
-            UpdateHitFlashEffect(entity);
-            UpdatePoisonedEffect(entity);
-            UpdateBounceEffect(entity);
-            UpdateParentEffect(entity);
-            UpdateTweenPosition(entity);
-            UpdateShakeEffect(entity);
-        }
-    }
-    
-    public struct ScaleEffect {
-        public Vector3 targetScale;
-        public Timer timer;
-    }
-
-    private void AddScaleEffect(Entity entity, float scalePercent, float duration) {
-        if (entity.scaleEffect.TryGetValue(out var oldScale)) {
-            entity.trans.localScale = oldScale.targetScale;
-        }
-        ScaleEffect scale = new() {
-            targetScale = entity.trans.localScale,
-        };
-        entity.trans.localScale *= scalePercent;
-        scale.timer.SetTime(duration);
-        entity.scaleEffect = scale;
-    }
-
-    private void UpdateScaleEffect(Entity entity) {
-        if (!entity.scaleEffect.TryGetValue(out var scale)) return;
-        scale.timer.Tick();
-        float comp = scale.timer.Comp();
-        entity.trans.localScale = Vector3.Lerp(entity.trans.localScale, scale.targetScale, comp);  
-        entity.scaleEffect = scale;
-    }
-
-    
-    private int damageFlashTintPropertyId = Shader.PropertyToID("_DamageFlashTint");
-    
-    public struct HitFlashEffect {
-        public Timer timer;
-    }
-
     private void AddFlashHitEffect(Entity entity) {
-        HitFlashEffect hitFlash = new();
         float duration = hitFlashCurve.keys[^1].time;
-        hitFlash.timer.SetTime(duration);
-        entity.hitFlashEffect = hitFlash;
-    }
-
-    private void UpdateHitFlashEffect(Entity entity) {
-        if (!entity.hitFlashEffect.TryGetValue(out var hitFlash)) return;
-
-        if (hitFlash.timer.IsFinished) {
-            RemoveHitFlashEffect(entity);
-            return;
-        }
         
-        hitFlash.timer.Tick();
-        float comp = hitFlash.timer.Comp();
-        entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
-        entity.matPropertyBlock.SetFloat(damageFlashTintPropertyId, hitFlashCurve.Evaluate(comp));
-        entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
-        entity.hitFlashEffect = hitFlash;
-    }
-
-    private void RemoveHitFlashEffect(Entity entity) {
-        if (!entity.hitFlashEffect.HasValue) return;
+        entity.GetEffect(EffectsIndicies.HitFlash).Stop();
         
-        entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
-        entity.matPropertyBlock.SetFloat(damageFlashTintPropertyId, 0);
-        entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
-        entity.hitFlashEffect = null;
-    }
+        Tween tween = Tween.Custom(entity, 0f, 1f, duration, ease: Ease.Linear, onValueChange: static (entity, val) => {
+            entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
+            entity.matPropertyBlock.SetFloat(damageFlashTintPropertyId, inst.hitFlashCurve.Evaluate(val));
+            entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
+        })
+        .OnComplete(entity, static entity => {
+            entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
+            entity.matPropertyBlock.SetFloat(damageFlashTintPropertyId, 0);
+            entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
+        });
 
+        entity.SetEffect(EffectsIndicies.HitFlash, tween);
+    }
 
     private static int poisonedPropertyId = Shader.PropertyToID("_Poisoned");
     
     public struct PoisonedEffect {
-        public Timer timer;
-        public Entity poisonDebuff;
+        public Entity poisonDebuffEntity;
     }
-
+    
     public void AddPoisonedEffect(Entity entity, float duration) {
-        if (entity.poisonedEffect.TryGetValue(out var oldPoison)) {
-            DestroyEntity(oldPoison.poisonDebuff);
+        if (!entity.GetEffect(EffectsIndicies.Poisoned).isAlive) {
+            Entity poisonDebuff = SpawnEntity(poisonDebuffPool, OffsetY(entity.position, -0.14f), Quaternion.identity, entity.trans);
+            entity.poisonedEffect = new() {
+                poisonDebuffEntity = poisonDebuff,
+            };
         }
         
-        PoisonedEffect poisoned = new();
-        poisoned.timer.SetTime(duration);
-        poisoned.poisonDebuff = SpawnEntity(poisonDebuffPool, OffsetY(entity.position, -0.14f), Quaternion.identity, entity.trans);
-        entity.poisonedEffect = poisoned;
+        entity.GetEffect(EffectsIndicies.Poisoned).Stop();
         
         entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
         entity.matPropertyBlock.SetFloat(poisonedPropertyId, 1);
         entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
-    }
 
-    private void UpdatePoisonedEffect(Entity entity) {
-        if (!entity.poisonedEffect.TryGetValue(out var poison)) return;
-
-        if (poison.timer.IsFinished) {
-            RemovePoisonedEffect(entity);
-            return;
-        }
+        Tween tween = Delay(entity, duration, static entity => {
+            entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
+            entity.matPropertyBlock.SetFloat(poisonedPropertyId, 0);
+            entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
+            inst.DestroyEntity(entity.poisonedEffect.poisonDebuffEntity);
+        });
         
-        poison.timer.Tick();
-        entity.poisonedEffect = poison;
+        entity.SetEffect(EffectsIndicies.Poisoned, tween);
     }
-
-    private void RemovePoisonedEffect(Entity entity) {
-        if (!entity.poisonedEffect.HasValue) return;
-        
-        entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
-        entity.matPropertyBlock.SetFloat(poisonedPropertyId, 0);
-        entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
-        
-        // We need to delay it by a frame because we are iterating over the list of
-        // entites from the caller and can't modify the list while its iterating
-        DestroyEntity(entity.poisonedEffect.Value.poisonDebuff, float.Epsilon);
-        entity.poisonedEffect = null;
-    }
-    
     
     public struct BounceEffect {
         public Vector2 targetPos;
         public Vector2 initialPos;
-        public Timer timer;
     }
 
     private void AddBounceEffect(Entity entity, Vector3 pos, float duration) {
-        BounceEffect bounce = new() {
+        entity.bounceEffect = new() {
             targetPos = pos,
-            initialPos = entity.position
+            initialPos = entity.position,
         };
-        bounce.timer.SetTime(duration);
-        entity.bounceEffect = bounce;
-    }
-
-    private void UpdateBounceEffect(Entity entity) {
-        if (!entity.bounceEffect.TryGetValue(out var bounce)) return;
         
-        bounce.timer.Tick();
-        float comp = bounce.timer.Comp();
-        float yPos = bounceCurve.Evaluate(comp);
-        entity.position = Vector2.Lerp(bounce.initialPos, bounce.targetPos, comp);
-        entity.position = new(entity.position.x, entity.position.y + yPos, entity.position.y);
-        entity.bounceEffect = bounce;
+        Tween.Custom(entity, 0f, 1f, duration, ease: Ease.Linear, onValueChange: static (entity, val) => {
+            float yPos = inst.bounceCurve.Evaluate(val);
+            entity.position = Vector2.Lerp(entity.bounceEffect.initialPos, entity.bounceEffect.targetPos, val);
+            entity.position = new(entity.position.x, entity.position.y + yPos, entity.position.y);
+        });
     }
 
-    
     public struct ParentToEntity {
         public Entity parentEntity;
         public Vector2 localOffset;
-        public float endTime;
     }
 
     private void AddParentEffect(Entity entity, Entity parent, float duration) {
-        ParentToEntity parentToEntity = new() {
+        entity.parentEffect = new() {
             parentEntity = parent,
             localOffset = parent.position - entity.position,
-            endTime = Time.time + duration,
         };
-        entity.parentEffect = parentToEntity;
+
+        Tween tween = Tween.Custom(entity, 0f, 0f, duration, static (entity, _) => {
+            if (!inst.EntityIsValid(entity.parentEffect.parentEntity)) { 
+                entity.GetEffect(EffectsIndicies.Parent).Stop();
+                return;
+            }
+            entity.position = entity.parentEffect.parentEntity.position + entity.parentEffect.localOffset.ToVector3();
+        });
+        
+        entity.SetEffect(EffectsIndicies.Parent, tween);
     }
 
-    private void UpdateParentEffect(Entity entity) {
-        if (!entity.parentEffect.TryGetValue(out var parentToEntity)) return;
-        if (Time.time > parentToEntity.endTime || !parentToEntity.parentEntity.IsValid) { 
-            entity.parentEffect = null;
-            return;
-        }
-        entity.position = parentToEntity.parentEntity.position + parentToEntity.localOffset.ToVector3();
-    }
-
-
-    public struct TweenPosition {
-        public Vector2 startPos;
-        public Vector2 endPos;
-        public Timer timer;
-        public DemonEyeTween.Curve curve;
-    }
-
-    private void AddTweenPosition(Entity entity, Vector2 endPos, float duration, DemonEyeTween.Curve curve = DemonEyeTween.Curve.Linear) {
-        TweenPosition tween = new() {
-            startPos = entity.position,
-            endPos = endPos,
-            curve = curve,
-        };
-        tween.timer.SetTime(duration);
-        entity.tweenPosition = tween;
-    }
-
-    private void UpdateTweenPosition(Entity entity) {
-        if (!entity.tweenPosition.TryGetValue(out var tween)) return;
-
-        tween.timer.Tick();
-        float comp = DemonEyeTween.ConvertCompletion(tween.timer.Comp(), tween.curve);
-        entity.position = Vector2.Lerp(tween.startPos, tween.endPos, comp);
-        entity.tweenPosition = tween;
-    }
-
-    
     public struct ShakeEffect {
         public float jitter;
         public float magnitude;
         public AnimationCurve animCurve;
         public Vector2 randomSeed;
         public Vector3 entityStartPos;
-        public Timer timer;
         public float noisePos;
     }
 
@@ -1030,23 +879,24 @@ public class Game : MonoBehaviour {
             magnitude = magnitude,
             animCurve = animCurve,
             randomSeed = new(Random.Range(int.MinValue, int.MaxValue), Random.Range(int.MinValue, int.MaxValue)),
-            timer = new(time),
             noisePos = 0f,
             entityStartPos = entity.position,
         }; 
-    }
-    
-    private void UpdateShakeEffect(Entity entity) {
-        if (!entity.shakeEffect.TryGetValue(out var shakeEffect)) return;
-
-        shakeEffect.timer.Tick(); 
-        float magnitude = shakeEffect.animCurve.Evaluate(shakeEffect.timer.Comp()) * shakeEffect.magnitude;
-        shakeEffect.noisePos = (shakeEffect.noisePos + shakeEffect.jitter * Time.deltaTime) % 1f;
-        float x = (Mathf.PerlinNoise(shakeEffect.randomSeed.x, shakeEffect.noisePos) - 0.5f) * 2f;
-        float y = (Mathf.PerlinNoise(shakeEffect.randomSeed.y, shakeEffect.noisePos + 100f) - 0.5f) * 2f;
-        Vector3 targetVector = new Vector3(x, y, entity.position.z) * magnitude;
-        entity.position = shakeEffect.entityStartPos + targetVector;
-        entity.shakeEffect = shakeEffect.timer.IsFinished ? null : shakeEffect;
+        
+        entity.GetEffect(EffectsIndicies.Shake).Stop();
+        
+        Tween tween = Tween.Custom(entity, 0f, 1f, time, ease: Ease.Linear, onValueChange: static (entity, val) => {
+            ShakeEffect shakeEffect = entity.shakeEffect;
+            float magnitude = shakeEffect.animCurve.Evaluate(val) * shakeEffect.magnitude;
+            shakeEffect.noisePos = (shakeEffect.noisePos + shakeEffect.jitter * Time.deltaTime) % 1f;
+            float x = (Mathf.PerlinNoise(shakeEffect.randomSeed.x, shakeEffect.noisePos) - 0.5f) * 2f;
+            float y = (Mathf.PerlinNoise(shakeEffect.randomSeed.y, shakeEffect.noisePos + 100f) - 0.5f) * 2f;
+            Vector3 targetVector = new Vector3(x, y, entity.position.z) * magnitude;
+            entity.position = shakeEffect.entityStartPos + targetVector;
+            entity.shakeEffect = shakeEffect;
+        });
+        
+        entity.SetEffect(EffectsIndicies.Shake, tween);
     }
     
     // *****************************
@@ -1126,9 +976,7 @@ public class Game : MonoBehaviour {
                 }
                 
                 if (enemy.data.type == EnemyData.EnemyType.Boomon) {
-                    Tween.Delay(enemy, enemy.data.attackDamageDelay, static (enemy) => {
-                        if (!enemy.IsValid) return;
-                        
+                    Delay(enemy, enemy.data.attackDamageDelay, static (enemy) => {
                         const int projectileCount = 3;
                         const float angleDeltaPerDrop = 360f /  projectileCount;
                         const float randomRangePerDrop = angleDeltaPerDrop * 0.25f;
@@ -1145,9 +993,7 @@ public class Game : MonoBehaviour {
                     });
                 }
                 else {
-                    Tween.Delay(enemy, enemy.data.attackDamageDelay, static (enemy) => {
-                        if (!enemy.IsValid) return;
-                        
+                    Delay(enemy, enemy.data.attackDamageDelay, static (enemy) => {
                         Vector2 attackCheckPos = enemy.position;
                         switch (inst.CardinalDirFromVector(enemy.graphicalDir)) {
                             case CardinalDir.Right:
@@ -1163,14 +1009,14 @@ public class Game : MonoBehaviour {
                                 attackCheckPos += enemy.data.donwAttackOffset;
                                 break;
                         }
-                        
+
                         Collider2D col = Physics2D.OverlapCircle(attackCheckPos, enemy.data.attackRadius, Masks.PlayerHurtMask);
-                        
+
                         if (enemy.data.type == EnemyData.EnemyType.Doughmon) {
                             Entity smokeSlam = inst.SpawnEntity<Entity>(inst.slamSmokePrefab, attackCheckPos, Quaternion.identity);
                             inst.DestroyEntity(smokeSlam, inst.CurrentClipLength(smokeSlam.animator));
                         }
-                        
+
                         if (col) {
                             inst.DamagePlayer(enemy.data.damage, enemy.data.changeToCauseBleed);
                         }
@@ -1194,7 +1040,7 @@ public class Game : MonoBehaviour {
             if (enemy.health <= 0) {
                 Enemy deadEnemy = enemies[i];
                 const float deathDelay = 0.12f;
-                Tween.Delay(deadEnemy, deathDelay, static (deadEnemy) => {
+                Delay(deadEnemy, deathDelay, static (deadEnemy) => {
                     if (RollProbability(deadEnemy.data.chanceToDropItem)) {
                         Item dropItem = inst.GetItemFromEnemyDropPool(deadEnemy.data);
                         if (dropItem) {
@@ -1301,9 +1147,7 @@ public class Game : MonoBehaviour {
 
         float spawnDelay = spawnAnimDuration * 0.7f;
         
-        Tween.Delay(target: enemy, spawnDelay, static (enemy) => {
-            // Only teleport in if we are still in the raid
-            if (enemy == null || !inst.InRaid) return;
+        Delay(enemy, spawnDelay, static (enemy) => {
             enemy.gameObject.SetActive(true);
             enemy.teleportTime = 0f;
         });
@@ -1447,6 +1291,7 @@ public class Game : MonoBehaviour {
     
     private void InitRaid() {
         curRaidState = RaidState.None;
+        demonEyeRaidStats = new();
         
         Cursor.visible = false;
         ShowRaidUI();
@@ -1466,9 +1311,9 @@ public class Game : MonoBehaviour {
         cinemachineCamera.ForceCameraPosition(cameraWarpTarget, Quaternion.identity);
         cinemachineCamera.Follow = player.trans;
         
-        InitSpawnManager(currentMapInstance.waves);
+        InitSpawnManager(loadedMapData.waves);
         SpawnResources(currentMapInstance.resourceParent);
-        InitEarlyExitPortal(currentMapInstance.exitPortalsParent, currentMapInstance.waves.timeBeforeExitPortalsSpawn);
+        InitEarlyExitPortal(currentMapInstance.exitPortalsParent, spawnManager.timeUntilFinalWave + 15f);
 
         // Animation Sequence
         {
@@ -1519,12 +1364,12 @@ public class Game : MonoBehaviour {
         raidStateSwitchedThisFrame = prevState != curRaidState;
         
         if (raidStateSwitchedThisFrame && curRaidState == RaidState.FinalWave) {
-            DespawnEarlyExitPortal();
+            // DespawnEarlyExitPortal();
             PlayAudioClip(finalWaveStingerClip, player.position);
         }
 
         if (raidStateSwitchedThisFrame && curRaidState == RaidState.PostFinalWave) {
-            Tween.Delay(this, 0.25f, static (inst) => {
+            Tween.Delay(0.25f, static () => {
                 inst.AnimateLargeRaidText(ColorText("Map Cleared!", inst.styles.increaseDescColor));
                 inst.SpawnFinalExitPortal();
             });
@@ -1635,7 +1480,7 @@ public class Game : MonoBehaviour {
         
         player.spriteRenderer.sortingLayerName = "DeathWipe";
         
-        RemoveHitFlashEffect(player);
+        player.GetEffect(EffectsIndicies.HitFlash).Complete();
         player.spriteRenderer.GetPropertyBlock(player.matPropertyBlock);
         player.matPropertyBlock.SetFloat(damageFlashTintPropertyId, 1f);
         player.spriteRenderer.SetPropertyBlock(player.matPropertyBlock);
@@ -2434,13 +2279,8 @@ public class Game : MonoBehaviour {
         if (prevEquippedBackpackItem != curBackpackItem) {
             prevEquippedBackpackItem = curBackpackItem;
             if (curBackpackItem != null) {
-                int backpackSize = 0;
-                if (curBackpackItem.ItemRef == pouchItem) {
-                    backpackSize = 8;
-                }
-                else if (curBackpackItem.ItemRef == ruckSackItem) {
-                    backpackSize = 12;
-                }
+                Assert.IsTrue(curBackpackItem.ItemRef is BackpackItem);
+                int backpackSize = (curBackpackItem.ItemRef as BackpackItem).additionalStorageSlots;
                 ChangeInventorySize(playerInventory, NakedPlayerInventorySize + backpackSize);
             }
             else {
@@ -3263,8 +3103,6 @@ public class Game : MonoBehaviour {
             curStepDistance = 0f;
         }
         
-        return;
-        
         int targetCount = 1;
         if (equipedEye.projectileCount.TryGetValue(out var projectileCount)) {
             targetCount += projectileCount.extraProjectileCount;
@@ -3303,8 +3141,19 @@ public class Game : MonoBehaviour {
         ConsumableItem item = fromInventory.slots[slotIndex].item.ItemRef as ConsumableItem;
 
         if (!item) return;
-        if (item.healingAmount > 0f && player.health == FullPlayerHealth) return;
-        if (item.bandageAmount > 0f && !player.bleeding) return;
+        
+        bool itemHeals = item.healingAmount > 0;
+        bool itemStopsBleeds = item.bandageAmount > 0;
+
+        if (itemHeals && itemStopsBleeds) {
+            if (player.health == FullPlayerHealth && !player.bleeding) return;
+        }
+        else if (itemHeals) {
+            if (player.health == FullPlayerHealth) return;
+        }
+        else if (itemStopsBleeds) {
+            if (!player.bleeding) return;
+        }
         
         const float additionalConsumeDelay = 0.15f;
         const float performActionAtAnimationCompletion = 0.9f;
@@ -3330,7 +3179,7 @@ public class Game : MonoBehaviour {
             if (item.healingAmount > 0) {
                 inst.HealPlayer(item.healingAmount);
             }
-            else {
+            if (item.bandageAmount > 0) {
                 inst.player.bleeding = false;
             }
             inst.ReduceItemCountInInventory(inst.consumingInventory, inst.consumingSlotIndex);
@@ -3373,8 +3222,8 @@ public class Game : MonoBehaviour {
     private const float maxPlayerSpeed = 0.61f;
 
     private const int encumberingIncreasePerStrengthPoint = 50;
-    private const int defaultStartingEncumberingWeight = 130;
-    private const int maxEncumberedWeight = 180;
+    private const int defaultStartingEncumberingWeight = 160;
+    private const int maxEncumberedWeight = 210;
     private const float maxEncumberedSpeedReduction = 0.2f;
 
     private const int healthIncreasePerStatLevel = 10;
@@ -3460,6 +3309,14 @@ public class Game : MonoBehaviour {
         public StoppingPowerSoulcard.InstanceData? stoppingPower;
         public ProjectileCountSoulcard.InstanceData? projectileCount;
     }
+    
+    public class DemonEyeRaidStats {
+        public int consecutiveCriticalHits;
+        public float lastDoubleCritActivationTime;
+    }
+
+    // Need to reset this at the beginning of every raid
+    private DemonEyeRaidStats demonEyeRaidStats;
 
     private Dictionary<int, DemonEyeInstance> eyeInstanceFromItemId = new();
     private DemonEyeInstance equipedEye;
@@ -3632,12 +3489,11 @@ public class Game : MonoBehaviour {
                 EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), details);
                 
                 if (interactInputAction.WasPressedThisFrame()) {
-                    itemDrop.circleCollider.enabled = false;
-                    
                     InventoryAddResult result = TryAddItemToInventory(playerInventory, itemDrop.item, itemDrop.dropCount);
                     if (result.type == InventoryAddResult.ResultType.Success) {
                         Entity droppedEntity = entityLookup[itemDrop.gameObject];
                         PickupDroppedItem(droppedEntity); 
+                        itemDrop.circleCollider.enabled = false;
                     }
                     else if (result.type == InventoryAddResult.ResultType.FailureToAddAll) {
                         itemDrop.dropCount -= result.addedCount;
@@ -3666,7 +3522,7 @@ public class Game : MonoBehaviour {
     private void PickupDroppedItem(Entity droppedEntity) {
         Vector3 playerPickupTarget = new(0f, 0.07f, 0f);
         
-        droppedEntity.bounceEffect = null;
+        droppedEntity.GetEffect(EffectsIndicies.Bounce).Stop();
         droppedEntity.trans.SetParent(player.trans, true);
         
         TweenSettings horizontalSettings = new() {
@@ -3852,7 +3708,7 @@ public class Game : MonoBehaviour {
 
     private void ProjectileIgnoreEntity(Projectile proj, Entity entity) {
         bool alreadyContainsEntity = proj.ignoreEntities?.Contains(entity) ?? false;
-        if (entity.IsValid && !alreadyContainsEntity) {
+        if (EntityIsValid(entity) && !alreadyContainsEntity) {
             proj.ignoreEntities ??= ListPool<Entity>.Get();
             proj.ignoreEntities.Add(entity);
         }
@@ -3884,10 +3740,10 @@ public class Game : MonoBehaviour {
             
             bool isCriticalStrike = RollProbability(GetCriticalStrikeProbability(projectile, enemy));
             if (isCriticalStrike) {
-                consecutiveCriticalHits++;
+                demonEyeRaidStats.consecutiveCriticalHits++;
             }
             else {
-                consecutiveCriticalHits = 0;
+                demonEyeRaidStats.consecutiveCriticalHits = 0;
             }
 
             int damage = Mathf.RoundToInt(GetBaseDamage(projectile) * GetDamageMultiplier(projectile, isCriticalStrike));
@@ -3946,7 +3802,8 @@ public class Game : MonoBehaviour {
             else {
                 AddFlashHitEffect(entity);
                 AddShakeEffect(entity, 8f, 0.038f, 0.35f, shakeCurve);
-                AddScaleEffect(entity, 1.1f, 0.2f);
+                // AddScaleEffect(entity, 0.91f, 0.2f);
+                Tween.PunchScale(entity.trans, Vector3.one * 0.12f, 0.1f, 15f);
             }
         }
     }
@@ -3974,7 +3831,8 @@ public class Game : MonoBehaviour {
         }
         
         if (eyeInstance.farDamage.TryGetValue(out var farDamage)) {
-            int increasedDamageFromDist = Mathf.RoundToInt(farDamage.damageIncreasePerUnitTraveled * proj.distTraveled);
+            float convertedUnits = proj.distTraveled / gameplayConfig.distancePerUnit;
+            int increasedDamageFromDist = Mathf.FloorToInt(convertedUnits) * farDamage.damageIncreasePerUnitTraveled;
             damage += increasedDamageFromDist;
         }
 
@@ -3990,7 +3848,12 @@ public class Game : MonoBehaviour {
         float multiplier = isCriticalHit ? defaultCriticalStrikeMultiplier : 1f;
         
         if (eyeInstance.doubleCrit.TryGetValue(out var doubleCrit)) {
+            int consecutiveCriticalHits = demonEyeRaidStats.consecutiveCriticalHits;
             if (consecutiveCriticalHits > 0 && consecutiveCriticalHits % 2 == 0) {
+                demonEyeRaidStats.lastDoubleCritActivationTime = Time.time;
+            }
+
+            if (Time.time - demonEyeRaidStats.lastDoubleCritActivationTime <= doubleCrit.multiplierDuration) {
                 multiplier += doubleCrit.damageMultiplier;
             }
         }
@@ -4007,15 +3870,15 @@ public class Game : MonoBehaviour {
         DestroyEntity(expEntity, CurrentClipLength(expEntity.animator));
         
         Tween.Delay(damageDelay, () => {
-            List<Collider2D> cols = OverlapCircle(spawnPos, radius, mask);
+            List<Collider2D> cols = inst.OverlapCircle(spawnPos, radius, mask);
             foreach (Collider2D col in cols) {
                 if (mask == Masks.PlayerHurtMask) {
-                    DamagePlayer(damage);
+                    inst.DamagePlayer(damage);
                     continue;
                 }
-                Entity entity = entityLookup[col.gameObject];
+                Entity entity = inst.entityLookup[col.gameObject];
                 if (entity is Enemy) {
-                    DamageEnemy(entityLookup[col.gameObject], damage, false);
+                    inst.DamageEnemy(entityLookup[col.gameObject], damage, false);
                 }
             }
         });
@@ -4033,8 +3896,8 @@ public class Game : MonoBehaviour {
             _                  => 1f,
         };
         
-        float xOffset = Random.Range(-0.1f, 0.1f);
-        float yOffset = Random.Range(0.05f, 0.22f);
+        float xOffset = Random.Range(-0.08f, 0.08f);
+        float yOffset = Random.Range(0.05f, 0.1f);
         Vector2 endDamageNumPos;
         
         if (damageColor == DamageColor.Blood) {
@@ -4219,7 +4082,7 @@ public class Game : MonoBehaviour {
         int gemRocksToSpawn = Random.Range(6, 10);
         for (int i = 0; i < gemRocksToSpawn; i++) {
             Entity mineableRockEntity = SpawnResource<Entity>(gemRockPrefab, spawnPoints, 1);
-            mineableRockEntity.health = 300;
+            mineableRockEntity.health = 50;
         }
         
         int deadBodiesToSpawn = Random.Range(3, 5);
@@ -4228,7 +4091,7 @@ public class Game : MonoBehaviour {
         for (int i = 0; i < deadBodiesToSpawn; i++) {
             using var autoRelease = ListPool<Item>.Get(out List<Item> deadBodyItems);
             
-            int maxDeadBodyItemCount = Random.Range(2, 6);
+            int maxDeadBodyItemCount = Random.Range(2, 4);
             GetUniqueItemsFromDropPool(bodyDropPool, maxDeadBodyItemCount, deadBodyItems);
             
             InventorySlot[] deadBodySlots = new InventorySlot[lootInvetoryPtr.slots.Length];
@@ -5719,6 +5582,19 @@ public class Game : MonoBehaviour {
         return ColorText($"{multiplier:0.00}x", textColor);
     }
 
+    public static string DisplaySeconds(float time) {
+        if (time == 1f) {
+            return ColorText($"{time:0}<space=0.12em>s", inst.styles.timeDescColor);
+        }
+        
+        bool isWholeNumber = time % 1 == 0;
+        if (isWholeNumber) {
+            return ColorText($"{time:0}<space=0.12em>s", inst.styles.timeDescColor);
+        }
+        
+        return ColorText($"{time:0.0#}<space=0.12em>s", inst.styles.timeDescColor);
+    }
+
     private enum CardinalDir { Right, Left, Up, Down }
 
     private CardinalDir CardinalDirFromVector(Vector2 vector) {
@@ -5728,15 +5604,9 @@ public class Game : MonoBehaviour {
         } 
         return vector.y > 0 ? CardinalDir.Up : CardinalDir.Down;
     }
-    
-    private Vector2 SnapToCardinalDir(Vector2 vector) {
-        return CardinalDirFromVector(vector) switch {
-            CardinalDir.Right => Vector2.right,
-            CardinalDir.Left  => Vector2.left,
-            CardinalDir.Up    => Vector2.up,
-            CardinalDir.Down  => Vector2.down,
-            _                 => Vector2.zero,
-        };
-    }
 
+    private Tween Delay<T>(T entity, float delay, Action<T> callback) where T: Entity {
+        return Tween.Delay(entity, delay, onComplete: callback, onValidate: EntityIsValid);
+    }
+    
 }

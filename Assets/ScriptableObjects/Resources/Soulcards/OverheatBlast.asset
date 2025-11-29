@@ -18,15 +18,15 @@ MonoBehaviour:
   dropSprite: {fileID: 0}
   pickupRadius: 0.07
   type: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
-  associatedTrader: {fileID: 11400000, guid: b04e05a2cdc85404fbe24578a1868a5d, type: 2}
-  buyPrice: 200
-  sellPrice: 130
+  associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
+  buyPrice: 28
+  sellPrice: 13
   traderXp: 0
   spawnsOnAllMaps: 1
   spawnsOnMaps: []
-  chanceToSpawnOnBody: 0.081
-  chanceToSpawnOnTrader: 0.189
-  chanceToSpawnFromRock: 0.173
+  chanceToSpawnOnBody: 0.034
+  chanceToSpawnOnTrader: 0.103
+  chanceToSpawnFromRock: 0.15
   chanceToSpawnFromEnemy: 0
   spawnsFromEnemies: []
   modifiesStats: 0
@@ -38,5 +38,5 @@ MonoBehaviour:
   description: 
   relativeMechanicDesc: {fileID: 0}
   numShotsUntilOverheat: 15
-  damage: 50
+  damage: 25
   radius: 0.6

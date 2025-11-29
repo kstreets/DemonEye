@@ -37,6 +37,7 @@ public class Styles : ScriptableObject {
 
     public Color increaseDescColor;
     public Color decreaseDescColor;
+    public Color timeDescColor;
 
     public float tagTextPadding;
     

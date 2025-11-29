@@ -5,5 +5,6 @@ public class MapData : ScriptableObject {
 
     public string displayName;
     public string sceneReference;
+    public RaidSpawnPattern waves;
 
 }

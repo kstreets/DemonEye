@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MapData
   displayName: Lighthouse
   sceneReference: Lighthouse
+  waves: {fileID: 11400000, guid: 38dd496c01602c04c9ab160aba69b9ec, type: 2}

@@ -30,7 +30,7 @@ public class BleedSoulcard : Soulcard {
     }
 
     public override string GetStackDescription(int stackCount) {
-        return $"{DisplayNumber(GetBleedDamage(stackCount))} damage per bleed every {DisplayNumber(bleedInterval)}s";
+        return $"{DisplayNumber(GetBleedDamage(stackCount))} damage per bleed every {DisplaySeconds(bleedInterval)}";
     }
 
     private int GetBleedDamage(int stackCount) {

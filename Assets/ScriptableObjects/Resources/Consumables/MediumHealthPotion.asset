@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6df5ff14159687148a293eaf73fadad6, type: 3}
+  m_Name: MediumHealthPotion
+  m_EditorClassIdentifier: Assembly-CSharp::ConsumableItem
+  uuid: -1758126255
+  displayName: Small Health Potion
+  inventorySprite: {fileID: 1876801147, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  dropSprite: {fileID: -1182639373, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  pickupRadius: 0.07
+  type: {fileID: 11400000, guid: 229fbe8e9203e95499f73ff3b9ecfb68, type: 2}
+  associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
+  buyPrice: 10
+  sellPrice: 3
+  traderXp: 0
+  spawnsOnAllMaps: 1
+  spawnsOnMaps: []
+  chanceToSpawnOnBody: 0.25
+  chanceToSpawnOnTrader: 1
+  chanceToSpawnFromRock: 0
+  chanceToSpawnFromEnemy: 0
+  spawnsFromEnemies: []
+  modifiesStats: 0
+  agilityStatAdjustment: 0
+  strengthStatAdjustment: 0
+  itemGroupProps: {fileID: 0}
+  maxStackCount: 6
+  weight: 1
+  description: Drink and restore 50 health.
+  animationType: 0
+  healingAmount: 50
+  bandageAmount: 0

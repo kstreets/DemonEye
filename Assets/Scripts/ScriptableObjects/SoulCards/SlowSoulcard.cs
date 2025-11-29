@@ -23,7 +23,7 @@ public class SlowSoulcard : Soulcard {
     }
 
     public override string GetStackDescription(int stackCount) {
-        return $"{DisplayProb(GetSpeedReduction(stackCount))} enemy speed reduction for {DisplayNumber(slowDuration)}s";
+        return $"{DisplayProb(GetSpeedReduction(stackCount))} enemy speed reduction for {DisplaySeconds(slowDuration)}";
     }
 
     private float GetSpeedReduction(int stackCount) {

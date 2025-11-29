@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 078ad71daca1aa343b00dd0a32d59cd5, type: 3}
+  m_Name: Rucksack
+  m_EditorClassIdentifier: Assembly-CSharp::BackpackItem
+  uuid: 1458421521
+  displayName: Rucksack
+  inventorySprite: {fileID: -230456345, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  dropSprite: {fileID: 1558544633, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  pickupRadius: 0.07
+  type: {fileID: 11400000, guid: b4838a3d7e08dae4fbca579b80e09e71, type: 2}
+  associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
+  buyPrice: 28
+  sellPrice: 13
+  traderXp: 0
+  spawnsOnAllMaps: 0
+  spawnsOnMaps: []
+  chanceToSpawnOnBody: 0.07
+  chanceToSpawnOnTrader: 0.325
+  chanceToSpawnFromRock: 0
+  chanceToSpawnFromEnemy: 0
+  spawnsFromEnemies: []
+  modifiesStats: 0
+  agilityStatAdjustment: 0
+  strengthStatAdjustment: 0
+  itemGroupProps: {fileID: 0}
+  maxStackCount: 1
+  weight: 5
+  description: 
+  additionalStorageSlots: 12

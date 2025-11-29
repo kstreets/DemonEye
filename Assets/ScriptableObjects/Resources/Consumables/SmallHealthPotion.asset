@@ -19,8 +19,8 @@ MonoBehaviour:
   pickupRadius: 0.07
   type: {fileID: 11400000, guid: 229fbe8e9203e95499f73ff3b9ecfb68, type: 2}
   associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
-  buyPrice: 20
-  sellPrice: 10
+  buyPrice: 6
+  sellPrice: 2
   traderXp: 0
   spawnsOnAllMaps: 1
   spawnsOnMaps: []
