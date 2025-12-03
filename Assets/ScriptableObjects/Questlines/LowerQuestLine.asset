@@ -10,8 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 02ceda3b82dec8f448f301f2f983d264, type: 3}
-  m_Name: HatManQuestLine
+  m_Name: LowerQuestLine
   m_EditorClassIdentifier: Assembly-CSharp::QuestLine
-  questGiver: {fileID: 11400000, guid: bb3b083a03a70c147a32c54d43dd6569, type: 2}
   quests:
-  - {fileID: 11400000, guid: ce1c38044861cf742a613bf7b66b42c6, type: 2}
+  - {fileID: 11400000, guid: 62171f5b8d89f0d459406c3504853841, type: 2}

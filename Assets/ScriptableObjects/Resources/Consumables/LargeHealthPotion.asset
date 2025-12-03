@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: LargeHealthPotion
   m_EditorClassIdentifier: Assembly-CSharp::ConsumableItem
   uuid: -502983669
-  displayName: Small Health Potion
+  displayName: Large Health Potion
   inventorySprite: {fileID: -761439653, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   dropSprite: {fileID: -572536681, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   pickupRadius: 0.07

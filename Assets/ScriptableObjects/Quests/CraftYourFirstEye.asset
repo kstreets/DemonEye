@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5d4d20277d10e0489f4a0bf8ac49946, type: 3}
+  m_Name: CraftYourFirstEye
+  m_EditorClassIdentifier: Assembly-CSharp::Quest
+  title: Forging a Demon Eye
+  description: You won't get far without more powerful attacks. You need to learn
+    how to forge your first Demon Eye and equip it. Come see me and I'll give you
+    your first eye upgrades at no cost.
+  objectives:
+  - type: 0
+    display: 1
+    targetValue: 1
+    task: Visit the trader in the Trading tab and take the items offered
+    targetEnemy: {fileID: 0}
+    targetItem: {fileID: 0}
+    teleportMap: {fileID: 0}
+  - type: 0
+    display: 1
+    targetValue: 1
+    task: Move to the Eye Forge tab and place an eye in the center of the pentagram
+      and eye upgrades on the perimeter.
+    targetEnemy: {fileID: 0}
+    targetItem: {fileID: 0}
+    teleportMap: {fileID: 0}
+  traderReputationReward: 0

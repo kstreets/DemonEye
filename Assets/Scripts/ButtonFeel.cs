@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -20,6 +21,7 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
     public bool beingKeptPressed;
 
     private bool beingHovered;
+    private Action buttonListenerCallback;
 
     private void OnDisable() {
         OnPointerExit(null);
@@ -63,6 +65,12 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
         text.margin = styles.normalButtonTextMargin;
     }
 
+    public void AddListener(Action callback) {
+        buttonListenerCallback -= callback;
+        buttonListenerCallback += callback;
+        button.onClick.AddListener(OnButtonClicked);
+    }
+    
     public void KeepPressed() {
         beingKeptPressed = true;
         OnPointerDown(null);
@@ -91,6 +99,11 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
             return nonHighlightedPressedSprite;
         }
         return unpressedSprite;
+    }
+
+    private void OnButtonClicked() {
+        if (isDisabled) return;
+        buttonListenerCallback?.Invoke();
     }
 
 }

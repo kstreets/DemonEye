@@ -24,7 +24,6 @@ public class Game : MonoBehaviour {
 
     public static Game inst;
     
-    public TraderConfig traderConfig;
     public StartingItemsConfig startingItems;
     public Styles styles;
     public GameplayConfig gameplayConfig;
@@ -77,11 +76,6 @@ public class Game : MonoBehaviour {
     public StatUpgradePath strengthUpgradePath;
     [EndFoldout]
     
-    [Foldout("Gameplay Variables")]
-    [Range(0f, 1f)] public float defaultCriticalStrikeChange;
-    public float defaultCriticalStrikeMultiplier;
-    [EndFoldout]
-
     public Camera mainCamera;
     public CinemachineCamera cinemachineCamera;
     public PixelPerfectCamera pixelPerfectCamera;
@@ -90,8 +84,6 @@ public class Game : MonoBehaviour {
     public GameObject gemRockPrefab;
     public GameObject deadBodyPrefab;
 
-    public BaseCharacterStats baseStats;
-    public CoreAttack defaultAttack;
     public Item demonEyeItem;
     
     [Foldout("Effects")]
@@ -116,7 +108,6 @@ public class Game : MonoBehaviour {
     public MechanicDescPopup mechanicDescPopup;
     public UIElementPopup uiElementPopup;
     public RectTransform hideoutParent;
-    public RectTransform hideoutHeaderParent;
     public RectTransform hotBarParent;
     public ItemUI dragAndDropItemUI;
     public Image menuBackgroundImage;
@@ -172,8 +163,6 @@ public class Game : MonoBehaviour {
     [Foldout("UI/StashPanel")]
     public RectTransform stashPanel;
     public RectTransform stashInventoryParent;
-    public TextMeshProUGUI stashValueText;
-    public Button stashUpgradeButton;
     [EndFoldout]
     
     [Foldout("UI/EyeForgePanel")]
@@ -261,7 +250,6 @@ public class Game : MonoBehaviour {
     
     [Foldout("UpgradePaths")]
     public UpgradePath crucibleUpgradePath; 
-    public UpgradePath stashUpgradePath; 
     [EndFoldout]
     
     [Foldout("TraderLevels")]
@@ -317,7 +305,6 @@ public class Game : MonoBehaviour {
     private EntityPool<Projectile> gooProjectilePool;
     private EntityPool<Entity> poisonDebuffPool;
     private EntityPool<Entity> explosionPool;
-    private EntityPool<Entity> boomonExplosionPool;
     private EntityPool<Entity> projectileImpactPool;
     private EntityPool<Entity> teleportInPool;
     private EntityPool<Entity> teleportOutPool;
@@ -338,6 +325,9 @@ public class Game : MonoBehaviour {
     private StateMachine gameStateMachine = new();
 
     public static Action<Enemy> onEnemyDeath;
+    public static Action<MapData> onTeleportToMap;
+    public static Action<DemonEyeInstance> onEyeForged;
+    public static Action<InventorySlot[]> onSoldItemsToTrader;
     
     private void Start() {
         inst = this;
@@ -367,7 +357,6 @@ public class Game : MonoBehaviour {
         gooProjectilePool = CreateEntityPool<Projectile>(gooProjectilePrefab, 20, OnSpawnProjectile);
         poisonDebuffPool = CreateEntityPool<Entity>(poisonDebuffPrefab, 10, null);
         explosionPool = CreateEntityPool<Entity>(explosionPrefab, 5, null);
-        boomonExplosionPool = CreateEntityPool<Entity>(boomonExplosionPrefab, 5, null);
         projectileImpactPool = CreateEntityPool<Entity>(projectileImpactPrefab, 20, null);
         teleportInPool = CreateEntityPool<Entity>(teleportInPrefab, 20, null);
         teleportOutPool = CreateEntityPool<Entity>(teleportOutPrefab, 20, null);
@@ -378,7 +367,7 @@ public class Game : MonoBehaviour {
         forgeDustExplosionPool = CreateEntityPool<Entity>(forgeDustExplosionPrefab, 10, null);
         blastPool = CreateEntityPool<Entity>(blastPrefab, 5, null);
 
-        equipedEye = new() { coreAttack = defaultAttack };
+        equipedEye = emptyDemonEye;
         
         moveInputAction = InputSystem.actions.FindAction("Move");
         lookInputAction = InputSystem.actions.FindAction("Look");
@@ -461,7 +450,6 @@ public class Game : MonoBehaviour {
         gameStateMachine.Tick();
         DemonEyeTween.Update();
         UpdateTrader();
-        UpdateQuests();
         foreach (Inventory inventory in allInventories) {
             RefreshInventoryDisplay(inventory);
         }
@@ -516,6 +504,7 @@ public class Game : MonoBehaviour {
         SaveInventory(playerInventory);
         SaveInventory(stashInventory);
         SaveInventory(crucibleInventory);
+        SaveQuestStates();
     }
 
     private void OnHideoutStateUpdate() {
@@ -1314,6 +1303,8 @@ public class Game : MonoBehaviour {
         InitSpawnManager(loadedMapData.waves);
         SpawnResources(currentMapInstance.resourceParent);
         InitEarlyExitPortal(currentMapInstance.exitPortalsParent, spawnManager.timeUntilFinalWave + 15f);
+        
+        onTeleportToMap?.Invoke(loadedMapData);
 
         // Animation Sequence
         {
@@ -1673,7 +1664,7 @@ public class Game : MonoBehaviour {
     private int NakedPlayerInventorySize => playerPocketSize + playerQuickUseSize + playerEquipmentSize;
 
     private const int traderInventoryColCount = 6;
-    private const int traderInventoryRowCount = 4;
+    private const int traderInventoryRowCount = 5;
 
     private Timer discoverLootTimer;
     private int discoverLootIndex;
@@ -1714,7 +1705,7 @@ public class Game : MonoBehaviour {
         traderInventory = CreateInventory(traderInventoryParent, traderInventorySize);
         LoadInventory(traderInventory);
         
-        const int transactionInventorySize = 25;
+        const int transactionInventorySize = 20;
         SpawnUiSlots(traderTransactionInventoryParent, transactionInventorySize);
         transactionInventory = CreateInventory(traderTransactionInventoryParent, transactionInventorySize);
 
@@ -2268,12 +2259,7 @@ public class Game : MonoBehaviour {
 
         if (prevEquippedEyeItem != curEyeItem) {
             prevEquippedEyeItem = curEyeItem;
-            if (curEyeItem == null) {
-                equipedEye = new() { coreAttack = defaultAttack };
-            }
-            else {
-                equipedEye = eyeInstanceFromItemId[curEyeItem.itemOrInstanceUuid];
-            }
+            equipedEye = curEyeItem == null ? emptyDemonEye : eyeInstanceFromItemId[curEyeItem.itemOrInstanceUuid];
         }
         
         if (prevEquippedBackpackItem != curBackpackItem) {
@@ -3117,7 +3103,7 @@ public class Game : MonoBehaviour {
             ShootProjectile(attackTarget);
         }
 
-        float consecutiveShotDelay = defaultAttack.attackDelay * 1.5f;
+        float consecutiveShotDelay = gameplayConfig.attackDelay * 1.5f;
         if (Time.time - lastShotTime <= consecutiveShotDelay) {
             consecutiveShotCount++;
         }
@@ -3292,8 +3278,6 @@ public class Game : MonoBehaviour {
 
     public class DemonEyeInstance {
         public List<EquipedModInstance> modInstances = new();
-        public CoreAttack coreAttack;
-        
         public FirerateSoulcard.InstanceData? firerate;
         public TrishotSoulcard.InstanceData? trishot;
         public BleedCritSoulcard.InstanceData? bleedCrit;
@@ -3319,10 +3303,11 @@ public class Game : MonoBehaviour {
     private DemonEyeRaidStats demonEyeRaidStats;
 
     private Dictionary<int, DemonEyeInstance> eyeInstanceFromItemId = new();
+    private readonly DemonEyeInstance emptyDemonEye = new();
     private DemonEyeInstance equipedEye;
     private Limiter attackLimiter;
 
-    private void BuildAndRegisterEye(InventoryItem item) {
+    private DemonEyeInstance BuildAndRegisterEye(InventoryItem item) {
         item.itemOrInstanceUuid = GenerateNewItemUuid();
         item._itemRef = demonEyeItem;
         
@@ -3345,7 +3330,6 @@ public class Game : MonoBehaviour {
         }
         
         DemonEyeInstance newDemonEye = new() {
-            coreAttack = defaultAttack,
             modInstances = eyeModifiers,
         };
         
@@ -3354,6 +3338,7 @@ public class Game : MonoBehaviour {
         }
         
         eyeInstanceFromItemId.Add(item.itemOrInstanceUuid, newDemonEye);
+        return newDemonEye;
     }
 
     private List<(Soulcard, int)> SortSoulcardsFromDictionary(Dictionary<Soulcard, int> soulcardsAndStackCount) {
@@ -3400,17 +3385,17 @@ public class Game : MonoBehaviour {
     }
 
     private bool CanShoot() {
-        float attackDelay = equipedEye.coreAttack.attackDelay;
+        float attackDelay = gameplayConfig.attackDelay;
         if (equipedEye.firerate.TryGetValue(out var firerate)) {
             attackDelay -= attackDelay * firerate.rateIncrasePercentage;
-            attackDelay = Mathf.Clamp(attackDelay, equipedEye.coreAttack.cappedMinAttackDelay, equipedEye.coreAttack.attackDelay);
+            attackDelay = Mathf.Clamp(attackDelay, gameplayConfig.cappedMinAttackDelay, gameplayConfig.attackDelay);
         }
         return attackLimiter.TimeHasPassed(attackDelay);
     }
 
     private void ShootProjectile(Vector2 targetPos) {
         const float maxInaccuracyAngle = 18f;
-        float maxAccuracyAngle = maxInaccuracyAngle * (1f - equipedEye.coreAttack.accuracy);
+        float maxAccuracyAngle = maxInaccuracyAngle * (1f - gameplayConfig.accuracy);
         float accuracyAngle = Random.Range(-maxAccuracyAngle, maxAccuracyAngle);
 
         float projectileSpeed = GetProjectileSpeed();
@@ -3459,7 +3444,7 @@ public class Game : MonoBehaviour {
     }
 
     private float GetProjectileSpeed() {
-        float projectileSpeed = equipedEye.coreAttack.projectileSpeed;
+        float projectileSpeed = gameplayConfig.projectileSpeed;
         if (equipedEye.stoppingPower.TryGetValue(out var stoppingPower)) {
             projectileSpeed *= 1f - stoppingPower.percentSpeedReduction;
         }
@@ -3770,7 +3755,7 @@ public class Game : MonoBehaviour {
             }
         }
         else {
-            entity.health -= eyeInstance.coreAttack.damage;
+            entity.health -= gameplayConfig.damage;
 
             PlayAudioClip(stoneHitClip, entity.position);
                 
@@ -3810,7 +3795,7 @@ public class Game : MonoBehaviour {
 
     private float GetCriticalStrikeProbability(Projectile proj, Enemy enemy) {
         DemonEyeInstance eyeInstance = proj.eyeInstanceSpawnedFrom;
-        float criticalStrikeProb = defaultCriticalStrikeChange;
+        float criticalStrikeProb = gameplayConfig.defaultCritChance;
 
         if (eyeInstance.bleedCrit.HasValue && enemy.bleed.HasValue) {
             criticalStrikeProb += eyeInstance.bleedCrit.Value.probability;
@@ -3821,7 +3806,7 @@ public class Game : MonoBehaviour {
 
     private int GetBaseDamage(Projectile proj) {
         DemonEyeInstance eyeInstance = proj.eyeInstanceSpawnedFrom;
-        int damage = eyeInstance.coreAttack.damage;
+        int damage = gameplayConfig.damage;
 
         int damageRange = Mathf.RoundToInt(damage * 0.1f);
         damage += Random.Range(-damageRange, damageRange);
@@ -3845,7 +3830,7 @@ public class Game : MonoBehaviour {
     
     private float GetDamageMultiplier(Projectile proj, bool isCriticalHit) {
         DemonEyeInstance eyeInstance = proj.eyeInstanceSpawnedFrom;
-        float multiplier = isCriticalHit ? defaultCriticalStrikeMultiplier : 1f;
+        float multiplier = isCriticalHit ? gameplayConfig.defaultCritMultiplier : 1f;
         
         if (eyeInstance.doubleCrit.TryGetValue(out var doubleCrit)) {
             int consecutiveCriticalHits = demonEyeRaidStats.consecutiveCriticalHits;
@@ -4339,7 +4324,6 @@ public class Game : MonoBehaviour {
 
     private void ShowMapSelectionUI() {
         ShowHideoutUI();
-        hideoutHeaderParent.gameObject.SetActive(false);
         hideoutTabsParent.gameObject.SetActive(false);
         playerInfoParent.gameObject.SetActive(false);
         ToggleHideoutPanels(playerPanel, mapSelectionPanel);
@@ -4360,7 +4344,6 @@ public class Game : MonoBehaviour {
         weightBarParent.gameObject.SetActive(false);
         playerInfoParent.gameObject.SetActive(true);
         menuBackgroundImage.gameObject.SetActive(true);
-        hideoutHeaderParent.gameObject.SetActive(true);
         hideoutTabsParent.gameObject.SetActive(true);
     }
 
@@ -4371,7 +4354,6 @@ public class Game : MonoBehaviour {
         menuBackButton.gameObject.SetActive(false);
         playerInfoParent.gameObject.SetActive(false);
         menuBackgroundImage.gameObject.SetActive(false);
-        hideoutHeaderParent.gameObject.SetActive(false);
         hideoutTabsParent.gameObject.SetActive(false);
     }
 
@@ -4440,15 +4422,15 @@ public class Game : MonoBehaviour {
     }
     
     private void InitButtonCallbacks() {
-        mainMenuPlayButton.button.onClick.AddListener(() => {
+        mainMenuPlayButton.AddListener(() => {
             gameStateMachine.SetStateIfNotCurrent(mapSelectionState);
         });
         
-        mainMenuHideoutButton.button.onClick.AddListener(() => {
+        mainMenuHideoutButton.AddListener(() => {
             gameStateMachine.SetStateIfNotCurrent(hideoutState);
         });
         
-        menuBackButton.button.onClick.AddListener(() => {
+        menuBackButton.AddListener(() => {
             OnEscapePressed(new());
         });
         
@@ -4472,6 +4454,7 @@ public class Game : MonoBehaviour {
         questsTabButton.onClick.AddListener(() => {
             ToggleHideoutTab(questsTabButton, questsTabText);
             ToggleHideoutPanels(questsPanel);
+            RefreshQuestDisplays();
         });
         
         levelupTabButton.onClick.AddListener(() => {
@@ -4480,13 +4463,13 @@ public class Game : MonoBehaviour {
             ToggleHideoutPanels(playerPanel, levelupPanel);
         });
 
-        agilityUpgradeButton.button.onClick.AddListener(() => OnLevelupButtonPressed(agilityUpgradePath, player.agilityLevel));
-        corruptionUpgradeButton.button.onClick.AddListener(() => OnLevelupButtonPressed(luckUpgradePath, player.luckLevel));
-        healthUpgradeButton.button.onClick.AddListener(() => OnLevelupButtonPressed(healthUpgradePath, player.healthLevel));
-        strengthUpgradeButton.button.onClick.AddListener(() => OnLevelupButtonPressed(strengthUpgradePath, player.strengthLevel));
+        agilityUpgradeButton.AddListener(() => OnLevelupButtonPressed(agilityUpgradePath, player.agilityLevel));
+        corruptionUpgradeButton.AddListener(() => OnLevelupButtonPressed(luckUpgradePath, player.luckLevel));
+        healthUpgradeButton.AddListener(() => OnLevelupButtonPressed(healthUpgradePath, player.healthLevel));
+        strengthUpgradeButton.AddListener(() => OnLevelupButtonPressed(strengthUpgradePath, player.strengthLevel));
         
-        forgeEyeButton.button.onClick.AddListener(() => {
-            if (forgeEyeButton.isDisabled || PlayingForgeAnimation) return;
+        forgeEyeButton.AddListener(() => {
+            if (PlayingForgeAnimation) return;
             
             int eyeSlotIndex = 0;
             InventoryItem eyeItem = null;
@@ -4533,15 +4516,14 @@ public class Game : MonoBehaviour {
                     slot.item = null;
                 }
 
-                BuildAndRegisterEye(newDemonEyeItem);
-                
+                DemonEyeInstance newDemonEye = BuildAndRegisterEye(newDemonEyeItem);
                 crucibleInventory.slots[eyeSlotIndex].item = newDemonEyeItem;
+                
+                onEyeForged?.Invoke(newDemonEye);
             });
         });
         
-        upgradeForgeButton.button.onClick.AddListener(() => {
-            if (upgradeForgeButton.isDisabled) return;
-            
+        upgradeForgeButton.AddListener(() => {
             toggledOffHoverableUIElement = upgradeForgeButton.rectTransform;
             
             UpgradePath.UpgradeRequirements requirements = crucibleUpgradePath.pathUpgrades[player.crucibleLevel];
@@ -4591,6 +4573,9 @@ public class Game : MonoBehaviour {
                 ClearItemsAsTraderOwned(stashInventory);
             }
             else if (transactionState == TransactionState.Selling) {
+                // Before selling items we pass the transaction inventory to callbacks that want to know what we sold
+                onSoldItemsToTrader?.Invoke(transactionInventory.slots);
+                
                 player.coinCurrency += price;
                 
                 int xpGain = GetInventoryValue(transactionInventory, InventoryValueType.Xp);
@@ -5021,7 +5006,7 @@ public class Game : MonoBehaviour {
     // Quests 
     // ************************
 
-    private const int activeQuestCount = 3;
+    private const int activeQuestCount = 2;
     private Quest[] activeQuests = new Quest[activeQuestCount];
     private QuestUI[] questUIs = new QuestUI[activeQuestCount];
     
@@ -5049,16 +5034,22 @@ public class Game : MonoBehaviour {
             
             Quest.SaveState saveState = questlineState.questSaveStates[i];
             if (saveState != null) {
-                quest.LoadSaveState(saveState);     
+                quest.LoadSaveState(saveState); 
             }
-            quest.Init(questLines[i].questGiver);
+            quest.Init();
 
             QuestUI ui = Instantiate(questPrefab, questsParent).GetComponent<QuestUI>();
             questUIs[i] = ui;
             
             int callbackIndex = i;
-            ui.completeButton.onClick.AddListener(() => OnQuestCompleteClicked(callbackIndex));
-            ui.Set(quest);
+            ui.completeButton.AddListener(() => OnQuestCompleteClicked(callbackIndex));
+            ui.Display(quest);
+        }
+    }
+
+    private void RefreshQuestDisplays() {
+        for (int i = 0; i < activeQuests.Length; i++) {
+            questUIs[i].Display(activeQuests[i]);
         }
     }
 
@@ -5066,13 +5057,6 @@ public class Game : MonoBehaviour {
         
     }
 
-    private void UpdateQuests() {
-        for (int i = 0; i < activeQuests.Length; i++) {
-            activeQuests[i].UpdateQuest(this);
-            questUIs[i].Set(activeQuests[i]);
-        }
-    }
-    
     // ************************
     // Leveling Up
     // ************************
