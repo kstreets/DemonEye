@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.Pool;
+using VInspector;
 using static Game;
 
 [CreateAssetMenu(fileName = "Quest", menuName = "Scriptable Objects/Quest")]
@@ -9,24 +11,38 @@ public class Quest : ScriptableObject {
 
     [Serializable]
     public class Objective {
-        public enum Type { Kill, Fetch, Teleport, Sell, ForgeEye }
+        public enum Type { None, Kill, Fetch, Teleport, Sell, ForgeEye }
         
         public Type type;
+        
+        [HideIf(nameof(type), Type.None)]
         public QuestObjectiveUI.Display display;
-        public int targetValue = 1;
+        
         [TextArea] public string task;
+        public int targetValue = 1;
 
-        [Header("Kill")]
+        [ShowIf(nameof(type), Type.Kill)]
         public EnemyData targetEnemy;
         
-        [Header("Fetch / Sell")]
+        [ShowIf(nameof(TypeRequiresItem))]
         public Item targetItem;
         
-        [Header("Teleport")]
+        [ShowIf(nameof(type), Type.Teleport)]
         public MapData teleportMap;
+        
+        [EndIf]
 
         [NonSerialized] public int progressValue;
         public bool completed => progressValue >= targetValue;
+        
+        private bool TypeRequiresItem => type == Type.Fetch || type == Type.Sell;
+
+        [OnValueChanged(nameof(type))]
+        private void OnTypeChanged() {
+            if (type == Type.Teleport) {
+                targetValue = 1;
+            }
+        }
     }
     
     [Serializable]
@@ -39,16 +55,31 @@ public class Quest : ScriptableObject {
     [TextArea] public string description;
     
     [Header("Objectives")]
-    public List<Objective> objectives;
+    public Objective firstObjective;
+    public Objective secondObjective;
+    public Objective thirdObjective;
 
     [Header("Rewards")]
     public int traderReputationReward;
+
+    [NonSerialized] public List<Objective> objectives;
 
     public void Init() {
         onEnemyDeath += OnEnemyDeath;
         onTeleportToMap += OnTeleportToMap;
         onEyeForged += OnEyeForged;
         onSoldItemsToTrader += OnSoldItemsToTrader;
+        
+        objectives = ListPool<Objective>.Get();
+        if (firstObjective.type != Objective.Type.None) {
+            objectives.Add(firstObjective);
+        }
+        if (secondObjective.type != Objective.Type.None) {
+            objectives.Add(secondObjective);
+        }
+        if (thirdObjective.type != Objective.Type.None) {
+            objectives.Add(thirdObjective);
+        }
     }
 
     public void Deinit() {
@@ -56,6 +87,7 @@ public class Quest : ScriptableObject {
         onTeleportToMap -= OnTeleportToMap;
         onEyeForged -= OnEyeForged;
         onSoldItemsToTrader -= OnSoldItemsToTrader;
+        ListPool<Objective>.Release(objectives);
     }
 
     public void LoadSaveState(SaveState saveState) {

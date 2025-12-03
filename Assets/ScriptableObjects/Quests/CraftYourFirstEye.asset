@@ -16,19 +16,27 @@ MonoBehaviour:
   description: You won't get far without more powerful attacks. You need to learn
     how to forge your first Demon Eye and equip it. Come see me and I'll give you
     your first eye upgrades at no cost.
-  objectives:
-  - type: 0
-    display: 1
+  firstObjective:
+    type: 1
+    display: 0
+    task: Recieve trader items
     targetValue: 1
-    task: Visit the trader in the Trading tab and take the items offered
     targetEnemy: {fileID: 0}
     targetItem: {fileID: 0}
     teleportMap: {fileID: 0}
-  - type: 0
-    display: 1
+  secondObjective:
+    type: 5
+    display: 0
+    task: Forge an eye from the items recieved
     targetValue: 1
-    task: Move to the Eye Forge tab and place an eye in the center of the pentagram
-      and eye upgrades on the perimeter.
+    targetEnemy: {fileID: 0}
+    targetItem: {fileID: 0}
+    teleportMap: {fileID: 0}
+  thirdObjective:
+    type: 0
+    display: 0
+    task: 
+    targetValue: 1
     targetEnemy: {fileID: 0}
     targetItem: {fileID: 0}
     teleportMap: {fileID: 0}

@@ -5054,7 +5054,7 @@ public class Game : MonoBehaviour {
     }
 
     private void OnQuestCompleteClicked(int activeQuestIndex) {
-        
+        activeQuests[activeQuestIndex].Deinit();
     }
 
     // ************************
