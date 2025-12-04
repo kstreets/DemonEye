@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
+using Febucci.TextAnimatorForUnity;
 using PrimeTween;
 using TMPro;
 using Unity.Cinemachine;
@@ -113,7 +114,10 @@ public class Game : MonoBehaviour {
     public Image menuBackgroundImage;
     public Image deathBackgroundImage;
     public ButtonFeel menuBackButton;
-    public TextMeshProUGUI gameEndText;
+    public TextMeshProUGUI smallRaidText;
+    public TypewriterComponent smallRaidTextTypewriter;
+    public TextMeshProUGUI largeRaidText;
+    public TypewriterComponent largeRaidTextTypewriter;
     [EndFoldout]
     
     [Foldout("UI/Main Menu")]
@@ -152,10 +156,8 @@ public class Game : MonoBehaviour {
     public TextMeshProUGUI playerPanelHealthText;
     public TextMeshProUGUI playerPanelWeightText;
     public TextMeshProUGUI agilityStatValueText;
-    public TextMeshProUGUI armorStatValueText;
     public TextMeshProUGUI bleedResStatValueText;
     public TextMeshProUGUI healthStatValueText;
-    public TextMeshProUGUI luckStatValueText;
     public TextMeshProUGUI strengthStatValueText;
     public Image playerPreviewImage;
     [EndFoldout]
@@ -207,7 +209,7 @@ public class Game : MonoBehaviour {
     public ButtonFeel strengthUpgradeButton;
     public TextMeshProUGUI agilityUpgradeInfoText;
     public TextMeshProUGUI healthUpgradeInfoText;
-    public TextMeshProUGUI luckUpgradeInfoText;
+    public TextMeshProUGUI bleedResInfoText;
     public TextMeshProUGUI strengthUpgradeInfoText;
     [EndFoldout]
 
@@ -295,8 +297,6 @@ public class Game : MonoBehaviour {
     
     public static Dictionary<int, Item> itemLookup = new();
     public static Dictionary<int, Soulcard> eyeModifierLookup = new();
-
-    private Timer exitPortalTimer;
 
     private EntityPool<Entity> itemDropPool;
     private EntityPool<Entity> bloodDropPool;
@@ -454,6 +454,15 @@ public class Game : MonoBehaviour {
             RefreshInventoryDisplay(inventory);
         }
         UpdateGraySlots();
+        
+        #if UNITY_EDITOR
+        if (Mouse.current != null && Mouse.current.middleButton.isPressed) {
+            Time.timeScale = 8f;
+        }
+        else {
+            Time.timeScale = 1f;
+        }
+        #endif
     }
 
     private void FixedUpdate() {
@@ -479,7 +488,6 @@ public class Game : MonoBehaviour {
     }
 
     private void UpdateTimers() {
-        exitPortalTimer.Tick();
         discoverLootTimer.Tick();
     }
 
@@ -1273,7 +1281,7 @@ public class Game : MonoBehaviour {
     // Raid 
     // *******************************
     
-    private enum RaidState { None, InitialWaves, InitialWavesWithExit, FinalWave, PostFinalWave }
+    private enum RaidState { None, InitialWaves, FinalWave, FinalWaveWithExit, PostFinalWave }
     private RaidState curRaidState;
     private bool raidStateSwitchedThisFrame;
     private Sequence raidEnterSequence;
@@ -1343,10 +1351,10 @@ public class Game : MonoBehaviour {
         RaidState prevState = curRaidState;
         
         if (spawnManager.timeUntilFinalWave >= 0f) {
-            curRaidState = activeExitPortal ? RaidState.InitialWavesWithExit : RaidState.InitialWaves;
+            curRaidState = RaidState.InitialWaves;
         }
         else if (!spawnManager.isFinishedSpawning || enemies.Count > 0) {
-            curRaidState = RaidState.FinalWave;
+            curRaidState = activeExitPortal ? RaidState.FinalWaveWithExit : RaidState.FinalWave;
         }
         else {
             curRaidState = RaidState.PostFinalWave;
@@ -1361,7 +1369,7 @@ public class Game : MonoBehaviour {
 
         if (raidStateSwitchedThisFrame && curRaidState == RaidState.PostFinalWave) {
             Tween.Delay(0.25f, static () => {
-                inst.AnimateLargeRaidText(ColorText("Map Cleared!", inst.styles.increaseDescColor));
+                inst.AnimateLargeRaidText(ColorText("Map Cleared!", inst.styles.increaseDescColor), 1.8f);
                 inst.SpawnFinalExitPortal();
             });
         }
@@ -1403,16 +1411,17 @@ public class Game : MonoBehaviour {
                 exitPortalActiveNotifier.SetActive(false);
                 finalExitPortalNotifier.SetActive(false);
             }
-            else if (curRaidState == RaidState.InitialWavesWithExit) {
-                exitPortalCountdownParent.SetActive(false);
-                exitPortalActiveNotifier.SetActive(true);
-                Tween.Scale(exitPortalActiveNotifier.transform, 0f, 1f, 0.5f, Ease.OutBack);
-            }
             else if (curRaidState == RaidState.FinalWave) {
                 finalWaveCountdownParent.SetActive(false); 
                 exitPortalActiveNotifier.SetActive(false);
                 finalWaveActiveNotifier.SetActive(true);
                 Tween.Scale(finalWaveActiveNotifier.transform, 0f, 1f, 0.5f, Ease.OutBack);
+            }
+            else if (curRaidState == RaidState.FinalWaveWithExit) {
+                exitPortalCountdownParent.SetActive(false);
+                exitPortalActiveNotifier.SetActive(true);
+                Tween.Scale(exitPortalActiveNotifier.transform, 0f, 1f, 0.5f, Ease.OutBack);
+                AnimateSmallRaidText(ColorText("Exit Portal is Open", styles.increaseDescColor));
             }
             else if (curRaidState == RaidState.PostFinalWave) {
                 finalWaveActiveNotifier.SetActive(false);
@@ -1422,35 +1431,42 @@ public class Game : MonoBehaviour {
         }
         
         if (exitPortalCountdownText.gameObject.activeInHierarchy) {
-            exitPortalCountdownText.text = GetCountdownText(exitPortalTimer.CurTime);
+            exitPortalCountdownText.text = GetCountdownText(exitPortalTween.duration - exitPortalTween.elapsedTime);
         }
         if (finalWaveCountdownText.gameObject.activeInHierarchy) {
             finalWaveCountdownText.text = GetCountdownText(spawnManager.timeUntilFinalWave);
         }
     }
 
-    private void AnimateLargeRaidText(string text) {
-        gameEndText.gameObject.SetActive(true);
-        gameEndText.text = text;
+    private void AnimateLargeRaidText(string text, float typewriterSpeed) {
+        largeRaidText.characterSpacing = 0;
+        largeRaidText.gameObject.SetActive(true);
+        largeRaidTextTypewriter.ShowText($"{{incr}}{{fade}}{{wave}}{{#fade}}{{#wave}}{text}");
+        largeRaidTextTypewriter.SetTypewriterSpeed(typewriterSpeed);
         
-        Sequence sequence = Sequence.Create(2, Sequence.SequenceCycleMode.Rewind);
-        sequence.Group(Tween.Custom(-gameEndText.text.Length / 2f, 0f, 0.9f, ease: Ease.OutBack, onValueChange: (val) => { 
-            gameEndText.characterSpacing = val;
-        }));
-
-        float startYPos = gameEndText.rectTransform.anchoredPosition.y - 170f;
-        sequence.Group(Tween.UIAnchoredPositionY(gameEndText.rectTransform, startYPos, gameEndText.rectTransform.anchoredPosition.y, 1.3f, Ease.OutBack));
+        largeRaidTextTypewriter.onTextShowed.AddListener(OnTypewriterFinish);
         
-        sequence.Group(Tween.TextFontSize(gameEndText, 0f, gameEndText.fontSize, 1f, Ease.OutBack));
-        sequence.ChainDelay(0.025f);
+        void OnTypewriterFinish() {
+            Sequence sequence = Sequence.Create();
+            sequence.Chain(Tween.Custom(0, 30, 0.5f, startDelay: 0.3f, ease: Ease.OutBack, onValueChange: static (val) => {
+                inst.largeRaidText.characterSpacing = val;
+            }));
+            sequence.ChainDelay(0.35f);
+            sequence.ChainCallback(static () => inst.largeRaidTextTypewriter.StartDisappearingText());
+        }
+    }
 
-        float initialFontSize = gameEndText.fontSize;
-        Vector3 initialAnchorPos = gameEndText.rectTransform.anchoredPosition;
-        sequence.OnComplete(() => {
-            gameEndText.rectTransform.anchoredPosition = initialAnchorPos;
-            gameEndText.fontSize = initialFontSize;
-            gameEndText.gameObject.SetActive(false);
-        });
+    private void AnimateSmallRaidText(string text) {
+        smallRaidText.gameObject.SetActive(true);
+        smallRaidTextTypewriter.ShowText($"{{incr}}{{fade}}{{smallwave}}{{#fade}}{{#smallwave}}{text}");
+        
+        smallRaidTextTypewriter.onTextShowed.AddListener(OnTypewriterFinish);
+        
+        void OnTypewriterFinish() {
+            Sequence sequence = Sequence.Create();
+            sequence.ChainDelay(0.8f);
+            sequence.ChainCallback(static () => inst.smallRaidTextTypewriter.StartDisappearingText());
+        }
     }
     
     // *******************************
@@ -1500,7 +1516,7 @@ public class Game : MonoBehaviour {
             pixelPerfectCamera.assetsPPU = (int)val;
         }, Ease.InOutQuad));
 
-        sequence.Group(Tween.Delay(0.25f, () => AnimateLargeRaidText(ColorText("YOU DIED", styles.decreaseDescColor))));
+        sequence.Group(Tween.Delay(0.25f, () => AnimateLargeRaidText(ColorText("YOU DIED", styles.decreaseDescColor), 1f)));
         
         sequence.ChainDelay(1f);
 
@@ -1580,7 +1596,7 @@ public class Game : MonoBehaviour {
         deathBackgroundImage.fillAmount = 1f;
         sequence.Chain(Tween.Alpha(deathBackgroundImage, 0f, 1f, 0.75f, Ease.InOutQuad));
         
-        sequence.Group(Tween.Delay(0.35f, () => AnimateLargeRaidText(ColorText("EARLY EXIT TAKEN", styles.increaseDescColor))));
+        sequence.Group(Tween.Delay(0.35f, () => AnimateLargeRaidText(ColorText("EARLY EXIT TAKEN", styles.increaseDescColor), 3f)));
         
         menuBackgroundImage.gameObject.SetActive(true);
         menuBackgroundImage.color = new(1f, 1f, 1f, 0f);
@@ -1705,7 +1721,7 @@ public class Game : MonoBehaviour {
         traderInventory = CreateInventory(traderInventoryParent, traderInventorySize);
         LoadInventory(traderInventory);
         
-        const int transactionInventorySize = 20;
+        const int transactionInventorySize = 25;
         SpawnUiSlots(traderTransactionInventoryParent, transactionInventorySize);
         transactionInventory = CreateInventory(traderTransactionInventoryParent, transactionInventorySize);
 
@@ -2148,7 +2164,7 @@ public class Game : MonoBehaviour {
         
         agilityStatValueText.text = (player.agilityLevel + 1).ToString("0.0");
         healthStatValueText.text = (player.healthLevel + 1).ToString("0.0");
-        luckStatValueText.text = (player.luckLevel + 1).ToString("0.0");
+        bleedResStatValueText.text = (player.bleedResLevel + 1).ToString("0.0");
         strengthStatValueText.text = (player.strengthLevel + 1).ToString("0.0");
     }
 
@@ -2978,7 +2994,7 @@ public class Game : MonoBehaviour {
         public int soulCurrency;
         public int coinCurrency;
         public int agilityLevel;
-        public int luckLevel;
+        public int bleedResLevel;
         public int healthLevel;
         public int strengthLevel;
     }
@@ -3212,12 +3228,11 @@ public class Game : MonoBehaviour {
     private const int maxEncumberedWeight = 210;
     private const float maxEncumberedSpeedReduction = 0.2f;
 
+    private const float reducedChanceForBleedPerLevel = 0.1f;
+
     private const int healthIncreasePerStatLevel = 10;
     private int FullPlayerHealth => 100 + (healthIncreasePerStatLevel * player.healthLevel);
 
-    private const float luckPercentIncreasePerStatLevel = 0.01f;
-    private float RaritySkewIncreaseFromLuck => luckPercentIncreasePerStatLevel * player.luckLevel;
-    
     private float GetPlayerSpeedBasedOnStats() {
         int agilityStat = player.agilityLevel;
         for (int i = 0; i < playerEquipmentSize; i++) {
@@ -3942,6 +3957,7 @@ public class Game : MonoBehaviour {
     // ***************************
     
     private Transform activeExitPortal;
+    private Tween exitPortalTween;
 
     private void InitEarlyExitPortal(Transform exitPortalParent, float timeBeforePortalsSpawn) {
         activeExitPortal = null;
@@ -3949,15 +3965,14 @@ public class Game : MonoBehaviour {
         foreach (Transform portal in exitPortalParent) {
             portal.gameObject.SetActive(false);
         }
-        
-        exitPortalTimer.SetTime(timeBeforePortalsSpawn);
-        exitPortalTimer.EndAction = () => {
+
+        exitPortalTween = Tween.Delay(timeBeforePortalsSpawn, () => {
             int randomSpawnIndex = Random.Range(0, exitPortalParent.childCount);
             activeExitPortal = exitPortalParent.GetChild(randomSpawnIndex);
             activeExitPortal.gameObject.SetActive(true);
             Tween.Scale(activeExitPortal, 0f, 1f, 0.5f, Ease.OutBack);
             PlayAudioClip(portalSpawnClip, activeExitPortal.position);
-        };
+        });
     }
 
     private void DespawnEarlyExitPortal() {
@@ -3997,7 +4012,7 @@ public class Game : MonoBehaviour {
             portalArrow.gameObject.SetActive(false);
             return;
         }
-        
+
         Vector3 portalPosInScreenSpace = mainCamera.WorldToScreenPoint(activeExitPortal.position);
 
         // Handle behind-camera targets by mirroring the direction
@@ -4016,8 +4031,11 @@ public class Game : MonoBehaviour {
             portalArrow.gameObject.SetActive(false);
             return;
         }
-        
-        portalArrow.gameObject.SetActive(true);
+
+        if (!portalArrow.gameObject.activeInHierarchy) {
+            portalArrow.gameObject.SetActive(true);
+            Tween.Scale(portalArrow, 0f, 1f, 0.5f, Ease.OutBack);
+        }
         
         const float distFromScreenEdge = 50f;
         const float extraTopPadding = 130f;
@@ -4226,7 +4244,7 @@ public class Game : MonoBehaviour {
         public int soulCurrency;
         public int coinCurrency;
         public int agilityLevel;
-        public int luckLevel;
+        public int bleedResLevel;
         public int healthLevel;
         public int strengthLevel;
     }
@@ -4238,7 +4256,7 @@ public class Game : MonoBehaviour {
             soulCurrency = player.soulCurrency,
             coinCurrency = player.coinCurrency,
             agilityLevel = player.agilityLevel,
-            luckLevel = player.luckLevel,
+            bleedResLevel = player.bleedResLevel,
             healthLevel = player.healthLevel,
             strengthLevel = player.strengthLevel,
         };
@@ -4253,7 +4271,7 @@ public class Game : MonoBehaviour {
             instancedPlayer.soulCurrency = data.soulCurrency;
             instancedPlayer.coinCurrency = data.coinCurrency;
             instancedPlayer.agilityLevel = data.agilityLevel;
-            instancedPlayer.luckLevel = data.luckLevel;
+            instancedPlayer.bleedResLevel = data.bleedResLevel;
             instancedPlayer.healthLevel = data.healthLevel;
             instancedPlayer.strengthLevel = data.strengthLevel;
         }
@@ -4272,7 +4290,7 @@ public class Game : MonoBehaviour {
         ShowMainMenuUI();
         
         menuBackButton.gameObject.SetActive(false);
-        gameEndText.gameObject.SetActive(false);
+        largeRaidTextTypewriter.gameObject.SetActive(false);
 
         // Set the stat upgrade info once at startup because each increase is the same
         {
@@ -4280,7 +4298,7 @@ public class Game : MonoBehaviour {
             float speedPercentIncreasePerLevel = (speedRange / agilityUpgradePath.MaxLevel) / defaultPlayerSpeed;
             agilityUpgradeInfoText.text = $"+{(speedPercentIncreasePerLevel * 100f):0}% Speed";
             healthUpgradeInfoText.text = $"+{healthIncreasePerStatLevel} Health";
-            luckUpgradeInfoText.text = $"+{(luckPercentIncreasePerStatLevel * 100f):0}% Luck";
+            bleedResInfoText.text = $"+{(reducedChanceForBleedPerLevel * 100f):0}% Bleed Resistance";
             strengthUpgradeInfoText.text = $"+{encumberingIncreasePerStrengthPoint} Weight Carry Capacity";
         }
         
@@ -4464,7 +4482,7 @@ public class Game : MonoBehaviour {
         });
 
         agilityUpgradeButton.AddListener(() => OnLevelupButtonPressed(agilityUpgradePath, player.agilityLevel));
-        corruptionUpgradeButton.AddListener(() => OnLevelupButtonPressed(luckUpgradePath, player.luckLevel));
+        corruptionUpgradeButton.AddListener(() => OnLevelupButtonPressed(luckUpgradePath, player.bleedResLevel));
         healthUpgradeButton.AddListener(() => OnLevelupButtonPressed(healthUpgradePath, player.healthLevel));
         strengthUpgradeButton.AddListener(() => OnLevelupButtonPressed(strengthUpgradePath, player.strengthLevel));
         
@@ -5032,11 +5050,12 @@ public class Game : MonoBehaviour {
             Quest quest = questLines[i].quests[questlineState.questLineIndicies[i]];
             activeQuests[i] = quest;
             
+            quest.Init();
+            
             Quest.SaveState saveState = questlineState.questSaveStates[i];
             if (saveState != null) {
                 quest.LoadSaveState(saveState); 
             }
-            quest.Init();
 
             QuestUI ui = Instantiate(questPrefab, questsParent).GetComponent<QuestUI>();
             questUIs[i] = ui;
@@ -5071,7 +5090,7 @@ public class Game : MonoBehaviour {
             player.agilityLevel++;
         }
         else if (upgradePath == luckUpgradePath) {
-            player.luckLevel++;
+            player.bleedResLevel++;
         }
         else if (upgradePath == healthUpgradePath) {
             int prevFullPlayerHealth = FullPlayerHealth;
@@ -5089,7 +5108,7 @@ public class Game : MonoBehaviour {
     
     private void RefreshLevelUpPossibilities() {
         ToggleStatUpgradeButton(agilityUpgradeButton, agilityUpgradePath, player.agilityLevel);
-        ToggleStatUpgradeButton(corruptionUpgradeButton, luckUpgradePath, player.luckLevel);
+        ToggleStatUpgradeButton(corruptionUpgradeButton, luckUpgradePath, player.bleedResLevel);
         ToggleStatUpgradeButton(healthUpgradeButton, healthUpgradePath, player.healthLevel);
         ToggleStatUpgradeButton(strengthUpgradeButton, strengthUpgradePath, player.strengthLevel);
     }
@@ -5427,15 +5446,15 @@ public class Game : MonoBehaviour {
     private float GetDropChanceOfItem(Item item, DropOrigin origin) {
         float addChanceToSpawnFromLuck = 0f;
         
-        if (origin != DropOrigin.Trader) {
-            addChanceToSpawnFromLuck = item.GetRarity() switch {
-                // Scaling the luck increase exponentionally (the adding/subtracting 1 is because rarity skew from luck is a decimal)
-                Item.Rarity.Uncommon  => Mathf.Pow(1f + RaritySkewIncreaseFromLuck, 1.1f) - 1f,
-                Item.Rarity.Rare      => Mathf.Pow(1f + RaritySkewIncreaseFromLuck, 1.2f) - 1f,
-                Item.Rarity.Legendary => Mathf.Pow(1f + RaritySkewIncreaseFromLuck, 1.3f) - 1f,
-                _                     => 0f,
-            };
-        }
+        // if (origin != DropOrigin.Trader) {
+        //     addChanceToSpawnFromLuck = item.GetRarity() switch {
+        //         // Scaling the luck increase exponentionally (the adding/subtracting 1 is because rarity skew from luck is a decimal)
+        //         Item.Rarity.Uncommon  => Mathf.Pow(1f + RaritySkewIncreaseFromLuck, 1.1f) - 1f,
+        //         Item.Rarity.Rare      => Mathf.Pow(1f + RaritySkewIncreaseFromLuck, 1.2f) - 1f,
+        //         Item.Rarity.Legendary => Mathf.Pow(1f + RaritySkewIncreaseFromLuck, 1.3f) - 1f,
+        //         _                     => 0f,
+        //     };
+        // }
         
         return origin switch {
             DropOrigin.Rock => Mathf.Clamp01(item.chanceToSpawnFromRock + addChanceToSpawnFromLuck),
