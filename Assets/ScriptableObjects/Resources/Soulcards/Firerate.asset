@@ -21,7 +21,7 @@ MonoBehaviour:
   associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
   buyPrice: 18
   sellPrice: 6
-  traderXp: 5
+  traderXp: 0
   spawnsOnAllMaps: 1
   spawnsOnMaps:
   - {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}

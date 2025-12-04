@@ -456,7 +456,7 @@ public class Game : MonoBehaviour {
         UpdateGraySlots();
         
         #if UNITY_EDITOR
-        if (Mouse.current != null && Mouse.current.middleButton.isPressed) {
+        if (Keyboard.current.spaceKey.isPressed) {
             Time.timeScale = 8f;
         }
         else {
@@ -914,7 +914,7 @@ public class Game : MonoBehaviour {
         public Collider2D enemySpacerCollider;
         public EnemyData data;
         public Timer applyDamageTimer;
-        public BleedModInstance? bleed;
+        public BleedSoulcard.InstanceData? bleed;
         public PoisonSoulcard.InstanceData? poisoned;
         public SlowInstance? slow;
         public Vector2 moveDir;
@@ -1310,7 +1310,7 @@ public class Game : MonoBehaviour {
         
         InitSpawnManager(loadedMapData.waves);
         SpawnResources(currentMapInstance.resourceParent);
-        InitEarlyExitPortal(currentMapInstance.exitPortalsParent, spawnManager.timeUntilFinalWave + 15f);
+        InitEarlyExitPortal(currentMapInstance.exitPortalsParent, spawnManager.timeUntilFinalWave + loadedMapData.waves.timeBeforePortalSpawns);
         
         onTeleportToMap?.Invoke(loadedMapData);
 
@@ -1726,7 +1726,7 @@ public class Game : MonoBehaviour {
         transactionInventory = CreateInventory(traderTransactionInventoryParent, transactionInventorySize);
 
         const int maxCrucibleInventorySize = 13;
-        const int startingCrucibleInventorySize = 2;
+        const int startingCrucibleInventorySize = 4;
         SpawnUiSlots(crucibleParent, maxCrucibleInventorySize, eyeForgeSlotPrefab);
         crucibleInventory = CreateInventory(crucibleParent, startingCrucibleInventorySize + player.crucibleLevel);
         ArrangeEyeCrucibleInventorySlots();
@@ -4950,7 +4950,7 @@ public class Game : MonoBehaviour {
     }
 
     private bool AddToTraderRep(int repGain) {
-        int prevLevel = traderSaveData.traderRep;
+        int prevLevel = GetTraderRepLevel();
         traderSaveData.traderRep += repGain;
         SaveTrader();
         int repLevel = GetTraderRepLevel();

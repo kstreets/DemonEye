@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: LighthouseWaves 2
   m_EditorClassIdentifier: 
   timeBeforeFirstPhase: 35
-  timeBeforeExitPortalsSpawn: 165
+  timeBeforePortalSpawns: 15
   spawnPhases:
   - phaseDuration: 30
     spawnDuration: 8

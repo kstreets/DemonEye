@@ -21,7 +21,7 @@ public class RaidSpawnPattern : ScriptableObject {
     }
     
     public float timeBeforeFirstPhase;
-    public float timeBeforeExitPortalsSpawn;
+    public float timeBeforePortalSpawns;
     public List<SpawnPhase> spawnPhases;
     
 }

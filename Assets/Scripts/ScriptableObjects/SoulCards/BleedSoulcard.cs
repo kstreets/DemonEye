@@ -1,27 +1,27 @@
 using UnityEngine;
 using static Game;
 
-public struct BleedModInstance {
-    public int bleedDamage;
-    public float bleedInterval;
-    public float lastBleedTime;
-}
-
 [CreateAssetMenu(fileName = "BleedSoulcard", menuName = "Scriptable Objects/Soulcards/BleedSoulcard")]
 public class BleedSoulcard : Soulcard {
+    
+    public struct InstanceData {
+        public int bleedDamage;
+        public float bleedInterval;
+        public float lastBleedTime;
+    }
 
     public int bleedDamage;
     public float bleedInterval;
     
     public override void AddInstanceToEnemy(Enemy enemy, int stackCount) {
-        if (enemy.bleed.TryGetValue(out BleedModInstance bleed)) {
+        if (enemy.bleed.TryGetValue(out InstanceData bleed)) {
             bleed.bleedDamage = GetBleedDamage(stackCount);
             bleed.bleedInterval = bleedInterval;
             enemy.bleed = bleed;
             return;
         }
         
-        BleedModInstance instance = new() {
+        InstanceData instance = new() {
             bleedDamage = GetBleedDamage(stackCount),
             bleedInterval = bleedInterval,
             lastBleedTime = 0f,
