@@ -38,7 +38,7 @@ MonoBehaviour:
   weight: 0
   description: 
   relativeMechanicDesc: {fileID: 0}
-  probability: 0.32
-  shardsCount: 5
-  perShardDamage: 15
+  probability: 0.4
+  shardsCount: 6
+  perShardDamage: 7
   projectileLifetime: 0.5

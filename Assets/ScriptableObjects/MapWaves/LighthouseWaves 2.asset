@@ -111,7 +111,7 @@ MonoBehaviour:
     - enemyCount: 3
       enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
   - phaseDuration: 100
-    spawnDuration: 60
+    spawnDuration: 50
     spawnCellRange: {x: 13, y: 17}
     repositionCellRange: {x: 6, y: 9}
     spawnRateCurve:
@@ -119,13 +119,13 @@ MonoBehaviour:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0
-        inSlope: 2.0481377
-        outSlope: 2.0481377
+        value: 0.15
+        inSlope: 0.28688586
+        outSlope: 0.28688586
         tangentMode: 0
         weightedMode: 0
         inWeight: 0
-        outWeight: 0.03714936
+        outWeight: 0.085759245
       - serializedVersion: 3
         time: 1
         value: 1
@@ -139,7 +139,7 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 0
     enemyBatches:
-    - enemyCount: 100
-      enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
     - enemyCount: 80
+      enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
+    - enemyCount: 65
       enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
