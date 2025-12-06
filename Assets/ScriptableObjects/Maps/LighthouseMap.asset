@@ -15,3 +15,12 @@ MonoBehaviour:
   displayName: Lighthouse
   sceneReference: Lighthouse
   waves: {fileID: 11400000, guid: 38dd496c01602c04c9ab160aba69b9ec, type: 2}
+  minRockCount: 8
+  maxRockCount: 14
+  minBodyCount: 3
+  maxBodyCount: 5
+  eyeUpgradeOnBodyChance: 0.25
+  eyeUpgradeFromRockChance: 0.4
+  maxGemCountPerRock: 2
+  individualGemSpawnChance: 0.5
+  increasedLootRarityChance: 0

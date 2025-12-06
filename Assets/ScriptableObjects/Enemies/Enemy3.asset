@@ -29,5 +29,5 @@ MonoBehaviour:
   health: 200
   damage: 35
   changeToCauseBleed: 0
-  chanceToDropItem: 0.04
+  chanceToDropItem: 0.06
   soulWorthPerKill: 3

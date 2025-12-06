@@ -19,15 +19,16 @@ MonoBehaviour:
   pickupRadius: 0.07
   type: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
   associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
-  buyPrice: 25
-  sellPrice: 8
-  traderXp: 0
+  buyPrice: 75
+  sellPrice: 41
   spawnsOnAllMaps: 1
   spawnsOnMaps: []
-  chanceToSpawnOnBody: 0.085
+  chanceToSpawnOnBody: 0
   chanceToSpawnOnTrader: 0.213
-  chanceToSpawnFromRock: 0.3
+  chanceToSpawnFromRock: 0.45
   chanceToSpawnFromEnemy: 0
+  traderLevelRequired: 2
+  traderStockRange: {x: 1, y: 5}
   spawnsFromEnemies: []
   modifiesStats: 0
   agilityStatAdjustment: 0
@@ -37,7 +38,7 @@ MonoBehaviour:
   weight: 0
   description: 
   relativeMechanicDesc: {fileID: 0}
-  probability: 0.15
+  probability: 0.32
   shardsCount: 5
-  perShardDamage: 8
-  projectileLifetime: 0.4
+  perShardDamage: 15
+  projectileLifetime: 0.5

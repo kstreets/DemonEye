@@ -61,12 +61,13 @@ public class Game : MonoBehaviour {
     [EndFoldout]
     
     [Foldout("Item Type Refs")]
-    public ItemType consumableType;
+    public ItemType quickUseType;
     public ItemType backpackType;
     public ItemType eyeType;
     public ItemType demonEyeType;
     public ItemType trinketType;
     public ItemType soulcardType;
+    public ItemType gemType;
     public ItemType passiveType;
     [EndFoldout]
 
@@ -456,7 +457,7 @@ public class Game : MonoBehaviour {
         UpdateGraySlots();
         
         #if UNITY_EDITOR
-        if (Keyboard.current.spaceKey.isPressed) {
+        if (Mouse.current != null && Mouse.current.middleButton.isPressed) {
             Time.timeScale = 8f;
         }
         else {
@@ -585,7 +586,7 @@ public class Game : MonoBehaviour {
     }
     
     private void OnGameOverExit() {
-        player.health = FullPlayerHealth;
+        player.health = gameplayConfig.postDeathStartingHealth;
         DeinitRaid();
     }
 
@@ -742,9 +743,8 @@ public class Game : MonoBehaviour {
             bool enemyWasInLookup = entityLookup.Remove(entity.gameObject, out _);
             if (enemyWasInLookup) {
                 entities.Remove(entity);
+                DestroyOrReleaseEntitysGameObject(entity);
             }
-            
-            DestroyOrReleaseEntitysGameObject(entity);
         }
     }
 
@@ -799,7 +799,7 @@ public class Game : MonoBehaviour {
     
     public void AddPoisonedEffect(Entity entity, float duration) {
         if (!entity.GetEffect(EffectsIndicies.Poisoned).isAlive) {
-            Entity poisonDebuff = SpawnEntity(poisonDebuffPool, OffsetY(entity.position, -0.14f), Quaternion.identity, entity.trans);
+            Entity poisonDebuff = SpawnEntity(poisonDebuffPool, OffsetY(entity.position, -0.01f), Quaternion.identity, entity.trans);
             entity.poisonedEffect = new() {
                 poisonDebuffEntity = poisonDebuff,
             };
@@ -915,7 +915,7 @@ public class Game : MonoBehaviour {
         public EnemyData data;
         public Timer applyDamageTimer;
         public BleedSoulcard.InstanceData? bleed;
-        public PoisonSoulcard.InstanceData? poisoned;
+        public PoisonSoulcard.InstanceData? poison;
         public SlowInstance? slow;
         public Vector2 moveDir;
         public Vector2 graphicalDir;
@@ -933,8 +933,9 @@ public class Game : MonoBehaviour {
             enemy.teleportTime += Time.deltaTime;
             float distFromPlayer = Vector2.Distance(player.Center, enemy.Center);
 
-            if (enemy.teleportTime >= 10f && distFromPlayer > 2.3f) {
-                Vector2 randomSpawnGridPos = currentMapInstance.grid.GetSpawnPosition(player.position);
+            if (enemy.teleportTime >= 8f && distFromPlayer > 2.2f) {
+                Vector2Int repositionCellRange = spawnManager.CurSpawnPhase.repositionCellRange;
+                Vector2 randomSpawnGridPos = currentMapInstance.grid.GetSpawnPosition(player.position, repositionCellRange.x, repositionCellRange.y);
                 TeleportEnemy(enemy, randomSpawnGridPos, TeleportType.Reposition);
                 continue;
             }
@@ -954,7 +955,7 @@ public class Game : MonoBehaviour {
                 }
             }
 
-            bool canStartAttack = !enemy.poisoned.HasValue && !playingAttackAnimation;
+            bool canStartAttack = !playingAttackAnimation;
             bool withinAttackDist = distFromPlayer < enemy.data.attackDistance;
             bool facingPlayer = Vector2.Dot(enemy.graphicalDir, dirToPlayer) >= 0.5f;
             
@@ -1008,6 +1009,10 @@ public class Game : MonoBehaviour {
                         }
 
                         Collider2D col = Physics2D.OverlapCircle(attackCheckPos, enemy.data.attackRadius, Masks.PlayerHurtMask);
+                        
+                        if (!col) { 
+                            col = Physics2D.OverlapCircle(enemy.Center, enemy.data.attackRadius, Masks.PlayerHurtMask);
+                        }
 
                         if (enemy.data.type == EnemyData.EnemyType.Doughmon) {
                             Entity smokeSlam = inst.SpawnEntity<Entity>(inst.slamSmokePrefab, attackCheckPos, Quaternion.identity);
@@ -1163,6 +1168,8 @@ public class Game : MonoBehaviour {
 
         public List<(float time, EnemyData enemy)> spawnEvents = new();
         public int spawnTimeIndex;
+        
+        public RaidSpawnPattern.SpawnPhase CurSpawnPhase => spawnPattern?.spawnPhases[curPhaseIndex];
     }
 
     [NonSerialized] private EnemySpawnManager spawnManager = new();
@@ -1252,7 +1259,8 @@ public class Game : MonoBehaviour {
         if (!spawnLimiterForEnemyBatching.TimeHasPassed(3f)) return;
         
         while (sm.spawnEvents.IndexInRange(sm.spawnTimeIndex) && sm.spawnEvents[sm.spawnTimeIndex].time <= sm.timeInPhase) {
-            Vector2 randomSpawnPos = currentMapInstance.grid.GetSpawnPosition(player.position);
+            Vector2Int spawnCellRange = spawnManager.CurSpawnPhase.spawnCellRange;
+            Vector2 randomSpawnPos = currentMapInstance.grid.GetSpawnPosition(player.position, spawnCellRange.x, spawnCellRange.y);
 
             EnemyData enemyToSpawn = sm.spawnEvents[sm.spawnTimeIndex].enemy;
             Enemy enemy = SpawnEntity<Enemy>(enemyToSpawn.enemyPrefab, randomSpawnPos, Quaternion.identity);
@@ -1596,7 +1604,7 @@ public class Game : MonoBehaviour {
         deathBackgroundImage.fillAmount = 1f;
         sequence.Chain(Tween.Alpha(deathBackgroundImage, 0f, 1f, 0.75f, Ease.InOutQuad));
         
-        sequence.Group(Tween.Delay(0.35f, () => AnimateLargeRaidText(ColorText("EARLY EXIT TAKEN", styles.increaseDescColor), 3f)));
+        sequence.Group(Tween.Delay(0.35f, () => AnimateLargeRaidText(ColorText("EARLY EXIT TAKEN", styles.increaseDescColor), 3.8f)));
         
         menuBackgroundImage.gameObject.SetActive(true);
         menuBackgroundImage.color = new(1f, 1f, 1f, 0f);
@@ -1674,7 +1682,7 @@ public class Game : MonoBehaviour {
     [NonSerialized] private Inventory lootInvetoryPtr;
     [NonSerialized] private List<Inventory> allInventories = new();
     
-    private const int playerPocketSize = 8;
+    private const int playerPocketSize = 6;
     private const int playerQuickUseSize = 4;
     private const int playerEquipmentSize = 3;
     private int NakedPlayerInventorySize => playerPocketSize + playerQuickUseSize + playerEquipmentSize;
@@ -1704,7 +1712,7 @@ public class Game : MonoBehaviour {
 
         InventorySlotUI[] quickUseSlots = playerPassiveParent.GetComponentsInChildren<InventorySlotUI>();
         foreach (InventorySlotUI slotUI in quickUseSlots) {
-            slotUI.onlyAcceptedItemType = consumableType;
+            slotUI.onlyAcceptedItemType = quickUseType;
         }
         
         int stashInventorySize = 40;
@@ -1855,8 +1863,8 @@ public class Game : MonoBehaviour {
         itemDescPopup.tag1.gameObject.SetActive(true);
         itemDescPopup.tag1.color = itemRarityColor;
         
-        if (hoveredSlot.item.ItemRef.type == consumableType) {
-            itemDescPopup.tag1Text.text = "Consumable";
+        if (hoveredSlot.item.ItemRef.type == quickUseType) {
+            itemDescPopup.tag1Text.text = "Quick Use";
         } 
         else if (hoveredSlot.item.ItemRef.type == soulcardType) {
             itemDescPopup.tag1Text.text = "Eye Upgrade";
@@ -1911,7 +1919,7 @@ public class Game : MonoBehaviour {
             descText.text = hoveredSlot.item.ItemRef.GetDescription();
         }
         
-        if (hoveredSlot.item.ItemRef.type == consumableType && !hoveredSlot.item.traderOwned) {
+        if (hoveredSlot.item.ItemRef.type == quickUseType && !hoveredSlot.item.traderOwned) {
             descText.text += $"<line-height=150%>\n<sprite=5 color=#{ColorUtility.ToHtmlStringRGBA(styles.inputIconTint)}> " +
                              $"<size=80%>{ColorText("Right click to consume", styles.inputIconTint)}</size>";
         } 
@@ -1951,8 +1959,8 @@ public class Game : MonoBehaviour {
     }
 
     private string GetDemonEyeModDescription(Soulcard soulcard, int count) {
-        string title = ColorText($"<size=105%>{soulcard.displayName}</size> <size=87%>x{count}</size>", styles.subHeaderTextColor);
-        return $"<line-height=85%>{title}\n{soulcard.GetStackDescription(count)}<line-height=135%>\n";
+        string title = ColorText($"<size=108%>{soulcard.displayName}</size> <size=87%>x{count}</size>", styles.subHeaderTextColor);
+        return $"<line-height=90%>{title}\n{soulcard.GetStackDescription(count)}<line-height=135%>\n";
     }
 
     private void FitPopupSize(RectTransform popupRect, params Rect[] rects) {
@@ -2149,7 +2157,7 @@ public class Game : MonoBehaviour {
     private void CheckToConsumeItem(InventoryHoverInfo invHoverInfo) {
         if (!useItemInputAction.WasPressedThisFrame()) return;
         if (!TryGetItemFromHoverInfo(invHoverInfo, out InventoryItem hoveredItem)) return;
-        if (hoveredItem.ItemRef.type != consumableType) return;
+        if (hoveredItem.ItemRef.type != quickUseType) return;
         HavePlayerConsumeItem(invHoverInfo.inventory, invHoverInfo.slotIndex);
     }
 
@@ -2598,7 +2606,8 @@ public class Game : MonoBehaviour {
 
         // If we can stack the item then we just do that
         foreach (InventorySlot slot in availableSlots) {
-            if (slot.item == null || slot.ui.disallowItemStacking || slot.item.IsFullStack || slot.item.itemOrInstanceUuid != item.itemOrInstanceUuid) continue;
+            if (slot.item == null || slot.item.itemOrInstanceUuid != item.itemOrInstanceUuid) continue;
+            if (slot.ui.disallowItemStacking || (!allowInfiniteStacking && slot.item.IsFullStack)) continue;
 
             TweenItemMove(slot.ui.itemUI);
                 
@@ -2608,7 +2617,7 @@ public class Game : MonoBehaviour {
                 result.type = InventoryAddResult.ResultType.Success;
                 return result;
             }
-
+            
             int overflowAmount = (remainingItemCount + slot.item.count) - slot.item.ItemRef.MaxStackCount;
             if (overflowAmount > 0) {
                 int addCount = slot.item.ItemRef.MaxStackCount - slot.item.count;
@@ -2847,7 +2856,7 @@ public class Game : MonoBehaviour {
         return weight;
     }
     
-    private enum InventoryValueType { Buy, Sell, Xp }
+    private enum InventoryValueType { Buy, Sell }
 
     private int GetInventoryValue(Inventory inventory, InventoryValueType valueType) {
         int value = 0;
@@ -2859,9 +2868,6 @@ public class Game : MonoBehaviour {
                     break;
                 case InventoryValueType.Sell:
                     value += slot.item.ItemRef.type == demonEyeType ? GetDemonEyeSellPrice(slot.item) : slot.item.ItemRef.sellPrice * slot.item.count;
-                    break;
-                case InventoryValueType.Xp:
-                    value += slot.item.ItemRef.traderXp * slot.item.count;
                     break;
             }
         }
@@ -3107,7 +3113,11 @@ public class Game : MonoBehaviour {
         
         int targetCount = 1;
         if (equipedEye.projectileCount.TryGetValue(out var projectileCount)) {
-            targetCount += projectileCount.extraProjectileCount;
+            for (int i = 0; i < projectileCount.extraProjectileCount; i++) {
+                if (RollProbability(projectileCount.probability)) {
+                    targetCount += projectileCount.extraProjectileCount;
+                }
+            }
         }
         
         List<Vector3> attackTargets = GetAttackTargets(targetCount);
@@ -3208,11 +3218,12 @@ public class Game : MonoBehaviour {
     }
 
     private void DamagePlayer(int damage, float chanceToBleed = 0f) {
-        if (!player.bleeding && !PlayerHealthIsAtAutoBleedStop() && RollProbability(chanceToBleed)) {
-            player.bleeding = true;
-        }
+        // if (!player.bleeding && !PlayerHealthIsAtAutoBleedStop() && RollProbability(chanceToBleed)) {
+        //     player.bleeding = true;
+        // }
         player.health -= damage;
         AddFlashHitEffect(player);
+        SpawnDamageNumber(player.position, damage, DamageColor.Blood);
     }
     
     private bool PlayerHealthIsAtAutoBleedStop() {
@@ -3224,8 +3235,8 @@ public class Game : MonoBehaviour {
     private const float maxPlayerSpeed = 0.61f;
 
     private const int encumberingIncreasePerStrengthPoint = 50;
-    private const int defaultStartingEncumberingWeight = 160;
-    private const int maxEncumberedWeight = 210;
+    private const int defaultStartingEncumberingWeight = 140;
+    private const int maxEncumberedWeight = 190;
     private const float maxEncumberedSpeedReduction = 0.2f;
 
     private const float reducedChanceForBleedPerLevel = 0.1f;
@@ -3301,7 +3312,6 @@ public class Game : MonoBehaviour {
         public PenetrationSoulcard.InstanceData? penetration;
         public DoubleCritSoulcard.InstanceData? doubleCrit;
         public BackwardsShotSoulcard.InstanceData? backwardShot;
-        public PoisonSoulcard.InstanceData? poison;
         public ExplosionSoulcard.InstanceData? explosion;
         public OverheatBlast.InstanceData? blast;
         public BoneShatterSoulcard.InstanceData? boneShatter;
@@ -3384,19 +3394,32 @@ public class Game : MonoBehaviour {
             cols = OverlapCircle(player.position, overlapDist, Masks.MineableMask);
         }
         
-        // Sort by distance from player
         cols.Sort(static (a, b) => {
-            float da = Vector2.SqrMagnitude(a.transform.position - inst.player.position);
-            float db = Vector2.SqrMagnitude(b.transform.position - inst.player.position);
-            return da.CompareTo(db);
+            float aScore = GetTargetScore(a);
+            float bScore = GetTargetScore(b);
+            return aScore.CompareTo(bScore);
         });
-        
+
         int count = Mathf.Min(targetCount, cols.Count);
         List<Vector3> targets = new();
         for (int i = 0; i < count; i++) {
             targets.Add(entityLookup[cols[i].gameObject].Center);
         }
         return targets;
+    }
+
+    private static float GetTargetScore(Collider2D col) {
+        Entity entity = inst.entityLookup[col.gameObject];
+        float dist = Vector2.Distance(col.transform.position, inst.player.position);
+
+        if (entity is Enemy enemy) {
+            const float distWeight = 1f;
+            const float healthWeight = -0.003f;
+            float bleedingWeight = enemy.bleed.HasValue ? 0.1f : 0f;
+            return (dist * distWeight) + (enemy.health * healthWeight) + bleedingWeight;
+        }
+        
+        return dist;
     }
 
     private bool CanShoot() {
@@ -3417,7 +3440,11 @@ public class Game : MonoBehaviour {
         Vector2 dir = (targetPos - PlayerEyePos.ToVector2()).normalized;
         dir = Quaternion.AngleAxis(accuracyAngle, Vector3.forward) * dir;
         Vector2 velocity = dir * projectileSpeed; 
-        SpawnProjectile(PlayerEyePos, velocity, projectilePool);
+        Projectile proj = SpawnProjectile(PlayerEyePos, velocity, projectilePool);
+
+        if (equipedEye.penetration.TryGetValue(out var penetration)) {
+            proj.enemyPenetrationCount = penetration.goThroughCount;
+        }
 
         if (equipedEye.trishot.TryGetValue(out var trishot) && RollProbability(trishot.probability)) {
             const float baseTriShotAngle = 8f;
@@ -3746,7 +3773,7 @@ public class Game : MonoBehaviour {
                 demonEyeRaidStats.consecutiveCriticalHits = 0;
             }
 
-            int damage = Mathf.RoundToInt(GetBaseDamage(projectile) * GetDamageMultiplier(projectile, isCriticalStrike));
+            int damage = Mathf.RoundToInt(GetBaseDamage(projectile) * GetDamageMultiplier(projectile, enemy, isCriticalStrike));
             DamageEnemy(enemy, damage, isCriticalStrike);
             
             foreach (EquipedModInstance modInstance in eyeInstance.modInstances) {
@@ -3789,12 +3816,30 @@ public class Game : MonoBehaviour {
                 float angleDeltaPerDrop = 360f / dropCount;
                 float randomRangePerDrop = angleDeltaPerDrop * 0.25f;
 
-                int upgradeDropIndex = Random.Range(0, 10);
+                int upgradeDropIndex = -1;
+                if (RollProbability(loadedMapData.eyeUpgradeFromRockChance)) {
+                    upgradeDropIndex = Random.Range(0, dropCount);
+                }
+
+                int gemsSpawned = 0;
+                int maxGemsAllowedToSpawn = loadedMapData.maxGemCountPerRock;
                 
                 for (int i = 0; i < dropCount; i++) {
+                    Item dropItem = null;
+                    if (i == upgradeDropIndex) {
+                        dropItem = GetItemFromDropPool(eyeUpgradesDropPool);
+                    }
+                    else {
+                        do dropItem = GetItemFromDropPool(rockStonesDropPool);
+                        while (gemsSpawned == maxGemsAllowedToSpawn && dropItem.type == gemType);
+
+                        if (dropItem.type == gemType) {
+                            gemsSpawned++;
+                        }
+                    }
+                    
                     float randomAngle = (angleDeltaPerDrop * i) + Random.Range(-randomRangePerDrop, randomRangePerDrop);
                     Vector3 endPos = entity.position + RotationVector(randomAngle, 0.18f, 0.25f);
-                    Item dropItem = i == upgradeDropIndex ? GetItemFromDropPool(rockUpgradesDropPool) : GetItemFromDropPool(rockStonesDropPool);
                     Entity rockDrop = SpawnItemAsEntity(dropItem, 1, entity.position, Quaternion.identity);
                     AddBounceEffect(rockDrop, endPos, 0.8f);
                 }
@@ -3802,7 +3847,6 @@ public class Game : MonoBehaviour {
             else {
                 AddFlashHitEffect(entity);
                 AddShakeEffect(entity, 8f, 0.038f, 0.35f, shakeCurve);
-                // AddScaleEffect(entity, 0.91f, 0.2f);
                 Tween.PunchScale(entity.trans, Vector3.one * 0.12f, 0.1f, 15f);
             }
         }
@@ -3843,8 +3887,13 @@ public class Game : MonoBehaviour {
         return damage;
     }
     
-    private float GetDamageMultiplier(Projectile proj, bool isCriticalHit) {
+    private float GetDamageMultiplier(Projectile proj, Enemy enemy, bool isCriticalHit) {
         DemonEyeInstance eyeInstance = proj.eyeInstanceSpawnedFrom;
+        
+        if (!isCriticalHit && proj.isBackwardsShot) {
+            isCriticalHit = true;
+        }
+        
         float multiplier = isCriticalHit ? gameplayConfig.defaultCritMultiplier : 1f;
         
         if (eyeInstance.doubleCrit.TryGetValue(out var doubleCrit)) {
@@ -3858,10 +3907,12 @@ public class Game : MonoBehaviour {
             }
         }
 
-        if (proj.isBackwardsShot && eyeInstance.backwardShot.TryGetValue(out var backShot)) {
-            multiplier += backShot.damageMultiplier;
+        if (enemy.poison.TryGetValue(out var poison)) {
+            if (enemy.health >= enemy.data.health * poison.minHealthPercentForMulti) {
+                multiplier += poison.damageMulti;
+            }
         }
-
+        
         return multiplier;
     }
 
@@ -4082,29 +4133,43 @@ public class Game : MonoBehaviour {
         List<Transform> spawnPoints = resourceSpawnParent.GetComponentsInChildren<Transform>().ToList();
         spawnPoints.RemoveAt(0); // Remove resourceSpawnParent
         
-        int gemRocksToSpawn = Random.Range(6, 10);
+        int gemRocksToSpawn = Random.Range(loadedMapData.minRockCount, loadedMapData.maxRockCount);
         for (int i = 0; i < gemRocksToSpawn; i++) {
             Entity mineableRockEntity = SpawnResource<Entity>(gemRockPrefab, spawnPoints, 1);
             mineableRockEntity.health = 50;
         }
         
-        int deadBodiesToSpawn = Random.Range(3, 5);
+        int deadBodiesToSpawn = Random.Range(loadedMapData.minBodyCount, loadedMapData.maxBodyCount);
         InventorySlotUI[] lootInventorySlotUis = lootInventoryParent.GetComponentsInChildren<InventorySlotUI>(true);
         
         for (int i = 0; i < deadBodiesToSpawn; i++) {
             using var autoRelease = ListPool<Item>.Get(out List<Item> deadBodyItems);
             
-            int maxDeadBodyItemCount = Random.Range(2, 4);
+            int maxDeadBodyItemCount = Random.Range(2, 6);
             GetUniqueItemsFromDropPool(bodyDropPool, maxDeadBodyItemCount, deadBodyItems);
+
+            bool spawnEyeUpgrade = RollProbability(loadedMapData.eyeUpgradeOnBodyChance);
+            while (spawnEyeUpgrade && deadBodyItems.Count < lootInvetoryPtr.slots.Length) {
+                deadBodyItems.Add(GetItemFromDropPool(eyeUpgradesDropPool));
+                spawnEyeUpgrade = RollProbability(loadedMapData.eyeUpgradeOnBodyChance);
+            }
             
             InventorySlot[] deadBodySlots = new InventorySlot[lootInvetoryPtr.slots.Length];
             for (int j = 0; j < deadBodySlots.Length; j++) {
                 InventoryItem inventoryItem = null;
                 if (deadBodyItems.IndexInRange(j)) {
                     Item spawnItem = deadBodyItems[j];
+
+                    int stackCount = 1;
+                    float spawnRateTaper = 0f;
+                    while (RollProbability(spawnItem.chanceToSpawnOnBody - spawnRateTaper)) {
+                        stackCount++;
+                        spawnRateTaper += spawnItem.chanceToSpawnOnBody * 0.15f;
+                    }
+                    
                     inventoryItem = new() {
                         itemOrInstanceUuid = spawnItem.uuid, 
-                        count = Random.Range(1, spawnItem.MaxStackCount / 3),
+                        count = stackCount,
                         notDiscovered = true,
                     };
                 }
@@ -4277,7 +4342,7 @@ public class Game : MonoBehaviour {
         }
         
         // We want to make sure that the player health is never <= zero
-        instancedPlayer.health = player.health <= 0f ? FullPlayerHealth : player.health;
+        instancedPlayer.health = player.health <= 0f ? gameplayConfig.postDeathStartingHealth : player.health;
     }
 
     // ************************************
@@ -4593,16 +4658,9 @@ public class Game : MonoBehaviour {
             else if (transactionState == TransactionState.Selling) {
                 // Before selling items we pass the transaction inventory to callbacks that want to know what we sold
                 onSoldItemsToTrader?.Invoke(transactionInventory.slots);
-                
                 player.coinCurrency += price;
-                
-                int xpGain = GetInventoryValue(transactionInventory, InventoryValueType.Xp);
-                IncreaseTraderRep(xpGain);
                 ClearInventory(transactionInventory);
             }
-            
-            SavePlayerData();
-            SaveInventory(stashInventory);
         });
         
         easyMapButton.onClick.AddListener(() => {
@@ -4871,9 +4929,8 @@ public class Game : MonoBehaviour {
         }
         else if (transactionState == TransactionState.Selling) {
             int sellPrice = GetInventoryValue(transactionInventory, InventoryValueType.Sell);
-            int xpGain = GetInventoryValue(transactionInventory, InventoryValueType.Xp);
             string sellPriceString = ColorText(sellPrice.ToString("N0"), styles.coinCurrencyColor);
-            traderTransactionInfoText.text = $"Sell for <sprite=0>{sellPriceString}\n Gain {xpGain} trader experience";
+            traderTransactionInfoText.text = $"Sell for <sprite=0>{sellPriceString}";
         }
     }
     
@@ -4969,8 +5026,9 @@ public class Game : MonoBehaviour {
 
     private void FillTraderInventoryWithItems() {
         ClearInventory(traderInventory);
+        int curTraderLevel = GetTraderRepLevel();
         
-        float raritySkew = GetTraderRepLevel() switch { 
+        float raritySkew = curTraderLevel switch { 
             0 => 0f, 
             1 => 0.20f, 
             2 => 0.40f,
@@ -4978,13 +5036,30 @@ public class Game : MonoBehaviour {
             _ => 0.60f,
         };
         
+        float stockCountSkew = curTraderLevel switch { 
+            0 => 0f, 
+            1 => 0.12f, 
+            2 => 0.20f,
+            3 => 0.40f,
+            4 => 0.60f,
+            _ => 0.80f,
+        };
+        
         using var _ = ListPool<Item>.Get(out List<Item> items);
         GetUniqueItemsFromDropPool(traderDropPool, traderInventoryColCount * traderInventoryRowCount, items, raritySkew);
-        
-        items = items.OrderBy(x => x.type.name).ThenBy(x => x.GetRarity()).ToList();
+        items = items.OrderBy(x => x.type.name).ThenBy(x => x.GetRarity()).ThenBy(x => x.buyPrice).ToList();
         
         foreach (Item item in items) {
-            TryAddItemToInventory(traderInventory, item, item.MaxStackCount);
+            if (item.traderLevelRequired > curTraderLevel) continue;
+            
+            int lowerRange = item.traderStockRange.x;
+            int maxUpperRange = item.traderStockRange.y;
+            int weightedUpperRange = lowerRange + ((maxUpperRange - lowerRange) / 2);
+            while (weightedUpperRange < maxUpperRange && RollProbability(stockCountSkew)) {
+                weightedUpperRange++;
+            }
+            int stackCount = Random.Range(lowerRange, weightedUpperRange); 
+            TryAddItemToInventory(traderInventory, item, stackCount);
         }
         
         MarkTraderItemsAsTraderOwned();
@@ -5345,14 +5420,16 @@ public class Game : MonoBehaviour {
     }
 
     private DropPool rockStonesDropPool;
-    private DropPool rockUpgradesDropPool;
+    private DropPool eyeUpgradesDropPool;
+    // private DropPool gemDropPool;
     private DropPool bodyDropPool;
     private DropPool traderDropPool;
     private DropPool enemyDropPool;
 
     private void CreateDropPools() {
         rockStonesDropPool = new() { items = new(), dropOrigin = DropOrigin.Rock };
-        rockUpgradesDropPool = new() { items = new(), dropOrigin = DropOrigin.Rock };
+        eyeUpgradesDropPool = new() { items = new(), dropOrigin = DropOrigin.Rock };
+        // gemDropPool = new() { items = new(), dropOrigin = DropOrigin.Rock };
         bodyDropPool = new() { items = new(), dropOrigin = DropOrigin.Body };
         traderDropPool = new() { items = new(), dropOrigin = DropOrigin.Trader };
         enemyDropPool = new() { items = new(), dropOrigin = DropOrigin.Enemy };
@@ -5370,7 +5447,8 @@ public class Game : MonoBehaviour {
     
     private void CreateDropPoolsForMap(MapData map) { 
         rockStonesDropPool.items.Clear();
-        rockUpgradesDropPool.items.Clear();
+        // gemDropPool.items.Clear();
+        eyeUpgradesDropPool.items.Clear();
         bodyDropPool.items.Clear();
         
         foreach ((int _, Item item) in itemLookup) {
@@ -5378,8 +5456,15 @@ public class Game : MonoBehaviour {
             if (!spawnsOnCurrentMap) continue;
             
             if (item.chanceToSpawnFromRock > 0f) {
-                List<Item> itemsForRock = item.type == soulcardType ? rockUpgradesDropPool.items : rockStonesDropPool.items;
-                itemsForRock.Add(item);
+                if (item.type == soulcardType) {
+                    eyeUpgradesDropPool.items.Add(item);
+                }
+                // else if (item.type == gemType) {
+                //     gemDropPool.items.Add(item);
+                // }
+                else {
+                    rockStonesDropPool.items.Add(item);
+                }
             }
             
             if (item.chanceToSpawnOnBody > 0f) {
@@ -5409,9 +5494,8 @@ public class Game : MonoBehaviour {
         ListPool<Item>.Release(tempEnemyPool.items);
         return item;
     }
-    
-    
-    private Item GetItemFromDropPool(DropPool dropPool) {
+
+    private Item GetItemFromDropPool(DropPool dropPool, bool allowNullReturns = false) {
         Assert.IsFalse(dropPool.items == enemyDropPool.items, $"Use {nameof(GetItemFromEnemyDropPool)} for enemies");
         
         dropPool.items.Shuffle();
@@ -5422,10 +5506,10 @@ public class Game : MonoBehaviour {
                 return drop;
             }
         }
-        
-        return dropPool.items[^1];
-    }
 
+        return allowNullReturns ? null : dropPool.items[^1];
+    }
+    
     private void GetUniqueItemsFromDropPool(DropPool dropPool, int maxCount, List<Item> items, float raritySkew = 0f) {
         dropPool.items.Shuffle();
         
@@ -5446,15 +5530,16 @@ public class Game : MonoBehaviour {
     private float GetDropChanceOfItem(Item item, DropOrigin origin) {
         float addChanceToSpawnFromLuck = 0f;
         
-        // if (origin != DropOrigin.Trader) {
-        //     addChanceToSpawnFromLuck = item.GetRarity() switch {
-        //         // Scaling the luck increase exponentionally (the adding/subtracting 1 is because rarity skew from luck is a decimal)
-        //         Item.Rarity.Uncommon  => Mathf.Pow(1f + RaritySkewIncreaseFromLuck, 1.1f) - 1f,
-        //         Item.Rarity.Rare      => Mathf.Pow(1f + RaritySkewIncreaseFromLuck, 1.2f) - 1f,
-        //         Item.Rarity.Legendary => Mathf.Pow(1f + RaritySkewIncreaseFromLuck, 1.3f) - 1f,
-        //         _                     => 0f,
-        //     };
-        // }
+        if (origin != DropOrigin.Trader) {
+            float raritySkewIncreaseFromMap = loadedMapData.increasedLootRarityChance;
+            addChanceToSpawnFromLuck = item.GetRarity() switch {
+                // Scaling the luck increase exponentionally (the adding/subtracting 1 is because rarity skew is a decimal)
+                Item.Rarity.Uncommon  => Mathf.Pow(1f + raritySkewIncreaseFromMap, 1.1f) - 1f,
+                Item.Rarity.Rare      => Mathf.Pow(1f + raritySkewIncreaseFromMap, 1.2f) - 1f,
+                Item.Rarity.Legendary => Mathf.Pow(1f + raritySkewIncreaseFromMap, 1.3f) - 1f,
+                _                     => 0f,
+            };
+        }
         
         return origin switch {
             DropOrigin.Rock => Mathf.Clamp01(item.chanceToSpawnFromRock + addChanceToSpawnFromLuck),
@@ -5547,7 +5632,7 @@ public class Game : MonoBehaviour {
     }
     
     public static string DisplayProb(float probability) {
-        return ColorText($"{Mathf.FloorToInt(probability * 100f)}%", inst.styles.increaseDescColor);
+        return ColorText($"{Mathf.FloorToInt(probability * 100f)}%", inst.styles.timeDescColor);
     }
     
     public static string DisplayProbIncrease(float probability) {
@@ -5560,11 +5645,11 @@ public class Game : MonoBehaviour {
 
     
     public static string DisplayNumber(int number) {
-        return ColorText(number.ToString(), inst.styles.increaseDescColor);
+        return ColorText(number.ToString(), inst.styles.timeDescColor);
     }
     
     public static string DisplayNumber(float number) {
-        return ColorText(number.ToString("0.00"), inst.styles.increaseDescColor);
+        return ColorText(number.ToString("0.00"), inst.styles.timeDescColor);
     }
 
 

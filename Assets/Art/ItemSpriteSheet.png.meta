@@ -427,28 +427,6 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ItemSpriteSheet_17
-      rect:
-        serializedVersion: 2
-        x: 48
-        y: 368
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 7c82c4c962f49a74093f5db1065b0d89
-      internalID: -1594482155
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
       name: ItemSpriteSheet_18
       rect:
         serializedVersion: 2
@@ -1104,28 +1082,6 @@ TextureImporter:
       bones: []
       spriteID: f1fa6adb1e0480c44a0c5cdbfe78d107
       internalID: 1558544633
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ItemSpriteSheet_46
-      rect:
-        serializedVersion: 2
-        x: 48
-        y: 384
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 9f2db5b3589745a4ca43f59ea648d8ed
-      internalID: 564901494
       vertices: []
       indices: 
       edges: []

@@ -55,7 +55,7 @@ namespace LunaWolfStudiosEditor.ScriptableSheets
 			m_Virtualization = true;
 			m_MaxIterations = 3000;
 			m_MaxVisibleCells = 800;
-			m_RowsPerPage = 20;
+			m_RowsPerPage = 60;
 			m_VisibleColumnLimit = 40;
 		}
 
@@ -70,8 +70,8 @@ namespace LunaWolfStudiosEditor.ScriptableSheets
 			maxIterationsStepIndex = EditorGUILayout.IntSlider(SettingsContent.DigitField.MaxIterations, maxIterationsStepIndex, 1, 10);
 			m_MaxIterations = maxIterationsStepIndex * 1000;
 			m_MaxVisibleCells = EditorGUILayout.IntSlider(SettingsContent.DigitField.MaxVisibleCells, m_MaxVisibleCells, 100, 1600);
-			m_RowsPerPage = EditorGUILayout.IntSlider(SettingsContent.DigitField.RowsPerPage, m_RowsPerPage, 1, Mathf.Min(100, m_MaxVisibleCells / m_VisibleColumnLimit));
-			m_VisibleColumnLimit = EditorGUILayout.IntSlider(SettingsContent.DigitField.VisibleColumnLimit, m_VisibleColumnLimit, 1, Mathf.Min(100, m_MaxVisibleCells / m_RowsPerPage));
+			m_RowsPerPage = EditorGUILayout.IntSlider(SettingsContent.DigitField.RowsPerPage, m_RowsPerPage, 1, 100);
+			m_VisibleColumnLimit = EditorGUILayout.IntSlider(SettingsContent.DigitField.VisibleColumnLimit, m_VisibleColumnLimit, 1, 100);
 		}
 	}
 }

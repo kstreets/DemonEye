@@ -10,9 +10,9 @@ public class BleedCritSoulcard : Soulcard {
 
     public float probability;
     
-    public override void AddInstanceToEye(Game.DemonEyeInstance eyeInstance, int stackCount) {
+    public override void AddInstanceToEye(DemonEyeInstance eyeInstance, int stackCount) {
         eyeInstance.bleedCrit = new() {
-            probability = GetProbability(stackCount) 
+            probability = GetProbability(stackCount),
         };
     }
     
@@ -21,7 +21,7 @@ public class BleedCritSoulcard : Soulcard {
     }
     
     private float GetProbability(int stackCount) {
-        return probability * stackCount;
+        return TaperFloat(probability, stackCount, 0.5f);
     }
     
 }

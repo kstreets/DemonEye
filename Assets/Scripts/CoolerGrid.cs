@@ -84,7 +84,7 @@ public class CoolerGrid : MonoBehaviour {
         }
     }
 
-    public Vector3 GetSpawnPosition(Vector2 playerPosition) {
+    public Vector3 GetSpawnPosition(Vector2 playerPosition, int innerCellRadius, int outerCellRadius) {
         bool needToRecalculate = lastUpdateTime != Time.time;
         lastUpdateTime = Time.time;
 
@@ -94,7 +94,7 @@ public class CoolerGrid : MonoBehaviour {
                 return Vector3.zero;
             }
 
-            UpdateDataForSpawnCells(playerCell, 12, 20);
+            UpdateDataForSpawnCells(playerCell, innerCellRadius, outerCellRadius);
         }
 
         Vector2 slightRandomOffset = Random.insideUnitCircle * (cellSize * 0.90f);

@@ -9,8 +9,8 @@ public class Soulcard : Item {
 
     public MechanicDesc relativeMechanicDesc;
     
-    public virtual void AddInstanceToEnemy(Game.Enemy enemy, int stackCount) { }
-    public virtual void AddInstanceToEye(Game.DemonEyeInstance eyeInstance, int stackCount) { }
+    public virtual void AddInstanceToEnemy(Enemy enemy, int stackCount) { }
+    public virtual void AddInstanceToEye(DemonEyeInstance eyeInstance, int stackCount) { }
 
     public override string GetDescription() {
         return GetStackDescription(1);
@@ -19,7 +19,7 @@ public class Soulcard : Item {
     public virtual string GetStackDescription(int stackCount) {
         return "Modifier has no description";
     }
-
+    
     protected int TaperInteger(int value, int stackCount, float taper) {
         Assert.IsFalse(taper >= 1f && taper <= 0f, "Taper needs to be between 0 and 1");
         return Mathf.RoundToInt(value * Mathf.Pow(stackCount, taper));
@@ -34,7 +34,7 @@ public class Soulcard : Item {
     
     [Button]
     private void AutoCalculateSellPrice() {
-        sellPrice = Mathf.RoundToInt(buyPrice * 0.25f);     
+        sellPrice = Mathf.RoundToInt(buyPrice * 0.55f);     
         EditorUtility.SetDirty(this);
     }
     

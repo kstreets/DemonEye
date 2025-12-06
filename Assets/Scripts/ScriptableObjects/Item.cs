@@ -16,7 +16,6 @@ public class Item : UuidScriptableObject {
     public Trader associatedTrader;
     public int buyPrice;
     public int sellPrice;
-    public int traderXp;
 
     [Space]
 
@@ -24,10 +23,16 @@ public class Item : UuidScriptableObject {
     [ShowIf(nameof(spawnsOnAllMaps), false)]
     public List<MapData> spawnsOnMaps;
     [EndIf] 
+    
     [Range(0f, 1f)] public float chanceToSpawnOnBody;
     [Range(0f, 1f)] public float chanceToSpawnOnTrader;
     [Range(0f, 1f)] public float chanceToSpawnFromRock;
     [Range(0f, 1f)] public float chanceToSpawnFromEnemy;
+
+    [HideIf(nameof(chanceToSpawnOnTrader), 0f)]
+    [Range(1, 10)] public int traderLevelRequired;
+    [MinMaxSlider(1, 15)] public Vector2Int traderStockRange;
+    [EndIf]
 
     [HideIf(nameof(chanceToSpawnFromEnemy), 0f)]
     public List<EnemyData> spawnsFromEnemies;

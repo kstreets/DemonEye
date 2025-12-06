@@ -27,7 +27,7 @@ public class SlowSoulcard : Soulcard {
     }
 
     private float GetSpeedReduction(int stackCount) {
-        return TaperFloat(speedReductionPercent, stackCount, 0.5f);
+        return TaperFloat(speedReductionPercent, stackCount, 0.4f);
     }
     
 }

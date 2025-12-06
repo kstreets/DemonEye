@@ -5,33 +5,31 @@ using static Game;
 public class PoisonSoulcard : Soulcard {
 
     public struct InstanceData {
-        public float probability;
         public float duration;
+        public float damageMulti;
+        public float minHealthPercentForMulti;
     }
     
     public float probability;
     public float duration;
+    public float damageMulti;
+    public float minHealthPercentForMulti; 
 
-    public override void AddInstanceToEnemy(Game.Enemy enemy, int stackCount) {
+    public override void AddInstanceToEnemy(Enemy enemy, int stackCount) {
         float prob = GetProbability(stackCount);
         if (RollProbability(prob)) {
-            enemy.poisoned = new() {
-                probability = GetProbability(stackCount),
+            enemy.poison = new() {
                 duration = GetDuration(stackCount),
+                damageMulti = damageMulti,
+                minHealthPercentForMulti = minHealthPercentForMulti,
             };
-            inst.AddPoisonedEffect(enemy, enemy.poisoned.Value.duration);
+            inst.AddPoisonedEffect(enemy, enemy.poison.Value.duration);
         }
     }
     
-    public override void AddInstanceToEye(Game.DemonEyeInstance eyeInstance, int stackCount) {
-        eyeInstance.poison = new() {
-            probability = GetProbability(stackCount),
-            duration = GetDuration(stackCount),
-        };
-    }
-    
     public override string GetStackDescription(int stackCount) {
-        return $"{DisplayProb(GetProbability(stackCount))} chance for a projectile to poison an enemy for {GetDuration(stackCount)} seconds";
+        return $"{DisplayProb(GetProbability(stackCount))} chance for a projectile to poison an enemy for {DisplaySeconds(GetDuration(stackCount))}, " +
+               $"dealing {DisplayMultiplier(damageMulti)} damage to enemies over {DisplayProb(minHealthPercentForMulti)} health.";
     }
 
     private float GetProbability(int stackCount) {
@@ -41,5 +39,5 @@ public class PoisonSoulcard : Soulcard {
     private float GetDuration(int stackCount) {
         return duration * stackCount;
     }
-
+    
 }

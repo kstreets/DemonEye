@@ -19,20 +19,21 @@ MonoBehaviour:
   pickupRadius: 0.07
   type: {fileID: 0}
   associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
-  buyPrice: 1
+  buyPrice: 0
   sellPrice: 1
-  traderXp: 0
   spawnsOnAllMaps: 1
   spawnsOnMaps: []
   chanceToSpawnOnBody: 0.2
   chanceToSpawnOnTrader: 0
   chanceToSpawnFromRock: 1
   chanceToSpawnFromEnemy: 0
+  traderLevelRequired: 1
+  traderStockRange: {x: 0, y: 0}
   spawnsFromEnemies: []
   modifiesStats: 0
   agilityStatAdjustment: 0
   strengthStatAdjustment: 0
   itemGroupProps: {fileID: 0}
   maxStackCount: 15
-  weight: 10
+  weight: 5
   description: Demonic stone, a powerful tool for building.

@@ -20,4 +20,5 @@ MonoBehaviour:
   projectileSpeed: 2
   defaultCritChance: 0.15
   defaultCritMultiplier: 1.5
+  postDeathStartingHealth: 25
   distancePerUnit: 0.32

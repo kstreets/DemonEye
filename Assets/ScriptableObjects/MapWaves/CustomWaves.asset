@@ -12,11 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6be7b725e872d8544a676cc6767aad0a, type: 3}
   m_Name: CustomWaves
   m_EditorClassIdentifier: 
-  timeBeforeFirstPhase: 35
-  timeBeforePortalSpawns: 25
+  timeBeforeFirstPhase: 30
+  timeBeforePortalSpawns: 15
   spawnPhases:
-  - phaseDuration: 45
-    spawnDuration: 18
+  - phaseDuration: 40
+    spawnDuration: 12
+    spawnCellRange: {x: 10, y: 16}
+    repositionCellRange: {x: 6, y: 11}
     spawnRateCurve:
       serializedVersion: 2
       m_Curve:
@@ -42,12 +44,16 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 0
     enemyBatches:
-    - enemyCount: 60
+    - enemyCount: 30
       enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
-    - enemyCount: 60
+    - enemyCount: 15
       enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
-  - phaseDuration: 60
-    spawnDuration: 20
+    - enemyCount: 8
+      enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
+  - phaseDuration: 50
+    spawnDuration: 15
+    spawnCellRange: {x: 10, y: 16}
+    repositionCellRange: {x: 6, y: 11}
     spawnRateCurve:
       serializedVersion: 2
       m_Curve:
@@ -73,42 +79,53 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 0
     enemyBatches:
+    - enemyCount: 35
+      enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
     - enemyCount: 20
-      enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
-    - enemyCount: 60
       enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
-    - enemyCount: 15
-      enemyData: {fileID: 11400000, guid: cc0cbb56eaca641408b7d1856ed0d048, type: 2}
+    - enemyCount: 12
+      enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
   - phaseDuration: 120
-    spawnDuration: 45
+    spawnDuration: 55
+    spawnCellRange: {x: 10, y: 16}
+    repositionCellRange: {x: 6, y: 11}
     spawnRateCurve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 1
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 34
+        value: 0.099378854
+        inSlope: 0.3064146
+        outSlope: 0.3064146
+        tangentMode: 0
         weightedMode: 0
         inWeight: 0
-        outWeight: 0
+        outWeight: 0.09628507
+      - serializedVersion: 3
+        time: 0.38504264
+        value: 0.16964276
+        inSlope: 0.501258
+        outSlope: 0.501258
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.12167642
       - serializedVersion: 3
         time: 1
         value: 1
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 34
+        inSlope: 0.22479533
+        outSlope: 0.22479533
+        tangentMode: 0
         weightedMode: 0
-        inWeight: 0
+        inWeight: 0.0621683
         outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 0
     enemyBatches:
-    - enemyCount: 100
+    - enemyCount: 200
       enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
-    - enemyCount: 65
+    - enemyCount: 100
       enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
-    - enemyCount: 15
-      enemyData: {fileID: 11400000, guid: cc0cbb56eaca641408b7d1856ed0d048, type: 2}
+    - enemyCount: 80
+      enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}

@@ -14,6 +14,9 @@ public class GameplayConfig : ScriptableObject {
     [Header("Crit")]
     public float defaultCritChance;
     public float defaultCritMultiplier;
+
+    [Header("Player")]
+    public int postDeathStartingHealth;
     
     [Header("Misc")]
     public float distancePerUnit;
