@@ -19,14 +19,15 @@ MonoBehaviour:
   pickupRadius: 0.07
   type: {fileID: 11400000, guid: b4838a3d7e08dae4fbca579b80e09e71, type: 2}
   associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
-  buyPrice: 40
-  sellPrice: 13
+  buyPrice: 60
+  sellPrice: 10
   spawnsOnAllMaps: 1
   spawnsOnMaps: []
   chanceToSpawnOnBody: 0
   chanceToSpawnOnTrader: 1
   chanceToSpawnFromRock: 0
   chanceToSpawnFromEnemy: 0
+  chanceToExistInLevel: 0
   traderLevelRequired: 1
   traderStockRange: {x: 1, y: 3}
   spawnsFromEnemies: []

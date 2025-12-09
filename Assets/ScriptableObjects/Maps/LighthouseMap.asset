@@ -13,14 +13,15 @@ MonoBehaviour:
   m_Name: LighthouseMap
   m_EditorClassIdentifier: Assembly-CSharp::MapData
   displayName: Lighthouse
-  sceneReference: Lighthouse
-  waves: {fileID: 11400000, guid: 38dd496c01602c04c9ab160aba69b9ec, type: 2}
+  sceneReference: LighthouseExpansion
+  waves: {fileID: 11400000, guid: c3f7f6d7c8bc62a4993a44c716d126e0, type: 2}
   minRockCount: 8
   maxRockCount: 14
   minBodyCount: 3
   maxBodyCount: 5
+  minForageCount: 4
+  maxForageCount: 8
   eyeUpgradeOnBodyChance: 0.25
   eyeUpgradeFromRockChance: 0.4
   maxGemCountPerRock: 2
-  individualGemSpawnChance: 0.5
   increasedLootRarityChance: 0

@@ -28,6 +28,7 @@ public class Item : UuidScriptableObject {
     [Range(0f, 1f)] public float chanceToSpawnOnTrader;
     [Range(0f, 1f)] public float chanceToSpawnFromRock;
     [Range(0f, 1f)] public float chanceToSpawnFromEnemy;
+    [Range(0f, 1f)] public float chanceToExistInLevel;
 
     [HideIf(nameof(chanceToSpawnOnTrader), 0f)]
     [Range(1, 10)] public int traderLevelRequired;
@@ -84,5 +85,10 @@ public class Item : UuidScriptableObject {
         
         return "Item is missing description";
     }
-    
+
+    [OnValueChanged(nameof(buyPrice))]
+    private void AutoSetSellPriceOnBuyPriceChanged() {
+        sellPrice = Mathf.RoundToInt(buyPrice * 0.28f);
+    }
+
 }

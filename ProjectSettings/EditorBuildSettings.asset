@@ -14,6 +14,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Customs.unity
     guid: 5fd8c1da36d40be4887828c63cb56905
+  - enabled: 1
+    path: Assets/Scenes/LighthouseExpansion.unity
+    guid: 3f6d3a4d8d8f7a44d899285babe12f86
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: a532c4d929d3a764a805933affb91304, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}

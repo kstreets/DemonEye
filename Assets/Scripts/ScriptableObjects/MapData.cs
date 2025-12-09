@@ -12,6 +12,8 @@ public class MapData : ScriptableObject {
     public int maxRockCount;
     public int minBodyCount;
     public int maxBodyCount;
+    public int minForageCount;
+    public int maxForageCount;
     
     [Header("Eye Upgrade Drop Chances")]
     public float eyeUpgradeOnBodyChance;

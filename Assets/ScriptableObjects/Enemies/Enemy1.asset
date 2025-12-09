@@ -19,7 +19,7 @@ MonoBehaviour:
   excludeCollisionLayers:
     serializedVersion: 2
     m_Bits: 0
-  attackDistance: 0.25
+  attackDistance: 0.21
   attackDamageDelay: 0.4
   attackRadius: 0.1
   sideAttackOffset: {x: 0.157, y: 0.081}

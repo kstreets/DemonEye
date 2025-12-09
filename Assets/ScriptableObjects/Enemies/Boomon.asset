@@ -27,7 +27,7 @@ MonoBehaviour:
   donwAttackOffset: {x: 0, y: 0}
   speed: 0.45
   health: 300
-  damage: 15
+  damage: 20
   changeToCauseBleed: 0.15
   chanceToDropItem: 0.05
   soulWorthPerKill: 4

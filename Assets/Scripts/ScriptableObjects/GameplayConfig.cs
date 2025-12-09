@@ -18,6 +18,11 @@ public class GameplayConfig : ScriptableObject {
     [Header("Player")]
     public int postDeathStartingHealth;
     
+    [Header("Portal")]
+    public float portalSummonTime;
+    public float portalPostSummonDelay;
+    public float portalActiveDuration;
+
     [Header("Misc")]
     public float distancePerUnit;
 

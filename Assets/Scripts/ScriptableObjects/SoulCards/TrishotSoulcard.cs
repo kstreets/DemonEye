@@ -12,7 +12,7 @@ public class TrishotSoulcard : Soulcard {
     public float probability;
     public float reducedDamageMultiplier;
     
-    public override void AddInstanceToEye(Game.DemonEyeInstance eyeInstance, int stackCount) {
+    public override void AddInstanceToEye(DemonEyeInstance eyeInstance, int stackCount) {
         InstanceData instance = new() {
             probability = GetProbability(stackCount),
             reducedDamageMultiplier = reducedDamageMultiplier,

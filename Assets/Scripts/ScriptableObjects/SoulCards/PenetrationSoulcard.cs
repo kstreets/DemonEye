@@ -25,7 +25,7 @@ public class PenetrationSoulcard : Soulcard {
     }
 
     private int GetGoThroughCount(int stackCount) {
-        return startingGoThroughCount * stackCount;
+        return startingGoThroughCount + (stackCount - 1);
     }
 
 }

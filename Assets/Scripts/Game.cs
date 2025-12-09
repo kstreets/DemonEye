@@ -468,8 +468,8 @@ public class Game : MonoBehaviour {
 
     private void FixedUpdate() {
         if (!InRaid) return;
-        currentMapInstance.grid.CompleteFlowFieldCalculation();
-        currentMapInstance.grid.ScheduleFlowFieldCalculation(player.position);
+        loadedMapInst.grid.CompleteFlowFieldCalculation();
+        loadedMapInst.grid.ScheduleFlowFieldCalculation(player.position);
         FixedUpdateEnemies();
     }
 
@@ -908,6 +908,9 @@ public class Game : MonoBehaviour {
     private int attackUpAnim = Animator.StringToHash("AttackUp");
     private int attackDownAnim = Animator.StringToHash("AttackDown");
     
+    private Limiter enemyReteleportLimitter;
+    private int enemyReteleportCount;
+    
     public class Enemy : Entity {
         public float teleportTime;
         public float flowFieldAcc;
@@ -923,6 +926,12 @@ public class Game : MonoBehaviour {
     }
     
     private void UpdateEnemies() {
+        bool timeHasPassed = enemyReteleportLimitter.TimeHasPassed(1f);
+        if (timeHasPassed) {
+            enemyReteleportCount = 0;
+        }
+        int maxTeleportCount = Mathf.RoundToInt(enemies.Count * 0.08f);
+        
         for (int i = enemies.Count - 1; i >= 0; i--) {
             Enemy enemy = enemies[i];
             
@@ -932,11 +941,15 @@ public class Game : MonoBehaviour {
 
             enemy.teleportTime += Time.deltaTime;
             float distFromPlayer = Vector2.Distance(player.Center, enemy.Center);
+            
+            bool canReteleport = timeHasPassed && enemyReteleportCount < maxTeleportCount;
 
-            if (enemy.teleportTime >= 8f && distFromPlayer > 2.2f) {
+            if (canReteleport && enemy.teleportTime >= 6.5f && distFromPlayer > 1.1f) {
                 Vector2Int repositionCellRange = spawnManager.CurSpawnPhase.repositionCellRange;
-                Vector2 randomSpawnGridPos = currentMapInstance.grid.GetSpawnPosition(player.position, repositionCellRange.x, repositionCellRange.y);
-                TeleportEnemy(enemy, randomSpawnGridPos, TeleportType.Reposition);
+                Vector2 randomSpawnGridPos = loadedMapInst.grid.GetSpawnPosition(player.position, repositionCellRange.x, repositionCellRange.y);
+                if (Vector2.Distance(randomSpawnGridPos, player.position) < distFromPlayer) {
+                    TeleportEnemy(enemy, randomSpawnGridPos, TeleportType.Reposition);
+                }
                 continue;
             }
             
@@ -1089,7 +1102,7 @@ public class Game : MonoBehaviour {
 
             Vector3 targetDir = Vector3.zero;
             if (enemy.data.usesFlowField) {
-                targetDir = currentMapInstance.grid.GetFlowFieldDirection(enemy.position);
+                targetDir = loadedMapInst.grid.GetFlowFieldDirection(enemy.position);
             }
             if (targetDir == Vector3.zero) {
                 targetDir = (player.position - enemy.position).normalized;
@@ -1260,7 +1273,7 @@ public class Game : MonoBehaviour {
         
         while (sm.spawnEvents.IndexInRange(sm.spawnTimeIndex) && sm.spawnEvents[sm.spawnTimeIndex].time <= sm.timeInPhase) {
             Vector2Int spawnCellRange = spawnManager.CurSpawnPhase.spawnCellRange;
-            Vector2 randomSpawnPos = currentMapInstance.grid.GetSpawnPosition(player.position, spawnCellRange.x, spawnCellRange.y);
+            Vector2 randomSpawnPos = loadedMapInst.grid.GetSpawnPosition(player.position, spawnCellRange.x, spawnCellRange.y);
 
             EnemyData enemyToSpawn = sm.spawnEvents[sm.spawnTimeIndex].enemy;
             Enemy enemy = SpawnEntity<Enemy>(enemyToSpawn.enemyPrefab, randomSpawnPos, Quaternion.identity);
@@ -1297,17 +1310,20 @@ public class Game : MonoBehaviour {
     private void InitRaid() {
         curRaidState = RaidState.None;
         demonEyeRaidStats = new();
+        callingExitPortalSequence.Stop();
+        canTakeExitPortal = false;
+        timeSpentSummoningPortal = 0f;
         
         Cursor.visible = false;
         ShowRaidUI();
 
         deathBackgroundImage.enabled = false;
         
-        currentMapInstance.gameObject.SetActive(true);
-        currentMapInstance.grid.Init();
+        loadedMapInst.gameObject.SetActive(true);
+        loadedMapInst.grid.Init();
 
-        int randomSpawnIndex = Random.Range(0, currentMapInstance.spawnPositionsParent.childCount);
-        Vector2 randomSpawnPos = currentMapInstance.spawnPositionsParent.GetChild(randomSpawnIndex).position;
+        int randomSpawnIndex = Random.Range(0, loadedMapInst.spawnPositionsParent.childCount);
+        Vector2 randomSpawnPos = loadedMapInst.spawnPositionsParent.GetChild(randomSpawnIndex).position;
         
         player.position = randomSpawnPos;
         player.gameObject.SetActive(false);
@@ -1317,8 +1333,8 @@ public class Game : MonoBehaviour {
         cinemachineCamera.Follow = player.trans;
         
         InitSpawnManager(loadedMapData.waves);
-        SpawnResources(currentMapInstance.resourceParent);
-        InitEarlyExitPortal(currentMapInstance.exitPortalsParent, spawnManager.timeUntilFinalWave + loadedMapData.waves.timeBeforePortalSpawns);
+        SpawnResources(loadedMapInst.resourceParent);
+        InitEarlyExitPortal(loadedMapInst.exitPortalsParent, spawnManager.timeUntilFinalWave + loadedMapData.waves.timeBeforePortalSpawns);
         
         onTeleportToMap?.Invoke(loadedMapData);
 
@@ -1378,13 +1394,13 @@ public class Game : MonoBehaviour {
         if (raidStateSwitchedThisFrame && curRaidState == RaidState.PostFinalWave) {
             Tween.Delay(0.25f, static () => {
                 inst.AnimateLargeRaidText(ColorText("Map Cleared!", inst.styles.increaseDescColor), 1.8f);
-                inst.SpawnFinalExitPortal();
+                // inst.SpawnFinalExitPortal();
             });
         }
     }
     
     private void DeinitRaid() {
-        currentMapInstance.grid.Deinit();
+        loadedMapInst.grid.Deinit();
         
         DestroyLevelEntities();
         UnloadCurrentMapAsync();
@@ -1439,7 +1455,7 @@ public class Game : MonoBehaviour {
         }
         
         if (exitPortalCountdownText.gameObject.activeInHierarchy) {
-            exitPortalCountdownText.text = GetCountdownText(exitPortalTween.duration - exitPortalTween.elapsedTime);
+            // exitPortalCountdownText.text = GetCountdownText(exitPortalTween.duration - exitPortalTween.elapsedTime);
         }
         if (finalWaveCountdownText.gameObject.activeInHierarchy) {
             finalWaveCountdownText.text = GetCountdownText(spawnManager.timeUntilFinalWave);
@@ -1682,7 +1698,7 @@ public class Game : MonoBehaviour {
     [NonSerialized] private Inventory lootInvetoryPtr;
     [NonSerialized] private List<Inventory> allInventories = new();
     
-    private const int playerPocketSize = 6;
+    private const int playerPocketSize = 10;
     private const int playerQuickUseSize = 4;
     private const int playerEquipmentSize = 3;
     private int NakedPlayerInventorySize => playerPocketSize + playerQuickUseSize + playerEquipmentSize;
@@ -1896,7 +1912,7 @@ public class Game : MonoBehaviour {
         }
         else {
             bool itemIsOwnedByTrader = info.inventory.slots[info.slotIndex].item.traderOwned;
-            sellOrBuyPrice = itemIsOwnedByTrader ? item.buyPrice : item.sellPrice;
+            sellOrBuyPrice = itemIsOwnedByTrader ? item.buyPrice : item.sellPrice * hoveredSlot.item.count;
         }
                              
         string coinText = $"<sprite=0>{ColorText(sellOrBuyPrice.ToString(), styles.coinCurrencyColor)}";
@@ -2991,6 +3007,7 @@ public class Game : MonoBehaviour {
     public class Player : Entity {
         public Vector3 velocity;
         public bool bleeding;
+        public bool interactingWithPortal;
         
         public int nextIdleAnimHash;
         public int nextIdleDir;
@@ -3028,6 +3045,7 @@ public class Game : MonoBehaviour {
     private void InitPlayer() {
         player.animator.Play(playerIdleDownAnim);
         player.nextIdleAnimHash = playerIdleDownAnim;
+        player.interactingWithPortal = false;
         defaultPlayerPreviewSprite ??= playerPreviewImage.sprite;
     }
     
@@ -3064,7 +3082,7 @@ public class Game : MonoBehaviour {
             return;
         }
 
-        if (InventoryIsOpen) return;
+        if (InventoryIsOpen || player.interactingWithPortal) return;
         
         Vector2 moveInput = moveInputAction.ReadValue<Vector2>();
         Vector2 prevPos = player.position;
@@ -3221,6 +3239,9 @@ public class Game : MonoBehaviour {
         // if (!player.bleeding && !PlayerHealthIsAtAutoBleedStop() && RollProbability(chanceToBleed)) {
         //     player.bleeding = true;
         // }
+        if (timeSpentSummoningPortal < gameplayConfig.portalSummonTime) {
+            timeSpentSummoningPortal = 0f;
+        }
         player.health -= damage;
         AddFlashHitEffect(player);
         SpawnDamageNumber(player.position, damage, DamageColor.Blood);
@@ -3500,6 +3521,10 @@ public class Game : MonoBehaviour {
     // Interactions 
     // *******************************
     
+    private Sequence callingExitPortalSequence;
+    private bool canTakeExitPortal;
+    private float timeSpentSummoningPortal;
+    
     private void CheckForInteractions() { 
         interactPrompt.gameObject.SetActive(false);
         interactionDetails.gameObject.SetActive(false);
@@ -3538,9 +3563,30 @@ public class Game : MonoBehaviour {
             }
 
             if (col.CompareTag(Tags.ExitPortal)) {
-                EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Take Exit Portal");
-                if (interactInputAction.WasPressedThisFrame()) {
-                    gameStateMachine.SetStateIfNotCurrent(curRaidState == RaidState.PostFinalWave ? winExitState : earlyExitState);
+                if (timeSpentSummoningPortal < gameplayConfig.portalSummonTime) {
+                    EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Summon Exit Portal");
+                    if (interactInputAction.IsPressed()) {
+                        player.interactingWithPortal = true;
+                        timeSpentSummoningPortal += Time.deltaTime;
+
+                        if (timeSpentSummoningPortal >= gameplayConfig.portalSummonTime && !callingExitPortalSequence.isAlive) {
+                            player.interactingWithPortal = false;
+                            callingExitPortalSequence = Sequence.Create();
+                            callingExitPortalSequence.ChainDelay(gameplayConfig.portalPostSummonDelay);
+                            callingExitPortalSequence.Chain(Tween.Scale(activeExitPortal, Vector3.one, 0.25f, Ease.OutBack));
+                            callingExitPortalSequence.OnComplete(static () => inst.canTakeExitPortal = true);
+                        }
+                    }
+                    else {
+                        player.interactingWithPortal = false;
+                        timeSpentSummoningPortal = 0f;
+                    }
+                }
+                if (canTakeExitPortal) {
+                    EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Take Exit Portal");
+                    if (interactInputAction.WasPressedThisFrame()) {
+                        gameStateMachine.SetStateIfNotCurrent(curRaidState == RaidState.PostFinalWave ? winExitState : earlyExitState);
+                    }
                 }
             }
         }
@@ -3803,7 +3849,7 @@ public class Game : MonoBehaviour {
                 
             if (entity.health <= 0) {
                 if (entity.obstacleCellRadius > 0) {
-                    currentMapInstance.grid.ClearObstacle(entity.obstaclePosition, entity.obstacleCellRadius);
+                    loadedMapInst.grid.ClearObstacle(entity.obstaclePosition, entity.obstacleCellRadius);
                 }
                 
                 Entity smokeEntity = SpawnEntity<Entity>(rockSmokePrefab, entity.position, Quaternion.identity);
@@ -3816,14 +3862,15 @@ public class Game : MonoBehaviour {
                 float angleDeltaPerDrop = 360f / dropCount;
                 float randomRangePerDrop = angleDeltaPerDrop * 0.25f;
 
-                int upgradeDropIndex = -1;
-                if (RollProbability(loadedMapData.eyeUpgradeFromRockChance)) {
-                    upgradeDropIndex = Random.Range(0, dropCount);
-                }
-
                 int gemsSpawned = 0;
                 int maxGemsAllowedToSpawn = loadedMapData.maxGemCountPerRock;
                 
+                int upgradeDropIndex = -1;
+                if (RollProbability(loadedMapData.eyeUpgradeFromRockChance)) {
+                    upgradeDropIndex = Random.Range(0, dropCount);
+                    gemsSpawned++;
+                }
+
                 for (int i = 0; i < dropCount; i++) {
                     Item dropItem = null;
                     if (i == upgradeDropIndex) {
@@ -4008,22 +4055,32 @@ public class Game : MonoBehaviour {
     // ***************************
     
     private Transform activeExitPortal;
-    private Tween exitPortalTween;
+    // private Tween exitPortalTween;
 
     private void InitEarlyExitPortal(Transform exitPortalParent, float timeBeforePortalsSpawn) {
         activeExitPortal = null;
         
+        using var autoRelease = ListPool<Transform>.Get(out List<Transform> possibleExitPortals);
+        
         foreach (Transform portal in exitPortalParent) {
             portal.gameObject.SetActive(false);
+            if (Vector2.Distance(player.position, portal.position) > 5) {
+                possibleExitPortals.Add(portal);
+            }
         }
+        
+        possibleExitPortals.Shuffle();
+        activeExitPortal = possibleExitPortals[0];
+        activeExitPortal.gameObject.SetActive(true);
+        activeExitPortal.transform.localScale = Vector3.one * 0.25f;
 
-        exitPortalTween = Tween.Delay(timeBeforePortalsSpawn, () => {
-            int randomSpawnIndex = Random.Range(0, exitPortalParent.childCount);
-            activeExitPortal = exitPortalParent.GetChild(randomSpawnIndex);
-            activeExitPortal.gameObject.SetActive(true);
-            Tween.Scale(activeExitPortal, 0f, 1f, 0.5f, Ease.OutBack);
-            PlayAudioClip(portalSpawnClip, activeExitPortal.position);
-        });
+        // exitPortalTween = Tween.Delay(timeBeforePortalsSpawn, () => {
+        //     int randomSpawnIndex = Random.Range(0, exitPortalParent.childCount);
+        //     activeExitPortal = exitPortalParent.GetChild(randomSpawnIndex);
+        //     activeExitPortal.gameObject.SetActive(true);
+        //     Tween.Scale(activeExitPortal, 0f, 1f, 0.5f, Ease.OutBack);
+        //     PlayAudioClip(portalSpawnClip, activeExitPortal.position);
+        // });
     }
 
     private void DespawnEarlyExitPortal() {
@@ -4043,7 +4100,7 @@ public class Game : MonoBehaviour {
             Vector2 randomPos = player.position.ToVector2() + Random.insideUnitCircle * Random.Range(0.5f, 1.5f);
             if (OverlapCircle(randomPos, 0.2f, Masks.StaticLevelMask).Count > 0) continue;
             
-            Transform exitPortalParent = currentMapInstance.exitPortalsParent;
+            Transform exitPortalParent = loadedMapInst.exitPortalsParent;
             int randomSpawnIndex = Random.Range(0, exitPortalParent.childCount);
             activeExitPortal = exitPortalParent.GetChild(randomSpawnIndex);
             activeExitPortal.gameObject.SetActive(true);
@@ -4059,6 +4116,7 @@ public class Game : MonoBehaviour {
     }
 
     private void UpdateExitPortalArrowUI() {
+        return;
         if (!activeExitPortal) {
             portalArrow.gameObject.SetActive(false);
             return;
@@ -4138,6 +4196,11 @@ public class Game : MonoBehaviour {
             Entity mineableRockEntity = SpawnResource<Entity>(gemRockPrefab, spawnPoints, 1);
             mineableRockEntity.health = 50;
         }
+
+        int foragablesToSpawn = Random.Range(loadedMapData.minForageCount, loadedMapData.maxForageCount);
+        for (int i = 0; i < foragablesToSpawn; i++) {
+            SpawnResource(GetItemFromDropPool(foragingDropPool), spawnPoints);
+        }
         
         int deadBodiesToSpawn = Random.Range(loadedMapData.minBodyCount, loadedMapData.maxBodyCount);
         InventorySlotUI[] lootInventorySlotUis = lootInventoryParent.GetComponentsInChildren<InventorySlotUI>(true);
@@ -4193,14 +4256,21 @@ public class Game : MonoBehaviour {
         T resource = SpawnEntity<T>(resourcePrefab, spawnTrans.position, spawnTrans.rotation);
 
         if (obstacleCellRadius > 0) {
-            currentMapInstance.grid.AddObstacle(resource.position, obstacleCellRadius);
+            loadedMapInst.grid.AddObstacle(resource.position, obstacleCellRadius);
             resource.obstacleCellRadius = obstacleCellRadius;
             resource.obstaclePosition = resource.position;
         }
 
         return resource;
     }
-
+    
+    private Entity SpawnResource(Item item, List<Transform> spawnPoints) {
+        int randomIndex = Random.Range(0, spawnPoints.Count);
+        Transform spawnTrans = spawnPoints[randomIndex];
+        spawnPoints.RemoveAt(randomIndex);
+        return SpawnItemAsEntity(item, 1, spawnTrans.position, spawnTrans.rotation);
+    }
+    
     private void DestroyLevelEntities() {
         for (int i = entities.Count - 1; i >= 0; i--) {
             if (entities[i].lifetime == EntityLifetime.Level) {
@@ -4665,15 +4735,15 @@ public class Game : MonoBehaviour {
         
         easyMapButton.onClick.AddListener(() => {
             LoadMapAsync(lighthouseMap, () => {
-                gameStateMachine.SetStateIfNotCurrent(raidState);
                 CreateDropPoolsForMap(lighthouseMap);
+                gameStateMachine.SetStateIfNotCurrent(raidState);
             });
         });
         
         mediumMapButton.onClick.AddListener(() => {
             LoadMapAsync(customsMap, () => {
-                gameStateMachine.SetStateIfNotCurrent(raidState);
                 CreateDropPoolsForMap(customsMap);
+                gameStateMachine.SetStateIfNotCurrent(raidState);
             });
         });
     }
@@ -5341,7 +5411,7 @@ public class Game : MonoBehaviour {
     private MapLoadingState mapLoadingState;
 
     [NonSerialized] public MapData loadedMapData;
-    [NonSerialized] public MapInstance currentMapInstance;
+    [NonSerialized] public MapInstance loadedMapInst;
 
     public void LoadMapAsync(MapData mapData, Action onLoadedCallback) {
         if (LoadingMapInProgress()) return;
@@ -5367,7 +5437,7 @@ public class Game : MonoBehaviour {
             
             foreach (GameObject root in loadedMapRoots) {
                 if (!root.TryGetComponent(out MapInstance map)) continue;
-                currentMapInstance = map;
+                loadedMapInst = map;
                 map.gameObject.SetActive(false);
                 break;
             }
@@ -5380,7 +5450,7 @@ public class Game : MonoBehaviour {
     public void UnloadCurrentMapAsync() {
         if (UnloadingMapInProgress()) return;
             
-        currentMapInstance.gameObject.SetActive(false); 
+        loadedMapInst.gameObject.SetActive(false); 
         
         Scene loadedMap = SceneManager.GetSceneByName(loadedMapData.sceneReference);
         AsyncOperation unloadOperation = SceneManager.UnloadSceneAsync(loadedMap);
@@ -5412,7 +5482,7 @@ public class Game : MonoBehaviour {
     // Item Dropping
     // ************************
 
-    private enum DropOrigin { Rock, Body, Trader, Enemy }
+    private enum DropOrigin { Rock, Body, Trader, Enemy, ExistsInLevel }
 
     private struct DropPool {
         public List<Item> items;
@@ -5421,18 +5491,18 @@ public class Game : MonoBehaviour {
 
     private DropPool rockStonesDropPool;
     private DropPool eyeUpgradesDropPool;
-    // private DropPool gemDropPool;
     private DropPool bodyDropPool;
     private DropPool traderDropPool;
     private DropPool enemyDropPool;
+    private DropPool foragingDropPool;
 
     private void CreateDropPools() {
         rockStonesDropPool = new() { items = new(), dropOrigin = DropOrigin.Rock };
         eyeUpgradesDropPool = new() { items = new(), dropOrigin = DropOrigin.Rock };
-        // gemDropPool = new() { items = new(), dropOrigin = DropOrigin.Rock };
         bodyDropPool = new() { items = new(), dropOrigin = DropOrigin.Body };
         traderDropPool = new() { items = new(), dropOrigin = DropOrigin.Trader };
         enemyDropPool = new() { items = new(), dropOrigin = DropOrigin.Enemy };
+        foragingDropPool = new() { items = new(), dropOrigin = DropOrigin.ExistsInLevel };
 
         foreach ((int _, Item item) in itemLookup) {
             if (item.chanceToSpawnOnTrader > 0f) {
@@ -5447,9 +5517,9 @@ public class Game : MonoBehaviour {
     
     private void CreateDropPoolsForMap(MapData map) { 
         rockStonesDropPool.items.Clear();
-        // gemDropPool.items.Clear();
         eyeUpgradesDropPool.items.Clear();
         bodyDropPool.items.Clear();
+        foragingDropPool.items.Clear();
         
         foreach ((int _, Item item) in itemLookup) {
             bool spawnsOnCurrentMap = item.spawnsOnAllMaps || item.spawnsOnMaps.Contains(map);
@@ -5459,9 +5529,6 @@ public class Game : MonoBehaviour {
                 if (item.type == soulcardType) {
                     eyeUpgradesDropPool.items.Add(item);
                 }
-                // else if (item.type == gemType) {
-                //     gemDropPool.items.Add(item);
-                // }
                 else {
                     rockStonesDropPool.items.Add(item);
                 }
@@ -5469,6 +5536,10 @@ public class Game : MonoBehaviour {
             
             if (item.chanceToSpawnOnBody > 0f) {
                 bodyDropPool.items.Add(item);
+            }
+
+            if (item.chanceToExistInLevel > 0f) {
+                foragingDropPool.items.Add(item);
             }
         }
     }
