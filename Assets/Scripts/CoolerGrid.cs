@@ -476,6 +476,19 @@ public class CoolerGrid : MonoBehaviour {
         Color gridColor = new(154f / 255f, 1f, 0f, 0.1f);
         Color gridFill = new(45f / 255f, 1f, 0f, 0.2f);
         
+        if (cells == null || cells.Count == 0) {
+            for (int i = 0; i < width; i++) {
+                for (int j = 0; j < height; j++) {
+                    Bounds bounds = new() {
+                        center = CalculateCellPosition(i, j),
+                        size = Vector3.one * cellSize,
+                    };
+                    DebugExtension.DrawBounds(bounds, nonGeneratedColor);
+                }
+            }
+            return;
+        }
+        
         if (cells != null && showFlowField) {
             foreach (GridCell cell in cells) {
                 Vector2 flowDir = cell.flowDir;
@@ -503,18 +516,6 @@ public class CoolerGrid : MonoBehaviour {
             }
             
             return;
-        }
-        
-        if (cells == null) {
-            for (int i = 0; i < width; i++) {
-                for (int j = 0; j < height; j++) {
-                    Bounds bounds = new() {
-                        center = CalculateCellPosition(i, j),
-                        size = Vector3.one * cellSize,
-                    };
-                    DebugExtension.DrawBounds(bounds, nonGeneratedColor);
-                }
-            }
         }
         
     }

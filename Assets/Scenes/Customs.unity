@@ -86188,7 +86188,7 @@ MonoBehaviour:
   height: 90
   cellSize: 0.16
   sourcePosForTesting: {fileID: 0}
-  drawGizmos: 1
+  drawGizmos: 0
   showFlowField: 0
 --- !u!4 &1315907622
 Transform:

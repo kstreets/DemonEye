@@ -22,7 +22,7 @@ public class FirerateSoulcard : Soulcard {
     }
 
     private float GetReductionPercentage(int stackCount) {
-        return TaperFloat(rateIncreasePercentage, stackCount, 0.65f);
+        return TaperFloat(rateIncreasePercentage, stackCount, 0.45f);
     }
     
 }

@@ -21,4 +21,7 @@ MonoBehaviour:
   defaultCritChance: 0.15
   defaultCritMultiplier: 1.5
   postDeathStartingHealth: 25
+  portalSummonTime: 6
+  portalPostSummonDelay: 10
+  portalActiveDuration: 25
   distancePerUnit: 0.32

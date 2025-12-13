@@ -37,5 +37,5 @@ MonoBehaviour:
   poisonDamageColor: {r: 0.3576005, g: 0.7735849, b: 0.3576005, a: 1}
   increaseDescColor: {r: 0.35686275, g: 0.7725491, b: 0.35686275, a: 1}
   decreaseDescColor: {r: 0.8352942, g: 0.27058825, b: 0.27450982, a: 1}
-  timeDescColor: {r: 0.7924528, g: 0.46136582, b: 0.30153066, a: 1}
+  timeDescColor: {r: 0.7610062, g: 0.45321578, b: 0.380503, a: 1}
   tagTextPadding: 20

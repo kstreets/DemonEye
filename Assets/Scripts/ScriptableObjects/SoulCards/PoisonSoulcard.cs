@@ -20,7 +20,7 @@ public class PoisonSoulcard : Soulcard {
         if (RollProbability(prob)) {
             enemy.poison = new() {
                 duration = GetDuration(stackCount),
-                damageMulti = damageMulti,
+                damageMulti = GetDamageMulti(stackCount),
                 minHealthPercentForMulti = minHealthPercentForMulti,
             };
             inst.AddPoisonedEffect(enemy, enemy.poison.Value.duration);
@@ -29,15 +29,19 @@ public class PoisonSoulcard : Soulcard {
     
     public override string GetStackDescription(int stackCount) {
         return $"{DisplayProb(GetProbability(stackCount))} chance for a projectile to poison an enemy for {DisplaySeconds(GetDuration(stackCount))}, " +
-               $"dealing {DisplayMultiplier(damageMulti)} damage to enemies over {DisplayProb(minHealthPercentForMulti)} health.";
+               $"dealing {DisplayMultiplier(GetDamageMulti(stackCount))} damage to enemies over {DisplayProb(minHealthPercentForMulti)} health.";
     }
 
     private float GetProbability(int stackCount) {
-        return probability * stackCount;
+        return TaperFloat(probability, stackCount, 0.5f);
     }
 
     private float GetDuration(int stackCount) {
-        return duration * stackCount;
+        return TaperFloat(duration, stackCount, 0.3f);
+    }
+
+    private float GetDamageMulti(int stackCount) {
+        return TaperFloat(damageMulti, stackCount, 0.2f);
     }
     
 }

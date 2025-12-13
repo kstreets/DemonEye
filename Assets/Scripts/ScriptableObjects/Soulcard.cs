@@ -34,7 +34,7 @@ public class Soulcard : Item {
     
     [Button]
     private void AutoCalculateSellPrice() {
-        sellPrice = Mathf.RoundToInt(buyPrice * 0.55f);     
+        sellPrice = Mathf.RoundToInt(buyPrice * 0.08f);     
         EditorUtility.SetDirty(this);
     }
     

@@ -22,6 +22,6 @@ MonoBehaviour:
   minForageCount: 4
   maxForageCount: 8
   eyeUpgradeOnBodyChance: 0.25
-  eyeUpgradeFromRockChance: 0.4
+  eyeUpgradeFromRockChance: 0.5
   maxGemCountPerRock: 2
   increasedLootRarityChance: 0

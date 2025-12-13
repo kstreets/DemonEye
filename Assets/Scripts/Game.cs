@@ -150,7 +150,7 @@ public class Game : MonoBehaviour {
     public RectTransform playerPanel;
     public RectTransform playerEquipmentParent;
     public RectTransform playerPocketParent;
-    public RectTransform playerBackpackParent;
+    // public RectTransform playerBackpackParent;
     public RectTransform playerPocketsBackpackParent;
     public RectTransform playerPassiveParent;
     public RectTransform playerInventoryParent;
@@ -171,11 +171,19 @@ public class Game : MonoBehaviour {
     [Foldout("UI/EyeForgePanel")]
     public RectTransform eyeForgePanel;
     public RectTransform crucibleParent;
-    public ButtonFeel forgeEyeButton;
-    public ButtonFeel upgradeForgeButton;
     public Image pentagramFillImage;
     public AnimationCurve pentagramFillCurve;
     public AnimationCurve itemShakeCurve;
+    [EndFoldout]
+    
+    [Foldout("UI/ForgeDetailsPanel")]
+    public RectTransform forgeDetailsPanel;
+    public RectTransform forgeDetailsUpgradeScreen;
+    public RectTransform forgeDetailsForgeScreen;
+    public ButtonFeel upgradeForgeButton;
+    public ButtonFeel forgeEyeButton;
+    public TextMeshProUGUI forgeDetailsForgeText;
+    public List<ResourceRequirement> forgeDetailsResourceRequirements;
     [EndFoldout]
     
     [Foldout("UI/TraderPanel")]
@@ -475,6 +483,7 @@ public class Game : MonoBehaviour {
 
     private void LateUpdate() {
         UpdatePlayerPanelUI();
+        UpdateCrucibleInfoPanel();
         UpdateHotBarUI();
         UpdateDragAndDropItemToCursor();
         UpdateCurrencyNumbers();
@@ -949,6 +958,7 @@ public class Game : MonoBehaviour {
                 Vector2 randomSpawnGridPos = loadedMapInst.grid.GetSpawnPosition(player.position, repositionCellRange.x, repositionCellRange.y);
                 if (Vector2.Distance(randomSpawnGridPos, player.position) < distFromPlayer) {
                     TeleportEnemy(enemy, randomSpawnGridPos, TeleportType.Reposition);
+                    enemyReteleportCount++;
                 }
                 continue;
             }
@@ -1311,6 +1321,7 @@ public class Game : MonoBehaviour {
         curRaidState = RaidState.None;
         demonEyeRaidStats = new();
         callingExitPortalSequence.Stop();
+        closeExitPortalSequence.Stop();
         canTakeExitPortal = false;
         timeSpentSummoningPortal = 0f;
         
@@ -1721,8 +1732,8 @@ public class Game : MonoBehaviour {
     private void InitInventories() {
         const int maxBackpackSize = 30;
         SpawnUiSlots(playerPassiveParent, playerQuickUseSize);
-        SpawnUiSlots(playerPocketParent, playerPocketSize);
-        SpawnUiSlots(playerBackpackParent, maxBackpackSize);
+        SpawnUiSlots(playerPocketParent, playerPocketSize + maxBackpackSize);
+        // SpawnUiSlots(playerBackpackParent, maxBackpackSize);
         playerInventory = CreateInventory(playerInventoryParent, NakedPlayerInventorySize);
         LoadInventory(playerInventory);
 
@@ -1975,8 +1986,8 @@ public class Game : MonoBehaviour {
     }
 
     private string GetDemonEyeModDescription(Soulcard soulcard, int count) {
-        string title = ColorText($"<size=108%>{soulcard.displayName}</size> <size=87%>x{count}</size>", styles.subHeaderTextColor);
-        return $"<line-height=90%>{title}\n{soulcard.GetStackDescription(count)}<line-height=135%>\n";
+        string title = ColorText($"<size=108%>{soulcard.displayName}</size> <size=87%>x{count}</size>", styles.headerTextColor);
+        return $"<line-height=95%>{title}\n{soulcard.GetStackDescription(count)}<line-height=140%>\n";
     }
 
     private void FitPopupSize(RectTransform popupRect, params Rect[] rects) {
@@ -2043,42 +2054,6 @@ public class Game : MonoBehaviour {
                 bool meetsSingleReq = MeetsSingleUpgradeRequirement(req); 
                 Color textColor = meetsSingleReq ? styles.increaseDescColor : styles.decreaseDescColor; 
                 uiElementPopup.descText.text += ColorText($"\n{req.item.displayName} x{req.count}", textColor);
-            }
-        }
-        
-        if (hoverInfo.hoveringTransform == forgeEyeButton.rectTransform) {
-            if (crucibleMode == CrucibleMode.Empty) {
-                uiElementPopup.descText.text = "Place an eyeball in the center to start the Demon Eye forging process";
-            }
-            else if (crucibleMode == CrucibleMode.ForgingButJustEye) {
-                uiElementPopup.descText.text = $"Requires at least {DisplayNumber(1)} eye upgrade to forge a Demon Eye";
-            }
-            else if (crucibleMode == CrucibleMode.ForgingButWithoutEye) {
-                uiElementPopup.descText.text = $"Missing eyeball in the center";
-            }
-            else if (crucibleMode == CrucibleMode.NeedToRemoveDemonEye) {
-                uiElementPopup.descText.text = $"Need to remove Demon Eye before forging";
-            }
-            else {
-                uiElementPopup.descText.text = ColorText("Demon Eye Preview:<line-height=135%>\n", styles.headerTextColor);
-                
-                Dictionary<Soulcard, int> allSoulCards = new();
-                
-                foreach (InventorySlot slot in crucibleInventory.slots) {
-                    if (slot.item == null || slot.item.ItemRef.type != soulcardType) continue;    
-                    Soulcard soulcard = itemLookup[slot.item.itemOrInstanceUuid] as Soulcard;
-                    if (!allSoulCards.TryAdd(soulcard, 1)) {
-                        allSoulCards[soulcard]++;
-                    }
-                }
-
-                List<(Soulcard, int)> sortedSoulcards = SortSoulcardsFromDictionary(allSoulCards);
-                
-                string eyeDescription = "";
-                foreach ((Soulcard soulcard, int count) in sortedSoulcards) {
-                    eyeDescription += GetDemonEyeModDescription(soulcard, count);
-                }
-                uiElementPopup.descText.text += eyeDescription;
             }
         }
         
@@ -2842,25 +2817,18 @@ public class Game : MonoBehaviour {
         return count;
     }
 
+    public int GetOwnedCountOfItem(Item item) {
+        int itemCount = 0;
+        itemCount += GetItemCountInInventory(stashInventory, item);
+        itemCount += GetItemCountInInventory(playerInventory, item);
+        return itemCount;
+    }
+
     private bool MeetsSingleUpgradeRequirement(UpgradePath.Requirement req) {
         int itemCount = 0;
         itemCount += GetItemCountInInventory(stashInventory, req.item);
         itemCount += GetItemCountInInventory(playerInventory, req.item);
         return itemCount >= req.count; 
-    }
-
-    private bool MeetsAllUpgradeRequirement(List<UpgradePath.Requirement> requirements) {
-        foreach (UpgradePath.Requirement req in requirements) {
-            if (!MeetsSingleUpgradeRequirement(req)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public bool CarryingPassiveItem(PassiveItem item, out int count) {
-        count = GetItemCountInInventory(playerInventory, item);
-        return count > 0;
     }
 
     private int GetInventoryWeight(Inventory inventory) {
@@ -3574,7 +3542,10 @@ public class Game : MonoBehaviour {
                             callingExitPortalSequence = Sequence.Create();
                             callingExitPortalSequence.ChainDelay(gameplayConfig.portalPostSummonDelay);
                             callingExitPortalSequence.Chain(Tween.Scale(activeExitPortal, Vector3.one, 0.25f, Ease.OutBack));
-                            callingExitPortalSequence.OnComplete(static () => inst.canTakeExitPortal = true);
+                            callingExitPortalSequence.OnComplete(static () => {
+                                inst.canTakeExitPortal = true; 
+                                inst.OnExitPortalSummoned();
+                            });
                         }
                     }
                     else {
@@ -3586,6 +3557,7 @@ public class Game : MonoBehaviour {
                     EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Take Exit Portal");
                     if (interactInputAction.WasPressedThisFrame()) {
                         gameStateMachine.SetStateIfNotCurrent(curRaidState == RaidState.PostFinalWave ? winExitState : earlyExitState);
+                        closeExitPortalSequence.Stop();
                     }
                 }
             }
@@ -4083,6 +4055,17 @@ public class Game : MonoBehaviour {
         // });
     }
 
+    private Sequence closeExitPortalSequence;
+    
+    private void OnExitPortalSummoned() {
+        closeExitPortalSequence = Sequence.Create();
+        closeExitPortalSequence.ChainDelay(gameplayConfig.portalActiveDuration);
+        closeExitPortalSequence.ChainCallback(static () => {
+            inst.canTakeExitPortal = false;
+            Tween.Scale(inst.activeExitPortal, Vector3.zero, 0.25f, Ease.OutCubic);
+        });
+    }
+
     private void DespawnEarlyExitPortal() {
         activeExitPortal.GetComponent<Collider2D>().enabled = false;
         PlayAudioClip(portalDespawnClip, activeExitPortal.position);
@@ -4437,8 +4420,9 @@ public class Game : MonoBehaviour {
             strengthUpgradeInfoText.text = $"+{encumberingIncreasePerStrengthPoint} Weight Carry Capacity";
         }
         
-        hoverableUIElements.Add(forgeEyeButton.rectTransform);
-        hoverableUIElements.Add(upgradeForgeButton.rectTransform);
+        // Leaving this in so I remember how to make things hoverable
+        // hoverableUIElements.Add(forgeEyeButton.rectTransform);
+        // hoverableUIElements.Add(upgradeForgeButton.rectTransform);
         
         SetPentagramFill(0f);
     }
@@ -4552,6 +4536,7 @@ public class Game : MonoBehaviour {
         playerPanel.gameObject.SetActive(false);
         stashPanel.gameObject.SetActive(false);
         eyeForgePanel.gameObject.SetActive(false);
+        forgeDetailsPanel.gameObject.SetActive(false);
         lootInventoryPanel.gameObject.SetActive(false);
         traderInventoryPanel.gameObject.SetActive(false);
         traderTransactionPanel.gameObject.SetActive(false);
@@ -4595,8 +4580,7 @@ public class Game : MonoBehaviour {
         
         eyeForgeTabButton.onClick.AddListener(() => {
             ToggleHideoutTab(eyeForgeTabButton, eyeForgeTabText);
-            ToggleHideoutPanels(playerPanel, eyeForgePanel, stashPanel);
-            ToggleSlimPlayerPanel(true);
+            ToggleHideoutPanels(forgeDetailsPanel, eyeForgePanel, stashPanel);
         });
         
         traderTabButton.onClick.AddListener(() => {
@@ -4746,6 +4730,9 @@ public class Game : MonoBehaviour {
                 gameStateMachine.SetStateIfNotCurrent(raidState);
             });
         });
+    }
+
+    private void UpdateEyeForgeInfoPanel() {
     }
     
     private Sequence eyeForgeSequence;
@@ -4937,8 +4924,12 @@ public class Game : MonoBehaviour {
         else {
             crucibleMode = CrucibleMode.Forging;
         }
+    }
 
-        bool forging = crucibleMode is CrucibleMode.Forging or CrucibleMode.ForgingButJustEye;
+    private void UpdateCrucibleInfoPanel() {
+        if (!OnEyeForgeTab) return;
+        
+        bool forging = crucibleMode is CrucibleMode.Forging;
         if (forging && forgeEyeButton.isDisabled) {
             forgeEyeButton.Enable();
         }
@@ -4946,21 +4937,73 @@ public class Game : MonoBehaviour {
             forgeEyeButton.Disable();
         }
 
-        if (PlayingForgeAnimation) {
-            if (!upgradeForgeButton.isDisabled) {
+        if (PlayingForgeAnimation) return;
+
+        bool showUpgradeScreen = crucibleMode is CrucibleMode.Empty or CrucibleMode.NeedToRemoveDemonEye;
+        forgeDetailsUpgradeScreen.gameObject.SetActive(showUpgradeScreen);
+        forgeDetailsForgeScreen.gameObject.SetActive(!showUpgradeScreen);
+        
+        if (showUpgradeScreen) {
+            bool meetsAllUpgradeRequirements = true;
+            List<UpgradePath.Requirement> curUpgradeReqs = crucibleUpgradePath.pathUpgrades[player.crucibleLevel].requirements;
+            
+            for (int i = 0; i < forgeDetailsResourceRequirements.Count; i++) {
+                if (!curUpgradeReqs.IndexInRange(i)) {
+                    forgeDetailsResourceRequirements[i].gameObject.SetActive(false);
+                    continue;
+                }
+                forgeDetailsResourceRequirements[i].gameObject.SetActive(true);
+                
+                UpgradePath.Requirement req = curUpgradeReqs[i];
+                int ownedCount = GetOwnedCountOfItem(req.item);
+                forgeDetailsResourceRequirements[i].Set(req.item, req.count, ownedCount);
+
+                if (ownedCount < req.count) {
+                    meetsAllUpgradeRequirements = false;
+                }
+            }
+
+            if (upgradeForgeButton.isDisabled && meetsAllUpgradeRequirements) {
+                upgradeForgeButton.Enable();
+            }
+            else if (!upgradeForgeButton.isDisabled && !meetsAllUpgradeRequirements) {
                 upgradeForgeButton.Disable();
             }
+            
             return;
         }
         
-        List<UpgradePath.Requirement> upgradeReqs = crucibleUpgradePath.pathUpgrades[player.crucibleLevel].requirements;
-        bool meetsAllUpgradeRequirements = MeetsAllUpgradeRequirement(upgradeReqs);
-
-        if (upgradeForgeButton.isDisabled && meetsAllUpgradeRequirements) {
-            upgradeForgeButton.Enable();
+        if (crucibleMode == CrucibleMode.Empty) {
+            forgeDetailsForgeText.text = "Place an eyeball in the center to start the Demon Eye forging process";
         }
-        else if (!upgradeForgeButton.isDisabled && !meetsAllUpgradeRequirements) {
-            upgradeForgeButton.Disable();
+        else if (crucibleMode == CrucibleMode.ForgingButJustEye) {
+            forgeDetailsForgeText.text = $"Requires at least {DisplayNumber(1)} eye upgrade to forge a Demon Eye";
+        }
+        else if (crucibleMode == CrucibleMode.ForgingButWithoutEye) {
+            forgeDetailsForgeText.text = $"Missing eyeball in the center";
+        }
+        else {
+            int eyeUpgradeCount = GetInventoryItemCount(crucibleInventory) - 1;
+            int totalUpgradeCount = crucibleInventory.slots.Length - 1;
+            forgeDetailsForgeText.text = $"<size=90%>Previewing Upgrades {ColorText(eyeUpgradeCount.ToString(), styles.timeDescColor)}/{totalUpgradeCount}</size><line-height=150%>\n";
+            
+            Dictionary<Soulcard, int> allSoulCards = new();
+            
+            foreach (InventorySlot slot in crucibleInventory.slots) {
+                if (slot.item == null || slot.item.ItemRef.type != soulcardType) continue;    
+                Soulcard soulcard = itemLookup[slot.item.itemOrInstanceUuid] as Soulcard;
+                if (!allSoulCards.TryAdd(soulcard, 1)) {
+                    allSoulCards[soulcard]++;
+                }
+            }
+
+            List<(Soulcard, int)> sortedSoulcards = SortSoulcardsFromDictionary(allSoulCards);
+            
+            string eyeDescription = "";
+            foreach ((Soulcard soulcard, int count) in sortedSoulcards) {
+                eyeDescription += GetDemonEyeModDescription(soulcard, count);
+            }
+            forgeDetailsForgeText.text += eyeDescription;
         }
     }
 
