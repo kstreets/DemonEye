@@ -25,3 +25,14 @@ MonoBehaviour:
   portalPostSummonDelay: 10
   portalActiveDuration: 25
   distancePerUnit: 0.32
+  carryCapacityIncPerLevel: 1
+  critChanceIncPerLevel: 2
+  critMultiplierIncPerLevel: 3
+  damageIncPerLevel: 4
+  firerateIncPerLevel: 5
+  healthIncPerLevel: 6
+  healingIncPerLevel: 0
+  healingSpeedIncPerLevel: 0
+  lootingSpeedIncPerLevel: 0
+  movementSpeedIncPerLevel: 0
+  projectileCountIncPerLevel: 0

@@ -71,11 +71,11 @@ public class Game : MonoBehaviour {
     public ItemType passiveType;
     [EndFoldout]
 
-    [Foldout("Stat Upgrade Paths")]
-    public StatUpgradePath agilityUpgradePath;
-    public StatUpgradePath luckUpgradePath;
-    public StatUpgradePath healthUpgradePath;
-    public StatUpgradePath strengthUpgradePath;
+    [Foldout("Skill Upgrade Paths")]
+    public SkillUpgradePath hasteUpgradePath;
+    public SkillUpgradePath intellectUpgradePath;
+    public SkillUpgradePath lifeBloodUpgradePath;
+    public SkillUpgradePath strengthUpgradePath;
     [EndFoldout]
     
     public Camera mainCamera;
@@ -105,6 +105,7 @@ public class Game : MonoBehaviour {
     [EndFoldout]
 
     [Foldout("UI/MiscRefs")]
+    public SkillsPanel skillsPanel;
     public RectTransform mainCanvasRectTransform;
     public ItemDescPopup itemDescPopup;
     public MechanicDescPopup mechanicDescPopup;
@@ -512,7 +513,7 @@ public class Game : MonoBehaviour {
 
     private void OnHideoutStateEnter() {
         ShowHideoutUI();
-        RefreshLevelUpPossibilities();
+        RefreshSkillsPanel();
     }
 
     private void OnHideoutStateExit() {
@@ -2161,10 +2162,10 @@ public class Game : MonoBehaviour {
         GetEncumberingWeightRange(out int startEncumberingWeight, out _);
         playerPanelWeightText.text = $"<color=#98C5CC>{inventoryWeight}</color><size=22>/{startEncumberingWeight}";
         
-        agilityStatValueText.text = (player.agilityLevel + 1).ToString("0.0");
-        healthStatValueText.text = (player.healthLevel + 1).ToString("0.0");
-        bleedResStatValueText.text = (player.bleedResLevel + 1).ToString("0.0");
-        strengthStatValueText.text = (player.strengthLevel + 1).ToString("0.0");
+        // agilityStatValueText.text = (player.agilityLevel + 1).ToString("0.0");
+        // healthStatValueText.text = (player.healthLevel + 1).ToString("0.0");
+        // bleedResStatValueText.text = (player.bleedResLevel + 1).ToString("0.0");
+        // strengthStatValueText.text = (player.strengthLevel + 1).ToString("0.0");
     }
 
     private bool TryGetItemFromHoverInfo(InventoryHoverInfo invHoverInfo, out InventoryItem hoveredItem) {
@@ -2984,10 +2985,16 @@ public class Game : MonoBehaviour {
         public int crucibleLevel;
         public int soulCurrency;
         public int coinCurrency;
-        public int agilityLevel;
-        public int bleedResLevel;
-        public int healthLevel;
-        public int strengthLevel;
+        
+        public int hasteSkillLevel;
+        public int intellectSkillLevel;
+        public int lifeBloodSkillLevel;
+        public int strengthSkillLevel;
+
+        public enum Stat {
+            CarryCapacity, CritChance, CritMulti, Damage, Firerate, Health, 
+            HealingAmount, HealingSpeed, LootingSpeed, MovementSpeed, ProjectileCount,
+        }
     }
 
     private Player player;
@@ -3219,7 +3226,24 @@ public class Game : MonoBehaviour {
         const float percentageOfHealthBleedingStops = 0.10f;
         return player.health <= FullPlayerHealth * percentageOfHealthBleedingStops;
     }
-    
+
+    private int PlayerStatLevel(Player.Stat stat) {
+        return stat switch {
+            Player.Stat.CarryCapacity   => player.strengthSkillLevel,
+            Player.Stat.CritChance      => player.intellectSkillLevel,
+            Player.Stat.CritMulti       => player.intellectSkillLevel,
+            Player.Stat.Damage          => player.intellectSkillLevel,
+            Player.Stat.Firerate        => player.hasteSkillLevel,
+            Player.Stat.Health          => player.lifeBloodSkillLevel,
+            Player.Stat.HealingAmount   => player.lifeBloodSkillLevel,
+            Player.Stat.HealingSpeed    => player.lifeBloodSkillLevel,
+            Player.Stat.LootingSpeed    => player.hasteSkillLevel,
+            Player.Stat.MovementSpeed   => player.hasteSkillLevel,
+            Player.Stat.ProjectileCount => player.strengthSkillLevel,
+            _                           => -1,
+        };
+    }
+
     private const float defaultPlayerSpeed = 0.52f;
     private const float maxPlayerSpeed = 0.61f;
 
@@ -3231,18 +3255,18 @@ public class Game : MonoBehaviour {
     private const float reducedChanceForBleedPerLevel = 0.1f;
 
     private const int healthIncreasePerStatLevel = 10;
-    private int FullPlayerHealth => 100 + (healthIncreasePerStatLevel * player.healthLevel);
+    private int FullPlayerHealth => 100 + (healthIncreasePerStatLevel * PlayerStatLevel(Player.Stat.Health));
 
     private float GetPlayerSpeedBasedOnStats() {
-        int agilityStat = player.agilityLevel;
+        int movementSpeedStat = PlayerStatLevel(Player.Stat.MovementSpeed);
         for (int i = 0; i < playerEquipmentSize; i++) {
             InventoryItem item = playerInventory.slots[i].item;
             if (item == null) continue;
             if (item.ItemRef.modifiesStats && item.ItemRef.agilityStatAdjustment != 0) {
-                agilityStat += item.ItemRef.agilityStatAdjustment;
+                movementSpeedStat += item.ItemRef.agilityStatAdjustment;
             }
         }
-        float playerSpeed = Mathf.Lerp(defaultPlayerSpeed, maxPlayerSpeed, (float)agilityStat / agilityUpgradePath.MaxLevel);
+        float playerSpeed = Mathf.Lerp(defaultPlayerSpeed, maxPlayerSpeed, (float)movementSpeedStat / hasteUpgradePath.MaxLevel);
         
         float speedReductionFromWeight = Mathf.Lerp(0f, maxEncumberedSpeedReduction, GetOverweightCompletion());
         speedReductionFromWeight = Mathf.Clamp(speedReductionFromWeight, 0f, maxEncumberedSpeedReduction);
@@ -3251,20 +3275,20 @@ public class Game : MonoBehaviour {
         return playerSpeed;
     }
 
-    private int GetStrengthStat() {
-        int strengthStat = player.strengthLevel;
+    private int GetCarryCapacityStat() {
+        int carryCapacityStat = PlayerStatLevel(Player.Stat.CarryCapacity);
         for (int i = 0; i < playerEquipmentSize; i++) {
             InventoryItem item = playerInventory.slots[i].item;
             if (item == null) continue;
             if (item.ItemRef.modifiesStats && item.ItemRef.strengthStatAdjustment != 0) {
-                strengthStat += item.ItemRef.strengthStatAdjustment;
+                carryCapacityStat += item.ItemRef.strengthStatAdjustment;
             }
         }
-        return strengthStat;
+        return carryCapacityStat;
     }
 
     private void GetEncumberingWeightRange(out int startingWeight, out int endingWeight) {
-        int encumberingIncreaseFromStrength = GetStrengthStat() * encumberingIncreasePerStrengthPoint;
+        int encumberingIncreaseFromStrength = GetCarryCapacityStat() * encumberingIncreasePerStrengthPoint;
         endingWeight = maxEncumberedWeight + encumberingIncreaseFromStrength;
         startingWeight = defaultStartingEncumberingWeight + encumberingIncreaseFromStrength;
     }
@@ -4361,10 +4385,11 @@ public class Game : MonoBehaviour {
         public int crucibleLevel;
         public int soulCurrency;
         public int coinCurrency;
-        public int agilityLevel;
-        public int bleedResLevel;
-        public int healthLevel;
-        public int strengthLevel;
+        
+        public int hasteSkillLevel;
+        public int intellectSkillLevel;
+        public int lifeBloodSkillLevel;
+        public int strengthSkillLevel;
     }
 
     private void SavePlayerData() {
@@ -4373,10 +4398,10 @@ public class Game : MonoBehaviour {
             crucibleLevel = player.crucibleLevel,
             soulCurrency = player.soulCurrency,
             coinCurrency = player.coinCurrency,
-            agilityLevel = player.agilityLevel,
-            bleedResLevel = player.bleedResLevel,
-            healthLevel = player.healthLevel,
-            strengthLevel = player.strengthLevel,
+            hasteSkillLevel = player.hasteSkillLevel,
+            intellectSkillLevel = player.intellectSkillLevel,
+            lifeBloodSkillLevel = player.lifeBloodSkillLevel,
+            strengthSkillLevel = player.strengthSkillLevel,
         };
         SaveToFile(playerSavePath, data);
     }
@@ -4388,10 +4413,10 @@ public class Game : MonoBehaviour {
             instancedPlayer.crucibleLevel = data.crucibleLevel;
             instancedPlayer.soulCurrency = data.soulCurrency;
             instancedPlayer.coinCurrency = data.coinCurrency;
-            instancedPlayer.agilityLevel = data.agilityLevel;
-            instancedPlayer.bleedResLevel = data.bleedResLevel;
-            instancedPlayer.healthLevel = data.healthLevel;
-            instancedPlayer.strengthLevel = data.strengthLevel;
+            instancedPlayer.hasteSkillLevel = data.hasteSkillLevel;
+            instancedPlayer.intellectSkillLevel = data.intellectSkillLevel;
+            instancedPlayer.lifeBloodSkillLevel = data.lifeBloodSkillLevel;
+            instancedPlayer.strengthSkillLevel = data.strengthSkillLevel;
         }
         
         // We want to make sure that the player health is never <= zero
@@ -4407,18 +4432,20 @@ public class Game : MonoBehaviour {
         CloseRaidUI();
         ShowMainMenuUI();
         
+        InitSkillsPanel();
+        
         menuBackButton.gameObject.SetActive(false);
         largeRaidTextTypewriter.gameObject.SetActive(false);
 
         // Set the stat upgrade info once at startup because each increase is the same
-        {
-            const float speedRange = maxPlayerSpeed - defaultPlayerSpeed;
-            float speedPercentIncreasePerLevel = (speedRange / agilityUpgradePath.MaxLevel) / defaultPlayerSpeed;
-            agilityUpgradeInfoText.text = $"+{(speedPercentIncreasePerLevel * 100f):0}% Speed";
-            healthUpgradeInfoText.text = $"+{healthIncreasePerStatLevel} Health";
-            bleedResInfoText.text = $"+{(reducedChanceForBleedPerLevel * 100f):0}% Bleed Resistance";
-            strengthUpgradeInfoText.text = $"+{encumberingIncreasePerStrengthPoint} Weight Carry Capacity";
-        }
+        // {
+        //     const float speedRange = maxPlayerSpeed - defaultPlayerSpeed;
+        //     float speedPercentIncreasePerLevel = (speedRange / hasteUpgradePath.MaxLevel) / defaultPlayerSpeed;
+        //     agilityUpgradeInfoText.text = $"+{(speedPercentIncreasePerLevel * 100f):0}% Speed";
+        //     healthUpgradeInfoText.text = $"+{healthIncreasePerStatLevel} Health";
+        //     bleedResInfoText.text = $"+{(reducedChanceForBleedPerLevel * 100f):0}% Bleed Resistance";
+        //     strengthUpgradeInfoText.text = $"+{encumberingIncreasePerStrengthPoint} Weight Carry Capacity";
+        // }
         
         // Leaving this in so I remember how to make things hoverable
         // hoverableUIElements.Add(forgeEyeButton.rectTransform);
@@ -4596,14 +4623,13 @@ public class Game : MonoBehaviour {
         
         levelupTabButton.onClick.AddListener(() => {
             ToggleHideoutTab(levelupTabButton, levelupTabText);
-            ToggleSlimPlayerPanel(false);
-            ToggleHideoutPanels(playerPanel, levelupPanel);
+            ToggleHideoutPanels(levelupPanel);
         });
 
-        agilityUpgradeButton.AddListener(() => OnLevelupButtonPressed(agilityUpgradePath, player.agilityLevel));
-        corruptionUpgradeButton.AddListener(() => OnLevelupButtonPressed(luckUpgradePath, player.bleedResLevel));
-        healthUpgradeButton.AddListener(() => OnLevelupButtonPressed(healthUpgradePath, player.healthLevel));
-        strengthUpgradeButton.AddListener(() => OnLevelupButtonPressed(strengthUpgradePath, player.strengthLevel));
+        skillsPanel.hasteSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(hasteUpgradePath, player.hasteSkillLevel));
+        skillsPanel.intellectSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(intellectUpgradePath, player.intellectSkillLevel));
+        skillsPanel.lifeBloodSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(lifeBloodUpgradePath, player.lifeBloodSkillLevel));
+        skillsPanel.strengthSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(strengthUpgradePath, player.strengthSkillLevel));
         
         forgeEyeButton.AddListener(() => {
             if (PlayingForgeAnimation) return;
@@ -4732,9 +4758,6 @@ public class Game : MonoBehaviour {
         });
     }
 
-    private void UpdateEyeForgeInfoPanel() {
-    }
-    
     private Sequence eyeForgeSequence;
     private bool PlayingForgeAnimation => eyeForgeSequence.isAlive;
     
@@ -4863,7 +4886,7 @@ public class Game : MonoBehaviour {
     }
 
     // Its better just to have these as constants because the canvas layout recalculates in LateUpdate
-    private const float playerPanelWidth = 570f;
+    private const float playerPanelWidth = 600f;
     private const float playerPanelLeftHalfWidth = 290f;
     
     private void ToggleSlimPlayerPanel(bool toggle) {
@@ -5265,67 +5288,85 @@ public class Game : MonoBehaviour {
     }
 
     // ************************
-    // Leveling Up
+    // Leveling Skills
     // ************************
 
-    private void OnLevelupButtonPressed(StatUpgradePath upgradePath, int playerStatLevel) {
-        UpgradeStatResult result = CanUpgradeStat(upgradePath, playerStatLevel);
+    private void InitSkillsPanel() {
+        skillsPanel.hasteSkillRow.Init(hasteUpgradePath.MaxLevel, 
+            $"{DisplayIncrease(gameplayConfig.movementSpeedIncPerLevel)} Movement Speed\n" +
+            $"{DisplayIncrease(gameplayConfig.lootingSpeedIncPerLevel)} Looting Speed\n" +
+            $"{DisplayIncrease(gameplayConfig.firerateIncPerLevel)} Firerate"
+        );
+        skillsPanel.intellectSkillRow.Init(intellectUpgradePath.MaxLevel, 
+            $"{DisplayIncrease(gameplayConfig.critChanceIncPerLevel)} Critical Strike Chance\n" +
+            $"{DisplayIncrease(gameplayConfig.critMultiplierIncPerLevel)} Critical Strike Multiplier\n" +
+            $"{DisplayIncrease(gameplayConfig.damageIncPerLevel)} Damage"
+        );
+        skillsPanel.lifeBloodSkillRow.Init(lifeBloodUpgradePath.MaxLevel, 
+            $"{DisplayIncrease(gameplayConfig.healthIncPerLevel)} Health\n" +
+            $"{DisplayIncrease(gameplayConfig.healingSpeedIncPerLevel)} Healing Speed\n" +
+            $"{DisplayIncrease(gameplayConfig.healingIncPerLevel)} Healing Amount"
+        );
+        skillsPanel.strengthSkillRow.Init(strengthUpgradePath.MaxLevel, 
+            $"{DisplayIncrease(gameplayConfig.carryCapacityIncPerLevel)} Carry Capacity\n" +
+            $"{DisplayIncrease(gameplayConfig.projectileCountIncPerLevel)} Projectile Count"
+        );
+    }
+
+    private void OnLevelupButtonPressed(SkillUpgradePath upgradePath, int playerStatLevel) {
+        UpgradeStatResult result = CanUpgradeSkill(upgradePath, playerStatLevel);
         if (result == UpgradeStatResult.CantAfford || result == UpgradeStatResult.AtMaxLevel) return;
         
         player.soulCurrency -= upgradePath.soulsNeededPerLevel[playerStatLevel];
 
-        if (upgradePath == agilityUpgradePath) {
-            player.agilityLevel++;
+        if (upgradePath == hasteUpgradePath) {
+            player.hasteSkillLevel++;
         }
-        else if (upgradePath == luckUpgradePath) {
-            player.bleedResLevel++;
+        else if (upgradePath == intellectUpgradePath) {
+            player.intellectSkillLevel++;
         }
-        else if (upgradePath == healthUpgradePath) {
+        else if (upgradePath == lifeBloodUpgradePath) {
             int prevFullPlayerHealth = FullPlayerHealth;
-            player.healthLevel++;
+            player.lifeBloodSkillLevel++;
             int newFullPlayerHealth = FullPlayerHealth;
             player.health += newFullPlayerHealth - prevFullPlayerHealth;
         }
         else if (upgradePath == strengthUpgradePath) {
-            player.strengthLevel++;
+            player.strengthSkillLevel++;
         }
         
         SavePlayerData();
-        RefreshLevelUpPossibilities();
+        RefreshSkillsPanel();
     }
     
-    private void RefreshLevelUpPossibilities() {
-        ToggleStatUpgradeButton(agilityUpgradeButton, agilityUpgradePath, player.agilityLevel);
-        ToggleStatUpgradeButton(corruptionUpgradeButton, luckUpgradePath, player.bleedResLevel);
-        ToggleStatUpgradeButton(healthUpgradeButton, healthUpgradePath, player.healthLevel);
-        ToggleStatUpgradeButton(strengthUpgradeButton, strengthUpgradePath, player.strengthLevel);
+    private void RefreshSkillsPanel() {
+        for (int i = 0; i < skillsPanel.playerStatRows.Length; i++) {
+            PlayerStatRow statRow = skillsPanel.playerStatRows[i];
+            statRow.statValueText.text = PlayerStatLevel((Player.Stat)i).ToString();
+        }
+        
+        RefreshSkillRow(skillsPanel.hasteSkillRow, hasteUpgradePath, player.hasteSkillLevel);
+        RefreshSkillRow(skillsPanel.intellectSkillRow, intellectUpgradePath, player.intellectSkillLevel);
+        RefreshSkillRow(skillsPanel.lifeBloodSkillRow, lifeBloodUpgradePath, player.lifeBloodSkillLevel);
+        RefreshSkillRow(skillsPanel.strengthSkillRow, strengthUpgradePath, player.strengthSkillLevel);
     }
 
-    private void ToggleStatUpgradeButton(ButtonFeel button, StatUpgradePath upgradePath, int playerStatLevel) {
-        UpgradeStatResult result = CanUpgradeStat(upgradePath, playerStatLevel);
-        switch (result) {
-            case UpgradeStatResult.CantAfford:
-                button.Disable();
-                button.text.text = $"{upgradePath.soulsNeededPerLevel[playerStatLevel]:N0} Souls";
-                break;
-            case UpgradeStatResult.Affordable:
-                button.Enable();
-                button.text.text = $"{upgradePath.soulsNeededPerLevel[playerStatLevel]:N0} Souls";
-                break;
-            case UpgradeStatResult.AtMaxLevel:
-                button.Disable();
-                button.text.text = "Max";
-                break;
-        }
+    private void RefreshSkillRow(SkillLevelUpRow skillLevelRow, SkillUpgradePath upgradePath, int playerStatLevel) {
+        UpgradeStatResult result = CanUpgradeSkill(upgradePath, playerStatLevel);
+        if (result == UpgradeStatResult.AtMaxLevel) return;
+        
+        int soulsRequired = upgradePath.soulsNeededPerLevel[playerStatLevel];
+        bool enableButton = result == UpgradeStatResult.Affordable;
+        skillLevelRow.Refresh(playerStatLevel, upgradePath.MaxLevel, soulsRequired, enableButton);
     }
 
     private enum UpgradeStatResult { CantAfford, Affordable, AtMaxLevel }
     
-    private UpgradeStatResult CanUpgradeStat(StatUpgradePath upgradePath, int playerStatLevel) {
-        if (!upgradePath.soulsNeededPerLevel.IndexInRange(playerStatLevel)) {
+    private UpgradeStatResult CanUpgradeSkill(SkillUpgradePath upgradePath, int playerSkillLevel) {
+        if (!upgradePath.soulsNeededPerLevel.IndexInRange(playerSkillLevel)) {
             return UpgradeStatResult.AtMaxLevel;
         }
-        if (player.soulCurrency >= upgradePath.soulsNeededPerLevel[playerStatLevel]) {
+        if (player.soulCurrency >= upgradePath.soulsNeededPerLevel[playerSkillLevel]) {
             return UpgradeStatResult.Affordable;    
         }
         return UpgradeStatResult.CantAfford;
