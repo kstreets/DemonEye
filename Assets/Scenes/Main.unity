@@ -4652,6 +4652,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 1721248389582782667, guid: 57c438f45972063498a3e045f18c1295, type: 3}
   m_PrefabInstance: {fileID: 600094875}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &600094877 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8663200870649463664, guid: 57c438f45972063498a3e045f18c1295, type: 3}
+  m_PrefabInstance: {fileID: 600094875}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2775e1c50754a0f4d96fcd949d5282e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerStatRow
 --- !u!1001 &602668649
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4833,6 +4844,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 639054780}
   m_CullTransparentMesh: 1
+--- !u!1 &639686003 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 978082322800402056, guid: 0580ab26c15d8bc47b3d901fe38e1fea, type: 3}
+  m_PrefabInstance: {fileID: 870023798}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &640671270
 GameObject:
   m_ObjectHideFlags: 0
@@ -6577,6 +6593,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 1721248389582782667, guid: 57c438f45972063498a3e045f18c1295, type: 3}
   m_PrefabInstance: {fileID: 859561055}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &859561057 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8663200870649463664, guid: 57c438f45972063498a3e045f18c1295, type: 3}
+  m_PrefabInstance: {fileID: 859561055}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2775e1c50754a0f4d96fcd949d5282e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerStatRow
 --- !u!1 &864391876
 GameObject:
   m_ObjectHideFlags: 0
@@ -6747,13 +6774,39 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1086349923754639530, guid: 0580ab26c15d8bc47b3d901fe38e1fea, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3189500953911214167}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 978082322800402056, guid: 0580ab26c15d8bc47b3d901fe38e1fea, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 870023803}
   m_SourcePrefab: {fileID: 100100000, guid: 0580ab26c15d8bc47b3d901fe38e1fea, type: 3}
 --- !u!224 &870023799 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1086349923754639530, guid: 0580ab26c15d8bc47b3d901fe38e1fea, type: 3}
   m_PrefabInstance: {fileID: 870023798}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &870023803
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 639686003}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85cf1bd375926894e8465e4baf3d74b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerStatsPanel
+  carryCapacityRow: {fileID: 1430098325}
+  critChanceRow: {fileID: 1955936137}
+  critMultiRow: {fileID: 600094877}
+  damageRow: {fileID: 1167989202}
+  firerateRow: {fileID: 859561057}
+  healthRow: {fileID: 1034765675}
+  healingAmountRow: {fileID: 897244522}
+  healingSpeedRow: {fileID: 1699324172}
+  lootingSpeedRow: {fileID: 2062533701}
+  movementSpeedRow: {fileID: 1018111211}
+  projectileCountRow: {fileID: 1718371668}
 --- !u!1 &876120829
 GameObject:
   m_ObjectHideFlags: 0
@@ -7063,6 +7116,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 1721248389582782667, guid: 57c438f45972063498a3e045f18c1295, type: 3}
   m_PrefabInstance: {fileID: 897244520}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &897244522 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8663200870649463664, guid: 57c438f45972063498a3e045f18c1295, type: 3}
+  m_PrefabInstance: {fileID: 897244520}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2775e1c50754a0f4d96fcd949d5282e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerStatRow
 --- !u!1 &907677277
 GameObject:
   m_ObjectHideFlags: 0
@@ -8155,6 +8219,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 5552300825819374944, guid: f4e2e9836ede3824daab845da109bd03, type: 3}
   m_PrefabInstance: {fileID: 6727874920895783781}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1018111211 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8663200870649463664, guid: 57c438f45972063498a3e045f18c1295, type: 3}
+  m_PrefabInstance: {fileID: 227584511}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2775e1c50754a0f4d96fcd949d5282e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerStatRow
 --- !u!1 &1027180333
 GameObject:
   m_ObjectHideFlags: 0
@@ -8348,6 +8423,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 1721248389582782667, guid: 57c438f45972063498a3e045f18c1295, type: 3}
   m_PrefabInstance: {fileID: 1034765673}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1034765675 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8663200870649463664, guid: 57c438f45972063498a3e045f18c1295, type: 3}
+  m_PrefabInstance: {fileID: 1034765673}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2775e1c50754a0f4d96fcd949d5282e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerStatRow
 --- !u!1 &1069734736
 GameObject:
   m_ObjectHideFlags: 0
@@ -9249,6 +9335,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 8712680000265659784, guid: 0412bcb04847baa4d920e89c3e52615d, type: 3}
   m_PrefabInstance: {fileID: 1161753909}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1167989202 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8663200870649463664, guid: 57c438f45972063498a3e045f18c1295, type: 3}
+  m_PrefabInstance: {fileID: 1077329000}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2775e1c50754a0f4d96fcd949d5282e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerStatRow
 --- !u!1001 &1177980013
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10730,6 +10827,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 565211821639723289, guid: b2677ba9cb9eef2478615a13813d13a3, type: 3}
   m_PrefabInstance: {fileID: 2478916924513498097}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1430098325 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8663200870649463664, guid: 57c438f45972063498a3e045f18c1295, type: 3}
+  m_PrefabInstance: {fileID: 421647470}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2775e1c50754a0f4d96fcd949d5282e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerStatRow
 --- !u!114 &1446478272 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2500983849780606268, guid: ee0c07b700867e0438569b4674ce88df, type: 3}
@@ -12184,6 +12292,17 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &1699324172 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8663200870649463664, guid: 57c438f45972063498a3e045f18c1295, type: 3}
+  m_PrefabInstance: {fileID: 834160856}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2775e1c50754a0f4d96fcd949d5282e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerStatRow
 --- !u!1001 &1718033707
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -12410,6 +12529,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 1721248389582782667, guid: 57c438f45972063498a3e045f18c1295, type: 3}
   m_PrefabInstance: {fileID: 1718371666}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1718371668 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8663200870649463664, guid: 57c438f45972063498a3e045f18c1295, type: 3}
+  m_PrefabInstance: {fileID: 1718371666}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2775e1c50754a0f4d96fcd949d5282e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerStatRow
 --- !u!114 &1779444793 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3874865120119824866, guid: 1388258b3e69b7b488ca8e5df5d1d8c5, type: 3}
@@ -12952,7 +13082,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dda3678c8db158c4d99df54083c1ae88, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SkillsPanel
-  playerStatRows: []
   hasteSkillRow: {fileID: 6683082631902429937}
   intellectSkillRow: {fileID: 2020742935}
   lifeBloodSkillRow: {fileID: 1537839895}
@@ -13866,6 +13995,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 1721248389582782667, guid: 57c438f45972063498a3e045f18c1295, type: 3}
   m_PrefabInstance: {fileID: 1955936135}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1955936137 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8663200870649463664, guid: 57c438f45972063498a3e045f18c1295, type: 3}
+  m_PrefabInstance: {fileID: 1955936135}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2775e1c50754a0f4d96fcd949d5282e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerStatRow
 --- !u!114 &1992544602 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5936181210396252032, guid: 4cac6d2cfca57ad49bb9bbc37750b7f7, type: 3}
@@ -14120,6 +14260,7 @@ MonoBehaviour:
   forgeDustExplosionPrefab: {fileID: 8036104380610038385, guid: 25f9fb5d1792ce8469e19830c925f3bc, type: 3}
   questPrefab: {fileID: 7601280925113951189, guid: a542f2fd657b8f44d925aa64fa59b3fd, type: 3}
   skillsPanel: {fileID: 1821770995}
+  playerStatsPanel: {fileID: 870023803}
   mainCanvasRectTransform: {fileID: 848481703}
   itemDescPopup: {fileID: 570121183}
   mechanicDescPopup: {fileID: 775932238}
@@ -14814,6 +14955,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &2062533701 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8663200870649463664, guid: 57c438f45972063498a3e045f18c1295, type: 3}
+  m_PrefabInstance: {fileID: 1802288789}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2775e1c50754a0f4d96fcd949d5282e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerStatRow
 --- !u!114 &2084820013 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3841791115031056167, guid: 329dac6abfc9a0145a705fc0851aac62, type: 3}

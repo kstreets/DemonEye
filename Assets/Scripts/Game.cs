@@ -106,6 +106,7 @@ public class Game : MonoBehaviour {
 
     [Foldout("UI/MiscRefs")]
     public SkillsPanel skillsPanel;
+    public PlayerStatsPanel playerStatsPanel;
     public RectTransform mainCanvasRectTransform;
     public ItemDescPopup itemDescPopup;
     public MechanicDescPopup mechanicDescPopup;
@@ -3244,6 +3245,23 @@ public class Game : MonoBehaviour {
         };
     }
 
+    private float PlayerStatValue(Player.Stat stat) {
+        return stat switch {
+            Player.Stat.CarryCapacity   => PlayerStatLevel(Player.Stat.CarryCapacity) * gameplayConfig.carryCapacityIncPerLevel,
+            Player.Stat.CritChance      => PlayerStatLevel(Player.Stat.CritChance) * gameplayConfig.critChanceIncPerLevel,
+            Player.Stat.CritMulti       => PlayerStatLevel(Player.Stat.CritMulti) * gameplayConfig.critMultiplierIncPerLevel,
+            Player.Stat.Damage          => PlayerStatLevel(Player.Stat.Damage) * gameplayConfig.damageIncPerLevel,
+            Player.Stat.Firerate        => PlayerStatLevel(Player.Stat.Firerate) * gameplayConfig.firerateIncPerLevel,
+            Player.Stat.Health          => PlayerStatLevel(Player.Stat.Health) * gameplayConfig.healthIncPerLevel,
+            Player.Stat.HealingAmount   => PlayerStatLevel(Player.Stat.HealingAmount) * gameplayConfig.healingIncPerLevel,
+            Player.Stat.HealingSpeed    => PlayerStatLevel(Player.Stat.HealingSpeed) * gameplayConfig.healingSpeedIncPerLevel,
+            Player.Stat.LootingSpeed    => PlayerStatLevel(Player.Stat.LootingSpeed) * gameplayConfig.lootingSpeedIncPerLevel,
+            Player.Stat.MovementSpeed   => PlayerStatLevel(Player.Stat.MovementSpeed) * gameplayConfig.movementSpeedIncPerLevel,
+            Player.Stat.ProjectileCount => PlayerStatLevel(Player.Stat.ProjectileCount) * gameplayConfig.projectileCountIncPerLevel,
+            _                           => -1,
+        };
+    }
+    
     private const float defaultPlayerSpeed = 0.52f;
     private const float maxPlayerSpeed = 0.61f;
 
@@ -5340,10 +5358,17 @@ public class Game : MonoBehaviour {
     }
     
     private void RefreshSkillsPanel() {
-        for (int i = 0; i < skillsPanel.playerStatRows.Length; i++) {
-            PlayerStatRow statRow = skillsPanel.playerStatRows[i];
-            statRow.statValueText.text = PlayerStatLevel((Player.Stat)i).ToString();
-        }
+        playerStatsPanel.carryCapacityRow.statValueText.text = DisplayNumber(PlayerStatValue(Player.Stat.CarryCapacity));
+        playerStatsPanel.critChanceRow.statValueText.text = DisplayNumber(PlayerStatValue(Player.Stat.CritChance));
+        playerStatsPanel.critMultiRow.statValueText.text = DisplayNumber(PlayerStatValue(Player.Stat.CritMulti));
+        playerStatsPanel.damageRow.statValueText.text = DisplayNumber(PlayerStatValue(Player.Stat.Damage));
+        playerStatsPanel.firerateRow.statValueText.text = DisplayNumber(PlayerStatValue(Player.Stat.Firerate));
+        playerStatsPanel.healthRow.statValueText.text = DisplayNumber(PlayerStatValue(Player.Stat.Health));
+        playerStatsPanel.healingAmountRow.statValueText.text = DisplayNumber(PlayerStatValue(Player.Stat.HealingAmount));
+        playerStatsPanel.healingSpeedRow.statValueText.text = DisplayNumber(PlayerStatValue(Player.Stat.HealingSpeed));
+        playerStatsPanel.lootingSpeedRow.statValueText.text = DisplayNumber(PlayerStatValue(Player.Stat.LootingSpeed));
+        playerStatsPanel.movementSpeedRow.statValueText.text = DisplayNumber(PlayerStatValue(Player.Stat.MovementSpeed));
+        playerStatsPanel.projectileCountRow.statValueText.text = DisplayNumber(PlayerStatValue(Player.Stat.ProjectileCount));
         
         RefreshSkillRow(skillsPanel.hasteSkillRow, hasteUpgradePath, player.hasteSkillLevel);
         RefreshSkillRow(skillsPanel.intellectSkillRow, intellectUpgradePath, player.intellectSkillLevel);

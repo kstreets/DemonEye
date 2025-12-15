@@ -28,15 +28,15 @@ public class GameplayConfig : ScriptableObject {
 
     [Header("Stat Upgrades")]
     public int carryCapacityIncPerLevel;
-    public int critChanceIncPerLevel;
-    public int critMultiplierIncPerLevel;
+    public float critChanceIncPerLevel;
+    public float critMultiplierIncPerLevel;
     public int damageIncPerLevel;
-    public int firerateIncPerLevel;
+    public float firerateIncPerLevel;
     public int healthIncPerLevel;
-    public int healingIncPerLevel;
-    public int healingSpeedIncPerLevel;
-    public int lootingSpeedIncPerLevel;
-    public int movementSpeedIncPerLevel;
-    public int projectileCountIncPerLevel;
+    public float healingIncPerLevel;
+    public float healingSpeedIncPerLevel;
+    public float lootingSpeedIncPerLevel;
+    public float movementSpeedIncPerLevel;
+    public float projectileCountIncPerLevel;
 
 }
