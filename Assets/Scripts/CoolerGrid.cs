@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using StagPoint.Collections;
 using Unity.Burst;
 using Unity.Collections;
@@ -84,6 +85,13 @@ public class CoolerGrid : MonoBehaviour {
         }
     }
 
+    private Vector2 predicetedPlayerPos;
+    
+    public void FeedPlayerVelocity(Vector2 playerPos, Vector2 playerVelocity) {
+        const float lookAheadTime = 2.1f;
+        predicetedPlayerPos = Vector2.Lerp(predicetedPlayerPos, playerPos + playerVelocity * lookAheadTime, Time.deltaTime);
+    }
+
     public Vector3 GetSpawnPosition(Vector2 playerPosition, int innerCellRadius, int outerCellRadius) {
         bool needToRecalculate = lastUpdateTime != Time.time;
         lastUpdateTime = Time.time;
@@ -98,16 +106,15 @@ public class CoolerGrid : MonoBehaviour {
         }
 
         Vector2 slightRandomOffset = Random.insideUnitCircle * (cellSize * 0.90f);
-
+        
         float rand = Random.value * totalSpawnCellsWeight;
         for (int i = 0; i < spawnCells.Count; i++) {
             if (rand < spawnCellWeights[i]) {
                 return spawnCells[i].position + slightRandomOffset;
-            }
-
+            } 
             rand -= spawnCellWeights[i];
         }
-
+        
         return spawnCells[0].position + slightRandomOffset;
     }
     
@@ -207,10 +214,24 @@ public class CoolerGrid : MonoBehaviour {
         };
         List<Collider2D> colList = UnityEngine.Pool.ListPool<Collider2D>.Get();
 
+        float dist = Vector2.Distance(predicetedPlayerPos, cell.position);
+        Vector2 dirToPredictedPos = (predicetedPlayerPos - cell.position).normalized;
+        Debug.Log("Clean this class up with all the new spawning techniques and predicted player position");
+        bool useDirectional = dist > 0.1f;
+
         float expandedSizeForEnemyTesting = cellSize * 5f;
         foreach (GridCell nCell in spawnCells) {
+            const float enemyWeight = 1f;
+            const float dirWeight = 1.5f;
+            
             int enemyCount = Physics2D.OverlapCircle(nCell.position, expandedSizeForEnemyTesting, filter, colList);
-            float weight = 1f / ((enemyCount + 1f) * 3f);
+            float weight = (1f / (enemyCount + 1f)) * enemyWeight;
+
+            if (useDirectional) {
+                Vector2 dir = (nCell.position - cell.position).normalized;
+                weight += (Vector2.Dot(dir, dirToPredictedPos) + 1 * 0.5f) * dirWeight;
+            }
+
             spawnCellWeights.Add(weight);
             totalSpawnCellsWeight += weight;
         }

@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class PlayerStatsPanel : MonoBehaviour {
 
+    public RectTransform rectTransform;
     public PlayerStatRow carryCapacityRow;
     public PlayerStatRow critChanceRow;
     public PlayerStatRow critMultiRow;

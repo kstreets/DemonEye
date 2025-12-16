@@ -16,6 +16,7 @@ public class GameplayConfig : ScriptableObject {
     public float defaultCritMultiplier;
 
     [Header("Player")]
+    public float baseSpeed;
     public int postDeathStartingHealth;
     
     [Header("Portal")]
@@ -25,6 +26,11 @@ public class GameplayConfig : ScriptableObject {
 
     [Header("Misc")]
     public float distancePerUnit;
+
+    [Header("Encumberment")]
+    public int defaultStartingEncumberingWeight;
+    public int maxEncumberedWeight;
+    public float maxEncumberedSpeedReduction;
 
     [Header("Stat Upgrades")]
     public int carryCapacityIncPerLevel;

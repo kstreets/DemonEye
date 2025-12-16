@@ -105,8 +105,6 @@ public class Game : MonoBehaviour {
     [EndFoldout]
 
     [Foldout("UI/MiscRefs")]
-    public SkillsPanel skillsPanel;
-    public PlayerStatsPanel playerStatsPanel;
     public RectTransform mainCanvasRectTransform;
     public ItemDescPopup itemDescPopup;
     public MechanicDescPopup mechanicDescPopup;
@@ -140,12 +138,12 @@ public class Game : MonoBehaviour {
     public Button eyeForgeTabButton;
     public Button traderTabButton;
     public Button questsTabButton;
-    public Button levelupTabButton;
+    public Button skillsTabButton;
     public TextMeshProUGUI characterTabText;
     public TextMeshProUGUI eyeForgeTabText;
     public TextMeshProUGUI traderTabText;
     public TextMeshProUGUI questsTabText;
-    public TextMeshProUGUI levelupTabText;
+    public TextMeshProUGUI skillsTabText;
     [EndFoldout]
 
     [Foldout("UI/PlayerPanel")]
@@ -212,16 +210,9 @@ public class Game : MonoBehaviour {
     public RectTransform questsParent;
     [EndFoldout]
     
-    [Foldout("UI/LevelupPanel")]
-    public RectTransform levelupPanel;
-    public ButtonFeel agilityUpgradeButton;
-    public ButtonFeel corruptionUpgradeButton;
-    public ButtonFeel healthUpgradeButton;
-    public ButtonFeel strengthUpgradeButton;
-    public TextMeshProUGUI agilityUpgradeInfoText;
-    public TextMeshProUGUI healthUpgradeInfoText;
-    public TextMeshProUGUI bleedResInfoText;
-    public TextMeshProUGUI strengthUpgradeInfoText;
+    [Foldout("UI/SkillsTab")]
+    public SkillsPanel skillsPanel;
+    public PlayerStatsPanel playerStatsPanel;
     [EndFoldout]
 
     [Foldout("UI/Health&Currency")]
@@ -569,6 +560,7 @@ public class Game : MonoBehaviour {
         UpdatePlayer();
         UpdateProjectiles();
         UpdateSpawnManager();
+        loadedMapInst.grid.FeedPlayerVelocity(player.position, player.velocity);
         UpdateEnemies();
     }
 
@@ -1281,7 +1273,7 @@ public class Game : MonoBehaviour {
 
         if (sm.spawnEvents.Count <= 0) return;
 
-        if (!spawnLimiterForEnemyBatching.TimeHasPassed(3f)) return;
+        if (!spawnLimiterForEnemyBatching.TimeHasPassed(1f)) return;
         
         while (sm.spawnEvents.IndexInRange(sm.spawnTimeIndex) && sm.spawnEvents[sm.spawnTimeIndex].time <= sm.timeInPhase) {
             Vector2Int spawnCellRange = spawnManager.CurSpawnPhase.spawnCellRange;
@@ -3070,7 +3062,7 @@ public class Game : MonoBehaviour {
         player.velocity = Vector3.Lerp(player.velocity, frameVelocity, acceleration * Time.deltaTime);
         
         player.position += player.velocity * Time.deltaTime;
-        curStepDistance += Vector2.Distance(prevPos, player.position); 
+        curStepDistance += Vector2.Distance(prevPos, player.position);
 
         if (moveInput != Vector2.zero) {
             player.spriteRenderer.flipX = moveInput.x < 0;
@@ -3105,13 +3097,11 @@ public class Game : MonoBehaviour {
             curStepDistance = 0f;
         }
         
-        int targetCount = 1;
-        if (equipedEye.projectileCount.TryGetValue(out var projectileCount)) {
-            for (int i = 0; i < projectileCount.extraProjectileCount; i++) {
-                if (RollProbability(projectileCount.probability)) {
-                    targetCount += projectileCount.extraProjectileCount;
-                }
-            }
+        float projCountStat = GetPlayerStat(Player.Stat.ProjectileCount);
+        int targetCount = 1 + Mathf.FloorToInt(projCountStat);
+        float extraProjChance = projCountStat % 1;
+        if (RollProbability(extraProjChance)) {
+            targetCount++;
         }
         
         List<Vector3> attackTargets = GetAttackTargets(targetCount);
@@ -3228,7 +3218,7 @@ public class Game : MonoBehaviour {
         return player.health <= FullPlayerHealth * percentageOfHealthBleedingStops;
     }
 
-    private int PlayerStatLevel(Player.Stat stat) {
+    private int GetPlayerStatLevel(Player.Stat stat) {
         return stat switch {
             Player.Stat.CarryCapacity   => player.strengthSkillLevel,
             Player.Stat.CritChance      => player.intellectSkillLevel,
@@ -3245,56 +3235,37 @@ public class Game : MonoBehaviour {
         };
     }
 
-    private float PlayerStatValue(Player.Stat stat) {
+    private float GetPlayerStat(Player.Stat stat) {
         return stat switch {
-            Player.Stat.CarryCapacity   => PlayerStatLevel(Player.Stat.CarryCapacity) * gameplayConfig.carryCapacityIncPerLevel,
-            Player.Stat.CritChance      => PlayerStatLevel(Player.Stat.CritChance) * gameplayConfig.critChanceIncPerLevel,
-            Player.Stat.CritMulti       => PlayerStatLevel(Player.Stat.CritMulti) * gameplayConfig.critMultiplierIncPerLevel,
-            Player.Stat.Damage          => PlayerStatLevel(Player.Stat.Damage) * gameplayConfig.damageIncPerLevel,
-            Player.Stat.Firerate        => PlayerStatLevel(Player.Stat.Firerate) * gameplayConfig.firerateIncPerLevel,
-            Player.Stat.Health          => PlayerStatLevel(Player.Stat.Health) * gameplayConfig.healthIncPerLevel,
-            Player.Stat.HealingAmount   => PlayerStatLevel(Player.Stat.HealingAmount) * gameplayConfig.healingIncPerLevel,
-            Player.Stat.HealingSpeed    => PlayerStatLevel(Player.Stat.HealingSpeed) * gameplayConfig.healingSpeedIncPerLevel,
-            Player.Stat.LootingSpeed    => PlayerStatLevel(Player.Stat.LootingSpeed) * gameplayConfig.lootingSpeedIncPerLevel,
-            Player.Stat.MovementSpeed   => PlayerStatLevel(Player.Stat.MovementSpeed) * gameplayConfig.movementSpeedIncPerLevel,
-            Player.Stat.ProjectileCount => PlayerStatLevel(Player.Stat.ProjectileCount) * gameplayConfig.projectileCountIncPerLevel,
+            Player.Stat.CarryCapacity   => GetPlayerStatLevel(Player.Stat.CarryCapacity) * gameplayConfig.carryCapacityIncPerLevel,
+            Player.Stat.CritChance      => GetPlayerStatLevel(Player.Stat.CritChance) * gameplayConfig.critChanceIncPerLevel,
+            Player.Stat.CritMulti       => GetPlayerStatLevel(Player.Stat.CritMulti) * gameplayConfig.critMultiplierIncPerLevel,
+            Player.Stat.Damage          => GetPlayerStatLevel(Player.Stat.Damage) * gameplayConfig.damageIncPerLevel,
+            Player.Stat.Firerate        => GetPlayerStatLevel(Player.Stat.Firerate) * gameplayConfig.firerateIncPerLevel,
+            Player.Stat.Health          => GetPlayerStatLevel(Player.Stat.Health) * gameplayConfig.healthIncPerLevel,
+            Player.Stat.HealingAmount   => GetPlayerStatLevel(Player.Stat.HealingAmount) * gameplayConfig.healingIncPerLevel,
+            Player.Stat.HealingSpeed    => GetPlayerStatLevel(Player.Stat.HealingSpeed) * gameplayConfig.healingSpeedIncPerLevel,
+            Player.Stat.LootingSpeed    => GetPlayerStatLevel(Player.Stat.LootingSpeed) * gameplayConfig.lootingSpeedIncPerLevel,
+            Player.Stat.MovementSpeed   => GetPlayerStatLevel(Player.Stat.MovementSpeed) * gameplayConfig.movementSpeedIncPerLevel,
+            Player.Stat.ProjectileCount => GetPlayerStatLevel(Player.Stat.ProjectileCount) * gameplayConfig.projectileCountIncPerLevel,
             _                           => -1,
         };
     }
     
-    private const float defaultPlayerSpeed = 0.52f;
-    private const float maxPlayerSpeed = 0.61f;
-
-    private const int encumberingIncreasePerStrengthPoint = 50;
-    private const int defaultStartingEncumberingWeight = 140;
-    private const int maxEncumberedWeight = 190;
-    private const float maxEncumberedSpeedReduction = 0.2f;
-
-    private const float reducedChanceForBleedPerLevel = 0.1f;
-
-    private const int healthIncreasePerStatLevel = 10;
-    private int FullPlayerHealth => 100 + (healthIncreasePerStatLevel * PlayerStatLevel(Player.Stat.Health));
+    private int FullPlayerHealth => 100 + (gameplayConfig.healthIncPerLevel * GetPlayerStatLevel(Player.Stat.Health));
 
     private float GetPlayerSpeedBasedOnStats() {
-        int movementSpeedStat = PlayerStatLevel(Player.Stat.MovementSpeed);
-        for (int i = 0; i < playerEquipmentSize; i++) {
-            InventoryItem item = playerInventory.slots[i].item;
-            if (item == null) continue;
-            if (item.ItemRef.modifiesStats && item.ItemRef.agilityStatAdjustment != 0) {
-                movementSpeedStat += item.ItemRef.agilityStatAdjustment;
-            }
-        }
-        float playerSpeed = Mathf.Lerp(defaultPlayerSpeed, maxPlayerSpeed, (float)movementSpeedStat / hasteUpgradePath.MaxLevel);
+        float playerSpeed = gameplayConfig.baseSpeed + (gameplayConfig.baseSpeed * GetPlayerStat(Player.Stat.MovementSpeed));
         
-        float speedReductionFromWeight = Mathf.Lerp(0f, maxEncumberedSpeedReduction, GetOverweightCompletion());
-        speedReductionFromWeight = Mathf.Clamp(speedReductionFromWeight, 0f, maxEncumberedSpeedReduction);
+        float speedReductionFromWeight = Mathf.Lerp(0f, gameplayConfig.maxEncumberedSpeedReduction, GetOverweightCompletion());
+        speedReductionFromWeight = Mathf.Clamp(speedReductionFromWeight, 0f, gameplayConfig.maxEncumberedSpeedReduction);
 
         playerSpeed -= speedReductionFromWeight;
         return playerSpeed;
     }
 
     private int GetCarryCapacityStat() {
-        int carryCapacityStat = PlayerStatLevel(Player.Stat.CarryCapacity);
+        int carryCapacityStat = GetPlayerStatLevel(Player.Stat.CarryCapacity);
         for (int i = 0; i < playerEquipmentSize; i++) {
             InventoryItem item = playerInventory.slots[i].item;
             if (item == null) continue;
@@ -3306,9 +3277,9 @@ public class Game : MonoBehaviour {
     }
 
     private void GetEncumberingWeightRange(out int startingWeight, out int endingWeight) {
-        int encumberingIncreaseFromStrength = GetCarryCapacityStat() * encumberingIncreasePerStrengthPoint;
-        endingWeight = maxEncumberedWeight + encumberingIncreaseFromStrength;
-        startingWeight = defaultStartingEncumberingWeight + encumberingIncreaseFromStrength;
+        int encumberingIncreaseFromStrength = GetCarryCapacityStat() * gameplayConfig.carryCapacityIncPerLevel;
+        endingWeight = gameplayConfig.maxEncumberedWeight + encumberingIncreaseFromStrength;
+        startingWeight = gameplayConfig.defaultStartingEncumberingWeight + encumberingIncreaseFromStrength;
     }
 
     private float GetOverweightCompletion() {
@@ -3455,10 +3426,8 @@ public class Game : MonoBehaviour {
 
     private bool CanShoot() {
         float attackDelay = gameplayConfig.attackDelay;
-        if (equipedEye.firerate.TryGetValue(out var firerate)) {
-            attackDelay -= attackDelay * firerate.rateIncrasePercentage;
-            attackDelay = Mathf.Clamp(attackDelay, gameplayConfig.cappedMinAttackDelay, gameplayConfig.attackDelay);
-        }
+        attackDelay -= attackDelay * GetPlayerStat(Player.Stat.Firerate);
+        attackDelay = Mathf.Clamp(attackDelay, gameplayConfig.cappedMinAttackDelay, gameplayConfig.attackDelay);
         return attackLimiter.TimeHasPassed(attackDelay);
     }
 
@@ -3915,7 +3884,7 @@ public class Game : MonoBehaviour {
 
     private float GetCriticalStrikeProbability(Projectile proj, Enemy enemy) {
         DemonEyeInstance eyeInstance = proj.eyeInstanceSpawnedFrom;
-        float criticalStrikeProb = gameplayConfig.defaultCritChance;
+        float criticalStrikeProb = gameplayConfig.defaultCritChance + GetPlayerStat(Player.Stat.CritChance);
 
         if (eyeInstance.bleedCrit.HasValue && enemy.bleed.HasValue) {
             criticalStrikeProb += eyeInstance.bleedCrit.Value.probability;
@@ -3926,7 +3895,7 @@ public class Game : MonoBehaviour {
 
     private int GetBaseDamage(Projectile proj) {
         DemonEyeInstance eyeInstance = proj.eyeInstanceSpawnedFrom;
-        int damage = gameplayConfig.damage;
+        int damage = gameplayConfig.damage + (int)GetPlayerStat(Player.Stat.Damage);
 
         int damageRange = Mathf.RoundToInt(damage * 0.1f);
         damage += Random.Range(-damageRange, damageRange);
@@ -3941,10 +3910,6 @@ public class Game : MonoBehaviour {
             damage += increasedDamageFromDist;
         }
 
-        if (eyeInstance.stoppingPower.TryGetValue(out var stoppingPower)) {
-            damage += stoppingPower.extraDamage;
-        }
-        
         return damage;
     }
     
@@ -3955,7 +3920,7 @@ public class Game : MonoBehaviour {
             isCriticalHit = true;
         }
         
-        float multiplier = isCriticalHit ? gameplayConfig.defaultCritMultiplier : 1f;
+        float multiplier = isCriticalHit ? gameplayConfig.defaultCritMultiplier + GetPlayerStat(Player.Stat.CritMulti) : 1f;
         
         if (eyeInstance.doubleCrit.TryGetValue(out var doubleCrit)) {
             int consecutiveCriticalHits = demonEyeRaidStats.consecutiveCriticalHits;
@@ -4565,13 +4530,13 @@ public class Game : MonoBehaviour {
         eyeForgeTabButton.image.sprite = tabNonSelectedSprite;
         traderTabButton.image.sprite = tabNonSelectedSprite;
         questsTabButton.image.sprite = tabNonSelectedSprite;
-        levelupTabButton.image.sprite = tabNonSelectedSprite;
+        skillsTabButton.image.sprite = tabNonSelectedSprite;
         
         characterTabText.margin = styles.nonSelectedHideoutTabMargin;
         eyeForgeTabText.margin = styles.nonSelectedHideoutTabMargin;
         traderTabText.margin = styles.nonSelectedHideoutTabMargin;
         questsTabText.margin = styles.nonSelectedHideoutTabMargin;
-        levelupTabText.margin = styles.nonSelectedHideoutTabMargin;
+        skillsTabText.margin = styles.nonSelectedHideoutTabMargin;
         
         button.image.sprite = tabSelectedSprite;
         text.margin = styles.selectedHideoutTabMargin;
@@ -4586,7 +4551,8 @@ public class Game : MonoBehaviour {
         traderInventoryPanel.gameObject.SetActive(false);
         traderTransactionPanel.gameObject.SetActive(false);
         questsPanel.gameObject.SetActive(false);
-        levelupPanel.gameObject.SetActive(false);
+        skillsPanel.gameObject.SetActive(false);
+        playerStatsPanel.gameObject.SetActive(false);
         mapSelectionPanel.gameObject.SetActive(false);
         
         foreach (RectTransform rect in panels) {
@@ -4639,9 +4605,9 @@ public class Game : MonoBehaviour {
             RefreshQuestDisplays();
         });
         
-        levelupTabButton.onClick.AddListener(() => {
-            ToggleHideoutTab(levelupTabButton, levelupTabText);
-            ToggleHideoutPanels(levelupPanel);
+        skillsTabButton.onClick.AddListener(() => {
+            ToggleHideoutTab(skillsTabButton, skillsTabText);
+            ToggleHideoutPanels(skillsPanel.rectTransform, playerStatsPanel.rectTransform);
         });
 
         skillsPanel.hasteSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(hasteUpgradePath, player.hasteSkillLevel));
@@ -5358,17 +5324,17 @@ public class Game : MonoBehaviour {
     }
     
     private void RefreshSkillsPanel() {
-        playerStatsPanel.carryCapacityRow.statValueText.text = DisplayNumber(PlayerStatValue(Player.Stat.CarryCapacity));
-        playerStatsPanel.critChanceRow.statValueText.text = DisplayNumber(PlayerStatValue(Player.Stat.CritChance));
-        playerStatsPanel.critMultiRow.statValueText.text = DisplayNumber(PlayerStatValue(Player.Stat.CritMulti));
-        playerStatsPanel.damageRow.statValueText.text = DisplayNumber(PlayerStatValue(Player.Stat.Damage));
-        playerStatsPanel.firerateRow.statValueText.text = DisplayNumber(PlayerStatValue(Player.Stat.Firerate));
-        playerStatsPanel.healthRow.statValueText.text = DisplayNumber(PlayerStatValue(Player.Stat.Health));
-        playerStatsPanel.healingAmountRow.statValueText.text = DisplayNumber(PlayerStatValue(Player.Stat.HealingAmount));
-        playerStatsPanel.healingSpeedRow.statValueText.text = DisplayNumber(PlayerStatValue(Player.Stat.HealingSpeed));
-        playerStatsPanel.lootingSpeedRow.statValueText.text = DisplayNumber(PlayerStatValue(Player.Stat.LootingSpeed));
-        playerStatsPanel.movementSpeedRow.statValueText.text = DisplayNumber(PlayerStatValue(Player.Stat.MovementSpeed));
-        playerStatsPanel.projectileCountRow.statValueText.text = DisplayNumber(PlayerStatValue(Player.Stat.ProjectileCount));
+        playerStatsPanel.carryCapacityRow.statValueText.text = DisplayIncrease(GetPlayerStat(Player.Stat.CarryCapacity));
+        playerStatsPanel.critChanceRow.statValueText.text = DisplayProbIncrease(GetPlayerStat(Player.Stat.CritChance));
+        playerStatsPanel.critMultiRow.statValueText.text = DisplayIncrease(GetPlayerStat(Player.Stat.CritMulti));
+        playerStatsPanel.damageRow.statValueText.text = DisplayIncrease(GetPlayerStat(Player.Stat.Damage));
+        playerStatsPanel.firerateRow.statValueText.text = DisplayProbIncrease(GetPlayerStat(Player.Stat.Firerate));
+        playerStatsPanel.healthRow.statValueText.text = DisplayIncrease(GetPlayerStat(Player.Stat.Health));
+        playerStatsPanel.healingAmountRow.statValueText.text = DisplayIncrease(GetPlayerStat(Player.Stat.HealingAmount));
+        playerStatsPanel.healingSpeedRow.statValueText.text = DisplayProbIncrease(GetPlayerStat(Player.Stat.HealingSpeed));
+        playerStatsPanel.lootingSpeedRow.statValueText.text = DisplayProbIncrease(GetPlayerStat(Player.Stat.LootingSpeed));
+        playerStatsPanel.movementSpeedRow.statValueText.text = DisplayProbIncrease(GetPlayerStat(Player.Stat.MovementSpeed));
+        playerStatsPanel.projectileCountRow.statValueText.text = DisplayIncrease(GetPlayerStat(Player.Stat.ProjectileCount));
         
         RefreshSkillRow(skillsPanel.hasteSkillRow, hasteUpgradePath, player.hasteSkillLevel);
         RefreshSkillRow(skillsPanel.intellectSkillRow, intellectUpgradePath, player.intellectSkillLevel);
