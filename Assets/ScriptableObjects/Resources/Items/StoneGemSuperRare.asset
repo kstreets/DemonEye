@@ -32,8 +32,14 @@ MonoBehaviour:
   traderStockRange: {x: 0, y: 0}
   spawnsFromEnemies: []
   modifiesStats: 0
-  agilityStatAdjustment: 0
-  strengthStatAdjustment: 0
+  armorPercentIncrease: 0
+  critChanceIncrease: 0
+  critMultiplierIncrease: 0
+  damageIncrease: 0
+  firerateIncrease: 0
+  movementSpeedPercentIncrease: 0
+  projectileCountIncrease: 0
+  rangeIncreaseInSeconds: 0
   itemGroupProps: {fileID: 11400000, guid: d6cdda62e69bb8d409c3ae50dc007477, type: 2}
   maxStackCount: 15
   weight: 6

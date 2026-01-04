@@ -6,32 +6,32 @@ public class BoneShatterSoulcard : Soulcard {
     
     public struct InstanceData {
         public int shardsCount;
-        public int perShardDamage;
+        public float perShardDamageMulti;
         public float probability;
         public float lifeTime;
     }
 
     public float probability;
     public int shardsCount;
-    public int perShardDamage;
+    public float perShardDamageMulti;
     public float projectileLifetime;
     
     public override void AddInstanceToEye(DemonEyeInstance eyeInstance, int stackCount) {
         eyeInstance.boneShatter = new() {
             shardsCount = shardsCount,
             probability = probability,
-            perShardDamage = perShardDamage,
+            perShardDamageMulti = perShardDamageMulti,
             lifeTime = projectileLifetime,
         };
     }
-    
-    public override string GetStackDescription(int stackCount) {
+
+    protected override string BuildDescription(int stackCount) {
         return $"{DisplayProb(GetProbability(stackCount))} chance to shatter an enemy's bone, " +
-               $"sending out {DisplayNumber(shardsCount)} bone fragments, each dealing {DisplayNumber(GetDamage(stackCount))} damage";
+               $"sending out {DisplayNumber(shardsCount)} bone fragments, each dealing {DisplayMultiplier(GetDamage(stackCount))} damage";
     }
 
-    private int GetDamage(int stackCount) {
-        return TaperInteger(perShardDamage, stackCount, 0.5f);
+    private float GetDamage(int stackCount) {
+        return TaperFloat(perShardDamageMulti, stackCount, 0.5f);
     }
     
     private float GetProbability(int stackCount) {

@@ -6,6 +6,9 @@ public class MapData : ScriptableObject {
     public string displayName;
     public string sceneReference;
     public RaidSpawnPattern waves;
+
+    [Header("Variables")]
+    public int altarSoulPrice;
     
     [Header("Spawns")]
     public int minRockCount;
@@ -14,6 +17,8 @@ public class MapData : ScriptableObject {
     public int maxBodyCount;
     public int minForageCount;
     public int maxForageCount;
+    public int minAltarCount;
+    public int maxAltarCount;
     
     [Header("Eye Upgrade Drop Chances")]
     public float eyeUpgradeOnBodyChance;

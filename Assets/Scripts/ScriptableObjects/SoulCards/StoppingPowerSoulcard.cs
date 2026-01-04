@@ -19,7 +19,7 @@ public class StoppingPowerSoulcard : Soulcard {
         };
     }
 
-    public override string GetStackDescription(int stackCount) {
+    protected override string BuildDescription(int stackCount) {
         return $"{DisplayIncrease(GetExtraDamage(stackCount))} damage\n{DisplayProbDecrease(percentSpeedReduction)} projectile velocity";
     }
 

@@ -15,8 +15,8 @@ public class FarDamageSoulcard : Soulcard {
             damageIncreasePerUnitTraveled = GetDamageIncrease(stackCount),
         };
     }
-    
-    public override string GetStackDescription(int stackCount) {
+
+    protected override string BuildDescription(int stackCount) {
         return $"{DisplayIncrease(GetDamageIncrease(stackCount))} damage per unit a projectile travels";
     }
 

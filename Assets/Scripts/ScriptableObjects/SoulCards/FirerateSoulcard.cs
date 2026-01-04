@@ -17,7 +17,7 @@ public class FirerateSoulcard : Soulcard {
         eyeInstance.firerate = instance;
     }
 
-    public override string GetStackDescription(int stackCount) {
+    protected override string BuildDescription(int stackCount) {
         return $"{DisplayProbIncrease(GetReductionPercentage(stackCount))} rate of fire";
     }
 

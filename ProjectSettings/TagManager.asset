@@ -9,6 +9,7 @@ TagManager:
   - ExitPortal
   - Pickup
   - DeadBody
+  - Altar
   layers:
   - Default
   - TransparentFX

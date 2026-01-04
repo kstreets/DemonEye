@@ -36,8 +36,12 @@ MonoBehaviour:
   - {fileID: 11400000, guid: cc0cbb56eaca641408b7d1856ed0d048, type: 2}
   - {fileID: 11400000, guid: ec9149e42a27186489ef2d08d286c80a, type: 2}
   modifiesStats: 0
-  agilityStatAdjustment: 0
-  strengthStatAdjustment: 0
+  critChanceIncrease: 0
+  critMultiplierIncrease: 0
+  damageIncrease: 0
+  firerateIncrease: 0
+  projectileCountIncrease: 0
+  rangeIncreaseInSeconds: 0
   itemGroupProps: {fileID: 0}
   maxStackCount: 6
   weight: 2

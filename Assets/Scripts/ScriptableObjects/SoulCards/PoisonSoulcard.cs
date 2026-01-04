@@ -26,8 +26,8 @@ public class PoisonSoulcard : Soulcard {
             inst.AddPoisonedEffect(enemy, enemy.poison.Value.duration);
         }
     }
-    
-    public override string GetStackDescription(int stackCount) {
+
+    protected override string BuildDescription(int stackCount) {
         return $"{DisplayProb(GetProbability(stackCount))} chance for a projectile to poison an enemy for {DisplaySeconds(GetDuration(stackCount))}, " +
                $"dealing {DisplayMultiplier(GetDamageMulti(stackCount))} damage to enemies over {DisplayProb(minHealthPercentForMulti)} health.";
     }

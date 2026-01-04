@@ -6,7 +6,7 @@ public class BackpackItem : Item {
 
     public int additionalStorageSlots;
     
-    public override string GetDescription() {
+    protected override string BuildDescription(int stackCount) {
         return $"{DisplayIncrease(additionalStorageSlots)} inventory slots";
     }
     

@@ -6,32 +6,32 @@ public class ExplosionSoulcard : Soulcard {
     
     public struct InstanceData {
         public float probability;
-        public int damage;
+        public float damageMulti;
         public float radius;
     }
     
     public float probability;
-    public int damage;
+    public float damageMulti;
     public float radius;
     
-    public override void AddInstanceToEye(Game.DemonEyeInstance eyeInstance, int stackCount) {
+    public override void AddInstanceToEye(DemonEyeInstance eyeInstance, int stackCount) {
         eyeInstance.explosion = new() {
             probability = GetProbability(stackCount),
-            damage = GetDamage(stackCount),
+            damageMulti = GetDamage(stackCount),
             radius = radius,
         };
     }
-    
-    public override string GetStackDescription(int stackCount) {
-        return $"{DisplayProb(GetProbability(stackCount))} chance for a projectile to explode on impact causing {DisplayNumber(GetDamage(stackCount))} damage";
+
+    protected override string BuildDescription(int stackCount) {
+        return $"{DisplayProb(GetProbability(stackCount))} chance for a projectile to explode on impact causing {DisplayMultiplier(GetDamage(stackCount))} damage";
     }
 
     private float GetProbability(int stackCount) {
         return TaperFloat(probability, stackCount, 0.65f);
     }
 
-    private int GetDamage(int stackCount) {
-        return TaperInteger(damage, stackCount, 0.5f);
+    private float GetDamage(int stackCount) {
+        return TaperFloat(damageMulti, stackCount, 0.5f);
     }
     
 }

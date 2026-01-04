@@ -11,6 +11,7 @@ using Object = UnityEngine.Object;
 
 namespace WingmanInspector {
 
+    [Serializable]
     public class WingmanContainer {
 
         public static GUIStyle BoldLabelStyle;
@@ -43,8 +44,7 @@ namespace WingmanInspector {
         private static Vector2 iconSize = new Vector2(12, 12);
         private static Vector2 toolBarIconSize = new Vector2(12, 12);
         
-        public readonly EditorWindow InspectorWindow;
-        
+        public EditorWindow InspectorWindow;
         private Object inspectingObject;
         private VisualElement editorListVisual;
         private IMGUIContainer miniMapGuiContainer;
@@ -85,13 +85,13 @@ namespace WingmanInspector {
         private bool canStartDrag;
         private int dragId;
         private Vector2 initialDragMousePos;
-        
-        public WingmanContainer(EditorWindow window, Object obj) {
+
+        public WingmanContainer(EditorWindow window) {
             InspectorWindow = window;
             lockedPropertyInfo = window.GetType().GetProperty("isLocked", BindingFlags.Public | BindingFlags.Instance);
             inspectorWasLocked = InspectorIsLocked();
             inspectorScrollView = (ScrollView)InspectorWindow.rootVisualElement.Q(null, InspectorScrolllassName);
-            SetContainerSelectionToObject(obj);
+            SetContainerSelectionToObject(inspectorWasLocked ? PersistentData.GetRestoredObjectForInspectorWindow(window) : Selection.activeContext);
         }
 
         public bool InspectorIsLocked() {
@@ -155,20 +155,24 @@ namespace WingmanInspector {
 
         public void Update() {
             if (!InspectingObjectIsValid()) return;
-
             if (Settings.TransOnlyDisable && OnlyHasTransform()) return;
 
             editorListVisual ??= InspectorWindow.rootVisualElement.Q(null, InspectorListClassName);
-
             if (editorListVisual == null) return;
-
+            
             if (performSearchFlag && EditorApplication.timeSinceStartup - timeOfLastSearchUpdate > TimeAfterLastKeyPressToSearch) {
                 PerformSearch();
                 performSearchFlag = false;
                 searchResultsGuiContainer?.MarkDirtyRepaint();
             }
             
-            if (WasJustUnlocked() && Selection.activeObject != inspectingObject) {
+            LockStateChange lockStateChange = GetLockStateChange();
+
+            if (lockStateChange == LockStateChange.WasJustLocked) {
+                PersistentData.SetDataForLockedInspector(InspectorWindow, inspectingObject);
+            }
+            
+            if (lockStateChange == LockStateChange.WasJustUnlocked && Selection.activeObject != inspectingObject) {
                 SetContainerSelectionToObject(Selection.activeObject); 
                 UpdateComponentVisibility();
             }
@@ -304,9 +308,10 @@ namespace WingmanInspector {
             rangeSelectModifier = modifiers.HasFlag(EventModifiers.Shift);
             
             UpdateDragAndDrop();
-
+            
             EditorGUI.BeginChangeCheck();
             DrawPreviewScrollView(buttonPlacements, comps, innerScrollRect, outerScrollRect);
+            
             if (EditorGUI.EndChangeCheck() || compsGotAdjusted) {
                 UpdateComponentVisibility();
             }
@@ -960,7 +965,10 @@ namespace WingmanInspector {
 
         private bool ShowingWingmanGui() {
             int insertIndex = MiniMapIndex();
-
+            
+            VisualElement duplicateContainer = editorListVisual.hierarchy.Children().FirstOrDefault(child => child.name == MainWingmanName);
+            duplicateContainer?.RemoveFromHierarchy();
+            
             if (insertIndex >= editorListVisual.childCount) {
                 return false;
             }
@@ -1152,12 +1160,24 @@ namespace WingmanInspector {
         private bool AllIsSelected() {
             return selectedCompIds.Count == 0;
         }
-        
-        private bool WasJustUnlocked() {
+
+
+        private enum LockStateChange { Nothing, WasJustUnlocked, WasJustLocked }
+
+        private LockStateChange GetLockStateChange() {
+            LockStateChange stateChange = LockStateChange.Nothing;
             bool currentlyLocked = InspectorIsLocked();
-            bool res = inspectorWasLocked && !currentlyLocked;
+
+            if (currentlyLocked && !inspectorWasLocked) {
+                stateChange = LockStateChange.WasJustLocked;
+            }
+
+            if (!currentlyLocked && inspectorWasLocked) {
+                stateChange = LockStateChange.WasJustUnlocked;
+            }
+            
             inspectorWasLocked = currentlyLocked;
-            return res;
+            return stateChange;
         }
 
         private int MiniMapIndex() {

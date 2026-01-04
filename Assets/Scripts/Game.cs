@@ -85,6 +85,7 @@ public class Game : MonoBehaviour {
     public GameObject playerPrefab;
     public GameObject gemRockPrefab;
     public GameObject deadBodyPrefab;
+    public GameObject altarPrefab;
 
     public Item demonEyeItem;
     
@@ -646,6 +647,9 @@ public class Game : MonoBehaviour {
         public int health;
         public int obstacleCellRadius;
         public Vector2 obstaclePosition;
+
+        public int delayedDamage;
+        public bool delayedDamageIsCrit;
         
         public PoisonedEffect poisonedEffect;
         public BounceEffect bounceEffect;
@@ -917,6 +921,11 @@ public class Game : MonoBehaviour {
     public class Enemy : Entity {
         public float teleportTime;
         public float flowFieldAcc;
+        public float prevAverageDistFromPlayer;
+        public float curRunningSumDistFromPlayer;
+        public int curRunningSumFrameCount;
+        public float averageDistFromPlayerTime;
+        public bool gettingFurtherFromPlayer;
         public Collider2D enemySpacerCollider;
         public EnemyData data;
         public Timer applyDamageTimer;
@@ -933,7 +942,7 @@ public class Game : MonoBehaviour {
         if (timeHasPassed) {
             enemyReteleportCount = 0;
         }
-        int maxTeleportCount = Mathf.RoundToInt(enemies.Count * 0.08f);
+        int maxTeleportCount = Mathf.Max(Mathf.RoundToInt(enemies.Count * 0.1f), 8);
         
         for (int i = enemies.Count - 1; i >= 0; i--) {
             Enemy enemy = enemies[i];
@@ -941,13 +950,29 @@ public class Game : MonoBehaviour {
             if (!enemy.gameObject.activeInHierarchy) continue;
             
             enemy.applyDamageTimer.Tick();
-
-            enemy.teleportTime += Time.deltaTime;
+            
             float distFromPlayer = Vector2.Distance(player.Center, enemy.Center);
+
+            enemy.curRunningSumFrameCount++;
+            enemy.curRunningSumDistFromPlayer += distFromPlayer;
+            
+            enemy.averageDistFromPlayerTime += Time.deltaTime;
+            if (enemy.averageDistFromPlayerTime > 2.5f) {
+                enemy.averageDistFromPlayerTime = 0f;
+
+                if (enemy.prevAverageDistFromPlayer != 0f) {
+                    float curAverage = enemy.curRunningSumDistFromPlayer / enemy.curRunningSumFrameCount;
+                    enemy.gettingFurtherFromPlayer = curAverage - enemy.prevAverageDistFromPlayer > 0.1f;
+                }
+                
+                enemy.prevAverageDistFromPlayer = enemy.curRunningSumDistFromPlayer / enemy.curRunningSumFrameCount;
+                enemy.curRunningSumDistFromPlayer = 0f;
+                enemy.curRunningSumFrameCount = 0;
+            }
             
             bool canReteleport = timeHasPassed && enemyReteleportCount < maxTeleportCount;
 
-            if (canReteleport && enemy.teleportTime >= 6.5f && distFromPlayer > 1.1f) {
+            if (canReteleport && enemy.gettingFurtherFromPlayer && distFromPlayer > 1.2f) {
                 Vector2Int repositionCellRange = spawnManager.CurSpawnPhase.repositionCellRange;
                 Vector2 randomSpawnGridPos = loadedMapInst.grid.GetSpawnPosition(player.position, repositionCellRange.x, repositionCellRange.y);
                 if (Vector2.Distance(randomSpawnGridPos, player.position) < distFromPlayer) {
@@ -1755,7 +1780,7 @@ public class Game : MonoBehaviour {
         transactionInventory = CreateInventory(traderTransactionInventoryParent, transactionInventorySize);
 
         const int maxCrucibleInventorySize = 13;
-        const int startingCrucibleInventorySize = 4;
+        const int startingCrucibleInventorySize = 6;
         SpawnUiSlots(crucibleParent, maxCrucibleInventorySize, eyeForgeSlotPrefab);
         crucibleInventory = CreateInventory(crucibleParent, startingCrucibleInventorySize + player.crucibleLevel);
         ArrangeEyeCrucibleInventorySlots();
@@ -1981,7 +2006,7 @@ public class Game : MonoBehaviour {
 
     private string GetDemonEyeModDescription(Soulcard soulcard, int count) {
         string title = ColorText($"<size=108%>{soulcard.displayName}</size> <size=87%>x{count}</size>", styles.headerTextColor);
-        return $"<line-height=95%>{title}\n{soulcard.GetStackDescription(count)}<line-height=140%>\n";
+        return $"<line-height=95%>{title}\n{soulcard.GetDescription(count)}<line-height=140%>\n";
     }
 
     private void FitPopupSize(RectTransform popupRect, params Rect[] rects) {
@@ -2985,8 +3010,8 @@ public class Game : MonoBehaviour {
         public int strengthSkillLevel;
 
         public enum Stat {
-            CarryCapacity, CritChance, CritMulti, Damage, Firerate, Health, 
-            HealingAmount, HealingSpeed, LootingSpeed, MovementSpeed, ProjectileCount,
+            Armor, CarryCapacity, CritChance, CritMulti, Damage, Firerate, Health, 
+            HealingAmount, HealingSpeed, LootingSpeed, MovementSpeedPercentage, ProjectileCount, Range,
         }
     }
 
@@ -3055,7 +3080,7 @@ public class Game : MonoBehaviour {
         Vector2 moveInput = moveInputAction.ReadValue<Vector2>();
         Vector2 prevPos = player.position;
         
-        float speed = GetPlayerSpeedBasedOnStats();
+        float speed = GetPlayerSpeed();
         Vector3 frameVelocity = new Vector3(moveInput.x, moveInput.y, 0f) * speed;
 
         const float acceleration = 18f;
@@ -3097,16 +3122,17 @@ public class Game : MonoBehaviour {
             curStepDistance = 0f;
         }
         
-        float projCountStat = GetPlayerStat(Player.Stat.ProjectileCount);
-        int targetCount = 1 + Mathf.FloorToInt(projCountStat);
-        float extraProjChance = projCountStat % 1;
+        float projCount = 1f + GetStatAdjustmentValue(StatAdjustmentType.ProjectileCount);
+        int targetCount = Mathf.FloorToInt(projCount);
+        float extraProjChance = projCount % 1;
         if (RollProbability(extraProjChance)) {
             targetCount++;
         }
         
-        List<Vector3> attackTargets = GetAttackTargets(targetCount);
+        bool canShoot = attackLimiter.TimeHasPassed(GetFirerateDelayBasedOnStats());
 
-        if (attackTargets.Count <= 0 || !CanShoot()) return;
+        List<Vector3> attackTargets = GetAttackTargets(targetCount);
+        if (attackTargets.Count <= 0 || !canShoot) return;
         
         PlayAudioClip(shootClip, player.position);
         foreach (Vector3 attackTarget in attackTargets) {
@@ -3122,7 +3148,17 @@ public class Game : MonoBehaviour {
         }
         
         if (equipedEye.blast.TryGetValue(out var blast) && consecutiveShotCount > 0 && consecutiveShotCount % blast.numshotsUntilOverheat == 0) {
-            SpawnExplosion(blastPool, OffsetY(player.position, 0.1f), blast.radius, blast.damage, Masks.EnemyMask, 0.15f);
+            Vector2 spawnPos = OffsetY(player.position, 0.1f);
+            
+            Entity expEntity = SpawnEntity(blastPool, spawnPos, Quaternion.identity); 
+            DestroyEntity(expEntity, CurrentClipLength(expEntity.animator));
+            
+            List<Collider2D> cols = OverlapCircle(spawnPos, blast.radius, Masks.EnemyMask);
+            foreach (Collider2D col in cols) {
+                Enemy enemy = entityLookup[col.gameObject] as Enemy;
+                int damage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(enemy) * blast.damageMulti);
+                DamageEnemyAfterDelay(entityLookup[col.gameObject], damage, false, 0.15f);
+            }
         }
             
         lastShotTime = Time.time;
@@ -3208,6 +3244,13 @@ public class Game : MonoBehaviour {
         if (timeSpentSummoningPortal < gameplayConfig.portalSummonTime) {
             timeSpentSummoningPortal = 0f;
         }
+        
+        float damageReductionFromArmor = GetStatAdjustmentValue(StatAdjustmentType.ArmorDamageReductionPercentage);
+        Assert.IsTrue(damageReductionFromArmor >= 0f && damageReductionFromArmor < 1f, "Armor stat needs to be [0, 1)");
+        
+        int damageReduction = Mathf.RoundToInt(damage * damageReductionFromArmor);
+        damage = Mathf.Clamp(damage - damageReduction, 0, int.MaxValue);
+        
         player.health -= damage;
         AddFlashHitEffect(player);
         SpawnDamageNumber(player.position, damage, DamageColor.Blood);
@@ -3229,7 +3272,7 @@ public class Game : MonoBehaviour {
             Player.Stat.HealingAmount   => player.lifeBloodSkillLevel,
             Player.Stat.HealingSpeed    => player.lifeBloodSkillLevel,
             Player.Stat.LootingSpeed    => player.hasteSkillLevel,
-            Player.Stat.MovementSpeed   => player.hasteSkillLevel,
+            Player.Stat.MovementSpeedPercentage   => player.hasteSkillLevel,
             Player.Stat.ProjectileCount => player.strengthSkillLevel,
             _                           => -1,
         };
@@ -3246,16 +3289,68 @@ public class Game : MonoBehaviour {
             Player.Stat.HealingAmount   => GetPlayerStatLevel(Player.Stat.HealingAmount) * gameplayConfig.healingIncPerLevel,
             Player.Stat.HealingSpeed    => GetPlayerStatLevel(Player.Stat.HealingSpeed) * gameplayConfig.healingSpeedIncPerLevel,
             Player.Stat.LootingSpeed    => GetPlayerStatLevel(Player.Stat.LootingSpeed) * gameplayConfig.lootingSpeedIncPerLevel,
-            Player.Stat.MovementSpeed   => GetPlayerStatLevel(Player.Stat.MovementSpeed) * gameplayConfig.movementSpeedIncPerLevel,
+            Player.Stat.MovementSpeedPercentage   => GetPlayerStatLevel(Player.Stat.MovementSpeedPercentage) * gameplayConfig.movementSpeedIncPerLevel,
             Player.Stat.ProjectileCount => GetPlayerStatLevel(Player.Stat.ProjectileCount) * gameplayConfig.projectileCountIncPerLevel,
             _                           => -1,
         };
     }
     
+    public enum StatAdjustmentType {
+        ArmorDamageReductionPercentage, FireratePercentage, MovementSpeedPercentage, 
+        Damage, CritChance, CritMulti, ProjectileCount, RangeInSeconds,
+    }
+    
+    private float GetStatAdjustmentValue(StatAdjustmentType stat) {
+        float statSum = 0f;
+        
+        for (int i = 0; i < playerEquipmentSize; i++) {
+            Item item = playerInventory.slots[i].item?.ItemRef;
+            if (!item || !item.modifiesStats) continue;
+            
+            switch (stat) {
+                case StatAdjustmentType.ArmorDamageReductionPercentage:
+                    statSum += item.armorPercent; 
+                    break;
+                case StatAdjustmentType.MovementSpeedPercentage:
+                    statSum += item.movementSpeedPercentage;
+                    break;
+            }
+        }
+
+        foreach (EquipedModInstance mod in equipedEye.modInstances) {
+            Soulcard soulcard = mod.Soulcard;
+            if (!soulcard.modifiesStats) continue;
+
+            switch (stat) {
+                case StatAdjustmentType.CritChance:
+                    statSum += soulcard.critChance; 
+                    break;
+                case StatAdjustmentType.CritMulti:
+                    statSum += soulcard.critMultiplier; 
+                    break;
+                case StatAdjustmentType.Damage:
+                    statSum += soulcard.damage; 
+                    break;
+                case StatAdjustmentType.FireratePercentage:
+                    statSum += soulcard.fireratePercentage; 
+                    break;
+                case StatAdjustmentType.ProjectileCount:
+                    statSum += soulcard.projectileCount; 
+                    break;
+                case StatAdjustmentType.RangeInSeconds:
+                    statSum += soulcard.rangeInSeconds;
+                    break;
+            }
+        }
+
+        return statSum;
+    }
+
     private int FullPlayerHealth => 100 + (gameplayConfig.healthIncPerLevel * GetPlayerStatLevel(Player.Stat.Health));
 
-    private float GetPlayerSpeedBasedOnStats() {
-        float playerSpeed = gameplayConfig.baseSpeed + (gameplayConfig.baseSpeed * GetPlayerStat(Player.Stat.MovementSpeed));
+    private float GetPlayerSpeed() {
+        float playerSpeed = gameplayConfig.baseSpeed;
+        playerSpeed += playerSpeed * GetStatAdjustmentValue(StatAdjustmentType.MovementSpeedPercentage);
         
         float speedReductionFromWeight = Mathf.Lerp(0f, gameplayConfig.maxEncumberedSpeedReduction, GetOverweightCompletion());
         speedReductionFromWeight = Mathf.Clamp(speedReductionFromWeight, 0f, gameplayConfig.maxEncumberedSpeedReduction);
@@ -3264,15 +3359,18 @@ public class Game : MonoBehaviour {
         return playerSpeed;
     }
 
+    private float GetFirerateDelayBasedOnStats() {
+        if (equipedEye == emptyDemonEye) {
+            return gameplayConfig.attackDelay;
+        }
+
+        float attackDelay = gameplayConfig.attackDelay;
+        attackDelay -= attackDelay * GetStatAdjustmentValue(StatAdjustmentType.FireratePercentage);
+        return Mathf.Clamp(attackDelay, gameplayConfig.cappedMinAttackDelay, gameplayConfig.attackDelay);
+    }
+
     private int GetCarryCapacityStat() {
         int carryCapacityStat = GetPlayerStatLevel(Player.Stat.CarryCapacity);
-        for (int i = 0; i < playerEquipmentSize; i++) {
-            InventoryItem item = playerInventory.slots[i].item;
-            if (item == null) continue;
-            if (item.ItemRef.modifiesStats && item.ItemRef.strengthStatAdjustment != 0) {
-                carryCapacityStat += item.ItemRef.strengthStatAdjustment;
-            }
-        }
         return carryCapacityStat;
     }
 
@@ -3389,7 +3487,7 @@ public class Game : MonoBehaviour {
     } 
 
     private List<Vector3> GetAttackTargets(int targetCount) {
-        float overlapDist = GetProjectileSpeed() * GetProjectileLifeTimeSeconds();
+        float overlapDist = gameplayConfig.projectileSpeed * GetProjectileRangeInSeconds();
         List<Collider2D> cols = OverlapCircle(player.position, overlapDist, Masks.EnemyMask);
         
         if (cols.Count <= 0) {
@@ -3424,19 +3522,12 @@ public class Game : MonoBehaviour {
         return dist;
     }
 
-    private bool CanShoot() {
-        float attackDelay = gameplayConfig.attackDelay;
-        attackDelay -= attackDelay * GetPlayerStat(Player.Stat.Firerate);
-        attackDelay = Mathf.Clamp(attackDelay, gameplayConfig.cappedMinAttackDelay, gameplayConfig.attackDelay);
-        return attackLimiter.TimeHasPassed(attackDelay);
-    }
-
     private void ShootProjectile(Vector2 targetPos) {
         const float maxInaccuracyAngle = 18f;
         float maxAccuracyAngle = maxInaccuracyAngle * (1f - gameplayConfig.accuracy);
         float accuracyAngle = Random.Range(-maxAccuracyAngle, maxAccuracyAngle);
 
-        float projectileSpeed = GetProjectileSpeed();
+        float projectileSpeed = gameplayConfig.projectileSpeed;
         Vector2 dir = (targetPos - PlayerEyePos.ToVector2()).normalized;
         dir = Quaternion.AngleAxis(accuracyAngle, Vector3.forward) * dir;
         Vector2 velocity = dir * projectileSpeed; 
@@ -3464,7 +3555,7 @@ public class Game : MonoBehaviour {
         Quaternion projectileRotation = Quaternion.AngleAxis(angle, Vector3.forward);
 
         Projectile projectile = SpawnEntity(pool, spawnPos, projectileRotation);
-        projectile.lifeTimeDuration = GetProjectileLifeTimeSeconds();
+        projectile.lifeTimeDuration = GetProjectileRangeInSeconds();
         projectile.velocity = velocity;
         projectile.eyeInstanceSpawnedFrom = equipedEye;
         projectile.layerMask = mask == default ? Masks.DamagableMask : mask;
@@ -3476,23 +3567,9 @@ public class Game : MonoBehaviour {
         return projectile;
     }
 
-    private float GetProjectileLifeTimeSeconds() {
-        const float defaultTimeAlive = 0.65f;
-        float projLifeTime = defaultTimeAlive;
-        if (equipedEye.range.TryGetValue(out var rangeIncrease)) {
-            projLifeTime += rangeIncrease.timeAliveIncrease;
-        }
-        return projLifeTime;
+    private float GetProjectileRangeInSeconds() {
+        return gameplayConfig.rangeInSeconds + GetStatAdjustmentValue(StatAdjustmentType.RangeInSeconds);
     }
-
-    private float GetProjectileSpeed() {
-        float projectileSpeed = gameplayConfig.projectileSpeed;
-        if (equipedEye.stoppingPower.TryGetValue(out var stoppingPower)) {
-            projectileSpeed *= 1f - stoppingPower.percentSpeedReduction;
-        }
-        return projectileSpeed;
-    }
-    
 
     private Vector3 PlayerEyePos => player.position + new Vector3(0f, 0.13f, 0f);
 
@@ -3538,6 +3615,18 @@ public class Game : MonoBehaviour {
                     lootInvetoryPtr.slots = deadBodySlotsLookup[col.gameObject];
                     OpenPlayerInventory();
                     OpenLootInventory();
+                }
+            }
+
+            if (col.CompareTag(Tags.Altar)) {
+                int soulsPrice = loadedMapData.altarSoulPrice;
+                EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), $"{soulsPrice} Souls");
+                if (interactInputAction.WasPressedThisFrame() && player.soulCurrency >= soulsPrice) {
+                    player.soulCurrency -= soulsPrice;
+                    Item dropItem = GetItemFromDropPool(eyeUpgradesDropPool);
+                    Entity item = SpawnItemAsEntity(dropItem, 1, OffsetY(col.transform.position, 0.2f), Quaternion.identity);
+                    item.spriteRenderer.sortingOrder = 1;
+                    col.enabled = false;
                 }
             }
 
@@ -3773,6 +3862,14 @@ public class Game : MonoBehaviour {
     // ***********************************
     // Damage Handling 
     // ***********************************
+
+    private void DamageEnemyAfterDelay(Entity enemy, int damage, bool isCriticalStrike, float delay) {
+        enemy.delayedDamage = damage;
+        enemy.delayedDamageIsCrit = isCriticalStrike;
+        Tween.Delay(enemy, delay, static enemy => {
+            inst.DamageEnemy(enemy, enemy.delayedDamage, enemy.delayedDamageIsCrit);
+        });
+    }
     
     private void DamageEnemy(Entity enemy, int damage, bool isCriticalStrike) {
         enemy.health -= damage;
@@ -3802,7 +3899,7 @@ public class Game : MonoBehaviour {
                 demonEyeRaidStats.consecutiveCriticalHits = 0;
             }
 
-            int damage = Mathf.RoundToInt(GetBaseDamage(projectile) * GetDamageMultiplier(projectile, enemy, isCriticalStrike));
+            int damage = GetProjectileDamage(projectile, enemy, isCriticalStrike);
             DamageEnemy(enemy, damage, isCriticalStrike);
             
             foreach (EquipedModInstance modInstance in eyeInstance.modInstances) {
@@ -3811,15 +3908,24 @@ public class Game : MonoBehaviour {
             
             if (eyeInstance.explosion.TryGetValue(out var explosion) && RollProbability(explosion.probability)) {
                 Vector2 expSpawnPos = projectile.position + (enemy.position - projectile.position) / 2f;
-                SpawnExplosion(explosionPool, expSpawnPos, explosion.radius, explosion.damage, Masks.EnemyMask, 0.1f);
+                
+                Entity expEntity = SpawnEntity(explosionPool, expSpawnPos, Quaternion.identity); 
+                DestroyEntity(expEntity, CurrentClipLength(expEntity.animator));
+                
+                List<Collider2D> cols = OverlapCircle(expSpawnPos, explosion.radius, Masks.EnemyMask);
+                foreach (Collider2D col in cols) {
+                    Enemy explosionEnemy = entityLookup[col.gameObject] as Enemy;
+                    int explosionDamage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(explosionEnemy) * explosion.damageMulti);
+                    DamageEnemyAfterDelay(entityLookup[col.gameObject], explosionDamage, false, 0.1f);
+                }
             }
             
             if (equipedEye.boneShatter.TryGetValue(out var boneShatter) && RollProbability(boneShatter.probability)) {
                 for (int i = 0; i < boneShatter.shardsCount; i++) {
                     Vector2 boneShatterVelocity = RandomizeVectorAngle(projectile.velocity / 1.5f, 40f);
                     Projectile boneShatterProj = SpawnProjectile(enemy.position, boneShatterVelocity, boneShatterProjectilePool);
+                    boneShatterProj.simpleDamage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(enemy) * boneShatter.perShardDamageMulti);
                     boneShatterProj.trans.rotation = RandomRotation();
-                    boneShatterProj.simpleDamage = boneShatter.perShardDamage;
                     boneShatterProj.lifeTimeDuration = boneShatter.lifeTime;
                     ProjectileIgnoreEntity(boneShatterProj, enemy);
                 }
@@ -3848,25 +3954,25 @@ public class Game : MonoBehaviour {
                 int gemsSpawned = 0;
                 int maxGemsAllowedToSpawn = loadedMapData.maxGemCountPerRock;
                 
-                int upgradeDropIndex = -1;
-                if (RollProbability(loadedMapData.eyeUpgradeFromRockChance)) {
-                    upgradeDropIndex = Random.Range(0, dropCount);
-                    gemsSpawned++;
-                }
+                // int upgradeDropIndex = -1;
+                // if (RollProbability(loadedMapData.eyeUpgradeFromRockChance)) {
+                //     upgradeDropIndex = Random.Range(0, dropCount);
+                //     gemsSpawned++;
+                // }
 
                 for (int i = 0; i < dropCount; i++) {
                     Item dropItem = null;
-                    if (i == upgradeDropIndex) {
-                        dropItem = GetItemFromDropPool(eyeUpgradesDropPool);
-                    }
-                    else {
+                    // if (i == upgradeDropIndex) {
+                    //     dropItem = GetItemFromDropPool(eyeUpgradesDropPool);
+                    // }
+                    // else {
                         do dropItem = GetItemFromDropPool(rockStonesDropPool);
                         while (gemsSpawned == maxGemsAllowedToSpawn && dropItem.type == gemType);
 
                         if (dropItem.type == gemType) {
                             gemsSpawned++;
                         }
-                    }
+                    // }
                     
                     float randomAngle = (angleDeltaPerDrop * i) + Random.Range(-randomRangePerDrop, randomRangePerDrop);
                     Vector3 endPos = entity.position + RotationVector(randomAngle, 0.18f, 0.25f);
@@ -3884,7 +3990,7 @@ public class Game : MonoBehaviour {
 
     private float GetCriticalStrikeProbability(Projectile proj, Enemy enemy) {
         DemonEyeInstance eyeInstance = proj.eyeInstanceSpawnedFrom;
-        float criticalStrikeProb = gameplayConfig.defaultCritChance + GetPlayerStat(Player.Stat.CritChance);
+        float criticalStrikeProb = gameplayConfig.defaultCritChance + GetStatAdjustmentValue(StatAdjustmentType.CritChance);
 
         if (eyeInstance.bleedCrit.HasValue && enemy.bleed.HasValue) {
             criticalStrikeProb += eyeInstance.bleedCrit.Value.probability;
@@ -3893,72 +3999,72 @@ public class Game : MonoBehaviour {
         return criticalStrikeProb;
     }
 
-    private int GetBaseDamage(Projectile proj) {
+    private int GetProjectileDamage(Projectile proj, Enemy enemy, bool isCriticalHit) {
         DemonEyeInstance eyeInstance = proj.eyeInstanceSpawnedFrom;
-        int damage = gameplayConfig.damage + (int)GetPlayerStat(Player.Stat.Damage);
-
-        int damageRange = Mathf.RoundToInt(damage * 0.1f);
-        damage += Random.Range(-damageRange, damageRange);
-
-        if (proj.isTriShot && eyeInstance.trishot.TryGetValue(out var triShot)) {
-            damage = Mathf.RoundToInt(damage * triShot.reducedDamageMultiplier);
-        }
         
-        if (eyeInstance.farDamage.TryGetValue(out var farDamage)) {
-            float convertedUnits = proj.distTraveled / gameplayConfig.distancePerUnit;
-            int increasedDamageFromDist = Mathf.FloorToInt(convertedUnits) * farDamage.damageIncreasePerUnitTraveled;
-            damage += increasedDamageFromDist;
+        int damage = GetBaseDamage();
+        
+        // Phase 1 : Additions
+        {
+            if (eyeInstance.farDamage.TryGetValue(out var farDamage)) {
+                float convertedUnits = proj.distTraveled / gameplayConfig.distancePerUnit;
+                int increasedDamageFromDist = Mathf.FloorToInt(convertedUnits) * farDamage.damageIncreasePerUnitTraveled;
+                damage += increasedDamageFromDist;
+            }
         }
-
-        return damage;
-    }
-    
-    private float GetDamageMultiplier(Projectile proj, Enemy enemy, bool isCriticalHit) {
-        DemonEyeInstance eyeInstance = proj.eyeInstanceSpawnedFrom;
         
         if (!isCriticalHit && proj.isBackwardsShot) {
             isCriticalHit = true;
         }
         
-        float multiplier = isCriticalHit ? gameplayConfig.defaultCritMultiplier + GetPlayerStat(Player.Stat.CritMulti) : 1f;
-        
-        if (eyeInstance.doubleCrit.TryGetValue(out var doubleCrit)) {
-            int consecutiveCriticalHits = demonEyeRaidStats.consecutiveCriticalHits;
-            if (consecutiveCriticalHits > 0 && consecutiveCriticalHits % 2 == 0) {
-                demonEyeRaidStats.lastDoubleCritActivationTime = Time.time;
+        // Phase 2 : Multipliers
+        {
+            float damageMultiplier = GetDamageMultiplierOnEnemy(enemy);
+            
+            if (isCriticalHit) {
+                float critMultiplier = gameplayConfig.defaultCritMulti + GetStatAdjustmentValue(StatAdjustmentType.CritMulti);
+                damageMultiplier *= critMultiplier;
             }
+            
+            if (proj.isTriShot && eyeInstance.trishot.TryGetValue(out var triShot)) {
+                damageMultiplier *= triShot.damageMultiplier;
+            }
+            
+            if (eyeInstance.doubleCrit.TryGetValue(out var doubleCrit)) {
+                int consecutiveCriticalHits = demonEyeRaidStats.consecutiveCriticalHits;
+                if (consecutiveCriticalHits > 0 && consecutiveCriticalHits % 2 == 0) {
+                    demonEyeRaidStats.lastDoubleCritActivationTime = Time.time;
+                }
 
-            if (Time.time - demonEyeRaidStats.lastDoubleCritActivationTime <= doubleCrit.multiplierDuration) {
-                multiplier += doubleCrit.damageMultiplier;
+                if (Time.time - demonEyeRaidStats.lastDoubleCritActivationTime <= doubleCrit.multiplierDuration) {
+                    damageMultiplier *= doubleCrit.damageMulti;
+                }
             }
+            
+            damage = Mathf.RoundToInt(damage * damageMultiplier);
         }
 
-        if (enemy.poison.TryGetValue(out var poison)) {
-            if (enemy.health >= enemy.data.health * poison.minHealthPercentForMulti) {
-                multiplier += poison.damageMulti;
-            }
-        }
-        
-        return multiplier;
+        return damage;
     }
 
-    private void SpawnExplosion(EntityPool<Entity> entityPool, Vector2 spawnPos, float radius, int damage, LayerMask mask, float damageDelay) {
-        Entity expEntity = SpawnEntity(entityPool, spawnPos, Quaternion.identity); 
-        DestroyEntity(expEntity, CurrentClipLength(expEntity.animator));
+    private int GetBaseDamage() {
+        int damage = gameplayConfig.damage;
+        int damageRange = Mathf.RoundToInt(damage * 0.1f);
+        damage += Random.Range(-damageRange, damageRange);
+        damage += Mathf.RoundToInt(GetStatAdjustmentValue(StatAdjustmentType.Damage));
+        return damage;
+    }
+
+    private float GetDamageMultiplierOnEnemy(Enemy enemy) {
+        float damageMultiplier = 1f;
         
-        Tween.Delay(damageDelay, () => {
-            List<Collider2D> cols = inst.OverlapCircle(spawnPos, radius, mask);
-            foreach (Collider2D col in cols) {
-                if (mask == Masks.PlayerHurtMask) {
-                    inst.DamagePlayer(damage);
-                    continue;
-                }
-                Entity entity = inst.entityLookup[col.gameObject];
-                if (entity is Enemy) {
-                    inst.DamageEnemy(entityLookup[col.gameObject], damage, false);
-                }
+        if (enemy.poison.TryGetValue(out var poison)) {
+            if (enemy.health >= enemy.data.health * poison.minHealthPercentForMulti) {
+                damageMultiplier *= poison.damageMulti;
             }
-        });
+        }
+
+        return damageMultiplier;
     }
 
     private enum DamageColor { Normal, Crit, Blood, Poison }
@@ -4190,6 +4296,11 @@ public class Game : MonoBehaviour {
         int foragablesToSpawn = Random.Range(loadedMapData.minForageCount, loadedMapData.maxForageCount);
         for (int i = 0; i < foragablesToSpawn; i++) {
             SpawnResource(GetItemFromDropPool(foragingDropPool), spawnPoints);
+        }
+
+        int altarsToSpawn = Random.Range(loadedMapData.minAltarCount, loadedMapData.maxAltarCount);
+        for (int i = 0; i < altarsToSpawn; i++) {
+            SpawnResource<Entity>(altarPrefab, spawnPoints, 1);
         }
         
         int deadBodiesToSpawn = Random.Range(loadedMapData.minBodyCount, loadedMapData.maxBodyCount);
@@ -5333,7 +5444,7 @@ public class Game : MonoBehaviour {
         playerStatsPanel.healingAmountRow.statValueText.text = DisplayIncrease(GetPlayerStat(Player.Stat.HealingAmount));
         playerStatsPanel.healingSpeedRow.statValueText.text = DisplayProbIncrease(GetPlayerStat(Player.Stat.HealingSpeed));
         playerStatsPanel.lootingSpeedRow.statValueText.text = DisplayProbIncrease(GetPlayerStat(Player.Stat.LootingSpeed));
-        playerStatsPanel.movementSpeedRow.statValueText.text = DisplayProbIncrease(GetPlayerStat(Player.Stat.MovementSpeed));
+        playerStatsPanel.movementSpeedRow.statValueText.text = DisplayProbIncrease(GetPlayerStat(Player.Stat.MovementSpeedPercentage));
         playerStatsPanel.projectileCountRow.statValueText.text = DisplayIncrease(GetPlayerStat(Player.Stat.ProjectileCount));
         
         RefreshSkillRow(skillsPanel.hasteSkillRow, hasteUpgradePath, player.hasteSkillLevel);
@@ -5780,13 +5891,17 @@ public class Game : MonoBehaviour {
     public static string DisplayProb(float probability) {
         return ColorText($"{Mathf.FloorToInt(probability * 100f)}%", inst.styles.timeDescColor);
     }
-    
+
+    public static string DisplayProbIncDec(float probability) {
+        return probability >= 0f ? DisplayProbIncrease(probability) : DisplayProbDecrease(probability);
+    }
+
     public static string DisplayProbIncrease(float probability) {
         return ColorText($"+{Mathf.FloorToInt(probability * 100f)}%", inst.styles.increaseDescColor);
     }
     
     public static string DisplayProbDecrease(float probability) {
-        return ColorText($"-{Mathf.FloorToInt(probability * 100f)}%", inst.styles.decreaseDescColor);
+        return ColorText($"-{Mathf.Abs(Mathf.FloorToInt(probability * 100f))}%", inst.styles.decreaseDescColor);
     }
 
     
@@ -5798,22 +5913,45 @@ public class Game : MonoBehaviour {
         return ColorText(number.ToString("0.00"), inst.styles.timeDescColor);
     }
 
+    public static string DisplayIncDec(int amount) {
+        return amount >= 0f ? DisplayIncrease(amount) : DisplayDecrease(amount);
+    }
 
     public static string DisplayIncrease(int amount) {
         return ColorText($"+{amount}", inst.styles.increaseDescColor);
     }
     
+    public static string DisplayDecrease(int amount) {
+        return ColorText($"-{Mathf.Abs(amount)}", inst.styles.decreaseDescColor);
+    }
+
+    public static string DisplayIncDec(float amount) {
+        return amount >= 0f ? DisplayIncrease(amount) : DisplayDecrease(amount);
+    }
+
     public static string DisplayIncrease(float amount) {
         return ColorText($"+{amount:0.00}", inst.styles.increaseDescColor);
     }
     
     public static string DisplayDecrease(float amount) {
-        return ColorText($"-{amount:0.00}", inst.styles.decreaseDescColor);
+        return ColorText($"-{Mathf.Abs(amount):0.00}", inst.styles.decreaseDescColor);
     }
     
     public static string DisplayMultiplier(float multiplier) {
         Color textColor = multiplier >= 1f ? inst.styles.increaseDescColor : inst.styles.decreaseDescColor;
         return ColorText($"{multiplier:0.00}x", textColor);
+    }
+
+    public static string DisplayMultiplierIncDec(float multiplier) {
+        return multiplier >= 0f ? DisplayMultiplierIncrease(multiplier) : DisplayMultiplierDecrease(multiplier);
+    }
+
+    public static string DisplayMultiplierIncrease(float multiplier) {
+        return ColorText($"+{multiplier:0.00}x", inst.styles.increaseDescColor);
+    }
+    
+    public static string DisplayMultiplierDecrease(float multiplier) {
+        return ColorText($"-{multiplier:0.00}x", inst.styles.decreaseDescColor);
     }
 
     public static string DisplaySeconds(float time) {

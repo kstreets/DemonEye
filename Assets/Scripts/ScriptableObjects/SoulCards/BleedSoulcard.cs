@@ -29,7 +29,7 @@ public class BleedSoulcard : Soulcard {
         enemy.bleed = instance;
     }
 
-    public override string GetStackDescription(int stackCount) {
+    protected override string BuildDescription(int stackCount) {
         return $"{DisplayNumber(GetBleedDamage(stackCount))} damage per bleed every {DisplaySeconds(bleedInterval)}";
     }
 

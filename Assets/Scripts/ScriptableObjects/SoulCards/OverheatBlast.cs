@@ -6,32 +6,32 @@ public class OverheatBlast : Soulcard {
     
     public struct InstanceData {
         public int numshotsUntilOverheat;
-        public int damage;
+        public float damageMulti;
         public float radius;
     }
 
     public int numShotsUntilOverheat;
-    public int damage;
+    public float damageMulti;
     public float radius;
     
     public override void AddInstanceToEye(DemonEyeInstance eyeInstance, int stackCount) {
         eyeInstance.blast = new() {
             numshotsUntilOverheat = GetOverheatShotCount(stackCount),
-            damage = GetDamage(stackCount),
+            damageMulti = GetDamageMultiplier(stackCount),
             radius = radius,
         };
     }
-    
-    public override string GetStackDescription(int stackCount) {
-        return $"After {DisplayNumber(GetOverheatShotCount(stackCount))} consecutive shots release a blast causing {DisplayNumber(GetDamage(stackCount))} damage";
+
+    protected override string BuildDescription(int stackCount) {
+        return $"After {DisplayNumber(GetOverheatShotCount(stackCount))} consecutive shots release a blast causing {DisplayMultiplier(GetDamageMultiplier(stackCount))} damage";
     }
 
     private int GetOverheatShotCount(int stackCount) {
         return TaperInteger(numShotsUntilOverheat, stackCount, 0.3f);
     }
 
-    private int GetDamage(int stackCount) {
-        return TaperInteger(damage, stackCount, 0.5f);
+    private float GetDamageMultiplier(int stackCount) {
+        return TaperFloat(damageMulti, stackCount, 0.5f);
     }
     
 }

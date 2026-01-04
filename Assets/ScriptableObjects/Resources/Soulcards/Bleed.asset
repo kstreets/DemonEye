@@ -32,9 +32,15 @@ MonoBehaviour:
   traderLevelRequired: 1
   traderStockRange: {x: 1, y: 5}
   spawnsFromEnemies: []
-  modifiesStats: 0
-  agilityStatAdjustment: 0
-  strengthStatAdjustment: 0
+  modifiesStats: 1
+  armorPercent: 0
+  critChance: 0
+  critMultiplier: 0
+  damage: -3
+  fireratePercentage: 0
+  movementSpeedPercentage: 0
+  projectileCount: 0
+  rangeInSeconds: 0
   itemGroupProps: {fileID: 11400000, guid: 78826f3a685555a4896655f4c68ef737, type: 2}
   maxStackCount: 3
   weight: 0

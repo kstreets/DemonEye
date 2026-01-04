@@ -35,6 +35,7 @@ public class CoolerGrid : MonoBehaviour {
     private List<GridCell> spawnCells = new(30);
     private List<float> spawnCellWeights = new(30);
     private Vector2 gridGameObjectPosition;
+    private Vector2 predicetedPlayerPos;
     private float totalSpawnCellsWeight;
     private float lastUpdateTime;
     
@@ -85,11 +86,10 @@ public class CoolerGrid : MonoBehaviour {
         }
     }
 
-    private Vector2 predicetedPlayerPos;
-    
     public void FeedPlayerVelocity(Vector2 playerPos, Vector2 playerVelocity) {
         const float lookAheadTime = 2.1f;
-        predicetedPlayerPos = Vector2.Lerp(predicetedPlayerPos, playerPos + playerVelocity * lookAheadTime, Time.deltaTime);
+        const float lookAheadSpeed = 1.3f;
+        predicetedPlayerPos = Vector2.Lerp(predicetedPlayerPos, playerPos + playerVelocity * lookAheadTime, Time.deltaTime * lookAheadSpeed);
     }
 
     public Vector3 GetSpawnPosition(Vector2 playerPosition, int innerCellRadius, int outerCellRadius) {
@@ -107,12 +107,11 @@ public class CoolerGrid : MonoBehaviour {
 
         Vector2 slightRandomOffset = Random.insideUnitCircle * (cellSize * 0.90f);
         
-        float rand = Random.value * totalSpawnCellsWeight;
-        for (int i = 0; i < spawnCells.Count; i++) {
-            if (rand < spawnCellWeights[i]) {
-                return spawnCells[i].position + slightRandomOffset;
-            } 
-            rand -= spawnCellWeights[i];
+        // TODO: This isn't the most effecient way to pick the top 20% of spawn points
+        var pairs = spawnCells.Select((cell, i) => new { cell, weight = spawnCellWeights[i] }).OrderByDescending(p => p.weight).ToList();
+        int maxIndex = Mathf.RoundToInt(pairs.Count * 0.2f);
+        if (maxIndex > 0 && maxIndex < pairs.Count) {
+            return pairs[Random.Range(0, maxIndex)].cell.position; 
         }
         
         return spawnCells[0].position + slightRandomOffset;
@@ -181,7 +180,7 @@ public class CoolerGrid : MonoBehaviour {
         return null;
     }
 
-    private void UpdateDataForSpawnCells(GridCell cell, int innerRadius, int outerRadius) {
+    private void UpdateDataForSpawnCells(GridCell playerCell, int innerRadius, int outerRadius) {
         spawnCells.Clear();
 
         const float maxDistScaler = 1.3f;
@@ -193,7 +192,7 @@ public class CoolerGrid : MonoBehaviour {
                 bool isInsideInnerRadius = Mathf.Abs(x) <= innerRadius && Mathf.Abs(y) <= innerRadius;
                 if (isCellWereWorkingOn || isInsideInnerRadius) continue;
 
-                Vector2 neighborPos = cell.position + new Vector2(x, y) * cellSize;
+                Vector2 neighborPos = playerCell.position + new Vector2(x, y) * cellSize;
                 GridCell neighbor = GetCellAtPosition(neighborPos);
                 if (neighbor == null || !neighbor.traversable || neighbor.isObstacleObstructed) continue;
 
@@ -214,21 +213,22 @@ public class CoolerGrid : MonoBehaviour {
         };
         List<Collider2D> colList = UnityEngine.Pool.ListPool<Collider2D>.Get();
 
-        float dist = Vector2.Distance(predicetedPlayerPos, cell.position);
-        Vector2 dirToPredictedPos = (predicetedPlayerPos - cell.position).normalized;
-        Debug.Log("Clean this class up with all the new spawning techniques and predicted player position");
-        bool useDirectional = dist > 0.1f;
+        float distFromCellToPredictedPlayerPos = Vector2.Distance(predicetedPlayerPos, playerCell.position);
+        Vector2 dirToPredictedPos = (predicetedPlayerPos - playerCell.position).normalized;
+        
+        const float minDistToIncludeDirectionWeight = 0.12f;
+        bool addDirectionalWeight = distFromCellToPredictedPlayerPos > minDistToIncludeDirectionWeight;
 
         float expandedSizeForEnemyTesting = cellSize * 5f;
         foreach (GridCell nCell in spawnCells) {
             const float enemyWeight = 1f;
-            const float dirWeight = 1.5f;
+            const float dirWeight = 2f;
             
             int enemyCount = Physics2D.OverlapCircle(nCell.position, expandedSizeForEnemyTesting, filter, colList);
             float weight = (1f / (enemyCount + 1f)) * enemyWeight;
 
-            if (useDirectional) {
-                Vector2 dir = (nCell.position - cell.position).normalized;
+            if (addDirectionalWeight) {
+                Vector2 dir = (nCell.position - playerCell.position).normalized;
                 weight += (Vector2.Dot(dir, dirToPredictedPos) + 1 * 0.5f) * dirWeight;
             }
 

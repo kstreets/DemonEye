@@ -16,7 +16,7 @@ public class PenetrationSoulcard : Soulcard {
         };
     }
 
-    public override string GetStackDescription(int stackCount) {
+    protected override string BuildDescription(int stackCount) {
         int throughCount = GetGoThroughCount(stackCount);
         if (throughCount == 1) {
             return $"Projectiles pass through {DisplayNumber(throughCount)} enemy before stopping";

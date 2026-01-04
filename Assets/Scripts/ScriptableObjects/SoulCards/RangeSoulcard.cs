@@ -15,8 +15,8 @@ public class RangeSoulcard : Soulcard {
             timeAliveIncrease = GetTimeIncrease(stackCount),
         };
     }
-    
-    public override string GetStackDescription(int stackCount) {
+
+    protected override string BuildDescription(int stackCount) {
         return $"{DisplayIncrease(GetTimeIncrease(stackCount))} projectile lifetime";
     }
 

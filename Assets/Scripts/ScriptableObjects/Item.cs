@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using VInspector;
+using static Game;
 
 [CreateAssetMenu(fileName = "Item", menuName = "Scriptable Objects/Item")]
 public class Item : UuidScriptableObject {
@@ -43,8 +44,14 @@ public class Item : UuidScriptableObject {
     
     public bool modifiesStats;
     [ShowIf(nameof(modifiesStats))]
-    public int agilityStatAdjustment;
-    public int strengthStatAdjustment;
+    public float armorPercent;
+    public float critChance;
+    public float critMultiplier;
+    public int damage;
+    public float fireratePercentage;
+    public float movementSpeedPercentage;
+    public float projectileCount;
+    public float rangeInSeconds;
     [EndIf]
     
     [Space]
@@ -74,21 +81,64 @@ public class Item : UuidScriptableObject {
         return Rarity.Common;
     }
 
-    public virtual string GetDescription() {
-        if (!string.IsNullOrEmpty(description)) {
-            return description;
+    public string GetDescription(int stackCount = 1) {
+        string desc = string.Empty;
+        
+        if (modifiesStats) {
+            if (!Mathf.Approximately(critChance, 0f))              desc += $"\n{DisplayIncDec(critChance)} Crit Chance";
+            if (!Mathf.Approximately(critMultiplier, 0f))          desc += $"\n{DisplayIncDec(critMultiplier)} Crit Multiplier";
+            if (damage != 0)                                       desc += $"\n{DisplayIncDec(damage)} Damage";
+            if (!Mathf.Approximately(fireratePercentage, 0f))      desc += $"\n{DisplayProbIncDec(fireratePercentage)} Firerate";
+            if (!Mathf.Approximately(movementSpeedPercentage, 0f)) desc += $"\n{DisplayProbIncDec(movementSpeedPercentage)} Movement Speed";
+            if (!Mathf.Approximately(projectileCount, 0f))         desc += $"\n{DisplayIncDec(projectileCount)} Projectile Count";
+            if (!Mathf.Approximately(rangeInSeconds, 0f))          desc += $"\n{DisplayIncDec(rangeInSeconds)} Range";
         }
 
-        if (!string.IsNullOrEmpty(itemGroupProps?.description)) {
-            return itemGroupProps.description;
+        bool removeFirstNewLine = !string.IsNullOrEmpty(desc);
+        if (removeFirstNewLine) {
+            desc = desc.Remove(0, 1);
+        }
+
+        string builtDesc = BuildDescription(stackCount);
+        if (!string.IsNullOrEmpty(builtDesc)) {
+            desc += string.IsNullOrEmpty(desc) ? builtDesc : $"\n{builtDesc}"; 
         }
         
-        return "Item is missing description";
+        if (!string.IsNullOrEmpty(description)) {
+            desc += string.IsNullOrEmpty(desc) ? description : $"\n{description}";
+        }
+        else if (!string.IsNullOrEmpty(itemGroupProps?.description)) {
+            desc += string.IsNullOrEmpty(desc) ? itemGroupProps.description : $"\n{itemGroupProps.description}";
+        }
+
+        return !string.IsNullOrEmpty(desc) ? desc : "Item is missing description";
     }
 
+    protected virtual string BuildDescription(int stackCount) {
+        return string.Empty;
+    }
+
+#if UNITY_EDITOR
+    
     [OnValueChanged(nameof(buyPrice))]
     private void AutoSetSellPriceOnBuyPriceChanged() {
-        sellPrice = Mathf.RoundToInt(buyPrice * 0.28f);
+        if (this is Soulcard) {
+            sellPrice = Mathf.RoundToInt(buyPrice * 0.08f);
+        }
+        else {
+            sellPrice = Mathf.RoundToInt(buyPrice * 0.28f);
+        }
     }
+    
+    [Button]
+    private void AddToStash() {
+        if (!Application.isPlaying) {
+            Debug.Log("Can only add to stash inventory when game is playing");
+            return;
+        }
+        inst.TryAddItemToInventory(inst.stashInventory, this, 1);
+    }
+
+#endif
 
 }

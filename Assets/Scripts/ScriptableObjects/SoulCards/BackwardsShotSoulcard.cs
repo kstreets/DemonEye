@@ -15,8 +15,8 @@ public class BackwardsShotSoulcard : Soulcard {
             probability = GetProbability(stackCount),
         };
     }
-    
-    public override string GetStackDescription(int stackCount) {
+
+    protected override string BuildDescription(int stackCount) {
         return $"{DisplayProb(GetProbability(stackCount))} chance per projectile to shoot a mirrored one with {DisplayProb(1)} critical strike chance";
     }
 

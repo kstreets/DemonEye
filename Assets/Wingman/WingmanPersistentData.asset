@@ -11,7 +11,8 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1ceb773d10504e968f2171473b801a37, type: 3}
   m_Name: WingmanPersistentData
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Wingman::WingmanInspector.WingmanPersistentData
+  containers: []
   indexLookUp: 
   searchFields: []
   selectedCompIds: []

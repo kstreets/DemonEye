@@ -17,8 +17,8 @@ public class ProjectileCountSoulcard : Soulcard {
             extraProjectileCount = stackCount,
         };
     }
-    
-    public override string GetStackDescription(int stackCount) {
+
+    protected override string BuildDescription(int stackCount) {
         if (stackCount == 1) {
             return $"{DisplayProb(GetProbability(stackCount))} chance to shoot an extra projectile";
         }

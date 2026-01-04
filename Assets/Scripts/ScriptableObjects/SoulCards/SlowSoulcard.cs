@@ -22,7 +22,7 @@ public class SlowSoulcard : Soulcard {
         enemy.slow = slow;
     }
 
-    public override string GetStackDescription(int stackCount) {
+    protected override string BuildDescription(int stackCount) {
         return $"{DisplayProb(GetSpeedReduction(stackCount))} enemy speed reduction for {DisplaySeconds(slowDuration)}";
     }
 

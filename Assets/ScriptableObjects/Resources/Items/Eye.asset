@@ -33,8 +33,12 @@ MonoBehaviour:
   spawnsFromEnemies:
   - {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
   modifiesStats: 0
-  agilityStatAdjustment: 0
-  strengthStatAdjustment: 0
+  critChanceIncrease: 0
+  critMultiplierIncrease: 0
+  damageIncrease: 0
+  firerateIncrease: 0
+  projectileCountIncrease: 0
+  rangeIncreaseInSeconds: 0
   itemGroupProps: {fileID: 0}
   maxStackCount: 3
   weight: 1

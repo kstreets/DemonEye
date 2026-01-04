@@ -7,13 +7,13 @@ public class GameplayConfig : ScriptableObject {
     public float attackDelay;
     public float cappedMinAttackDelay;
     public int damage;
-    public float range;
+    public float rangeInSeconds;
     public float accuracy;
     public float projectileSpeed;
 
     [Header("Crit")]
     public float defaultCritChance;
-    public float defaultCritMultiplier;
+    public float defaultCritMulti;
 
     [Header("Player")]
     public float baseSpeed;
