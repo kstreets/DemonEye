@@ -11,7 +11,6 @@ using Object = UnityEngine.Object;
 
 namespace WingmanInspector {
 
-    [Serializable]
     public class WingmanContainer {
 
         public static GUIStyle BoldLabelStyle;
@@ -177,6 +176,8 @@ namespace WingmanInspector {
                 UpdateComponentVisibility();
             }
 
+            Debug.Log(ShowingWingmanGui());
+            
             if (!ShowingWingmanGui() && editorListVisual.childCount > MiniMapIndex()) {
                 float miniMapHeight = CalculateMiniMapHeight();
                 
@@ -187,11 +188,6 @@ namespace WingmanInspector {
                 miniMapGuiContainer.style.minHeight = miniMapHeight; 
                 miniMapGuiContainer.onGUIHandler = DrawWingmanGui;
                 Margin(miniMapGuiContainer.style, MiniMapMargin);
-
-                // In Unity 6.2 when double clicking to inspect a prefab, the inspector doesn't always redraw so there might be a leftover
-                // wingman container in the wrong position, so we just remove the prior existing one before inserting the new one if thats the case
-                VisualElement duplicateContainer = editorListVisual.hierarchy.Children().FirstOrDefault(child => child.name == MainWingmanName);
-                duplicateContainer?.RemoveFromHierarchy();
                 
                 editorListVisual.Insert(MiniMapIndex(), miniMapGuiContainer);
                 UpdateComponentVisibility();
@@ -966,13 +962,20 @@ namespace WingmanInspector {
         private bool ShowingWingmanGui() {
             int insertIndex = MiniMapIndex();
             
-            VisualElement duplicateContainer = editorListVisual.hierarchy.Children().FirstOrDefault(child => child.name == MainWingmanName);
-            duplicateContainer?.RemoveFromHierarchy();
-            
             if (insertIndex >= editorListVisual.childCount) {
                 return false;
             }
 
+            VisualElement duplicateContainer = editorListVisual.hierarchy.Children().FirstOrDefault(child => child.name == MainWingmanName);
+            if (duplicateContainer != null) {
+                bool inCorrectPosition = editorListVisual.hierarchy.IndexOf(duplicateContainer) == insertIndex;
+                if (inCorrectPosition) {
+                    return true;
+                }
+                duplicateContainer.RemoveFromHierarchy();
+                return false;
+            }
+            
             VisualElement potentialMiniMap = editorListVisual.hierarchy.ElementAt(insertIndex);
             return potentialMiniMap != null && potentialMiniMap.name == MainWingmanName;
         }
