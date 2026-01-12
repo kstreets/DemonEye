@@ -176,8 +176,6 @@ namespace WingmanInspector {
                 UpdateComponentVisibility();
             }
 
-            Debug.Log(ShowingWingmanGui());
-            
             if (!ShowingWingmanGui() && editorListVisual.childCount > MiniMapIndex()) {
                 float miniMapHeight = CalculateMiniMapHeight();
                 
