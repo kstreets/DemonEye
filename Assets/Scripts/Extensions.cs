@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
+using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 
 public static class Extensions {
@@ -110,5 +112,17 @@ public static class Extensions {
         if (!animator.gameObject.activeInHierarchy) return false;
         return animator.GetCurrentAnimatorStateInfo(0).shortNameHash == animHash;
     }
+    
+#if UNITY_EDITOR
+    
+    public static GUID AssetGUID(this Object obj) {
+        return AssetDatabase.GUIDFromAssetPath(AssetDatabase.GetAssetPath(obj));
+    }
+
+    public static T LoadAsset<T>(this GUID guid) where T : Object { 
+        return AssetDatabase.LoadAssetByGUID<T>(guid);
+    }
+
+#endif
 
 }

@@ -10,14 +10,15 @@ public class WaveFunctionCollapseTileRuleset : ScriptableObject {
     
     [Serializable]
     public class TileRule {
-        public GUID tileId;
-        public List<GUID> northNeighbors = new();
-        public List<GUID> southNeighbors = new();
-        public List<GUID> westNeighbors = new();
-        public List<GUID> eastNeighbors = new();
+        public string tileGuid;
+        public List<string> northNeighbors = new();
+        public List<string> southNeighbors = new();
+        public List<string> westNeighbors = new();
+        public List<string> eastNeighbors = new();
     }
     
     public List<TileRule> rules;
+    private static GUID emptyGUID => new();
 
     [Button]
     public void GenerateRuleset() {
@@ -38,12 +39,12 @@ public class WaveFunctionCollapseTileRuleset : ScriptableObject {
         for (int x = dims.xMin; x < dims.xMax; x++) {
             for (int y = dims.yMin; y < dims.yMax; y++) {
                 TileBase tile = tilemap.GetTile(new(x, y, 0));
-                
-                GUID tileId = tile ? AssetDatabase.GUIDFromAssetPath(AssetDatabase.GetAssetPath(tile)) : new();
-                TileRule tileRule = rules.Find(e => e.tileId == tileId);
+
+                string tileId = tile ? tile.AssetGUID().ToString() : emptyGUID.ToString();
+                TileRule tileRule = rules.Find(e => e.tileGuid == tileId);
 
                 if (tileRule == null) {
-                    tileRule = new() { tileId = tileId };
+                    tileRule = new() { tileGuid = tileId };
                     rules.Add(tileRule);
                 }
                 
@@ -64,17 +65,17 @@ public class WaveFunctionCollapseTileRuleset : ScriptableObject {
             northTile, southTile, westTile, eastTile,
         };
         
-        List<List<GUID>> rulesNeighborLists = new() {
+        List<List<string>> rulesNeighborLists = new() {
             rule.northNeighbors, rule.southNeighbors, rule.westNeighbors, rule.eastNeighbors,
         };
 
         for (int i = 0; i < 4; i++) {
             TileBase tile = neighbors[i]; 
-            GUID tileId = tile ? AssetDatabase.GUIDFromAssetPath(AssetDatabase.GetAssetPath(tile)) : new();
+            string tileId = tile ? tile.AssetGUID().ToString() : emptyGUID.ToString();
             
-            List<GUID> ruleList = rulesNeighborLists[i];
+            List<string> ruleList = rulesNeighborLists[i];
             if (!ruleList.Contains(tileId)) ruleList.Add(tileId);
         }
     }
-
+    
 }
