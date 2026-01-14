@@ -10,14 +10,18 @@ public class WaveFunctionCollapseTileRuleset : ScriptableObject {
     
     [Serializable]
     public class TileRule {
-        public string tileGuid;
-        public List<string> northNeighbors = new();
-        public List<string> southNeighbors = new();
-        public List<string> westNeighbors = new();
-        public List<string> eastNeighbors = new();
+        public int tileIndex;
+        public List<int> northNeighbors = new();
+        public List<int> southNeighbors = new();
+        public List<int> westNeighbors = new();
+        public List<int> eastNeighbors = new();
     }
-    
+
     public List<TileRule> rules;
+    public List<string> indexToGuid;
+    public int emptyStateIndex;
+    
+    private Dictionary<GUID, TileRule> tileToRuleLookup;
     private static GUID emptyGUID => new();
 
     [Button]
@@ -29,27 +33,39 @@ public class WaveFunctionCollapseTileRuleset : ScriptableObject {
         }
         
         tilemap.CompressBounds();
+        BoundsInt dims = tilemap.cellBounds;
         
         Undo.RecordObject(this, "Generation of Tile Rules");
 
+        HashSet<GUID> uniqueTileAssets = new();
+        foreach (Vector3Int pos in dims.allPositionsWithin) {
+            TileBase tile = tilemap.GetTile(pos);
+            uniqueTileAssets.Add(tile ? tile.AssetGUID() : emptyGUID);
+        }
+
         rules = new();
-        
-        BoundsInt dims = tilemap.cellBounds;
-        
-        for (int x = dims.xMin; x < dims.xMax; x++) {
-            for (int y = dims.yMin; y < dims.yMax; y++) {
-                TileBase tile = tilemap.GetTile(new(x, y, 0));
-
-                string tileId = tile ? tile.AssetGUID().ToString() : emptyGUID.ToString();
-                TileRule tileRule = rules.Find(e => e.tileGuid == tileId);
-
-                if (tileRule == null) {
-                    tileRule = new() { tileGuid = tileId };
-                    rules.Add(tileRule);
-                }
-                
-                UpdateTilesRule(tileRule, tilemap, new(x, y, 0));
+        indexToGuid = new();
+        tileToRuleLookup = new();
+        foreach (GUID tileGuid in uniqueTileAssets) {
+            if (tileGuid.Empty()) {
+                emptyStateIndex = indexToGuid.Count;
             }
+            TileRule rule = new() {
+                tileIndex = indexToGuid.Count,
+                northNeighbors = new(),
+                southNeighbors = new(),
+                eastNeighbors = new(),
+                westNeighbors = new(),
+            };
+            rules.Add(rule);
+            indexToGuid.Add(tileGuid.ToString());
+            tileToRuleLookup.Add(tileGuid, rule);
+        }
+        
+        foreach (Vector3Int pos in dims.allPositionsWithin) {
+            TileBase tile = tilemap.GetTile(pos);
+            TileRule rule = tileToRuleLookup[tile.AssetGUID()];
+            UpdateTilesRule(rule, tilemap, pos);
         }
         
         EditorUtility.SetDirty(this); 
@@ -65,16 +81,17 @@ public class WaveFunctionCollapseTileRuleset : ScriptableObject {
             northTile, southTile, westTile, eastTile,
         };
         
-        List<List<string>> rulesNeighborLists = new() {
+        List<List<int>> rulesNeighborLists = new() {
             rule.northNeighbors, rule.southNeighbors, rule.westNeighbors, rule.eastNeighbors,
         };
 
         for (int i = 0; i < 4; i++) {
-            TileBase tile = neighbors[i]; 
-            string tileId = tile ? tile.AssetGUID().ToString() : emptyGUID.ToString();
-            
-            List<string> ruleList = rulesNeighborLists[i];
-            if (!ruleList.Contains(tileId)) ruleList.Add(tileId);
+            TileBase tile = neighbors[i];
+            int tileIndex = tileToRuleLookup[tile.AssetGUID()].tileIndex; 
+            List<int> ruleList = rulesNeighborLists[i];
+            if (!ruleList.Contains(tileIndex)) {
+                ruleList.Add(tileIndex);
+            }
         }
     }
     
