@@ -21,9 +21,9 @@ public class AutoTilePlacementTool : MonoBehaviour {
     public bool placeFailedTile;
     
     private Dictionary<Vector3Int, WaveTile> waveTileLookup = new();
-    private SimplePriorityQueue<WaveTile, int> priorityQueue;
+    private FastPriorityQueue<WaveTile> priorityQueue;
 
-    private class WaveTile {
+    private class WaveTile : FastPriorityQueueNode {
         public bool collapsed;
         public Vector3Int cellPosition;
         public FixedBitSet256 states;
@@ -35,7 +35,7 @@ public class AutoTilePlacementTool : MonoBehaviour {
         waveTileLookup.Clear();
         neighborPositions = new Vector3Int[4];
 
-        priorityQueue = new();
+        priorityQueue = new(2000); // Chosen arbitrarily
         
         List<WaveTile> waveTiles = new();
 
@@ -145,11 +145,12 @@ public class AutoTilePlacementTool : MonoBehaviour {
     }
 
     private enum Direction { North, South, West, East }
+    private FixedBitSet256 allowedBitSet = new();
     
     private bool CheckToReducePossibleStates(WaveTile referenceWaveTile, WaveTile updatingWaveTile, Direction direction) {
         int prevStateCount = updatingWaveTile.states.Count();
-
-        FixedBitSet256 allowed = new(0, false);
+        
+        allowedBitSet.ClearAll();
         
         for (int i = 0; i < 256; i++) {
             if (referenceWaveTile.states.IsSet(i)) {
@@ -162,11 +163,11 @@ public class AutoTilePlacementTool : MonoBehaviour {
                     Direction.West  => rule.westNeighbors,
                 };
                 
-                allowed.Or(possibleStates);
+                allowedBitSet.Or(possibleStates);
             }
         }
         
-        updatingWaveTile.states.And(allowed);
+        updatingWaveTile.states.And(allowedBitSet);
         return prevStateCount != updatingWaveTile.states.Count();
     }
 
