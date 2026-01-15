@@ -1,4 +1,6 @@
 using System;
+using System.Numerics;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -7,6 +9,9 @@ using UnityEngine.Profiling;
 using UnityEngine.Tilemaps;
 using VInspector;
 using Random = UnityEngine.Random;
+using Unity.Mathematics;
+using Unity.VisualScripting;
+using Yohash.PriorityQueue;
 
 public class AutoTilePlacementTool : MonoBehaviour {
 
@@ -16,17 +21,21 @@ public class AutoTilePlacementTool : MonoBehaviour {
     public bool placeFailedTile;
     
     private Dictionary<Vector3Int, WaveTile> waveTileLookup = new();
+    private SimplePriorityQueue<WaveTile, int> priorityQueue;
 
     private class WaveTile {
         public bool collapsed;
         public Vector3Int cellPosition;
-        public List<int> states;
+        public FixedBitSet256 states;
+        public int collapsedIndex;
     }
 
     [Button]
     private void Generate() {
         waveTileLookup.Clear();
         neighborPositions = new Vector3Int[4];
+
+        priorityQueue = new();
         
         List<WaveTile> waveTiles = new();
 
@@ -34,7 +43,8 @@ public class AutoTilePlacementTool : MonoBehaviour {
         allTileIds.AddRange(ruleset.rules.Select(rule => rule.tileIndex));
         
         BoundsInt dims = tilemap.cellBounds;
-        
+        int initialBitArraySize = ruleset.rules.Count;
+
         // Initialize all the superpositions
         for (int x = dims.xMin - 1; x < dims.xMax + 1; x++) {
             for (int y = dims.yMin - 1; y < dims.yMax + 1; y++) {
@@ -43,16 +53,17 @@ public class AutoTilePlacementTool : MonoBehaviour {
                 WaveTile wTile = new() { cellPosition = pos };
                 
                 if (tile) {
-                    wTile.states = new(allTileIds);
-                    // Remove the empty state for an existing tile so that WFC will not produce an empty tile
-                    wTile.states.Remove(ruleset.emptyStateIndex);
+                    wTile.states = new(initialBitArraySize, true);
+                    wTile.states.Clear(ruleset.emptyStateIndex);
                 }
                 else {
-                    wTile.states = new() { ruleset.emptyStateIndex };
+                    wTile.states = new(initialBitArraySize, false);
+                    wTile.states.Set(ruleset.emptyStateIndex);
                 }
 
                 waveTiles.Add(wTile);
                 waveTileLookup.Add(pos, wTile);  
+                priorityQueue.Enqueue(wTile, wTile.states.Count());
             }
         }
         
@@ -61,16 +72,17 @@ public class AutoTilePlacementTool : MonoBehaviour {
         const int maxIterations = 10000;
         int curIteration = 0;
         
-        while (!WaveHasCollapsed(waveTiles) && curIteration < maxIterations) {
+        while (priorityQueue.Count() > 0 && curIteration < maxIterations) {
             curIteration++;
             
             Profiler.BeginSample("AutoTile.LowestEntropy");
-            WaveTile collapsingWaveTile = GetLowestEntropy(waveTiles);
+            WaveTile collapsingWaveTile = priorityQueue.Dequeue();
             Profiler.EndSample();
-            
-            int randomID = collapsingWaveTile.states[Random.Range(0, collapsingWaveTile.states.Count)];
-            collapsingWaveTile.states.Clear();
-            collapsingWaveTile.states.Add(randomID);
+
+            int randomID = collapsingWaveTile.states.RandomSetIndex();
+            collapsingWaveTile.states.ClearAll();
+            collapsingWaveTile.states.Set(randomID);
+            collapsingWaveTile.collapsedIndex = randomID;
             collapsingWaveTile.collapsed = true;
 
             if (PropagateWaveFromCollapsed(collapsingWaveTile)) continue;
@@ -89,40 +101,14 @@ public class AutoTilePlacementTool : MonoBehaviour {
             for (int y = dims.yMin; y < dims.yMax; y++) {
                 Vector3Int pos = new(x, y, 0);
                 if (!waveTileLookup.TryGetValue(pos, out WaveTile tile)) continue;
-                if (tile.states[0] == ruleset.emptyStateIndex) continue;
+                if (tile.collapsedIndex == ruleset.emptyStateIndex) continue;
                 
-                string tileGuidAsString = ruleset.indexToGuid[tile.states[0]];
+                string tileGuidAsString = ruleset.indexToGuid[tile.collapsedIndex];
                 if (GUID.TryParse(tileGuidAsString, out GUID tileGuid)) {
                     tilemap.SetTile(pos, tileGuid.LoadAsset<TileBase>());
                 }
             }
         }
-    }
-
-    private bool WaveHasCollapsed(List<WaveTile> superPositions) {
-        foreach (WaveTile wTile in superPositions) {
-            if (!wTile.collapsed) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private WaveTile GetLowestEntropy(List<WaveTile> superPositions) {
-        WaveTile lowest = null;
-        foreach (WaveTile position in superPositions) {
-            if (position.collapsed) continue;
-            
-            if (lowest == null) {
-                lowest = position;
-                continue;
-            }
-            
-            if (position.states.Count < lowest.states.Count) {
-                lowest = position;
-            }
-        }
-        return lowest;
     }
 
     private Queue<WaveTile> propagationQueue = new(1000);
@@ -148,9 +134,10 @@ public class AutoTilePlacementTool : MonoBehaviour {
                 Vector3Int nPos = neighborPositions[i];
                 if (!waveTileLookup.TryGetValue(nPos, out WaveTile neighborTile)) continue;
                 if (!CheckToReducePossibleStates(cell, neighborTile, (Direction)i)) continue;
-                if (neighborTile.states.Count <= 0) {
+                if (neighborTile.states.Count() <= 0) {
                     return false;
                 }
+                priorityQueue.UpdatePriority(neighborTile, neighborTile.states.Count());
                 propagationQueue.Enqueue(neighborTile);
             }
         } 
@@ -158,36 +145,29 @@ public class AutoTilePlacementTool : MonoBehaviour {
     }
 
     private enum Direction { North, South, West, East }
-    private HashSet<int> allowedPossibleStates = new(1000);
     
     private bool CheckToReducePossibleStates(WaveTile referenceWaveTile, WaveTile updatingWaveTile, Direction direction) {
-        allowedPossibleStates.Clear();
-        int prevStateCount = updatingWaveTile.states.Count;
+        int prevStateCount = updatingWaveTile.states.Count();
+
+        FixedBitSet256 allowed = new(0, false);
         
-        foreach (int possibleState in referenceWaveTile.states) {
-            WaveFunctionCollapseTileRuleset.TileRule rule = ruleset.rules[possibleState];
-            
-            List<int> possibleStates = direction switch {
-                Direction.North => rule.northNeighbors,
-                Direction.East  => rule.eastNeighbors,
-                Direction.South => rule.southNeighbors,
-                Direction.West  => rule.westNeighbors,
-            };
-            
-            if (possibleStates == null) continue;
-
-            foreach (int state in possibleStates) {
-                allowedPossibleStates.Add(state);
-            }
-        }
-
-        for (int i = updatingWaveTile.states.Count - 1; i >= 0; i--) {
-            if (!allowedPossibleStates.Contains(updatingWaveTile.states[i])) {
-                updatingWaveTile.states.RemoveAt(i);
+        for (int i = 0; i < 256; i++) {
+            if (referenceWaveTile.states.IsSet(i)) {
+                WaveFunctionCollapseTileRuleset.TileRule rule = ruleset.rules[i];
+                
+                FixedBitSet256 possibleStates = direction switch {
+                    Direction.North => rule.northNeighbors,
+                    Direction.East  => rule.eastNeighbors,
+                    Direction.South => rule.southNeighbors,
+                    Direction.West  => rule.westNeighbors,
+                };
+                
+                allowed.Or(possibleStates);
             }
         }
         
-        return prevStateCount != updatingWaveTile.states.Count;
+        updatingWaveTile.states.And(allowed);
+        return prevStateCount != updatingWaveTile.states.Count();
     }
 
 }

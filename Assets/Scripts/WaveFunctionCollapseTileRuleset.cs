@@ -11,10 +11,10 @@ public class WaveFunctionCollapseTileRuleset : ScriptableObject {
     [Serializable]
     public class TileRule {
         public int tileIndex;
-        public List<int> northNeighbors = new();
-        public List<int> southNeighbors = new();
-        public List<int> westNeighbors = new();
-        public List<int> eastNeighbors = new();
+        public FixedBitSet256 northNeighbors;
+        public FixedBitSet256 southNeighbors;
+        public FixedBitSet256 westNeighbors;
+        public FixedBitSet256 eastNeighbors;
     }
 
     public List<TileRule> rules;
@@ -46,10 +46,12 @@ public class WaveFunctionCollapseTileRuleset : ScriptableObject {
         rules = new();
         indexToGuid = new();
         tileToRuleLookup = new();
+        
         foreach (GUID tileGuid in uniqueTileAssets) {
             if (tileGuid.Empty()) {
                 emptyStateIndex = indexToGuid.Count;
             }
+            
             TileRule rule = new() {
                 tileIndex = indexToGuid.Count,
                 northNeighbors = new(),
@@ -57,6 +59,7 @@ public class WaveFunctionCollapseTileRuleset : ScriptableObject {
                 eastNeighbors = new(),
                 westNeighbors = new(),
             };
+            
             rules.Add(rule);
             indexToGuid.Add(tileGuid.ToString());
             tileToRuleLookup.Add(tileGuid, rule);
@@ -81,17 +84,16 @@ public class WaveFunctionCollapseTileRuleset : ScriptableObject {
             northTile, southTile, westTile, eastTile,
         };
         
-        List<List<int>> rulesNeighborLists = new() {
+        List<FixedBitSet256> updatingNeighborStates = new() {
             rule.northNeighbors, rule.southNeighbors, rule.westNeighbors, rule.eastNeighbors,
         };
 
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < neighbors.Count; i++) {
             TileBase tile = neighbors[i];
-            int tileIndex = tileToRuleLookup[tile.AssetGUID()].tileIndex; 
-            List<int> ruleList = rulesNeighborLists[i];
-            if (!ruleList.Contains(tileIndex)) {
-                ruleList.Add(tileIndex);
-            }
+            int tileIndex = tileToRuleLookup[tile.AssetGUID()].tileIndex;
+            
+            FixedBitSet256 neighborStates = updatingNeighborStates[i];
+            neighborStates.Set(tileIndex);
         }
     }
     
