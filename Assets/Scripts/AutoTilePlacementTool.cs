@@ -44,6 +44,7 @@ public class AutoTilePlacementTool : MonoBehaviour {
         List<int> allTileIds = new();
         allTileIds.AddRange(ruleset.rules.Select(rule => rule.tileIndex));
         
+        tilemap.CompressBounds();
         BoundsInt dims = tilemap.cellBounds;
         int initialBitArraySize = ruleset.rules.Count;
 
@@ -86,9 +87,9 @@ public class AutoTilePlacementTool : MonoBehaviour {
             if (PropagateWaveFromCollapsed(collapsingWaveTile)) continue;
             
             // Mark the collapsed tile as problematic since its wave caused an invalid state of another tile
-            if (placeFailedTile) {
-                tilemap.SetTile(collapsingWaveTile.cellPosition, failedTile);
-            }
+            // if (placeFailedTile) {
+            //     tilemap.SetTile(collapsingWaveTile.cellPosition, failedTile);
+            // }
             Debug.Log("Wave function collapse failed");
             return;
         }
@@ -132,6 +133,9 @@ public class AutoTilePlacementTool : MonoBehaviour {
                 if (!waveTileLookup.TryGetValue(nPos, out WaveTile neighborTile)) continue;
                 if (!CheckToReducePossibleStates(cell, neighborTile, (Direction)i)) continue;
                 if (neighborTile.states.Count() <= 0) {
+                    if (placeFailedTile) {
+                        tilemap.SetTile(nPos, failedTile);
+                    }
                     return false;
                 }
                 priorityQueue.UpdatePriority(neighborTile, neighborTile.states.Count());
