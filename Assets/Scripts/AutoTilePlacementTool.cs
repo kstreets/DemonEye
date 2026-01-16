@@ -17,23 +17,33 @@ using Debug = UnityEngine.Debug;
 
 public class AutoTilePlacementTool : MonoBehaviour {
 
-    public WaveFunctionCollapseTileRuleset ruleset;
+    public WaveFunctionCollapseTileRuleset wfcRuleset;
     public Tilemap tilemap;
+    public Tilemap backgroundTilemap;
     public TileBase failedTile;
     public bool placeFailedTile;
     
-    private Dictionary<Vector3Int, WaveTile> waveTileLookup = new();
-    private FastPriorityQueue<WaveTile> priorityQueue;
-
     private class WaveTile : FastPriorityQueueNode {
         public bool collapsed;
         public Vector3Int cellPosition;
         public FixedBitSet256 states;
         public int collapsedIndex;
     }
+    
+    private Dictionary<Vector3Int, WaveTile> waveTileLookup = new();
+    private FastPriorityQueue<WaveTile> priorityQueue;
 
     [Button]
-    private void Generate() {
+    private void GenerateBaseTiles() {
+        backgroundTilemap.ClearAllTiles();
+        Perform(wfcRuleset.baseMapRuleset);
+    }
+
+    [Button]
+    private void GenerateFinal() {
+        backgroundTilemap.ClearAllTiles();
+        backgroundTilemap.CompressBounds();
+        
         waveTileLookup.Clear();
         neighborPositions = new Vector3Int[4];
 
@@ -41,12 +51,98 @@ public class AutoTilePlacementTool : MonoBehaviour {
         
         List<WaveTile> waveTiles = new();
 
-        List<int> allTileIds = new();
-        allTileIds.AddRange(ruleset.rules.Select(rule => rule.tileIndex));
-        
         tilemap.CompressBounds();
         BoundsInt dims = tilemap.cellBounds;
-        int initialBitArraySize = ruleset.rules.Count;
+        int initialBitArraySize = wfcRuleset.idToGuid.Count;
+        
+        FixedBitSet256 allowedStates = new(initialBitArraySize, true);
+        for (int i = 0; i < wfcRuleset.baseMapRuleset.rules.Length; i++) {
+            if (wfcRuleset.baseMapRuleset.rules[i] != null) {
+                allowedStates.Clear(i);
+            }
+        }
+        
+        // Initialize all the superpositions
+        for (int x = dims.xMin - 10; x < dims.xMax + 10; x++) {
+            for (int y = dims.yMin - 10; y < dims.yMax + 10; y++) {
+                Vector3Int pos = new(x, y, 0);
+                TileBase tile = tilemap.GetTile(pos);
+                WaveTile wTile = new() { cellPosition = pos };
+                
+                if (tile) {
+                    wTile.states = new(initialBitArraySize, false);
+                    int index = wfcRuleset.idToGuid.FindIndex(x => x == tile.AssetGUID().ToString());
+                    wTile.states.Set(index);
+                }
+                else {
+                    wTile.states = new(allowedStates);
+                    wTile.states.Clear(wfcRuleset.emptyStateIndex);
+                }
+
+                waveTiles.Add(wTile);
+                waveTileLookup.Add(pos, wTile);
+                priorityQueue.Enqueue(wTile, wTile.states.Count());
+            }
+        }
+        
+        const int maxIterations = 10000;
+        int curIteration = 0;
+        
+        while (priorityQueue.Count() > 0 && curIteration < maxIterations) {
+            curIteration++;
+            
+            WaveTile collapsingWaveTile = priorityQueue.Dequeue();
+
+            int randomID = collapsingWaveTile.states.RandomSetIndex();
+            collapsingWaveTile.states.ClearAll();
+            collapsingWaveTile.states.Set(randomID);
+            collapsingWaveTile.collapsedIndex = randomID;
+            collapsingWaveTile.collapsed = true;
+
+            // if (collapsingWaveTile.collapsedIndex != wfcRuleset.emptyStateIndex) {
+            //     string tileGuidAsString = wfcRuleset.idToGuid[collapsingWaveTile.collapsedIndex];
+            //     if (GUID.TryParse(tileGuidAsString, out GUID tileGuid)) {
+            //         tilemap.SetTile(collapsingWaveTile.cellPosition, tileGuid.LoadAsset<TileBase>());
+            //     }
+            // }
+            
+            if (PropagateWaveFromCollapsed(wfcRuleset.lavaMapRuleset, collapsingWaveTile)) continue;
+            
+            // Mark the collapsed tile as problematic since its wave caused an invalid state of another tile
+            // if (placeFailedTile) {
+            //     tilemap.SetTile(collapsingWaveTile.cellPosition, failedTile);
+            // }
+            Debug.Log("Wave function collapse failed");
+            return;
+        }
+        
+        for (int x = dims.xMin - 9; x < dims.xMax + 9; x++) {
+            for (int y = dims.yMin - 9; y < dims.yMax + 9; y++) {
+                Vector3Int pos = new(x, y, 0);
+                if (!waveTileLookup.TryGetValue(pos, out WaveTile tile)) continue;
+                if (tile.collapsedIndex == wfcRuleset.emptyStateIndex) continue;
+                
+                string tileGuidAsString = wfcRuleset.idToGuid[tile.collapsedIndex];
+                if (GUID.TryParse(tileGuidAsString, out GUID tileGuid)) {
+                    if (tilemap.GetTile(pos)) continue;
+                    // Settting it on a different tilemap
+                    backgroundTilemap.SetTile(pos, tileGuid.LoadAsset<TileBase>());
+                }
+            }
+        }
+    }
+
+    private void Perform(WaveFunctionCollapseTileRuleset.Ruleset ruleset) {
+        waveTileLookup.Clear();
+        neighborPositions = new Vector3Int[4];
+
+        priorityQueue = new(10000); // Chosen arbitrarily
+        
+        List<WaveTile> waveTiles = new();
+
+        tilemap.CompressBounds();
+        BoundsInt dims = tilemap.cellBounds;
+        int initialBitArraySize = ruleset.rules.Length;
 
         // Initialize all the superpositions
         for (int x = dims.xMin - 1; x < dims.xMax + 1; x++) {
@@ -57,11 +153,11 @@ public class AutoTilePlacementTool : MonoBehaviour {
                 
                 if (tile) {
                     wTile.states = new(initialBitArraySize, true);
-                    wTile.states.Clear(ruleset.emptyStateIndex);
+                    wTile.states.Clear(wfcRuleset.emptyStateIndex);
                 }
                 else {
                     wTile.states = new(initialBitArraySize, false);
-                    wTile.states.Set(ruleset.emptyStateIndex);
+                    wTile.states.Set(wfcRuleset.emptyStateIndex);
                 }
 
                 waveTiles.Add(wTile);
@@ -84,7 +180,7 @@ public class AutoTilePlacementTool : MonoBehaviour {
             collapsingWaveTile.collapsedIndex = randomID;
             collapsingWaveTile.collapsed = true;
 
-            if (PropagateWaveFromCollapsed(collapsingWaveTile)) continue;
+            if (PropagateWaveFromCollapsed(ruleset, collapsingWaveTile)) continue;
             
             // Mark the collapsed tile as problematic since its wave caused an invalid state of another tile
             // if (placeFailedTile) {
@@ -98,9 +194,9 @@ public class AutoTilePlacementTool : MonoBehaviour {
             for (int y = dims.yMin; y < dims.yMax; y++) {
                 Vector3Int pos = new(x, y, 0);
                 if (!waveTileLookup.TryGetValue(pos, out WaveTile tile)) continue;
-                if (tile.collapsedIndex == ruleset.emptyStateIndex) continue;
+                if (tile.collapsedIndex == wfcRuleset.emptyStateIndex) continue;
                 
-                string tileGuidAsString = ruleset.indexToGuid[tile.collapsedIndex];
+                string tileGuidAsString = wfcRuleset.idToGuid[tile.collapsedIndex];
                 if (GUID.TryParse(tileGuidAsString, out GUID tileGuid)) {
                     tilemap.SetTile(pos, tileGuid.LoadAsset<TileBase>());
                 }
@@ -111,7 +207,7 @@ public class AutoTilePlacementTool : MonoBehaviour {
     private Queue<WaveTile> propagationQueue = new(1000);
     private Vector3Int[] neighborPositions;
     
-    private bool PropagateWaveFromCollapsed(WaveTile collapsedWaveTile) {
+    private bool PropagateWaveFromCollapsed(WaveFunctionCollapseTileRuleset.Ruleset ruleset, WaveTile collapsedWaveTile) {
         propagationQueue.Clear();
         propagationQueue.Enqueue(collapsedWaveTile);
 
@@ -131,7 +227,7 @@ public class AutoTilePlacementTool : MonoBehaviour {
             for (int i = 0; i < neighborPositions.Length; i++) {
                 Vector3Int nPos = neighborPositions[i];
                 if (!waveTileLookup.TryGetValue(nPos, out WaveTile neighborTile)) continue;
-                if (!CheckToReducePossibleStates(cell, neighborTile, (Direction)i)) continue;
+                if (!CheckToReducePossibleStates(ruleset, cell, neighborTile, (Direction)i)) continue;
                 if (neighborTile.states.Count() <= 0) {
                     if (placeFailedTile) {
                         tilemap.SetTile(nPos, failedTile);
@@ -149,7 +245,7 @@ public class AutoTilePlacementTool : MonoBehaviour {
     private enum Direction { North, South, East, West }
     private FixedBitSet256 allowedBitSet = new();
     
-    private bool CheckToReducePossibleStates(WaveTile referenceWaveTile, WaveTile updatingWaveTile, Direction direction) {
+    private bool CheckToReducePossibleStates(WaveFunctionCollapseTileRuleset.Ruleset ruleset, WaveTile referenceWaveTile, WaveTile updatingWaveTile, Direction direction) {
         int prevStateCount = updatingWaveTile.states.Count();
         
         allowedBitSet.ClearAll();

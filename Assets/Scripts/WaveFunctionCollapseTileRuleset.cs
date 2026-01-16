@@ -10,68 +10,168 @@ public class WaveFunctionCollapseTileRuleset : ScriptableObject {
     
     [Serializable]
     public class TileRule {
-        public int tileIndex;
+        public int tileIdOrIndex;
         public FixedBitSet256 northNeighbors;
         public FixedBitSet256 southNeighbors;
         public FixedBitSet256 westNeighbors;
         public FixedBitSet256 eastNeighbors;
     }
 
-    public List<TileRule> rules;
-    public List<string> indexToGuid;
+    [Serializable]
+    public class Ruleset {
+        public TileRule[] rules;
+    }
+
+    public Ruleset baseMapRuleset;
+    public Ruleset lavaMapRuleset;
+    public List<string> idToGuid = new();
     public int emptyStateIndex;
     
-    private Dictionary<GUID, TileRule> tileToRuleLookup;
+    private Dictionary<GUID, TileRule> tileToRuleLookup = new();
+    
     private static GUID emptyGUID => new();
-
+    
     [Button]
     public void GenerateRuleset() {
-        Tilemap tilemap = FindAnyObjectByType<Tilemap>();
-        if (!tilemap) {
-            Debug.Log("Could not find tilemap to operate on");
+        Tilemap[] allTilemaps = FindObjectsByType<Tilemap>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        
+        if (allTilemaps.Length != 2) {
+            Debug.Log("Requires just 2 tilemaps in the scene");
             return;
         }
         
-        tilemap.CompressBounds();
-        BoundsInt dims = tilemap.cellBounds;
+        (Tilemap baseTilemap, Tilemap lavaTilemap) = (allTilemaps[0], allTilemaps[1]);
+
+        if (baseTilemap.TryGetComponent(out TilemapCollider2D _)) {
+            (baseTilemap, lavaTilemap) = (lavaTilemap, baseTilemap);
+        }
+
+        // Tilemap combinedTilemap = new GameObject().AddComponent<Tilemap>();
+        // CombineTilemaps(baseTilemap, lavaTilemap, combinedTilemap);
         
         Undo.RecordObject(this, "Generation of Tile Rules");
 
-        HashSet<GUID> uniqueTileAssets = new();
-        foreach (Vector3Int pos in dims.allPositionsWithin) {
-            TileBase tile = tilemap.GetTile(pos);
-            uniqueTileAssets.Add(tile ? tile.AssetGUID() : emptyGUID);
-        }
+        baseTilemap = GameObject.Find("BaseTileMap").GetComponent<Tilemap>();
+        lavaTilemap = GameObject.Find("SuperTilemap").GetComponent<Tilemap>();
+        
+        baseTilemap.CompressBounds();
+        lavaTilemap.CompressBounds();
 
-        rules = new();
-        indexToGuid = new();
+        HashSet<GUID> baseTileAssets = new();
+        foreach (Vector3Int pos in baseTilemap.cellBounds.allPositionsWithin) {
+            TileBase tile = baseTilemap.GetTile(pos);
+            baseTileAssets.Add(tile ? tile.AssetGUID() : emptyGUID);
+        }
+        
+        InitializeDataFromHashSet(baseTileAssets);
+        baseMapRuleset = GenerateMapRulesetForTilemap(baseTilemap);
+        
+        
+        HashSet<GUID> lavaTileAssets = new();
+        foreach (Vector3Int pos in lavaTilemap.cellBounds.allPositionsWithin) {
+            TileBase tile = lavaTilemap.GetTile(pos);
+            lavaTileAssets.Add(tile ? tile.AssetGUID() : emptyGUID);
+        }
+        
+        AppendDataFromHashSet(lavaTileAssets);
+        
+        lavaMapRuleset = GenerateMapRulesetForTilemap(lavaTilemap);
+
+        EditorUtility.SetDirty(this); 
+        
+        // DestroyImmediate(combinedTilemap.gameObject);
+    }
+
+    private void CombineTilemaps(Tilemap baseTilemap, Tilemap lavaTilemap, Tilemap result) {
+        BoundsInt bounds = lavaTilemap.cellBounds;
+        foreach (Vector3Int pos in bounds.allPositionsWithin) {
+            if (baseTilemap.GetTile(pos)) {
+                result.SetTile(pos, baseTilemap.GetTile(pos));
+            }
+            else if (lavaTilemap.GetTile(pos)) {
+                result.SetTile(pos, lavaTilemap.GetTile(pos));
+            }
+        }
+    }
+
+    private void InitializeDataFromHashSet(HashSet<GUID> uniqueTileAssets) {
+        emptyStateIndex = -1;
         tileToRuleLookup = new();
+        idToGuid = new();
         
         foreach (GUID tileGuid in uniqueTileAssets) {
             if (tileGuid.Empty()) {
-                emptyStateIndex = indexToGuid.Count;
+                emptyStateIndex = idToGuid.Count;
             }
             
             TileRule rule = new() {
-                tileIndex = indexToGuid.Count,
+                tileIdOrIndex = idToGuid.Count,
                 northNeighbors = new(),
                 southNeighbors = new(),
                 eastNeighbors = new(),
                 westNeighbors = new(),
             };
             
-            rules.Add(rule);
-            indexToGuid.Add(tileGuid.ToString());
+            idToGuid.Add(tileGuid.ToString());
             tileToRuleLookup.Add(tileGuid, rule);
         }
         
-        foreach (Vector3Int pos in dims.allPositionsWithin) {
+        // We did not have an empty tile
+        if (emptyStateIndex == -1) { 
+            emptyStateIndex = idToGuid.Count;
+            
+            TileRule rule = new() {
+                tileIdOrIndex = idToGuid.Count,
+                northNeighbors = new(),
+                southNeighbors = new(),
+                eastNeighbors = new(),
+                westNeighbors = new(),
+            };
+            
+            idToGuid.Add(emptyGUID.ToString());
+            tileToRuleLookup.Add(emptyGUID, rule);
+        }
+    }
+
+    private void AppendDataFromHashSet(HashSet<GUID> uniqueTileAssets) {
+        foreach (GUID tileGuid in uniqueTileAssets) {
+            if (tileToRuleLookup.ContainsKey(tileGuid)) continue;
+            
+            if (tileGuid.Empty()) {
+                emptyStateIndex = idToGuid.Count;
+            }
+            
+            TileRule rule = new() {
+                tileIdOrIndex = idToGuid.Count,
+                northNeighbors = new(),
+                southNeighbors = new(),
+                eastNeighbors = new(),
+                westNeighbors = new(),
+            };
+            
+            idToGuid.Add(tileGuid.ToString());
+            tileToRuleLookup.Add(tileGuid, rule);
+        }
+    }
+
+    private Ruleset GenerateMapRulesetForTilemap(Tilemap tilemap) {
+        Ruleset rSet = new();
+        rSet.rules = new TileRule[idToGuid.Count];
+
+        HashSet<TileRule> uniqueRules = new();
+
+        foreach (Vector3Int pos in tilemap.cellBounds.allPositionsWithin) {
             TileBase tile = tilemap.GetTile(pos);
             TileRule rule = tileToRuleLookup[tile.AssetGUID()];
             UpdateTilesRule(rule, tilemap, pos);
+            uniqueRules.Add(rule);
         }
         
-        EditorUtility.SetDirty(this); 
+        foreach (TileRule rule in uniqueRules) {
+            rSet.rules[rule.tileIdOrIndex] = rule;
+        }
+
+        return rSet;
     }
     
     private void UpdateTilesRule(TileRule rule, Tilemap tilemap, Vector3Int position) {
@@ -90,7 +190,7 @@ public class WaveFunctionCollapseTileRuleset : ScriptableObject {
 
         for (int i = 0; i < neighbors.Count; i++) {
             TileBase tile = neighbors[i];
-            int tileIndex = tileToRuleLookup[tile.AssetGUID()].tileIndex;
+            int tileIndex = tileToRuleLookup[tile.AssetGUID()].tileIdOrIndex;
             
             FixedBitSet256 neighborStates = updatingNeighborStates[i];
             neighborStates.Set(tileIndex);

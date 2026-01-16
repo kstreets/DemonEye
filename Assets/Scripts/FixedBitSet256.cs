@@ -13,6 +13,13 @@ public class FixedBitSet256 {
 
     public FixedBitSet256() { }
 
+    public FixedBitSet256(FixedBitSet256 other) {
+        b0 = other.b0;
+        b1 = other.b1;
+        b2 = other.b2;
+        b3 = other.b3;
+    }
+
     public FixedBitSet256(int count, bool defaultValue) {
         ClearAll();
         for (int i = 0; i < count; i++) {
