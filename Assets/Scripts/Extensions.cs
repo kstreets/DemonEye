@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
@@ -121,6 +122,10 @@ public static class Extensions {
 
     public static T LoadAsset<T>(this GUID guid) where T : Object { 
         return AssetDatabase.LoadAssetByGUID<T>(guid);
+    }
+
+    public static int GetSuffixNumberInAssetName(this string str) {
+        return int.Parse(str.Split('_')[^1]);
     }
 
 #endif

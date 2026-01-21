@@ -64,7 +64,7 @@ MonoBehaviour:
         b3: 0
       southNeighbors:
         b0: 1
-        b1: 1310720
+        b1: 262144
         b2: 0
         b3: 0
       westNeighbors:
@@ -111,7 +111,7 @@ MonoBehaviour:
         b3: 0
       westNeighbors:
         b0: 1
-        b1: 1310720
+        b1: 262144
         b2: 0
         b3: 0
       eastNeighbors:
@@ -925,7 +925,7 @@ MonoBehaviour:
         b3: 0
       southNeighbors:
         b0: 1
-        b1: 564054310518784
+        b1: 564054310780928
         b2: 0
         b3: 0
       westNeighbors:
@@ -1093,7 +1093,7 @@ MonoBehaviour:
         b3: 0
       southNeighbors:
         b0: 1
-        b1: 1310720
+        b1: 262144
         b2: 0
         b3: 0
       westNeighbors:
@@ -1145,7 +1145,7 @@ MonoBehaviour:
         b3: 0
       eastNeighbors:
         b0: 1
-        b1: 1130298004733952
+        b1: 1130298004996096
         b2: 0
         b3: 0
     - tileIdOrIndex: 54
@@ -1303,7 +1303,7 @@ MonoBehaviour:
         b3: 0
       southNeighbors:
         b0: 1
-        b1: 1048576
+        b1: 262144
         b2: 0
         b3: 0
       westNeighbors:
@@ -1736,7 +1736,7 @@ MonoBehaviour:
         b1: 131200
         b2: 0
         b3: 0
-  lavaMapRuleset:
+  superMapRuleset:
     rules:
     - tileIdOrIndex: 0
       northNeighbors:
@@ -1788,7 +1788,7 @@ MonoBehaviour:
         b3: 0
       southNeighbors:
         b0: 1
-        b1: 1310720
+        b1: 262144
         b2: 0
         b3: 0
       westNeighbors:
@@ -1835,7 +1835,7 @@ MonoBehaviour:
         b3: 0
       westNeighbors:
         b0: 1
-        b1: 1310720
+        b1: 262144
         b2: 0
         b3: 0
       eastNeighbors:
@@ -2649,7 +2649,7 @@ MonoBehaviour:
         b3: 0
       southNeighbors:
         b0: 1
-        b1: 564054310518784
+        b1: 564054310780928
         b2: 0
         b3: 0
       westNeighbors:
@@ -2817,7 +2817,7 @@ MonoBehaviour:
         b3: 0
       southNeighbors:
         b0: 1
-        b1: 1310720
+        b1: 262144
         b2: 0
         b3: 0
       westNeighbors:
@@ -2869,7 +2869,7 @@ MonoBehaviour:
         b3: 0
       eastNeighbors:
         b0: 1
-        b1: 1130298004733952
+        b1: 1130298004996096
         b2: 0
         b3: 0
     - tileIdOrIndex: 54
@@ -3027,7 +3027,7 @@ MonoBehaviour:
         b3: 0
       southNeighbors:
         b0: 1
-        b1: 1048576
+        b1: 262144
         b2: 0
         b3: 0
       westNeighbors:
@@ -3462,23 +3462,23 @@ MonoBehaviour:
         b3: 0
     - tileIdOrIndex: 82
       northNeighbors:
-        b0: 39406498350104607
+        b0: 2345258303656820767
         b1: 278373597184
         b2: 0
         b3: 0
       southNeighbors:
         b0: 315251973915934721
-        b1: 22236238184576
+        b1: 3690207028445312
         b2: 0
         b3: 0
       westNeighbors:
-        b0: 8796093022217
-        b1: 5934039695488
+        b0: 9015995347763209
+        b1: 700825388449920
         b2: 0
         b3: 0
       eastNeighbors:
         b0: 306244774661324819
-        b1: 429403586428928
+        b1: 429472305905664
         b2: 0
         b3: 0
     - tileIdOrIndex: 83
@@ -3489,12 +3489,12 @@ MonoBehaviour:
         b3: 0
       southNeighbors:
         b0: 0
-        b1: 1310720
+        b1: 262144
         b2: 0
         b3: 0
       westNeighbors:
         b0: 0
-        b1: 1310720
+        b1: 262144
         b2: 0
         b3: 0
       eastNeighbors:
@@ -3504,23 +3504,23 @@ MonoBehaviour:
         b3: 0
     - tileIdOrIndex: 84
       northNeighbors:
-        b0: 2345258303656820750
-        b1: 148635648
+        b0: 37163494629441546
+        b1: 148111360
         b2: 0
         b3: 0
       southNeighbors:
         b0: 315251973915934720
-        b1: 3690227429539968
+        b1: 312458972758144
         b2: 0
         b3: 0
       westNeighbors:
         b0: 9015995347828744
-        b1: 696012349112448
+        b1: 26409767796864
         b2: 0
         b3: 0
       eastNeighbors:
-        b0: 306244774661324818
-        b1: 286123611652096
+        b0: 306244774661324802
+        b1: 4579914940416
         b2: 0
         b3: 0
     - tileIdOrIndex: 85
@@ -3589,7 +3589,7 @@ MonoBehaviour:
     - tileIdOrIndex: 88
       northNeighbors:
         b0: 0
-        b1: 1310720
+        b1: 262144
         b2: 0
         b3: 0
       southNeighbors:
@@ -3841,7 +3841,7 @@ MonoBehaviour:
     - tileIdOrIndex: 100
       northNeighbors:
         b0: 0
-        b1: 1310720
+        b1: 262144
         b2: 0
         b3: 0
       southNeighbors:
@@ -3851,7 +3851,7 @@ MonoBehaviour:
         b3: 0
       westNeighbors:
         b0: 0
-        b1: 34360786944
+        b1: 34360000512
         b2: 0
         b3: 0
       eastNeighbors:
@@ -3940,7 +3940,7 @@ MonoBehaviour:
         b3: 0
       eastNeighbors:
         b0: 0
-        b1: 1310720
+        b1: 262144
         b2: 0
         b3: 0
     - tileIdOrIndex: 105
@@ -3988,7 +3988,7 @@ MonoBehaviour:
     - tileIdOrIndex: 107
       northNeighbors:
         b0: 0
-        b1: 1048576
+        b1: 1310720
         b2: 0
         b3: 0
       southNeighbors:
@@ -4003,7 +4003,7 @@ MonoBehaviour:
         b3: 0
       eastNeighbors:
         b0: 0
-        b1: 1048576
+        b1: 1310720
         b2: 0
         b3: 0
     - tileIdOrIndex: 108
@@ -4024,7 +4024,7 @@ MonoBehaviour:
         b3: 0
       eastNeighbors:
         b0: 0
-        b1: 1048576
+        b1: 1310720
         b2: 0
         b3: 0
     - tileIdOrIndex: 109
@@ -4045,7 +4045,7 @@ MonoBehaviour:
         b3: 0
       eastNeighbors:
         b0: 0
-        b1: 1048576
+        b1: 262144
         b2: 0
         b3: 0
     - tileIdOrIndex: 110
@@ -4066,7 +4066,7 @@ MonoBehaviour:
         b3: 0
       eastNeighbors:
         b0: 0
-        b1: 1048576
+        b1: 262144
         b2: 0
         b3: 0
     - tileIdOrIndex: 111
@@ -4093,7 +4093,7 @@ MonoBehaviour:
     - tileIdOrIndex: 112
       northNeighbors:
         b0: 0
-        b1: 1048576
+        b1: 1310720
         b2: 0
         b3: 0
       southNeighbors:
@@ -4103,7 +4103,7 @@ MonoBehaviour:
         b3: 0
       westNeighbors:
         b0: 0
-        b1: 1310720
+        b1: 262144
         b2: 0
         b3: 0
       eastNeighbors:
@@ -4129,13 +4129,13 @@ MonoBehaviour:
         b3: 0
       eastNeighbors:
         b0: 0
-        b1: 1048576
+        b1: 262144
         b2: 0
         b3: 0
     - tileIdOrIndex: 114
       northNeighbors:
         b0: 0
-        b1: 1048576
+        b1: 262144
         b2: 0
         b3: 0
       southNeighbors:
@@ -4156,7 +4156,7 @@ MonoBehaviour:
     - tileIdOrIndex: 115
       northNeighbors:
         b0: 0
-        b1: 1048576
+        b1: 262144
         b2: 0
         b3: 0
       southNeighbors:
@@ -4257,7 +4257,7 @@ MonoBehaviour:
   - b91674eeb8ecb0741869f173ab7408b5
   - 4637d2cfec3153146a28a7dd6347ed0a
   - 3cee75d13ff24df4bb6ec21d88387912
-  - cf2673226580cf34bba6404c8450d950
+  - 5375f32019ec9da45b84ae21e128f1b5
   - 0014cf145e6e3bf498676adc18b65d6d
   - ce7e873ed4568b04f92702bba985adb9
   - 21886faa1e917af459faa6b761ea8482
@@ -4292,3 +4292,4 @@ MonoBehaviour:
   - 4a59f50065b3f7347a6abbd657638e31
   - 824008e33f0f2dc448af87775f8d23d2
   emptyStateIndex: 0
+  transferSpriteAtlas: {fileID: 2800000, guid: 267c086be2e19d64ca84bb3e3b36075c, type: 3}

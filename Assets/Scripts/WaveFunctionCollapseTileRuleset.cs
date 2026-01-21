@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -23,9 +25,11 @@ public class WaveFunctionCollapseTileRuleset : ScriptableObject {
     }
 
     public Ruleset baseMapRuleset;
-    public Ruleset lavaMapRuleset;
+    public Ruleset superMapRuleset;
     public List<string> idToGuid = new();
     public int emptyStateIndex;
+
+    public Texture2D transferSpriteAtlas;
     
     private Dictionary<GUID, TileRule> tileToRuleLookup = new();
     
@@ -46,16 +50,13 @@ public class WaveFunctionCollapseTileRuleset : ScriptableObject {
             (baseTilemap, lavaTilemap) = (lavaTilemap, baseTilemap);
         }
 
-        // Tilemap combinedTilemap = new GameObject().AddComponent<Tilemap>();
-        // CombineTilemaps(baseTilemap, lavaTilemap, combinedTilemap);
+        Tilemap superTilemap = new GameObject().AddComponent<Tilemap>();
+        CombineTilemaps(baseTilemap, lavaTilemap, superTilemap);
         
         Undo.RecordObject(this, "Generation of Tile Rules");
 
-        baseTilemap = GameObject.Find("BaseTileMap").GetComponent<Tilemap>();
-        lavaTilemap = GameObject.Find("SuperTilemap").GetComponent<Tilemap>();
-        
         baseTilemap.CompressBounds();
-        lavaTilemap.CompressBounds();
+        superTilemap.CompressBounds();
 
         HashSet<GUID> baseTileAssets = new();
         foreach (Vector3Int pos in baseTilemap.cellBounds.allPositionsWithin) {
@@ -66,20 +67,35 @@ public class WaveFunctionCollapseTileRuleset : ScriptableObject {
         InitializeDataFromHashSet(baseTileAssets);
         baseMapRuleset = GenerateMapRulesetForTilemap(baseTilemap);
         
-        
-        HashSet<GUID> lavaTileAssets = new();
-        foreach (Vector3Int pos in lavaTilemap.cellBounds.allPositionsWithin) {
-            TileBase tile = lavaTilemap.GetTile(pos);
-            lavaTileAssets.Add(tile ? tile.AssetGUID() : emptyGUID);
+        HashSet<GUID> bgTileAssets = new();
+        foreach (Vector3Int pos in superTilemap.cellBounds.allPositionsWithin) {
+            TileBase tile = superTilemap.GetTile(pos);
+            bgTileAssets.Add(tile ? tile.AssetGUID() : emptyGUID);
         }
         
-        AppendDataFromHashSet(lavaTileAssets);
+        AppendDataFromHashSet(bgTileAssets);
         
-        lavaMapRuleset = GenerateMapRulesetForTilemap(lavaTilemap);
+        superMapRuleset = GenerateMapRulesetForTilemap(superTilemap);
 
         EditorUtility.SetDirty(this); 
         
-        // DestroyImmediate(combinedTilemap.gameObject);
+        DestroyImmediate(superTilemap.gameObject);
+    }
+
+    [Button]
+    private void CopyRulesetToDifferentSpriteAtlas() {
+        List<Sprite> transferSprites = AssetDatabase.LoadAllAssetsAtPath(AssetDatabase.GetAssetPath(transferSpriteAtlas)).OfType<Sprite>().ToList();
+        transferSprites = transferSprites.OrderBy(x => x.name.GetSuffixNumberInAssetName()).ToList();
+        
+        foreach (string guiString in idToGuid) {
+            if (GUID.TryParse(guiString, out GUID guid)) {
+                TileBase tileAsset = guid.LoadAsset<TileBase>();
+                int numberSuffix = tileAsset.name.GetSuffixNumberInAssetName();
+                if (numberSuffix >= 0) {
+                    Debug.Log($"{transferSprites[numberSuffix]} : {numberSuffix}");
+                }
+            }
+        }
     }
 
     private void CombineTilemaps(Tilemap baseTilemap, Tilemap lavaTilemap, Tilemap result) {

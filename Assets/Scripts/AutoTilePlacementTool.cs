@@ -106,7 +106,7 @@ public class AutoTilePlacementTool : MonoBehaviour {
             //     }
             // }
             
-            if (PropagateWaveFromCollapsed(wfcRuleset.lavaMapRuleset, collapsingWaveTile)) continue;
+            if (PropagateWaveFromCollapsed(wfcRuleset.superMapRuleset, collapsingWaveTile)) continue;
             
             // Mark the collapsed tile as problematic since its wave caused an invalid state of another tile
             // if (placeFailedTile) {
