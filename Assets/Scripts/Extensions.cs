@@ -124,10 +124,6 @@ public static class Extensions {
         return AssetDatabase.LoadAssetByGUID<T>(guid);
     }
 
-    public static int GetSuffixNumberInAssetName(this string str) {
-        return int.Parse(str.Split('_')[^1]);
-    }
-
 #endif
 
 }
