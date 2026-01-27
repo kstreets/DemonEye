@@ -12,12 +12,14 @@ public class AutoTilePlacementWindow : EditorWindow {
     public Tilemap backgroundTilemap;
     public TileBase failedTile;
     public bool placeFailedTile;
+    public bool ignoreProblematicTiles;
     
     private class WaveTile : FastPriorityQueueNode {
         public bool collapsed;
         public Vector3Int cellPosition;
         public FixedBitSet256 states;
         public int collapsedIndex;
+        public bool ignore;
     }
 
     private List<WaveTile> waveTiles = new();
@@ -54,6 +56,10 @@ public class AutoTilePlacementWindow : EditorWindow {
         failedTile = EditorGUILayout.ObjectField("Failed Tile", failedTile, typeof(TileBase), true) as TileBase;
         
         EditorGUILayout.Space();
+        
+        ignoreProblematicTiles = EditorGUILayout.Toggle("Ignore Problematic Tiles", ignoreProblematicTiles);
+        
+        EditorGUILayout.Space();
 
         if (GUILayout.Button("Generate Base Tiles", GUILayout.Height(30f))) {
             GenerateBaseTiles();
@@ -81,7 +87,8 @@ public class AutoTilePlacementWindow : EditorWindow {
             }
         }
         
-        Perform(wfcRuleset.baseMapRuleset);
+        bool success = Perform(wfcRuleset.baseMapRuleset);
+        if (!success) return;
         
         for (int x = dims.xMin; x < dims.xMax; x++) {
             for (int y = dims.yMin; y < dims.yMax; y++) {
@@ -117,7 +124,8 @@ public class AutoTilePlacementWindow : EditorWindow {
             }
         }
         
-        Perform(wfcRuleset.superMapRuleset);
+        bool success = Perform(wfcRuleset.superMapRuleset);
+        if (!success) return;
         
         for (int x = dims.xMin - tilemapExpansion; x < dims.xMax + tilemapExpansion; x++) {
             for (int y = dims.yMin - tilemapExpansion; y < dims.yMax + tilemapExpansion; y++) {
@@ -159,7 +167,7 @@ public class AutoTilePlacementWindow : EditorWindow {
         }
     }
 
-    private void Perform(Ruleset ruleset) {
+    private bool Perform(Ruleset ruleset) {
         foreach (WaveTile wTile in waveTiles) {
             wfcPriorityQueue.Enqueue(wTile, wTile.states.Count());
         }
@@ -171,18 +179,23 @@ public class AutoTilePlacementWindow : EditorWindow {
             curIteration++;
             
             WaveTile collapsingWaveTile = wfcPriorityQueue.Dequeue();
+            if (collapsingWaveTile.ignore) continue;
 
             int randomID = collapsingWaveTile.states.RandomSetIndex();
             collapsingWaveTile.states.ClearAll();
             collapsingWaveTile.states.Set(randomID);
             collapsingWaveTile.collapsedIndex = randomID;
             collapsingWaveTile.collapsed = true;
+            
+            bool propagationSuccess = PropagateWaveFromCollapsed(ruleset, collapsingWaveTile);
 
-            if (!PropagateWaveFromCollapsed(ruleset, collapsingWaveTile)) {
+            if (!propagationSuccess && !ignoreProblematicTiles) {
                 Debug.Log("Wave function collapse failed");
-                return;
+                return false;
             }
         }
+
+        return true;
     }
     
     private Queue<WaveTile> propagationQueue = new(1000);
@@ -193,7 +206,6 @@ public class AutoTilePlacementWindow : EditorWindow {
         propagationQueue.Enqueue(collapsedWaveTile);
 
         while (propagationQueue.Count > 0) { 
-            
             WaveTile cell = propagationQueue.Dequeue();
             
             Vector3Int northPos = new(cell.cellPosition.x, cell.cellPosition.y + 1, 0);
@@ -207,19 +219,33 @@ public class AutoTilePlacementWindow : EditorWindow {
             
             for (int i = 0; i < neighborPositions.Length; i++) {
                 Vector3Int nPos = neighborPositions[i];
-                if (!waveTileLookup.TryGetValue(nPos, out WaveTile neighborTile)) continue;
-                if (!CheckToReducePossibleStates(ruleset, cell, neighborTile, (Direction)i)) continue;
+                if (!waveTileLookup.TryGetValue(nPos, out WaveTile neighborTile) || neighborTile.ignore) continue;
+
+                bool reducedStates = CheckToReducePossibleStates(ruleset, cell, neighborTile, (Direction)i);
+                if (!reducedStates) continue;
+                
                 if (neighborTile.states.Count() <= 0) {
-                    if (placeFailedTile) {
-                        baseTilemap.SetTile(nPos, failedTile);
+                    if (!ignoreProblematicTiles) {
+                        if (placeFailedTile) {
+                            baseTilemap.SetTile(nPos, failedTile);
+                        }
+                        return false;
                     }
-                    return false;
+                    
+                    // Mark tile as one to ignore and continue
+                    neighborTile.ignore = true;
+                    baseTilemap.SetTile(nPos, failedTile);
+                    Debug.Log($"Discovered problematic tile at {nPos}");
                 }
+
                 wfcPriorityQueue.UpdatePriority(neighborTile, neighborTile.states.Count());
-                propagationQueue.Enqueue(neighborTile);
+                if (!neighborTile.ignore) {
+                    propagationQueue.Enqueue(neighborTile);
+                }
             }
             
         } 
+        
         return true;
     }
 
@@ -233,26 +259,14 @@ public class AutoTilePlacementWindow : EditorWindow {
 
         if (referenceWaveTile.collapsed) {
             TileRule rule = ruleset.rules[referenceWaveTile.collapsedIndex];
-            FixedBitSet256 possibleStates = direction switch {
-                Direction.North => rule.northNeighbors,
-                Direction.South => rule.southNeighbors,
-                Direction.East => rule.eastNeighbors,
-                Direction.West => rule.westNeighbors,
-            };
+            FixedBitSet256 possibleStates = GetDirectionRules(rule, direction);
             allowedBitSet.Or(possibleStates);
         }
         else {
             for (int i = 0; i < FixedBitSet256.bitCount; i++) {
                 if (referenceWaveTile.states.IsSet(i)) {
                     TileRule rule = ruleset.rules[i];
-                    
-                    FixedBitSet256 possibleStates = direction switch {
-                        Direction.North => rule.northNeighbors,
-                        Direction.South => rule.southNeighbors,
-                        Direction.East => rule.eastNeighbors,
-                        Direction.West => rule.westNeighbors,
-                    };
-                    
+                    FixedBitSet256 possibleStates = GetDirectionRules(rule, direction);
                     allowedBitSet.Or(possibleStates);
                 }
             }
@@ -260,6 +274,15 @@ public class AutoTilePlacementWindow : EditorWindow {
         
         updatingWaveTile.states.And(allowedBitSet);
         return prevStateCount != updatingWaveTile.states.Count();
+    }
+
+    private FixedBitSet256 GetDirectionRules(TileRule rule, Direction direction) {
+        return direction switch {
+            Direction.North => rule.northNeighbors,
+            Direction.South => rule.southNeighbors,
+            Direction.East  => rule.eastNeighbors,
+            Direction.West  => rule.westNeighbors,
+        };
     }
 
 }
