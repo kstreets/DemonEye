@@ -19,6 +19,7 @@ MonoBehaviour:
   pickupRadius: 0.07
   type: {fileID: 11400000, guid: 3aa9d6e5cf74e89469679d25c1a431eb, type: 2}
   associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
+  priceCategory: {fileID: 11400000, guid: 1b413ce208f37d445884e80008464342, type: 2}
   buyPrice: 0
   sellPrice: 35
   spawnsOnAllMaps: 0
@@ -29,12 +30,20 @@ MonoBehaviour:
   chanceToSpawnFromRock: 0.375
   chanceToSpawnFromEnemy: 0
   chanceToExistInLevel: 0
+  chanceToSpawnFromBush: 0
   traderLevelRequired: 0
   traderStockRange: {x: 0, y: 0}
+  barterRequirements: []
   spawnsFromEnemies: []
   modifiesStats: 0
-  agilityStatAdjustment: 0
-  strengthStatAdjustment: 0
+  armorPercent: 0
+  critChance: 0
+  critMultiplier: 0
+  damage: 0
+  fireratePercentage: 0
+  movementSpeedPercentage: 0
+  projectileCount: 0
+  rangeInSeconds: 0
   itemGroupProps: {fileID: 11400000, guid: d6cdda62e69bb8d409c3ae50dc007477, type: 2}
   maxStackCount: 0
   weight: 2

@@ -12,9 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61064aeeb056f5b42910a87710c3d42e, type: 3}
   m_Name: Styles
   m_EditorClassIdentifier: Assembly-CSharp::Styles
-  commonTextColor: {r: 0.2502669, g: 0.46540874, b: 0.46540874, a: 1}
-  uncommonTextColor: {r: 0.5882353, g: 0.27058825, b: 0.8352941, a: 1}
-  rareTextColor: {r: 0.78431374, g: 0.2, b: 0.46697134, a: 1}
+  commonTextColor: {r: 0.28627452, g: 0.48235294, b: 0.3196935, a: 1}
+  uncommonTextColor: {r: 0.24949563, g: 0.4887094, b: 0.5471698, a: 1}
+  rareTextColor: {r: 0.5882353, g: 0.27058825, b: 0.8352941, a: 1}
+  epicTextColor: {r: 0.78431374, g: 0.2, b: 0.46666667, a: 1}
   legendaryTextColor: {r: 0.8352941, g: 0.27058825, b: 0.27450982, a: 1}
   headerTextColor: {r: 0.7490196, g: 0.6627451, b: 0.57254905, a: 1}
   subHeaderTextColor: {r: 0.7490196, g: 0.6627451, b: 0.57254905, a: 1}

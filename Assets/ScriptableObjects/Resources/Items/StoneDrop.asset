@@ -14,11 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   uuid: 675888058
   displayName: Demonic Stone
-  inventorySprite: {fileID: 1172067732, guid: f5f130e61e73c674ba01af3a5a5f58ea, type: 3}
+  inventorySprite: {fileID: -1594482155, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   dropSprite: {fileID: 0}
   pickupRadius: 0.07
   type: {fileID: 0}
   associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
+  priceCategory: {fileID: 11400000, guid: 1b413ce208f37d445884e80008464342, type: 2}
   buyPrice: 0
   sellPrice: 4
   spawnsOnAllMaps: 1
@@ -28,12 +29,20 @@ MonoBehaviour:
   chanceToSpawnFromRock: 1
   chanceToSpawnFromEnemy: 0
   chanceToExistInLevel: 0
+  chanceToSpawnFromBush: 0
   traderLevelRequired: 1
   traderStockRange: {x: 0, y: 0}
+  barterRequirements: []
   spawnsFromEnemies: []
   modifiesStats: 0
-  agilityStatAdjustment: 0
-  strengthStatAdjustment: 0
+  armorPercent: 0
+  critChance: 0
+  critMultiplier: 0
+  damage: 0
+  fireratePercentage: 0
+  movementSpeedPercentage: 0
+  projectileCount: 0
+  rangeInSeconds: 0
   itemGroupProps: {fileID: 0}
   maxStackCount: 15
   weight: 5

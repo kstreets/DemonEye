@@ -75,10 +75,8 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 0
     enemyBatches:
-    - enemyCount: 20
+    - enemyCount: 35
       enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
-    - enemyCount: 10
-      enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
   - phaseDuration: 55
     spawnDuration: 10
     spawnCellRange: {x: 8, y: 12}
@@ -108,10 +106,8 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 0
     enemyBatches:
-    - enemyCount: 40
+    - enemyCount: 50
       enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
-    - enemyCount: 25
-      enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
   - phaseDuration: 65
     spawnDuration: 12
     spawnCellRange: {x: 11, y: 15}
@@ -141,9 +137,9 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 0
     enemyBatches:
-    - enemyCount: 60
+    - enemyCount: 50
       enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
-    - enemyCount: 40
+    - enemyCount: 15
       enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
   - phaseDuration: 65
     spawnDuration: 15
@@ -176,10 +172,8 @@ MonoBehaviour:
     enemyBatches:
     - enemyCount: 65
       enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
-    - enemyCount: 35
+    - enemyCount: 25
       enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
-    - enemyCount: 20
-      enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
   - phaseDuration: 60
     spawnDuration: 20
     spawnCellRange: {x: 11, y: 15}
@@ -211,10 +205,8 @@ MonoBehaviour:
     enemyBatches:
     - enemyCount: 75
       enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
-    - enemyCount: 40
+    - enemyCount: 35
       enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
-    - enemyCount: 25
-      enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
   - phaseDuration: 60
     spawnDuration: 20
     spawnCellRange: {x: 11, y: 15}
@@ -244,9 +236,40 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 0
     enemyBatches:
-    - enemyCount: 100
+    - enemyCount: 95
       enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
-    - enemyCount: 42
+    - enemyCount: 45
       enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
-    - enemyCount: 30
-      enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
+  - phaseDuration: 60
+    spawnDuration: 20
+    spawnCellRange: {x: 11, y: 15}
+    repositionCellRange: {x: 6, y: 9}
+    spawnRateCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 34
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 34
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 0
+    enemyBatches:
+    - enemyCount: 130
+      enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
+    - enemyCount: 55
+      enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}

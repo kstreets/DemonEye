@@ -17,6 +17,8 @@ public class MapData : ScriptableObject {
     public int maxBodyCount;
     public int minForageCount;
     public int maxForageCount;
+    public int minBushesCount;
+    public int maxBushesCount;
     public int minAltarCount;
     public int maxAltarCount;
     

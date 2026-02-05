@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b4f076cbd333334b939ae36b488efcf, type: 3}
+  m_Name: Trinket
+  m_EditorClassIdentifier: Assembly-CSharp::PriceCategory
+  commonPrice: 500
+  uncommonPrice: 1000
+  rarePrice: 2000
+  epicPrice: 3000
+  legendaryPrice: 4000

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using VInspector;
@@ -15,6 +16,7 @@ public class Item : UuidScriptableObject {
     [Space]
 
     public Trader associatedTrader;
+    public PriceCategory priceCategory;
     public int buyPrice;
     public int sellPrice;
 
@@ -30,10 +32,12 @@ public class Item : UuidScriptableObject {
     [Range(0f, 1f)] public float chanceToSpawnFromRock;
     [Range(0f, 1f)] public float chanceToSpawnFromEnemy;
     [Range(0f, 1f)] public float chanceToExistInLevel;
+    [Range(0f, 1f)] public float chanceToSpawnFromBush;
 
     [HideIf(nameof(chanceToSpawnOnTrader), 0f)]
     [Range(1, 10)] public int traderLevelRequired;
     [MinMaxSlider(1, 15)] public Vector2Int traderStockRange;
+    public List<ItemWithCount> barterRequirements;
     [EndIf]
 
     [HideIf(nameof(chanceToSpawnFromEnemy), 0f)]
@@ -66,21 +70,37 @@ public class Item : UuidScriptableObject {
     public int Weight => itemGroupProps ? itemGroupProps.weight : weight;
     public int MaxStackCount => itemGroupProps ? itemGroupProps.maxStackCount : maxStackCount;
     
-    public enum Rarity { Common, Uncommon, Rare, Legendary }
+    public enum Rarity { Common, Uncommon, Rare, Epic, Legendary }
 
     public Rarity GetRarity() {
         float minRarity = Mathf.Max(
             chanceToSpawnOnBody   > 0 ? chanceToSpawnOnBody   : float.MinValue,
             chanceToSpawnOnTrader > 0 ? chanceToSpawnOnTrader : float.MinValue,
             chanceToSpawnFromRock > 0 ? chanceToSpawnFromRock : float.MinValue,
-            chanceToSpawnFromEnemy > 0 ? chanceToSpawnFromEnemy : float.MinValue
+            chanceToSpawnFromEnemy > 0 ? chanceToSpawnFromEnemy : float.MinValue,
+            chanceToSpawnFromBush > 0 ? chanceToSpawnFromBush : float.MinValue
         );
         if (minRarity <= 0.08f) return Rarity.Legendary;
-        if (minRarity <= 0.20f) return Rarity.Rare;
+        if (minRarity <= 0.20f) return Rarity.Epic;
+        if (minRarity <= 0.38f) return Rarity.Rare;
         if (minRarity <= 0.50f) return Rarity.Uncommon;
         return Rarity.Common;
     }
 
+    public int GetSellPrice() {
+        if (priceCategory == null) {
+            return sellPrice;
+        }
+        
+        return GetRarity() switch {
+            Rarity.Common    => priceCategory.commonPrice,
+            Rarity.Uncommon  => priceCategory.uncommonPrice,
+            Rarity.Rare      => priceCategory.rarePrice,
+            Rarity.Epic      => priceCategory.epicPrice,
+            Rarity.Legendary => priceCategory.legendaryPrice,
+        };
+    }
+    
     public string GetDescription(int stackCount = 1) {
         string desc = string.Empty;
         

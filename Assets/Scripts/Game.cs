@@ -86,6 +86,7 @@ public class Game : MonoBehaviour {
     public GameObject gemRockPrefab;
     public GameObject deadBodyPrefab;
     public GameObject altarPrefab;
+    public GameObject bushPrefab;
 
     public Item demonEyeItem;
     
@@ -192,12 +193,16 @@ public class Game : MonoBehaviour {
     public RectTransform traderInventoryPanel;
     public RectTransform traderInventoryParent;
     public RectTransform traderTransactionInventoryParent;
+    public TextMeshProUGUI traderBarterRequirementsText;
     public TextMeshProUGUI traderTransactionInfoText;
     public Image traderXpLevelFill;
     public TextMeshProUGUI traderLevelText;
     public TextMeshProUGUI traderRemainingXpText;
     public TextMeshProUGUI traderItemRefreshTimeText;
-    public Button traderDealButton;
+    public Button traderMoneyDealButton;
+    public Button traderBarterDealButton;
+    public Button traderBuyModeButton;
+    public Button traderSellModeButton;
     [EndFoldout]
 
     [Foldout("UI/MapSelectionPanel")]
@@ -1942,10 +1947,10 @@ public class Game : MonoBehaviour {
         }
         else {
             bool itemIsOwnedByTrader = info.inventory.slots[info.slotIndex].item.traderOwned;
-            sellOrBuyPrice = itemIsOwnedByTrader ? item.buyPrice : item.sellPrice * hoveredSlot.item.count;
+            sellOrBuyPrice = itemIsOwnedByTrader ? item.buyPrice : item.GetSellPrice() * hoveredSlot.item.count;
         }
                              
-        string coinText = $"<sprite=0>{ColorText(sellOrBuyPrice.ToString(), styles.coinCurrencyColor)}";
+        string coinText = $"<sprite=0>{ColorText(sellOrBuyPrice.ToString("N0"), styles.coinCurrencyColor)}";
         
         string tintedWeightSprite = $"<sprite=2 color=#{ColorUtility.ToHtmlStringRGBA(styles.underWeightColor)}>";
         string weightText = tintedWeightSprite + ColorText(item.Weight.ToString(), styles.underWeightColor);
@@ -2131,16 +2136,16 @@ public class Game : MonoBehaviour {
             }
         }
         else if (OnTradingTab) {
-            if (transactionState == TransactionState.Buying) {
-                if (hoveredInventory == traderInventory) {
-                    destinationInventory = transactionInventory;
-                    moveOption = MoveItemOption.Single;
-                }
-                else if (hoveredInventory == transactionInventory) {
-                    destinationInventory = traderInventory;
-                }
-            }
-            else if (transactionState == TransactionState.Selling) {
+            // if (transactionState == TransactionState.Buying) {
+            //     if (hoveredInventory == traderInventory) {
+            //         destinationInventory = transactionInventory;
+            //         moveOption = MoveItemOption.Single;
+            //     }
+            //     else if (hoveredInventory == transactionInventory) {
+            //         destinationInventory = traderInventory;
+            //     }
+            // }
+            /*else*/ if (transactionState == TransactionState.Selling) {
                 if (hoveredInventory == stashInventory) {
                     destinationInventory = transactionInventory;
                 }
@@ -2148,15 +2153,15 @@ public class Game : MonoBehaviour {
                     destinationInventory = stashInventory;
                 }
             }
-            else {
-                if (hoveredInventory == traderInventory) {
-                    destinationInventory = transactionInventory;
-                    moveOption = MoveItemOption.Single;
-                }
-                else if (hoveredInventory == stashInventory) {
-                    destinationInventory = transactionInventory;
-                }
-            }
+            // else {
+            //     if (hoveredInventory == traderInventory) {
+            //         destinationInventory = transactionInventory;
+            //         moveOption = MoveItemOption.Single;
+            //     }
+            //     else if (hoveredInventory == stashInventory) {
+            //         destinationInventory = transactionInventory;
+            //     }
+            // }
         }
 
         if (destinationInventory == null) return;
@@ -2212,6 +2217,12 @@ public class Game : MonoBehaviour {
     
     private bool NotAllowedToMoveOrPickupItem(InventoryHoverInfo info) {
         if (IsHoveredItemGrayedOut(info)) {
+            return true;
+        }
+        // Because we wait to reduce the consumed inventory item count until the consuming tween has finished,
+        // we can't drag it from its slot, why not just use decrement a reference to InventoryItem? Because when moving it 
+        // between inventories the item reference may become stale.
+        if (playerConsumingTween.isAlive && info.inventory == consumingInventory && info.slotIndex == consumingSlotIndex) {
             return true;
         }
         if (info.inventory == crucibleInventory && PlayingForgeAnimation) {
@@ -2423,9 +2434,12 @@ public class Game : MonoBehaviour {
 
         // We don't allow trader items to be picked up
         if (hoverInfo.inventory == traderInventory && !IsDraggingItem) {
-            if (transactionState != TransactionState.Selling) {
-                MoveItemBetweenInventories(traderInventory, transactionInventory, hoverInfo.slotIndex, MoveItemOption.Single);
+            if (TryGetItemFromHoverInfo(hoverInfo, out InventoryItem item)) {
+                SetTradingItem(item); 
             }
+            // if (transactionState != TransactionState.Selling) {
+            //     MoveItemBetweenInventories(traderInventory, transactionInventory, hoverInfo.slotIndex, MoveItemOption.Single);
+            // }
             return IsDraggingItem;
         }
 
@@ -2776,12 +2790,15 @@ public class Game : MonoBehaviour {
         return inventory.slots[slotIndex].item;
     }
 
-    private void ReduceItemCountInInventory(Inventory inventory, int slotIndex, int reduction = 1) {
+    // Returns true if we reduced the item to nothing
+    private bool ReduceItemCountInInventory(Inventory inventory, int slotIndex, int reduction = 1) {
         var item = GetInventoryItem(inventory, slotIndex);
         item.count -= reduction;
         if (item.count <= 0) {
             RemoveItemFromInventory(inventory, slotIndex);
+            return true;
         }
+        return false;
     }
     
     private void AdjustItemCountInInventory(Inventory inventory, int slotIndex, int newCount) {
@@ -2870,7 +2887,7 @@ public class Game : MonoBehaviour {
                     value += slot.item.ItemRef.type == demonEyeType ? GetDemonEyeSellPrice(slot.item) : slot.item.ItemRef.buyPrice * slot.item.count;
                     break;
                 case InventoryValueType.Sell:
-                    value += slot.item.ItemRef.type == demonEyeType ? GetDemonEyeSellPrice(slot.item) : slot.item.ItemRef.sellPrice * slot.item.count;
+                    value += slot.item.ItemRef.type == demonEyeType ? GetDemonEyeSellPrice(slot.item) : slot.item.ItemRef.GetSellPrice() * slot.item.count;
                     break;
             }
         }
@@ -3232,7 +3249,7 @@ public class Game : MonoBehaviour {
         }))
         .Chain(Tween.Delay(additionalConsumeDelay));
     }
-    
+
     private void HealPlayer(int healing) {
         player.health = Mathf.Clamp(player.health + healing, 0, FullPlayerHealth);
     }
@@ -3481,7 +3498,7 @@ public class Game : MonoBehaviour {
         
         int sellPrice = 0;
         foreach (EquipedModInstance modInstance in demonEye.modInstances) {
-            sellPrice += modInstance.Soulcard.sellPrice * modInstance.stackCount;
+            sellPrice += modInstance.Soulcard.GetSellPrice() * modInstance.stackCount;
         }
         return sellPrice;
     } 
@@ -3613,6 +3630,15 @@ public class Game : MonoBehaviour {
                 EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), "Search Body");
                 if (interactInputAction.WasPressedThisFrame()) {
                     lootInvetoryPtr.slots = deadBodySlotsLookup[col.gameObject];
+                    OpenPlayerInventory();
+                    OpenLootInventory();
+                }
+            }
+            
+            if (col.CompareTag(Tags.Bush)) {
+                EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), "Search Bush");
+                if (interactInputAction.WasPressedThisFrame()) {
+                    lootInvetoryPtr.slots = bushSlotsLookup[col.gameObject];
                     OpenPlayerInventory();
                     OpenLootInventory();
                 }
@@ -3947,7 +3973,7 @@ public class Game : MonoBehaviour {
                 
                 PlayAudioClip(stoneBreakClip, entity.position);
 
-                int dropCount = Random.Range(3, 5);
+                int dropCount = Random.Range(1, 3);
                 float angleDeltaPerDrop = 360f / dropCount;
                 float randomRangePerDrop = angleDeltaPerDrop * 0.25f;
 
@@ -4282,6 +4308,7 @@ public class Game : MonoBehaviour {
     // ***************************
     
     private Dictionary<GameObject, InventorySlot[]> deadBodySlotsLookup = new();
+    private Dictionary<GameObject, InventorySlot[]> bushSlotsLookup = new();
 
     private void SpawnResources(Transform resourceSpawnParent) {
         List<Transform> spawnPoints = resourceSpawnParent.GetComponentsInChildren<Transform>().ToList();
@@ -4297,6 +4324,45 @@ public class Game : MonoBehaviour {
         for (int i = 0; i < foragablesToSpawn; i++) {
             SpawnResource(GetItemFromDropPool(foragingDropPool), spawnPoints);
         }
+        
+        InventorySlotUI[] lootInventorySlotUis = lootInventoryParent.GetComponentsInChildren<InventorySlotUI>(true);
+        
+        int bushesToSpawn = Random.Range(loadedMapData.minBushesCount, loadedMapData.maxBushesCount);
+        for (int i = 0; i < bushesToSpawn; i++) {
+            
+            using var autoRelease = ListPool<Item>.Get(out List<Item> bushItems);
+            
+            int maxBushItemCount = Random.Range(1, 3);
+            GetUniqueItemsFromDropPool(bushesDropPool, maxBushItemCount, bushItems);
+            
+            InventorySlot[] bushSlots = new InventorySlot[lootInvetoryPtr.slots.Length];
+            for (int j = 0; j < bushSlots.Length; j++) {
+                InventoryItem inventoryItem = null;
+                if (bushItems.IndexInRange(j)) {
+                    Item spawnItem = bushItems[j];
+
+                    int stackCount = 1;
+                    float spawnRateTaper = 0f;
+                    while (RollProbability(spawnItem.chanceToSpawnFromBush - spawnRateTaper)) {
+                        stackCount++;
+                        spawnRateTaper += spawnItem.chanceToSpawnFromBush * 0.15f;
+                    }
+                    
+                    inventoryItem = new() {
+                        itemOrInstanceUuid = spawnItem.uuid, 
+                        count = stackCount,
+                        notDiscovered = true,
+                    };
+                }
+                bushSlots[j] = new() {
+                    item = inventoryItem,
+                    ui = lootInventorySlotUis[j],
+                };
+            }
+            
+            Entity bush = SpawnResource<Entity>(bushPrefab, spawnPoints, 1);
+            bushSlotsLookup.Add(bush.gameObject, bushSlots);
+        }
 
         int altarsToSpawn = Random.Range(loadedMapData.minAltarCount, loadedMapData.maxAltarCount);
         for (int i = 0; i < altarsToSpawn; i++) {
@@ -4304,7 +4370,6 @@ public class Game : MonoBehaviour {
         }
         
         int deadBodiesToSpawn = Random.Range(loadedMapData.minBodyCount, loadedMapData.maxBodyCount);
-        InventorySlotUI[] lootInventorySlotUis = lootInventoryParent.GetComponentsInChildren<InventorySlotUI>(true);
         
         for (int i = 0; i < deadBodiesToSpawn; i++) {
             using var autoRelease = ListPool<Item>.Get(out List<Item> deadBodyItems);
@@ -4814,18 +4879,22 @@ public class Game : MonoBehaviour {
             });
         });
         
-        traderDealButton.onClick.AddListener(() => {
-            InventoryValueType valueType = transactionState == TransactionState.Buying ? InventoryValueType.Buy : InventoryValueType.Sell;
-            if (GetInventoryItemCount(transactionInventory) <= 0) return;
+        traderMoneyDealButton.onClick.AddListener(() => {
+            if (transactionState == TransactionState.Buying && curTradingItem == null) return;
+            if (transactionState == TransactionState.Selling && GetInventoryItemCount(transactionInventory) <= 0) return;
             
-            int price = GetInventoryValue(transactionInventory, valueType);
+            // InventoryValueType valueType = transactionState == TransactionState.Buying ? InventoryValueType.Buy : InventoryValueType.Sell;
+            // int price = GetInventoryValue(transactionInventory, valueType);
+            int price = transactionState == TransactionState.Buying ? curTradingItem.ItemRef.buyPrice : GetInventoryValue(transactionInventory, InventoryValueType.Sell);
             
             if (transactionState == TransactionState.Buying && player.coinCurrency >= price) {
                 player.coinCurrency -= price;
+                TryAddItemToInventory(stashInventory, curTradingItem.ItemRef, 1);
+                ReduceTradingItemStock();
                 
-                for (int i = 0; i < transactionInventory.slots.Length; i++) { 
-                    MoveEntireItemStack(transactionInventory, stashInventory, i);
-                }
+                // for (int i = 0; i < transactionInventory.slots.Length; i++) { 
+                //     MoveEntireItemStack(transactionInventory, stashInventory, i);
+                // }
                 
                 // After buying items we just make sure all items in stash are no longer trader owned
                 ClearItemsAsTraderOwned(stashInventory);
@@ -4836,6 +4905,42 @@ public class Game : MonoBehaviour {
                 player.coinCurrency += price;
                 ClearInventory(transactionInventory);
             }
+        });
+        
+        traderBarterDealButton.onClick.AddListener(() => {
+            if (curTradingItem == null) return;
+
+            foreach (ItemWithCount barterReq in curTradingItem.ItemRef.barterRequirements) {
+                if (GetOwnedCountOfItem(barterReq.item) < barterReq.count) return;
+            }
+            
+            foreach (ItemWithCount barterReq in curTradingItem.ItemRef.barterRequirements) {
+                int removedCount = RemoveNumberOfItemsFromInventory(stashInventory, barterReq.item, barterReq.count);
+                if (removedCount != barterReq.count) {
+                    int additionalRemoveCount = barterReq.count - removedCount;
+                    RemoveNumberOfItemsFromInventory(playerInventory, barterReq.item, additionalRemoveCount);
+                }
+            }
+
+            TryAddItemToInventory(stashInventory, curTradingItem.ItemRef, 1);
+            ReduceTradingItemStock();
+        });
+        
+        traderBuyModeButton.onClick.AddListener(() => {
+            transactionState = TransactionState.Buying;
+            traderTransactionInventoryParent.gameObject.SetActive(false);
+            // Move any selling items back to stash
+            foreach (InventorySlot slot in transactionInventory.slots) {
+                if (slot.item == null) continue;
+                TryAddItemToInventory(stashInventory, slot.item);
+            }
+            ClearInventory(transactionInventory);
+        });
+        
+        traderSellModeButton.onClick.AddListener(() => {
+            transactionState = TransactionState.Selling;
+            traderTransactionInventoryParent.gameObject.SetActive(true);
+            SetTradingItem(null);
         });
         
         easyMapButton.onClick.AddListener(() => {
@@ -5125,43 +5230,76 @@ public class Game : MonoBehaviour {
         }
     }
 
-    private enum TransactionState { Empty, Buying, Selling }
+    private InventoryItem curTradingItem;
+    
+    private void SetTradingItem(InventoryItem item) {
+        curTradingItem = item;
+        if (curTradingItem == null) {
+            traderBarterRequirementsText.text = string.Empty;
+            return;
+        }
+
+        string barterReqString = string.Empty;
+        foreach (ItemWithCount barterReq in item.ItemRef.barterRequirements) {
+            barterReqString += $"{barterReq.item.displayName} x{barterReq.count}  ({GetOwnedCountOfItem(barterReq.item)})\n";
+        }
+        traderBarterRequirementsText.text = barterReqString;
+        
+        string buyPriceString = ColorText(curTradingItem.ItemRef.buyPrice.ToString("N0"), styles.coinCurrencyColor);
+        traderTransactionInfoText.text = $"Purchase for <sprite=0>{buyPriceString}";
+    }
+
+    private void ReduceTradingItemStock() {
+        bool reducedToNothing = ReduceItemCountInInventory(traderInventory, curTradingItem.traderSlotIndex);
+        if (reducedToNothing) {
+            SetTradingItem(null);
+        }
+    }
+
+    // private enum TransactionState { Empty, Buying, Selling }
+    private enum TransactionState { Selling, Buying }
     private TransactionState transactionState;
     
     private void UpdateTraderTransactionState() {
         if (!OnTradingTab) return;
         
-        if (GetInventoryItemCount(transactionInventory) <= 0) {
-            transactionState = TransactionState.Empty;
-            RefreshTransactionUI();
-            return;
-        }
+        // if (GetInventoryItemCount(transactionInventory) <= 0) {
+        //     transactionState = TransactionState.Empty;
+        //     RefreshTransactionUI();
+        //     return;
+        // }
         
-        bool itemsAreTraderOwned = false;
-        foreach (InventorySlot slot in transactionInventory.slots) {
-            if (slot.item == null) continue;
-            itemsAreTraderOwned = slot.item.traderOwned;
-        }
-
-        transactionState = itemsAreTraderOwned ? TransactionState.Buying : TransactionState.Selling;
+        // bool itemsAreTraderOwned = false;
+        // foreach (InventorySlot slot in transactionInventory.slots) {
+        //     if (slot.item == null) continue;
+        //     itemsAreTraderOwned = slot.item.traderOwned;
+        // }
+        
+        // transactionState = itemsAreTraderOwned ? TransactionState.Buying : TransactionState.Selling;
         RefreshTransactionUI();
     }
     
     private void RefreshTransactionUI() {
-        if (transactionState == TransactionState.Empty) {
-            traderTransactionInfoText.text = "Place an item to begin transaction";
-            return;
-        }
+        // if (transactionState == TransactionState.Empty) {
+        //     traderTransactionInfoText.text = "Place an item to begin transaction";
+        //     return;
+        // }
         
         if (transactionState == TransactionState.Buying) {
-            int buyPrice = GetInventoryValue(transactionInventory, InventoryValueType.Buy);
-            string buyPriceString = ColorText(buyPrice.ToString("N0"), styles.coinCurrencyColor);
-            traderTransactionInfoText.text = $"Purchase for <sprite=0>{buyPriceString}";
+            // int buyPrice = GetInventoryValue(transactionInventory, InventoryValueType.Buy);
+            // string buyPriceString = ColorText(buyPrice.ToString("N0"), styles.coinCurrencyColor);
+            // traderTransactionInfoText.text = $"Purchase for <sprite=0>{buyPriceString}";
+            
+            traderBarterDealButton.gameObject.SetActive(true);
+            traderBarterRequirementsText.gameObject.SetActive(true);
         }
         else if (transactionState == TransactionState.Selling) {
             int sellPrice = GetInventoryValue(transactionInventory, InventoryValueType.Sell);
             string sellPriceString = ColorText(sellPrice.ToString("N0"), styles.coinCurrencyColor);
             traderTransactionInfoText.text = $"Sell for <sprite=0>{sellPriceString}";
+            
+            traderBarterDealButton.gameObject.SetActive(false);
+            traderBarterRequirementsText.gameObject.SetActive(false);
         }
     }
     
@@ -5314,6 +5452,8 @@ public class Game : MonoBehaviour {
     }
     
     private void ClearTraderItemsFromTransactionInventory() {
+        SetTradingItem(null);
+        return;
         for (int i = 0; i < transactionInventory.slots.Length; i++) {
             InventorySlot slot = transactionInventory.slots[i];
             if (slot.item == null || !slot.item.traderOwned) continue;
@@ -5668,7 +5808,7 @@ public class Game : MonoBehaviour {
     // Item Dropping
     // ************************
 
-    private enum DropOrigin { Rock, Body, Trader, Enemy, ExistsInLevel }
+    private enum DropOrigin { Rock, Body, Trader, Enemy, ExistsInLevel, Bush }
 
     private struct DropPool {
         public List<Item> items;
@@ -5681,6 +5821,7 @@ public class Game : MonoBehaviour {
     private DropPool traderDropPool;
     private DropPool enemyDropPool;
     private DropPool foragingDropPool;
+    private DropPool bushesDropPool;
 
     private void CreateDropPools() {
         rockStonesDropPool = new() { items = new(), dropOrigin = DropOrigin.Rock };
@@ -5689,6 +5830,7 @@ public class Game : MonoBehaviour {
         traderDropPool = new() { items = new(), dropOrigin = DropOrigin.Trader };
         enemyDropPool = new() { items = new(), dropOrigin = DropOrigin.Enemy };
         foragingDropPool = new() { items = new(), dropOrigin = DropOrigin.ExistsInLevel };
+        bushesDropPool = new() { items = new(), dropOrigin = DropOrigin.Bush };
 
         foreach ((int _, Item item) in itemLookup) {
             if (item.chanceToSpawnOnTrader > 0f) {
@@ -5706,6 +5848,7 @@ public class Game : MonoBehaviour {
         eyeUpgradesDropPool.items.Clear();
         bodyDropPool.items.Clear();
         foragingDropPool.items.Clear();
+        bushesDropPool.items.Clear();
         
         foreach ((int _, Item item) in itemLookup) {
             bool spawnsOnCurrentMap = item.spawnsOnAllMaps || item.spawnsOnMaps.Contains(map);
@@ -5719,13 +5862,14 @@ public class Game : MonoBehaviour {
                     rockStonesDropPool.items.Add(item);
                 }
             }
-            
             if (item.chanceToSpawnOnBody > 0f) {
                 bodyDropPool.items.Add(item);
             }
-
             if (item.chanceToExistInLevel > 0f) {
                 foragingDropPool.items.Add(item);
+            }
+            if (item.chanceToSpawnFromBush > 0f) {
+                bushesDropPool.items.Add(item);
             }
         }
     }
@@ -5799,11 +5943,12 @@ public class Game : MonoBehaviour {
         }
         
         return origin switch {
-            DropOrigin.Rock => Mathf.Clamp01(item.chanceToSpawnFromRock + addChanceToSpawnFromLuck),
-            DropOrigin.Body => Mathf.Clamp01(item.chanceToSpawnOnBody + addChanceToSpawnFromLuck),
+            DropOrigin.Rock   => Mathf.Clamp01(item.chanceToSpawnFromRock + addChanceToSpawnFromLuck),
+            DropOrigin.Body   => Mathf.Clamp01(item.chanceToSpawnOnBody + addChanceToSpawnFromLuck),
             DropOrigin.Trader => Mathf.Clamp01(item.chanceToSpawnOnTrader + addChanceToSpawnFromLuck),
-            DropOrigin.Enemy => Mathf.Clamp01(item.chanceToSpawnFromEnemy + addChanceToSpawnFromLuck),
-            _ => 0f,
+            DropOrigin.Enemy  => Mathf.Clamp01(item.chanceToSpawnFromEnemy + addChanceToSpawnFromLuck),
+            DropOrigin.Bush   => Mathf.Clamp01(item.chanceToSpawnFromBush + addChanceToSpawnFromLuck),
+            _                 => 0f,
         };
     }
     

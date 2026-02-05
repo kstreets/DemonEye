@@ -6,6 +6,7 @@ public class Styles : ScriptableObject {
     public Color commonTextColor;
     public Color uncommonTextColor;
     public Color rareTextColor;
+    public Color epicTextColor;
     public Color legendaryTextColor;
 
     public Color headerTextColor;
@@ -46,6 +47,7 @@ public class Styles : ScriptableObject {
             Item.Rarity.Common    => commonTextColor,
             Item.Rarity.Uncommon  => uncommonTextColor,
             Item.Rarity.Rare      => rareTextColor,
+            Item.Rarity.Epic      => epicTextColor,
             Item.Rarity.Legendary => legendaryTextColor,
             _                     => commonTextColor,
         };

@@ -19,24 +19,38 @@ MonoBehaviour:
   pickupRadius: 0.07
   type: {fileID: 11400000, guid: 229fbe8e9203e95499f73ff3b9ecfb68, type: 2}
   associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
-  buyPrice: 12
-  sellPrice: 2
+  priceCategory: {fileID: 11400000, guid: f0a2c8c186d098e4ebf04fbd311fece8, type: 2}
+  buyPrice: 500
+  sellPrice: 70
   spawnsOnAllMaps: 1
   spawnsOnMaps: []
   chanceToSpawnOnBody: 0.25
   chanceToSpawnOnTrader: 1
   chanceToSpawnFromRock: 0
   chanceToSpawnFromEnemy: 0
+  chanceToExistInLevel: 0
+  chanceToSpawnFromBush: 0
   traderLevelRequired: 1
-  traderStockRange: {x: 6, y: 12}
+  traderStockRange: {x: 4, y: 8}
+  barterRequirements:
+  - item: {fileID: 11400000, guid: b74700219c5d37047b0c9061ea0df5b2, type: 2}
+    count: 3
+  - item: {fileID: 11400000, guid: 0c1ef7ec636b7674886cc5581cc6deff, type: 2}
+    count: 1
   spawnsFromEnemies: []
   modifiesStats: 0
-  agilityStatAdjustment: 0
-  strengthStatAdjustment: 0
+  armorPercent: 0
+  critChance: 0
+  critMultiplier: 0
+  damage: 0
+  fireratePercentage: 0
+  movementSpeedPercentage: 0
+  projectileCount: 0
+  rangeInSeconds: 0
   itemGroupProps: {fileID: 0}
   maxStackCount: 6
   weight: 1
-  description: Drink and restore 25 health.
+  description: Drink and restore 35 health.
   animationType: 0
-  healingAmount: 25
+  healingAmount: 35
   bandageAmount: 0
