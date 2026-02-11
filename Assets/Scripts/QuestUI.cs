@@ -26,7 +26,7 @@ public class QuestUI : MonoBehaviour {
         } 
         
         foreach (Quest.Objective obj in quest.objectives) {
-            GameObject objUIGameobject = Instantiate(obj.display == QuestObjectiveUI.Display.Numerical ? objectiveNumericalPrefab : objectiveBinaryPrefab, objectivesParent);
+            GameObject objUIGameobject = Instantiate(objectiveNumericalPrefab, objectivesParent);
             objUIGameobject.GetComponent<QuestObjectiveUI>().UpdateDisplay(obj);
         }
     }

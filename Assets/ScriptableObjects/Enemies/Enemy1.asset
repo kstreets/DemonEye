@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a5df0d022d54a7488a42b771db86189, type: 3}
   m_Name: Enemy1
   m_EditorClassIdentifier: 
+  displayName: Lesser Spawn
   type: 0
   enemyPrefab: {fileID: 7814119993517076521, guid: 833b76e47459c3f42b84396473e92372, type: 3}
   animatorOverride: {fileID: 22100000, guid: 67ba03f72d5d50749bdc6dc339915615, type: 2}

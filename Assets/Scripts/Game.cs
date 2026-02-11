@@ -209,6 +209,7 @@ public class Game : MonoBehaviour {
     public RectTransform mapSelectionPanel;
     public Button easyMapButton;
     public Button mediumMapButton;
+    public Button otherMediumMapButton;
     [EndFoldout]
     
     [Foldout("UI/QuestsPanel")]
@@ -334,8 +335,8 @@ public class Game : MonoBehaviour {
 
     public static Action<Enemy> onEnemyDeath;
     public static Action<MapData> onTeleportToMap;
-    public static Action<DemonEyeInstance> onEyeForged;
     public static Action<InventorySlot[]> onSoldItemsToTrader;
+    public static Action<string> customQuestEvent;
     
     private void Start() {
         inst = this;
@@ -376,7 +377,7 @@ public class Game : MonoBehaviour {
         blastPool = CreateEntityPool<Entity>(blastPrefab, 5, null);
 
         equipedEye = emptyDemonEye;
-        
+
         moveInputAction = InputSystem.actions.FindAction("Move");
         lookInputAction = InputSystem.actions.FindAction("Look");
         attackInputAction = InputSystem.actions.FindAction("Attack");
@@ -597,6 +598,28 @@ public class Game : MonoBehaviour {
     private void OnGameOverExit() {
         player.health = gameplayConfig.postDeathStartingHealth;
         DeinitRaid();
+    }
+    
+    // *****************************
+    // Tutorial 
+    // *****************************
+
+    [Serializable]
+    public class TutorialState {
+        public enum State { NotStarted, PlayFirstGame, VisitQuestsTab, VisitForgeTab, CraftFirstDemonEye, EquipFirstDemonEye,  Finished }
+        public State curState = State.NotStarted;
+    }
+
+    private TutorialState tutorialState;
+    private bool inTutorial;
+
+    private void InitTutorialState() { 
+        tutorialState = LoadFromFileOrCreateNew<TutorialState>(tutorialSavePath);
+        inTutorial = tutorialState.curState != TutorialState.State.Finished;
+    }
+    
+    private void SaveTutorialState() {
+        SaveToFile(tutorialSavePath, tutorialState);
     }
 
     // *****************************
@@ -846,8 +869,8 @@ public class Game : MonoBehaviour {
         
         Tween.Custom(entity, 0f, 1f, duration, ease: Ease.Linear, onValueChange: static (entity, val) => {
             float yPos = inst.bounceCurve.Evaluate(val);
-            entity.position = Vector2.Lerp(entity.bounceEffect.initialPos, entity.bounceEffect.targetPos, val);
-            entity.position = new(entity.position.x, entity.position.y + yPos, entity.position.y);
+            Vector2 newPos = Vector2.Lerp(entity.bounceEffect.initialPos, entity.bounceEffect.targetPos, val);
+            entity.position = new(newPos.x, newPos.y + yPos, entity.position.z);
         });
     }
 
@@ -1731,6 +1754,7 @@ public class Game : MonoBehaviour {
     [NonSerialized] private Inventory transactionInventory;
     [NonSerialized] private Inventory traderInventory;
     [NonSerialized] private Inventory lootInvetoryPtr;
+    [NonSerialized] private InventorySlotUI[] lootInventorySlotUis;
     [NonSerialized] private List<Inventory> allInventories = new();
     
     private const int playerPocketSize = 10;
@@ -1774,6 +1798,7 @@ public class Game : MonoBehaviour {
         const int cachedLootInventorySize = 12;
         SpawnUiSlots(lootInventoryParent, cachedLootInventorySize); 
         lootInvetoryPtr = CreateInventory(lootInventoryParent, cachedLootInventorySize);
+        lootInventorySlotUis = lootInventoryParent.GetComponentsInChildren<InventorySlotUI>(true);
 
         const int traderInventorySize = traderInventoryRowCount * traderInventoryColCount;
         SpawnUiSlots(traderInventoryParent, traderInventorySize);
@@ -1844,6 +1869,23 @@ public class Game : MonoBehaviour {
             if (!toInventory.slots.IndexInRange(i) || !items.IndexInRange(i)) break;
             toInventory.slots[i].item = items[i];
         }
+    }
+    
+    private InventorySlot[] CreateLootInventoryInstance(List<InventoryItem> inventoryItems) {
+        var slots = new InventorySlot[lootInvetoryPtr.slots.Length];
+        
+        for (int j = 0; j < lootInvetoryPtr.slots.Length; j++) {
+            InventoryItem inventoryItem = null;
+            if (inventoryItems.IndexInRange(j)) {
+                inventoryItem = inventoryItems[j];
+            }
+            slots[j] = new() {
+                item = inventoryItem,
+                ui = lootInventorySlotUis[j],
+            };
+        }
+        
+        return slots;
     }
 
     private void UpdateInventory() {
@@ -3684,6 +3726,7 @@ public class Game : MonoBehaviour {
                     if (interactInputAction.WasPressedThisFrame()) {
                         gameStateMachine.SetStateIfNotCurrent(curRaidState == RaidState.PostFinalWave ? winExitState : earlyExitState);
                         closeExitPortalSequence.Stop();
+                        customQuestEvent?.Invoke("FirstExtract");
                     }
                 }
             }
@@ -4311,110 +4354,197 @@ public class Game : MonoBehaviour {
     private Dictionary<GameObject, InventorySlot[]> bushSlotsLookup = new();
 
     private void SpawnResources(Transform resourceSpawnParent) {
-        List<Transform> spawnPoints = resourceSpawnParent.GetComponentsInChildren<Transform>().ToList();
-        spawnPoints.RemoveAt(0); // Remove resourceSpawnParent
+        var resourceSpawns = resourceSpawnParent.GetComponentsInChildren<ResourceSpawn>().ToList();
+        resourceSpawns.RemoveAt(0); // Remove resourceSpawnParent
         
-        int gemRocksToSpawn = Random.Range(loadedMapData.minRockCount, loadedMapData.maxRockCount);
-        for (int i = 0; i < gemRocksToSpawn; i++) {
-            Entity mineableRockEntity = SpawnResource<Entity>(gemRockPrefab, spawnPoints, 1);
-            mineableRockEntity.health = 50;
-        }
+        foreach (ResourceSpawn resourceSpawn in resourceSpawns) { 
+            GameObject prefab = resourceSpawn.GetPrefabToSpawn();
+            if (!prefab) continue;
+            
+            Entity resouceEntity = SpawnResource<Entity>(prefab, resourceSpawn.transform, 1);
 
-        int foragablesToSpawn = Random.Range(loadedMapData.minForageCount, loadedMapData.maxForageCount);
-        for (int i = 0; i < foragablesToSpawn; i++) {
-            SpawnResource(GetItemFromDropPool(foragingDropPool), spawnPoints);
-        }
-        
-        InventorySlotUI[] lootInventorySlotUis = lootInventoryParent.GetComponentsInChildren<InventorySlotUI>(true);
-        
-        int bushesToSpawn = Random.Range(loadedMapData.minBushesCount, loadedMapData.maxBushesCount);
-        for (int i = 0; i < bushesToSpawn; i++) {
-            
-            using var autoRelease = ListPool<Item>.Get(out List<Item> bushItems);
-            
-            int maxBushItemCount = Random.Range(1, 3);
-            GetUniqueItemsFromDropPool(bushesDropPool, maxBushItemCount, bushItems);
-            
-            InventorySlot[] bushSlots = new InventorySlot[lootInvetoryPtr.slots.Length];
-            for (int j = 0; j < bushSlots.Length; j++) {
-                InventoryItem inventoryItem = null;
-                if (bushItems.IndexInRange(j)) {
-                    Item spawnItem = bushItems[j];
-
-                    int stackCount = 1;
-                    float spawnRateTaper = 0f;
-                    while (RollProbability(spawnItem.chanceToSpawnFromBush - spawnRateTaper)) {
-                        stackCount++;
-                        spawnRateTaper += spawnItem.chanceToSpawnFromBush * 0.15f;
-                    }
-                    
-                    inventoryItem = new() {
-                        itemOrInstanceUuid = spawnItem.uuid, 
-                        count = stackCount,
-                        notDiscovered = true,
-                    };
-                }
-                bushSlots[j] = new() {
-                    item = inventoryItem,
-                    ui = lootInventorySlotUis[j],
-                };
+            switch (resouceEntity.gameObject.tag) {
+                case Tags.Mineable:
+                    resouceEntity.health = 50;
+                    break;
+                case Tags.DeadBody:
+                    InitDeadBody(resouceEntity);
+                    break;
+                case Tags.Bush:
+                    InitBush(resouceEntity); 
+                    break;
             }
-            
-            Entity bush = SpawnResource<Entity>(bushPrefab, spawnPoints, 1);
-            bushSlotsLookup.Add(bush.gameObject, bushSlots);
-        }
-
-        int altarsToSpawn = Random.Range(loadedMapData.minAltarCount, loadedMapData.maxAltarCount);
-        for (int i = 0; i < altarsToSpawn; i++) {
-            SpawnResource<Entity>(altarPrefab, spawnPoints, 1);
-        }
+        } 
         
-        int deadBodiesToSpawn = Random.Range(loadedMapData.minBodyCount, loadedMapData.maxBodyCount);
-        
-        for (int i = 0; i < deadBodiesToSpawn; i++) {
-            using var autoRelease = ListPool<Item>.Get(out List<Item> deadBodyItems);
-            
-            int maxDeadBodyItemCount = Random.Range(2, 6);
-            GetUniqueItemsFromDropPool(bodyDropPool, maxDeadBodyItemCount, deadBodyItems);
-
-            bool spawnEyeUpgrade = RollProbability(loadedMapData.eyeUpgradeOnBodyChance);
-            while (spawnEyeUpgrade && deadBodyItems.Count < lootInvetoryPtr.slots.Length) {
-                deadBodyItems.Add(GetItemFromDropPool(eyeUpgradesDropPool));
-                spawnEyeUpgrade = RollProbability(loadedMapData.eyeUpgradeOnBodyChance);
-            }
-            
-            InventorySlot[] deadBodySlots = new InventorySlot[lootInvetoryPtr.slots.Length];
-            for (int j = 0; j < deadBodySlots.Length; j++) {
-                InventoryItem inventoryItem = null;
-                if (deadBodyItems.IndexInRange(j)) {
-                    Item spawnItem = deadBodyItems[j];
-
-                    int stackCount = 1;
-                    float spawnRateTaper = 0f;
-                    while (RollProbability(spawnItem.chanceToSpawnOnBody - spawnRateTaper)) {
-                        stackCount++;
-                        spawnRateTaper += spawnItem.chanceToSpawnOnBody * 0.15f;
-                    }
-                    
-                    inventoryItem = new() {
-                        itemOrInstanceUuid = spawnItem.uuid, 
-                        count = stackCount,
-                        notDiscovered = true,
-                    };
-                }
-                deadBodySlots[j] = new() {
-                    item = inventoryItem,
-                    ui = lootInventorySlotUis[j],
-                };
-            }
-            
-            Entity body = SpawnResource<Entity>(deadBodyPrefab, spawnPoints);
-            deadBodySlotsLookup.Add(body.gameObject, deadBodySlots);
-        }
+        // int gemRocksToSpawn = Random.Range(loadedMapData.minRockCount, loadedMapData.maxRockCount);
+        // for (int i = 0; i < gemRocksToSpawn; i++) {
+        //     Entity mineableRockEntity = SpawnResource<Entity>(gemRockPrefab, resourceSpawns, 1);
+        //     mineableRockEntity.health = 50;
+        // }
+        //
+        // int foragablesToSpawn = foragingDropPool.HasItems ? Random.Range(loadedMapData.minForageCount, loadedMapData.maxForageCount) : 0;
+        // for (int i = 0; i < foragablesToSpawn; i++) {
+        //     SpawnResource(GetItemFromDropPool(foragingDropPool), resourceSpawns);
+        // }
+        //
+        // InventorySlotUI[] lootInventorySlotUis = lootInventoryParent.GetComponentsInChildren<InventorySlotUI>(true);
+        //
+        // int bushesToSpawn = Random.Range(loadedMapData.minBushesCount, loadedMapData.maxBushesCount);
+        // for (int i = 0; i < bushesToSpawn; i++) {
+        //     
+        //     using var autoRelease = ListPool<Item>.Get(out List<Item> bushItems);
+        //     
+        //     int maxBushItemCount = Random.Range(1, 3);
+        //     GetUniqueItemsFromDropPool(bushesDropPool, maxBushItemCount, bushItems);
+        //     
+        //     InventorySlot[] bushSlots = new InventorySlot[lootInvetoryPtr.slots.Length];
+        //     for (int j = 0; j < bushSlots.Length; j++) {
+        //         InventoryItem inventoryItem = null;
+        //         if (bushItems.IndexInRange(j)) {
+        //             Item spawnItem = bushItems[j];
+        //
+        //             int stackCount = 1;
+        //             float spawnRateTaper = 0f;
+        //             while (RollProbability(spawnItem.chanceToSpawnFromBush - spawnRateTaper)) {
+        //                 stackCount++;
+        //                 spawnRateTaper += spawnItem.chanceToSpawnFromBush * 0.15f;
+        //             }
+        //             
+        //             inventoryItem = new() {
+        //                 itemOrInstanceUuid = spawnItem.uuid, 
+        //                 count = stackCount,
+        //                 notDiscovered = true,
+        //             };
+        //         }
+        //         bushSlots[j] = new() {
+        //             item = inventoryItem,
+        //             ui = lootInventorySlotUis[j],
+        //         };
+        //     }
+        //     
+        //     Entity bush = SpawnResource<Entity>(bushPrefab, resourceSpawns, 1);
+        //     bushSlotsLookup.Add(bush.gameObject, bushSlots);
+        // }
+        //
+        // int altarsToSpawn = Random.Range(loadedMapData.minAltarCount, loadedMapData.maxAltarCount);
+        // for (int i = 0; i < altarsToSpawn; i++) {
+        //     SpawnResource<Entity>(altarPrefab, resourceSpawns, 1);
+        // }
+        //
+        // int deadBodiesToSpawn = Random.Range(loadedMapData.minBodyCount, loadedMapData.maxBodyCount);
+        //
+        // for (int i = 0; i < deadBodiesToSpawn; i++) {
+        //     using var autoRelease = ListPool<Item>.Get(out List<Item> deadBodyItems);
+        //     
+        //     int maxDeadBodyItemCount = Random.Range(2, 6);
+        //     GetUniqueItemsFromDropPool(bodyDropPool, maxDeadBodyItemCount, deadBodyItems);
+        //
+        //     bool spawnEyeUpgrade = RollProbability(loadedMapData.eyeUpgradeOnBodyChance);
+        //     while (spawnEyeUpgrade && deadBodyItems.Count < lootInvetoryPtr.slots.Length) {
+        //         deadBodyItems.Add(GetItemFromDropPool(eyeUpgradesDropPool));
+        //         spawnEyeUpgrade = RollProbability(loadedMapData.eyeUpgradeOnBodyChance);
+        //     }
+        //     
+        //     InventorySlot[] deadBodySlots = new InventorySlot[lootInvetoryPtr.slots.Length];
+        //     for (int j = 0; j < deadBodySlots.Length; j++) {
+        //         InventoryItem inventoryItem = null;
+        //         if (deadBodyItems.IndexInRange(j)) {
+        //             Item spawnItem = deadBodyItems[j];
+        //
+        //             int stackCount = 1;
+        //             float spawnRateTaper = 0f;
+        //             while (RollProbability(spawnItem.chanceToSpawnOnBody - spawnRateTaper)) {
+        //                 stackCount++;
+        //                 spawnRateTaper += spawnItem.chanceToSpawnOnBody * 0.15f;
+        //             }
+        //             
+        //             inventoryItem = new() {
+        //                 itemOrInstanceUuid = spawnItem.uuid, 
+        //                 count = stackCount,
+        //                 notDiscovered = true,
+        //             };
+        //         }
+        //         deadBodySlots[j] = new() {
+        //             item = inventoryItem,
+        //             ui = lootInventorySlotUis[j],
+        //         };
+        //     }
+        //     
+        //     Entity body = SpawnResource<Entity>(deadBodyPrefab, resourceSpawns);
+        //     deadBodySlotsLookup.Add(body.gameObject, deadBodySlots);
+        // }
         
     }
     
+    private T SpawnResource<T>(GameObject resourcePrefab, Transform spawnPoint, int obstacleCellRadius = 0) where T : Entity, new() {
+        T resource = SpawnEntity<T>(resourcePrefab, spawnPoint.position, spawnPoint.rotation);
+        if (obstacleCellRadius > 0) {
+            loadedMapInst.grid.AddObstacle(resource.position, obstacleCellRadius);
+            resource.obstacleCellRadius = obstacleCellRadius;
+            resource.obstaclePosition = resource.position;
+        }
+        return resource;
+    }
+    
+    private void InitDeadBody(Entity entity) {
+        using var _ = ListPool<Item>.Get(out var items);
+        using var __ = ListPool<InventoryItem>.Get(out var inventoryItems);
+            
+        int maxDeadBodyItemCount = Random.Range(2, 6);
+        GetUniqueItemsFromDropPool(bodyDropPool, maxDeadBodyItemCount, items);
+            
+        bool spawnEyeUpgrade = RollProbability(loadedMapData.eyeUpgradeOnBodyChance);
+        while (spawnEyeUpgrade && items.Count < lootInvetoryPtr.slots.Length) {
+            items.Add(GetItemFromDropPool(eyeUpgradesDropPool));
+            spawnEyeUpgrade = RollProbability(loadedMapData.eyeUpgradeOnBodyChance);
+        }
+            
+        foreach (Item item in items) {
+            int stackCount = 1;
+            float spawnRateTaper = 0f;
+            while (RollProbability(item.chanceToSpawnOnBody - spawnRateTaper)) {
+                stackCount++;
+                spawnRateTaper += item.chanceToSpawnOnBody * 0.15f;
+            }
+                    
+            inventoryItems.Add(new() {
+                itemOrInstanceUuid = item.uuid, 
+                count = stackCount,
+                notDiscovered = true,
+            });
+        }
+            
+        deadBodySlotsLookup.Add(entity.gameObject, CreateLootInventoryInstance(inventoryItems));
+    }
+    
+    private void InitBush(Entity entity) {
+        using var _ = ListPool<Item>.Get(out var items);
+        using var __ = ListPool<InventoryItem>.Get(out var inventoryItems);
+            
+        int maxBushItemCount = Random.Range(1, 3);
+        GetUniqueItemsFromDropPool(bushesDropPool, maxBushItemCount, items);
+            
+        foreach (Item item in items) {
+            int stackCount = 1;
+            float spawnRateTaper = 0f;
+            while (RollProbability(item.chanceToSpawnFromBush - spawnRateTaper)) {
+                stackCount++;
+                spawnRateTaper += item.chanceToSpawnFromBush * 0.15f;
+            }
+                    
+            inventoryItems.Add(new() {
+                itemOrInstanceUuid = item.uuid, 
+                count = stackCount,
+                notDiscovered = true,
+            });
+        }
+            
+        bushSlotsLookup.Add(entity.gameObject, CreateLootInventoryInstance(inventoryItems));
+    }
+    
     private T SpawnResource<T>(GameObject resourcePrefab, List<Transform> spawnPoints, int obstacleCellRadius = 0) where T : Entity, new() {
+        Assert.IsFalse(spawnPoints.Count <= 0, "Ran out of resource spawn points, add more to level or adjust map pools");
+    
         int randomIndex = Random.Range(0, spawnPoints.Count);
         Transform spawnTrans = spawnPoints[randomIndex];
         spawnPoints.RemoveAt(randomIndex);
@@ -4477,6 +4607,7 @@ public class Game : MonoBehaviour {
     private string questSavePath;
     private string traderSavePath;
     private string traderInventorySavePath;
+    private string tutorialSavePath;
     private List<InventoryItem> cachedInventoryForSaving = new(50);
     
     private void BuildSavePaths() {
@@ -4489,6 +4620,7 @@ public class Game : MonoBehaviour {
         questSavePath = $"{Application.persistentDataPath}/quests";
         traderSavePath = $"{Application.persistentDataPath}/traders";
         traderInventorySavePath = $"{Application.persistentDataPath}/traderInventory";
+        tutorialSavePath = $"{Application.persistentDataPath}/tutorial";
     }
 
     private string GetInventorySavePath(Inventory inventory) {
@@ -4768,6 +4900,10 @@ public class Game : MonoBehaviour {
         eyeForgeTabButton.onClick.AddListener(() => {
             ToggleHideoutTab(eyeForgeTabButton, eyeForgeTabText);
             ToggleHideoutPanels(forgeDetailsPanel, eyeForgePanel, stashPanel);
+
+            if (inTutorial) {
+                customQuestEvent.Invoke("MetTraderInForge");
+            }
         });
         
         traderTabButton.onClick.AddListener(() => {
@@ -4841,8 +4977,6 @@ public class Game : MonoBehaviour {
 
                 DemonEyeInstance newDemonEye = BuildAndRegisterEye(newDemonEyeItem);
                 crucibleInventory.slots[eyeSlotIndex].item = newDemonEyeItem;
-                
-                onEyeForged?.Invoke(newDemonEye);
             });
         });
         
@@ -4953,6 +5087,13 @@ public class Game : MonoBehaviour {
         mediumMapButton.onClick.AddListener(() => {
             LoadMapAsync(customsMap, () => {
                 CreateDropPoolsForMap(customsMap);
+                gameStateMachine.SetStateIfNotCurrent(raidState);
+            });
+        });
+        
+        otherMediumMapButton.onClick.AddListener(() => {
+            LoadMapAsync(terminalMap, () => {
+                CreateDropPoolsForMap(terminalMap);
                 gameStateMachine.SetStateIfNotCurrent(raidState);
             });
         });
@@ -5813,6 +5954,7 @@ public class Game : MonoBehaviour {
     private struct DropPool {
         public List<Item> items;
         public DropOrigin dropOrigin;
+        public bool HasItems => items.Count > 0;
     }
 
     private DropPool rockStonesDropPool;
@@ -5896,8 +6038,9 @@ public class Game : MonoBehaviour {
         return item;
     }
 
-    private Item GetItemFromDropPool(DropPool dropPool, bool allowNullReturns = false) {
+    private Item GetItemFromDropPool(DropPool dropPool) {
         Assert.IsFalse(dropPool.items == enemyDropPool.items, $"Use {nameof(GetItemFromEnemyDropPool)} for enemies");
+        Assert.IsFalse(dropPool.items.Count == 0, $"No items in drop pool, use {nameof(DropPool.HasItems)} before calling"); 
         
         dropPool.items.Shuffle();
         
@@ -5908,10 +6051,12 @@ public class Game : MonoBehaviour {
             }
         }
 
-        return allowNullReturns ? null : dropPool.items[^1];
+        return dropPool.items[^1];
     }
     
     private void GetUniqueItemsFromDropPool(DropPool dropPool, int maxCount, List<Item> items, float raritySkew = 0f) {
+        Assert.IsFalse(dropPool.items.Count == 0, $"No items in drop pool, use {nameof(DropPool.HasItems)} before calling"); 
+        
         dropPool.items.Shuffle();
         
         foreach (Item item in dropPool.items) {

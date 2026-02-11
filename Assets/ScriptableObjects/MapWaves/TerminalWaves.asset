@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6be7b725e872d8544a676cc6767aad0a, type: 3}
-  m_Name: CustomWaves
+  m_Name: TerminalWaves
   m_EditorClassIdentifier: 
   timeBeforeFirstPhase: 30
   timeBeforePortalSpawns: 15

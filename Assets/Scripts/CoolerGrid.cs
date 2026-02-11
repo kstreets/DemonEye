@@ -195,7 +195,14 @@ public class CoolerGrid : MonoBehaviour {
                 Vector2 neighborPos = playerCell.position + new Vector2(x, y) * cellSize;
                 GridCell neighbor = GetCellAtPosition(neighborPos);
                 if (neighbor == null || !neighbor.traversable || neighbor.isObstacleObstructed) continue;
-
+                
+                // Player is in unreacheable position, add anyways so we have something in the list
+                if (neighbor.distFromPlayerCell == int.MaxValue) {
+                    spawnCells.Add(neighbor); 
+                    Debug.Log("Player is unreachable");
+                    continue;
+                }
+                
                 // Convert dijkstra distance into world distance
                 float distFromPlayer = (neighbor.distFromPlayerCell / (float)dijkstraOrthogonalDist) * cellSize;
                 if (distFromPlayer > maxDistCellCanBeFromPlayer) continue;

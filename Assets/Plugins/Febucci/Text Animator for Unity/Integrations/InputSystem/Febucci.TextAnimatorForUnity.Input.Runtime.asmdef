@@ -3,7 +3,8 @@
     "rootNamespace": "",
     "references": [
         "Febucci.TextAnimatorForUnity.Runtime",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "Febucci.Attributes.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -53,4 +53,4 @@ MonoBehaviour:
   weight: 0
   description: 
   relativeMechanicDesc: {fileID: 0}
-  startingGoThroughCount: 2
+  startingGoThroughCount: 1

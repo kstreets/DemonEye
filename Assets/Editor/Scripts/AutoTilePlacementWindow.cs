@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.EditorTools;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using Yohash.PriorityQueue;
@@ -90,14 +91,21 @@ public class AutoTilePlacementWindow : EditorWindow {
         bool success = Perform(wfcRuleset.baseMapRuleset);
         if (!success) return;
         
+        Undo.RecordObject(baseTilemap, "BaseTilemap Auto Placement");
+        
         for (int x = dims.xMin; x < dims.xMax; x++) {
             for (int y = dims.yMin; y < dims.yMax; y++) {
                 PlaceTile(baseTilemap, x, y);
             }
         }
+        
+        EditorUtility.SetDirty(baseTilemap); 
     }
     
     private void GenerateFinal() {
+        Undo.RecordObject(baseTilemap, "BaseTilemap Final Auto Placement");
+        Undo.RecordObject(backgroundTilemap, "BackgroundTilemap Final Auto Placement");
+    
         backgroundTilemap.ClearAllTiles();
         backgroundTilemap.CompressBounds();
 
@@ -133,13 +141,16 @@ public class AutoTilePlacementWindow : EditorWindow {
                 PlaceTile(backgroundTilemap, x, y);
             }
         }
+        
+        EditorUtility.SetDirty(baseTilemap); 
+        EditorUtility.SetDirty(backgroundTilemap); 
     }
 
     private void InitalizeData(Ruleset ruleset, out BoundsInt tilemapDimensions, out int initialBitArraySize, int tilemapExpansion = 0) {
         waveTiles.Clear();
         waveTileLookup.Clear();
         neighborPositions = new Vector3Int[4];
-        wfcPriorityQueue = new(10000); // Chosen arbitrarily
+        wfcPriorityQueue = new(100000); // Chosen arbitrarily
 
         baseTilemap.CompressBounds();
         tilemapDimensions = baseTilemap.cellBounds;
@@ -234,7 +245,9 @@ public class AutoTilePlacementWindow : EditorWindow {
                     
                     // Mark tile as one to ignore and continue
                     neighborTile.ignore = true;
-                    baseTilemap.SetTile(nPos, failedTile);
+                    if (placeFailedTile) {
+                        baseTilemap.SetTile(nPos, failedTile);
+                    }
                     Debug.Log($"Discovered problematic tile at {nPos}");
                 }
 

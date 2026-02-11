@@ -5,6 +5,7 @@ public class EnemyData : ScriptableObject {
 
     public enum EnemyType { Normal, Doughmon, Boomon, Meatbalon }
 
+    public string displayName;
     public EnemyType type;
     public GameObject enemyPrefab;
     public AnimatorOverrideController animatorOverride;

@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: HigherQuestLine
   m_EditorClassIdentifier: Assembly-CSharp::QuestLine
   quests:
-  - {fileID: 11400000, guid: 20df4e2a774e27e49ac21a9ba4813fdf, type: 2}
+  - {fileID: 11400000, guid: 62171f5b8d89f0d459406c3504853841, type: 2}

@@ -2,7 +2,8 @@
     "name": "Febucci.TextAnimatorForUnity.UITk.Runtime",
     "rootNamespace": "",
     "references": [
-        "GUID:1e113d3b5d77bc04eab508251483e8ff"
+        "GUID:1e113d3b5d77bc04eab508251483e8ff",
+        "GUID:448b0b55421917e4784a8f2f7449081f"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

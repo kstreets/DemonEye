@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0aa690954e129034abb7319a8a860125, type: 3}
+  m_Name: TerminalMap
+  m_EditorClassIdentifier: Assembly-CSharp::MapData
+  displayName: Terminal
+  sceneReference: Terminal
+  waves: {fileID: 11400000, guid: fc2949be33c63e14eb9ce0a4eed242b8, type: 2}
+  altarSoulPrice: 150
+  minRockCount: 20
+  maxRockCount: 35
+  minBodyCount: 8
+  maxBodyCount: 15
+  minForageCount: 15
+  maxForageCount: 20
+  minBushesCount: 0
+  maxBushesCount: 0
+  minAltarCount: 4
+  maxAltarCount: 7
+  eyeUpgradeOnBodyChance: 0.12
+  eyeUpgradeFromRockChance: 0.2
+  maxGemCountPerRock: 2
+  increasedLootRarityChance: 0.06

@@ -1,8 +1,12 @@
 using System;
 using System.Collections.Generic;
+using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.Events;
 using UnityEngine.Pool;
+using UnityEngine.UIElements;
 using VInspector;
 using static Game;
 
@@ -11,37 +15,27 @@ public class Quest : ScriptableObject {
 
     [Serializable]
     public class Objective {
-        public enum Type { None, Kill, Fetch, Teleport, Sell, ForgeEye }
+        public enum Type { None, Custom, Kill, Fetch, Teleport, Sell }
         
         public Type type;
-        
-        [HideIf(nameof(type), Type.None)]
-        public QuestObjectiveUI.Display display;
-        
-        [TextArea] public string task;
+        public string taskDescription;
         public int targetValue = 1;
-
-        [ShowIf(nameof(type), Type.Kill)]
         public EnemyData targetEnemy;
-        
-        [ShowIf(nameof(TypeRequiresItem))]
         public Item targetItem;
-        
-        [ShowIf(nameof(type), Type.Teleport)]
         public MapData teleportMap;
+        public string customCode;
         
-        [EndIf]
-
         [NonSerialized] public int progressValue;
         public bool completed => progressValue >= targetValue;
-        
-        private bool TypeRequiresItem => type == Type.Fetch || type == Type.Sell;
 
-        [OnValueChanged(nameof(type))]
-        private void OnTypeChanged() {
-            if (type == Type.Teleport) {
-                targetValue = 1;
-            }
+        public string GetTaskDescription() {
+            return (type) switch {
+                Type.Kill => $"Kill {targetValue} {targetEnemy.displayName}s", 
+                Type.Fetch => $"Find {targetValue} {targetItem.displayName}s", 
+                Type.Teleport => $"Teleport to {teleportMap?.displayName}", 
+                Type.Sell => $"Sell {targetValue} {targetItem.displayName} to {targetItem.associatedTrader.traderName}", 
+                _ => taskDescription,
+            };
         }
     }
     
@@ -54,40 +48,24 @@ public class Quest : ScriptableObject {
     public string title;
     [TextArea] public string description;
     
-    [Header("Objectives")]
-    public Objective firstObjective;
-    public Objective secondObjective;
-    public Objective thirdObjective;
-
     [Header("Rewards")]
     public int traderReputationReward;
-
-    [NonSerialized] public List<Objective> objectives;
+    
+    [Space]
+    public List<Objective> objectives;
 
     public void Init() {
         onEnemyDeath += OnEnemyDeath;
         onTeleportToMap += OnTeleportToMap;
-        onEyeForged += OnEyeForged;
         onSoldItemsToTrader += OnSoldItemsToTrader;
-        
-        objectives = ListPool<Objective>.Get();
-        if (firstObjective.type != Objective.Type.None) {
-            objectives.Add(firstObjective);
-        }
-        if (secondObjective.type != Objective.Type.None) {
-            objectives.Add(secondObjective);
-        }
-        if (thirdObjective.type != Objective.Type.None) {
-            objectives.Add(thirdObjective);
-        }
+        customQuestEvent += OnCustomEvent;
     }
 
     public void Deinit() {
         onEnemyDeath -= OnEnemyDeath;
         onTeleportToMap -= OnTeleportToMap;
-        onEyeForged -= OnEyeForged;
         onSoldItemsToTrader -= OnSoldItemsToTrader;
-        ListPool<Objective>.Release(objectives);
+        customQuestEvent -= OnCustomEvent;
     }
 
     public void LoadSaveState(SaveState saveState) {
@@ -97,7 +75,7 @@ public class Quest : ScriptableObject {
         }
     }
     
-    public SaveState GetSaveState() {
+    public SaveState GetSaveState() { 
         List<int> progressValues = new();
         
         foreach (Objective obj in objectives) {
@@ -135,15 +113,6 @@ public class Quest : ScriptableObject {
         }
     }
 
-    private void OnEyeForged(DemonEyeInstance demonEye) {
-        foreach (Objective obj in objectives) {
-            if (obj.type == Objective.Type.ForgeEye) {
-                Assert.IsTrue(obj.targetValue == 1, "Eye forge objectives need to have a target value of 1");
-                obj.progressValue = Mathf.Clamp(++obj.progressValue, 0, obj.targetValue);
-            }
-        }
-    }
-
     private void OnSoldItemsToTrader(InventorySlot[] transactionInventorySlots) {
         foreach (Objective obj in objectives) {
             if  (obj.type != Objective.Type.Sell) continue;
@@ -158,4 +127,105 @@ public class Quest : ScriptableObject {
         }
     }
 
+    private void OnCustomEvent(string code) {
+        foreach (Objective obj in objectives) {
+            if  (obj.type != Objective.Type.Custom || obj.customCode != code) continue;
+            obj.progressValue = Mathf.Clamp(++obj.progressValue, 0, obj.targetValue);
+            return;
+        }
+        Assert.IsTrue(true, $"Could not find a matching code for {code}");
+    }
+
 }
+
+#if UNITY_EDITOR
+
+[CustomPropertyDrawer(typeof(Quest.Objective))]
+public class ObjectiveDrawer : PropertyDrawer {
+
+    public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
+        EditorGUI.BeginProperty(position, label, property);
+        
+        position.height = EditorGUIUtility.singleLineHeight;
+        
+        DisplayPropertyField(property, "type", ref position);
+        Quest.Objective.Type actualType = (Quest.Objective.Type)property.FindPropertyRelative("type").enumValueIndex;
+
+        if (actualType != Quest.Objective.Type.None) {
+            DisplayTextArea(property, "taskDescription", ref position);
+        }
+        
+        if (actualType == Quest.Objective.Type.Custom) {
+            DisplayPropertyField(property, "customCode", ref position);
+            DisplayPropertyField(property, "targetValue", ref position);
+        }
+        else if (actualType == Quest.Objective.Type.Kill) {
+            DisplayPropertyField(property, "targetEnemy", ref position);
+            DisplayPropertyField(property, "targetValue", ref position);
+        }
+        else if (actualType == Quest.Objective.Type.Fetch) {
+            DisplayPropertyField(property, "targetItem", ref position);
+            DisplayPropertyField(property, "targetValue", ref position);
+        }
+        else if (actualType == Quest.Objective.Type.Teleport) {
+            DisplayPropertyField(property, "teleportMap", ref position);
+            DisplayPropertyField(property, "targetValue", ref position);
+        }
+        else if (actualType == Quest.Objective.Type.Sell) {
+            DisplayPropertyField(property, "targetItem", ref position);
+            DisplayPropertyField(property, "targetValue", ref position);
+        }
+
+        EditorGUI.EndProperty();
+    }
+
+    private void DisplayPropertyField(SerializedProperty main, string relative, ref Rect position) {
+        SerializedProperty relativeProp = main.FindPropertyRelative(relative);
+        EditorGUI.PropertyField(position, relativeProp);
+        position.y += EditorGUIUtility.singleLineHeight;
+    }
+    
+    private void DisplayTextArea(SerializedProperty main, string relative, ref Rect position) {
+        SerializedProperty relativeProp = main.FindPropertyRelative(relative);
+
+        float line = EditorGUIUtility.singleLineHeight;
+        Rect labelRect = new(position.x, position.y, position.width, line);
+        Rect textRect  = new(position.x, position.y + line, position.width, line * 3);
+        
+        EditorGUI.PrefixLabel(labelRect, new(relativeProp.displayName));
+        
+        EditorGUI.BeginChangeCheck();
+        string textString = EditorGUI.TextArea(textRect, relativeProp.stringValue);
+        if (EditorGUI.EndChangeCheck()) {
+            relativeProp.stringValue = textString;
+        }
+        
+        position.y += line * 4;
+    }
+
+    public override float GetPropertyHeight(SerializedProperty property, GUIContent label) {
+        int lines = 1; // type is always shown
+
+        SerializedProperty typeProp = property.FindPropertyRelative("type");
+        Quest.Objective.Type type = (Quest.Objective.Type)typeProp.enumValueIndex;
+
+        if (type != Quest.Objective.Type.None) {
+            lines += 4;
+        }
+
+        switch (type) {
+            case Quest.Objective.Type.Custom:
+            case Quest.Objective.Type.Kill:
+            case Quest.Objective.Type.Fetch:
+            case Quest.Objective.Type.Sell:
+            case Quest.Objective.Type.Teleport:
+                lines += 2; 
+                break;
+        }
+
+        return lines * EditorGUIUtility.singleLineHeight;
+    }
+    
+}
+
+#endif
