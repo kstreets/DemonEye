@@ -14387,7 +14387,6 @@ MonoBehaviour:
   gameplayConfig: {fileID: 11400000, guid: 047f9f114e4a4a540874b19b32b4a4f9, type: 2}
   questLines:
   - {fileID: 11400000, guid: 6628f4d6576a6fb40b90774982504b86, type: 2}
-  - {fileID: 11400000, guid: 3f9a7307443eea84aa127a89f824620d, type: 2}
   potionManTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
   armsDealerTrader: {fileID: 11400000, guid: b04e05a2cdc85404fbe24578a1868a5d, type: 2}
   hatManTrader: {fileID: 11400000, guid: bb3b083a03a70c147a32c54d43dd6569, type: 2}

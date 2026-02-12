@@ -5617,8 +5617,16 @@ public class Game : MonoBehaviour {
     
     [Serializable]
     private class QuestlineStateData {
+
+        public QuestlineStateData() {
+            questLineIndicies[0] = 0;
+            questLineIndicies[1] = 1;
+            nextQuestIndex = 2;
+        }
+
         public Quest.SaveState[] questSaveStates = new Quest.SaveState[activeQuestCount];
         public int[] questLineIndicies = new int[activeQuestCount];
+        public int nextQuestIndex;
     }
     
     private QuestlineStateData questlineState;
@@ -5629,12 +5637,24 @@ public class Game : MonoBehaviour {
         }
         SaveToFile(questSavePath, questlineState);
     }
-    
+
     private void InitQuests() {
         questlineState = LoadFromFileOrCreateNew<QuestlineStateData>(questSavePath);
         
         for (int i = 0; i < activeQuestCount; i++) {
-            Quest quest = questLines[i].quests[questlineState.questLineIndicies[i]];
+            QuestUI ui = Instantiate(questPrefab, questsParent).GetComponent<QuestUI>();
+            questUIs[i] = ui;
+            
+            int callbackIndex = i;
+            ui.completeButton.AddListener(() => OnQuestCompleteClicked(callbackIndex));
+            
+            int questIndex = questlineState.questLineIndicies[i];
+            if (!questLines[0].quests.IndexInRange(questIndex)) {
+                ui.gameObject.SetActive(false);
+                continue;
+            }
+            
+            Quest quest = questLines[0].quests[questIndex];
             activeQuests[i] = quest;
             
             quest.Init();
@@ -5644,23 +5664,43 @@ public class Game : MonoBehaviour {
                 quest.LoadSaveState(saveState); 
             }
 
-            QuestUI ui = Instantiate(questPrefab, questsParent).GetComponent<QuestUI>();
-            questUIs[i] = ui;
-            
-            int callbackIndex = i;
-            ui.completeButton.AddListener(() => OnQuestCompleteClicked(callbackIndex));
             ui.Display(quest);
         }
     }
 
     private void RefreshQuestDisplays() {
         for (int i = 0; i < activeQuests.Length; i++) {
+            if (!activeQuests[i]) continue;
             questUIs[i].Display(activeQuests[i]);
         }
     }
 
-    private void OnQuestCompleteClicked(int activeQuestIndex) {
-        activeQuests[activeQuestIndex].Deinit();
+    private void OnQuestCompleteClicked(int questBoardIndex) {
+        Quest quest = activeQuests[questBoardIndex];
+        quest.Deinit();
+        AddToTraderRep(quest.traderReputationReward);
+
+        int nextQuestIndex = questlineState.nextQuestIndex++;
+        
+        if (questLines[0].quests.IndexInRange(nextQuestIndex)) {
+            InitalizeNextQuest(questLines[0].quests[nextQuestIndex], questBoardIndex, nextQuestIndex);
+        }
+        else {
+            InitalizeNextQuest(null, questBoardIndex, nextQuestIndex);
+            questUIs[questBoardIndex].gameObject.SetActive(false);
+        }
+        
+        SaveQuestStates();
+    }
+    
+    private void InitalizeNextQuest(Quest quest, int displayIndex, int nextQuestIndex) {
+        questlineState.questLineIndicies[displayIndex] = nextQuestIndex;
+        questlineState.questSaveStates[displayIndex] = null;
+        activeQuests[displayIndex] = quest;
+        if (quest) {
+            questUIs[displayIndex].Display(quest); 
+            quest.Init();
+        }
     }
 
     // ************************

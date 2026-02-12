@@ -462,7 +462,7 @@
                 {
                     "name": "modifier",
                     "id": "8653168a-d448-44fc-ba38-cd9ad8107111",
-                    "path": "<Keyboard>/ctrl",
+                    "path": "<Keyboard>/alt",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -495,7 +495,7 @@
                 {
                     "name": "modifier",
                     "id": "8d4b7cee-4c46-495b-9c9d-681631d9105a",
-                    "path": "<Keyboard>/ctrl",
+                    "path": "<Keyboard>/shift",
                     "interactions": "",
                     "processors": "",
                     "groups": "",

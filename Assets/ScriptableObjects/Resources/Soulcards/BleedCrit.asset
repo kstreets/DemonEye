@@ -34,7 +34,7 @@ MonoBehaviour:
   traderLevelRequired: 1
   traderStockRange: {x: 1, y: 5}
   barterRequirements:
-  - item: {fileID: 11400000, guid: 080b4f634b61c1d49a235bcf9b6ae110, type: 2}
+  - item: {fileID: 11400000, guid: c300cfd9dba50fc438f83dec791af29b, type: 2}
     count: 5
   - item: {fileID: 11400000, guid: a07b5ddf383ac59479afdf67c0f5c18a, type: 2}
     count: 1

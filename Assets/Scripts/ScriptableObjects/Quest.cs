@@ -52,6 +52,8 @@ public class Quest : ScriptableObject {
     
     [Space]
     public List<Objective> objectives;
+    
+    [NonSerialized] public int questBoardSlotIndex;
 
     public void Init() {
         onEnemyDeath += OnEnemyDeath;

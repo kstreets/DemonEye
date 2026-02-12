@@ -2129,7 +2129,7 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2138,6 +2138,50 @@ TextureImporter:
       bones: []
       spriteID: 30543df781dfe684e984460fdaa1cc2c
       internalID: -394989852
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemSpriteSheet_93
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 320
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e3616d3dc591e9c48afacabde4f40a22
+      internalID: 1970280092
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemSpriteSheet_94
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 304
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b994f3724ea369544bb1f862adaaa625
+      internalID: -1894842987
       vertices: []
       indices: 
       edges: []
@@ -2251,6 +2295,8 @@ TextureImporter:
       ItemSpriteSheet_90: 1381685490
       ItemSpriteSheet_91: -584130490
       ItemSpriteSheet_92: -394989852
+      ItemSpriteSheet_93: 1970280092
+      ItemSpriteSheet_94: -1894842987
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
