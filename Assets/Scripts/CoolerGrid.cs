@@ -7,22 +7,18 @@ using Unity.Collections;
 using Unity.Jobs;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Profiling;
 using Random = UnityEngine.Random;
 
 public class CoolerGrid : MonoBehaviour {
 
     [Serializable]
-    public class GridCell {
+    public class PrecomputedCellData {
         public Vector2 position;
         public bool traversable;
-        
-        // These values get updated during runtime
-        [NonSerialized] public Vector2 flowDir;
-        [NonSerialized] public int distFromPlayerCell;
-        [NonSerialized] public bool isObstacleObstructed;
     }
 
-    [HideInInspector] public List<GridCell> cells;
+    [HideInInspector] public List<PrecomputedCellData> precomputedCells;
 
     public int width = 100;
     public int height = 100;
@@ -45,18 +41,37 @@ public class CoolerGrid : MonoBehaviour {
     private NativeArray<Vector2> nativePositions;
     private NativeArray<Vector2> flowFieldJobResults;
 
+    private struct GridCell {
+        public Vector2 position;
+        public bool traversable;
+        
+        // These values get updated during runtime
+        public Vector2 flowDir;
+        public int distFromPlayerCell;
+        public bool isObstacleObstructed;
+    }
+    
+    // Much faster to read/write because of memory locality
+    private GridCell[] gridCells; 
+
     public void Init() {
         gridGameObjectPosition = transform.position;
-        nativeDistances = new(cells.Count, Allocator.Persistent);
-        nativeTraversables = new(cells.Count, Allocator.Persistent);
-        nativePositions = new(cells.Count, Allocator.Persistent);
-        flowFieldJobResults = new(cells.Count, Allocator.Persistent);
+        nativeDistances = new(precomputedCells.Count, Allocator.Persistent);
+        nativeTraversables = new(precomputedCells.Count, Allocator.Persistent);
+        nativePositions = new(precomputedCells.Count, Allocator.Persistent);
+        flowFieldJobResults = new(precomputedCells.Count, Allocator.Persistent);
+        
+        gridCells = new GridCell[precomputedCells.Count];
+        for (int i = 0; i < precomputedCells.Count; i++) {
+            PrecomputedCellData precomputedCellData = precomputedCells[i];
+            gridCells[i] = new() {
+                position = precomputedCellData.position,
+                traversable = precomputedCellData.traversable,
+            };
+        }
     }
 
     public void Deinit() {
-        foreach (GridCell cell in cells) {
-            cell.isObstacleObstructed = false;
-        }
         flowFieldJobHandle?.Complete();
         nativeDistances.Dispose();
         nativeTraversables.Dispose();
@@ -68,9 +83,12 @@ public class CoolerGrid : MonoBehaviour {
         for (int y = -cellRadius; y <= cellRadius; y++) {
             for (int x = -cellRadius; x <= cellRadius; x++) {
                 Vector2 offset = new Vector2(x, y) * cellSize;
-                GridCell cell = GetCellAtPosition(position + offset);
-                if (cell == null) continue;
-                cell.isObstacleObstructed = true;
+
+                int index = GetCellIndexAtPosition(position + offset);
+                if (index < 0 || index >= gridCells.Length) continue;
+                
+                ref bool obstructed = ref gridCells[index].isObstacleObstructed;
+                obstructed = true;
             }
         }
     }
@@ -79,9 +97,12 @@ public class CoolerGrid : MonoBehaviour {
         for (int y = -cellRadius; y <= cellRadius; y++) {
             for (int x = -cellRadius; x <= cellRadius; x++) {
                 Vector2 offset = new Vector2(x, y) * cellSize;
-                GridCell cell = GetCellAtPosition(position + offset);
-                if (cell == null) continue;
-                cell.isObstacleObstructed = false;
+                
+                int index = GetCellIndexAtPosition(position + offset);
+                if (index < 0 || index >= gridCells.Length) continue;
+                
+                ref bool obstructed = ref gridCells[index].isObstacleObstructed;
+                obstructed = false;
             }
         }
     }
@@ -97,12 +118,12 @@ public class CoolerGrid : MonoBehaviour {
         lastUpdateTime = Time.time;
 
         if (needToRecalculate) {
-            GridCell playerCell = GetCellAtPosition(playerPosition);
-            if (playerCell == null) {
-                return Vector3.zero;
+            if (TryGetCellAtPosition(playerPosition, out GridCell playerCell)) {
+                UpdateDataForSpawnCells(playerCell, innerCellRadius, outerCellRadius);
             }
-
-            UpdateDataForSpawnCells(playerCell, innerCellRadius, outerCellRadius);
+            else {
+                return Vector2.zero;
+            }
         }
 
         Vector2 slightRandomOffset = Random.insideUnitCircle * (cellSize * 0.90f);
@@ -118,14 +139,13 @@ public class CoolerGrid : MonoBehaviour {
     }
     
     public void ScheduleFlowFieldCalculation(Vector2 sourcePosition) {
-        GridCell sourceNode = GetCellAtPosition(sourcePosition);
-        if (sourceNode == null) return;
-
-        for (int i = 0; i < cells.Count; i++) {
-            GridCell cell = cells[i];
-            nativeDistances[i] = cell == sourceNode ? 0 : int.MaxValue;
-            nativeTraversables[i] = cell.isObstacleObstructed ? false : cell.traversable;
-            nativePositions[i] = cell.position;
+        int sourceIndex = GetCellIndexAtPosition(sourcePosition);
+        if (sourceIndex < 0 || sourceIndex >= gridCells.Length) return;
+        
+        for (int i = 0; i < gridCells.Length; i++) {
+            nativeDistances[i] = i == sourceIndex ? 0 : int.MaxValue;
+            nativeTraversables[i] = gridCells[i].isObstacleObstructed ? false : gridCells[i].traversable;
+            nativePositions[i] = gridCells[i].position;
             flowFieldJobResults[i] = Vector2.zero;
         }
 
@@ -134,7 +154,7 @@ public class CoolerGrid : MonoBehaviour {
             traversable = nativeTraversables,
             gridWitdh = width,
             gridHeight = height,
-            startingIndex = cells.IndexOf(sourceNode),
+            startingIndex = sourceIndex,
         };
 
         FlowFieldJob flowFieldJob = new() {
@@ -147,7 +167,7 @@ public class CoolerGrid : MonoBehaviour {
         };
 
         JobHandle dijkstraJobHandle = dijkstraJob.Schedule();
-        flowFieldJobHandle = flowFieldJob.Schedule(cells.Count, 128, dijkstraJobHandle);
+        flowFieldJobHandle = flowFieldJob.Schedule(gridCells.Length, 128, dijkstraJobHandle);
     }
     
     public void CompleteFlowFieldCalculation() {
@@ -155,29 +175,41 @@ public class CoolerGrid : MonoBehaviour {
         
         flowFieldJobHandle?.Complete();
 
-        for (int i = 0; i < cells.Count; i++) {
-            cells[i].flowDir = flowFieldJobResults[i];
-            cells[i].distFromPlayerCell = nativeDistances[i];
+        for (int i = 0; i < gridCells.Length; i++) {
+            ref GridCell cell = ref gridCells[i];  // Must be an array for this to work
+            cell.flowDir = flowFieldJobResults[i];
+            cell.distFromPlayerCell = nativeDistances[i];
         }
     }
 
     public Vector2 GetFlowFieldDirection(Vector2 position) {
-        GridCell cellAtPos = GetCellAtPosition(position);
-        return cellAtPos == null ? Vector2.zero : cellAtPos.flowDir;
+        if (TryGetCellAtPosition(position, out GridCell cell)) {
+            return cell.flowDir;
+        }
+        return Vector2.zero;
     }
 
-    private GridCell GetCellAtPosition(Vector2 position) {
+    private bool TryGetCellAtPosition(Vector2 position, out GridCell cell) {
         Vector2 posInGridSpace = position - gridGameObjectPosition;
 
         int x = Mathf.FloorToInt(posInGridSpace.x / cellSize);
         int y = Mathf.FloorToInt(posInGridSpace.y / cellSize);
 
         int index = y * width + x;
-        if (cells.IndexInRange(index)) {
-            return cells[index];
+        if (gridCells.IndexInRange(index)) {
+            cell = gridCells[index];
+            return true;
         }
 
-        return null;
+        cell = new();
+        return false;
+    }
+
+    private int GetCellIndexAtPosition(Vector2 position) {
+        Vector2 posInGridSpace = position - gridGameObjectPosition;
+        int x = Mathf.FloorToInt(posInGridSpace.x / cellSize);
+        int y = Mathf.FloorToInt(posInGridSpace.y / cellSize);
+        return y * width + x;
     }
 
     private void UpdateDataForSpawnCells(GridCell playerCell, int innerRadius, int outerRadius) {
@@ -193,20 +225,20 @@ public class CoolerGrid : MonoBehaviour {
                 if (isCellWereWorkingOn || isInsideInnerRadius) continue;
 
                 Vector2 neighborPos = playerCell.position + new Vector2(x, y) * cellSize;
-                GridCell neighbor = GetCellAtPosition(neighborPos);
-                if (neighbor == null || !neighbor.traversable || neighbor.isObstacleObstructed) continue;
-                
+                if (!TryGetCellAtPosition(neighborPos, out GridCell neighbor)) continue;
+                if (!neighbor.traversable || neighbor.isObstacleObstructed) continue;
+                    
                 // Player is in unreacheable position, add anyways so we have something in the list
                 if (neighbor.distFromPlayerCell == int.MaxValue) {
                     spawnCells.Add(neighbor); 
                     Debug.Log("Player is unreachable");
                     continue;
                 }
-                
+                    
                 // Convert dijkstra distance into world distance
                 float distFromPlayer = (neighbor.distFromPlayerCell / (float)dijkstraOrthogonalDist) * cellSize;
                 if (distFromPlayer > maxDistCellCanBeFromPlayer) continue;
-                
+                    
                 spawnCells.Add(neighbor);
             }
         }
@@ -414,7 +446,7 @@ public class CoolerGrid : MonoBehaviour {
         const float traversableRatioPerTile = 0.8f;
         Vector2 traversableTestBoxSize = new Vector2(cellSize, cellSize) * traversableRatioPerTile;
 
-        cells = new();
+        precomputedCells = new();
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 Vector2 pos = CalculateCellPosition(x, y);
@@ -424,7 +456,7 @@ public class CoolerGrid : MonoBehaviour {
                     traversable = false;
                 }
 
-                cells.Add(new() {
+                precomputedCells.Add(new() {
                     position = pos,
                     traversable = traversable,
                 });
@@ -441,7 +473,7 @@ public class CoolerGrid : MonoBehaviour {
 
     [VInspector.Button("Clear")]
     public void Clear() {
-        cells = null;
+        precomputedCells = null;
         EditorUtility.SetDirty(this);
     }
 
@@ -465,7 +497,7 @@ public class CoolerGrid : MonoBehaviour {
             return;
         }
         
-        if (cells == null) {
+        if (precomputedCells == null) {
             Generate();
         }
         
@@ -475,25 +507,6 @@ public class CoolerGrid : MonoBehaviour {
         Deinit();
     }
 
-    private List<GridCell> GetNeighborsSlow(GridCell cell) {
-        List<GridCell> neighbors = new();
-
-        for (int y = -1; y <= 1; y++) {
-            for (int x = -1; x <= 1; x++) {
-                bool isCellWereWorkingOn = x == 0 && y == 0;
-                if (isCellWereWorkingOn) continue;
-
-                Vector2 neighborPos = cell.position + new Vector2(x, y) * cellSize;
-                GridCell neighbor = GetCellAtPosition(neighborPos);
-                if (neighbor != null && neighbor.traversable) {
-                    neighbors.Add(neighbor);
-                }
-            }
-        }
-
-        return neighbors;
-    }
-    
     public bool drawGizmos;
     public bool showFlowField;
     
@@ -504,7 +517,7 @@ public class CoolerGrid : MonoBehaviour {
         Color gridColor = new(154f / 255f, 1f, 0f, 0.1f);
         Color gridFill = new(45f / 255f, 1f, 0f, 0.2f);
         
-        if (cells == null || cells.Count == 0) {
+        if (precomputedCells == null || precomputedCells.Count == 0) {
             for (int i = 0; i < width; i++) {
                 for (int j = 0; j < height; j++) {
                     Bounds bounds = new() {
@@ -517,21 +530,21 @@ public class CoolerGrid : MonoBehaviour {
             return;
         }
         
-        if (cells != null && showFlowField) {
-            foreach (GridCell cell in cells) {
-                Vector2 flowDir = cell.flowDir;
-                if (flowDir == Vector2.zero) continue;
+        // if (cells != null && showFlowField) {
+        //     foreach (GridCell cell in cells) {
+        //         Vector2 flowDir = cell.flowDir;
+        //         if (flowDir == Vector2.zero) continue;
+        //
+        //         Vector2 cellPos = cell.position;
+        //         DebugExtension.DrawArrow(cellPos, flowDir * 0.05f);
+        //     }
+        //
+        //     return;
+        // }
 
-                Vector2 cellPos = cell.position;
-                DebugExtension.DrawArrow(cellPos, flowDir * 0.05f);
-            }
-
-            return;
-        }
-
-        if (cells != null && !showFlowField) {
-            foreach (GridCell cell in cells) {
-                if (!cell.traversable || cell.isObstacleObstructed) continue;
+        if (precomputedCells != null && !showFlowField) {
+            foreach (PrecomputedCellData cell in precomputedCells) {
+                if (!cell.traversable) continue;
                 
                 Bounds bounds = new() {
                     center = cell.position,

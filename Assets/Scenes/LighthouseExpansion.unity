@@ -73565,6 +73565,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 371735fa5b6e3f3428491ec9659a2748, type: 3}
+--- !u!4 &859540105 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3863734740221782449, guid: 371735fa5b6e3f3428491ec9659a2748, type: 3}
+  m_PrefabInstance: {fileID: 859540104}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &864949041
 GameObject:
   m_ObjectHideFlags: 0
@@ -77572,7 +77577,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f732ad139116b84ea3da7b37bed8cda, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Grid
-  cells:
+  precomputedCells:
   - position: {x: -14.96, y: -11.44}
     traversable: 0
   - position: {x: -14.8, y: -11.44}
@@ -109036,8 +109041,8 @@ MonoBehaviour:
   width: 121
   height: 130
   cellSize: 0.16
-  sourcePosForTesting: {fileID: 0}
-  drawGizmos: 0
+  sourcePosForTesting: {fileID: 859540105}
+  drawGizmos: 1
   showFlowField: 0
 --- !u!4 &1315907622
 Transform:
