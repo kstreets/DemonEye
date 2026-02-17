@@ -30,7 +30,7 @@ public class Quest : ScriptableObject {
         public string GetTaskDescription() {
             return (type) switch {
                 Type.Kill => $"Kill {targetValue} {targetEnemy.displayName}s", 
-                Type.Fetch => $"Find {targetValue} {targetItem.displayName}s", 
+                Type.Fetch => targetValue == 1 ? $"Return with a {targetItem.displayName}" : $"Return with {targetValue} {targetItem.displayName}s",
                 Type.Teleport => $"Teleport to {teleportMap?.displayName}", 
                 Type.Sell => $"Sell {targetValue} {targetItem.displayName} to {targetItem.associatedTrader.traderName}", 
                 _ => taskDescription,
@@ -41,6 +41,7 @@ public class Quest : ScriptableObject {
     [Serializable]
     public class SaveState {
         public List<int> objectiveProgressValues;
+        public bool completed;
     }
 
     [Header("Info")]
@@ -53,12 +54,11 @@ public class Quest : ScriptableObject {
     [Space]
     public List<Objective> objectives;
     
-    [NonSerialized] public int questBoardSlotIndex;
-
     public void Init() {
         onEnemyDeath += OnEnemyDeath;
         onTeleportToMap += OnTeleportToMap;
         onSoldItemsToTrader += OnSoldItemsToTrader;
+        onReturnedFromRaid += OnReturnFromRaid;
         customQuestEvent += OnCustomEvent;
     }
 
@@ -66,6 +66,7 @@ public class Quest : ScriptableObject {
         onEnemyDeath -= OnEnemyDeath;
         onTeleportToMap -= OnTeleportToMap;
         onSoldItemsToTrader -= OnSoldItemsToTrader;
+        onReturnedFromRaid -= OnReturnFromRaid;
         customQuestEvent -= OnCustomEvent;
     }
 
@@ -85,6 +86,7 @@ public class Quest : ScriptableObject {
         
         return new() {
             objectiveProgressValues = progressValues,
+            completed = IsComplete(),
         };
     }
 
@@ -119,6 +121,20 @@ public class Quest : ScriptableObject {
             if  (obj.type != Objective.Type.Sell) continue;
             
             foreach (InventorySlot slot in transactionInventorySlots) {
+                if (slot.item == null) continue;
+                
+                if (obj.targetItem.uuid == slot.item.ItemRef.uuid) {
+                    obj.progressValue = Mathf.Clamp(obj.progressValue + slot.item.count, 0, obj.targetValue);
+                }
+            }
+        }
+    }
+
+    private void OnReturnFromRaid(InventorySlot[] playerInventory) {
+        foreach (Objective obj in objectives) {
+            if  (obj.type != Objective.Type.Fetch) continue;
+            
+            foreach (InventorySlot slot in playerInventory) {
                 if (slot.item == null) continue;
                 
                 if (obj.targetItem.uuid == slot.item.ItemRef.uuid) {

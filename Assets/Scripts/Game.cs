@@ -28,7 +28,12 @@ public class Game : MonoBehaviour {
     public StartingItemsConfig startingItems;
     public Styles styles;
     public GameplayConfig gameplayConfig;
+    
+    [Foldout("Quests")]
     public List<QuestLine> questLines;
+    public QuestGraphRuntime questGraph;
+    public Quest pickPocketQuest;
+    [EndFoldout]
 
     [Foldout("Traders")]
     public Trader potionManTrader;
@@ -103,6 +108,7 @@ public class Game : MonoBehaviour {
     public GameObject damageNumberPrefab;
     public GameObject forgeExplosionPrefab;
     public GameObject forgeDustExplosionPrefab;
+    public GameObject questSelectionTogglePrefab;
     public GameObject questPrefab;
     [EndFoldout]
 
@@ -215,6 +221,8 @@ public class Game : MonoBehaviour {
     [Foldout("UI/QuestsPanel")]
     public RectTransform questsPanel;
     public RectTransform questsParent;
+    public RectTransform questSelectionParent;
+    public ToggleButtonGroup questToggleButtonGroup;
     [EndFoldout]
     
     [Foldout("UI/SkillsTab")]
@@ -336,6 +344,7 @@ public class Game : MonoBehaviour {
     public static Action<Enemy> onEnemyDeath;
     public static Action<MapData> onTeleportToMap;
     public static Action<InventorySlot[]> onSoldItemsToTrader;
+    public static Action<InventorySlot[]> onReturnedFromRaid;
     public static Action<string> customQuestEvent;
     
     private void Start() {
@@ -621,7 +630,7 @@ public class Game : MonoBehaviour {
     private void SaveTutorialState() {
         SaveToFile(tutorialSavePath, tutorialState);
     }
-
+    
     // *****************************
     // Entity
     // *****************************
@@ -1468,6 +1477,7 @@ public class Game : MonoBehaviour {
         SaveInventory(playerInventory);
         SavePlayerData();
         SaveQuestStates();
+        Debug.Log($"Save Frame Count: {Time.frameCount}");
     }
 
     private void UpdateInRaidUI() {
@@ -1705,6 +1715,7 @@ public class Game : MonoBehaviour {
         [NonSerialized] public bool notDiscovered;
         [NonSerialized] public bool traderOwned;
         [NonSerialized] public int traderSlotIndex;
+        [NonSerialized] public bool foundInLastRaid;
         [NonSerialized] public Item _itemRef; // Used for items created at runtime, like demon eyes
 
         public Item ItemRef => _itemRef ? _itemRef : itemLookup[itemOrInstanceUuid];
@@ -2824,6 +2835,15 @@ public class Game : MonoBehaviour {
         
         return removedCount;
     }
+
+    private void RemoveNumberOfOwnedItems(Item item, int count) {
+        int removedCount = RemoveNumberOfItemsFromInventory(stashInventory, item, count);
+        if (removedCount != count) {
+            int additionalRemoveCount = count - removedCount;
+            removedCount += RemoveNumberOfItemsFromInventory(playerInventory, item, additionalRemoveCount);
+        }
+        Assert.IsFalse(removedCount == count, "Did not remove the specified number of item, this is bad");
+    }
     
     private InventoryItem GetInventoryItem(Inventory inventory, int slotIndex) {
         if (slotIndex < 0 || slotIndex >= inventory.slots.Length) {
@@ -3726,7 +3746,10 @@ public class Game : MonoBehaviour {
                     if (interactInputAction.WasPressedThisFrame()) {
                         gameStateMachine.SetStateIfNotCurrent(curRaidState == RaidState.PostFinalWave ? winExitState : earlyExitState);
                         closeExitPortalSequence.Stop();
+                        
+                        Debug.Log($"Interact Frame Count: {Time.frameCount}");
                         customQuestEvent?.Invoke("FirstExtract");
+                        onReturnedFromRaid?.Invoke(playerInventory.slots);
                     }
                 }
             }
@@ -4375,6 +4398,21 @@ public class Game : MonoBehaviour {
                     break;
             }
         } 
+        
+        if (QuestIsActive(pickPocketQuest)) {
+            InventorySlot[] chosenDeadbody = deadBodySlotsLookup.RandomValue();
+            for (int i = 0; i < chosenDeadbody.Length; i++) {
+                if (chosenDeadbody[i].item == null) {
+                    chosenDeadbody[i].item = new() {
+                        itemOrInstanceUuid = pickPocketQuest.objectives[1].targetItem.uuid,
+                        count = 1,
+                        notDiscovered = true,
+                    };
+                    Debug.Log("Added");
+                    break;
+                }
+            }
+        }
         
         // int gemRocksToSpawn = Random.Range(loadedMapData.minRockCount, loadedMapData.maxRockCount);
         // for (int i = 0; i < gemRocksToSpawn; i++) {
@@ -5487,7 +5525,13 @@ public class Game : MonoBehaviour {
     private void IncreaseTraderRep(int repGain) {
         if (ReachedTraderMaxRep()) return;
 
-        if (AddToTraderRep(repGain)) {
+        int prevLevel = GetTraderRepLevel();
+        traderSaveData.traderRep += repGain;
+        SaveTrader();
+        int repLevel = GetTraderRepLevel();
+        bool increasedLevel = prevLevel < repLevel;
+        
+        if (increasedLevel) {
             FillTraderInventoryWithItems();
         }
         SetTraderRepBar();
@@ -5514,14 +5558,6 @@ public class Game : MonoBehaviour {
         traderXpLevelFill.fillAmount = repCompletedAtCurLevel / (float)repNeededForThisLevel;
         traderRemainingXpText.text = $"{repLeftToGo} Rep Left";
         traderLevelText.text = $"Level {levelIndex}";
-    }
-
-    private bool AddToTraderRep(int repGain) {
-        int prevLevel = GetTraderRepLevel();
-        traderSaveData.traderRep += repGain;
-        SaveTrader();
-        int repLevel = GetTraderRepLevel();
-        return prevLevel < repLevel;
     }
 
     private int GetTraderRepLevel() {
@@ -5614,57 +5650,82 @@ public class Game : MonoBehaviour {
     private const int activeQuestCount = 2;
     private Quest[] activeQuests = new Quest[activeQuestCount];
     private QuestUI[] questUIs = new QuestUI[activeQuestCount];
+    private ToggleButton[] questToggleButtons = new ToggleButton[activeQuestCount];
+    private GameObject questOnDisplay;
+    
+    private List<QuestGraphRuntime.Node> curQuestNodes = new();
     
     [Serializable]
     private class QuestlineStateData {
-
-        public QuestlineStateData() {
-            questLineIndicies[0] = 0;
-            questLineIndicies[1] = 1;
-            nextQuestIndex = 2;
-        }
-
-        public Quest.SaveState[] questSaveStates = new Quest.SaveState[activeQuestCount];
-        public int[] questLineIndicies = new int[activeQuestCount];
-        public int nextQuestIndex;
+        public Quest.SaveState[] questSaveStates;
     }
     
     private QuestlineStateData questlineState;
     
     private void SaveQuestStates() {
-        for (int i = 0; i < activeQuestCount; i++) {
-            questlineState.questSaveStates[i] = activeQuests[i]?.GetSaveState();
+        foreach (QuestGraphRuntime.Node node in curQuestNodes) {
+            questlineState.questSaveStates[node.saveIndex] = node.curQuest.GetSaveState();
         }
         SaveToFile(questSavePath, questlineState);
     }
 
     private void InitQuests() {
-        questlineState = LoadFromFileOrCreateNew<QuestlineStateData>(questSavePath);
+        questlineState = LoadFromFile<QuestlineStateData>(questSavePath);
+        if (questlineState == null) {
+            questlineState = new() { questSaveStates = new Quest.SaveState[questGraph.questCount] };
+        }
         
-        for (int i = 0; i < activeQuestCount; i++) {
-            QuestUI ui = Instantiate(questPrefab, questsParent).GetComponent<QuestUI>();
-            questUIs[i] = ui;
-            
-            int callbackIndex = i;
-            ui.completeButton.AddListener(() => OnQuestCompleteClicked(callbackIndex));
-            
-            int questIndex = questlineState.questLineIndicies[i];
-            if (!questLines[0].quests.IndexInRange(questIndex)) {
-                ui.gameObject.SetActive(false);
-                continue;
-            }
-            
-            Quest quest = questLines[0].quests[questIndex];
-            activeQuests[i] = quest;
-            
-            quest.Init();
-            
-            Quest.SaveState saveState = questlineState.questSaveStates[i];
-            if (saveState != null) {
-                quest.LoadSaveState(saveState); 
-            }
+        HashSet<QuestGraphRuntime.Node> initialQuestNodes = new();
+        foreach (QuestGraphRuntime.Node node in questGraph.rootNode.nextNodes) {
+            FindStartingQuestNodes(initialQuestNodes, node);
+        }
+        
+        foreach (QuestGraphRuntime.Node node in initialQuestNodes) {
+            curQuestNodes.Add(node);
+            Debug.Log(node.curQuest.name);
+        }
+        
+        // for (int i = 0; i < activeQuestCount; i++) {
+        //     QuestUI ui = Instantiate(questPrefab, questsParent).GetComponent<QuestUI>();
+        //     questUIs[i] = ui;
+        //
+        //     ToggleButton button = Instantiate(questSelectionTogglePrefab, questSelectionParent).GetComponent<ToggleButton>();
+        //     questToggleButtons[i] = button;
+        //     questToggleButtonGroup.Add(button);
+        //     
+        //     int callbackIndex = i;
+        //     ui.completeButton.AddListener(() => OnQuestCompleteClicked(callbackIndex));
+        //     
+        //     int questIndex = questlineState.questLineIndicies[i];
+        //     if (!questLines[0].quests.IndexInRange(questIndex)) {
+        //         ui.gameObject.SetActive(false);
+        //         continue;
+        //     }
+        //     
+        //     Quest quest = questLines[0].quests[questIndex];
+        //     activeQuests[i] = quest;
+        //     
+        //     quest.Init();
+        //     
+        //     Quest.SaveState saveState = questlineState.questSaveStates[i];
+        //     if (saveState != null) {
+        //         quest.LoadSaveState(saveState); 
+        //     }
+        // }
+        //
+        // RefreshQuestDisplays();
+    }
 
-            ui.Display(quest);
+    private void FindStartingQuestNodes(HashSet<QuestGraphRuntime.Node> nodes, QuestGraphRuntime.Node curNode) {
+        bool questHasBeenCompleted = questlineState.questSaveStates[curNode.saveIndex].completed;
+        
+        if (!questHasBeenCompleted) {
+            nodes.Add(curNode);
+            return;
+        }
+        
+        foreach (QuestGraphRuntime.Node nextNode in curNode.nextNodes) {
+            FindStartingQuestNodes(nodes, nextNode);
         }
     }
 
@@ -5672,35 +5733,49 @@ public class Game : MonoBehaviour {
         for (int i = 0; i < activeQuests.Length; i++) {
             if (!activeQuests[i]) continue;
             questUIs[i].Display(activeQuests[i]);
+            questToggleButtons[i].text.text = activeQuests[i].title;
         }
+    }
+
+    private void OnQuestToggleClicked() {
+        
     }
 
     private void OnQuestCompleteClicked(int questBoardIndex) {
-        Quest quest = activeQuests[questBoardIndex];
-        quest.Deinit();
-        AddToTraderRep(quest.traderReputationReward);
-
-        int nextQuestIndex = questlineState.nextQuestIndex++;
-        
-        if (questLines[0].quests.IndexInRange(nextQuestIndex)) {
-            InitalizeNextQuest(questLines[0].quests[nextQuestIndex], questBoardIndex, nextQuestIndex);
-        }
-        else {
-            InitalizeNextQuest(null, questBoardIndex, nextQuestIndex);
-            questUIs[questBoardIndex].gameObject.SetActive(false);
-        }
-        
-        SaveQuestStates();
+        // Quest quest = activeQuests[questBoardIndex];
+        // quest.Deinit();
+        // IncreaseTraderRep(quest.traderReputationReward);
+        //
+        // int nextQuestIndex = questlineState.nextQuestIndex++;
+        //
+        // if (questLines[0].quests.IndexInRange(nextQuestIndex)) {
+        //     InitalizeNextQuest(questLines[0].quests[nextQuestIndex], questBoardIndex, nextQuestIndex);
+        // }
+        // else {
+        //     InitalizeNextQuest(null, questBoardIndex, nextQuestIndex);
+        //     questUIs[questBoardIndex].gameObject.SetActive(false);
+        // }
+        //
+        // SaveQuestStates();
     }
     
     private void InitalizeNextQuest(Quest quest, int displayIndex, int nextQuestIndex) {
-        questlineState.questLineIndicies[displayIndex] = nextQuestIndex;
-        questlineState.questSaveStates[displayIndex] = null;
-        activeQuests[displayIndex] = quest;
-        if (quest) {
-            questUIs[displayIndex].Display(quest); 
-            quest.Init();
-        }
+        // questlineState.questLineIndicies[displayIndex] = nextQuestIndex;
+        // questlineState.questSaveStates[displayIndex] = null;
+        // activeQuests[displayIndex] = quest;
+        // if (quest) {
+        //     questUIs[displayIndex].Display(quest); 
+        //     quest.Init();
+        // }
+    }
+
+    private bool QuestIsActive(Quest quest) {
+        foreach (Quest activeQuest in activeQuests) {
+            if (quest == activeQuest && !quest.IsComplete()) {
+                return true;
+            }
+        } 
+        return false;
     }
 
     // ************************

@@ -99,6 +99,19 @@ public static class Extensions {
         return index >= 0 && index < list.Count;
     }
 
+    public static V RandomValue<K, V>(this Dictionary<K, V> dictionary) where V : class {
+        int target = UnityEngine.Random.Range(0, dictionary.Count);
+
+        int i = 0;
+        foreach (var kvp in dictionary) {
+            if (i++ == target) {
+                return kvp.Value;
+            }
+        }
+
+        return null;
+    }
+
     public static bool TryGetValue<T>(this T? nullableStruct, out T value) where T : struct {
         value = nullableStruct.GetValueOrDefault();
         return nullableStruct.HasValue;
