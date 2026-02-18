@@ -1,8 +1,6 @@
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.UI;
 
 public class ToggleButtonGroup : MonoBehaviour {
 
@@ -20,8 +18,9 @@ public class ToggleButtonGroup : MonoBehaviour {
     }
 
     public void Add(ToggleButton toggle) {
-        InitalizeToggle(toggle);
-        if (toggles.Count <= 0) {
+        InitializeToggle(toggle);
+        toggles.Add(toggle);
+        if (toggles.Count == 1) {
             OnButtonClicked(toggle);
         }
     }
@@ -30,9 +29,13 @@ public class ToggleButtonGroup : MonoBehaviour {
         UnityAction callback = callbacks[toggle];
         toggle.button.onClick.RemoveListener(callback);
         callbacks.Remove(toggle);
+        toggles.Remove(toggle);
+        if (toggles.Count == 1) {
+            OnButtonClicked(toggles[0]);
+        }
     }
 
-    private void InitalizeToggle(ToggleButton toggle) {
+    private void InitializeToggle(ToggleButton toggle) {
         UnityAction callback = () => OnButtonClicked(toggle);
         callbacks.Add(toggle, callback);
         toggle.button.onClick.AddListener(callback);

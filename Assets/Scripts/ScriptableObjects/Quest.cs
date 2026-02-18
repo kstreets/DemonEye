@@ -71,6 +71,8 @@ public class Quest : ScriptableObject {
     }
 
     public void LoadSaveState(SaveState saveState) {
+        if (saveState.objectiveProgressValues == null) return;
+        
         Assert.IsTrue(objectives.Count == saveState.objectiveProgressValues.Count, "Save state does not match objectives");
         for (int i = 0; i < objectives.Count; i++) {
             objectives[i].progressValue = saveState.objectiveProgressValues[i];

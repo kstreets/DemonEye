@@ -14230,10 +14230,7 @@ MonoBehaviour:
   styles: {fileID: 11400000, guid: f4b4ae74a1e122340bf1d9d4fa5ab586, type: 2}
   selectedSprite: {fileID: -2041690214, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
   nonSelectedSprite: {fileID: 1949233253, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
-  toggles:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  toggles: []
 --- !u!222 &1902885918
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -14639,7 +14636,7 @@ MonoBehaviour:
   gameplayConfig: {fileID: 11400000, guid: 047f9f114e4a4a540874b19b32b4a4f9, type: 2}
   questLines:
   - {fileID: 11400000, guid: 6628f4d6576a6fb40b90774982504b86, type: 2}
-  questGraph: {fileID: 0}
+  questGraph: {fileID: 7194093555672020370, guid: 8f5c04b849593bf4baec4efb1e04402c, type: 3}
   pickPocketQuest: {fileID: 11400000, guid: efcb77f3e34a9bb47a120bed21367bc2, type: 2}
   potionManTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
   armsDealerTrader: {fileID: 11400000, guid: b04e05a2cdc85404fbe24578a1868a5d, type: 2}
@@ -14984,7 +14981,7 @@ MonoBehaviour:
   questsPanel: {fileID: 433635796}
   questsParent: {fileID: 1720765152}
   questSelectionParent: {fileID: 1902885915}
-  questToggleButtonGroup: {fileID: 0}
+  questToggleButtonGroup: {fileID: 1902885917}
   skillsPanel: {fileID: 1821770995}
   playerStatsPanel: {fileID: 870023803}
   playerInfoParent: {fileID: 223198396}
