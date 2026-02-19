@@ -37,13 +37,12 @@ public class Quest : ScriptableObject {
             };
         }
     }
-    
-    [Serializable]
-    public class SaveState {
-        public List<int> objectiveProgressValues;
-        public bool completed;
-    }
 
+    [Serializable]
+    public class ProgressSave {
+        public List<int> progressValues;
+    }
+    
     [Header("Info")]
     public string title;
     [TextArea] public string description;
@@ -70,16 +69,15 @@ public class Quest : ScriptableObject {
         customQuestEvent -= OnCustomEvent;
     }
 
-    public void LoadSaveState(SaveState saveState) {
-        if (saveState.objectiveProgressValues == null) return;
-        
-        Assert.IsTrue(objectives.Count == saveState.objectiveProgressValues.Count, "Save state does not match objectives");
+    public void LoadProgressSave(ProgressSave progressSave) {
+        if (progressSave.progressValues == null) return;
+        Assert.IsTrue(objectives.Count == progressSave.progressValues.Count, "Save state does not match objectives");
         for (int i = 0; i < objectives.Count; i++) {
-            objectives[i].progressValue = saveState.objectiveProgressValues[i];
+            objectives[i].progressValue = progressSave.progressValues[i];
         }
     }
     
-    public SaveState GetSaveState() { 
+    public ProgressSave GetProgressSave() { 
         List<int> progressValues = new();
         
         foreach (Objective obj in objectives) {
@@ -87,8 +85,7 @@ public class Quest : ScriptableObject {
         }
         
         return new() {
-            objectiveProgressValues = progressValues,
-            completed = IsComplete(),
+            progressValues = progressValues,
         };
     }
 

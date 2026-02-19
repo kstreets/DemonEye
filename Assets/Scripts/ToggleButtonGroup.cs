@@ -17,6 +17,10 @@ public class ToggleButtonGroup : MonoBehaviour {
         }
     }
 
+    public void SetSelected(ToggleButton toggle) {
+        OnButtonClicked(toggle);
+    }
+
     public void Add(ToggleButton toggle) {
         InitializeToggle(toggle);
         toggles.Add(toggle);

@@ -50,7 +50,7 @@ MonoBehaviour:
           x: -383.33334
           y: 330
           width: 989.3334
-          height: 296
+          height: 292.66663
         m_GraphElementMetaData:
         - m_Guid:
             m_Value0: 11417732691955669920
@@ -249,7 +249,7 @@ MonoBehaviour:
           serializedVersion: 2
           Hash: 3beeba7b157721e706d57f0f3a2e77de
         m_Version: 2
-        m_Position: {x: -77.814995, y: 503.7159}
+        m_Position: {x: -60.18165, y: 500.6492}
         m_Title: 
         m_Tooltip: 
         m_NodePreviewModel:

@@ -532,7 +532,7 @@ public class Game : MonoBehaviour {
         SaveInventory(playerInventory);
         SaveInventory(stashInventory);
         SaveInventory(crucibleInventory);
-        SaveQuestStates();
+        SaveActiveQuestProgresses();
     }
 
     private void OnHideoutStateUpdate() {
@@ -1477,8 +1477,7 @@ public class Game : MonoBehaviour {
     private void OnSaveWhenRaidIsOver() {
         SaveInventory(playerInventory);
         SavePlayerData();
-        SaveQuestStates();
-        Debug.Log($"Save Frame Count: {Time.frameCount}");
+        SaveActiveQuestProgresses();
     }
 
     private void UpdateInRaidUI() {
@@ -3748,7 +3747,6 @@ public class Game : MonoBehaviour {
                         gameStateMachine.SetStateIfNotCurrent(curRaidState == RaidState.PostFinalWave ? winExitState : earlyExitState);
                         closeExitPortalSequence.Stop();
                         
-                        Debug.Log($"Interact Frame Count: {Time.frameCount}");
                         customQuestEvent?.Invoke("FirstExtract");
                         onReturnedFromRaid?.Invoke(playerInventory.slots);
                     }
@@ -4409,7 +4407,6 @@ public class Game : MonoBehaviour {
                         count = 1,
                         notDiscovered = true,
                     };
-                    Debug.Log("Added");
                     break;
                 }
             }
@@ -5659,32 +5656,40 @@ public class Game : MonoBehaviour {
     private Queue<QuestPackage> reservedQuestPackages = new();
     private List<QuestPackage> activeQuestPackages = new();
     
-    private QuestPackage questOnDisplay;
+    private QuestPackage presentingQuestPackage;
 
     [Serializable]
-    private class QuestlineStateData {
-        public Quest.SaveState[] questSaveStates;
+    private class QuestSaveData {
+        public Quest.ProgressSave[] progressSaves;
+        public bool[] submissionStates;
     }
     
-    private QuestlineStateData questlineState;
+    private QuestSaveData questSaveData;
     
-    private void SaveQuestStates() {
+    private void SaveActiveQuestProgresses() {
         foreach (QuestPackage questPackage in activeQuestPackages) {
             QuestGraphRuntime.Node node = questPackage.questNode;
-            questlineState.questSaveStates[node.saveIndex] = node.curQuest.GetSaveState();
+            questSaveData.progressSaves[node.saveIndex] = node.curQuest.GetProgressSave();
         }
-        SaveToFile(questSavePath, questlineState);
+        SaveToFile(questSavePath, questSaveData);
+    }
+
+    private void SaveAndMarkQuestAsSubmitted(QuestGraphRuntime.Node questNode) {
+        questSaveData.submissionStates[questNode.saveIndex] = true;
+        questSaveData.progressSaves[questNode.saveIndex] = questNode.curQuest.GetProgressSave();
+        SaveToFile(questSavePath, questSaveData);
     }
 
     private void InitQuests() {
-        questlineState = LoadFromFile<QuestlineStateData>(questSavePath);
+        questSaveData = LoadFromFile<QuestSaveData>(questSavePath);
         
-        if (questlineState == null) {
-            questlineState = new() {
-                questSaveStates = new Quest.SaveState[questGraph.questCount]
+        if (questSaveData == null) {
+            questSaveData = new() {
+                progressSaves = new Quest.ProgressSave[questGraph.questCount],
+                submissionStates = new bool[questGraph.questCount],
             };
-            questlineState.questSaveStates.InitalizeWithDefault();
-            SaveToFile(questSavePath, questlineState);
+            questSaveData.progressSaves.InitalizeWithDefault();
+            SaveToFile(questSavePath, questSaveData);
         }
         
         HashSet<QuestGraphRuntime.Node> initialQuestNodes = new();
@@ -5698,19 +5703,18 @@ public class Game : MonoBehaviour {
         }
         
         foreach (QuestGraphRuntime.Node questNode in initialQuestNodes) {
-            Quest.SaveState save = questlineState.questSaveStates[questNode.saveIndex];
-            questNode.curQuest.LoadSaveState(save);
+            Quest.ProgressSave progressSave = questSaveData.progressSaves[questNode.saveIndex];
+            questNode.curQuest.LoadProgressSave(progressSave);
             ActivateQuest(questNode); 
         }
         
-        questOnDisplay = activeQuestPackages[0];
         RefreshQuestDisplays();
     }
     
     private void FindStartingQuestNodes(HashSet<QuestGraphRuntime.Node> nodes, QuestGraphRuntime.Node curNode) {
-        bool questHasBeenCompleted = questlineState.questSaveStates[curNode.saveIndex].completed;
+        bool questHasBeenSubmitted = questSaveData.submissionStates[curNode.saveIndex];
         
-        if (!questHasBeenCompleted) {
+        if (!questHasBeenSubmitted) {
             nodes.Add(curNode);
             return;
         }
@@ -5721,11 +5725,19 @@ public class Game : MonoBehaviour {
     }
 
     private void RefreshQuestDisplays() {
+        if (activeQuestPackages.Count <= 0) return;
+
+        if (presentingQuestPackage == null || presentingQuestPackage.questNode == null) {
+            presentingQuestPackage = activeQuestPackages[0];
+            questToggleButtonGroup.SetSelected(presentingQuestPackage.questToggleButton);
+        }
+        
         foreach (QuestPackage questPackage in activeQuestPackages) {
             questPackage.questUI.gameObject.SetActive(false);
         }
-        questOnDisplay.questUI.gameObject.SetActive(true);
-        questOnDisplay.RefreshDisplay();
+        
+        presentingQuestPackage.questUI.gameObject.SetActive(true);
+        presentingQuestPackage.RefreshDisplay();
     }
 
     private void ActivateQuest(QuestGraphRuntime.Node questNode) {
@@ -5773,29 +5785,25 @@ public class Game : MonoBehaviour {
     }
     
     private void OnQuestToggleClicked(QuestPackage questPackage) {
-        questOnDisplay = questPackage;
+        presentingQuestPackage = questPackage;
         RefreshQuestDisplays();
     }
 
     private void OnQuestCompleteClicked(QuestPackage questPackage) {
-        QuestGraphRuntime.Node comQuestNode = questPackage.questNode;
-        IncreaseTraderRep(comQuestNode.curQuest.traderReputationReward);
+        QuestGraphRuntime.Node compQuestNode = questPackage.questNode;
+        IncreaseTraderRep(compQuestNode.curQuest.traderReputationReward);
+        SaveAndMarkQuestAsSubmitted(compQuestNode);
         
-        foreach (QuestGraphRuntime.Node nextQuestNode in comQuestNode.nextNodes) {
-            bool completed = questlineState.questSaveStates[nextQuestNode.saveIndex].completed;
-            if (!completed) {
-                ActivateQuest(nextQuestNode);    
+        if (questPackage.questNode.nextNodes != null) {
+            foreach (QuestGraphRuntime.Node nextQuestNode in compQuestNode.nextNodes) {
+                bool questHasBeenSubmitted = questSaveData.submissionStates[nextQuestNode.saveIndex];
+                if (questHasBeenSubmitted || QuestIsActive(nextQuestNode.curQuest)) continue;
+                ActivateQuest(nextQuestNode);
             }
         }
-
-        if (questOnDisplay == questPackage) {
-            questOnDisplay = activeQuestPackages[0];
-            RefreshQuestDisplays();
-        }
         
-        SaveQuestStates(); // NOTE: Do we really want to save all quests or just this completed one?
-        // Deactivate after saving to ensure quest is marked as completed
         DeactivateQuest(questPackage); 
+        RefreshQuestDisplays();
     }
     
     private bool QuestIsActive(Quest quest) {
