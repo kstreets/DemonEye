@@ -343,7 +343,6 @@ public class Game : MonoBehaviour {
     private StateMachine gameStateMachine = new();
 
     public static Action<Enemy> onEnemyDeath;
-    public static Action<MapData> onTeleportToMap;
     public static Action<InventorySlot[]> onSoldItemsToTrader;
     public static Action<InventorySlot[]> onReturnedFromRaid;
     public static Action<string> customQuestEvent;
@@ -1404,8 +1403,6 @@ public class Game : MonoBehaviour {
         SpawnResources(loadedMapInst.resourceParent);
         InitEarlyExitPortal(loadedMapInst.exitPortalsParent, spawnManager.timeUntilFinalWave + loadedMapData.waves.timeBeforePortalSpawns);
         
-        onTeleportToMap?.Invoke(loadedMapData);
-
         // Animation Sequence
         {
             int initialPPU = pixelPerfectCamera.assetsPPU;
@@ -5793,6 +5790,12 @@ public class Game : MonoBehaviour {
         QuestGraphRuntime.Node compQuestNode = questPackage.questNode;
         IncreaseTraderRep(compQuestNode.curQuest.traderReputationReward);
         SaveAndMarkQuestAsSubmitted(compQuestNode);
+        
+        foreach (Quest.Objective objective in questPackage.questNode.curQuest.objectives) {
+            if (objective.type == Quest.Objective.Type.Fetch) {
+                RemoveNumberOfOwnedItems(objective.targetItem, objective.targetValue);
+            }    
+        }
         
         if (questPackage.questNode.nextNodes != null) {
             foreach (QuestGraphRuntime.Node nextQuestNode in compQuestNode.nextNodes) {

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.Jobs.LowLevel.Unsafe;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "QuestGraphRuntime", menuName = "Scriptable Objects/QuestGraphRuntime")]
@@ -8,8 +9,9 @@ public class QuestGraphRuntime : ScriptableObject {
     [Serializable]
     public class Node {
         public Quest curQuest;
-        public List<Node> nextNodes;
         public int saveIndex;
+        [SerializeReference] // Don't serialize by value to prevent duplicates of same objects
+        public List<Node> nextNodes;
     }
 
     public Node rootNode;

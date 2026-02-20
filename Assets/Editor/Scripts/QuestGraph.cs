@@ -17,7 +17,38 @@ public class QuestGraph : Graph {
     public static void CreateAssetFile() {
         GraphDatabase.PromptInProjectBrowserToCreateNewAsset<QuestGraph>();     
     }
-    
+
+    public override void OnGraphChanged(GraphLogger graphLogger) {
+        List<QuestStartNode> startNodes = new();
+        Dictionary<Quest, int> questCounter = new();
+        
+        foreach (INode node in GetNodes()) {
+            if (node is QuestStartNode) {
+                startNodes.Add((QuestStartNode)node);
+            }
+            if (node is QuestGraphNode questNode) {
+                if (!questNode.GetNodeOption(0).TryGetValue(out Quest quest)) continue;
+                if (!quest) {
+                    graphLogger.LogWarning("Missing quest", node);
+                    continue;
+                }
+                if (questCounter.ContainsKey(quest)) {
+                    questCounter[quest]++;
+                    continue;
+                }
+                questCounter.Add(quest, 1);
+            }
+        }
+
+        if (startNodes.Count > 1) {
+            graphLogger.LogError("Should not have more than 1 start node");
+        }
+        
+        foreach ((Quest quest, int count) in questCounter) {
+            if (count == 1) continue;
+            graphLogger.LogError($"Quest '{quest.name}' is referenced by ({count}) different nodes, it should just be 1");
+        }
+    }
 }
 
 public class QuestStartNode : Node {
@@ -44,12 +75,16 @@ public class QuestGraphNode : Node {
 [ScriptedImporter(1, QuestGraph.assetExtension)]
 public class QuestGraphImporter : ScriptedImporter {
     
+    private Dictionary<INode, QuestGraphRuntime.Node> existingNodesDictionary = new();
+    
     public override void OnImportAsset(AssetImportContext ctx) {
         QuestGraph graph = GraphDatabase.LoadGraphForImporter<QuestGraph>(ctx.assetPath);
         if (graph == null) return;
 
         QuestStartNode entryNode = graph.GetNodes().OfType<QuestStartNode>().FirstOrDefault();
         if (entryNode == null) return;
+        
+        existingNodesDictionary.Clear();
 
         QuestGraphRuntime runtimeAsset = ScriptableObject.CreateInstance<QuestGraphRuntime>();
         QuestGraphRuntime.Node rootNode = TraverseGraph(entryNode); 
@@ -61,14 +96,17 @@ public class QuestGraphImporter : ScriptedImporter {
     }
 
     private QuestGraphRuntime.Node TraverseGraph(INode curNode) {
-        QuestGraphRuntime.Node runtimeNode = new();
-        if (TryGetOption<Quest>(curNode, out Quest quest)) {
-            runtimeNode.curQuest = quest;
+        if (existingNodesDictionary.TryGetValue(curNode, out QuestGraphRuntime.Node existingNode)) {
+            return existingNode;
         }
+        
+        QuestGraphRuntime.Node runtimeNode = new();
+        runtimeNode.curQuest = TryGetOption(curNode, out Quest quest) ? quest : null;
+        existingNodesDictionary.Add(curNode, runtimeNode);
         
         List<IPort> connectedPorts = new();
         curNode.GetOutputPort(0).GetConnectedPorts(connectedPorts);
-
+        
         if (connectedPorts.Count > 0) {
             runtimeNode.nextNodes = new();
         }

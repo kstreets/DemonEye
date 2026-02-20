@@ -23,9 +23,10 @@ public class Quest : ScriptableObject {
         public Item targetItem;
         public MapData teleportMap;
         public string customCode;
+        public bool keepFetchedItems;
         
         [NonSerialized] public int progressValue;
-        public bool completed => progressValue >= targetValue;
+        public bool completed => progressValue >= targetValue || type == Type.Teleport;
 
         public string GetTaskDescription() {
             return (type) switch {
@@ -55,7 +56,6 @@ public class Quest : ScriptableObject {
     
     public void Init() {
         onEnemyDeath += OnEnemyDeath;
-        onTeleportToMap += OnTeleportToMap;
         onSoldItemsToTrader += OnSoldItemsToTrader;
         onReturnedFromRaid += OnReturnFromRaid;
         customQuestEvent += OnCustomEvent;
@@ -63,7 +63,6 @@ public class Quest : ScriptableObject {
 
     public void Deinit() {
         onEnemyDeath -= OnEnemyDeath;
-        onTeleportToMap -= OnTeleportToMap;
         onSoldItemsToTrader -= OnSoldItemsToTrader;
         onReturnedFromRaid -= OnReturnFromRaid;
         customQuestEvent -= OnCustomEvent;
@@ -106,15 +105,6 @@ public class Quest : ScriptableObject {
         }
     }
 
-    private void OnTeleportToMap(MapData map) {
-        foreach (Objective obj in objectives) {
-            if (obj.type == Objective.Type.Teleport && obj.teleportMap == map) {
-                Assert.IsTrue(obj.targetValue == 1, "Teleport objectives need to have a target value of 1");
-                obj.progressValue = Mathf.Clamp(++obj.progressValue, 0, obj.targetValue);
-            }
-        }
-    }
-
     private void OnSoldItemsToTrader(InventorySlot[] transactionInventorySlots) {
         foreach (Objective obj in objectives) {
             if  (obj.type != Objective.Type.Sell) continue;
@@ -132,14 +122,8 @@ public class Quest : ScriptableObject {
     private void OnReturnFromRaid(InventorySlot[] playerInventory) {
         foreach (Objective obj in objectives) {
             if  (obj.type != Objective.Type.Fetch) continue;
-            
-            foreach (InventorySlot slot in playerInventory) {
-                if (slot.item == null) continue;
-                
-                if (obj.targetItem.uuid == slot.item.ItemRef.uuid) {
-                    obj.progressValue = Mathf.Clamp(obj.progressValue + slot.item.count, 0, obj.targetValue);
-                }
-            }
+            int ownedCount = inst.GetOwnedCountOfItem(obj.targetItem); 
+            obj.progressValue = Mathf.Clamp(ownedCount, 0, obj.targetValue);
         }
     }
 
@@ -180,12 +164,12 @@ public class ObjectiveDrawer : PropertyDrawer {
             DisplayPropertyField(property, "targetValue", ref position);
         }
         else if (actualType == Quest.Objective.Type.Fetch) {
+            DisplayPropertyField(property, "keepFetchedItems", ref position);
             DisplayPropertyField(property, "targetItem", ref position);
             DisplayPropertyField(property, "targetValue", ref position);
         }
         else if (actualType == Quest.Objective.Type.Teleport) {
             DisplayPropertyField(property, "teleportMap", ref position);
-            DisplayPropertyField(property, "targetValue", ref position);
         }
         else if (actualType == Quest.Objective.Type.Sell) {
             DisplayPropertyField(property, "targetItem", ref position);
@@ -232,10 +216,14 @@ public class ObjectiveDrawer : PropertyDrawer {
         switch (type) {
             case Quest.Objective.Type.Custom:
             case Quest.Objective.Type.Kill:
-            case Quest.Objective.Type.Fetch:
             case Quest.Objective.Type.Sell:
-            case Quest.Objective.Type.Teleport:
                 lines += 2; 
+                break;
+            case Quest.Objective.Type.Teleport:
+                lines += 1; 
+                break;
+            case Quest.Objective.Type.Fetch:
+                lines += 3;
                 break;
         }
 

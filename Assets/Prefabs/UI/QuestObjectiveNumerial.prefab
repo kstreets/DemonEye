@@ -269,6 +269,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -434,6 +435,10 @@ PrefabInstance:
       propertyPath: fillImage
       value: 
       objectReference: {fileID: 5295910133529672445}
+    - target: {fileID: 3787526284496586224, guid: 7c689e3544bf68c49b42a9603649bc8a, type: 3}
+      propertyPath: progressBar
+      value: 
+      objectReference: {fileID: 2101558726905761029}
     - target: {fileID: 3787526284496586224, guid: 7c689e3544bf68c49b42a9603649bc8a, type: 3}
       propertyPath: progressText
       value: 
