@@ -21,6 +21,8 @@ public class QuestUI : MonoBehaviour {
 
         if (quest.IsComplete()) completeButton.Enable(); else completeButton.Disable();
 
+        // TODO: We should not be destroying and instantiating these gameobjects every time we refresh the display
+        
         for (int i = 0; i < objectivesParent.childCount; i++) {
             Destroy(objectivesParent.GetChild(i).gameObject);
         } 

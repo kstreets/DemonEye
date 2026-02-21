@@ -468,6 +468,7 @@ public class Game : MonoBehaviour {
         gameStateMachine.Tick();
         DemonEyeTween.Update();
         UpdateTrader();
+        UpdateQuests();
         foreach (Inventory inventory in allInventories) {
             RefreshInventoryDisplay(inventory);
         }
@@ -2347,14 +2348,19 @@ public class Game : MonoBehaviour {
     
     private InventoryItem prevEquippedEyeItem;
     private InventoryItem prevEquippedBackpackItem;
+    private InventoryItem prevEquippedTrinketItem;
     
     private void CheckForEquipmentChange() {
         InventoryItem curEyeItem = playerInventory.slots[0].item;
         InventoryItem curBackpackItem = playerInventory.slots[1].item;
+        InventoryItem curTrinketItem = playerInventory.slots[2].item;
 
         if (prevEquippedEyeItem != curEyeItem) {
             prevEquippedEyeItem = curEyeItem;
             equipedEye = curEyeItem == null ? emptyDemonEye : eyeInstanceFromItemId[curEyeItem.itemOrInstanceUuid];
+            if (equipedEye != emptyDemonEye) {
+                customQuestEvent?.Invoke("FirstDemonEyeEquiped");
+            }
         }
         
         if (prevEquippedBackpackItem != curBackpackItem) {
@@ -2366,6 +2372,16 @@ public class Game : MonoBehaviour {
             }
             else {
                 ChangeInventorySize(playerInventory, NakedPlayerInventorySize);
+            }
+        }
+
+        if (prevEquippedTrinketItem != curTrinketItem) {
+            prevEquippedTrinketItem = curTrinketItem;
+            
+            curTrinketPowers = new();
+            
+            if (curTrinketItem.ItemRef is Soulcard trinket) {
+                trinket.AddInstanceToTrinketPower(ref curTrinketPowers, 1);
             }
         }
 
@@ -2839,7 +2855,7 @@ public class Game : MonoBehaviour {
             int additionalRemoveCount = count - removedCount;
             removedCount += RemoveNumberOfItemsFromInventory(playerInventory, item, additionalRemoveCount);
         }
-        Assert.IsFalse(removedCount == count, "Did not remove the specified number of item, this is bad");
+        Assert.IsTrue(removedCount == count, "Did not remove the specified number of item, this is bad");
     }
     
     private InventoryItem GetInventoryItem(Inventory inventory, int slotIndex) {
@@ -3466,6 +3482,16 @@ public class Game : MonoBehaviour {
     }
     
     // ************************ 
+    // Trinkets 
+    // ************************ 
+
+    public struct TrinketPowers {
+        public BleedCritSoulcard.InstanceData? bleedCrit;
+    }
+    
+    private TrinketPowers curTrinketPowers;
+    
+    // ************************ 
     // Demon Eye
     // ************************ 
     
@@ -3482,7 +3508,6 @@ public class Game : MonoBehaviour {
         public List<EquipedModInstance> modInstances = new();
         public FirerateSoulcard.InstanceData? firerate;
         public TrishotSoulcard.InstanceData? trishot;
-        public BleedCritSoulcard.InstanceData? bleedCrit;
         public RangeSoulcard.InstanceData? range;
         public FarDamageSoulcard.InstanceData? farDamage;
         public PenetrationSoulcard.InstanceData? penetration;
@@ -4080,8 +4105,8 @@ public class Game : MonoBehaviour {
         DemonEyeInstance eyeInstance = proj.eyeInstanceSpawnedFrom;
         float criticalStrikeProb = gameplayConfig.defaultCritChance + GetStatAdjustmentValue(StatAdjustmentType.CritChance);
 
-        if (eyeInstance.bleedCrit.HasValue && enemy.bleed.HasValue) {
-            criticalStrikeProb += eyeInstance.bleedCrit.Value.probability;
+        if (curTrinketPowers.bleedCrit.HasValue && enemy.bleed.HasValue) {
+            criticalStrikeProb += curTrinketPowers.bleedCrit.Value.probability;
         }
 
         return criticalStrikeProb;
@@ -5707,6 +5732,12 @@ public class Game : MonoBehaviour {
         
         RefreshQuestDisplays();
     }
+
+    private void UpdateQuests() {
+        foreach (QuestPackage questPackage in activeQuestPackages) {
+            questPackage.questNode.curQuest.Update();
+        }
+    }
     
     private void FindStartingQuestNodes(HashSet<QuestGraphRuntime.Node> nodes, QuestGraphRuntime.Node curNode) {
         bool questHasBeenSubmitted = questSaveData.submissionStates[curNode.saveIndex];
@@ -5792,8 +5823,10 @@ public class Game : MonoBehaviour {
         SaveAndMarkQuestAsSubmitted(compQuestNode);
         
         foreach (Quest.Objective objective in questPackage.questNode.curQuest.objectives) {
-            if (objective.type == Quest.Objective.Type.Fetch) {
+            if (objective.type == Quest.Objective.Type.Fetch && !objective.keepFetchedItems) {
                 RemoveNumberOfOwnedItems(objective.targetItem, objective.targetValue);
+                SaveInventory(playerInventory);
+                SaveInventory(stashInventory);
             }    
         }
         

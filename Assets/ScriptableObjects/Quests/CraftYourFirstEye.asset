@@ -12,31 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5d4d20277d10e0489f4a0bf8ac49946, type: 3}
   m_Name: CraftYourFirstEye
   m_EditorClassIdentifier: Assembly-CSharp::Quest
-  title: Forging a Demon Eye Part 1
+  title: Forging a Demon Eye
   description: "You won\u2019t get far without stronger attacks.\nSacrificing your
     collected souls at a Blood Altar will create a Soul Stone, a powerful gem that
     enhances attacks.\nBring a handful back to the hideout along with an eye, and
     I\u2019ll show you how to forge a stronger Demon Eye than the one you have now."
   traderReputationReward: 100
   objectives:
-  - type: 4
-    taskDescription: 
-    targetValue: 1
-    targetEnemy: {fileID: 0}
-    targetItem: {fileID: 0}
-    teleportMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
-    customCode: 
-  - type: 1
-    taskDescription: Meet the trader in the Forge
-    targetValue: 1
-    targetEnemy: {fileID: 0}
-    targetItem: {fileID: 0}
-    teleportMap: {fileID: 0}
-    customCode: MetTraderInForge
   - type: 1
     taskDescription: Create a Demon Eye and equip it
     targetValue: 1
     targetEnemy: {fileID: 0}
     targetItem: {fileID: 0}
     teleportMap: {fileID: 0}
-    customCode: 
+    customCode: FirstDemonEyeEquiped
+    keepFetchedItems: 0

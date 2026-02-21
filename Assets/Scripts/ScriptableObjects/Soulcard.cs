@@ -9,6 +9,7 @@ public class Soulcard : Item {
     
     public virtual void AddInstanceToEnemy(Enemy enemy, int stackCount) { }
     public virtual void AddInstanceToEye(DemonEyeInstance eyeInstance, int stackCount) { }
+    public virtual void AddInstanceToTrinketPower(ref TrinketPowers trinkets, int stackCount) { }
 
     protected int TaperInteger(int value, int stackCount, float taper) {
         Assert.IsFalse(taper >= 1f && taper <= 0f, "Taper needs to be between 0 and 1");

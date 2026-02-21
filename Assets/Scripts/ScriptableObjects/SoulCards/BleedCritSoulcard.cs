@@ -9,9 +9,9 @@ public class BleedCritSoulcard : Soulcard {
     }
 
     public float probability;
-    
-    public override void AddInstanceToEye(DemonEyeInstance eyeInstance, int stackCount) {
-        eyeInstance.bleedCrit = new() {
+
+    public override void AddInstanceToTrinketPower(ref TrinketPowers trinkets, int stackCount) {
+        trinkets.bleedCrit = new() {
             probability = GetProbability(stackCount),
         };
     }

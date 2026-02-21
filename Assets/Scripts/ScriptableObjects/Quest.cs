@@ -57,15 +57,22 @@ public class Quest : ScriptableObject {
     public void Init() {
         onEnemyDeath += OnEnemyDeath;
         onSoldItemsToTrader += OnSoldItemsToTrader;
-        onReturnedFromRaid += OnReturnFromRaid;
         customQuestEvent += OnCustomEvent;
     }
 
     public void Deinit() {
         onEnemyDeath -= OnEnemyDeath;
         onSoldItemsToTrader -= OnSoldItemsToTrader;
-        onReturnedFromRaid -= OnReturnFromRaid;
         customQuestEvent -= OnCustomEvent;
+    }
+
+    public void Update() {
+        foreach (Objective obj in objectives) {
+            if (obj.type == Objective.Type.Fetch) {
+                int ownedCount = inst.GetOwnedCountOfItem(obj.targetItem);
+                obj.progressValue = Mathf.Clamp(ownedCount, 0, obj.targetValue);
+            }
+        }
     }
 
     public void LoadProgressSave(ProgressSave progressSave) {
@@ -116,14 +123,6 @@ public class Quest : ScriptableObject {
                     obj.progressValue = Mathf.Clamp(obj.progressValue + slot.item.count, 0, obj.targetValue);
                 }
             }
-        }
-    }
-
-    private void OnReturnFromRaid(InventorySlot[] playerInventory) {
-        foreach (Objective obj in objectives) {
-            if  (obj.type != Objective.Type.Fetch) continue;
-            int ownedCount = inst.GetOwnedCountOfItem(obj.targetItem); 
-            obj.progressValue = Mathf.Clamp(ownedCount, 0, obj.targetValue);
         }
     }
 

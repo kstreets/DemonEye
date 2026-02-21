@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Quest
   title: An Introduction
   description: Prove yourself useful and draw out some Lesser Spawns on lighthouse.
-    Killing 50 of them should be good enough for now.
+    Killing 80 of them should be good enough for now. Meet me back here when thats
+    done. I have more to show you.
   traderReputationReward: 100
   objectives:
   - type: 4
@@ -24,10 +25,12 @@ MonoBehaviour:
     targetItem: {fileID: 0}
     teleportMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
     customCode: 
+    keepFetchedItems: 0
   - type: 2
     taskDescription: 
-    targetValue: 50
+    targetValue: 80
     targetEnemy: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
     targetItem: {fileID: 0}
     teleportMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
     customCode: 
+    keepFetchedItems: 0
