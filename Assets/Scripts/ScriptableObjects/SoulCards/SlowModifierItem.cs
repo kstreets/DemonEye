@@ -1,20 +1,20 @@
 using UnityEngine;
 using static Game;
 
-public struct SlowInstance {
-    public float speedReductionPercent;
-    public float activationTime;
-    public float duration;
-}
-
-[CreateAssetMenu(fileName = "SlowSoulcard", menuName = "Scriptable Objects/Soulcards/SlowSoulcard")]
-public class SlowSoulcard : Soulcard {
+[CreateAssetMenu(fileName = "SlowModifier", menuName = "Scriptable Objects/Modifiers/SlowModifier")]
+public class SlowModifierItem : ModifierItem {
+    
+    public struct InstanceData {
+        public float speedReductionPercent;
+        public float activationTime;
+        public float duration;
+    }
     
     public float speedReductionPercent;
     public float slowDuration;
 
     public override void AddInstanceToEnemy(Enemy enemy, int stackCount) {
-        SlowInstance slow = new() {
+        InstanceData slow = new() {
             speedReductionPercent = GetSpeedReduction(stackCount),
             duration = slowDuration,
             activationTime = Time.time,

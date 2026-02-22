@@ -10,7 +10,6 @@ using TMPro;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.Audio;
-using UnityEngine.Events;
 using UnityEngine.InputSystem;
 using UnityEngine.Pool;
 using UnityEngine.Rendering.Universal;
@@ -71,10 +70,9 @@ public class Game : MonoBehaviour {
     public ItemType backpackType;
     public ItemType eyeType;
     public ItemType demonEyeType;
-    public ItemType trinketType;
-    public ItemType soulcardType;
     public ItemType gemType;
-    public ItemType passiveType;
+    public ItemType eyeModifierType;
+    public ItemType wearableModifierType;
     [EndFoldout]
 
     [Foldout("Skill Upgrade Paths")]
@@ -314,7 +312,7 @@ public class Game : MonoBehaviour {
     [NonSerialized] public List<Enemy> enemies = new();
     
     public static Dictionary<int, Item> itemLookup = new();
-    public static Dictionary<int, Soulcard> eyeModifierLookup = new();
+    public static Dictionary<int, ModifierItem> eyeModifierLookup = new();
 
     private EntityPool<Entity> itemDropPool;
     private EntityPool<Entity> bloodDropPool;
@@ -967,9 +965,9 @@ public class Game : MonoBehaviour {
         public Collider2D enemySpacerCollider;
         public EnemyData data;
         public Timer applyDamageTimer;
-        public BleedSoulcard.InstanceData? bleed;
-        public PoisonSoulcard.InstanceData? poison;
-        public SlowInstance? slow;
+        public BleedModifierItem.InstanceData? bleed;
+        public PoisonModifierItem.InstanceData? poison;
+        public SlowModifierItem.InstanceData? slow;
         public Vector2 moveDir;
         public Vector2 graphicalDir;
         public Limiter changeDirLimiter;
@@ -1831,7 +1829,7 @@ public class Game : MonoBehaviour {
         for (int i = 0; i < inventoryLength; i++) {
             InventorySlotUI slotUI = crucibleInventory.slots[i].ui;
             slotUI.disallowItemStacking = true;
-            slotUI.onlyAcceptedItemType = i == 0 ? eyeType : soulcardType;
+            slotUI.onlyAcceptedItemType = i == 0 ? eyeType : eyeModifierType;
 
             if (i == 0) {
                 slotUI.gameObject.transform.position = crucibleParent.position;
@@ -1968,11 +1966,11 @@ public class Game : MonoBehaviour {
         if (hoveredSlot.item.ItemRef.type == quickUseType) {
             itemDescPopup.tag1Text.text = "Quick Use";
         } 
-        else if (hoveredSlot.item.ItemRef.type == soulcardType) {
-            itemDescPopup.tag1Text.text = "Eye Upgrade";
+        else if (hoveredSlot.item.ItemRef.type == eyeModifierType) {
+            itemDescPopup.tag1Text.text = "Eye Modifier";
         }
-        else if (hoveredSlot.item.ItemRef.type == passiveType) {
-            itemDescPopup.tag1Text.text = "Passive Item";
+        else if (hoveredSlot.item.ItemRef.type == wearableModifierType) {
+            itemDescPopup.tag1Text.text = "Wearable Modifier";
         }
         else if (hoveredSlot.item.ItemRef.type == backpackType) {
             itemDescPopup.tag1Text.text = "Backpack";
@@ -2013,7 +2011,7 @@ public class Game : MonoBehaviour {
             DemonEyeInstance eyeInstance = eyeInstanceFromItemId[hoveredSlot.item.itemOrInstanceUuid];
             string eyeDescription = "";
             foreach (EquipedModInstance modInstance in eyeInstance.modInstances) {
-                eyeDescription += GetDemonEyeModDescription(modInstance.Soulcard, modInstance.stackCount);
+                eyeDescription += GetDemonEyeModDescription(modInstance.ModifierItem, modInstance.stackCount);
             }
             descText.text = eyeDescription;
         }
@@ -2043,12 +2041,12 @@ public class Game : MonoBehaviour {
         FitPopupSize(itemDescPopup.rectTransform, itemDescPopup.tagsParent.rect, itemDescPopup.nameText.rectTransform.rect, itemDescPopup.descText.rectTransform.rect);
         
         // Add mechanic desctiption if necessary
-        if (hoveredSlot.item.ItemRef.type == soulcardType) {
-            Soulcard soulcard = (Soulcard)hoveredSlot.item.ItemRef;
-            if (soulcard.relativeMechanicDesc) {
+        if (hoveredSlot.item.ItemRef.type == eyeModifierType) {
+            ModifierItem modifierItem = (ModifierItem)hoveredSlot.item.ItemRef;
+            if (modifierItem.relativeMechanicDesc) {
                 mechanicDescPopup.gameObject.SetActive(true);
-                mechanicDescPopup.nameText.text = soulcard.relativeMechanicDesc.displayName;
-                mechanicDescPopup.descText.text = soulcard.relativeMechanicDesc.description;
+                mechanicDescPopup.nameText.text = modifierItem.relativeMechanicDesc.displayName;
+                mechanicDescPopup.descText.text = modifierItem.relativeMechanicDesc.description;
                 mechanicDescPopup.transform.position = itemDescPopup.rectTransform.WorldRect().min;
                 
                 mechanicDescPopup.nameFitter.ForceRecalculate();
@@ -2060,9 +2058,9 @@ public class Game : MonoBehaviour {
         }
     }
 
-    private string GetDemonEyeModDescription(Soulcard soulcard, int count) {
-        string title = ColorText($"<size=108%>{soulcard.displayName}</size> <size=87%>x{count}</size>", styles.headerTextColor);
-        return $"<line-height=95%>{title}\n{soulcard.GetDescription(count)}<line-height=140%>\n";
+    private string GetDemonEyeModDescription(ModifierItem modifierItem, int count) {
+        string title = ColorText($"<size=108%>{modifierItem.displayName}</size> <size=87%>x{count}</size>", styles.headerTextColor);
+        return $"<line-height=95%>{title}\n{modifierItem.GetDescription(count)}<line-height=140%>\n";
     }
 
     private void FitPopupSize(RectTransform popupRect, params Rect[] rects) {
@@ -2377,12 +2375,7 @@ public class Game : MonoBehaviour {
 
         if (prevEquippedTrinketItem != curTrinketItem) {
             prevEquippedTrinketItem = curTrinketItem;
-            
-            curTrinketPowers = new();
-            
-            if (curTrinketItem.ItemRef is Soulcard trinket) {
-                trinket.AddInstanceToTrinketPower(ref curTrinketPowers, 1);
-            }
+            RebuildTrinketPowers(curTrinketItem);
         }
 
     }
@@ -2901,7 +2894,7 @@ public class Game : MonoBehaviour {
             foreach (InventorySlot slot in stashInventory.slots) {
                 if (slot.item == null) continue;
                 Item item = slot.item.ItemRef;
-                if (item.type != eyeType && item.type != soulcardType) {
+                if (item.type != eyeType && item.type != eyeModifierType) {
                     slot.ui.itemUI.ToggleGray();
                 }
             }
@@ -3410,27 +3403,27 @@ public class Game : MonoBehaviour {
         }
 
         foreach (EquipedModInstance mod in equipedEye.modInstances) {
-            Soulcard soulcard = mod.Soulcard;
-            if (!soulcard.modifiesStats) continue;
+            ModifierItem modifierItem = mod.ModifierItem;
+            if (!modifierItem.modifiesStats) continue;
 
             switch (stat) {
                 case StatAdjustmentType.CritChance:
-                    statSum += soulcard.critChance; 
+                    statSum += modifierItem.critChance; 
                     break;
                 case StatAdjustmentType.CritMulti:
-                    statSum += soulcard.critMultiplier; 
+                    statSum += modifierItem.critMultiplier; 
                     break;
                 case StatAdjustmentType.Damage:
-                    statSum += soulcard.damage; 
+                    statSum += modifierItem.damage; 
                     break;
                 case StatAdjustmentType.FireratePercentage:
-                    statSum += soulcard.fireratePercentage; 
+                    statSum += modifierItem.fireratePercentage; 
                     break;
                 case StatAdjustmentType.ProjectileCount:
-                    statSum += soulcard.projectileCount; 
+                    statSum += modifierItem.projectileCount; 
                     break;
                 case StatAdjustmentType.RangeInSeconds:
-                    statSum += soulcard.rangeInSeconds;
+                    statSum += modifierItem.rangeInSeconds;
                     break;
             }
         }
@@ -3486,10 +3479,22 @@ public class Game : MonoBehaviour {
     // ************************ 
 
     public struct TrinketPowers {
-        public BleedCritSoulcard.InstanceData? bleedCrit;
+        public BleedCritModifierItem.InstanceData? bleedCrit;
+        public DoubleCritModifierItem.InstanceData? doubleCrit;
+        public FarDamageModifierItem.InstanceData? farDamage;
     }
     
     private TrinketPowers curTrinketPowers;
+
+    private void RebuildTrinketPowers(params InventoryItem[] items) {
+        Debug.Log("Rebuild");
+        curTrinketPowers = new();
+        foreach (InventoryItem item in items) {
+            if (item?.ItemRef is ModifierItem trinket) {
+                trinket.AddInstanceToTrinketPower(ref curTrinketPowers, 1);
+            }
+        }
+    }
     
     // ************************ 
     // Demon Eye
@@ -3499,25 +3504,23 @@ public class Game : MonoBehaviour {
         public int modId;
         public int stackCount;
         
-        public Soulcard Soulcard => eyeModifierLookup[modId];
-        public void ApplyToEnemy(Enemy enemy) => Soulcard.AddInstanceToEnemy(enemy, stackCount);
-        public void ApplyToEye(DemonEyeInstance eyeInstance) => Soulcard.AddInstanceToEye(eyeInstance, stackCount);
+        public ModifierItem ModifierItem => eyeModifierLookup[modId];
+        public void ApplyToEnemy(Enemy enemy) => ModifierItem.AddInstanceToEnemy(enemy, stackCount);
+        public void ApplyToEye(DemonEyeInstance eyeInstance) => ModifierItem.AddInstanceToEye(eyeInstance, stackCount);
     }
 
     public class DemonEyeInstance {
         public List<EquipedModInstance> modInstances = new();
-        public FirerateSoulcard.InstanceData? firerate;
-        public TrishotSoulcard.InstanceData? trishot;
-        public RangeSoulcard.InstanceData? range;
-        public FarDamageSoulcard.InstanceData? farDamage;
-        public PenetrationSoulcard.InstanceData? penetration;
-        public DoubleCritSoulcard.InstanceData? doubleCrit;
-        public BackwardsShotSoulcard.InstanceData? backwardShot;
-        public ExplosionSoulcard.InstanceData? explosion;
+        public FirerateModifierItem.InstanceData? firerate;
+        public TrishotModifierItem.InstanceData? trishot;
+        public RangeModifierItem.InstanceData? range;
+        public PenetrationModifierItem.InstanceData? penetration;
+        public BackwardsShotModifierItem.InstanceData? backwardShot;
+        public ExplosionModifierItem.InstanceData? explosion;
         public OverheatBlast.InstanceData? blast;
-        public BoneShatterSoulcard.InstanceData? boneShatter;
-        public StoppingPowerSoulcard.InstanceData? stoppingPower;
-        public ProjectileCountSoulcard.InstanceData? projectileCount;
+        public BoneShatterModifierItem.InstanceData? boneShatter;
+        public StoppingPowerModifierItem.InstanceData? stoppingPower;
+        public ProjectileCountModifierItem.InstanceData? projectileCount;
     }
     
     public class DemonEyeRaidStats {
@@ -3537,18 +3540,18 @@ public class Game : MonoBehaviour {
         item.itemOrInstanceUuid = GenerateNewItemUuid();
         item._itemRef = demonEyeItem;
         
-        Dictionary<Soulcard, int> eyeModCountFromSoulcard = new();
+        Dictionary<ModifierItem, int> eyeModCountFromSoulcard = new();
         foreach (int modUuid in item.modifierUuids) {
-            Soulcard soulcard = itemLookup[modUuid] as Soulcard;
-            if (!eyeModCountFromSoulcard.TryAdd((Soulcard)itemLookup[modUuid], 1)) {
-                eyeModCountFromSoulcard[soulcard]++;
+            ModifierItem modifierItem = itemLookup[modUuid] as ModifierItem;
+            if (!eyeModCountFromSoulcard.TryAdd((ModifierItem)itemLookup[modUuid], 1)) {
+                eyeModCountFromSoulcard[modifierItem]++;
             }
         }
 
-        List<(Soulcard, int)> sortedSoulcardsWithCount = SortSoulcardsFromDictionary(eyeModCountFromSoulcard);
+        List<(ModifierItem, int)> sortedSoulcardsWithCount = SortSoulcardsFromDictionary(eyeModCountFromSoulcard);
         
         List<EquipedModInstance> eyeModifiers = new();
-        foreach ((Soulcard soulcard, int stackCount) in sortedSoulcardsWithCount) {
+        foreach ((ModifierItem soulcard, int stackCount) in sortedSoulcardsWithCount) {
             eyeModifiers.Add(new() {
                 modId = soulcard.uuid,
                 stackCount = stackCount,
@@ -3567,9 +3570,9 @@ public class Game : MonoBehaviour {
         return newDemonEye;
     }
 
-    private List<(Soulcard, int)> SortSoulcardsFromDictionary(Dictionary<Soulcard, int> soulcardsAndStackCount) {
-        List<(Soulcard, int)> eyeModifiers = new();
-        foreach (KeyValuePair<Soulcard, int> pair in soulcardsAndStackCount) {
+    private List<(ModifierItem, int)> SortSoulcardsFromDictionary(Dictionary<ModifierItem, int> soulcardsAndStackCount) {
+        List<(ModifierItem, int)> eyeModifiers = new();
+        foreach (KeyValuePair<ModifierItem, int> pair in soulcardsAndStackCount) {
             eyeModifiers.Add(new(pair.Key, pair.Value));
         }
         eyeModifiers = eyeModifiers.OrderByDescending(m => m.Item1.GetRarity()).ThenBy(m => m.Item1.displayName).ToList();
@@ -3582,7 +3585,7 @@ public class Game : MonoBehaviour {
         
         int sellPrice = 0;
         foreach (EquipedModInstance modInstance in demonEye.modInstances) {
-            sellPrice += modInstance.Soulcard.GetSellPrice() * modInstance.stackCount;
+            sellPrice += modInstance.ModifierItem.GetSellPrice() * modInstance.stackCount;
         }
         return sellPrice;
     } 
@@ -4102,7 +4105,6 @@ public class Game : MonoBehaviour {
     }
 
     private float GetCriticalStrikeProbability(Projectile proj, Enemy enemy) {
-        DemonEyeInstance eyeInstance = proj.eyeInstanceSpawnedFrom;
         float criticalStrikeProb = gameplayConfig.defaultCritChance + GetStatAdjustmentValue(StatAdjustmentType.CritChance);
 
         if (curTrinketPowers.bleedCrit.HasValue && enemy.bleed.HasValue) {
@@ -4119,7 +4121,7 @@ public class Game : MonoBehaviour {
         
         // Phase 1 : Additions
         {
-            if (eyeInstance.farDamage.TryGetValue(out var farDamage)) {
+            if (curTrinketPowers.farDamage.TryGetValue(out var farDamage)) {
                 float convertedUnits = proj.distTraveled / gameplayConfig.distancePerUnit;
                 int increasedDamageFromDist = Mathf.FloorToInt(convertedUnits) * farDamage.damageIncreasePerUnitTraveled;
                 damage += increasedDamageFromDist;
@@ -4143,7 +4145,8 @@ public class Game : MonoBehaviour {
                 damageMultiplier *= triShot.damageMultiplier;
             }
             
-            if (eyeInstance.doubleCrit.TryGetValue(out var doubleCrit)) {
+            if (curTrinketPowers.doubleCrit.TryGetValue(out var doubleCrit)) {
+                Debug.Log("Has double crit");
                 int consecutiveCriticalHits = demonEyeRaidStats.consecutiveCriticalHits;
                 if (consecutiveCriticalHits > 0 && consecutiveCriticalHits % 2 == 0) {
                     demonEyeRaidStats.lastDoubleCritActivationTime = Time.time;
@@ -4721,7 +4724,7 @@ public class Game : MonoBehaviour {
     private void LoadAllItems() {
         Item[] itemsFoundInFolder = Resources.LoadAll<Item>(string.Empty);
         foreach (Item item in itemsFoundInFolder) {
-            if (item is Soulcard mod) {
+            if (item is ModifierItem mod) {
                 eyeModifierLookup.Add(mod.uuid, mod);
             }
             itemLookup.Add(item.uuid, item);
@@ -5027,7 +5030,7 @@ public class Game : MonoBehaviour {
                     
                     if (slot.item == null) continue;
                     
-                    if (slot.ui.OnlyAcceptsType(soulcardType)) {
+                    if (slot.ui.OnlyAcceptsType(eyeModifierType)) {
                         newDemonEyeItem.modifierUuids.Add(slot.item.ItemRef.uuid);
                     }
                     slot.item = null;
@@ -5409,20 +5412,20 @@ public class Game : MonoBehaviour {
             int totalUpgradeCount = crucibleInventory.slots.Length - 1;
             forgeDetailsForgeText.text = $"<size=90%>Previewing Upgrades {ColorText(eyeUpgradeCount.ToString(), styles.timeDescColor)}/{totalUpgradeCount}</size><line-height=150%>\n";
             
-            Dictionary<Soulcard, int> allSoulCards = new();
+            Dictionary<ModifierItem, int> allSoulCards = new();
             
             foreach (InventorySlot slot in crucibleInventory.slots) {
-                if (slot.item == null || slot.item.ItemRef.type != soulcardType) continue;    
-                Soulcard soulcard = itemLookup[slot.item.itemOrInstanceUuid] as Soulcard;
-                if (!allSoulCards.TryAdd(soulcard, 1)) {
-                    allSoulCards[soulcard]++;
+                if (slot.item == null || slot.item.ItemRef.type != eyeModifierType) continue;    
+                ModifierItem modifierItem = itemLookup[slot.item.itemOrInstanceUuid] as ModifierItem;
+                if (!allSoulCards.TryAdd(modifierItem, 1)) {
+                    allSoulCards[modifierItem]++;
                 }
             }
 
-            List<(Soulcard, int)> sortedSoulcards = SortSoulcardsFromDictionary(allSoulCards);
+            List<(ModifierItem, int)> sortedSoulcards = SortSoulcardsFromDictionary(allSoulCards);
             
             string eyeDescription = "";
-            foreach ((Soulcard soulcard, int count) in sortedSoulcards) {
+            foreach ((ModifierItem soulcard, int count) in sortedSoulcards) {
                 eyeDescription += GetDemonEyeModDescription(soulcard, count);
             }
             forgeDetailsForgeText.text += eyeDescription;
@@ -6185,7 +6188,7 @@ public class Game : MonoBehaviour {
             if (!spawnsOnCurrentMap) continue;
             
             if (item.chanceToSpawnFromRock > 0f) {
-                if (item.type == soulcardType) {
+                if (item.type == eyeModifierType) {
                     eyeUpgradesDropPool.items.Add(item);
                 }
                 else {

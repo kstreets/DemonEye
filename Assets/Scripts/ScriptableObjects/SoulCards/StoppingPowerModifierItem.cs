@@ -1,8 +1,8 @@
 using UnityEngine;
 using static Game;
 
-[CreateAssetMenu(fileName = "StoppingPowerSoulcard", menuName = "Scriptable Objects/Soulcards/StoppingPowerSoulcard")]
-public class StoppingPowerSoulcard : Soulcard {
+[CreateAssetMenu(fileName = "StoppingPowerModifier", menuName = "Scriptable Objects/Modifiers/StoppingPowerModifier")]
+public class StoppingPowerModifierItem : ModifierItem {
 
     public struct InstanceData {
         public int extraDamage;

@@ -1,17 +1,17 @@
 using UnityEngine;
 using static Game;
 
-[CreateAssetMenu(fileName = "FarDamageSoulcard", menuName = "Scriptable Objects/Soulcards/FarDamageSoulcard")]
-public class FarDamageSoulcard : Soulcard {
+[CreateAssetMenu(fileName = "FarDamageModifier", menuName = "Scriptable Objects/Modifiers/FarDamageModifier")]
+public class FarDamageModifierItem : ModifierItem {
     
     public struct InstanceData {
         public int damageIncreasePerUnitTraveled;
     }
     
     public int damageIncreasePerUnitTraveled;
-    
-    public override void AddInstanceToEye(Game.DemonEyeInstance eyeInstance, int stackCount) {
-        eyeInstance.farDamage = new() {
+
+    public override void AddInstanceToTrinketPower(ref TrinketPowers trinkets, int stackCount) {
+        trinkets.farDamage = new() {
             damageIncreasePerUnitTraveled = GetDamageIncrease(stackCount),
         };
     }

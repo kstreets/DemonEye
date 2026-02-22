@@ -1,8 +1,8 @@
 using UnityEngine;
 using static Game;
 
-[CreateAssetMenu(fileName = "PenetrationSoulcard", menuName = "Scriptable Objects/Soulcards/PenetrationSoulcard")]
-public class PenetrationSoulcard : Soulcard {
+[CreateAssetMenu(fileName = "PenetrationModifier", menuName = "Scriptable Objects/Modifiers/PenetrationModifier")]
+public class PenetrationModifierItem : ModifierItem {
 
     public struct InstanceData {
         public int goThroughCount;

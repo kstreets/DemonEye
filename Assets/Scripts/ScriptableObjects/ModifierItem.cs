@@ -3,7 +3,7 @@ using UnityEngine.Assertions;
 using static Game;
 
 [CreateAssetMenu(fileName = "EyeModifier", menuName = "Scriptable Objects/EyeModifier")]
-public class Soulcard : Item {
+public class ModifierItem : Item {
 
     public MechanicDesc relativeMechanicDesc;
     

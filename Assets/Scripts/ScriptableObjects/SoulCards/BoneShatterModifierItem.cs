@@ -1,8 +1,8 @@
 using UnityEngine;
 using static Game;
 
-[CreateAssetMenu(fileName = "BoneShatter", menuName = "Scriptable Objects/Soulcards/BoneShatter")]
-public class BoneShatterSoulcard : Soulcard {
+[CreateAssetMenu(fileName = "BoneShatter", menuName = "Scriptable Objects/Modifiers/BoneShatter")]
+public class BoneShatterModifierItem : ModifierItem {
     
     public struct InstanceData {
         public int shardsCount;

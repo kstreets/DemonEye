@@ -1,8 +1,8 @@
 using UnityEngine;
 using static Game;
 
-[CreateAssetMenu(fileName = "RangeSoulcard", menuName = "Scriptable Objects/Soulcards/RangeSoulcard")]
-public class RangeSoulcard : Soulcard {
+[CreateAssetMenu(fileName = "RangeModifier", menuName = "Scriptable Objects/Modifiers/RangeModifier")]
+public class RangeModifierItem : ModifierItem {
     
     public struct InstanceData {
         public float timeAliveIncrease;

@@ -1,18 +1,18 @@
 using UnityEngine;
 using static Game;
 
-[CreateAssetMenu(fileName = "FirerateSoulcard", menuName = "Scriptable Objects/Soulcards/FirerateSoulcard")]
-public class FirerateSoulcard : Soulcard {
+[CreateAssetMenu(fileName = "FirerateModifier", menuName = "Scriptable Objects/Modifiers/FirerateModifier")]
+public class FirerateModifierItem : ModifierItem {
 
     public struct InstanceData {
-        public float rateIncrasePercentage;
+        public float rateIncreasePercentage;
     }
     
     public float rateIncreasePercentage;
     
     public override void AddInstanceToEye(DemonEyeInstance eyeInstance, int stackCount) {
         InstanceData instance = new() {
-            rateIncrasePercentage = GetReductionPercentage(stackCount), 
+            rateIncreasePercentage = GetReductionPercentage(stackCount), 
         };
         eyeInstance.firerate = instance;
     }

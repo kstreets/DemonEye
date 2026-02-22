@@ -1,8 +1,8 @@
 using UnityEngine;
 using static Game;
 
-[CreateAssetMenu(fileName = "DoubleCritSoulcard", menuName = "Scriptable Objects/Soulcards/DoubleCritSoulcard")]
-public class DoubleCritSoulcard : Soulcard {
+[CreateAssetMenu(fileName = "DoubleCritModifier", menuName = "Scriptable Objects/Modifiers/DoubleCritModifier")]
+public class DoubleCritModifierItem : ModifierItem {
     
     public struct InstanceData {
         public float damageMulti;
@@ -11,9 +11,9 @@ public class DoubleCritSoulcard : Soulcard {
     
     public float damageMulti;
     public float multiplierDuration;
-    
-    public override void AddInstanceToEye(DemonEyeInstance eyeInstance, int stackCount) {
-        eyeInstance.doubleCrit = new() {
+
+    public override void AddInstanceToTrinketPower(ref TrinketPowers trinkets, int stackCount) {
+        trinkets.doubleCrit = new() {
             damageMulti = GetDamageMultiplierIncrease(stackCount),
             multiplierDuration = GetMultiplierDuration(stackCount),
         };

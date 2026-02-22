@@ -1,8 +1,8 @@
 using UnityEngine;
 using static Game;
 
-[CreateAssetMenu(fileName = "PoisonSoulcard", menuName = "Scriptable Objects/Soulcards/PoisonSoulcard")]
-public class PoisonSoulcard : Soulcard {
+[CreateAssetMenu(fileName = "PoisonModifier", menuName = "Scriptable Objects/Modifiers/PoisonModifier")]
+public class PoisonModifierItem : ModifierItem {
 
     public struct InstanceData {
         public float duration;

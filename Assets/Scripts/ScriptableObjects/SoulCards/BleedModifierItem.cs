@@ -1,8 +1,8 @@
 using UnityEngine;
 using static Game;
 
-[CreateAssetMenu(fileName = "BleedSoulcard", menuName = "Scriptable Objects/Soulcards/BleedSoulcard")]
-public class BleedSoulcard : Soulcard {
+[CreateAssetMenu(fileName = "BleedModifier", menuName = "Scriptable Objects/Modifiers/BleedModifier")]
+public class BleedModifierItem : ModifierItem {
     
     public struct InstanceData {
         public int bleedDamage;

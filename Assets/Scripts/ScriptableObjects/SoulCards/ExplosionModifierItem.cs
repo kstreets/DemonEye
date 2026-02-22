@@ -1,8 +1,8 @@
 using UnityEngine;
 using static Game;
 
-[CreateAssetMenu(fileName = "ExplosionSoulcard", menuName = "Scriptable Objects/Soulcards/ExplosionSoulcard")]
-public class ExplosionSoulcard : Soulcard {
+[CreateAssetMenu(fileName = "ExplosionModifier", menuName = "Scriptable Objects/Modifiers/ExplosionModifier")]
+public class ExplosionModifierItem : ModifierItem {
     
     public struct InstanceData {
         public float probability;

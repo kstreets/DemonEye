@@ -1,8 +1,8 @@
 using UnityEngine;
 using static Game;
 
-[CreateAssetMenu(fileName = "ProjectileCountSoulcard", menuName = "Scriptable Objects/Soulcards/ProjectileCountSoulcard")]
-public class ProjectileCountSoulcard : Soulcard {
+[CreateAssetMenu(fileName = "ProjectileCountModifier", menuName = "Scriptable Objects/Modifiers/ProjectileCountModifier")]
+public class ProjectileCountModifierItem : ModifierItem {
 
     public struct InstanceData {
         public float probability;

@@ -142,7 +142,7 @@ public class Item : UuidScriptableObject {
     
     [OnValueChanged(nameof(buyPrice))]
     private void AutoSetSellPriceOnBuyPriceChanged() {
-        if (this is Soulcard) {
+        if (this is ModifierItem) {
             sellPrice = Mathf.RoundToInt(buyPrice * 0.08f);
         }
         else {

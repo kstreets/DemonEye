@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   uuid: 315277496
   displayName: Bleed Crit
-  inventorySprite: {fileID: 1442519032, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  inventorySprite: {fileID: -584130490, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   dropSprite: {fileID: 0}
   pickupRadius: 0.07
-  type: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
+  type: {fileID: 11400000, guid: 91804a8de7d984648aff2f6ae72e2331, type: 2}
   associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
   priceCategory: {fileID: 11400000, guid: 29cfe26cd6da0734197e5840e6724f56, type: 2}
   buyPrice: 8000

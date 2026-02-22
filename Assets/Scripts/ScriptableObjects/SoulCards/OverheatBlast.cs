@@ -1,8 +1,8 @@
 using UnityEngine;
 using static Game;
 
-[CreateAssetMenu(fileName = "OverheatBlast", menuName = "Scriptable Objects/Soulcards/OverheatBlast")]
-public class OverheatBlast : Soulcard {
+[CreateAssetMenu(fileName = "OverheatBlast", menuName = "Scriptable Objects/Modifiers/OverheatBlast")]
+public class OverheatBlast : ModifierItem {
     
     public struct InstanceData {
         public int numshotsUntilOverheat;

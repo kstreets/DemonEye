@@ -1,8 +1,8 @@
 using UnityEngine;
 using static Game;
 
-[CreateAssetMenu(fileName = "BackwardsShotSoulcard", menuName = "Scriptable Objects/Soulcards/BackwardsShotSoulcard")]
-public class BackwardsShotSoulcard : Soulcard {
+[CreateAssetMenu(fileName = "BackwardsShotModifier", menuName = "Scriptable Objects/Modifiers/BackwardsShotModifier")]
+public class BackwardsShotModifierItem : ModifierItem {
     
     public struct InstanceData {
         public float probability;
