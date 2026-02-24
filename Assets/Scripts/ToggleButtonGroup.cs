@@ -12,11 +12,15 @@ public class ToggleButtonGroup : MonoBehaviour {
     private Dictionary<ToggleButton, UnityAction> callbacks = new();
 
     private void Awake() {
+        callbacks.Clear();
         foreach (ToggleButton toggle in toggles) {
-            Add(toggle);
+            InitializeToggle(toggle);
+        }
+        if (toggles.Count == 1) {
+            OnButtonClicked(toggles[0]);
         }
     }
-
+    
     public void SetSelected(ToggleButton toggle) {
         OnButtonClicked(toggle);
     }
@@ -41,7 +45,7 @@ public class ToggleButtonGroup : MonoBehaviour {
 
     private void InitializeToggle(ToggleButton toggle) {
         UnityAction callback = () => OnButtonClicked(toggle);
-        callbacks.Add(toggle, callback);
+        callbacks.TryAdd(toggle, callback);
         toggle.button.onClick.AddListener(callback);
     }
 

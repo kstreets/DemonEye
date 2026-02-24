@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b237e7e2abf048047bc6eaba3b1f619c, type: 3}
+  m_Name: DistanceDamageAugment
+  m_EditorClassIdentifier: Assembly-CSharp::DistanceDamageAugment
+  uuid: -247024783
+  derivedModifiers:
+  - {fileID: 11400000, guid: 39bde04b92cb89449b8a0451d4916433, type: 2}
+  - {fileID: 11400000, guid: 49998337f8ec6284eb89852e7ecb85c0, type: 2}
+  damageIncreasePerUnitTraveled: 2

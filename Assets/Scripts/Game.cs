@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -18,6 +19,7 @@ using UnityEngine.UI;
 using Random = UnityEngine.Random;
 using VInspector;
 using Assert = UnityEngine.Assertions.Assert;
+using Debug = UnityEngine.Debug;
 using Vector3 = UnityEngine.Vector3;
 using EffectsIndicies = Game.Entity.EffectsIndicies;
 
@@ -311,9 +313,6 @@ public class Game : MonoBehaviour {
     [NonSerialized] public Dictionary<GameObject, Entity> entityLookup = new();
     [NonSerialized] public List<Enemy> enemies = new();
     
-    public static Dictionary<int, Item> itemLookup = new();
-    public static Dictionary<int, ModifierItem> eyeModifierLookup = new();
-
     private EntityPool<Entity> itemDropPool;
     private EntityPool<Entity> bloodDropPool;
     private EntityPool<Projectile> projectilePool;
@@ -348,7 +347,7 @@ public class Game : MonoBehaviour {
     private void Start() {
         inst = this;
         
-        LoadAllItems();
+        LoadAllResources();
         InitAudio();
         
         BuildSavePaths();
@@ -1705,7 +1704,7 @@ public class Game : MonoBehaviour {
     [Serializable]
     public class InventoryItem {
         public int itemOrInstanceUuid;
-        public List<int> modifierUuids;
+        public List<int> nestedUuids;
         public int count = 1;
 
         [NonSerialized] public bool notDiscovered;
@@ -1714,7 +1713,7 @@ public class Game : MonoBehaviour {
         [NonSerialized] public bool foundInLastRaid;
         [NonSerialized] public Item _itemRef; // Used for items created at runtime, like demon eyes
 
-        public Item ItemRef => _itemRef ? _itemRef : itemLookup[itemOrInstanceUuid];
+        public Item ItemRef => _itemRef ? _itemRef : resourceLookup[itemOrInstanceUuid] as Item;
         public bool IsFullStack => count == ItemRef.MaxStackCount;
 
         public InventoryItem(Item item = null, int count = 1) {
@@ -1733,10 +1732,10 @@ public class Game : MonoBehaviour {
                 _itemRef = ItemRef,
             };
 
-            if (modifierUuids != null) {
-                foreach (int modifierUuid in modifierUuids) {
-                    clonedItem.modifierUuids ??= new();     
-                    clonedItem.modifierUuids.Add(modifierUuid);
+            if (nestedUuids != null) {
+                foreach (int modifierUuid in nestedUuids) {
+                    clonedItem.nestedUuids ??= new();     
+                    clonedItem.nestedUuids.Add(modifierUuid);
                 }
             }
 
@@ -1860,7 +1859,7 @@ public class Game : MonoBehaviour {
         
         // Items can be null because we save all inventory slots, including empty ones
         foreach (InventoryItem item in items) {
-            bool isDemonEye = item?.modifierUuids != null;
+            bool isDemonEye = item?.nestedUuids != null;
             if (isDemonEye) {
                 BuildAndRegisterEye(item);
             }
@@ -2010,6 +2009,9 @@ public class Game : MonoBehaviour {
         if (hoveredSlot.item.ItemRef.type == demonEyeType) {
             DemonEyeInstance eyeInstance = eyeInstanceFromItemId[hoveredSlot.item.itemOrInstanceUuid];
             string eyeDescription = "";
+            foreach (EquipedAugmentInstance augmentInstance in eyeInstance.augmentInstances) {
+                eyeDescription += $"{augmentInstance.Augment.GetDescription()}\n";
+            }
             foreach (EquipedModInstance modInstance in eyeInstance.modInstances) {
                 eyeDescription += GetDemonEyeModDescription(modInstance.ModifierItem, modInstance.stackCount);
             }
@@ -2351,7 +2353,6 @@ public class Game : MonoBehaviour {
     private void CheckForEquipmentChange() {
         InventoryItem curEyeItem = playerInventory.slots[0].item;
         InventoryItem curBackpackItem = playerInventory.slots[1].item;
-        InventoryItem curTrinketItem = playerInventory.slots[2].item;
 
         if (prevEquippedEyeItem != curEyeItem) {
             prevEquippedEyeItem = curEyeItem;
@@ -2372,12 +2373,6 @@ public class Game : MonoBehaviour {
                 ChangeInventorySize(playerInventory, NakedPlayerInventorySize);
             }
         }
-
-        if (prevEquippedTrinketItem != curTrinketItem) {
-            prevEquippedTrinketItem = curTrinketItem;
-            RebuildTrinketPowers(curTrinketItem);
-        }
-
     }
 
     public struct InventoryHoverInfo {
@@ -3475,42 +3470,30 @@ public class Game : MonoBehaviour {
     }
     
     // ************************ 
-    // Trinkets 
-    // ************************ 
-
-    public struct TrinketPowers {
-        public BleedCritModifierItem.InstanceData? bleedCrit;
-        public DoubleCritModifierItem.InstanceData? doubleCrit;
-        public FarDamageModifierItem.InstanceData? farDamage;
-    }
-    
-    private TrinketPowers curTrinketPowers;
-
-    private void RebuildTrinketPowers(params InventoryItem[] items) {
-        Debug.Log("Rebuild");
-        curTrinketPowers = new();
-        foreach (InventoryItem item in items) {
-            if (item?.ItemRef is ModifierItem trinket) {
-                trinket.AddInstanceToTrinketPower(ref curTrinketPowers, 1);
-            }
-        }
-    }
-    
-    // ************************ 
     // Demon Eye
     // ************************ 
     
     public struct EquipedModInstance {
-        public int modId;
+        public int uuid;
         public int stackCount;
         
-        public ModifierItem ModifierItem => eyeModifierLookup[modId];
+        public ModifierItem ModifierItem => resourceLookup[uuid] as ModifierItem;
         public void ApplyToEnemy(Enemy enemy) => ModifierItem.AddInstanceToEnemy(enemy, stackCount);
         public void ApplyToEye(DemonEyeInstance eyeInstance) => ModifierItem.AddInstanceToEye(eyeInstance, stackCount);
     }
 
+    public struct EquipedAugmentInstance {
+        public int uuid;
+        
+        public Augment Augment => resourceLookup[uuid] as Augment;
+        public void ApplyToEnemy(Enemy enemy) => Augment.AddInstanceToEnemy(enemy);
+        public void ApplyToEye(DemonEyeInstance eyeInstance) => Augment.AddInstanceToEye(eyeInstance);
+    }
+
     public class DemonEyeInstance {
         public List<EquipedModInstance> modInstances = new();
+        public List<EquipedAugmentInstance> augmentInstances = new();
+        
         public FirerateModifierItem.InstanceData? firerate;
         public TrishotModifierItem.InstanceData? trishot;
         public RangeModifierItem.InstanceData? range;
@@ -3521,6 +3504,10 @@ public class Game : MonoBehaviour {
         public BoneShatterModifierItem.InstanceData? boneShatter;
         public StoppingPowerModifierItem.InstanceData? stoppingPower;
         public ProjectileCountModifierItem.InstanceData? projectileCount;
+        
+        public BleedCritAugment.InstanceData? bleedCritAugment;
+        public DoubleCritAugment.InstanceData? doubleCritAugment;
+        public DistanceDamageAugment.InstanceData? distanceDamage;
     }
     
     public class DemonEyeRaidStats {
@@ -3540,37 +3527,46 @@ public class Game : MonoBehaviour {
         item.itemOrInstanceUuid = GenerateNewItemUuid();
         item._itemRef = demonEyeItem;
         
-        Dictionary<ModifierItem, int> eyeModCountFromSoulcard = new();
-        foreach (int modUuid in item.modifierUuids) {
-            ModifierItem modifierItem = itemLookup[modUuid] as ModifierItem;
-            if (!eyeModCountFromSoulcard.TryAdd((ModifierItem)itemLookup[modUuid], 1)) {
-                eyeModCountFromSoulcard[modifierItem]++;
+        Dictionary<ModifierItem, int> modCountFromItem = new();
+        List<EquipedAugmentInstance> equipedAugments = new();
+        
+        foreach (int modUuid in item.nestedUuids) {
+            UuidScriptableObject nestedObject = resourceLookup[modUuid];
+            if (nestedObject is ModifierItem modifierItem) {
+                if (!modCountFromItem.TryAdd(modifierItem, 1)) {
+                    modCountFromItem[modifierItem]++;
+                }
+            }
+            else if (nestedObject is Augment augment) {
+                equipedAugments.Add(new() { uuid = augment.uuid });
             }
         }
 
-        List<(ModifierItem, int)> sortedSoulcardsWithCount = SortSoulcardsFromDictionary(eyeModCountFromSoulcard);
-        
-        List<EquipedModInstance> eyeModifiers = new();
-        foreach ((ModifierItem soulcard, int stackCount) in sortedSoulcardsWithCount) {
-            eyeModifiers.Add(new() {
-                modId = soulcard.uuid,
+        List<EquipedModInstance> equipedMods = new();
+        foreach ((ModifierItem modItem, int stackCount) in SortModsFromDictionary(modCountFromItem)) {
+            equipedMods.Add(new() {
+                uuid = modItem.uuid,
                 stackCount = stackCount,
             });
         }
         
         DemonEyeInstance newDemonEye = new() {
-            modInstances = eyeModifiers,
+            modInstances = equipedMods,
+            augmentInstances = equipedAugments,
         };
         
-        foreach (EquipedModInstance modInstance in eyeModifiers) { 
+        foreach (EquipedModInstance modInstance in equipedMods) { 
             modInstance.ApplyToEye(newDemonEye); 
+        }
+        foreach (EquipedAugmentInstance augmentInstance in equipedAugments) { 
+            augmentInstance.ApplyToEye(newDemonEye); 
         }
         
         eyeInstanceFromItemId.Add(item.itemOrInstanceUuid, newDemonEye);
         return newDemonEye;
     }
 
-    private List<(ModifierItem, int)> SortSoulcardsFromDictionary(Dictionary<ModifierItem, int> soulcardsAndStackCount) {
+    private List<(ModifierItem, int)> SortModsFromDictionary(Dictionary<ModifierItem, int> soulcardsAndStackCount) {
         List<(ModifierItem, int)> eyeModifiers = new();
         foreach (KeyValuePair<ModifierItem, int> pair in soulcardsAndStackCount) {
             eyeModifiers.Add(new(pair.Key, pair.Value));
@@ -4107,8 +4103,8 @@ public class Game : MonoBehaviour {
     private float GetCriticalStrikeProbability(Projectile proj, Enemy enemy) {
         float criticalStrikeProb = gameplayConfig.defaultCritChance + GetStatAdjustmentValue(StatAdjustmentType.CritChance);
 
-        if (curTrinketPowers.bleedCrit.HasValue && enemy.bleed.HasValue) {
-            criticalStrikeProb += curTrinketPowers.bleedCrit.Value.probability;
+        if (equipedEye.bleedCritAugment.HasValue && enemy.bleed.HasValue) {
+            criticalStrikeProb += equipedEye.bleedCritAugment.Value.probability;
         }
 
         return criticalStrikeProb;
@@ -4121,9 +4117,9 @@ public class Game : MonoBehaviour {
         
         // Phase 1 : Additions
         {
-            if (curTrinketPowers.farDamage.TryGetValue(out var farDamage)) {
+            if (equipedEye.distanceDamage.TryGetValue(out var distDamage)) {
                 float convertedUnits = proj.distTraveled / gameplayConfig.distancePerUnit;
-                int increasedDamageFromDist = Mathf.FloorToInt(convertedUnits) * farDamage.damageIncreasePerUnitTraveled;
+                int increasedDamageFromDist = Mathf.FloorToInt(convertedUnits) * distDamage.damageIncreasePerUnitTraveled;
                 damage += increasedDamageFromDist;
             }
         }
@@ -4145,8 +4141,7 @@ public class Game : MonoBehaviour {
                 damageMultiplier *= triShot.damageMultiplier;
             }
             
-            if (curTrinketPowers.doubleCrit.TryGetValue(out var doubleCrit)) {
-                Debug.Log("Has double crit");
+            if (equipedEye.doubleCritAugment.TryGetValue(out var doubleCrit)) {
                 int consecutiveCriticalHits = demonEyeRaidStats.consecutiveCriticalHits;
                 if (consecutiveCriticalHits > 0 && consecutiveCriticalHits % 2 == 0) {
                     demonEyeRaidStats.lastDoubleCritActivationTime = Time.time;
@@ -4715,19 +4710,26 @@ public class Game : MonoBehaviour {
     
     private int GenerateNewItemUuid() {
         int newItemId = UuidScriptableObject.GetIntUuid();
-        while (itemLookup.ContainsKey(newItemId)) {
+        while (resourceLookup.ContainsKey(newItemId)) {
             newItemId = UuidScriptableObject.GetIntUuid();
         }
         return newItemId;
     }
     
-    private void LoadAllItems() {
-        Item[] itemsFoundInFolder = Resources.LoadAll<Item>(string.Empty);
-        foreach (Item item in itemsFoundInFolder) {
-            if (item is ModifierItem mod) {
-                eyeModifierLookup.Add(mod.uuid, mod);
+    public static Dictionary<int, UuidScriptableObject> resourceLookup = new();
+    public List<Item> allItems = new();
+    public List<Augment> allAugments = new();
+    
+    private void LoadAllResources() {
+        UuidScriptableObject[] resourceObjects = Resources.LoadAll<UuidScriptableObject>(string.Empty);
+        foreach (UuidScriptableObject res in resourceObjects) {
+            resourceLookup.Add(res.uuid, res);
+            if (res is Item item) {
+                allItems.Add(item);
             }
-            itemLookup.Add(item.uuid, item);
+            if (res is Augment augment) {
+                allAugments.Add(augment);
+            }
         }
     }
 
@@ -5021,7 +5023,7 @@ public class Game : MonoBehaviour {
                 forgeEyeButton.text.text = prevButtonText;
                 
                 InventoryItem newDemonEyeItem = new() {
-                    modifierUuids = new(),
+                    nestedUuids = new(),
                 };
 
                 foreach (InventorySlot slot in crucibleInventory.slots) {
@@ -5031,9 +5033,21 @@ public class Game : MonoBehaviour {
                     if (slot.item == null) continue;
                     
                     if (slot.ui.OnlyAcceptsType(eyeModifierType)) {
-                        newDemonEyeItem.modifierUuids.Add(slot.item.ItemRef.uuid);
+                        newDemonEyeItem.nestedUuids.Add(slot.item.ItemRef.uuid);
                     }
                     slot.item = null;
+                }
+                
+                int? additionalAugmentUuid = null;
+                foreach (Augment augment in allAugments) {
+                    if (augment.MeetsRequirements(newDemonEyeItem.nestedUuids)) {
+                        additionalAugmentUuid = augment.uuid;
+                        break;
+                    }
+                }
+
+                if (additionalAugmentUuid.HasValue) {
+                    newDemonEyeItem.nestedUuids.Add(additionalAugmentUuid.Value);
                 }
 
                 DemonEyeInstance newDemonEye = BuildAndRegisterEye(newDemonEyeItem);
@@ -5416,13 +5430,13 @@ public class Game : MonoBehaviour {
             
             foreach (InventorySlot slot in crucibleInventory.slots) {
                 if (slot.item == null || slot.item.ItemRef.type != eyeModifierType) continue;    
-                ModifierItem modifierItem = itemLookup[slot.item.itemOrInstanceUuid] as ModifierItem;
+                ModifierItem modifierItem = resourceLookup[slot.item.itemOrInstanceUuid] as ModifierItem;
                 if (!allSoulCards.TryAdd(modifierItem, 1)) {
                     allSoulCards[modifierItem]++;
                 }
             }
 
-            List<(ModifierItem, int)> sortedSoulcards = SortSoulcardsFromDictionary(allSoulCards);
+            List<(ModifierItem, int)> sortedSoulcards = SortModsFromDictionary(allSoulCards);
             
             string eyeDescription = "";
             foreach ((ModifierItem soulcard, int count) in sortedSoulcards) {
@@ -6165,7 +6179,7 @@ public class Game : MonoBehaviour {
         foragingDropPool = new() { items = new(), dropOrigin = DropOrigin.ExistsInLevel };
         bushesDropPool = new() { items = new(), dropOrigin = DropOrigin.Bush };
 
-        foreach ((int _, Item item) in itemLookup) {
+        foreach (Item item in allItems) {
             if (item.chanceToSpawnOnTrader > 0f) {
                 traderDropPool.items.Add(item); 
             }
@@ -6183,7 +6197,7 @@ public class Game : MonoBehaviour {
         foragingDropPool.items.Clear();
         bushesDropPool.items.Clear();
         
-        foreach ((int _, Item item) in itemLookup) {
+        foreach (Item item in allItems) {
             bool spawnsOnCurrentMap = item.spawnsOnAllMaps || item.spawnsOnMaps.Contains(map);
             if (!spawnsOnCurrentMap) continue;
             
@@ -6446,6 +6460,16 @@ public class Game : MonoBehaviour {
         }
         
         return ColorText($"{time:0.0#}<space=0.12em>s", inst.styles.timeDescColor);
+    }
+    
+    public static int TaperInteger(int value, int stackCount, float taper) {
+        Assert.IsFalse(taper >= 1f && taper <= 0f, "Taper needs to be between 0 and 1");
+        return Mathf.RoundToInt(value * Mathf.Pow(stackCount, taper));
+    }
+
+    public static float TaperFloat(float value, int stackCount, float taper) {
+        Assert.IsFalse(taper >= 1f && taper <= 0f, "Taper needs to be between 0 and 1");
+        return value * Mathf.Pow(stackCount, taper);
     }
 
     private enum CardinalDir { Right, Left, Up, Down }
