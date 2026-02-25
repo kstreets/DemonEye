@@ -63,6 +63,7 @@ namespace PrimeTween {
         [CanBeNull] object onCompleteCallback;
         [CanBeNull] object onValidateCallback;
         [CanBeNull] object onCompleteTarget;
+        internal Vector3 targetVector;
 
         internal float waitDelay;
         internal Sequence sequence;
@@ -516,6 +517,33 @@ namespace PrimeTween {
                     tween.warnOnCompleteIgnored(true);
                     return;
                 }
+                try {
+                    if (validateCallback == null) {
+                        callback(_onCompleteTarget);
+                    }
+                    else if (validateCallback(_onCompleteTarget)) {
+                        callback(_onCompleteTarget);
+                    }
+                } catch (Exception e) {
+                    tween.handleOnCompleteException(e);
+                }
+            };
+        }
+        
+        internal void OnComplete(Vector3 _target, [CanBeNull] Action<Vector3> _onComplete, bool warnIfTargetDestroyed, [CanBeNull] Func<Vector3, bool> _onValidate) {
+            if (_onComplete == null) {
+                return;
+            }
+            validateOnCompleteAssignment();
+            warnIgnoredOnCompleteIfTargetDestroyed = warnIfTargetDestroyed;
+            targetVector = _target;
+            onCompleteCallback = _onComplete;
+            onValidateCallback = _onValidate;
+            onComplete = tween => {
+                var callback = tween.onCompleteCallback as Action<Vector3>;
+                var validateCallback = tween.onValidateCallback as Func<Vector3, bool>;
+                Assert.IsNotNull(callback);
+                var _onCompleteTarget = tween.targetVector;
                 try {
                     if (validateCallback == null) {
                         callback(_onCompleteTarget);

@@ -210,6 +210,21 @@ namespace PrimeTween {
             PrimeTweenManager.checkDuration(target, duration);
             return PrimeTweenManager.delayWithoutDurationCheck(target, duration, useUnscaledTime);
         }
+        
+        public static Tween Delay(Vector3 target, float duration, [NotNull] Action<Vector3> onComplete, bool useUnscaledTime = false, bool warnIfTargetDestroyed = true, [CanBeNull] Func<Vector3, bool> onValidate = null) {
+            var maybeDelay = delay_internal(target, duration, useUnscaledTime);
+            if (!maybeDelay.HasValue) {
+                return default;
+            }
+            var delay = maybeDelay.Value;
+            delay.tween.OnComplete(target, onComplete, warnIfTargetDestroyed, onValidate);
+            return delay;
+        }
+        
+        static Tween? delay_internal(Vector3 target, float duration, bool useUnscaledTime) {
+            PrimeTweenManager.checkDuration<object>(null, duration);
+            return PrimeTweenManager.delayWithoutDurationCheck(null, duration, useUnscaledTime, true);
+        }
 
         public static Tween MaterialColor([NotNull] Material target, int propertyId, Color endValue, float duration, Ease ease = default, int cycles = 1, CycleMode cycleMode = CycleMode.Restart, float startDelay = 0, float endDelay = 0, bool useUnscaledTime = false)
             => MaterialColor(target, propertyId, new TweenSettings<Color>(endValue, new TweenSettings(duration, ease, cycles, cycleMode, startDelay, endDelay, useUnscaledTime)));

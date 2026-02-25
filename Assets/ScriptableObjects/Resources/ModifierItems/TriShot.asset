@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: TriShot
   m_EditorClassIdentifier: 
   uuid: 2008728135
-  displayName: Tripple Shot
+  displayName: Triple Shot
   inventorySprite: {fileID: 1376013578, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   dropSprite: {fileID: 0}
   pickupRadius: 0.07

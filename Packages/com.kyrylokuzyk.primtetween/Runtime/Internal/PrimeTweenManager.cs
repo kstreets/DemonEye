@@ -466,7 +466,7 @@ namespace PrimeTween {
         }
 
         /// Returns null if target is a destroyed UnityEngine.Object
-        internal static Tween? delayWithoutDurationCheck([CanBeNull] object target, float duration, bool useUnscaledTime) {
+        internal static Tween? delayWithoutDurationCheck([CanBeNull] object target, float duration, bool useUnscaledTime, bool notUsingTarget = false) {
             var tween = fetchTween();
             var settings = new TweenSettings {
                 duration = duration,
@@ -474,7 +474,7 @@ namespace PrimeTween {
                 useUnscaledTime = useUnscaledTime
             };
             tween.Setup(target, ref settings, _ => {}, null, false, TweenType.Delay);
-            var result = addTween(tween);
+            var result = addTween(tween, notUsingTarget);
             // ReSharper disable once RedundantCast
             return result.IsCreated ? result : (Tween?)null;
         }
@@ -516,14 +516,14 @@ namespace PrimeTween {
             }
         }
 
-        internal static Tween addTween([NotNull] ReusableTween tween) {
-            return Instance.addTween_internal(tween);
+        internal static Tween addTween([NotNull] ReusableTween tween, bool notUsingTarget = false) {
+            return Instance.addTween_internal(tween, notUsingTarget);
         }
 
-        Tween addTween_internal([NotNull] ReusableTween tween) {
+        Tween addTween_internal([NotNull] ReusableTween tween, bool notUsingTarget = false) {
             Assert.IsNotNull(tween);
             Assert.IsTrue(tween.id > 0);
-            if (tween.target == null || tween.isUnityTargetDestroyed()) {
+            if (!notUsingTarget && (tween.target == null || tween.isUnityTargetDestroyed())) {
                 Debug.LogError($"Tween's target is null: {tween.GetDescription()}. This error can mean that:\n" +
                                "- The target reference is null.\n" +
                                "- UnityEngine.Object target reference is not populated in the Inspector.\n" +

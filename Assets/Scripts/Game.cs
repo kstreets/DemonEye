@@ -473,7 +473,7 @@ public class Game : MonoBehaviour {
         
         #if UNITY_EDITOR
         if (Mouse.current != null && Mouse.current.middleButton.isPressed) {
-            Time.timeScale = 8f;
+            Time.timeScale = 4f;
         }
         else {
             Time.timeScale = 1f;
@@ -3217,6 +3217,12 @@ public class Game : MonoBehaviour {
         PlayAudioClip(shootClip, player.position);
         foreach (Vector3 attackTarget in attackTargets) {
             ShootProjectile(attackTarget);
+            
+            if (equipedEye.doubleTapAugment.TryGetValue(out var doubleTap) && RollProbability(doubleTap.probability)) {
+                Tween.Delay(attackTarget, doubleTap.delayBetweenShots, static (attackTarget) => {
+                    inst.ShootProjectile(attackTarget);
+                });
+            }
         }
 
         float consecutiveShotDelay = gameplayConfig.attackDelay * 1.5f;
@@ -3508,6 +3514,8 @@ public class Game : MonoBehaviour {
         public BleedCritAugment.InstanceData? bleedCritAugment;
         public DoubleCritAugment.InstanceData? doubleCritAugment;
         public DistanceDamageAugment.InstanceData? distanceDamage;
+        public PenetrationDamageAugment.InstanceData? penetrationDamageAugment;
+        public DoubleTapAugment.InstanceData? doubleTapAugment;
     }
     
     public class DemonEyeRaidStats {
@@ -3586,6 +3594,7 @@ public class Game : MonoBehaviour {
         return sellPrice;
     } 
 
+    // TODO: Make this not allocate memory
     private List<Vector3> GetAttackTargets(int targetCount) {
         float overlapDist = gameplayConfig.projectileSpeed * GetProjectileRangeInSeconds();
         List<Collider2D> cols = OverlapCircle(player.position, overlapDist, Masks.EnemyMask);
@@ -4149,6 +4158,13 @@ public class Game : MonoBehaviour {
 
                 if (Time.time - demonEyeRaidStats.lastDoubleCritActivationTime <= doubleCrit.multiplierDuration) {
                     damageMultiplier *= doubleCrit.damageMulti;
+                }
+            }
+
+            if (equipedEye.penetrationDamageAugment.TryGetValue(out var penetrationDamage)) {
+                int penetrationCountBeforeDamagingThisEnemy = proj.ignoreEntities == null ? 0 : proj.ignoreEntities.Count;
+                if (penetrationCountBeforeDamagingThisEnemy > 0) {
+                    damageMultiplier *= penetrationCountBeforeDamagingThisEnemy * penetrationDamage.damageMultiplierPerPenetration;
                 }
             }
             
