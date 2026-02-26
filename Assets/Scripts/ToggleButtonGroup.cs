@@ -15,14 +15,16 @@ public class ToggleButtonGroup : MonoBehaviour {
         callbacks.Clear();
         foreach (ToggleButton toggle in toggles) {
             InitializeToggle(toggle);
-        }
-        if (toggles.Count == 1) {
-            OnButtonClicked(toggles[0]);
-        }
+        } 
+        OnButtonClicked(toggles[0]);
     }
     
-    public void SetSelected(ToggleButton toggle) {
+    public void ManualyToggle(ToggleButton toggle) {
         OnButtonClicked(toggle);
+    }
+
+    public void ManualyToggleCosmetically(ToggleButton toggle) {
+        OnButtonClicked(toggle, false);
     }
 
     public void Add(ToggleButton toggle) {
@@ -49,11 +51,15 @@ public class ToggleButtonGroup : MonoBehaviour {
         toggle.button.onClick.AddListener(callback);
     }
 
-    private void OnButtonClicked(ToggleButton clickedToggle) {
+    private void OnButtonClicked(ToggleButton clickedToggle, bool invokeCallbacks = true) {
         foreach (ToggleButton toggle in toggles) {
             bool selected = toggle == clickedToggle;
             toggle.image.sprite = selected ? selectedSprite : nonSelectedSprite;
             toggle.text.margin = selected ? styles.selectedHideoutTabMargin : styles.nonSelectedHideoutTabMargin;
+        }
+
+        if (invokeCallbacks) {
+            clickedToggle.InvokeListenerCallback();
         }
     }
 

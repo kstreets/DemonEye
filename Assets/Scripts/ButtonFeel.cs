@@ -30,39 +30,46 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
     public void OnPointerDown(PointerEventData eventData) {
         if (isDisabled) return;
         image.sprite = pressedSprite;
-        text.margin = styles.pressedButtonTextMargin;
+        SetMargin(styles.pressedButtonTextMargin);
     }
     
     public void OnPointerUp(PointerEventData eventData) {
         if (isDisabled || beingKeptPressed) return;
         image.sprite = highlightedSprite && beingHovered ? GetHighlightedSprite() : GetNonHighlightedSprite();
-        text.margin = styles.normalButtonTextMargin;
+        SetMargin(styles.normalButtonTextMargin);
     }
 
     public void OnPointerEnter(PointerEventData eventData) {
         beingHovered = true;
         if (!highlightedSprite) return;
         image.sprite = GetHighlightedSprite();
-        text.margin = isDisabled || beingKeptPressed ? styles.pressedButtonTextMargin : styles.normalButtonTextMargin;
+        if (isDisabled || beingKeptPressed) {
+            SetMargin(styles.pressedButtonTextMargin);
+        }
+        else {
+            SetMargin(styles.normalButtonTextMargin);
+        }
     }
     
     public void OnPointerExit(PointerEventData eventData) {
         beingHovered = false;
         if (!highlightedSprite) return;
         image.sprite = GetNonHighlightedSprite();
-        text.margin = isDisabled || beingKeptPressed ? text.margin : styles.normalButtonTextMargin;
+        if (!(isDisabled || beingKeptPressed)) {
+            SetMargin(styles.normalButtonTextMargin);
+        }
     }
 
     public void Disable() {
         isDisabled = true;
         image.sprite = disabledSprite;
-        text.margin = styles.pressedButtonTextMargin;
+        SetMargin(styles.pressedButtonTextMargin);
     }
 
     public void Enable() {
         isDisabled = false;
         image.sprite = unpressedSprite;
-        text.margin = styles.normalButtonTextMargin;
+        SetMargin(styles.normalButtonTextMargin);
     }
 
     public void AddListener(Action callback) {
@@ -99,6 +106,11 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
             return nonHighlightedPressedSprite;
         }
         return unpressedSprite;
+    }
+
+    private void SetMargin(Vector4 margin) {
+        if (!text) return;
+        text.margin = margin;
     }
 
     private void OnButtonClicked() {

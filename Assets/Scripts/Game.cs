@@ -200,16 +200,12 @@ public class Game : MonoBehaviour {
     public RectTransform traderInventoryPanel;
     public RectTransform traderInventoryParent;
     public RectTransform traderTransactionInventoryParent;
-    public TextMeshProUGUI traderBarterRequirementsText;
     public TextMeshProUGUI traderTransactionInfoText;
     public Image traderXpLevelFill;
     public TextMeshProUGUI traderLevelText;
     public TextMeshProUGUI traderRemainingXpText;
     public TextMeshProUGUI traderItemRefreshTimeText;
-    public Button traderMoneyDealButton;
-    public Button traderBarterDealButton;
-    public Button traderBuyModeButton;
-    public Button traderSellModeButton;
+    public TransactionPanel transactionPanel;
     [EndFoldout]
 
     [Foldout("UI/MapSelectionPanel")]
@@ -1947,89 +1943,19 @@ public class Game : MonoBehaviour {
     private void ShowItemDescPopup(InventoryHoverInfo info) {
         if (itemDescPopup.gameObject.activeInHierarchy) return;
         
+        InventorySlot hoveredSlot = info.inventory.slots[info.slotIndex];
+        
         itemDescPopup.gameObject.SetActive(true);
+        itemDescPopup.Set(hoveredSlot.item);
         TweenPopUp(itemDescPopup.rectTransform);
         
-        InventorySlot hoveredSlot = info.inventory.slots[info.slotIndex];
-        TextMeshProUGUI nameText = itemDescPopup.nameText;
-        TextMeshProUGUI metaInfoText = itemDescPopup.metaInfoText;
-        TextMeshProUGUI descText = itemDescPopup.descText;
-        
-        Item.Rarity itemRarity = hoveredSlot.item.ItemRef.GetRarity();
-        Color itemRarityColor = styles.GetColorForRarity(itemRarity);
-        float tagTextPadding = styles.tagTextPadding;
-
-        itemDescPopup.tag1.gameObject.SetActive(true);
-        itemDescPopup.tag1.color = itemRarityColor;
-        
-        if (hoveredSlot.item.ItemRef.type == quickUseType) {
-            itemDescPopup.tag1Text.text = "Quick Use";
-        } 
-        else if (hoveredSlot.item.ItemRef.type == eyeModifierType) {
-            itemDescPopup.tag1Text.text = "Eye Modifier";
-        }
-        else if (hoveredSlot.item.ItemRef.type == wearableModifierType) {
-            itemDescPopup.tag1Text.text = "Wearable Modifier";
-        }
-        else if (hoveredSlot.item.ItemRef.type == backpackType) {
-            itemDescPopup.tag1Text.text = "Backpack";
-        }
-        else {
-            itemDescPopup.tag1.gameObject.SetActive(false);
-        }
-        
-        itemDescPopup.tag1ContentFitter.ForceRecalculate();
-        itemDescPopup.tag1.rectTransform.ResizeWidth(itemDescPopup.tag1Text.rectTransform.rect.width + tagTextPadding);
-        
-        itemDescPopup.tag2.color = itemRarityColor;
-        itemDescPopup.tag2Text.text = itemRarity.ToString();
-        itemDescPopup.tag2ContentFitter.ForceRecalculate();
-        itemDescPopup.tag2.rectTransform.ResizeWidth(itemDescPopup.tag2Text.rectTransform.rect.width + tagTextPadding);
-        
-        Item item = hoveredSlot.item.ItemRef;
-        nameText.text = item.displayName;
-
-        int sellOrBuyPrice = 0;
-        if (item.type == demonEyeType) { 
-            sellOrBuyPrice = GetDemonEyeSellPrice(hoveredSlot.item);
-        }
-        else {
-            bool itemIsOwnedByTrader = info.inventory.slots[info.slotIndex].item.traderOwned;
-            sellOrBuyPrice = itemIsOwnedByTrader ? item.buyPrice : item.GetSellPrice() * hoveredSlot.item.count;
-        }
-                             
-        string coinText = $"<sprite=0>{ColorText(sellOrBuyPrice.ToString("N0"), styles.coinCurrencyColor)}";
-        
-        string tintedWeightSprite = $"<sprite=2 color=#{ColorUtility.ToHtmlStringRGBA(styles.underWeightColor)}>";
-        string weightText = tintedWeightSprite + ColorText(item.Weight.ToString(), styles.underWeightColor);
-        
-        metaInfoText.text = coinText + "  " + weightText;
-        
-        // Set description
-        if (hoveredSlot.item.ItemRef.type == demonEyeType) {
-            DemonEyeInstance eyeInstance = eyeInstanceFromItemId[hoveredSlot.item.itemOrInstanceUuid];
-            string eyeDescription = "";
-            foreach (EquipedAugmentInstance augmentInstance in eyeInstance.augmentInstances) {
-                eyeDescription += $"{augmentInstance.Augment.GetDescription()}\n";
-            }
-            foreach (EquipedModInstance modInstance in eyeInstance.modInstances) {
-                eyeDescription += GetDemonEyeModDescription(modInstance.ModifierItem, modInstance.stackCount);
-            }
-            descText.text = eyeDescription;
-        }
-        else {
-            descText.text = hoveredSlot.item.ItemRef.GetDescription();
-        }
-        
-        if (hoveredSlot.item.ItemRef.type == quickUseType && !hoveredSlot.item.traderOwned) {
-            descText.text += $"<line-height=150%>\n<sprite=5 color=#{ColorUtility.ToHtmlStringRGBA(styles.inputIconTint)}> " +
-                             $"<size=80%>{ColorText("Right click to consume", styles.inputIconTint)}</size>";
-        } 
+        // Fit popup size to text elements
+        FitPopupSize(itemDescPopup.rectTransform, itemDescPopup.tagsParent.rect, itemDescPopup.nameText.rectTransform.rect, itemDescPopup.descText.rectTransform.rect);
 
         // Set popup position
         Vector2 hoveredSlotCenter = hoveredSlot.ui.rectTransform.WorldRect().center;
         float halfPopupWidth = itemDescPopup.rectTransform.rect.width / 2f;
-        Vector2 popupOffset = new(32 + halfPopupWidth, 40);
+        Vector2 popupOffset = new(45 + halfPopupWidth, 40);
         if (hoveredSlotCenter.x < ScreenCenter.x) {
             itemDescPopup.transform.position = hoveredSlotCenter + popupOffset;
         }
@@ -2037,11 +1963,6 @@ public class Game : MonoBehaviour {
             itemDescPopup.transform.position = hoveredSlotCenter + new Vector2(-popupOffset.x, popupOffset.y);
         }
 
-        // Fit popup size to text elements
-        itemDescPopup.nameContentFitter.ForceRecalculate();
-        itemDescPopup.descContentFitter.ForceRecalculate();
-        FitPopupSize(itemDescPopup.rectTransform, itemDescPopup.tagsParent.rect, itemDescPopup.nameText.rectTransform.rect, itemDescPopup.descText.rectTransform.rect);
-        
         // Add mechanic desctiption if necessary
         if (hoveredSlot.item.ItemRef.type == eyeModifierType) {
             ModifierItem modifierItem = (ModifierItem)hoveredSlot.item.ItemRef;
@@ -2060,12 +1981,12 @@ public class Game : MonoBehaviour {
         }
     }
 
-    private string GetDemonEyeModDescription(ModifierItem modifierItem, int count) {
+    public string GetDemonEyeModDescription(ModifierItem modifierItem, int count) {
         string title = ColorText($"<size=108%>{modifierItem.displayName}</size> <size=87%>x{count}</size>", styles.headerTextColor);
         return $"<line-height=95%>{title}\n{modifierItem.GetDescription(count)}<line-height=140%>\n";
     }
 
-    private void FitPopupSize(RectTransform popupRect, params Rect[] rects) {
+    public void FitPopupSize(RectTransform popupRect, params Rect[] rects) {
         float height = 0f;
         foreach (Rect rect in rects) {
             height += rect.height;
@@ -3526,7 +3447,7 @@ public class Game : MonoBehaviour {
     // Need to reset this at the beginning of every raid
     private DemonEyeRaidStats demonEyeRaidStats;
 
-    private Dictionary<int, DemonEyeInstance> eyeInstanceFromItemId = new();
+    public Dictionary<int, DemonEyeInstance> eyeInstanceFromItemId = new();
     private readonly DemonEyeInstance emptyDemonEye = new();
     private DemonEyeInstance equipedEye;
     private Limiter attackLimiter;
@@ -3583,7 +3504,7 @@ public class Game : MonoBehaviour {
         return eyeModifiers;
     }
 
-    private int GetDemonEyeSellPrice(InventoryItem demonEyeInventoryItem) {
+    public int GetDemonEyeSellPrice(InventoryItem demonEyeInventoryItem) {
         // We need to use the InventoryItem's ID because the Item's ID is the demon eye Scriptable Object
         DemonEyeInstance demonEye = eyeInstanceFromItemId[demonEyeInventoryItem.itemOrInstanceUuid]; 
         
@@ -5104,35 +5025,28 @@ public class Game : MonoBehaviour {
             });
         });
         
-        traderMoneyDealButton.onClick.AddListener(() => {
-            if (transactionState == TransactionState.Buying && curTradingItem == null) return;
+        transactionPanel.sellButton.AddListener(() => { 
             if (transactionState == TransactionState.Selling && GetInventoryItemCount(transactionInventory) <= 0) return;
-            
-            // InventoryValueType valueType = transactionState == TransactionState.Buying ? InventoryValueType.Buy : InventoryValueType.Sell;
-            // int price = GetInventoryValue(transactionInventory, valueType);
-            int price = transactionState == TransactionState.Buying ? curTradingItem.ItemRef.buyPrice : GetInventoryValue(transactionInventory, InventoryValueType.Sell);
-            
-            if (transactionState == TransactionState.Buying && player.coinCurrency >= price) {
-                player.coinCurrency -= price;
+            int sellPrice = GetInventoryValue(transactionInventory, InventoryValueType.Sell);
+            // Before selling items we pass the transaction inventory to callbacks that want to know what we sold
+            onSoldItemsToTrader?.Invoke(transactionInventory.slots); 
+            player.coinCurrency += sellPrice;
+            ClearInventory(transactionInventory);
+        });
+        
+        transactionPanel.moneyPurchaseButton.AddListener(() => {
+            if (transactionState == TransactionState.Buying && curTradingItem == null) return;
+            int buyPrice = curTradingItem.ItemRef.buyPrice;
+            if (player.coinCurrency >= buyPrice) {
+                player.coinCurrency -= buyPrice;
                 TryAddItemToInventory(stashInventory, curTradingItem.ItemRef, 1);
                 ReduceTradingItemStock();
-                
-                // for (int i = 0; i < transactionInventory.slots.Length; i++) { 
-                //     MoveEntireItemStack(transactionInventory, stashInventory, i);
-                // }
-                
                 // After buying items we just make sure all items in stash are no longer trader owned
                 ClearItemsAsTraderOwned(stashInventory);
             }
-            else if (transactionState == TransactionState.Selling) {
-                // Before selling items we pass the transaction inventory to callbacks that want to know what we sold
-                onSoldItemsToTrader?.Invoke(transactionInventory.slots);
-                player.coinCurrency += price;
-                ClearInventory(transactionInventory);
-            }
         });
         
-        traderBarterDealButton.onClick.AddListener(() => {
+        transactionPanel.barterPurchaseButton.AddListener(() => {
             if (curTradingItem == null) return;
 
             foreach (ItemWithCount barterReq in curTradingItem.ItemRef.barterRequirements) {
@@ -5151,7 +5065,7 @@ public class Game : MonoBehaviour {
             ReduceTradingItemStock();
         });
         
-        traderBuyModeButton.onClick.AddListener(() => {
+        transactionPanel.buyToggle.AddListener(() => {
             transactionState = TransactionState.Buying;
             traderTransactionInventoryParent.gameObject.SetActive(false);
             // Move any selling items back to stash
@@ -5162,7 +5076,7 @@ public class Game : MonoBehaviour {
             ClearInventory(transactionInventory);
         });
         
-        traderSellModeButton.onClick.AddListener(() => {
+        transactionPanel.sellToggle.AddListener(() => {
             transactionState = TransactionState.Selling;
             traderTransactionInventoryParent.gameObject.SetActive(true);
             SetTradingItem(null);
@@ -5466,19 +5380,24 @@ public class Game : MonoBehaviour {
     
     private void SetTradingItem(InventoryItem item) {
         curTradingItem = item;
-        if (curTradingItem == null) {
-            traderBarterRequirementsText.text = string.Empty;
-            return;
+        transactionPanel.UpdateBuyItem(item);
+        if (curTradingItem != null && transactionState == TransactionState.Selling) {
+            transactionPanel.toggleGroup.ManualyToggle(transactionPanel.buyToggle);
         }
-
-        string barterReqString = string.Empty;
-        foreach (ItemWithCount barterReq in item.ItemRef.barterRequirements) {
-            barterReqString += $"{barterReq.item.displayName} x{barterReq.count}  ({GetOwnedCountOfItem(barterReq.item)})\n";
-        }
-        traderBarterRequirementsText.text = barterReqString;
         
-        string buyPriceString = ColorText(curTradingItem.ItemRef.buyPrice.ToString("N0"), styles.coinCurrencyColor);
-        traderTransactionInfoText.text = $"Purchase for <sprite=0>{buyPriceString}";
+        // if (curTradingItem == null) {
+        //     traderBarterRequirementsText.text = string.Empty;
+        //     return;
+        // }
+        //
+        // string barterReqString = string.Empty;
+        // foreach (ItemWithCount barterReq in item.ItemRef.barterRequirements) {
+        //     barterReqString += $"{barterReq.item.displayName} x{barterReq.count}  ({GetOwnedCountOfItem(barterReq.item)})\n";
+        // }
+        // traderBarterRequirementsText.text = barterReqString;
+        //
+        // string buyPriceString = ColorText(curTradingItem.ItemRef.buyPrice.ToString("N0"), styles.coinCurrencyColor);
+        // traderTransactionInfoText.text = $"Purchase for <sprite=0>{buyPriceString}";
     }
 
     private void ReduceTradingItemStock() {
@@ -5518,20 +5437,24 @@ public class Game : MonoBehaviour {
         // }
         
         if (transactionState == TransactionState.Buying) {
+            transactionPanel.UpdateBuyItem(curTradingItem);
+            transactionPanel.toggleGroup.ManualyToggleCosmetically(transactionPanel.buyToggle);
             // int buyPrice = GetInventoryValue(transactionInventory, InventoryValueType.Buy);
             // string buyPriceString = ColorText(buyPrice.ToString("N0"), styles.coinCurrencyColor);
             // traderTransactionInfoText.text = $"Purchase for <sprite=0>{buyPriceString}";
             
-            traderBarterDealButton.gameObject.SetActive(true);
-            traderBarterRequirementsText.gameObject.SetActive(true);
+            // traderBarterDealButton.gameObject.SetActive(true);
+            // traderBarterRequirementsText.gameObject.SetActive(true);
         }
         else if (transactionState == TransactionState.Selling) {
             int sellPrice = GetInventoryValue(transactionInventory, InventoryValueType.Sell);
-            string sellPriceString = ColorText(sellPrice.ToString("N0"), styles.coinCurrencyColor);
-            traderTransactionInfoText.text = $"Sell for <sprite=0>{sellPriceString}";
-            
-            traderBarterDealButton.gameObject.SetActive(false);
-            traderBarterRequirementsText.gameObject.SetActive(false);
+            transactionPanel.UpdateSellPrice(sellPrice);
+            transactionPanel.toggleGroup.ManualyToggleCosmetically(transactionPanel.sellToggle);
+            // string sellPriceString = ColorText(sellPrice.ToString("N0"), styles.coinCurrencyColor);
+            // traderTransactionInfoText.text = $"Sell for <sprite=0>{sellPriceString}";
+            //
+            // traderBarterDealButton.gameObject.SetActive(false);
+            // traderBarterRequirementsText.gameObject.SetActive(false);
         }
     }
     
@@ -5790,7 +5713,7 @@ public class Game : MonoBehaviour {
 
         if (presentingQuestPackage == null || presentingQuestPackage.questNode == null) {
             presentingQuestPackage = activeQuestPackages[0];
-            questToggleButtonGroup.SetSelected(presentingQuestPackage.questToggleButton);
+            questToggleButtonGroup.ManualyToggle(presentingQuestPackage.questToggleButton);
         }
         
         foreach (QuestPackage questPackage in activeQuestPackages) {
