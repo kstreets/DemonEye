@@ -1,0 +1,4899 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 1
+  m_Script: {fileID: 11500000, guid: 10eebdfefeff7ec4da203cd302ad5f7a, type: 3}
+  m_Name: IceRuleset
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::WaveFunctionCollapseTileRuleset
+  baseMapRuleset:
+    rules:
+    - tileIdOrIndex: 0
+      northNeighbors:
+        b0: 2345258303656951839
+        b1: 15728640
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 4931934173179936769
+        b1: 403046784
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 658097291642601481
+        b1: 2786448
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 10826653781224194099
+        b1: 4550657
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 1
+      northNeighbors:
+        b0: 2147483680
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1
+        b1: 5368709120
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 7516192768
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 2309220710007963684
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 2
+      northNeighbors:
+        b0: 17231312832
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1
+        b1: 1073741824
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 2054
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 2251800887427116
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 3
+      northNeighbors:
+        b0: 67584
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1
+        b1: 105558484975616
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 37159095509256196
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 5368709120
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 4
+      northNeighbors:
+        b0: 131088
+        b1: 1152921513196781568
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 17
+        b1: 3221225472
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 1073741824
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1152921506754330656
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 5
+      northNeighbors:
+        b0: 144115256829173760
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 131074
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 2305843009213693975
+        b1: 1657857376256
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 35270276689984
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 6
+      northNeighbors:
+        b0: 9245944714756682496
+        b1: 268501025
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 61217443460868
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 14141427878452574048
+        b1: 134217728
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 648538958291661760
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 7
+      northNeighbors:
+        b0: 109053598036736
+        b1: 402655232
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 37176245261002500
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 19222590452032
+        b1: 536936448
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 39295078393088
+        b1: 4
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 8
+      northNeighbors:
+        b0: 288777649874597312
+        b1: 939524096
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 25558779811780
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 432382876886811584
+        b1: 12288
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 61293981194176
+        b1: 32
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 9
+      northNeighbors:
+        b0: 10385638909629491136
+        b1: 64
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 54134202985156
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 4629755040747779392
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 586053656415626560
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 10
+      northNeighbors:
+        b0: 13853198614394336704
+        b1: 256
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 2306393545172740
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 9241582971301402496
+        b1: 16384
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 39295141858880
+        b1: 1048
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 11
+      northNeighbors:
+        b0: 1099589222912
+        b1: 2
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 8796093022216
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 19275880338432
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1125899906842637
+        b1: 17179869184
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 12
+      northNeighbors:
+        b0: 18141087401529664
+        b1: 16385
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1180370701940164
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 450399113859096928
+        b1: 16384
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 602249009589952
+        b1: 528
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 13
+      northNeighbors:
+        b0: 27252053066700480
+        b1: 268435616
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1184290753791972
+        b1: 512
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 109431718974176
+        b1: 8193
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 9890923191325376
+        b1: 32
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 14
+      northNeighbors:
+        b0: 306248343974066048
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 21542042974180
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 450381600979990464
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 19370536964992
+        b1: 512
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 15
+      northNeighbors:
+        b0: 194265866102080
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1127678821901252
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 39148824094528
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 616993927066048
+        b1: 16
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 16
+      northNeighbors:
+        b0: 577029750050570624
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 8796093022216
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 726027264320
+        b1: 4
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 2341880603936292873
+        b1: 2256253694771200
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 17
+      northNeighbors:
+        b0: 2147483680
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 18014398509482001
+        b1: 18017705634299904
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 7516192768
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 549756076032
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 18
+      northNeighbors:
+        b0: 214892024192
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 9367487499808538656
+        b1: 8192
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 131072
+        b1: 8388608
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 36322564120960
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 19
+      northNeighbors:
+        b0: 4629739694544422336
+        b1: 402653696
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 54688585684416
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 74415018399552
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 621494947903424
+        b1: 1024
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 20
+      northNeighbors:
+        b0: 18035903945041856
+        b1: 134217728
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1151987789702084
+        b1: 67108864
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 18070677789140960
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 54692645779008
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 21
+      northNeighbors:
+        b0: 432367237152126784
+        b1: 128
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 2401069235904
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 288251464708540352
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 61139102217408
+        b1: 128
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 22
+      northNeighbors:
+        b0: 758161047836608
+        b1: 32896
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 21570893952960
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 9223393589489366880
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 9769813894284096
+        b1: 134217728
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 23
+      northNeighbors:
+        b0: 4620750096357189568
+        b1: 268435456
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 2343023630016696256
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 55248577939264
+        b1: 8192
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 147055497050048
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 24
+      northNeighbors:
+        b0: 4927045238159632192
+        b1: 129
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 37088432539460
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 9511691673518531520
+        b1: 268439552
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 576532938152264128
+        b1: 134217728
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 25
+      northNeighbors:
+        b0: 4611703739625014336
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 57827447599460
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 36949636198464
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 576464055346259392
+        b1: 33554432
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 26
+      northNeighbors:
+        b0: 9223499159512343936
+        b1: 134225920
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 2877988356032
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 9241388209570633024
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 576497706434837824
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 27
+      northNeighbors:
+        b0: 54666494260160
+        b1: 268435456
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 36083472220419136
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 144133877868283776
+        b1: 64
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 576515431951098560
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 28
+      northNeighbors:
+        b0: 4620729166923306880
+        b1: 134217792
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 36049392761897792
+        b1: 1048576
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 38203886699968
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 577307079992678080
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 29
+      northNeighbors:
+        b0: 1683627765760
+        b1: 4
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1
+        b1: 5368709120
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 3377700257464320
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 2684354568
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 30
+      northNeighbors:
+        b0: 580118384960
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1
+        b1: 5368709120
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 38280597906456582
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 3221225472
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 31
+      northNeighbors:
+        b0: 1152957590930473216
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 131074
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 37154698536419345
+        b1: 3298534883328
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 2413932057984
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 32
+      northNeighbors:
+        b0: 9223426596120585408
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 2305883911275212992
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 9223495844046341568
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 5558200546752
+        b1: 536871938
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 33
+      northNeighbors:
+        b0: 5188467360477017344
+        b1: 128
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 37193935075198400
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 9223425945568342848
+        b1: 64
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 9607047741503424
+        b1: 128
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 34
+      northNeighbors:
+        b0: 4972453040753264448
+        b1: 268435456
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 21686467478916
+        b1: 33554432
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 10664542845628118496
+        b1: 1
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 581018288628721408
+        b1: 32768
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 35
+      northNeighbors:
+        b0: 4638797768083157952
+        b1: 268435584
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 23816396404160
+        b1: 9437188
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 18138364636853696
+        b1: 67108864
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 649278697823133632
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 36
+      northNeighbors:
+        b0: 297433928960631680
+        b1: 32768
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 21163965970272
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 10682541136254892000
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 576557084640842944
+        b1: 32896
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 37
+      northNeighbors:
+        b0: 18141663108532032
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 36054824934757824
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 14988001140381628352
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 6786479900608
+        b1: 16
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 38
+      northNeighbors:
+        b0: 1441151880758820864
+        b1: 67108864
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 9223372073361997824
+        b1: 4194304
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 3307124817920
+        b2: 8
+        b3: 0
+      eastNeighbors:
+        b0: 20341099331968
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 39
+      northNeighbors:
+        b0: 315414349983831232
+        b1: 512
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1184998622865216
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 18212147896154048
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 129437937565504
+        b1: 512
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 40
+      northNeighbors:
+        b0: 161349201622976
+        b1: 268435456
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 20543599901632
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 3981971355008
+        b1: 16777216
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 576499948300336064
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 41
+      northNeighbors:
+        b0: 4900078255067906496
+        b1: 272
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 2305882273883903616
+        b1: 536870912
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 9511659005678728640
+        b1: 1
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 61229338522624
+        b1: 128
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 42
+      northNeighbors:
+        b0: 18318078517568
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 649081296294838272
+        b1: 32768
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 2959247672064
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 8796093022216
+        b1: 1048576
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 43
+      northNeighbors:
+        b0: 67584
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1
+        b1: 2314859061470298112
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 4398046576640
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 5368709120
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 44
+      northNeighbors:
+        b0: 72077093639845824
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 26100766914368
+        b1: 8388608
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 20736244237120
+        b1: 4096
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 4612304695748218560
+        b1: 1026
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 45
+      northNeighbors:
+        b0: 495343058302528
+        b1: 150995456
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 3377938590898112
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 56685187872160
+        b1: 2048
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 72658524698621760
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 46
+      northNeighbors:
+        b0: 1
+        b1: 4612671661882736640
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 35356254680448
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 18366860722438144
+        b1: 262144
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 4611897163331936320
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 47
+      northNeighbors:
+        b0: 1
+        b1: 9224075930455506944
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 39118566367488
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 4629911557541724160
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 4621115979903009792
+        b1: 16908480
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 48
+      northNeighbors:
+        b0: 1
+        b1: 4611827030793650176
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 35210141893376
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 4611826756184186880
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 4620763586426306560
+        b1: 134217728
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 49
+      northNeighbors:
+        b0: 577028100303355904
+        b1: 1152
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 649081296299032576
+        b1: 1024
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 52819781005824
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 144159220080574464
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 50
+      northNeighbors:
+        b0: 35742727319680
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1
+        b1: 5368709120
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1125899906844674
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 37154699610161160
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 51
+      northNeighbors:
+        b0: 35184372089856
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1
+        b1: 1073741824
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 6
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1610612736
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 52
+      northNeighbors:
+        b0: 1
+        b1: 524288
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 64
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 17179869184
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 9007199254740992
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 53
+      northNeighbors:
+        b0: 1
+        b1: 117128797232300032
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 653128638976
+        b1: 1056
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 4616611839113961984
+        b1: 544
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 4611826967442882560
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 54
+      northNeighbors:
+        b0: 131073
+        b1: 4577280865075200
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 10376294263034508352
+        b1: 16781376
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 5765962607764701184
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 4611897777563129408
+        b1: 64
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 55
+      northNeighbors:
+        b0: 146439929984
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1
+        b1: 5368709120
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 37154696925872128
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 36028800240189448
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 56
+      northNeighbors:
+        b0: 567347999932416
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 17609365913600
+        b1: 1024
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 35218731827264
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 35184372613120
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 57
+      northNeighbors:
+        b0: 432345564227829760
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 144115188077953056
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 2207613190144
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 134238464
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 58
+      northNeighbors:
+        b0: 1
+        b1: 576534433541128192
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 144118297651069184
+        b1: 16385
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 228978665193472
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 2284941496640
+        b1: 268437760
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 59
+      northNeighbors:
+        b0: 577028100303355904
+        b1: 33555456
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 577023710846844928
+        b1: 2098688
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1220290806336
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 2603124616624865280
+        b2: 4
+        b3: 0
+    - tileIdOrIndex: 60
+      northNeighbors:
+        b0: 9241386435364257792
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 277025391104
+        b1: 8192
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 17
+        b1: 282583078273024
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 223338299392
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 61
+      northNeighbors:
+        b0: 2203326611456
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1
+        b1: 1073741824
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 2305843009213759490
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 2305843009213693984
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 62
+      northNeighbors:
+        b0: 1
+        b1: 13836606648690933760
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 2259480478720
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 4630210590332157952
+        b1: 402653216
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 4621115567586148928
+        b1: 134217728
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 63
+      northNeighbors:
+        b0: 9241386710242426880
+        b1: 8192
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 10376293545823700544
+        b1: 64
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 22802771648446464
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 2435334538304
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 64
+      northNeighbors:
+        b0: 288230376151711744
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 16781376
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 3298534883328
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 2216203132928
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 65
+      northNeighbors:
+        b0: 0
+        b1: 136
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 2048
+        b1: 16
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 17596481011712
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 8796093022208
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 66
+      northNeighbors:
+        b0: 34359738368
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 536870912
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 128
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 65536
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 67
+      northNeighbors:
+        b0: 0
+        b1: 16
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 0
+        b1: 2
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1024
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 8796093022208
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 68
+      northNeighbors:
+        b0: 0
+        b1: 146
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 2199023255552
+        b1: 24
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 137438991360
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 44032004718592
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 69
+      northNeighbors:
+        b0: 9007199254740992
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 8256
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 8448
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 4620693217682128896
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 70
+      northNeighbors:
+        b0: 9241386435364257792
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 268435968
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 18155135997837312
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 8724152320
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 71
+      northNeighbors:
+        b0: 1
+        b1: 108086430785339392
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 562992926171136
+        b1: 18
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 143013823119360
+        b1: 402653440
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 36169677314981888
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 72
+      northNeighbors:
+        b0: 1
+        b1: 1126037345796096
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 2199023256576
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 288230376151711744
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 0
+        b1: 268435584
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 73
+      northNeighbors:
+        b0: 576460752303431680
+        b1: 1024
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 35734128427008
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 549755834368
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 9007199254740992
+        b1: 1024
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 74
+      northNeighbors:
+        b0: 658088495549513728
+        b1: 1024
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 577023702256844800
+        b1: 1536
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 17596481537024
+        b1: 512
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 9051179719852032
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 75
+      northNeighbors:
+        b0: 0
+        b1: 4096
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 128
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 288230376151711744
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 35184372088832
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 76
+      northNeighbors:
+        b0: 18014398509481984
+        b1: 20480
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 0
+        b1: 22528
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 576460752303423488
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 17592202821888
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 77
+      northNeighbors:
+        b0: 1152921504607109120
+        b1: 8192
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 9223372036921884672
+        b1: 8192
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 1108101562368
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 8397056
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 78
+      northNeighbors:
+        b0: 288230376151711744
+        b1: 4096
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 4096
+        b1: 4096
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 2207613190144
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 5120
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 79
+      northNeighbors:
+        b0: 4398046511104
+        b1: 131072
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 68723671040
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 85899345920
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 524288
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 80
+      northNeighbors:
+        b0: 0
+        b1: 262144
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 64
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 281474976710656
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 128
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 81
+      northNeighbors:
+        b0: 1
+        b1: 140737488355328
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 0
+        b1: 32768
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 140737488355328
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 17179869184
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 82
+      northNeighbors:
+        b0: 1
+        b1: 0
+        b2: 1
+        b3: 0
+      southNeighbors:
+        b0: 0
+        b1: 65536
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 8589934592
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 70368744177664
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 83
+      northNeighbors:
+        b0: 8796093022208
+        b1: 17180917760
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 4616400724287291392
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 72057594037927936
+        b1: 32768
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 422213538807808
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 84
+      northNeighbors:
+        b0: 34628173824
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1
+        b1: 524288
+        b2: 4
+        b3: 0
+      westNeighbors:
+        b0: 4398046511104
+        b1: 33554432
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 0
+        b1: 10485760
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 85
+      northNeighbors:
+        b0: 576460752303423488
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1
+        b1: 140737488355328
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 0
+        b1: 1048576
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 0
+        b2: 2
+        b3: 0
+    - tileIdOrIndex: 86
+      northNeighbors:
+        b0: 274877906944
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1
+        b1: 0
+        b2: 1
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 549755813888
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 0
+        b1: 8388608
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 87
+      northNeighbors:
+        b0: 17626545782784
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1
+        b1: 281474976710656
+        b2: 8
+        b3: 0
+      westNeighbors:
+        b0: 0
+        b1: 5242880
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 262144
+        b1: 67108864
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 88
+      northNeighbors:
+        b0: 18014398509481984
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 35184372088832
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 140737488355328
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1099511627776
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 89
+      northNeighbors:
+        b0: 17179869184
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 576460752303423488
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 33554432
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 0
+        b1: 1048576
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 90
+      northNeighbors:
+        b0: 1048576
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 274877906944
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 0
+        b1: 8388608
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 34359738368
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 91
+      northNeighbors:
+        b0: 1
+        b1: 141149805215744
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 35184709206400
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 4611967493425070080
+        b1: 134217728
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 4611686018427387968
+        b1: 134217856
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 92
+      northNeighbors:
+        b0: 1
+        b1: 141149805215744
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1151194374592
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 288230376151711744
+        b1: 268435712
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 4611686018444165120
+        b1: 268435584
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 93
+      northNeighbors:
+        b0: 2199023255552
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 256
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 4294967296
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 128
+        b1: 0
+        b2: 0
+        b3: 0
+  superMapRuleset:
+    rules:
+    - tileIdOrIndex: 0
+      northNeighbors:
+        b0: 0
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 0
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 0
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 0
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 1
+      northNeighbors:
+        b0: 2147483680
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1
+        b1: 5368709120
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 7516192768
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 2309220710007963684
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 2
+      northNeighbors:
+        b0: 17231312832
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1
+        b1: 1073741824
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 2054
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 2251800887427116
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 3
+      northNeighbors:
+        b0: 67584
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1
+        b1: 105558484975616
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 37159095509256196
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 5368709120
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 4
+      northNeighbors:
+        b0: 131088
+        b1: 1152921513196781568
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 17
+        b1: 3221225472
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 1073741824
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1152921506754330656
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 5
+      northNeighbors:
+        b0: 144115256829173760
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 131074
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 2305843009213693975
+        b1: 1657857376256
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 35270276689984
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 6
+      northNeighbors:
+        b0: 9245944714756682496
+        b1: 268501025
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 61217443460868
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 14141427878452574048
+        b1: 134217728
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 648538958291661760
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 7
+      northNeighbors:
+        b0: 109053598036736
+        b1: 402655232
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 37176245261002500
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 19222590452032
+        b1: 536936448
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 39295078393088
+        b1: 4
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 8
+      northNeighbors:
+        b0: 288777649874597312
+        b1: 939524096
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 25558779811780
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 432382876886811584
+        b1: 12288
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 61293981194176
+        b1: 32
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 9
+      northNeighbors:
+        b0: 10385638909629491136
+        b1: 64
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 54134202985156
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 4629755040747779392
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 586053656415626560
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 10
+      northNeighbors:
+        b0: 13853198614394336704
+        b1: 256
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 2306393545172740
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 9241582971301402496
+        b1: 16384
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 39295141858880
+        b1: 1048
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 11
+      northNeighbors:
+        b0: 1099589222912
+        b1: 2
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 8796093022216
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 19275880338432
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1125899906842637
+        b1: 17179869184
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 12
+      northNeighbors:
+        b0: 18141087401529664
+        b1: 16385
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1180370701940164
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 450399113859096928
+        b1: 16384
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 602249009589952
+        b1: 528
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 13
+      northNeighbors:
+        b0: 27252053066700480
+        b1: 268435616
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1184290753791972
+        b1: 512
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 109431718974176
+        b1: 8193
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 9890923191325376
+        b1: 32
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 14
+      northNeighbors:
+        b0: 306248343974066048
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 21542042974180
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 450381600979990464
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 19370536964992
+        b1: 512
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 15
+      northNeighbors:
+        b0: 194265866102080
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1127678821901252
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 39148824094528
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 616993927066048
+        b1: 16
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 16
+      northNeighbors:
+        b0: 577029750050570624
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 8796093022216
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 726027264320
+        b1: 4
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 2341880603936292873
+        b1: 2256253694771200
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 17
+      northNeighbors:
+        b0: 2147483680
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 18014398509482001
+        b1: 18017705634299904
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 7516192768
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 549756076032
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 18
+      northNeighbors:
+        b0: 214892024192
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 9367487499808538656
+        b1: 8192
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 131072
+        b1: 8388608
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 36322564120960
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 19
+      northNeighbors:
+        b0: 4629739694544422336
+        b1: 402653696
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 54688585684416
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 74415018399552
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 621494947903424
+        b1: 1024
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 20
+      northNeighbors:
+        b0: 18035903945041856
+        b1: 134217728
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1151987789702084
+        b1: 67108864
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 18070677789140960
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 54692645779008
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 21
+      northNeighbors:
+        b0: 432367237152126784
+        b1: 128
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 2401069235904
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 288251464708540352
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 61139102217408
+        b1: 128
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 22
+      northNeighbors:
+        b0: 758161047836608
+        b1: 32896
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 21570893952960
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 9223393589489366880
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 9769813894284096
+        b1: 134217728
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 23
+      northNeighbors:
+        b0: 4620750096357189568
+        b1: 268435456
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 2343023630016696256
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 55248577939264
+        b1: 8192
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 147055497050048
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 24
+      northNeighbors:
+        b0: 4927045238159632192
+        b1: 129
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 37088432539460
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 9511691673518531520
+        b1: 268439552
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 576532938152264128
+        b1: 134217728
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 25
+      northNeighbors:
+        b0: 4611703739625014336
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 57827447599460
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 36949636198464
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 576464055346259392
+        b1: 33554432
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 26
+      northNeighbors:
+        b0: 9223499159512343936
+        b1: 134225920
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 2877988356032
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 9241388209570633024
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 576497706434837824
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 27
+      northNeighbors:
+        b0: 54666494260160
+        b1: 268435456
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 36083472220419136
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 144133877868283776
+        b1: 64
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 576515431951098560
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 28
+      northNeighbors:
+        b0: 4620729166923306880
+        b1: 134217792
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 36049392761897792
+        b1: 1048576
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 38203886699968
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 577307079992678080
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 29
+      northNeighbors:
+        b0: 1683627765760
+        b1: 4
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1
+        b1: 5368709120
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 3377700257464320
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 2684354568
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 30
+      northNeighbors:
+        b0: 580118384960
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1
+        b1: 5368709120
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 38280597906456582
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 3221225472
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 31
+      northNeighbors:
+        b0: 1152957590930473216
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 131074
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 37154698536419345
+        b1: 3298534883328
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 2413932057984
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 32
+      northNeighbors:
+        b0: 9223426596120585408
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 2305883911275212992
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 9223495844046341568
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 5558200546752
+        b1: 536871938
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 33
+      northNeighbors:
+        b0: 5188467360477017344
+        b1: 128
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 37193935075198400
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 9223425945568342848
+        b1: 64
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 9607047741503424
+        b1: 128
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 34
+      northNeighbors:
+        b0: 4972453040753264448
+        b1: 268435456
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 21686467478916
+        b1: 33554432
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 10664542845628118496
+        b1: 1
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 581018288628721408
+        b1: 32768
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 35
+      northNeighbors:
+        b0: 4638797768083157952
+        b1: 268435584
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 23816396404160
+        b1: 9437188
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 18138364636853696
+        b1: 67108864
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 649278697823133632
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 36
+      northNeighbors:
+        b0: 297433928960631680
+        b1: 32768
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 21163965970272
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 10682541136254892000
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 576557084640842944
+        b1: 32896
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 37
+      northNeighbors:
+        b0: 18141663108532032
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 36054824934757824
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 14988001140381628352
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 6786479900608
+        b1: 16
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 38
+      northNeighbors:
+        b0: 1441151880758820864
+        b1: 67108864
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 9223372073361997824
+        b1: 4194304
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 3307124817920
+        b2: 8
+        b3: 0
+      eastNeighbors:
+        b0: 20341099331968
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 39
+      northNeighbors:
+        b0: 315414349983831232
+        b1: 512
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1184998622865216
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 18212147896154048
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 129437937565504
+        b1: 512
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 40
+      northNeighbors:
+        b0: 161349201622976
+        b1: 268435456
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 20543599901632
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 3981971355008
+        b1: 16777216
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 576499948300336064
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 41
+      northNeighbors:
+        b0: 4900078255067906496
+        b1: 272
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 2305882273883903616
+        b1: 536870912
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 9511659005678728640
+        b1: 1
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 61229338522624
+        b1: 128
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 42
+      northNeighbors:
+        b0: 18318078517568
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 649081296294838272
+        b1: 32768
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 2959247672064
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 8796093022216
+        b1: 1048576
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 43
+      northNeighbors:
+        b0: 67584
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1
+        b1: 2314859061470298112
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 4398046576640
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 5368709120
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 44
+      northNeighbors:
+        b0: 72077093639845824
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 26100766914368
+        b1: 8388608
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 20736244237120
+        b1: 4096
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 4612304695748218560
+        b1: 1026
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 45
+      northNeighbors:
+        b0: 495343058302528
+        b1: 150995456
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 3377938590898112
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 56685187872160
+        b1: 2048
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 72658524698621760
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 46
+      northNeighbors:
+        b0: 1
+        b1: 4612671661882736640
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 35356254680448
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 18366860722438144
+        b1: 262144
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 4611897163331936320
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 47
+      northNeighbors:
+        b0: 1
+        b1: 9224075930455506944
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 39118566367488
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 4629911557541724160
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 4621115979903009792
+        b1: 16908480
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 48
+      northNeighbors:
+        b0: 1
+        b1: 4611827030793650176
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 35210141893376
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 4611826756184186880
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 4620763586426306560
+        b1: 134217728
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 49
+      northNeighbors:
+        b0: 577028100303355904
+        b1: 1152
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 649081296299032576
+        b1: 1024
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 52819781005824
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 144159220080574464
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 50
+      northNeighbors:
+        b0: 35742727319680
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1
+        b1: 5368709120
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1125899906844674
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 37154699610161160
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 51
+      northNeighbors:
+        b0: 35184372089856
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1
+        b1: 1073741824
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 6
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1610612736
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 52
+      northNeighbors:
+        b0: 1
+        b1: 524288
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 64
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 17179869184
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 9007199254740992
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 53
+      northNeighbors:
+        b0: 1
+        b1: 117128797232300032
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 653128638976
+        b1: 1056
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 4616611839113961984
+        b1: 544
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 4611826967442882560
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 54
+      northNeighbors:
+        b0: 131073
+        b1: 4577280865075200
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 10376294263034508352
+        b1: 16781376
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 5765962607764701184
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 4611897777563129408
+        b1: 64
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 55
+      northNeighbors:
+        b0: 146439929984
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1
+        b1: 5368709120
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 37154696925872128
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 36028800240189448
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 56
+      northNeighbors:
+        b0: 567347999932416
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 17609365913600
+        b1: 1024
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 35218731827264
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 35184372613120
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 57
+      northNeighbors:
+        b0: 432345564227829760
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 144115188077953056
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 2207613190144
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 134238464
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 58
+      northNeighbors:
+        b0: 1
+        b1: 576534433541128192
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 144118297651069184
+        b1: 16385
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 228978665193472
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 2284941496640
+        b1: 268437760
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 59
+      northNeighbors:
+        b0: 577028100303355904
+        b1: 33555456
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 577023710846844928
+        b1: 2098688
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1220290806336
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 2603124616624865280
+        b2: 4
+        b3: 0
+    - tileIdOrIndex: 60
+      northNeighbors:
+        b0: 9241386435364257792
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 277025391104
+        b1: 8192
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 17
+        b1: 282583078273024
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 223338299392
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 61
+      northNeighbors:
+        b0: 2203326611456
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1
+        b1: 1073741824
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 2305843009213759490
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 2305843009213693984
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 62
+      northNeighbors:
+        b0: 1
+        b1: 13836606648690933760
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 2259480478720
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 4630210590332157952
+        b1: 402653216
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 4621115567586148928
+        b1: 134217728
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 63
+      northNeighbors:
+        b0: 9241386710242426880
+        b1: 8192
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 10376293545823700544
+        b1: 64
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 22802771648446464
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 2435334538304
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 64
+      northNeighbors:
+        b0: 288230376151711744
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 16781376
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 3298534883328
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 2216203132928
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 65
+      northNeighbors:
+        b0: 0
+        b1: 136
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 2048
+        b1: 16
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 17596481011712
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 8796093022208
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 66
+      northNeighbors:
+        b0: 34359738368
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 536870912
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 128
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 65536
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 67
+      northNeighbors:
+        b0: 0
+        b1: 16
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 0
+        b1: 2
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1024
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 8796093022208
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 68
+      northNeighbors:
+        b0: 0
+        b1: 146
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 2199023255552
+        b1: 24
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 137438991360
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 44032004718592
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 69
+      northNeighbors:
+        b0: 9007199254740992
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 8256
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 8448
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 4620693217682128896
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 70
+      northNeighbors:
+        b0: 9241386435364257792
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 268435968
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 18155135997837312
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 8724152320
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 71
+      northNeighbors:
+        b0: 1
+        b1: 108086430785339392
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 562992926171136
+        b1: 18
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 143013823119360
+        b1: 402653440
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 36169677314981888
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 72
+      northNeighbors:
+        b0: 1
+        b1: 1126037345796096
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 2199023256576
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 288230376151711744
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 0
+        b1: 268435584
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 73
+      northNeighbors:
+        b0: 576460752303431680
+        b1: 1024
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 35734128427008
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 549755834368
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 9007199254740992
+        b1: 1024
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 74
+      northNeighbors:
+        b0: 658088495549513728
+        b1: 1024
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 577023702256844800
+        b1: 1536
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 17596481537024
+        b1: 512
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 9051179719852032
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 75
+      northNeighbors:
+        b0: 0
+        b1: 4096
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 128
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 288230376151711744
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 35184372088832
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 76
+      northNeighbors:
+        b0: 18014398509481984
+        b1: 20480
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 0
+        b1: 22528
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 576460752303423488
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 17592202821888
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 77
+      northNeighbors:
+        b0: 1152921504607109120
+        b1: 8192
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 9223372036921884672
+        b1: 8192
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 1108101562368
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 8397056
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 78
+      northNeighbors:
+        b0: 288230376151711744
+        b1: 4096
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 4096
+        b1: 4096
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 2207613190144
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 5120
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 79
+      northNeighbors:
+        b0: 4398046511104
+        b1: 131072
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 68723671040
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 85899345920
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 524288
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 80
+      northNeighbors:
+        b0: 0
+        b1: 262144
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 64
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 281474976710656
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 128
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 81
+      northNeighbors:
+        b0: 1
+        b1: 140737488355328
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 0
+        b1: 32768
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 140737488355328
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 17179869184
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 82
+      northNeighbors:
+        b0: 1
+        b1: 0
+        b2: 1
+        b3: 0
+      southNeighbors:
+        b0: 0
+        b1: 65536
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 8589934592
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 70368744177664
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 83
+      northNeighbors:
+        b0: 8796093022208
+        b1: 17180917760
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 4616400724287291392
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 72057594037927936
+        b1: 32768
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 422213538807808
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 84
+      northNeighbors:
+        b0: 34628173824
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1
+        b1: 524288
+        b2: 4
+        b3: 0
+      westNeighbors:
+        b0: 4398046511104
+        b1: 33554432
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 0
+        b1: 10485760
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 85
+      northNeighbors:
+        b0: 576460752303423488
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1
+        b1: 140737488355328
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 0
+        b1: 1048576
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1
+        b1: 0
+        b2: 2
+        b3: 0
+    - tileIdOrIndex: 86
+      northNeighbors:
+        b0: 274877906944
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1
+        b1: 0
+        b2: 1
+        b3: 0
+      westNeighbors:
+        b0: 1
+        b1: 549755813888
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 0
+        b1: 8388608
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 87
+      northNeighbors:
+        b0: 17626545782784
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1
+        b1: 281474976710656
+        b2: 8
+        b3: 0
+      westNeighbors:
+        b0: 0
+        b1: 5242880
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 262144
+        b1: 67108864
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 88
+      northNeighbors:
+        b0: 18014398509481984
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 35184372088832
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 140737488355328
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1099511627776
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 89
+      northNeighbors:
+        b0: 17179869184
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 576460752303423488
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 33554432
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 0
+        b1: 1048576
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 90
+      northNeighbors:
+        b0: 1048576
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 274877906944
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 0
+        b1: 8388608
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 34359738368
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 91
+      northNeighbors:
+        b0: 1
+        b1: 141149805215744
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 35184709206400
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 4611967493425070080
+        b1: 134217728
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 4611686018427387968
+        b1: 134217856
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 92
+      northNeighbors:
+        b0: 1
+        b1: 141149805215744
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 1151194374592
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 288230376151711744
+        b1: 268435712
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 4611686018444165120
+        b1: 268435584
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 93
+      northNeighbors:
+        b0: 2199023255552
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 256
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 4294967296
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 128
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 94
+      northNeighbors:
+        b0: 2345258303656820767
+        b1: 2259521091141632
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 315251973915934721
+        b1: 15097977388560023680
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 9015995347763209
+        b1: 2858849002022502528
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 306244774661324819
+        b1: 1752695218060132352
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 95
+      northNeighbors:
+        b0: 16
+        b1: 1108101562368
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 0
+        b1: 1073741824
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 0
+        b1: 1073741824
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 131074
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 96
+      northNeighbors:
+        b0: 37163494629441546
+        b1: 606664130560
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 315251973915934720
+        b1: 1262398096046817408
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 9015995347828744
+        b1: 108130428430319744
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 306244774661324802
+        b1: 1358460574760960
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 97
+      northNeighbors:
+        b0: 131072
+        b1: 71476845740032
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 306244774661193744
+        b1: 576743337529180160
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 0
+        b1: 22548578304
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 1297036967560609824
+        b1: 286720
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 98
+      northNeighbors:
+        b0: 8796093022208
+        b1: 72066441670557696
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 9007199254740992
+        b1: 44037373952000
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 577023702256912384
+        b1: 131088
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 0
+        b1: 13958643712
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 99
+      northNeighbors:
+        b0: 8796093022208
+        b1: 44032004718592
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 0
+        b1: 55834574976
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 577023702256910336
+        b1: 16
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 0
+        b1: 4294967296
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 100
+      northNeighbors:
+        b0: 0
+        b1: 1073741824
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 4611897124659920896
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 9007199254740992
+        b1: 141149805215744
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 18014398509481984
+        b1: 412316860416
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 101
+      northNeighbors:
+        b0: 0
+        b1: 5368709120
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 4611897124659920896
+        b1: 402653440
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 9007199254740992
+        b1: 211587268870272
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 18014398509481984
+        b1: 108227609581584384
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 102
+      northNeighbors:
+        b0: 0
+        b1: 5368709120
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 4612037862148276224
+        b1: 402653184
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 0
+        b1: 211587268870144
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 306244774661193728
+        b1: 72198812562620416
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 103
+      northNeighbors:
+        b0: 0
+        b1: 2199023255552
+        b2: 8
+        b3: 0
+      southNeighbors:
+        b0: 0
+        b1: 70373039144960
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 0
+        b1: 4294967296
+        b2: 2
+        b3: 0
+      eastNeighbors:
+        b0: 32
+        b1: 4194304
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 104
+      northNeighbors:
+        b0: 131072
+        b1: 1152995180475842560
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 306244774661193728
+        b1: 284785322754048
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 0
+        b1: 5368709120
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 10376293818487013408
+        b1: 8193
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 105
+      northNeighbors:
+        b0: 131072
+        b1: 576552012842270720
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 306244774661193728
+        b1: 3849364439040
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 0
+        b1: 5368709120
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 9367487501956022272
+        b1: 16385
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 106
+      northNeighbors:
+        b0: 0
+        b1: 35184372088832
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 0
+        b1: 1073741824
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 65536
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 0
+        b1: 1073741824
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 107
+      northNeighbors:
+        b0: 8796093022208
+        b1: 36072795737686016
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 0
+        b1: 44032004718592
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 577023702256844800
+        b1: 1050
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 0
+        b1: 5368709120
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 108
+      northNeighbors:
+        b0: 0
+        b1: 4294967296
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 0
+        b1: 576462951326679040
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 0
+        b1: 5368709120
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 306244774661193728
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 109
+      northNeighbors:
+        b0: 8
+        b1: 44001939947520
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 9007199254740992
+        b1: 48412871360512
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 649081296294772736
+        b1: 1040
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 0
+        b1: 5368709120
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 110
+      northNeighbors:
+        b0: 8
+        b1: 555124523008
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 306244774661193728
+        b1: 3307124817920
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 0
+        b1: 72057599406637056
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 306244774661193728
+        b1: 704099758637056
+        b2: 1
+        b3: 0
+    - tileIdOrIndex: 111
+      northNeighbors:
+        b0: 0
+        b1: 5370806272
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 4612178599636631552
+        b1: 402784256
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 9007199254740992
+        b1: 211523918626944
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 306244774661193728
+        b1: 108509085632036864
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 112
+      northNeighbors:
+        b0: 0
+        b1: 1108109950976
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 4611756387171565568
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 0
+        b1: 140737488879616
+        b2: 1
+        b3: 0
+      eastNeighbors:
+        b0: 10376293541461622784
+        b1: 65536
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 113
+      northNeighbors:
+        b0: 0
+        b1: 1073741824
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 211106232532992
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 0
+        b1: 70369817919488
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 0
+        b1: 4612811918334230528
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 114
+      northNeighbors:
+        b0: 0
+        b1: 5368709120
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 4611686018427387904
+        b1: 256
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 0
+        b1: 562954248388608
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 18014398509481984
+        b1: 1073741824
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 115
+      northNeighbors:
+        b0: 0
+        b1: 9007199254740992
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 0
+        b1: 1073741824
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 65536
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 0
+        b1: 1073741824
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 116
+      northNeighbors:
+        b0: 0
+        b1: 18014398509481984
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 18014398509481984
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 0
+        b1: 1073741824
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 9223372036854775808
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 117
+      northNeighbors:
+        b0: 8796093022208
+        b1: 432345564227567616
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 9007199254740992
+        b1: 290482175965396992
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 576460752303423488
+        b1: 1024
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 0
+        b1: 1073741824
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 118
+      northNeighbors:
+        b0: 131072
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 0
+        b1: 4503599627370496
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 0
+        b1: 1073741824
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 9223372036854775808
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 119
+      northNeighbors:
+        b0: 0
+        b1: 5368709120
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 9007199254740992
+        b1: 8796093022336
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 0
+        b1: 9223512911782084736
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 0
+        b1: 5368709120
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 120
+      northNeighbors:
+        b0: 0
+        b1: 5368709120
+        b2: 2
+        b3: 0
+      southNeighbors:
+        b0: 9007199254740992
+        b1: 17179869312
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 0
+        b1: 141149805215744
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 0
+        b1: 70374112886784
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 121
+      northNeighbors:
+        b0: 0
+        b1: 288230376151711744
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 0
+        b1: 9007199254740992
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 562949953421312
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 0
+        b1: 1073741824
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 122
+      northNeighbors:
+        b0: 0
+        b1: 2314850208468434944
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 0
+        b1: 153122387330596864
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 576460752303423488
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 0
+        b1: 1073741824
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 123
+      northNeighbors:
+        b0: 0
+        b1: 576478353079402496
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 288230376151711744
+        b1: 576462951326679040
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 0
+        b1: 1073741824
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 0
+        b1: 4096
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 124
+      northNeighbors:
+        b0: 0
+        b1: 5368709120
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 16
+        b1: 1099511627776
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 0
+        b1: 1073741824
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 18014398509481984
+        b1: 0
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 125
+      northNeighbors:
+        b0: 8796093022208
+        b1: 0
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 0
+        b1: 288230376151711744
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 576460752303423488
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 0
+        b1: 1073741824
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 126
+      northNeighbors:
+        b0: 0
+        b1: 1073741824
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 4612037862148276224
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 9007199254740992
+        b1: 4612248968380809216
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 18014398509481984
+        b1: 13835058055282163712
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 127
+      northNeighbors:
+        b0: 0
+        b1: 1073741824
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 4611826755915743232
+        b1: 0
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 0
+        b1: 13835058055282163712
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 0
+        b1: 9259400833873739776
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 128
+      northNeighbors:
+        b0: 0
+        b1: 4194304
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 0
+        b1: 262144
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 0
+        b1: 70368744177664
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 0
+        b1: 281474976710656
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 129
+      northNeighbors:
+        b0: 0
+        b1: 0
+        b2: 4
+        b3: 0
+      southNeighbors:
+        b0: 0
+        b1: 72057594037927936
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 0
+        b1: 2097152
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 0
+        b1: 549755813888
+        b2: 0
+        b3: 0
+    - tileIdOrIndex: 130
+      northNeighbors:
+        b0: 0
+        b1: 1048576
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 0
+        b1: 0
+        b2: 2
+        b3: 0
+      westNeighbors:
+        b0: 576460752303423488
+        b1: 0
+        b2: 0
+        b3: 0
+      eastNeighbors:
+        b0: 0
+        b1: 0
+        b2: 8
+        b3: 0
+    - tileIdOrIndex: 131
+      northNeighbors:
+        b0: 0
+        b1: 8388608
+        b2: 0
+        b3: 0
+      southNeighbors:
+        b0: 0
+        b1: 549755813888
+        b2: 0
+        b3: 0
+      westNeighbors:
+        b0: 0
+        b1: 0
+        b2: 4
+        b3: 0
+      eastNeighbors:
+        b0: 274877906944
+        b1: 0
+        b2: 0
+        b3: 0
+  idToGuid:
+  - 00000000000000000000000000000000
+  - a4e77f23f66e2b3458161ae9f40a721c
+  - f461d44c4ef63844987339fb8bb775a0
+  - 9a0c1f3a7d75c024b90dc3240909c335
+  - 191aede871899ff4e8ec358298e7b4ca
+  - d170de90ff2d66d45a1313738cc4e4aa
+  - 012cdad67fa123e4a81182e127cf34f1
+  - bd70471fe059ce84eb80d2f124e7c85f
+  - 91157a952c9fe3f47a381bcdd82dd565
+  - 5ad84bbd694d6fc4095dbd0b60bb860e
+  - 633e5af1f13ec984fbc9aa28bbaa36dd
+  - 2e33330b0f59db24a850ca63c59cf2a1
+  - f911d53e8ec93f94fa98ed1b0e618463
+  - 02dc9f249067c1d49b1460e0e06cae10
+  - 107f75c59f125b6448320efc529410ee
+  - f9746e83872148941bd89a8d699ea7be
+  - 475a9baf58e7e554eaaaa4391c26040e
+  - 09b240119c234294091fde3f4b6bbed4
+  - d1ce0cfa9865c834f8b227dd99eba453
+  - f61535d3cc462d54294c22bb3965cb7d
+  - 86d222301465b0e4e9d5e308850ee907
+  - 422cacb66ac48e947aa15c90ff2086f5
+  - 0d3574d4968690344a40b9c7fa9557cd
+  - 277e559f74957c640aa6f1f569add8eb
+  - 9e99a56fa69ae5c4cba47b69d95a0f85
+  - 717241c9f7209a84c99cd7f3e57fb469
+  - 603d8ad1fbba1554b98100b0f7ae3015
+  - 9327a08e4492b3646abefd69c1082b86
+  - 8ce57e27600b0cc468c45ef904db6356
+  - 14719514990e9204aa5303d877969f5a
+  - 1988edb69a9bb9d428311a9a2cdab845
+  - 89dc926380b983342956c215fa9d7ba8
+  - 2cb216e5df1a87a479dc1ca541d6b617
+  - 84a6b6ab79f49d5448a9defc493e0fde
+  - 5c1f45c5dee34ad4d93747ff69fe0dce
+  - 4049dc15970572148bcbe9558e66cc20
+  - 697b4539b74d9514aacf5a70a6a6d799
+  - 06fc83eda30b7a747922cb30066c7bf2
+  - 9a6a35277a46ccb4da4e5d56087000e1
+  - c218979429e9d1844ba22c217bb190b3
+  - 04346c5f5e69a4f4f897614115ba498a
+  - cae193f0f3e091b4b850722cf0909757
+  - 131b425ba85a79744b3d3c9c5c3d132f
+  - f099aebdb056a41408aaa769c1438efd
+  - 3b0191080f904b24c850bd96c3bcd9c6
+  - 240380f39e4256744ab8a7b21a34ca57
+  - 83f26a62f09f654418aab3bf63f03328
+  - c227f45de20daa1439ccaec1729b9dcc
+  - 5bcbe0e151fcf334e9b6e2a2685485af
+  - 5af659c43d1cb9f4d84e08bd3a5c8aa0
+  - 8ce63f18fbf514648a34d4388c5465b1
+  - a3ed1c9ed6fd66949bd397fb931fe318
+  - 4ee75c9ecfb31534daf81078fd3507c0
+  - cb2d24ac7033f9d448f0632c1fa03a88
+  - a7e9dbb297b56f644862e9f63b6ceca8
+  - b7c9dc3d4bbc7634699c075323f3040b
+  - cf0abcdd07ef37241bba2008fa768788
+  - 5066c7708a930ea47a21b2d250f2777d
+  - 5f43a39b7009a4841bc6ff95aeaf8aa0
+  - 74fab62dc32d5e74791099ef03e98332
+  - 2bf90ad2ebcf006488768e8bd1604c4b
+  - 38562a1a2fbe8dc4c84c14247eb2b1a7
+  - ddb61f8292fef6544bd7120da7b97b83
+  - ddfde03dbc7b9de4b80893d7bbbc758a
+  - 9d4ad22adacec3f498c003d7337884e7
+  - 0b645e0948321bf45abbd955fd38a868
+  - dfa68072b703f7c488b2ae54f6530bf1
+  - 6ae4bb46912d340418443cd6f5652097
+  - bce1803baf49c8a42935cdda122bac91
+  - d48d96640dd5fb54e99ee3baae0213ee
+  - 5499c54d1da60af49892771273e81faa
+  - 2e2e1c544ea5d4840a0fe337b1696215
+  - ce2bdadfb8d9da24f830172bce7c849d
+  - 9b4c2661de4e040409ca0f58235183d3
+  - 3cc9774d7cdfd424e8c7c577d310c7b0
+  - be8f3cfff8de0e341beecbe1a389bed5
+  - cf6606ad1af0a9848aec4742073c6194
+  - 18554f51808c96c4e9def135c9fc7ab7
+  - 6bf68bd2ed435b8478e62d478a058055
+  - 717cc1f268b36994e98a53488668749b
+  - 27110a3c9884563429368a582a19335f
+  - 214b2b1155b161e4187313ceeef73d32
+  - 9ae7d09b8552e534984b8665c379c48c
+  - 6ee27fa827913ff438eb773993c4710b
+  - 8f0b356578f638f499c8d4ce0b0efdbb
+  - 60283518759a86e49b8cab1d9c5f67b0
+  - cab9b891ed9202a4b810f57ef4dfc39e
+  - 083a5b16c52246c49988b17379a55dab
+  - 638f14b56997ef1429959b159a708eb6
+  - 5f51a9a7e6e72734db4658213ae82a39
+  - 5787d14e6c7bf724099d085d0ae5611d
+  - 403593790a0d89f42aea58324d5cdc67
+  - 2cd6a696fae5a114693ad3a5e7bca343
+  - d94b072cc6e4897438f8e8e8e7d1c680
+  - 4f5f1fe6e880b84419fe9862ab85f5dc
+  - 3b392df9e69b7be42bca24254fc56134
+  - a817a88ba90f0f34c9218bf30186ffeb
+  - 76c35ae171f2ba14fa68bce5fc5daba1
+  - c94372153f2195246ab0af22fc1291ae
+  - 975ceacb9d9adb141a460c56ccb4cbfa
+  - 7251f16e9d9583e4b957e347a9f08048
+  - 44b71f51f34c08a4e9a95bae0f24aedc
+  - 070996f0afd84744d83bf4590f994313
+  - 8e9be9292c9cca547a31677be7491e04
+  - 31a2bc377516a314099ce68f1ab42466
+  - b4cb0ebb31232b941bf6155a8432cda4
+  - f7e8dc82a8ceac84d8eacef39d16ed75
+  - 15069a23e58feeb49b7d9dc9d48393b8
+  - ca6a8ae3718a95f468452ef1b3bbedeb
+  - e752908de7365124199247130d04269a
+  - 2ce177e89865bef4eac53c60f5c450d9
+  - 810a2179bfe8eab4fa10de76e597d2db
+  - e6f7d78fd4eb34841bd0e6a0cd9d5cd2
+  - 7855aacd3cc54654c8a2be27a9a6eae8
+  - 0f63ddab78ce28040a7032bb332eaef9
+  - 59ab6e79c73a9ea4d8ae089ff93cd58a
+  - a10f5520d9f9ff04aa94a3f1762cdc74
+  - ad2ff0c8b370f7b49b717af865fd0833
+  - a3212e4fc20439f4f8bcc0804628215f
+  - 06ef774bb5ca56a4bb1e361fd89733fb
+  - 4dd3f680819f06e4694c3868c4527a72
+  - e413c3c391651ee4399b870cd504aa85
+  - 13a9aaedb98ace94c9313183c92d5363
+  - c044c4af992111e45b17de31eb058352
+  - d1c296454bf304c409ae718e23c968b7
+  - 50f61bdbdbf3d2f4fa9cd7ca0e68cc45
+  - 2ff9065bebd488a43af381d063eb64bb
+  - 7b6a65ccdcf41cb45aa50d7991286121
+  - ac226a84034ef5d46a33a4643ce13aec
+  - 71584c62043fab44aa29c8bcf2d5590b
+  - cc003194f3f1a504a8d266524a17435a
+  - 102c2f15ba20f5747bcb5b6db5810e0e
+  emptyStateIndex: 0
+  generationMetaString: 'Generated from HellRuleset :: 2/26/2026 1:40:49 PM'

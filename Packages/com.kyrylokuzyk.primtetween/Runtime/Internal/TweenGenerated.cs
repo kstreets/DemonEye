@@ -6,6 +6,7 @@
 // ReSharper disable UnusedMethodReturnValue.Global
 using System;
 using JetBrains.Annotations;
+using UnityEngine;
 using TweenType = PrimeTween.TweenAnimation.TweenType;
 using TypeUnion = PrimeTween.TweenAnimation.TypeUnion;
 
@@ -1909,8 +1910,10 @@ namespace PrimeTween {
                 } else {
                     val = _tween.FloatVal;
                 }
+                
                 _onValueChange(_target, val);
             }, null, false, TweenType.CustomFloat);
+            
             return PrimeTweenManager.Animate(tween);
         }
         static Tween animate(object target, ref TweenSettings<float> settings, [NotNull] Action<ReusableTween> setter, Func<ReusableTween, TypeUnion> getter, TweenType _tweenType) {

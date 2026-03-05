@@ -16265,6 +16265,7 @@ MonoBehaviour:
   hatManTrader: {fileID: 11400000, guid: bb3b083a03a70c147a32c54d43dd6569, type: 2}
   lighthouseMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
   customsMap: {fileID: 11400000, guid: 9353817006d76f54fb1273b8ced36a68, type: 2}
+  iceMap: {fileID: 11400000, guid: f4f5916ef704f084b8d118aedb5b966a, type: 2}
   terminalMap: {fileID: 11400000, guid: aac23282a2cd7784ab5861d2a0508e69, type: 2}
   itemDropPrefab: {fileID: 6950097619826054733, guid: 76730055c1712874c9ac1c6f28f45cde, type: 3}
   baseProjectilePrefab: {fileID: 2758590605051147821, guid: 490c322ccae8e8149a6dddb96650a50e, type: 3}

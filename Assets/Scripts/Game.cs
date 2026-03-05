@@ -46,6 +46,7 @@ public class Game : MonoBehaviour {
     [Foldout("Maps")]
     public MapData lighthouseMap;
     public MapData customsMap;
+    public MapData iceMap;
     public MapData terminalMap;
     [EndFoldout]
     
@@ -3908,7 +3909,7 @@ public class Game : MonoBehaviour {
     private void DamageEnemyAfterDelay(Entity enemy, int damage, bool isCriticalStrike, float delay) {
         enemy.delayedDamage = damage;
         enemy.delayedDamageIsCrit = isCriticalStrike;
-        Tween.Delay(enemy, delay, static enemy => {
+        Delay(enemy, delay, static enemy => {
             inst.DamageEnemy(enemy, enemy.delayedDamage, enemy.delayedDamageIsCrit);
         });
     }
@@ -4334,7 +4335,6 @@ public class Game : MonoBehaviour {
 
     private void SpawnResources(Transform resourceSpawnParent) {
         var resourceSpawns = resourceSpawnParent.GetComponentsInChildren<ResourceSpawn>().ToList();
-        resourceSpawns.RemoveAt(0); // Remove resourceSpawnParent
         
         foreach (ResourceSpawn resourceSpawn in resourceSpawns) { 
             GameObject prefab = resourceSpawn.GetPrefabToSpawn();
@@ -4491,7 +4491,7 @@ public class Game : MonoBehaviour {
             items.Add(GetItemFromDropPool(eyeUpgradesDropPool));
             spawnEyeUpgrade = RollProbability(loadedMapData.eyeUpgradeOnBodyChance);
         }
-            
+
         foreach (Item item in items) {
             int stackCount = 1;
             float spawnRateTaper = 0f;
@@ -5090,8 +5090,8 @@ public class Game : MonoBehaviour {
         });
         
         mediumMapButton.onClick.AddListener(() => {
-            LoadMapAsync(customsMap, () => {
-                CreateDropPoolsForMap(customsMap);
+            LoadMapAsync(iceMap, () => {
+                CreateDropPoolsForMap(iceMap);
                 gameStateMachine.SetStateIfNotCurrent(raidState);
             });
         });
@@ -6139,7 +6139,7 @@ public class Game : MonoBehaviour {
         foreach (Item item in allItems) {
             bool spawnsOnCurrentMap = item.spawnsOnAllMaps || item.spawnsOnMaps.Contains(map);
             if (!spawnsOnCurrentMap) continue;
-            
+
             if (item.chanceToSpawnFromRock > 0f) {
                 if (item.type == eyeModifierType) {
                     eyeUpgradesDropPool.items.Add(item);
