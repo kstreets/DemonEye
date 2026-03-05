@@ -3509,7 +3509,6 @@ public class Game : MonoBehaviour {
         return sellPrice;
     } 
 
-    // TODO: Make this not allocate memory
     private List<Vector3> GetAttackTargets(int targetCount) {
         float overlapDist = gameplayConfig.projectileSpeed * GetProjectileRangeInSeconds();
         List<Collider2D> cols = OverlapCircle(player.position, overlapDist, Masks.EnemyMask);
