@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -291,8 +290,6 @@ public class Game : MonoBehaviour {
     [EndFoldout]
     
     private InputAction moveInputAction;
-    private InputAction lookInputAction;
-    private InputAction attackInputAction;
     private InputAction interactInputAction;
     private InputAction inventoryInputAction;
     private InputAction selectItemInputAction;
@@ -382,8 +379,6 @@ public class Game : MonoBehaviour {
         equipedEye = emptyDemonEye;
 
         moveInputAction = InputSystem.actions.FindAction("Move");
-        lookInputAction = InputSystem.actions.FindAction("Look");
-        attackInputAction = InputSystem.actions.FindAction("Attack");
         interactInputAction = InputSystem.actions.FindAction("Interact");
         inventoryInputAction = InputSystem.actions.FindAction("Inventory");
         selectItemInputAction = InputSystem.actions.FindAction("SelectItem");
@@ -493,7 +488,6 @@ public class Game : MonoBehaviour {
         UpdateCurrencyNumbers();
         if (InRaid) {
             UpdateInRaidUI();
-            UpdateExitPortalArrowUI();
         }
     }
 
@@ -3516,7 +3510,6 @@ public class Game : MonoBehaviour {
         return sellPrice;
     } 
 
-    // TODO: Make this not allocate memory
     private List<Vector3> GetAttackTargets(int targetCount) {
         float overlapDist = gameplayConfig.projectileSpeed * GetProjectileRangeInSeconds();
         List<Collider2D> cols = OverlapCircle(player.position, overlapDist, Masks.EnemyMask);
@@ -3997,25 +3990,25 @@ public class Game : MonoBehaviour {
                 int gemsSpawned = 0;
                 int maxGemsAllowedToSpawn = loadedMapData.maxGemCountPerRock;
                 
-                // int upgradeDropIndex = -1;
-                // if (RollProbability(loadedMapData.eyeUpgradeFromRockChance)) {
-                //     upgradeDropIndex = Random.Range(0, dropCount);
-                //     gemsSpawned++;
-                // }
+                int upgradeDropIndex = -1;
+                if (RollProbability(loadedMapData.eyeUpgradeFromRockChance)) {
+                    upgradeDropIndex = Random.Range(0, dropCount);
+                    gemsSpawned++;
+                }
 
                 for (int i = 0; i < dropCount; i++) {
                     Item dropItem = null;
-                    // if (i == upgradeDropIndex) {
-                    //     dropItem = GetItemFromDropPool(eyeUpgradesDropPool);
-                    // }
-                    // else {
+                    if (i == upgradeDropIndex) {
+                        dropItem = GetItemFromDropPool(eyeUpgradesDropPool);
+                    }
+                    else {
                         do dropItem = GetItemFromDropPool(rockStonesDropPool);
                         while (gemsSpawned == maxGemsAllowedToSpawn && dropItem.type == gemType);
 
                         if (dropItem.type == gemType) {
                             gemsSpawned++;
                         }
-                    // }
+                    }
                     
                     float randomAngle = (angleDeltaPerDrop * i) + Random.Range(-randomRangePerDrop, randomRangePerDrop);
                     Vector3 endPos = entity.position + RotationVector(randomAngle, 0.18f, 0.25f);
@@ -4260,72 +4253,6 @@ public class Game : MonoBehaviour {
         gameStateMachine.SetState(winExitState);
     }
 
-    private void UpdateExitPortalArrowUI() {
-        return;
-        if (!activeExitPortal) {
-            portalArrow.gameObject.SetActive(false);
-            return;
-        }
-
-        Vector3 portalPosInScreenSpace = mainCamera.WorldToScreenPoint(activeExitPortal.position);
-
-        // Handle behind-camera targets by mirroring the direction
-        if (portalPosInScreenSpace.z < 0) {
-            portalPosInScreenSpace.x = Screen.width - portalPosInScreenSpace.x;
-            portalPosInScreenSpace.y = Screen.height - portalPosInScreenSpace.y;
-        }
-
-        Vector2 screenCenter = new(Screen.width / 2f, Screen.height / 2f);
-        Vector2 dirFromScreenCenter = ((Vector2)portalPosInScreenSpace - screenCenter).normalized;
-
-        bool portalIsOnScreen = portalPosInScreenSpace.x > 0f && portalPosInScreenSpace.x < Screen.width 
-                                && portalPosInScreenSpace.y > 0f && portalPosInScreenSpace.y < Screen.height;
-
-        if (portalIsOnScreen) {
-            portalArrow.gameObject.SetActive(false);
-            return;
-        }
-
-        if (!portalArrow.gameObject.activeInHierarchy) {
-            portalArrow.gameObject.SetActive(true);
-            Tween.Scale(portalArrow, 0f, 1f, 0.5f, Ease.OutBack);
-        }
-        
-        const float distFromScreenEdge = 50f;
-        const float extraTopPadding = 130f;
-        const float extraBottomPadding = 100f;
-        
-        float minX = distFromScreenEdge;
-        float maxX = Screen.width - distFromScreenEdge;
-        float minY = distFromScreenEdge + extraBottomPadding;
-        float maxY = Screen.height - extraTopPadding - distFromScreenEdge;
-        
-        // Find where direction hits edge
-        Vector2 edgePos = screenCenter;
-        float slope = dirFromScreenCenter.y / dirFromScreenCenter.x;
-
-        edgePos.x = dirFromScreenCenter.x > 0 ? maxX : minX;
-        edgePos.y = screenCenter.y + (edgePos.x - screenCenter.x) * slope;
-
-        // Clamp vertically with padding
-        if (edgePos.y > maxY) {
-            edgePos.y = maxY;
-            edgePos.x = screenCenter.x + (edgePos.y - screenCenter.y) / slope;
-        }
-        else if (edgePos.y < minY) {
-            edgePos.y = minY;
-            edgePos.x = screenCenter.x + (edgePos.y - screenCenter.y) / slope;
-        }
-
-        // Convert to canvas-local coordinates (camera passed as null because canvas is set to screen overlay)
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(mainCanvasRectTransform, edgePos, null, out Vector2 canvasPos);
-        portalArrow.anchoredPosition = canvasPos;
-
-        // Rotate to face toward target
-        float angle = Mathf.Atan2(dirFromScreenCenter.y, dirFromScreenCenter.x) * Mathf.Rad2Deg - 90f;
-        portalArrow.localRotation = Quaternion.Euler(0, 0, angle);
-    }
-
     // ***************************
     // Spawning Map Items
     // ***************************
@@ -4340,17 +4267,17 @@ public class Game : MonoBehaviour {
             GameObject prefab = resourceSpawn.GetPrefabToSpawn();
             if (!prefab) continue;
             
-            Entity resouceEntity = SpawnResource<Entity>(prefab, resourceSpawn.transform, 1);
+            Entity resourceEntity = SpawnResource<Entity>(prefab, resourceSpawn.transform, 1);
 
-            switch (resouceEntity.gameObject.tag) {
+            switch (resourceEntity.gameObject.tag) {
                 case Tags.Mineable:
-                    resouceEntity.health = 50;
+                    resourceEntity.health = 50;
                     break;
                 case Tags.DeadBody:
-                    InitDeadBody(resouceEntity);
+                    InitDeadBody(resourceEntity);
                     break;
                 case Tags.Bush:
-                    InitBush(resouceEntity); 
+                    InitBush(resourceEntity); 
                     break;
             }
         } 
@@ -4368,105 +4295,6 @@ public class Game : MonoBehaviour {
                 }
             }
         }
-        
-        // int gemRocksToSpawn = Random.Range(loadedMapData.minRockCount, loadedMapData.maxRockCount);
-        // for (int i = 0; i < gemRocksToSpawn; i++) {
-        //     Entity mineableRockEntity = SpawnResource<Entity>(gemRockPrefab, resourceSpawns, 1);
-        //     mineableRockEntity.health = 50;
-        // }
-        //
-        // int foragablesToSpawn = foragingDropPool.HasItems ? Random.Range(loadedMapData.minForageCount, loadedMapData.maxForageCount) : 0;
-        // for (int i = 0; i < foragablesToSpawn; i++) {
-        //     SpawnResource(GetItemFromDropPool(foragingDropPool), resourceSpawns);
-        // }
-        //
-        // InventorySlotUI[] lootInventorySlotUis = lootInventoryParent.GetComponentsInChildren<InventorySlotUI>(true);
-        //
-        // int bushesToSpawn = Random.Range(loadedMapData.minBushesCount, loadedMapData.maxBushesCount);
-        // for (int i = 0; i < bushesToSpawn; i++) {
-        //     
-        //     using var autoRelease = ListPool<Item>.Get(out List<Item> bushItems);
-        //     
-        //     int maxBushItemCount = Random.Range(1, 3);
-        //     GetUniqueItemsFromDropPool(bushesDropPool, maxBushItemCount, bushItems);
-        //     
-        //     InventorySlot[] bushSlots = new InventorySlot[lootInvetoryPtr.slots.Length];
-        //     for (int j = 0; j < bushSlots.Length; j++) {
-        //         InventoryItem inventoryItem = null;
-        //         if (bushItems.IndexInRange(j)) {
-        //             Item spawnItem = bushItems[j];
-        //
-        //             int stackCount = 1;
-        //             float spawnRateTaper = 0f;
-        //             while (RollProbability(spawnItem.chanceToSpawnFromBush - spawnRateTaper)) {
-        //                 stackCount++;
-        //                 spawnRateTaper += spawnItem.chanceToSpawnFromBush * 0.15f;
-        //             }
-        //             
-        //             inventoryItem = new() {
-        //                 itemOrInstanceUuid = spawnItem.uuid, 
-        //                 count = stackCount,
-        //                 notDiscovered = true,
-        //             };
-        //         }
-        //         bushSlots[j] = new() {
-        //             item = inventoryItem,
-        //             ui = lootInventorySlotUis[j],
-        //         };
-        //     }
-        //     
-        //     Entity bush = SpawnResource<Entity>(bushPrefab, resourceSpawns, 1);
-        //     bushSlotsLookup.Add(bush.gameObject, bushSlots);
-        // }
-        //
-        // int altarsToSpawn = Random.Range(loadedMapData.minAltarCount, loadedMapData.maxAltarCount);
-        // for (int i = 0; i < altarsToSpawn; i++) {
-        //     SpawnResource<Entity>(altarPrefab, resourceSpawns, 1);
-        // }
-        //
-        // int deadBodiesToSpawn = Random.Range(loadedMapData.minBodyCount, loadedMapData.maxBodyCount);
-        //
-        // for (int i = 0; i < deadBodiesToSpawn; i++) {
-        //     using var autoRelease = ListPool<Item>.Get(out List<Item> deadBodyItems);
-        //     
-        //     int maxDeadBodyItemCount = Random.Range(2, 6);
-        //     GetUniqueItemsFromDropPool(bodyDropPool, maxDeadBodyItemCount, deadBodyItems);
-        //
-        //     bool spawnEyeUpgrade = RollProbability(loadedMapData.eyeUpgradeOnBodyChance);
-        //     while (spawnEyeUpgrade && deadBodyItems.Count < lootInvetoryPtr.slots.Length) {
-        //         deadBodyItems.Add(GetItemFromDropPool(eyeUpgradesDropPool));
-        //         spawnEyeUpgrade = RollProbability(loadedMapData.eyeUpgradeOnBodyChance);
-        //     }
-        //     
-        //     InventorySlot[] deadBodySlots = new InventorySlot[lootInvetoryPtr.slots.Length];
-        //     for (int j = 0; j < deadBodySlots.Length; j++) {
-        //         InventoryItem inventoryItem = null;
-        //         if (deadBodyItems.IndexInRange(j)) {
-        //             Item spawnItem = deadBodyItems[j];
-        //
-        //             int stackCount = 1;
-        //             float spawnRateTaper = 0f;
-        //             while (RollProbability(spawnItem.chanceToSpawnOnBody - spawnRateTaper)) {
-        //                 stackCount++;
-        //                 spawnRateTaper += spawnItem.chanceToSpawnOnBody * 0.15f;
-        //             }
-        //             
-        //             inventoryItem = new() {
-        //                 itemOrInstanceUuid = spawnItem.uuid, 
-        //                 count = stackCount,
-        //                 notDiscovered = true,
-        //             };
-        //         }
-        //         deadBodySlots[j] = new() {
-        //             item = inventoryItem,
-        //             ui = lootInventorySlotUis[j],
-        //         };
-        //     }
-        //     
-        //     Entity body = SpawnResource<Entity>(deadBodyPrefab, resourceSpawns);
-        //     deadBodySlotsLookup.Add(body.gameObject, deadBodySlots);
-        // }
-        
     }
     
     private T SpawnResource<T>(GameObject resourcePrefab, Transform spawnPoint, int obstacleCellRadius = 0) where T : Entity, new() {
@@ -4533,31 +4361,6 @@ public class Game : MonoBehaviour {
         }
             
         bushSlotsLookup.Add(entity.gameObject, CreateLootInventoryInstance(inventoryItems));
-    }
-    
-    private T SpawnResource<T>(GameObject resourcePrefab, List<Transform> spawnPoints, int obstacleCellRadius = 0) where T : Entity, new() {
-        Assert.IsFalse(spawnPoints.Count <= 0, "Ran out of resource spawn points, add more to level or adjust map pools");
-    
-        int randomIndex = Random.Range(0, spawnPoints.Count);
-        Transform spawnTrans = spawnPoints[randomIndex];
-        spawnPoints.RemoveAt(randomIndex);
-        
-        T resource = SpawnEntity<T>(resourcePrefab, spawnTrans.position, spawnTrans.rotation);
-
-        if (obstacleCellRadius > 0) {
-            loadedMapInst.grid.AddObstacle(resource.position, obstacleCellRadius);
-            resource.obstacleCellRadius = obstacleCellRadius;
-            resource.obstaclePosition = resource.position;
-        }
-
-        return resource;
-    }
-    
-    private Entity SpawnResource(Item item, List<Transform> spawnPoints) {
-        int randomIndex = Random.Range(0, spawnPoints.Count);
-        Transform spawnTrans = spawnPoints[randomIndex];
-        spawnPoints.RemoveAt(randomIndex);
-        return SpawnItemAsEntity(item, 1, spawnTrans.position, spawnTrans.rotation);
     }
     
     private void DestroyLevelEntities() {
@@ -5384,20 +5187,6 @@ public class Game : MonoBehaviour {
         if (curTradingItem != null && transactionState == TransactionState.Selling) {
             transactionPanel.toggleGroup.ManualyToggle(transactionPanel.buyToggle);
         }
-        
-        // if (curTradingItem == null) {
-        //     traderBarterRequirementsText.text = string.Empty;
-        //     return;
-        // }
-        //
-        // string barterReqString = string.Empty;
-        // foreach (ItemWithCount barterReq in item.ItemRef.barterRequirements) {
-        //     barterReqString += $"{barterReq.item.displayName} x{barterReq.count}  ({GetOwnedCountOfItem(barterReq.item)})\n";
-        // }
-        // traderBarterRequirementsText.text = barterReqString;
-        //
-        // string buyPriceString = ColorText(curTradingItem.ItemRef.buyPrice.ToString("N0"), styles.coinCurrencyColor);
-        // traderTransactionInfoText.text = $"Purchase for <sprite=0>{buyPriceString}";
     }
 
     private void ReduceTradingItemStock() {
@@ -5407,54 +5196,23 @@ public class Game : MonoBehaviour {
         }
     }
 
-    // private enum TransactionState { Empty, Buying, Selling }
     private enum TransactionState { Selling, Buying }
     private TransactionState transactionState;
     
     private void UpdateTraderTransactionState() {
         if (!OnTradingTab) return;
-        
-        // if (GetInventoryItemCount(transactionInventory) <= 0) {
-        //     transactionState = TransactionState.Empty;
-        //     RefreshTransactionUI();
-        //     return;
-        // }
-        
-        // bool itemsAreTraderOwned = false;
-        // foreach (InventorySlot slot in transactionInventory.slots) {
-        //     if (slot.item == null) continue;
-        //     itemsAreTraderOwned = slot.item.traderOwned;
-        // }
-        
-        // transactionState = itemsAreTraderOwned ? TransactionState.Buying : TransactionState.Selling;
         RefreshTransactionUI();
     }
     
     private void RefreshTransactionUI() {
-        // if (transactionState == TransactionState.Empty) {
-        //     traderTransactionInfoText.text = "Place an item to begin transaction";
-        //     return;
-        // }
-        
         if (transactionState == TransactionState.Buying) {
             transactionPanel.UpdateBuyItem(curTradingItem);
             transactionPanel.toggleGroup.ManualyToggleCosmetically(transactionPanel.buyToggle);
-            // int buyPrice = GetInventoryValue(transactionInventory, InventoryValueType.Buy);
-            // string buyPriceString = ColorText(buyPrice.ToString("N0"), styles.coinCurrencyColor);
-            // traderTransactionInfoText.text = $"Purchase for <sprite=0>{buyPriceString}";
-            
-            // traderBarterDealButton.gameObject.SetActive(true);
-            // traderBarterRequirementsText.gameObject.SetActive(true);
         }
         else if (transactionState == TransactionState.Selling) {
             int sellPrice = GetInventoryValue(transactionInventory, InventoryValueType.Sell);
             transactionPanel.UpdateSellPrice(sellPrice);
             transactionPanel.toggleGroup.ManualyToggleCosmetically(transactionPanel.sellToggle);
-            // string sellPriceString = ColorText(sellPrice.ToString("N0"), styles.coinCurrencyColor);
-            // traderTransactionInfoText.text = $"Sell for <sprite=0>{sellPriceString}";
-            //
-            // traderBarterDealButton.gameObject.SetActive(false);
-            // traderBarterRequirementsText.gameObject.SetActive(false);
         }
     }
     

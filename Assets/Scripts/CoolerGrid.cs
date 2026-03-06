@@ -29,7 +29,6 @@ public class CoolerGrid : MonoBehaviour {
     private const int dijkstraDiagonalDist = 10;
 
     private List<GridCell> spawnCells = new(30);
-    private List<float> spawnCellWeights = new(30);
     private Vector2 gridGameObjectPosition;
     private Vector2 predicetedPlayerPos;
     private float totalSpawnCellsWeight;
@@ -48,6 +47,7 @@ public class CoolerGrid : MonoBehaviour {
         // These values get updated during runtime
         public Vector2 flowDir;
         public int distFromPlayerCell;
+        public float spawnWeight;
         public bool isObstacleObstructed;
     }
     
@@ -128,11 +128,10 @@ public class CoolerGrid : MonoBehaviour {
 
         Vector2 slightRandomOffset = Random.insideUnitCircle * (cellSize * 0.90f);
         
-        // TODO: This isn't the most effecient way to pick the top 20% of spawn points
-        var pairs = spawnCells.Select((cell, i) => new { cell, weight = spawnCellWeights[i] }).OrderByDescending(p => p.weight).ToList();
-        int maxIndex = Mathf.RoundToInt(pairs.Count * 0.2f);
-        if (maxIndex > 0 && maxIndex < pairs.Count) {
-            return pairs[Random.Range(0, maxIndex)].cell.position; 
+        List<GridCell> sortedCells = spawnCells.OrderByDescending(static cell => cell.spawnWeight).ToList();
+        int maxIndex = Mathf.RoundToInt(sortedCells.Count * 0.2f);
+        if (maxIndex > 0 && maxIndex < sortedCells.Count) {
+            return sortedCells[Random.Range(0, maxIndex)].position; 
         }
         
         return spawnCells[0].position + slightRandomOffset;
@@ -243,7 +242,6 @@ public class CoolerGrid : MonoBehaviour {
             }
         }
 
-        spawnCellWeights.Clear();
         totalSpawnCellsWeight = 0f;
 
         ContactFilter2D filter = new() {
@@ -259,19 +257,22 @@ public class CoolerGrid : MonoBehaviour {
         bool addDirectionalWeight = distFromCellToPredictedPlayerPos > minDistToIncludeDirectionWeight;
 
         float expandedSizeForEnemyTesting = cellSize * 5f;
-        foreach (GridCell nCell in spawnCells) {
+        for (int i = 0; i < spawnCells.Count; i++) {
+            GridCell cell = spawnCells[i];
             const float enemyWeight = 1f;
             const float dirWeight = 2f;
-            
-            int enemyCount = Physics2D.OverlapCircle(nCell.position, expandedSizeForEnemyTesting, filter, colList);
+
+            int enemyCount = Physics2D.OverlapCircle(cell.position, expandedSizeForEnemyTesting, filter, colList);
             float weight = (1f / (enemyCount + 1f)) * enemyWeight;
 
             if (addDirectionalWeight) {
-                Vector2 dir = (nCell.position - playerCell.position).normalized;
+                Vector2 dir = (cell.position - playerCell.position).normalized;
                 weight += (Vector2.Dot(dir, dirToPredictedPos) + 1 * 0.5f) * dirWeight;
             }
 
-            spawnCellWeights.Add(weight);
+            cell.spawnWeight = weight;
+            spawnCells[i] = cell;
+            
             totalSpawnCellsWeight += weight;
         }
 
