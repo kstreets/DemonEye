@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0aa690954e129034abb7319a8a860125, type: 3}
-  m_Name: LighthouseMap
+  m_Name: LighthouseMap2
   m_EditorClassIdentifier: Assembly-CSharp::MapData
   displayName: Lighthouse
   sceneReference: LighthouseExpansion
-  waves: {fileID: 11400000, guid: c3f7f6d7c8bc62a4993a44c716d126e0, type: 2}
+  waves: {fileID: 11400000, guid: 3aa85a5582e39464ea951bcb151e03ef, type: 2}
   altarSoulPrice: 100
   minRockCount: 8
   maxRockCount: 11
@@ -27,6 +27,6 @@ MonoBehaviour:
   minAltarCount: 5
   maxAltarCount: 8
   eyeUpgradeOnBodyChance: 0.25
-  eyeUpgradeFromRockChance: 0.45
+  eyeUpgradeFromRockChance: 0.5
   maxGemCountPerRock: 2
-  increasedLootRarityChance: -0.2
+  increasedLootRarityChance: 0

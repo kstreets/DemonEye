@@ -36,8 +36,6 @@ MonoBehaviour:
   barterRequirements:
   - item: {fileID: 11400000, guid: c300cfd9dba50fc438f83dec791af29b, type: 2}
     count: 5
-  - item: {fileID: 11400000, guid: 0c1ef7ec636b7674886cc5581cc6deff, type: 2}
-    count: 2
   spawnsFromEnemies: []
   modifiesStats: 0
   armorPercent: 0

@@ -25,7 +25,7 @@ MonoBehaviour:
   spawnsOnAllMaps: 0
   spawnsOnMaps:
   - {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
-  - {fileID: 11400000, guid: 9353817006d76f54fb1273b8ced36a68, type: 2}
+  - {fileID: 11400000, guid: e77fcebe0e13696458bf0cfbacf93e5d, type: 2}
   chanceToSpawnOnBody: 0.294
   chanceToSpawnOnTrader: 0
   chanceToSpawnFromRock: 0

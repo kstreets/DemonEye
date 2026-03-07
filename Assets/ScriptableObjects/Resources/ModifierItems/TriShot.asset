@@ -38,8 +38,6 @@ MonoBehaviour:
     count: 6
   - item: {fileID: 11400000, guid: 5208da11a0273eb40938911e8a5feefc, type: 2}
     count: 1
-  - item: {fileID: 11400000, guid: a07b5ddf383ac59479afdf67c0f5c18a, type: 2}
-    count: 2
   spawnsFromEnemies: []
   modifiesStats: 0
   armorPercent: 0

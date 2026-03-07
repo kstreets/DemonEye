@@ -540,6 +540,81 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 54669758}
   m_CullTransparentMesh: 1
+--- !u!1 &55571928
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 55571929}
+  - component: {fileID: 55571931}
+  - component: {fileID: 55571930}
+  m_Layer: 5
+  m_Name: TopDivider
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &55571929
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 55571928}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 409214448}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 1}
+  m_SizeDelta: {x: 0, y: 2}
+  m_Pivot: {x: 0.5, y: 1}
+--- !u!114 &55571930
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 55571928}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.28930807, g: 0.25421676, b: 0.24836822, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &55571931
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 55571928}
+  m_CullTransparentMesh: 1
 --- !u!1 &72812175
 GameObject:
   m_ObjectHideFlags: 0
@@ -2514,7 +2589,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5552300825819374944, guid: f4e2e9836ede3824daab845da109bd03, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 406.875
+      value: 460
       objectReference: {fileID: 0}
     - target: {fileID: 5552300825819374944, guid: f4e2e9836ede3824daab845da109bd03, type: 3}
       propertyPath: m_SizeDelta.y
@@ -2550,7 +2625,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5552300825819374944, guid: f4e2e9836ede3824daab845da109bd03, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 223.4375
+      value: 250
       objectReference: {fileID: 0}
     - target: {fileID: 5552300825819374944, guid: f4e2e9836ede3824daab845da109bd03, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -14991,7 +15066,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1086349923754639530, guid: 0580ab26c15d8bc47b3d901fe38e1fea, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 446.875
+      value: 500
       objectReference: {fileID: 0}
     - target: {fileID: 1086349923754639530, guid: 0580ab26c15d8bc47b3d901fe38e1fea, type: 3}
       propertyPath: m_SizeDelta.y
@@ -15027,7 +15102,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1086349923754639530, guid: 0580ab26c15d8bc47b3d901fe38e1fea, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 223.4375
+      value: 385
       objectReference: {fileID: 0}
     - target: {fileID: 1086349923754639530, guid: 0580ab26c15d8bc47b3d901fe38e1fea, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -16263,10 +16338,10 @@ MonoBehaviour:
   potionManTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
   armsDealerTrader: {fileID: 11400000, guid: b04e05a2cdc85404fbe24578a1868a5d, type: 2}
   hatManTrader: {fileID: 11400000, guid: bb3b083a03a70c147a32c54d43dd6569, type: 2}
-  lighthouseMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
-  customsMap: {fileID: 11400000, guid: 9353817006d76f54fb1273b8ced36a68, type: 2}
-  iceMap: {fileID: 11400000, guid: f4f5916ef704f084b8d118aedb5b966a, type: 2}
-  terminalMap: {fileID: 11400000, guid: aac23282a2cd7784ab5861d2a0508e69, type: 2}
+  maps:
+  - {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
+  - {fileID: 11400000, guid: e77fcebe0e13696458bf0cfbacf93e5d, type: 2}
+  - {fileID: 11400000, guid: 70e29b5ce27e2494897ae262127e35f4, type: 2}
   itemDropPrefab: {fileID: 6950097619826054733, guid: 76730055c1712874c9ac1c6f28f45cde, type: 3}
   baseProjectilePrefab: {fileID: 2758590605051147821, guid: 490c322ccae8e8149a6dddb96650a50e, type: 3}
   boneShatterProjectilePrefab: {fileID: 2758590605051147821, guid: f7b19a83567c00a4da11c9ce9c266d1f, type: 3}
@@ -16275,6 +16350,7 @@ MonoBehaviour:
   explosionPrefab: {fileID: 1132575347036418292, guid: 97edbac11773f6b4d8f88d6785f366e1, type: 3}
   boomonExplosionPrefab: {fileID: 1132575347036418292, guid: 5807414c1cfb26b468b88be1b10a569d, type: 3}
   gooProjectilePrefab: {fileID: 2758590605051147821, guid: f6c4b75dd44ae6b48a2058ea0b780741, type: 3}
+  piercingProjectilePrefab: {fileID: 2758590605051147821, guid: 6f116d426ad964547bee23e2facdf618, type: 3}
   projectileImpactPrefab: {fileID: 1029373551851069770, guid: 4e9a043ef50fe0146ac2f805702ce90f, type: 3}
   teleportInPrefab: {fileID: 3234620779380181516, guid: c3ff9460cbebf9d488affacfb6e9f421, type: 3}
   teleportOutPrefab: {fileID: 6668224194367103619, guid: f2492c473fe22234f8435f7a2fe2718d, type: 3}
@@ -16593,9 +16669,10 @@ MonoBehaviour:
   traderItemRefreshTimeText: {fileID: 72812178}
   transactionPanel: {fileID: 728382296}
   mapSelectionPanel: {fileID: 1881859404}
-  easyMapButton: {fileID: 6727874920895783782}
-  mediumMapButton: {fileID: 2090883250}
-  otherMediumMapButton: {fileID: 231882646}
+  mapSelectionButtons:
+  - {fileID: 6727874920895783782}
+  - {fileID: 2090883250}
+  - {fileID: 231882646}
   questsPanel: {fileID: 433635796}
   questsParent: {fileID: 1720765152}
   questSelectionParent: {fileID: 1902885915}
@@ -17210,7 +17287,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5552300825819374944, guid: f4e2e9836ede3824daab845da109bd03, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 406.875
+      value: 460
       objectReference: {fileID: 0}
     - target: {fileID: 5552300825819374944, guid: f4e2e9836ede3824daab845da109bd03, type: 3}
       propertyPath: m_SizeDelta.y
@@ -17246,7 +17323,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5552300825819374944, guid: f4e2e9836ede3824daab845da109bd03, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 223.4375
+      value: 250
       objectReference: {fileID: 0}
     - target: {fileID: 5552300825819374944, guid: f4e2e9836ede3824daab845da109bd03, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -18183,7 +18260,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 3945069034801463122, guid: 8aa2a24f06e16ef4bb58d4d08217c11a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 55571929}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8aa2a24f06e16ef4bb58d4d08217c11a, type: 3}
 --- !u!224 &1563041425724041498
@@ -19985,7 +20065,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5552300825819374944, guid: f4e2e9836ede3824daab845da109bd03, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 406.875
+      value: 460
       objectReference: {fileID: 0}
     - target: {fileID: 5552300825819374944, guid: f4e2e9836ede3824daab845da109bd03, type: 3}
       propertyPath: m_SizeDelta.y
@@ -20021,7 +20101,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5552300825819374944, guid: f4e2e9836ede3824daab845da109bd03, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 223.4375
+      value: 250
       objectReference: {fileID: 0}
     - target: {fileID: 5552300825819374944, guid: f4e2e9836ede3824daab845da109bd03, type: 3}
       propertyPath: m_AnchoredPosition.y
