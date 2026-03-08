@@ -21,7 +21,6 @@ using Assert = UnityEngine.Assertions.Assert;
 using Debug = UnityEngine.Debug;
 using Vector3 = UnityEngine.Vector3;
 using EffectsIndicies = Game.Entity.EffectsIndicies;
-using VInspector.Libs;
 
 public class Game : MonoBehaviour {
 
@@ -1049,9 +1048,8 @@ public class Game : MonoBehaviour {
                         for (int i = 0; i <  projectileCount; i++) {
                             float randomAngle = (angleDeltaPerDrop * i) + Random.Range(-randomRangePerDrop, randomRangePerDrop);
                             Vector3 velocity = inst.RotationVector(randomAngle) * 0.62f;
-                            Projectile proj = inst.SpawnProjectile(inst.OffsetY(enemy.position, 0.2f), velocity, inst.gooProjectilePool, Masks.PlayerHurtMask);
-                            proj.simpleDamage = enemy.data.damage;
-                            proj.lifeTimeDuration = 2f;
+                            inst.SpawnProjectile(inst.OffsetY(enemy.position, 0.2f), velocity, inst.gooProjectilePool, 
+                                flatDamage: enemy.data.damage, lifetime: 2f, layermask: Masks.PlayerHurtMask);
                         }
                         
                         enemy.health = 0;
@@ -3123,19 +3121,33 @@ public class Game : MonoBehaviour {
             targetCount++;
         }
         
+        if (equipedEye.projectileCount.TryGetValue(out var projectileCount)) {
+            for (int i = 0; i < projectileCount.extraProjectileCount; i++) {
+                if (RollProbability(projectileCount.probability)) {
+                    targetCount++;
+                }
+            }
+        }
+        
         bool canShoot = attackLimiter.TimeHasPassed(GetFirerateDelayBasedOnStats());
 
         List<Vector3> attackTargets = GetAttackTargets(targetCount);
         if (attackTargets.Count <= 0 || !canShoot) return;
         
         PlayAudioClip(shootClip, player.position);
-        foreach (Vector3 attackTarget in attackTargets) {
-            ShootProjectile(attackTarget);
+        for (int i = 0; i < attackTargets.Count; i++) {
+            Vector3 attackTarget = attackTargets[i];
             
-            if (equipedEye.doubleTapAugment.TryGetValue(out var doubleTap) && RollProbability(doubleTap.probability)) {
-                Tween.Delay(attackTarget, doubleTap.delayBetweenShots, static (attackTarget) => {
-                    inst.ShootProjectile(attackTarget);
-                });
+            bool isPrimaryShot = i == 0;
+            if (isPrimaryShot) {
+                ShootProjectile(attackTarget);
+            }
+            else if (equipedEye.multiProjectileCritAugment.TryGetValue(out var multiProjCrit)) {
+                ShootProjectile(attackTarget, flatCritChance: multiProjCrit.probability);
+            }
+
+            if (equipedEye.doubleTapAugment.TryGetValue(out var doubleTap) && RollProbability(doubleTap.probability)) { 
+                ShootProjectile(attackTarget, spawnDelay: doubleTap.delayBetweenShots);
             }
         }
 
@@ -3431,6 +3443,7 @@ public class Game : MonoBehaviour {
         public PenetrationDamageAugment.InstanceData? penetrationDamageAugment;
         public DoubleTapAugment.InstanceData? doubleTapAugment;
         public BackwardsPiercingAugment.InstanceData? backwardsPiercingAugment;
+        public MultiProjectileCritAugment.InstanceData? multiProjectileCritAugment;
     }
     
     public class DemonEyeRaidStats {
@@ -3545,7 +3558,7 @@ public class Game : MonoBehaviour {
         return dist;
     }
 
-    private void ShootProjectile(Vector2 targetPos) {
+    private void ShootProjectile(Vector2 targetPos, float? spawnDelay = default, float? flatCritChance = default) {
         const float maxInaccuracyAngle = 18f;
         float maxAccuracyAngle = maxInaccuracyAngle * (1f - gameplayConfig.accuracy);
         float accuracyAngle = Random.Range(-maxAccuracyAngle, maxAccuracyAngle);
@@ -3554,44 +3567,51 @@ public class Game : MonoBehaviour {
         Vector2 dir = (targetPos - PlayerEyePos.ToVector2()).normalized;
         dir = Quaternion.AngleAxis(accuracyAngle, Vector3.forward) * dir;
         Vector2 velocity = dir * projectileSpeed; 
-        Projectile proj = SpawnProjectile(PlayerEyePos, velocity, projectilePool);
-
-
+        _SpawnProjectile(PlayerEyePos, velocity, projectilePool);
+        
         if (equipedEye.trishot.TryGetValue(out var trishot) && RollProbability(trishot.probability)) {
             const float baseTriShotAngle = 8f;
             Vector2 secondShotVelocity = Quaternion.AngleAxis(baseTriShotAngle, Vector3.forward) * velocity;
-            SpawnProjectile(PlayerEyePos, secondShotVelocity, projectilePool).isTriShot = true;
+            _SpawnProjectile(PlayerEyePos, secondShotVelocity, projectilePool, flgs: ProjectileTypeFlags.Trishot);
             Vector2 thirdShotVelocity = Quaternion.AngleAxis(-baseTriShotAngle, Vector3.forward) * velocity;
-            SpawnProjectile(PlayerEyePos, thirdShotVelocity, projectilePool).isTriShot = true;
+            _SpawnProjectile(PlayerEyePos, thirdShotVelocity, projectilePool, flgs: ProjectileTypeFlags.Trishot);
         }
 
         if (equipedEye.backwardShot.TryGetValue(out var backShot) && RollProbability(backShot.probability)) {
             const float backwardsShotSpeedScaler = 1.1f;
             EntityPool<Projectile> pool = equipedEye.backwardsPiercingAugment.HasValue ? piercingShotProjectilePool : projectilePool; 
-            SpawnProjectile(PlayerEyePos, -velocity * backwardsShotSpeedScaler, pool).isBackwardsShot = true;
+            _SpawnProjectile(PlayerEyePos, -velocity * backwardsShotSpeedScaler, pool, flgs: ProjectileTypeFlags.BackwardsShot);
+        }
+        
+        // Helper method just to forward the passed in parameters
+        void _SpawnProjectile(Vector2 pos, Vector2 vel, EntityPool<Projectile> pool, ProjectileTypeFlags flgs = ProjectileTypeFlags.None) {
+            SpawnProjectile(pos, vel, pool, typeFlags: flgs, spawnDelay: spawnDelay, flatCritChance: flatCritChance);
         }
     }
 
-    private Projectile SpawnProjectile(Vector2 spawnPos, Vector2 velocity, EntityPool<Projectile> pool, float delay = 0f, LayerMask mask = default) {
-        float angle = Vector2.SignedAngle(Vector2.right, velocity.normalized);
-        Quaternion projectileRotation = Quaternion.AngleAxis(angle, Vector3.forward);
-
+    private Projectile SpawnProjectile(Vector2 spawnPos, Vector2 velocity, EntityPool<Projectile> pool, 
+        Quaternion? rotation = default, int? flatDamage = default, float? spawnDelay = default, float? lifetime = default, 
+        float? flatCritChance = default, LayerMask? layermask = default, ProjectileTypeFlags typeFlags = ProjectileTypeFlags.None) 
+    {
+        Quaternion projectileRotation = rotation ?? Quaternion.AngleAxis(Vector2.SignedAngle(Vector2.right, velocity.normalized), Vector3.forward);
         Projectile projectile = SpawnEntity(pool, spawnPos, projectileRotation);
-        projectile.lifeTimeDuration = GetProjectileRangeInSeconds();
+        
         projectile.velocity = velocity;
         projectile.eyeInstanceSpawnedFrom = equipedEye;
-        projectile.layerMask = mask == default ? Masks.DamagableMask : mask;
+        projectile.flatDamage = flatDamage;
+        projectile.flatCritChance = flatCritChance;
+        projectile.lifeTimeDuration = lifetime ?? GetProjectileRangeInSeconds();
+        projectile.layerMask = layermask ?? Masks.DamagableMask;
+        projectile.typeFlags = typeFlags;
 
-        bool usingDelay = delay > 0f;
-
-        if (!usingDelay) {
+        if (!spawnDelay.HasValue) {
             projectiles.Add(projectile);
             projectile.trans.localScale = Vector3.zero;
             Tween.Scale(projectile.trans, Vector3.one, 0.025f, Ease.InBounce);
             return projectile;
         }
 
-        Delay(projectile, delay, static (projectile) => {
+        Delay(projectile, spawnDelay.Value, static (projectile) => {
             projectile.gameObject.SetActive(true);
             inst.projectiles.Add(projectile);
             projectile.trans.localScale = Vector3.zero;
@@ -3600,7 +3620,7 @@ public class Game : MonoBehaviour {
 
         return projectile;
     }
-
+    
     private float GetProjectileRangeInSeconds() {
         return gameplayConfig.rangeInSeconds + GetStatAdjustmentValue(StatAdjustmentType.RangeInSeconds);
     }
@@ -3806,28 +3826,29 @@ public class Game : MonoBehaviour {
     // *******************************
 
     [NonSerialized] public List<Projectile> projectiles = new();
+    [Flags] public enum ProjectileTypeFlags { None, Trishot, BackwardsShot, }
     
     public class Projectile : Entity {
-        public float curTimeAlive;
+        public ProjectileTypeFlags typeFlags;
+        public int? flatDamage;
+        public float? flatCritChance;
         public float lifeTimeDuration;
+        public float curTimeAlive;
         public float distTraveled;
-        public bool isTriShot;
-        public bool isBackwardsShot;
         public Vector2 velocity;
-        public int simpleDamage;
         public LayerMask layerMask;
         public DemonEyeInstance eyeInstanceSpawnedFrom;
         public List<Entity> ignoreEntities;
     }
     
     private static void OnSpawnProjectile(Projectile projectile) {
-        projectile.curTimeAlive = default;
+        projectile.typeFlags = ProjectileTypeFlags.None;
+        projectile.flatDamage = default;
+        projectile.flatCritChance = default;
         projectile.lifeTimeDuration = default;
+        projectile.curTimeAlive = default;
         projectile.distTraveled = default;
-        projectile.isBackwardsShot = default;
-        projectile.isTriShot = default;
         projectile.velocity = default;
-        projectile.simpleDamage = default;
         projectile.layerMask = default;
         projectile.eyeInstanceSpawnedFrom = default;
         if (projectile.ignoreEntities != null) {
@@ -3847,9 +3868,11 @@ public class Game : MonoBehaviour {
             
             Collider2D col = Physics2D.OverlapCircle(proj.trans.position, projectileRadius, proj.layerMask);
             if (!col) continue;
-
+            
+            // Hack for identifying if the projectile hit the player 
             if (proj.layerMask == Masks.PlayerHurtMask) {
-                DamagePlayer(proj.simpleDamage);
+                Assert.IsTrue(proj.flatDamage.HasValue, "Projectiles that damage the player need to have a flat damage value");
+                DamagePlayer(proj.flatDamage.Value);
                 DestroyEntity(projectiles[i]);
                 projectiles.RemoveAt(i);
                 continue;
@@ -3886,7 +3909,7 @@ public class Game : MonoBehaviour {
             return true;
         }
 
-        if (proj.isBackwardsShot && proj.eyeInstanceSpawnedFrom.backwardsPiercingAugment.HasValue) {
+        if (ProjectileIsType(proj, ProjectileTypeFlags.BackwardsShot) && proj.eyeInstanceSpawnedFrom.backwardsPiercingAugment.HasValue) {
             ProjectileMarkEntityToIgnore(proj, entity);
             return true;
         }
@@ -3910,6 +3933,10 @@ public class Game : MonoBehaviour {
 
     private bool ProjectileIsIgnoringEntity(Projectile proj, Entity entity) {
         return proj.ignoreEntities?.Contains(entity) ?? false;
+    }
+    
+    private bool ProjectileIsType(Projectile proj, ProjectileTypeFlags flags) {
+        return (proj.typeFlags & flags) != 0;
     }
 
     // ***********************************
@@ -3939,8 +3966,8 @@ public class Game : MonoBehaviour {
         if (entity.gameObject.CompareTag(Tags.Enemy)) {
             if (entityLookup[entity.gameObject] is not Enemy enemy) return;
 
-            if (projectile.simpleDamage != 0) {
-                DamageEnemy(enemy, projectile.simpleDamage, false);
+            if (projectile.flatDamage.HasValue) {
+                DamageEnemy(enemy, projectile.flatDamage.Value, false);
                 return;
             }
             
@@ -3978,10 +4005,9 @@ public class Game : MonoBehaviour {
                     float randomDelay = Random.Range(0f, 0.06f);
                     float randomSpeedScaler = Random.Range(0.4f, 0.6f);
                     Vector2 boneShatterVelocity = RandomizeVectorAngle(projectile.velocity * randomSpeedScaler, 40f);
-                    Projectile boneShatterProj = SpawnProjectile(enemy.position, boneShatterVelocity, boneShatterProjectilePool, randomDelay);
-                    boneShatterProj.simpleDamage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(enemy) * boneShatter.perShardDamageMulti);
-                    boneShatterProj.trans.rotation = RandomRotation();
-                    boneShatterProj.lifeTimeDuration = boneShatter.lifeTime;
+                    int boneDamage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(enemy) * boneShatter.perShardDamageMulti);
+                    Projectile boneShatterProj = SpawnProjectile(enemy.position, boneShatterVelocity, boneShatterProjectilePool, 
+                        rotation: RandomRotation(), spawnDelay: randomDelay, flatDamage: boneDamage, lifetime: boneShatter.lifeTime);
                     ProjectileMarkEntityToIgnore(boneShatterProj, enemy);
                 }
             }
@@ -4003,7 +4029,6 @@ public class Game : MonoBehaviour {
                 PlayAudioClip(stoneBreakClip, entity.position);
 
                 Item dropItem = null;
-
                 if (RollProbability(loadedMapData.eyeUpgradeFromRockChance)) {
                     dropItem = GetItemFromDropPool(eyeUpgradesDropPool);
                 }
@@ -4024,6 +4049,14 @@ public class Game : MonoBehaviour {
     }
 
     private float GetCriticalStrikeProbability(Projectile proj, Enemy enemy) {
+        if (proj.flatCritChance.TryGetValue(out float flatCrit)) {
+            return flatCrit;
+        }
+        
+        if (ProjectileIsType(proj, ProjectileTypeFlags.BackwardsShot)) {
+            return 1f;
+        }
+        
         float criticalStrikeProb = gameplayConfig.defaultCritChance + GetStatAdjustmentValue(StatAdjustmentType.CritChance);
 
         if (equipedEye.bleedCritAugment.HasValue && enemy.bleed.HasValue) {
@@ -4047,10 +4080,6 @@ public class Game : MonoBehaviour {
             }
         }
         
-        if (!isCriticalHit && proj.isBackwardsShot) {
-            isCriticalHit = true;
-        }
-        
         // Phase 2 : Multipliers
         {
             float damageMultiplier = GetDamageMultiplierOnEnemy(enemy);
@@ -4060,7 +4089,7 @@ public class Game : MonoBehaviour {
                 damageMultiplier += critMultiplier;
             }
             
-            if (proj.isTriShot && eyeInstance.trishot.TryGetValue(out var triShot)) {
+            if (ProjectileIsType(proj, ProjectileTypeFlags.Trishot) && eyeInstance.trishot.TryGetValue(out var triShot)) {
                 damageMultiplier += triShot.damageMultiplier;
             }
             
@@ -5943,7 +5972,7 @@ public class Game : MonoBehaviour {
     }
     
     public static bool RollProbability(float probability) {
-        return Random.value < probability;
+        return Random.value <= probability;
     }
     
     private Vector2 ScreenCenter => new(Screen.width / 2f, Screen.height / 2f);
