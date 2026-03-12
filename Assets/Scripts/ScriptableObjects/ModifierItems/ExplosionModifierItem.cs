@@ -22,7 +22,7 @@ public class ExplosionModifierItem : ModifierItem {
         };
     }
 
-    protected override string BuildDescription(int stackCount) {
+    protected override string GetModifierDescription(int stackCount) {
         return $"{DisplayProb(GetProbability(stackCount))} chance for a projectile to explode on impact causing {DisplayMultiplier(GetDamage(stackCount))} damage";
     }
 

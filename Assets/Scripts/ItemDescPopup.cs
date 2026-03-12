@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -22,12 +23,12 @@ public class ItemDescPopup : MonoBehaviour {
     public ContentSizeFitter tag1ContentFitter;
     public ContentSizeFitter tag2ContentFitter;
 
-    public void Set(InventoryItem inventoryItem) {
-        Item item = inventoryItem.ItemRef;
+    public void Set(ItemInstance itemInstance) {
+        Item item = itemInstance.ItemRef;
         SetName(item);
         SetTags(item);
-        SetMetaInfo(inventoryItem, item);
-        SetDescription(inventoryItem, item);
+        SetMetaInfo(itemInstance, item);
+        SetDescription(itemInstance, item);
     }
     
     private void SetName(Item item) {
@@ -68,14 +69,14 @@ public class ItemDescPopup : MonoBehaviour {
         tag2.rectTransform.ResizeWidth(tag2Text.rectTransform.rect.width + tagTextPadding);
     }
 
-    private void SetMetaInfo(InventoryItem inventoryItem, Item item) {
+    private void SetMetaInfo(ItemInstance itemInstance, Item item) {
         int sellOrBuyPrice = 0;
         if (item.type == inst.demonEyeType) { 
-            sellOrBuyPrice = inst.GetDemonEyeSellPrice(inventoryItem);
+            sellOrBuyPrice = inst.GetDemonEyeSellPrice(itemInstance);
         }
         else {
-            bool itemIsOwnedByTrader = inventoryItem.traderOwned;
-            sellOrBuyPrice = itemIsOwnedByTrader ? item.buyPrice : item.GetSellPrice() * inventoryItem.count;
+            bool itemIsOwnedByTrader = itemInstance.traderOwned;
+            sellOrBuyPrice = itemIsOwnedByTrader ? item.buyPrice : item.GetSellPrice() * itemInstance.count;
         }
                              
         string coinText = $"<sprite=0>{ColorText(sellOrBuyPrice.ToString("N0"), styles.coinCurrencyColor)}";
@@ -86,15 +87,15 @@ public class ItemDescPopup : MonoBehaviour {
         metaInfoText.text = coinText + "  " + weightText;
     }
 
-    private void SetDescription(InventoryItem inventoryItem, Item item) {
+    private void SetDescription(ItemInstance itemInstance, Item item) {
         if (item.type == inst.demonEyeType) {
-            DemonEyeInstance eyeInstance = inst.eyeInstanceFromItemId[inventoryItem.itemOrInstanceUuid];
+            DemonEyeInstance eyeInstance = inst.eyeInstanceFromItemId[itemInstance.itemOrInstanceUuid];
             string eyeDescription = "";
             foreach (EquipedAugmentInstance augmentInstance in eyeInstance.augmentInstances) {
                 eyeDescription += $"{augmentInstance.Augment.GetDescription()}\n";
             }
             foreach (EquipedModInstance modInstance in eyeInstance.modInstances) {
-                eyeDescription += inst.GetDemonEyeModDescription(modInstance.ModifierItem, modInstance.stackCount);
+                eyeDescription += inst.GetDemonEyeModDescription(modInstance.ModifierItem, modInstance.stackCount, null);
             }
             descText.text = eyeDescription;
         }
@@ -102,7 +103,7 @@ public class ItemDescPopup : MonoBehaviour {
             descText.text = item.GetDescription();
         }
         
-        if (item.type == inst.quickUseType && !inventoryItem.traderOwned) {
+        if (item.type == inst.quickUseType && !itemInstance.traderOwned) {
             descText.text += $"<line-height=150%>\n<sprite=5 color=#{ColorUtility.ToHtmlStringRGBA(styles.inputIconTint)}> " +
                              $"<size=80%>{ColorText("Right click to consume", styles.inputIconTint)}</size>";
         } 

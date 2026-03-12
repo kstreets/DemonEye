@@ -19,7 +19,7 @@ public class StoppingPowerModifierItem : ModifierItem {
         };
     }
 
-    protected override string BuildDescription(int stackCount) {
+    protected override string GetModifierDescription(int stackCount) {
         return $"{DisplayIncrease(GetExtraDamage(stackCount))} damage\n{DisplayProbDecrease(percentSpeedReduction)} projectile velocity";
     }
 

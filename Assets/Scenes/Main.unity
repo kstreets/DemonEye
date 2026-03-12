@@ -16721,7 +16721,6 @@ MonoBehaviour:
   ambienceClip: {fileID: 8300000, guid: 48ebfe4e6e022c34b90a2a7f3dde732f, type: 3}
   ambienceMixerGroup: {fileID: -6469774076249759476, guid: 5d1188e598dcb514aa82b03e86c0c627, type: 2}
   allItems: []
-  allAugments: []
 --- !u!114 &2018473790
 MonoBehaviour:
   m_ObjectHideFlags: 0

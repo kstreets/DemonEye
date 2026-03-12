@@ -16,7 +16,7 @@ public class BackwardsShotModifierItem : ModifierItem {
         };
     }
 
-    protected override string BuildDescription(int stackCount) {
+    protected override string GetModifierDescription(int stackCount) {
         return $"{DisplayProb(GetProbability(stackCount))} chance per projectile to shoot a mirrored one with {DisplayProb(1)} critical strike chance";
     }
 

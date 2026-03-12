@@ -53,4 +53,5 @@ MonoBehaviour:
   weight: 0
   description: 
   relativeMechanicDesc: {fileID: 0}
+  augments: []
   probability: 0.3

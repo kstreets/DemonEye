@@ -22,7 +22,7 @@ public class OverheatBlast : ModifierItem {
         };
     }
 
-    protected override string BuildDescription(int stackCount) {
+    protected override string GetModifierDescription(int stackCount) {
         return $"After {DisplayNumber(GetOverheatShotCount(stackCount))} consecutive shots release a blast causing {DisplayMultiplier(GetDamageMultiplier(stackCount))} damage";
     }
 

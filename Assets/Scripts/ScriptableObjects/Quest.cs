@@ -117,10 +117,10 @@ public class Quest : ScriptableObject {
             if  (obj.type != Objective.Type.Sell) continue;
             
             foreach (InventorySlot slot in transactionInventorySlots) {
-                if (slot.item == null) continue;
+                if (slot.itemInstance == null) continue;
                 
-                if (obj.targetItem.uuid == slot.item.ItemRef.uuid) {
-                    obj.progressValue = Mathf.Clamp(obj.progressValue + slot.item.count, 0, obj.targetValue);
+                if (obj.targetItem.uuid == slot.itemInstance.ItemRef.uuid) {
+                    obj.progressValue = Mathf.Clamp(obj.progressValue + slot.itemInstance.count, 0, obj.targetValue);
                 }
             }
         }

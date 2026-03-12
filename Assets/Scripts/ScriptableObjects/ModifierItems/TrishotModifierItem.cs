@@ -20,7 +20,7 @@ public class TrishotModifierItem : ModifierItem {
         eyeInstance.trishot = instance;
     }
 
-    protected override string BuildDescription(int stackCount) {
+    protected override string GetModifierDescription(int stackCount) {
         return $"{DisplayProb(GetProbability(stackCount))} chance to split a projectile into {DisplayNumber(3)}, " +
                $"each dealing {DisplayMultiplier(damageMultiplier)} damage";
     }

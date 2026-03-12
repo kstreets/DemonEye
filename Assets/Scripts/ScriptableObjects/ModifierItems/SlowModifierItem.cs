@@ -22,7 +22,7 @@ public class SlowModifierItem : ModifierItem {
         enemy.slow = slow;
     }
 
-    protected override string BuildDescription(int stackCount) {
+    protected override string GetModifierDescription(int stackCount) {
         return $"{DisplayProb(GetSpeedReduction(stackCount))} enemy speed reduction for {DisplaySeconds(slowDuration)}";
     }
 

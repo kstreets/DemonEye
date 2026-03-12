@@ -18,7 +18,7 @@ public class ProjectileCountModifierItem : ModifierItem {
         };
     }
 
-    protected override string BuildDescription(int stackCount) {
+    protected override string GetModifierDescription(int stackCount) {
         if (stackCount == 1) {
             return $"{DisplayProb(GetProbability(stackCount))} chance to shoot an extra projectile";
         }

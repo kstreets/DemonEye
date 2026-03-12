@@ -1,26 +1,34 @@
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using static Game;
+using VInspector;
 
 public class Augment : UuidScriptableObject {
 
-    public List<ModifierItem> derivedModifiers;
-
-    public bool MeetsRequirements(List<int> uuids) {
-        foreach (ModifierItem mod in derivedModifiers) {
-            int countInUuids = uuids.Count(id => id == mod.uuid);
-            int countInDerived = derivedModifiers.Count(m => m.uuid == mod.uuid);
-            if (countInUuids < countInDerived) return false;
-        }
-        return true;    
-    }
-
+    public ModifierItem modifierDerivedFrom;
+    
     public virtual void AddInstanceToEnemy(Enemy enemy) { }
     public virtual void AddInstanceToEye(DemonEyeInstance eyeInstance) { }
     
     public virtual string GetDescription() {
         return string.Empty;
     }
+    
+    #if UNITY_EDITOR
+    
+    [Button]
+    private void AddToStash() {
+        if (!Application.isPlaying) {
+            Debug.Log("Can only add to stash inventory when game is playing");
+            return;
+        }
+        ItemInstance itemInstance = new() {
+            itemOrInstanceUuid = uuid,
+            nestedUuids = new() { uuid },
+            count = 1,
+        };
+        inst.TryAddItemToInventory(inst.stashInventory, itemInstance);
+    }
+    
+    #endif 
 
 }

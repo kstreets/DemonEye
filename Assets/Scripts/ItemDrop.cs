@@ -1,27 +1,25 @@
 using System;
 using UnityEngine;
+using static Game;
 
 public class ItemDrop : MonoBehaviour {
 
     public CircleCollider2D circleCollider;
     public SpriteRenderer spriteRenderer;
-    [SerializeField] private Item item;
+    public Item itemRef;
     
-    [NonSerialized] private Item _item;
-    [NonSerialized] private int _dropCount;
+    [NonSerialized] private ItemInstance itemInstance;
     
-    public Item Item => item != null ? item : _item;
-
     public int dropCount {
-        get => _dropCount <= 0 ? 1 : _dropCount;
-        set => _dropCount = value;
+        get => itemInstance.count <= 0 ? 1 : itemInstance.count;
+        set => itemInstance.count = value;
     }
 
-    public void Init(Item applyItem, int count) {
-        _dropCount = count;
-        _item = applyItem;
-        spriteRenderer.sprite = applyItem.dropSprite == null ? applyItem.inventorySprite : applyItem.dropSprite;
-        circleCollider.radius = applyItem.pickupRadius;
+    public void Init(ItemInstance _itemInstance) {
+        itemInstance = _itemInstance;
+        itemRef = _itemInstance.ItemRef;
+        spriteRenderer.sprite = itemRef.dropSprite == null ? itemRef.inventorySprite : itemRef.dropSprite;
+        circleCollider.radius = itemRef.pickupRadius;
         circleCollider.enabled = true;
     }
     

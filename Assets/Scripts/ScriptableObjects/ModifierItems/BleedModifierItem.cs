@@ -29,7 +29,7 @@ public class BleedModifierItem : ModifierItem {
         enemy.bleed = instance;
     }
 
-    protected override string BuildDescription(int stackCount) {
+    protected override string GetModifierDescription(int stackCount) {
         return $"{DisplayNumber(GetBleedDamage(stackCount))} damage per bleed every {DisplaySeconds(bleedInterval)}";
     }
 

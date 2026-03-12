@@ -25,7 +25,7 @@ public class BoneShatterModifierItem : ModifierItem {
         };
     }
 
-    protected override string BuildDescription(int stackCount) {
+    protected override string GetModifierDescription(int stackCount) {
         return $"{DisplayProb(GetProbability(stackCount))} chance to shatter an enemy's bone, " +
                $"sending out {DisplayNumber(shardsCount)} bone fragments, each dealing {DisplayMultiplier(GetDamage(stackCount))} damage";
     }

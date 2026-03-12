@@ -17,7 +17,7 @@ public class FirerateModifierItem : ModifierItem {
         eyeInstance.firerate = instance;
     }
 
-    protected override string BuildDescription(int stackCount) {
+    protected override string GetModifierDescription(int stackCount) {
         return $"{DisplayProbIncrease(GetReductionPercentage(stackCount))} rate of fire";
     }
 

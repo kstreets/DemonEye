@@ -16,7 +16,7 @@ public class RangeModifierItem : ModifierItem {
         };
     }
 
-    protected override string BuildDescription(int stackCount) {
+    protected override string GetModifierDescription(int stackCount) {
         return $"{DisplayIncrease(GetTimeIncrease(stackCount))} projectile lifetime";
     }
 

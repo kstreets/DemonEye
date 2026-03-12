@@ -1,7 +1,7 @@
 using UnityEngine;
 using static Game;
 
-[CreateAssetMenu(menuName = "Scriptable Objects/Augments/BackwardsPiercingAugment")]
+[CreateAssetMenu(menuName = "Scriptable Objects/Modifiers/BackwardsPiercingAugment")]
 public class BackwardsPiercingAugment : Augment {
     
     public struct InstanceData { }
@@ -11,7 +11,7 @@ public class BackwardsPiercingAugment : Augment {
     }
 
     public override string GetDescription() {
-        return $"Backwards shots travel through all enemies";
+        return "Backwards shots travel through all enemies";
     }
-
+    
 }

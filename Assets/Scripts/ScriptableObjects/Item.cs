@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using VInspector;
@@ -119,9 +118,9 @@ public class Item : UuidScriptableObject {
             desc = desc.Remove(0, 1);
         }
 
-        string builtDesc = BuildDescription(stackCount);
-        if (!string.IsNullOrEmpty(builtDesc)) {
-            desc += string.IsNullOrEmpty(desc) ? builtDesc : $"\n{builtDesc}"; 
+        string modifierDesc = GetModifierDescription(stackCount);
+        if (!string.IsNullOrEmpty(modifierDesc)) {
+            desc += string.IsNullOrEmpty(desc) ? modifierDesc : $"\n{modifierDesc}"; 
         }
         
         if (!string.IsNullOrEmpty(description)) {
@@ -130,14 +129,14 @@ public class Item : UuidScriptableObject {
         else if (!string.IsNullOrEmpty(itemGroupProps?.description)) {
             desc += string.IsNullOrEmpty(desc) ? itemGroupProps.description : $"\n{itemGroupProps.description}";
         }
-
+        
         return !string.IsNullOrEmpty(desc) ? desc : "Item is missing description";
     }
 
-    protected virtual string BuildDescription(int stackCount) {
+    protected virtual string GetModifierDescription(int stackCount) {
         return string.Empty;
     }
-
+    
 #if UNITY_EDITOR
     
     [OnValueChanged(nameof(buyPrice))]

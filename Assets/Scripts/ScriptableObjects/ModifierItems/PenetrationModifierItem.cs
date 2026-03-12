@@ -16,7 +16,7 @@ public class PenetrationModifierItem : ModifierItem {
         };
     }
 
-    protected override string BuildDescription(int stackCount) {
+    protected override string GetModifierDescription(int stackCount) {
         int throughCount = GetGoThroughCount(stackCount);
         if (throughCount == 1) {
             return $"Projectiles pass through {DisplayNumber(throughCount)} enemy before stopping";

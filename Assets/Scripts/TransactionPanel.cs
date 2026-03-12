@@ -26,7 +26,7 @@ public class TransactionPanel : MonoBehaviour {
     public ButtonFeel barterPurchaseButton;
     public ButtonFeel moneyPurchaseButton;
     
-    public void UpdateBuyItem(InventoryItem item) {
+    public void UpdateBuyItem(ItemInstance itemInstance) {
         sellParent.gameObject.SetActive(false);
         purchasingParent.gameObject.SetActive(true);
 
@@ -34,22 +34,22 @@ public class TransactionPanel : MonoBehaviour {
             resReq.gameObject.SetActive(false);
         }
         
-        if (item == null) {
+        if (itemInstance == null) {
             return;
         }
 
-        purchasingItemImage.sprite = item.ItemRef.inventorySprite;
-        purchasingItemDesc.Set(item);
+        purchasingItemImage.sprite = itemInstance.ItemRef.inventorySprite;
+        purchasingItemDesc.Set(itemInstance);
         inst.FitPopupSize(purchasingItemDesc.rectTransform, purchasingItemDesc.tagsParent.rect, purchasingItemDesc.nameText.rectTransform.rect, purchasingItemDesc.descText.rectTransform.rect);
 
-        for (int i = 0; i < item.ItemRef.barterRequirements.Count; i++) {
-            ItemWithCount barterReq = item.ItemRef.barterRequirements[i];
+        for (int i = 0; i < itemInstance.ItemRef.barterRequirements.Count; i++) {
+            ItemWithCount barterReq = itemInstance.ItemRef.barterRequirements[i];
             ResourceRequirement resReq = resourceRequirements[i];
             resReq.gameObject.SetActive(true);
             resReq.Set(barterReq.item, barterReq.count, inst.GetOwnedCountOfItem(barterReq.item));
         }
 
-        string buyPriceString = ColorText(item.ItemRef.buyPrice.ToString("N0"), styles.coinCurrencyColor);
+        string buyPriceString = ColorText(itemInstance.ItemRef.buyPrice.ToString("N0"), styles.coinCurrencyColor);
         moneyPurchaseButton.text.text = $"Purchase for <sprite=0>{buyPriceString}";
     }
 

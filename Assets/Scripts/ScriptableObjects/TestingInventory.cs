@@ -6,12 +6,12 @@ using UnityEngine;
 public class TestingInventory : ScriptableObject {
 
     [Serializable]
-    public struct TestInventoryItem {
+    public struct TestItemInstance {
         public Item item;
         public int count;
     }
     
-    public List<TestInventoryItem> items;
+    public List<TestItemInstance> items;
 
     [VInspector.Button]
     public void AddToPlayerInventory() {
@@ -21,7 +21,7 @@ public class TestingInventory : ScriptableObject {
         }
         
         Game gameManager = FindAnyObjectByType(typeof(Game)) as Game;
-        foreach (TestInventoryItem inventoryItem in items) {
+        foreach (TestItemInstance inventoryItem in items) {
             gameManager?.TryAddItemToInventory(gameManager.playerInventory, inventoryItem.item, inventoryItem.count);
         }
     }
@@ -34,7 +34,7 @@ public class TestingInventory : ScriptableObject {
         }
         
         Game gameManager = FindAnyObjectByType(typeof(Game)) as Game;
-        foreach (TestInventoryItem inventoryItem in items) {
+        foreach (TestItemInstance inventoryItem in items) {
             gameManager?.TryAddItemToInventory(gameManager.stashInventory, inventoryItem.item, inventoryItem.count);
         }
     }
