@@ -7,6 +7,7 @@ using System.IO;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace WingmanInspector {
 
@@ -102,7 +103,7 @@ namespace WingmanInspector {
 
             EditorApplication.update -= Update;
             EditorApplication.update += Update;
-            
+
             EditorApplication.hierarchyWindowItemOnGUI -= OnHierarchyGUI;
             EditorApplication.hierarchyWindowItemOnGUI += OnHierarchyGUI;
             
@@ -111,7 +112,7 @@ namespace WingmanInspector {
             
             EditorApplication.quitting -= OnQuit;
             EditorApplication.quitting += OnQuit;
-            
+
             Settings.OnSettingsChanged += OnSettingsChanged;
         }
 
@@ -123,7 +124,7 @@ namespace WingmanInspector {
             EditorApplication.quitting -= OnQuit;
             Settings.OnSettingsChanged -= OnSettingsChanged;
         }
-
+        
         private static void RefreshInspectorWindows() {
             IList windows = (IList)allInspectorsFieldInfo.GetValue(inspectorWindowType);
             
@@ -135,7 +136,7 @@ namespace WingmanInspector {
             // Add new window as a container to the list
             foreach (EditorWindow inspectorWindow in windows) {
                 if (!InspectorHasContainer(inspectorWindow)) {
-                    containers.Add(new WingmanContainer(inspectorWindow));
+                    containers.Add(new WingmanContainer(inspectorWindow, Selection.activeObject));
                 }
             }
             
@@ -155,7 +156,7 @@ namespace WingmanInspector {
             }
             return false;
         }
-
+        
         private static void OnSelectionChanged() {
             foreach (WingmanContainer container in containers) {
                 if (!container.InspectorIsLocked()) {
