@@ -69,7 +69,7 @@ public class Quest : ScriptableObject {
     public void Update() {
         foreach (Objective obj in objectives) {
             if (obj.type == Objective.Type.Fetch) {
-                int ownedCount = inst.GetOwnedCountOfItem(obj.targetItem);
+                int ownedCount = gameInstance.GetOwnedCountOfItem(obj.targetItem);
                 obj.progressValue = Mathf.Clamp(ownedCount, 0, obj.targetValue);
             }
         }

@@ -13,7 +13,5 @@ MonoBehaviour:
   m_Name: BleedCritAugment
   m_EditorClassIdentifier: Assembly-CSharp::BleedCritAugment
   uuid: -535527104
-  derivedModifiers:
-  - {fileID: 11400000, guid: 879589b7002a56d4791affd28d5fb199, type: 2}
-  - {fileID: 11400000, guid: ba0965bc93d7d704f8f3e330886c9c1d, type: 2}
+  modifierDerivedFrom: {fileID: 11400000, guid: 879589b7002a56d4791affd28d5fb199, type: 2}
   probability: 0.3

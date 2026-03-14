@@ -40,13 +40,13 @@ public class TransactionPanel : MonoBehaviour {
 
         purchasingItemImage.sprite = itemInstance.ItemRef.inventorySprite;
         purchasingItemDesc.Set(itemInstance);
-        inst.FitPopupSize(purchasingItemDesc.rectTransform, purchasingItemDesc.tagsParent.rect, purchasingItemDesc.nameText.rectTransform.rect, purchasingItemDesc.descText.rectTransform.rect);
+        gameInstance.FitPopupSize(purchasingItemDesc.rectTransform, purchasingItemDesc.tagsParent.rect, purchasingItemDesc.nameText.rectTransform.rect, purchasingItemDesc.descText.rectTransform.rect);
 
         for (int i = 0; i < itemInstance.ItemRef.barterRequirements.Count; i++) {
             ItemWithCount barterReq = itemInstance.ItemRef.barterRequirements[i];
             ResourceRequirement resReq = resourceRequirements[i];
             resReq.gameObject.SetActive(true);
-            resReq.Set(barterReq.item, barterReq.count, inst.GetOwnedCountOfItem(barterReq.item));
+            resReq.Set(barterReq.item, barterReq.count, gameInstance.GetOwnedCountOfItem(barterReq.item));
         }
 
         string buyPriceString = ColorText(itemInstance.ItemRef.buyPrice.ToString("N0"), styles.coinCurrencyColor);

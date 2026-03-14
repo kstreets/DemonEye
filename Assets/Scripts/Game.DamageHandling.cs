@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using PrimeTween;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 public partial class Game {
     
@@ -8,7 +9,7 @@ public partial class Game {
         enemy.delayedDamage = damage;
         enemy.delayedDamageIsCrit = isCriticalStrike;
         Delay(enemy, delay, static enemy => {
-            inst.DamageEnemy(enemy, enemy.delayedDamage, enemy.delayedDamageIsCrit);
+            gameInstance.DamageEnemy(enemy, enemy.delayedDamage, enemy.delayedDamageIsCrit);
         });
     }
     
@@ -89,22 +90,13 @@ public partial class Game {
                 
                 PlayAudioClip(stoneBreakClip, entity.position);
 
-                Entity rockDropEntity = null;
+                DropPool dropPool = rockStonesDropPool;
                 if (RollProbability(loadedMapData.eyeUpgradeFromRockChance)) {
-                    ModifierItem modifierItem = GetItemFromDropPool(eyeUpgradesDropPool) as ModifierItem;
-                    ItemInstance modifierItemInstance = new(modifierItem);
-                    
-                    if (modifierItem.augments.Count > 0) {
-                        Augment randomAugment = modifierItem.augments[Random.Range(0, modifierItem.augments.Count)];
-                        modifierItemInstance.nestedUuids = new() { randomAugment.uuid };
-                    }
-                    
-                    rockDropEntity = SpawnItemInstanceAsEntity(modifierItemInstance, entity.position, Quaternion.identity);
+                    dropPool = eyeUpgradesDropPool;
                 }
-                else {
-                    Item dropItem = GetItemFromDropPool(rockStonesDropPool);
-                    rockDropEntity = SpawnItemAsEntity(dropItem, 1, entity.position, Quaternion.identity);
-                }
+                
+                Item dropItem = GetItemFromDropPool(dropPool);
+                Entity rockDropEntity = SpawnItemAsEntity(dropItem, 1, entity.position, Quaternion.identity);
 
                 Vector3 endPos = entity.position + RotationVector(Random.Range(0f, 360f), 0.18f, 0.25f);
                 AddBounceEffect(rockDropEntity, endPos, 0.8f);
@@ -126,7 +118,7 @@ public partial class Game {
             return 1f;
         }
         
-        float criticalStrikeProb = gameplayConfig.defaultCritChance + GetStatAdjustmentValue(StatAdjustmentType.CritChance);
+        float criticalStrikeProb = gameplayConfig.defaultCritChance + GetPlayerStatAdjustment(Player.Stat.CritChance) + GetEquipmentStatAdjustment(EquipmentStatType.CritChance);
 
         if (equipedEye.bleedCritAugment.HasValue && enemy.bleed.HasValue) {
             criticalStrikeProb += equipedEye.bleedCritAugment.Value.probability;
@@ -154,7 +146,7 @@ public partial class Game {
             float damageMultiplier = GetDamageMultiplierOnEnemy(enemy);
             
             if (isCriticalHit) {
-                float critMultiplier = gameplayConfig.defaultCritMulti + GetStatAdjustmentValue(StatAdjustmentType.CritMulti);
+                float critMultiplier = gameplayConfig.defaultCritMulti + GetPlayerStatAdjustment(Player.Stat.CritMulti) + GetEquipmentStatAdjustment(EquipmentStatType.CritMulti);
                 damageMultiplier += critMultiplier;
             }
             
@@ -190,7 +182,7 @@ public partial class Game {
         int damage = gameplayConfig.damage;
         int damageRange = Mathf.RoundToInt(damage * 0.1f);
         damage += Random.Range(-damageRange, damageRange);
-        damage += Mathf.RoundToInt(GetStatAdjustmentValue(StatAdjustmentType.Damage));
+        damage += Mathf.RoundToInt(GetPlayerStatAdjustment(Player.Stat.Damage) + GetEquipmentStatAdjustment(EquipmentStatType.Damage));
         return damage;
     }
 

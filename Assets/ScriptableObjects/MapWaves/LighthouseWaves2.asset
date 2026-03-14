@@ -17,8 +17,8 @@ MonoBehaviour:
   spawnPhases:
   - phaseDuration: 35
     spawnDuration: 8
-    spawnCellRange: {x: 7, y: 11}
-    repositionCellRange: {x: 5, y: 8}
+    spawnCellRange: {x: 11, y: 15}
+    repositionCellRange: {x: 8, y: 12}
     spawnRateCurve:
       serializedVersion: 2
       m_Curve:
@@ -52,8 +52,8 @@ MonoBehaviour:
       enemyData: {fileID: 11400000, guid: c955cc90bf6af754abb6438085c0d619, type: 2}
   - phaseDuration: 50
     spawnDuration: 8
-    spawnCellRange: {x: 8, y: 12}
-    repositionCellRange: {x: 5, y: 8}
+    spawnCellRange: {x: 11, y: 15}
+    repositionCellRange: {x: 8, y: 12}
     spawnRateCurve:
       serializedVersion: 2
       m_Curve:
@@ -85,8 +85,8 @@ MonoBehaviour:
       enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
   - phaseDuration: 55
     spawnDuration: 10
-    spawnCellRange: {x: 8, y: 12}
-    repositionCellRange: {x: 5, y: 8}
+    spawnCellRange: {x: 12, y: 16}
+    repositionCellRange: {x: 11, y: 13}
     spawnRateCurve:
       serializedVersion: 2
       m_Curve:
@@ -120,8 +120,8 @@ MonoBehaviour:
       enemyData: {fileID: 11400000, guid: c955cc90bf6af754abb6438085c0d619, type: 2}
   - phaseDuration: 65
     spawnDuration: 12
-    spawnCellRange: {x: 11, y: 15}
-    repositionCellRange: {x: 6, y: 9}
+    spawnCellRange: {x: 13, y: 17}
+    repositionCellRange: {x: 9, y: 13}
     spawnRateCurve:
       serializedVersion: 2
       m_Curve:
@@ -153,8 +153,8 @@ MonoBehaviour:
       enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
   - phaseDuration: 65
     spawnDuration: 15
-    spawnCellRange: {x: 11, y: 15}
-    repositionCellRange: {x: 6, y: 9}
+    spawnCellRange: {x: 13, y: 17}
+    repositionCellRange: {x: 11, y: 13}
     spawnRateCurve:
       serializedVersion: 2
       m_Curve:

@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using PrimeTween;
 using UnityEngine;
 using UnityEngine.Assertions;
+using Random = UnityEngine.Random;
 
 public partial class Game {
     
@@ -24,7 +26,7 @@ public partial class Game {
         public int strengthSkillLevel;
 
         public enum Stat {
-            Armor, CarryCapacity, CritChance, CritMulti, Damage, Firerate, Health, 
+            Armor, BleedResist, CarryCapacity, CritChance, CritMulti, Damage, Firerate, Health, 
             HealingAmount, HealingSpeed, LootingSpeed, MovementSpeedPercentage, ProjectileCount, Range,
         }
     }
@@ -136,7 +138,7 @@ public partial class Game {
             curStepDistance = 0f;
         }
         
-        float projCount = 1f + GetStatAdjustmentValue(StatAdjustmentType.ProjectileCount);
+        float projCount = 1f + GetPlayerStatAdjustment(Player.Stat.ProjectileCount) + GetEquipmentStatAdjustment(EquipmentStatType.ProjectileCount);
         int targetCount = Mathf.FloorToInt(projCount);
         float extraProjChance = projCount % 1;
         if (RollProbability(extraProjChance)) {
@@ -221,8 +223,8 @@ public partial class Game {
     }
 
     private static float GetTargetScore(Collider2D col) {
-        Entity entity = inst.entityLookup[col.gameObject];
-        float dist = Vector2.Distance(col.transform.position, inst.player.position);
+        Entity entity = gameInstance.entityLookup[col.gameObject];
+        float dist = Vector2.Distance(col.transform.position, gameInstance.player.position);
 
         if (entity is Enemy enemy) {
             const float distWeight = 1f;
@@ -289,9 +291,10 @@ public partial class Game {
             return projectile;
         }
 
+        projectile.gameObject.SetActive(false);
         Delay(projectile, spawnDelay.Value, static (projectile) => {
             projectile.gameObject.SetActive(true);
-            inst.projectiles.Add(projectile);
+            gameInstance.projectiles.Add(projectile);
             projectile.trans.localScale = Vector3.zero;
             Tween.Scale(projectile.trans, Vector3.one, 0.025f, Ease.InBounce);
         });
@@ -344,25 +347,25 @@ public partial class Game {
         
         playerConsumingTween = Tween.Delay(item, actionDelay, static (item) => {
             if (item.healingAmount > 0) {
-                inst.HealPlayer(item.healingAmount);
+                gameInstance.HealPlayer(item.healingAmount);
             }
             if (item.bandageAmount > 0) {
-                inst.player.bleeding = false;
+                gameInstance.player.bleeding = false;
             }
-            inst.ReduceItemCountInInventory(inst.consumingInventory, inst.consumingSlotIndex);
+            gameInstance.ReduceItemCountInInventory(gameInstance.consumingInventory, gameInstance.consumingSlotIndex);
         });
         
         playerConsumingTween.OnUpdate(this, static (_, _) => {
-            if (inst.playerPreviewImage.sprite != inst.player.spriteRenderer.sprite) {
-                inst.playerPreviewImage.sprite = inst.player.spriteRenderer.sprite;     
+            if (gameInstance.playerPreviewImage.sprite != gameInstance.player.spriteRenderer.sprite) {
+                gameInstance.playerPreviewImage.sprite = gameInstance.player.spriteRenderer.sprite;     
             }
         });
         
         playerConsumingTween.Chain(Tween.Delay(postActionDelay, static () => {
-            inst.player.animator.Play(inst.playerIdleDownAnim);
-            inst.player.animator.Update(0f);
-            if (inst.playerPreviewImage.sprite != inst.player.spriteRenderer.sprite) {
-                inst.playerPreviewImage.sprite = inst.player.spriteRenderer.sprite;     
+            gameInstance.player.animator.Play(gameInstance.playerIdleDownAnim);
+            gameInstance.player.animator.Update(0f);
+            if (gameInstance.playerPreviewImage.sprite != gameInstance.player.spriteRenderer.sprite) {
+                gameInstance.playerPreviewImage.sprite = gameInstance.player.spriteRenderer.sprite;     
             }
         }))
         .Chain(Tween.Delay(additionalConsumeDelay));
@@ -380,7 +383,7 @@ public partial class Game {
             timeSpentSummoningPortal = 0f;
         }
         
-        float damageReductionFromArmor = GetStatAdjustmentValue(StatAdjustmentType.ArmorDamageReductionPercentage);
+        float damageReductionFromArmor = GetEquipmentStatAdjustment(EquipmentStatType.ArmorDamageReductionPercentage);
         Assert.IsTrue(damageReductionFromArmor >= 0f && damageReductionFromArmor < 1f, "Armor stat needs to be [0, 1)");
         
         int damageReduction = Mathf.RoundToInt(damage * damageReductionFromArmor);
@@ -398,22 +401,27 @@ public partial class Game {
 
     private int GetPlayerStatLevel(Player.Stat stat) {
         return stat switch {
-            Player.Stat.CarryCapacity   => player.strengthSkillLevel,
+            Player.Stat.Firerate                => player.hasteSkillLevel,
+            Player.Stat.MovementSpeedPercentage => player.hasteSkillLevel,
+            Player.Stat.LootingSpeed            => player.hasteSkillLevel,
+        
             Player.Stat.CritChance      => player.intellectSkillLevel,
             Player.Stat.CritMulti       => player.intellectSkillLevel,
-            Player.Stat.Damage          => player.intellectSkillLevel,
-            Player.Stat.Firerate        => player.hasteSkillLevel,
-            Player.Stat.Health          => player.lifeBloodSkillLevel,
-            Player.Stat.HealingAmount   => player.lifeBloodSkillLevel,
-            Player.Stat.HealingSpeed    => player.lifeBloodSkillLevel,
-            Player.Stat.LootingSpeed    => player.hasteSkillLevel,
-            Player.Stat.MovementSpeedPercentage   => player.hasteSkillLevel,
-            Player.Stat.ProjectileCount => player.strengthSkillLevel,
-            _                           => -1,
+            Player.Stat.ProjectileCount => player.intellectSkillLevel,
+            
+            Player.Stat.Health        => player.lifeBloodSkillLevel,
+            Player.Stat.HealingAmount => player.lifeBloodSkillLevel,
+            Player.Stat.HealingSpeed  => player.lifeBloodSkillLevel,
+            
+            Player.Stat.BleedResist   => player.strengthSkillLevel,
+            Player.Stat.Damage        => player.strengthSkillLevel,
+            Player.Stat.CarryCapacity => player.strengthSkillLevel,
+            
+            _ => -1,
         };
     }
 
-    private float GetPlayerStat(Player.Stat stat) {
+    private float GetPlayerStatAdjustment(Player.Stat stat) {
         return stat switch {
             Player.Stat.CarryCapacity   => GetPlayerStatLevel(Player.Stat.CarryCapacity) * gameplayConfig.carryCapacityIncPerLevel,
             Player.Stat.CritChance      => GetPlayerStatLevel(Player.Stat.CritChance) * gameplayConfig.critChanceIncPerLevel,
@@ -424,29 +432,29 @@ public partial class Game {
             Player.Stat.HealingAmount   => GetPlayerStatLevel(Player.Stat.HealingAmount) * gameplayConfig.healingIncPerLevel,
             Player.Stat.HealingSpeed    => GetPlayerStatLevel(Player.Stat.HealingSpeed) * gameplayConfig.healingSpeedIncPerLevel,
             Player.Stat.LootingSpeed    => GetPlayerStatLevel(Player.Stat.LootingSpeed) * gameplayConfig.lootingSpeedIncPerLevel,
-            Player.Stat.MovementSpeedPercentage   => GetPlayerStatLevel(Player.Stat.MovementSpeedPercentage) * gameplayConfig.movementSpeedIncPerLevel,
+            Player.Stat.MovementSpeedPercentage => GetPlayerStatLevel(Player.Stat.MovementSpeedPercentage) * gameplayConfig.movementSpeedIncPerLevel,
             Player.Stat.ProjectileCount => GetPlayerStatLevel(Player.Stat.ProjectileCount) * gameplayConfig.projectileCountIncPerLevel,
             _                           => -1,
         };
     }
     
-    public enum StatAdjustmentType {
+    public enum EquipmentStatType {
         ArmorDamageReductionPercentage, FireratePercentage, MovementSpeedPercentage, 
         Damage, CritChance, CritMulti, ProjectileCount, RangeInSeconds,
     }
     
-    private float GetStatAdjustmentValue(StatAdjustmentType stat) {
+    private float GetEquipmentStatAdjustment(EquipmentStatType equipmentStat) {
         float statSum = 0f;
         
         for (int i = 0; i < playerEquipmentSize; i++) {
             Item item = playerInventory.slots[i].itemInstance?.ItemRef;
             if (!item || !item.modifiesStats) continue;
             
-            switch (stat) {
-                case StatAdjustmentType.ArmorDamageReductionPercentage:
+            switch (equipmentStat) {
+                case EquipmentStatType.ArmorDamageReductionPercentage:
                     statSum += item.armorPercent; 
                     break;
-                case StatAdjustmentType.MovementSpeedPercentage:
+                case EquipmentStatType.MovementSpeedPercentage:
                     statSum += item.movementSpeedPercentage;
                     break;
             }
@@ -456,23 +464,23 @@ public partial class Game {
             ModifierItem modifierItem = mod.ModifierItem;
             if (!modifierItem.modifiesStats) continue;
 
-            switch (stat) {
-                case StatAdjustmentType.CritChance:
+            switch (equipmentStat) {
+                case EquipmentStatType.CritChance:
                     statSum += modifierItem.critChance; 
                     break;
-                case StatAdjustmentType.CritMulti:
+                case EquipmentStatType.CritMulti:
                     statSum += modifierItem.critMultiplier; 
                     break;
-                case StatAdjustmentType.Damage:
+                case EquipmentStatType.Damage:
                     statSum += modifierItem.damage; 
                     break;
-                case StatAdjustmentType.FireratePercentage:
+                case EquipmentStatType.FireratePercentage:
                     statSum += modifierItem.fireratePercentage; 
                     break;
-                case StatAdjustmentType.ProjectileCount:
+                case EquipmentStatType.ProjectileCount:
                     statSum += modifierItem.projectileCount; 
                     break;
-                case StatAdjustmentType.RangeInSeconds:
+                case EquipmentStatType.RangeInSeconds:
                     statSum += modifierItem.rangeInSeconds;
                     break;
             }
@@ -481,11 +489,12 @@ public partial class Game {
         return statSum;
     }
 
-    private int FullPlayerHealth => 100 + (gameplayConfig.healthIncPerLevel * GetPlayerStatLevel(Player.Stat.Health));
+    private int FullPlayerHealth => 100 + (int)GetPlayerStatAdjustment(Player.Stat.Health);
 
     private float GetPlayerSpeed() {
         float playerSpeed = gameplayConfig.baseSpeed;
-        playerSpeed += playerSpeed * GetStatAdjustmentValue(StatAdjustmentType.MovementSpeedPercentage);
+        playerSpeed += playerSpeed * GetPlayerStatAdjustment(Player.Stat.MovementSpeedPercentage);
+        playerSpeed += playerSpeed * GetEquipmentStatAdjustment(EquipmentStatType.MovementSpeedPercentage);
         
         float speedReductionFromWeight = Mathf.Lerp(0f, gameplayConfig.maxEncumberedSpeedReduction, GetOverweightCompletion());
         speedReductionFromWeight = Mathf.Clamp(speedReductionFromWeight, 0f, gameplayConfig.maxEncumberedSpeedReduction);
@@ -500,21 +509,17 @@ public partial class Game {
         }
 
         float attackDelay = gameplayConfig.attackDelay;
-        attackDelay -= attackDelay * GetStatAdjustmentValue(StatAdjustmentType.FireratePercentage);
+        attackDelay -= attackDelay * GetPlayerStatAdjustment(Player.Stat.Firerate);
+        attackDelay -= attackDelay * GetEquipmentStatAdjustment(EquipmentStatType.FireratePercentage);
         return Mathf.Clamp(attackDelay, gameplayConfig.cappedMinAttackDelay, gameplayConfig.attackDelay);
     }
     
     private float GetProjectileRangeInSeconds() {
-        return gameplayConfig.rangeInSeconds + GetStatAdjustmentValue(StatAdjustmentType.RangeInSeconds);
-    }
-
-    private int GetCarryCapacityStat() {
-        int carryCapacityStat = GetPlayerStatLevel(Player.Stat.CarryCapacity);
-        return carryCapacityStat;
+        return gameplayConfig.rangeInSeconds + GetEquipmentStatAdjustment(EquipmentStatType.RangeInSeconds);
     }
 
     private void GetEncumberingWeightRange(out int startingWeight, out int endingWeight) {
-        int encumberingIncreaseFromStrength = GetCarryCapacityStat() * gameplayConfig.carryCapacityIncPerLevel;
+        int encumberingIncreaseFromStrength = (int)GetPlayerStatAdjustment(Player.Stat.CarryCapacity);
         endingWeight = gameplayConfig.maxEncumberedWeight + encumberingIncreaseFromStrength;
         startingWeight = gameplayConfig.defaultStartingEncumberingWeight + encumberingIncreaseFromStrength;
     }

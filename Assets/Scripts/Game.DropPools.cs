@@ -7,7 +7,7 @@ public partial class Game {
     
     private enum DropOrigin { Rock, Body, Trader, Enemy, ExistsInLevel, Bush }
 
-    private struct DropPool {
+    private class DropPool {
         public List<Item> items;
         public DropOrigin dropOrigin;
         public bool HasItems => items.Count > 0;
@@ -102,12 +102,12 @@ public partial class Game {
         
         foreach (Item drop in dropPool.items) {
             float dropChance = GetDropChanceOfItem(drop, dropPool.dropOrigin);
-            if (Random.value < dropChance) {
-                return drop;
+            if (RollProbability(dropChance)) {
+                return RollForAugmentedVersion(drop, dropPool.dropOrigin);
             }
         }
-
-        return dropPool.items[^1];
+        
+        return RollForAugmentedVersion(dropPool.items[^1], dropPool.dropOrigin); 
     }
     
     private void GetUniqueItemsFromDropPool(DropPool dropPool, int maxCount, List<Item> items, float raritySkew = 0f) {
@@ -117,8 +117,8 @@ public partial class Game {
         
         foreach (Item item in dropPool.items) {
             float itemDropChance = GetDropChanceOfItem(item, dropPool.dropOrigin) + raritySkew;
-            if (Random.value < itemDropChance) {
-                items.Add(item);
+            if (RollProbability(itemDropChance)) {
+                items.Add(RollForAugmentedVersion(item, dropPool.dropOrigin));
             }
         }
         
@@ -126,9 +126,25 @@ public partial class Game {
         if (itemListNeedsTrimming) {
             items.RemoveRange(maxCount, items.Count - maxCount);
         }
-
     }
+    
+    private Item RollForAugmentedVersion(Item item, DropOrigin origin) {
+        if (item is not ModifierItem modifierItem || !augmentsPerModifierItemLookup.TryGetValue(modifierItem, out var possibleAugments)) {
+            return item;
+        }
 
+        possibleAugments.Shuffle();
+        
+        foreach (Augment possibleAugment in possibleAugments) {
+            float augmentingChance = GetDropChanceOfItem(possibleAugment.augmentedModifierItem, origin);
+            if (RollProbability(augmentingChance)) {
+                return possibleAugment.augmentedModifierItem;
+            }
+        }
+
+        return item;
+    }
+    
     private float GetDropChanceOfItem(Item item, DropOrigin origin) {
         float addChanceToSpawnFromLuck = 0f;
         

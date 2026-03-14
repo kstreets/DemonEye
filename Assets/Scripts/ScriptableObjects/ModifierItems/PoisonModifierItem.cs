@@ -23,7 +23,7 @@ public class PoisonModifierItem : ModifierItem {
                 damageMulti = GetDamageMulti(stackCount),
                 minHealthPercentForMulti = minHealthPercentForMulti,
             };
-            inst.AddPoisonedEffect(enemy, enemy.poison.Value.duration);
+            gameInstance.AddPoisonedEffect(enemy, enemy.poison.Value.duration);
         }
     }
 

@@ -7,7 +7,7 @@ public partial class Game {
         public int uuid;
         public int stackCount;
         
-        public ModifierItem ModifierItem => resourceLookup[uuid] as ModifierItem;
+        public ModifierItem ModifierItem => gameInstance.resourceLookup[uuid] as ModifierItem;
         public void ApplyToEnemy(Enemy enemy) => ModifierItem.AddInstanceToEnemy(enemy, stackCount);
         public void ApplyToEye(DemonEyeInstance eyeInstance) => ModifierItem.AddInstanceToEye(eyeInstance, stackCount);
     }
@@ -15,7 +15,7 @@ public partial class Game {
     public struct EquipedAugmentInstance {
         public int uuid;
         
-        public Augment Augment => resourceLookup[uuid] as Augment;
+        public Augment Augment => gameInstance.resourceLookup[uuid] as Augment;
         public void ApplyToEnemy(Enemy enemy) => Augment.AddInstanceToEnemy(enemy);
         public void ApplyToEye(DemonEyeInstance eyeInstance) => Augment.AddInstanceToEye(eyeInstance);
     }
@@ -59,30 +59,21 @@ public partial class Game {
 
     private void BuildAndRegisterEye(ItemInstance itemInstance) {
         itemInstance.itemOrInstanceUuid = GenerateNewItemUuid();
-        itemInstance._itemRef = demonEyeItem;
         
-        Dictionary<ModifierItem, int> modCountFromItem = new();
+        List<EquipedModInstance> equipedMods = new();
         List<EquipedAugmentInstance> equipedAugments = new();
+        ModifierSet modifierSet = ConstructModifierSet(itemInstance.nestedUuids);
         
-        foreach (int modUuid in itemInstance.nestedUuids) {
-            UuidScriptableObject nestedObject = resourceLookup[modUuid];
-            ExtractModAndAugment(nestedObject, out ModifierItem modifier, out Augment augment);
-            if (augment != null) {
-                equipedAugments.Add(new() { uuid = augment.uuid });
-            }
-            if (modifier != null) {
-                if (!modCountFromItem.TryAdd(modifier, 1)) {
-                    modCountFromItem[modifier]++;
+        foreach (ModifierSet.Element modSetElm in modifierSet.elements) {
+            equipedMods.Add(new() {
+                uuid = modSetElm.modifierItem.uuid,
+                stackCount = modSetElm.modifierCount,
+            });
+            if (modSetElm.HasUniqueAugments) {
+                foreach (Augment augment in modSetElm.uniqueAugments) {
+                    equipedAugments.Add(new() { uuid = augment.uuid });        
                 }
             }
-        }
-
-        List<EquipedModInstance> equipedMods = new();
-        foreach ((ModifierItem modItem, int stackCount) in SortModsFromDictionary(modCountFromItem)) {
-            equipedMods.Add(new() {
-                uuid = modItem.uuid,
-                stackCount = stackCount,
-            });
         }
         
         DemonEyeInstance newDemonEye = new() {
@@ -100,17 +91,19 @@ public partial class Game {
         eyeInstanceFromItemId.Add(itemInstance.itemOrInstanceUuid, newDemonEye);
     }
     
-    private struct ModifierTree {
-        public ModifierItem modifierItem; 
-        public int modifierCount;
-        public List<Augment> uniqueAugments;
-    }
-    
     private struct ModifierSet {
-        public List<ModifierTree> elements;
+        
+        public struct Element {
+            public ModifierItem modifierItem; 
+            public int modifierCount;
+            public List<Augment> uniqueAugments;
+            public bool HasUniqueAugments => uniqueAugments != null && uniqueAugments.Count > 0;
+        }
+        
+        public List<Element> elements;
     }
     
-    private ModifierSet ConsturctModifierSet(List<int> uuids) {
+    private ModifierSet ConstructModifierSet(List<int> uuids) {
         Dictionary<ModifierItem, int> modCountFromItem = new();
         Dictionary<ModifierItem, HashSet<Augment>> uniqueAugmentsPerModifier = new();
         
@@ -138,7 +131,7 @@ public partial class Game {
         
         ModifierSet modifierSet = new() { elements = new() };
         foreach ((ModifierItem mod, int count) in sortedModsList) {
-            ModifierTree tree = new() {
+            ModifierSet.Element element = new() {
                 modifierItem = mod,
                 modifierCount = count,
                 uniqueAugments = new(),
@@ -146,10 +139,10 @@ public partial class Game {
             
             if (uniqueAugmentsPerModifier.TryGetValue(mod, out var augmentSet)) {
                 foreach (Augment augment in augmentSet) {
-                    tree.uniqueAugments.Add(augment);
+                    element.uniqueAugments.Add(augment);
                 }
             }
-            modifierSet.elements.Add(tree);
+            modifierSet.elements.Add(element);
         }
         
         return modifierSet;

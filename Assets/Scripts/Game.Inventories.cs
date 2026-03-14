@@ -18,24 +18,27 @@ public partial class Game {
         [NonSerialized] public bool notDiscovered;
         [NonSerialized] public bool traderOwned;
         [NonSerialized] public int traderSlotIndex;
-        [NonSerialized] public Item _itemRef; // Used for items created at runtime, like demon eyes
 
         public Item ItemRef {
             get {
-                if (_itemRef != null) return _itemRef;
-                UuidScriptableObject uuidObject = resourceLookup[itemOrInstanceUuid];
+                if (gameInstance.eyeInstanceFromItemId.ContainsKey(itemOrInstanceUuid)) {
+                    return gameInstance.demonEyeItem;
+                }
+                
+                UuidScriptableObject uuidObject = gameInstance.resourceLookup[itemOrInstanceUuid];
                 return uuidObject switch {
-                    Item item       => item,
-                    Augment augment => augment.modifierDerivedFrom,
+                    Item item => item,
+                    Augment augment => augment.augmentedModifierItem,
+                    _ => null, 
                 };
             }
         }
 
         public bool IsFullStack => count == ItemRef.MaxStackCount;
 
-        public ItemInstance(Item item = null, int count = 1) {
-            if (item == null) return;
-            this.itemOrInstanceUuid = item.uuid;
+        public ItemInstance(UuidScriptableObject uuidObject = null, int count = 1) {
+            if (uuidObject == null) return;
+            this.itemOrInstanceUuid = uuidObject.uuid;
             this.count = count;
         }
         
@@ -47,7 +50,6 @@ public partial class Game {
                 notDiscovered = notDiscovered,
                 traderOwned = traderOwned,
                 traderSlotIndex = traderSlotIndex,
-                _itemRef = ItemRef,
             };
 
             if (nestedUuids != null) {
@@ -58,6 +60,11 @@ public partial class Game {
             }
 
             return clonedItemInstance;
+        }
+        
+        public bool TryGetUuidObject(out UuidScriptableObject uuidObject) { 
+            // Demon Eye instances will not be in the resourceLookup
+            return gameInstance.resourceLookup.TryGetValue(itemOrInstanceUuid, out uuidObject);
         }
     }
     
@@ -729,7 +736,7 @@ public partial class Game {
         Vector2 mouseWorldPos = mainCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
         Vector2 dropDir = (mouseWorldPos - player.position.ToVector2()).normalized;
         
-        int dropCount = count <= 0 ? itemInstance.count : count;
+        int dropCount = count == -1 ? itemInstance.count : count;
         
         Vector3 endPos = player.position + RandomizeVectorAngle(dropDir, 20f) * 0.2f;
         Entity itemDropEntity = SpawnItemAsEntity(itemInstance.ItemRef, dropCount, player.position, Quaternion.identity);

@@ -29,11 +29,12 @@ MonoBehaviour:
   defaultStartingEncumberingWeight: 140
   maxEncumberedWeight: 190
   maxEncumberedSpeedReduction: 0.2
+  bleedResistIncPerLevel: 0.05
   carryCapacityIncPerLevel: 50
   critChanceIncPerLevel: 0.02
   critMultiplierIncPerLevel: 0.1
-  damageIncPerLevel: 4
-  firerateIncPerLevel: 0.03
+  damageIncPerLevel: 2
+  firerateIncPerLevel: 0.02
   healthIncPerLevel: 10
   healingIncPerLevel: 10
   healingSpeedIncPerLevel: 0.05

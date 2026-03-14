@@ -22,7 +22,7 @@ MonoBehaviour:
   priceCategory: {fileID: 11400000, guid: 29cfe26cd6da0734197e5840e6724f56, type: 2}
   buyPrice: 5000
   sellPrice: 400
-  spawnsOnAllMaps: 1
+  spawnsOnAllMaps: 0
   spawnsOnMaps: []
   chanceToSpawnOnBody: 0
   chanceToSpawnOnTrader: 0.252

@@ -43,16 +43,16 @@ public class ItemDescPopup : MonoBehaviour {
         tag1.gameObject.SetActive(true);
         tag1.color = itemRarityColor;
         
-        if (item.type == inst.quickUseType) {
+        if (item.type == gameInstance.quickUseType) {
             tag1Text.text = "Quick Use";
         } 
-        else if (item.type == inst.eyeModifierType) {
+        else if (item.type == gameInstance.eyeModifierType) {
             tag1Text.text = "Eye Modifier";
         }
-        else if (item.type == inst.wearableModifierType) {
+        else if (item.type == gameInstance.wearableModifierType) {
             tag1Text.text = "Wearable Modifier";
         }
-        else if (item.type == inst.backpackType) {
+        else if (item.type == gameInstance.backpackType) {
             tag1Text.text = "Backpack";
         }
         else {
@@ -70,8 +70,8 @@ public class ItemDescPopup : MonoBehaviour {
 
     private void SetMetaInfo(ItemInstance itemInstance, Item item) {
         int sellOrBuyPrice = 0;
-        if (item.type == inst.demonEyeType) { 
-            sellOrBuyPrice = inst.GetDemonEyeSellPrice(itemInstance);
+        if (item.type == gameInstance.demonEyeType) { 
+            sellOrBuyPrice = gameInstance.GetDemonEyeSellPrice(itemInstance);
         }
         else {
             bool itemIsOwnedByTrader = itemInstance.traderOwned;
@@ -87,14 +87,14 @@ public class ItemDescPopup : MonoBehaviour {
     }
 
     private void SetDescription(ItemInstance itemInstance, Item item) {
-        if (item.type == inst.demonEyeType) {
-            DemonEyeInstance eyeInstance = inst.eyeInstanceFromItemId[itemInstance.itemOrInstanceUuid];
+        if (item.type == gameInstance.demonEyeType) {
+            DemonEyeInstance eyeInstance = gameInstance.eyeInstanceFromItemId[itemInstance.itemOrInstanceUuid];
             string eyeDescription = "";
             foreach (EquipedAugmentInstance augmentInstance in eyeInstance.augmentInstances) {
                 eyeDescription += $"{augmentInstance.Augment.GetDescription()}\n";
             }
             foreach (EquipedModInstance modInstance in eyeInstance.modInstances) {
-                eyeDescription += inst.GetDemonEyeModDescription(modInstance.ModifierItem, modInstance.stackCount, null);
+                eyeDescription += gameInstance.GetDemonEyeModDescription(modInstance.ModifierItem, modInstance.stackCount, null);
             }
             descText.text = eyeDescription;
         }
@@ -102,7 +102,11 @@ public class ItemDescPopup : MonoBehaviour {
             descText.text = item.GetDescription();
         }
         
-        if (item.type == inst.quickUseType && !itemInstance.traderOwned) {
+        if (itemInstance.TryGetUuidObject(out var uuidObject) && uuidObject is Augment augment) {
+            descText.text += $"\n{augment.GetDescription()}";
+        }
+        
+        if (item.type == gameInstance.quickUseType && !itemInstance.traderOwned) {
             descText.text += $"<line-height=150%>\n<sprite=5 color=#{ColorUtility.ToHtmlStringRGBA(styles.inputIconTint)}> " +
                              $"<size=80%>{ColorText("Right click to consume", styles.inputIconTint)}</size>";
         } 

@@ -348,17 +348,17 @@ public partial class Game {
             int totalUpgradeCount = crucibleInventory.slots.Length - 1;
             forgeDetailsForgeText.text = $"<size=90%>Previewing Upgrades {ColorText(eyeUpgradeCount.ToString(), styles.timeDescColor)}/{totalUpgradeCount}</size><line-height=150%>\n";
             
-            List<int> uuids = new();
+            List<int> uuids = new(); // TODO: Performance
             foreach (InventorySlot slot in crucibleInventory.slots) {
                 if (slot.itemInstance == null || slot.itemInstance.ItemRef.type != eyeModifierType) continue;
-                uuids.Add(resourceLookup[slot.itemInstance.itemOrInstanceUuid].uuid);
+                uuids.Add(slot.itemInstance.itemOrInstanceUuid);
             }
             
-            ModifierSet modifierSet = ConsturctModifierSet(uuids);
+            ModifierSet modifierSet = ConstructModifierSet(uuids);
             
             string eyeDescription = "";
-            foreach (ModifierTree tree in modifierSet.elements) {
-                eyeDescription += GetDemonEyeModDescription(tree.modifierItem, tree.modifierCount, tree.uniqueAugments);
+            foreach (ModifierSet.Element modSetElm in modifierSet.elements) {
+                eyeDescription += GetDemonEyeModDescription(modSetElm.modifierItem, modSetElm.modifierCount, modSetElm.uniqueAugments);
             }
             forgeDetailsForgeText.text += eyeDescription;
         }
@@ -408,11 +408,7 @@ public partial class Game {
                 if (slot.itemInstance == null) continue;
                 
                 if (slot.ui.OnlyAcceptsType(eyeModifierType)) {
-                    ItemInstance modifierItemInstance = slot.itemInstance;
-                    newDemonEyeItemInstance.nestedUuids.Add(modifierItemInstance.ItemRef.uuid);
-                    foreach (int augmentUuid in modifierItemInstance.nestedUuids) {
-                        newDemonEyeItemInstance.nestedUuids.Add(augmentUuid);
-                    }
+                    newDemonEyeItemInstance.nestedUuids.Add(slot.itemInstance.itemOrInstanceUuid);
                 }
                 slot.itemInstance = null;
             }
@@ -783,7 +779,7 @@ public partial class Game {
         skillsPanel.intellectSkillRow.Init(intellectUpgradePath.MaxLevel, 
             $"{DisplayIncrease(gameplayConfig.critChanceIncPerLevel)} Critical Strike Chance\n" +
             $"{DisplayIncrease(gameplayConfig.critMultiplierIncPerLevel)} Critical Strike Multiplier\n" +
-            $"{DisplayIncrease(gameplayConfig.damageIncPerLevel)} Damage"
+            $"{DisplayIncrease(gameplayConfig.projectileCountIncPerLevel)} Projectile Count"
         );
         skillsPanel.lifeBloodSkillRow.Init(lifeBloodUpgradePath.MaxLevel, 
             $"{DisplayIncrease(gameplayConfig.healthIncPerLevel)} Health\n" +
@@ -791,8 +787,9 @@ public partial class Game {
             $"{DisplayIncrease(gameplayConfig.healingIncPerLevel)} Healing Amount"
         );
         skillsPanel.strengthSkillRow.Init(strengthUpgradePath.MaxLevel, 
+            $"{DisplayIncrease(gameplayConfig.bleedResistIncPerLevel)} Bleed Resist\n" +
             $"{DisplayIncrease(gameplayConfig.carryCapacityIncPerLevel)} Carry Capacity\n" +
-            $"{DisplayIncrease(gameplayConfig.projectileCountIncPerLevel)} Projectile Count"
+            $"{DisplayIncrease(gameplayConfig.damageIncPerLevel)} Damage"
         );
     }
 
@@ -823,17 +820,17 @@ public partial class Game {
     }
     
     private void RefreshSkillsPanel() {
-        playerStatsPanel.carryCapacityRow.statValueText.text = DisplayIncrease(GetPlayerStat(Player.Stat.CarryCapacity));
-        playerStatsPanel.critChanceRow.statValueText.text = DisplayProbIncrease(GetPlayerStat(Player.Stat.CritChance));
-        playerStatsPanel.critMultiRow.statValueText.text = DisplayIncrease(GetPlayerStat(Player.Stat.CritMulti));
-        playerStatsPanel.damageRow.statValueText.text = DisplayIncrease(GetPlayerStat(Player.Stat.Damage));
-        playerStatsPanel.firerateRow.statValueText.text = DisplayProbIncrease(GetPlayerStat(Player.Stat.Firerate));
-        playerStatsPanel.healthRow.statValueText.text = DisplayIncrease(GetPlayerStat(Player.Stat.Health));
-        playerStatsPanel.healingAmountRow.statValueText.text = DisplayIncrease(GetPlayerStat(Player.Stat.HealingAmount));
-        playerStatsPanel.healingSpeedRow.statValueText.text = DisplayProbIncrease(GetPlayerStat(Player.Stat.HealingSpeed));
-        playerStatsPanel.lootingSpeedRow.statValueText.text = DisplayProbIncrease(GetPlayerStat(Player.Stat.LootingSpeed));
-        playerStatsPanel.movementSpeedRow.statValueText.text = DisplayProbIncrease(GetPlayerStat(Player.Stat.MovementSpeedPercentage));
-        playerStatsPanel.projectileCountRow.statValueText.text = DisplayIncrease(GetPlayerStat(Player.Stat.ProjectileCount));
+        playerStatsPanel.carryCapacityRow.statValueText.text = DisplayIncrease(GetPlayerStatAdjustment(Player.Stat.CarryCapacity));
+        playerStatsPanel.critChanceRow.statValueText.text = DisplayProbIncrease(GetPlayerStatAdjustment(Player.Stat.CritChance));
+        playerStatsPanel.critMultiRow.statValueText.text = DisplayIncrease(GetPlayerStatAdjustment(Player.Stat.CritMulti));
+        playerStatsPanel.damageRow.statValueText.text = DisplayIncrease(GetPlayerStatAdjustment(Player.Stat.Damage));
+        playerStatsPanel.firerateRow.statValueText.text = DisplayProbIncrease(GetPlayerStatAdjustment(Player.Stat.Firerate));
+        playerStatsPanel.healthRow.statValueText.text = DisplayIncrease(GetPlayerStatAdjustment(Player.Stat.Health));
+        playerStatsPanel.healingAmountRow.statValueText.text = DisplayIncrease(GetPlayerStatAdjustment(Player.Stat.HealingAmount));
+        playerStatsPanel.healingSpeedRow.statValueText.text = DisplayProbIncrease(GetPlayerStatAdjustment(Player.Stat.HealingSpeed));
+        playerStatsPanel.lootingSpeedRow.statValueText.text = DisplayProbIncrease(GetPlayerStatAdjustment(Player.Stat.LootingSpeed));
+        playerStatsPanel.movementSpeedRow.statValueText.text = DisplayProbIncrease(GetPlayerStatAdjustment(Player.Stat.MovementSpeedPercentage));
+        playerStatsPanel.projectileCountRow.statValueText.text = DisplayIncrease(GetPlayerStatAdjustment(Player.Stat.ProjectileCount));
         
         RefreshSkillRow(skillsPanel.hasteSkillRow, hasteUpgradePath, player.hasteSkillLevel);
         RefreshSkillRow(skillsPanel.intellectSkillRow, intellectUpgradePath, player.intellectSkillLevel);

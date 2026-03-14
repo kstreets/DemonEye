@@ -86,18 +86,12 @@ public partial class Game {
     }
 
     private bool EntityIsValid(Entity entity) {
-        return entity.trans && inst.entityLookup.ContainsKey(entity.gameObject);
+        return entity.trans && gameInstance.entityLookup.ContainsKey(entity.gameObject);
     }
 
     private Entity SpawnItemAsEntity(Item item, int count, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level) {
         Entity entity = SpawnEntity(itemDropPool, position, rotation, parent, lifetime);
         ItemInstance itemInstance = new(item, count);
-        entity.gameObject.GetComponent<ItemDrop>().Init(itemInstance);
-        return entity;
-    }
-    
-    private Entity SpawnItemInstanceAsEntity(ItemInstance itemInstance, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level) {
-        Entity entity = SpawnEntity(itemDropPool, position, rotation, parent, lifetime);
         entity.gameObject.GetComponent<ItemDrop>().Init(itemInstance);
         return entity;
     }
@@ -204,7 +198,7 @@ public partial class Game {
     }
 
     private void DestroyEntity(Entity entity, float delay) {
-        Delay(entity, delay, static entity => inst.DestroyEntity(entity));
+        Delay(entity, delay, static entity => gameInstance.DestroyEntity(entity));
     }
     
     private static int damageFlashTintPropertyId = Shader.PropertyToID("_DamageFlashTint");
@@ -216,7 +210,7 @@ public partial class Game {
         
         Tween tween = Tween.Custom(entity, 0f, 1f, duration, ease: Ease.Linear, onValueChange: static (entity, val) => {
             entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
-            entity.matPropertyBlock.SetFloat(damageFlashTintPropertyId, inst.hitFlashCurve.Evaluate(val));
+            entity.matPropertyBlock.SetFloat(damageFlashTintPropertyId, gameInstance.hitFlashCurve.Evaluate(val));
             entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
         })
         .OnComplete(entity, static entity => {
@@ -252,7 +246,7 @@ public partial class Game {
             entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
             entity.matPropertyBlock.SetFloat(poisonedPropertyId, 0);
             entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
-            inst.DestroyEntity(entity.poisonedEffect.poisonDebuffEntity);
+            gameInstance.DestroyEntity(entity.poisonedEffect.poisonDebuffEntity);
         });
         
         entity.SetEffect(EffectsIndicies.Poisoned, tween);
@@ -270,7 +264,7 @@ public partial class Game {
         };
         
         Tween.Custom(entity, 0f, 1f, duration, ease: Ease.Linear, onValueChange: static (entity, val) => {
-            float yPos = inst.bounceCurve.Evaluate(val);
+            float yPos = gameInstance.bounceCurve.Evaluate(val);
             Vector2 newPos = Vector2.Lerp(entity.bounceEffect.initialPos, entity.bounceEffect.targetPos, val);
             entity.position = new(newPos.x, newPos.y + yPos, entity.position.z);
         });
@@ -288,7 +282,7 @@ public partial class Game {
         };
 
         Tween tween = Tween.Custom(entity, 0f, 0f, duration, static (entity, _) => {
-            if (!inst.EntityIsValid(entity.parentEffect.parentEntity)) { 
+            if (!gameInstance.EntityIsValid(entity.parentEffect.parentEntity)) { 
                 entity.GetEffect(EffectsIndicies.Parent).Stop();
                 return;
             }

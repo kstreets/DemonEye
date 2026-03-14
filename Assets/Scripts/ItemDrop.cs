@@ -6,18 +6,22 @@ public class ItemDrop : MonoBehaviour {
 
     public CircleCollider2D circleCollider;
     public SpriteRenderer spriteRenderer;
-    public Item itemRef;
+    [SerializeField] private Item item;
     
     [NonSerialized] private ItemInstance itemInstance;
     
-    public int dropCount {
-        get => itemInstance.count <= 0 ? 1 : itemInstance.count;
-        set => itemInstance.count = value;
+    public ItemInstance ItemInstance {
+        get {
+            // If we instantiate a prefab with this component it would not have an item instance.
+            // Example, spawning a mushroom on a map
+            itemInstance ??= new(item);
+            return itemInstance;
+        }
     }
-
+    
     public void Init(ItemInstance _itemInstance) {
         itemInstance = _itemInstance;
-        itemRef = _itemInstance.ItemRef;
+        Item itemRef = _itemInstance.ItemRef;
         spriteRenderer.sprite = itemRef.dropSprite == null ? itemRef.inventorySprite : itemRef.dropSprite;
         circleCollider.radius = itemRef.pickupRadius;
         circleCollider.enabled = true;

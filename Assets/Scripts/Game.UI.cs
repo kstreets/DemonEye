@@ -295,10 +295,10 @@ public partial class Game {
         void OnTypewriterFinish() {
             Sequence sequence = Sequence.Create();
             sequence.Chain(Tween.Custom(0, 30, 0.5f, startDelay: 0.3f, ease: Ease.OutBack, onValueChange: static (val) => {
-                inst.largeRaidText.characterSpacing = val;
+                gameInstance.largeRaidText.characterSpacing = val;
             }));
             sequence.ChainDelay(0.35f);
-            sequence.ChainCallback(static () => inst.largeRaidTextTypewriter.StartDisappearingText());
+            sequence.ChainCallback(static () => gameInstance.largeRaidTextTypewriter.StartDisappearingText());
         }
     }
 
@@ -311,7 +311,7 @@ public partial class Game {
         void OnTypewriterFinish() {
             Sequence sequence = Sequence.Create();
             sequence.ChainDelay(0.8f);
-            sequence.ChainCallback(static () => inst.smallRaidTextTypewriter.StartDisappearingText());
+            sequence.ChainCallback(static () => gameInstance.smallRaidTextTypewriter.StartDisappearingText());
         }
     }
     
@@ -397,7 +397,7 @@ public partial class Game {
         if (activeExitPortal) {
             sequence.ChainDelay(0.05f);
             sequence.ChainCallback(static () => {
-                inst.PlayAudioClip(inst.portalDespawnClip, inst.activeExitPortal.position);
+                gameInstance.PlayAudioClip(gameInstance.portalDespawnClip, gameInstance.activeExitPortal.position);
             });
             sequence.Chain(Tween.Scale(activeExitPortal, Vector3.zero, 0.25f, Ease.InOutBounce));
         }

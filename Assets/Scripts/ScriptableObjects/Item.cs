@@ -72,20 +72,20 @@ public class Item : UuidScriptableObject {
     public enum Rarity { Common, Uncommon, Rare, Epic, Legendary }
 
     public Rarity GetRarity() {
-        float minRarity = Mathf.Max(
+        float maxRarity = Mathf.Max(
             chanceToSpawnOnBody   > 0 ? chanceToSpawnOnBody   : float.MinValue,
             chanceToSpawnOnTrader > 0 ? chanceToSpawnOnTrader : float.MinValue,
             chanceToSpawnFromRock > 0 ? chanceToSpawnFromRock : float.MinValue,
             chanceToSpawnFromEnemy > 0 ? chanceToSpawnFromEnemy : float.MinValue,
             chanceToSpawnFromBush > 0 ? chanceToSpawnFromBush : float.MinValue
         );
-        if (minRarity <= 0.08f) return Rarity.Legendary;
-        if (minRarity <= 0.20f) return Rarity.Epic;
-        if (minRarity <= 0.38f) return Rarity.Rare;
-        if (minRarity <= 0.50f) return Rarity.Uncommon;
+        if (maxRarity <= 0.08f) return Rarity.Legendary;
+        if (maxRarity <= 0.20f) return Rarity.Epic;
+        if (maxRarity <= 0.38f) return Rarity.Rare;
+        if (maxRarity <= 0.50f) return Rarity.Uncommon;
         return Rarity.Common;
     }
-
+    
     public int GetSellPrice() {
         if (priceCategory == null) {
             return sellPrice;
@@ -109,7 +109,14 @@ public class Item : UuidScriptableObject {
             if (damage != 0)                                       desc += $"\n{DisplayIncDec(damage)} Damage";
             if (!Mathf.Approximately(fireratePercentage, 0f))      desc += $"\n{DisplayProbIncDec(fireratePercentage)} Firerate";
             if (!Mathf.Approximately(movementSpeedPercentage, 0f)) desc += $"\n{DisplayProbIncDec(movementSpeedPercentage)} Movement Speed";
-            if (!Mathf.Approximately(projectileCount, 0f))         desc += $"\n{DisplayIncDec(projectileCount)} Projectile Count";
+            if (!Mathf.Approximately(projectileCount, 0f)) {
+                if (stackCount == 1) {
+                    desc += $"\n{DisplayIncDec(projectileCount)} Projectile Count";
+                }
+                else {
+                    desc += $"\n{DisplayIncDec(projectileCount * stackCount)} Projectile Count";
+                }
+            }
             if (!Mathf.Approximately(rangeInSeconds, 0f))          desc += $"\n{DisplayIncDec(rangeInSeconds)} Range";
         }
 
@@ -155,7 +162,7 @@ public class Item : UuidScriptableObject {
             Debug.Log("Can only add to stash inventory when game is playing");
             return;
         }
-        inst.TryAddItemToInventory(inst.stashInventory, this, 1);
+        gameInstance.TryAddItemToInventory(gameInstance.stashInventory, this, 1);
     }
 
 #endif

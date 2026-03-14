@@ -13,8 +13,6 @@ MonoBehaviour:
   m_Name: DoubleTapAugment
   m_EditorClassIdentifier: Assembly-CSharp::DoubleTapAugment
   uuid: -1505730100
-  derivedModifiers:
-  - {fileID: 11400000, guid: 5208da11a0273eb40938911e8a5feefc, type: 2}
-  - {fileID: 11400000, guid: 5208da11a0273eb40938911e8a5feefc, type: 2}
+  modifierDerivedFrom: {fileID: 11400000, guid: 5208da11a0273eb40938911e8a5feefc, type: 2}
   delayBetweenShots: 0.08
   probability: 0.3

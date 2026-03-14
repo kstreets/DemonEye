@@ -124,8 +124,8 @@ public partial class Game {
 
                         for (int i = 0; i <  projectileCount; i++) {
                             float randomAngle = (angleDeltaPerDrop * i) + Random.Range(-randomRangePerDrop, randomRangePerDrop);
-                            Vector3 velocity = inst.RotationVector(randomAngle) * 0.62f;
-                            inst.SpawnProjectile(inst.OffsetY(enemy.position, 0.2f), velocity, inst.gooProjectilePool, 
+                            Vector3 velocity = gameInstance.RotationVector(randomAngle) * 0.62f;
+                            gameInstance.SpawnProjectile(gameInstance.OffsetY(enemy.position, 0.2f), velocity, gameInstance.gooProjectilePool, 
                                 flatDamage: enemy.data.damage, lifetime: 2f, layermask: Masks.PlayerHurtMask);
                         }
                         
@@ -135,7 +135,7 @@ public partial class Game {
                 else {
                     Delay(enemy, enemy.data.attackDamageDelay, static (enemy) => {
                         Vector2 attackCheckPos = enemy.position;
-                        switch (inst.CardinalDirFromVector(enemy.graphicalDir)) {
+                        switch (gameInstance.CardinalDirFromVector(enemy.graphicalDir)) {
                             case CardinalDir.Right:
                                 attackCheckPos += enemy.data.sideAttackOffset;
                                 break;
@@ -157,12 +157,12 @@ public partial class Game {
                         }
 
                         if (enemy.data.type == EnemyData.EnemyType.Doughmon) {
-                            Entity smokeSlam = inst.SpawnEntity<Entity>(inst.slamSmokePrefab, attackCheckPos, Quaternion.identity);
-                            inst.DestroyEntity(smokeSlam, inst.CurrentClipLength(smokeSlam.animator));
+                            Entity smokeSlam = gameInstance.SpawnEntity<Entity>(gameInstance.slamSmokePrefab, attackCheckPos, Quaternion.identity);
+                            gameInstance.DestroyEntity(smokeSlam, gameInstance.CurrentClipLength(smokeSlam.animator));
                         }
 
                         if (col) {
-                            inst.DamagePlayer(enemy.data.damage, enemy.data.changeToCauseBleed);
+                            gameInstance.DamagePlayer(enemy.data.damage, enemy.data.changeToCauseBleed);
                         }
                     });
                 }
@@ -186,21 +186,21 @@ public partial class Game {
                 const float deathDelay = 0.12f;
                 Delay(deadEnemy, deathDelay, static (deadEnemy) => {
                     if (RollProbability(deadEnemy.data.chanceToDropItem)) {
-                        Item dropItem = inst.GetItemFromEnemyDropPool(deadEnemy.data);
+                        Item dropItem = gameInstance.GetItemFromEnemyDropPool(deadEnemy.data);
                         if (dropItem) {
-                            inst.SpawnItemAsEntity(dropItem, 1, deadEnemy.position, Quaternion.identity);
+                            gameInstance.SpawnItemAsEntity(dropItem, 1, deadEnemy.position, Quaternion.identity);
                         }
                     }
 
-                    inst.player.soulCurrency += deadEnemy.data.soulWorthPerKill;
+                    gameInstance.player.soulCurrency += deadEnemy.data.soulWorthPerKill;
                     onEnemyDeath?.Invoke(deadEnemy);
                     
-                    Entity bloodSplatterEntity = inst.SpawnEntity(inst.bloodSplatterPool, deadEnemy.position, Quaternion.identity);
-                    inst.DestroyEntity(bloodSplatterEntity, inst.CurrentClipLength(bloodSplatterEntity.animator));
+                    Entity bloodSplatterEntity = gameInstance.SpawnEntity(gameInstance.bloodSplatterPool, deadEnemy.position, Quaternion.identity);
+                    gameInstance.DestroyEntity(bloodSplatterEntity, gameInstance.CurrentClipLength(bloodSplatterEntity.animator));
                     
-                    inst.PlayAudioClip(inst.bloodBurstClip, deadEnemy.position);
+                    gameInstance.PlayAudioClip(gameInstance.bloodBurstClip, deadEnemy.position);
 
-                    inst.DestroyEntity(deadEnemy);
+                    gameInstance.DestroyEntity(deadEnemy);
                 });
                 enemies.RemoveAt(i);
             }

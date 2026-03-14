@@ -22,7 +22,7 @@ MonoBehaviour:
   priceCategory: {fileID: 11400000, guid: 29cfe26cd6da0734197e5840e6724f56, type: 2}
   buyPrice: 5000
   sellPrice: 400
-  spawnsOnAllMaps: 1
+  spawnsOnAllMaps: 0
   spawnsOnMaps: []
   chanceToSpawnOnBody: 0
   chanceToSpawnOnTrader: 0.291
@@ -43,7 +43,7 @@ MonoBehaviour:
   critChance: 0
   critMultiplier: 0
   damage: 0
-  fireratePercentage: 0.1
+  fireratePercentage: 0.05
   movementSpeedPercentage: 0
   projectileCount: 0
   rangeInSeconds: 0

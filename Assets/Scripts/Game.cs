@@ -18,7 +18,7 @@ using EffectsIndicies = Game.Entity.EffectsIndicies;
 
 public partial class Game : MonoBehaviour {
 
-    public static Game inst;
+    public static Game gameInstance;
     
     public StartingItemsConfig startingItems;
     public Styles styles;
@@ -325,7 +325,7 @@ public partial class Game : MonoBehaviour {
     public static Action<string> customQuestEvent;
     
     private void Start() {
-        inst = this;
+        gameInstance = this;
         
         LoadAllResources();
         InitAudio();
@@ -675,7 +675,7 @@ public partial class Game : MonoBehaviour {
 
         if (raidStateSwitchedThisFrame && curRaidState == RaidState.PostFinalWave) {
             Tween.Delay(0.25f, static () => {
-                inst.AnimateLargeRaidText(ColorText("Map Cleared!", inst.styles.increaseDescColor), 1.8f);
+                gameInstance.AnimateLargeRaidText(ColorText("Map Cleared!", gameInstance.styles.increaseDescColor), 1.8f);
                 // inst.SpawnFinalExitPortal();
             });
         }
@@ -712,20 +712,21 @@ public partial class Game : MonoBehaviour {
         foreach (Collider2D col in cols) {
             if (col.CompareTag(Tags.Pickup)) {
                 ItemDrop itemDrop = col.GetComponent<ItemDrop>();
+                Item dropItemRef = itemDrop.ItemInstance.ItemRef;
                 
-                Color itemColor = styles.GetColorForRarity(itemDrop.itemRef.GetRarity());
-                string details = ColorText($"{itemDrop.itemRef.displayName} x{itemDrop.dropCount}", itemColor);
+                Color itemColor = styles.GetColorForRarity(dropItemRef.GetRarity());
+                string details = ColorText($"{dropItemRef.displayName} x{itemDrop.ItemInstance.count}", itemColor);
                 EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), details);
                 
                 if (interactInputAction.WasPressedThisFrame()) {
-                    InventoryAddResult result = TryAddItemToInventory(playerInventory, itemDrop.itemRef, itemDrop.dropCount);
+                    InventoryAddResult result = TryAddItemToInventory(playerInventory, itemDrop.ItemInstance);
                     if (result.type == InventoryAddResult.ResultType.Success) {
                         Entity droppedEntity = entityLookup[itemDrop.gameObject];
                         PickupDroppedItem(droppedEntity); 
                         itemDrop.circleCollider.enabled = false;
                     }
                     else if (result.type == InventoryAddResult.ResultType.FailureToAddAll) {
-                        itemDrop.dropCount -= result.addedCount;
+                        itemDrop.ItemInstance.count -= result.addedCount;
                     }
                 }
             }
@@ -773,8 +774,8 @@ public partial class Game : MonoBehaviour {
                             callingExitPortalSequence.ChainDelay(gameplayConfig.portalPostSummonDelay);
                             callingExitPortalSequence.Chain(Tween.Scale(activeExitPortal, Vector3.one, 0.25f, Ease.OutBack));
                             callingExitPortalSequence.OnComplete(static () => {
-                                inst.canTakeExitPortal = true; 
-                                inst.OnExitPortalSummoned();
+                                gameInstance.canTakeExitPortal = true; 
+                                gameInstance.OnExitPortalSummoned();
                             });
                         }
                     }
@@ -918,8 +919,8 @@ public partial class Game : MonoBehaviour {
         closeExitPortalSequence = Sequence.Create();
         closeExitPortalSequence.ChainDelay(gameplayConfig.portalActiveDuration);
         closeExitPortalSequence.ChainCallback(static () => {
-            inst.canTakeExitPortal = false;
-            Tween.Scale(inst.activeExitPortal, Vector3.zero, 0.25f, Ease.OutCubic);
+            gameInstance.canTakeExitPortal = false;
+            Tween.Scale(gameInstance.activeExitPortal, Vector3.zero, 0.25f, Ease.OutCubic);
         });
     }
 
@@ -1041,7 +1042,7 @@ public partial class Game : MonoBehaviour {
     }
     
     public static string DisplayProb(float probability) {
-        return ColorText($"{Mathf.FloorToInt(probability * 100f)}%", inst.styles.timeDescColor);
+        return ColorText($"{Mathf.FloorToInt(probability * 100f)}%", gameInstance.styles.timeDescColor);
     }
 
     public static string DisplayProbIncDec(float probability) {
@@ -1049,19 +1050,19 @@ public partial class Game : MonoBehaviour {
     }
 
     public static string DisplayProbIncrease(float probability) {
-        return ColorText($"+{Mathf.FloorToInt(probability * 100f)}%", inst.styles.increaseDescColor);
+        return ColorText($"+{Mathf.FloorToInt(probability * 100f)}%", gameInstance.styles.increaseDescColor);
     }
     
     public static string DisplayProbDecrease(float probability) {
-        return ColorText($"-{Mathf.Abs(Mathf.FloorToInt(probability * 100f))}%", inst.styles.decreaseDescColor);
+        return ColorText($"-{Mathf.Abs(Mathf.FloorToInt(probability * 100f))}%", gameInstance.styles.decreaseDescColor);
     }
 
     public static string DisplayNumber(int number) {
-        return ColorText(number.ToString(), inst.styles.timeDescColor);
+        return ColorText(number.ToString(), gameInstance.styles.timeDescColor);
     }
     
     public static string DisplayNumber(float number) {
-        return ColorText(number.ToString("0.00"), inst.styles.timeDescColor);
+        return ColorText(number.ToString("0.00"), gameInstance.styles.timeDescColor);
     }
 
     public static string DisplayIncDec(int amount) {
@@ -1069,11 +1070,11 @@ public partial class Game : MonoBehaviour {
     }
 
     public static string DisplayIncrease(int amount) {
-        return ColorText($"+{amount}", inst.styles.increaseDescColor);
+        return ColorText($"+{amount}", gameInstance.styles.increaseDescColor);
     }
     
     public static string DisplayDecrease(int amount) {
-        return ColorText($"-{Mathf.Abs(amount)}", inst.styles.decreaseDescColor);
+        return ColorText($"-{Mathf.Abs(amount)}", gameInstance.styles.decreaseDescColor);
     }
 
     public static string DisplayIncDec(float amount) {
@@ -1081,15 +1082,15 @@ public partial class Game : MonoBehaviour {
     }
 
     public static string DisplayIncrease(float amount) {
-        return ColorText($"+{amount:0.00}", inst.styles.increaseDescColor);
+        return ColorText($"+{amount:0.00}", gameInstance.styles.increaseDescColor);
     }
     
     public static string DisplayDecrease(float amount) {
-        return ColorText($"-{Mathf.Abs(amount):0.00}", inst.styles.decreaseDescColor);
+        return ColorText($"-{Mathf.Abs(amount):0.00}", gameInstance.styles.decreaseDescColor);
     }
     
     public static string DisplayMultiplier(float multiplier) {
-        Color textColor = multiplier >= 1f ? inst.styles.increaseDescColor : inst.styles.decreaseDescColor;
+        Color textColor = multiplier >= 1f ? gameInstance.styles.increaseDescColor : gameInstance.styles.decreaseDescColor;
         return ColorText($"{multiplier:0.00}x", textColor);
     }
 
@@ -1098,24 +1099,24 @@ public partial class Game : MonoBehaviour {
     }
 
     public static string DisplayMultiplierIncrease(float multiplier) {
-        return ColorText($"+{multiplier:0.00}x", inst.styles.increaseDescColor);
+        return ColorText($"+{multiplier:0.00}x", gameInstance.styles.increaseDescColor);
     }
     
     public static string DisplayMultiplierDecrease(float multiplier) {
-        return ColorText($"-{multiplier:0.00}x", inst.styles.decreaseDescColor);
+        return ColorText($"-{multiplier:0.00}x", gameInstance.styles.decreaseDescColor);
     }
 
     public static string DisplaySeconds(float time) {
         if (time == 1f) {
-            return ColorText($"{time:0}<space=0.12em>s", inst.styles.timeDescColor);
+            return ColorText($"{time:0}<space=0.12em>s", gameInstance.styles.timeDescColor);
         }
         
         bool isWholeNumber = time % 1 == 0;
         if (isWholeNumber) {
-            return ColorText($"{time:0}<space=0.12em>s", inst.styles.timeDescColor);
+            return ColorText($"{time:0}<space=0.12em>s", gameInstance.styles.timeDescColor);
         }
         
-        return ColorText($"{time:0.0#}<space=0.12em>s", inst.styles.timeDescColor);
+        return ColorText($"{time:0.0#}<space=0.12em>s", gameInstance.styles.timeDescColor);
     }
     
     public static int TaperInteger(int value, int stackCount, float taper) {

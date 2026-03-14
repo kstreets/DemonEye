@@ -33,6 +33,7 @@ public class GameplayConfig : ScriptableObject {
     public float maxEncumberedSpeedReduction;
 
     [Header("Stat Upgrades")]
+    public float bleedResistIncPerLevel;
     public int carryCapacityIncPerLevel;
     public float critChanceIncPerLevel;
     public float critMultiplierIncPerLevel;
