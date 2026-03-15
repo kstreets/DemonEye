@@ -16,6 +16,7 @@ MonoBehaviour:
   sceneReference: LighthouseExpansion
   waves: {fileID: 11400000, guid: 3aa85a5582e39464ea951bcb151e03ef, type: 2}
   altarSoulPrice: 100
+  exitPortalsCount: 2
   minRockCount: 8
   maxRockCount: 11
   minBodyCount: 3
@@ -26,7 +27,7 @@ MonoBehaviour:
   maxBushesCount: 6
   minAltarCount: 5
   maxAltarCount: 8
-  eyeUpgradeOnBodyChance: 0.25
-  eyeUpgradeFromRockChance: 0.5
+  eyeUpgradeOnBodyChance: 0.28
+  eyeUpgradeFromRockChance: 0.37
   maxGemCountPerRock: 2
-  increasedLootRarityChance: 0
+  increasedLootRarityChance: 0.12

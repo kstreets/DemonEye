@@ -14,4 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BleedCritAugment
   uuid: -535527104
   modifierDerivedFrom: {fileID: 11400000, guid: 879589b7002a56d4791affd28d5fb199, type: 2}
+  chanceToSpawnReduction: 0.2
   probability: 0.3

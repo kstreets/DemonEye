@@ -14,4 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DistanceDamageAugment
   uuid: -247024783
   modifierDerivedFrom: {fileID: 11400000, guid: 39bde04b92cb89449b8a0451d4916433, type: 2}
+  chanceToSpawnReduction: 0.25
   damageIncreasePerUnitTraveled: 2

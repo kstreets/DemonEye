@@ -19,7 +19,7 @@ public partial class Game {
         public void ApplyToEnemy(Enemy enemy) => Augment.AddInstanceToEnemy(enemy);
         public void ApplyToEye(DemonEyeInstance eyeInstance) => Augment.AddInstanceToEye(eyeInstance);
     }
-
+    
     public class DemonEyeInstance {
         public List<EquipedModInstance> modInstances = new();
         public List<EquipedAugmentInstance> augmentInstances = new();
@@ -44,17 +44,9 @@ public partial class Game {
         public MultiProjectileCritAugment.InstanceData? multiProjectileCritAugment;
     }
     
-    public class DemonEyeRaidStats {
-        public int consecutiveCriticalHits;
-        public float lastDoubleCritActivationTime;
-    }
-
-    // Need to reset this at the beginning of every raid
-    private DemonEyeRaidStats demonEyeRaidStats;
-
+    private DemonEyeInstance equipedEye;
     public Dictionary<int, DemonEyeInstance> eyeInstanceFromItemId = new();
     private readonly DemonEyeInstance emptyDemonEye = new();
-    private DemonEyeInstance equipedEye;
     private Limiter attackLimiter;
 
     private void BuildAndRegisterEye(ItemInstance itemInstance) {
@@ -171,7 +163,7 @@ public partial class Game {
         aug = null;
         mod = null;
     }
-
+    
     public int GetDemonEyeSellPrice(ItemInstance demonEyeItemInstance) {
         // We need to use the InventoryItem's ID because the Item's ID is the demon eye Scriptable Object
         DemonEyeInstance demonEye = eyeInstanceFromItemId[demonEyeItemInstance.itemOrInstanceUuid]; 
@@ -183,7 +175,6 @@ public partial class Game {
         return sellPrice;
     } 
 
-    
     public string GetDemonEyeModDescription(ModifierItem modifierItem, int count, List<Augment> augments) {
         string title = ColorText($"<size=108%>{modifierItem.displayName}</size> <size=87%>x{count}</size>", styles.headerTextColor);
         string desc = $"<line-height=95%>{title}\n{modifierItem.GetDescription(count)}<line-height=140%>\n";

@@ -24,7 +24,7 @@ MonoBehaviour:
   sellPrice: 800
   spawnsOnAllMaps: 0
   spawnsOnMaps:
-  - {fileID: 11400000, guid: 9353817006d76f54fb1273b8ced36a68, type: 2}
+  - {fileID: 11400000, guid: e77fcebe0e13696458bf0cfbacf93e5d, type: 2}
   chanceToSpawnOnBody: 0
   chanceToSpawnOnTrader: 0.312
   chanceToSpawnFromRock: 0.369
@@ -43,7 +43,7 @@ MonoBehaviour:
   armorPercent: 0
   critChance: 0
   critMultiplier: 0
-  damage: -3
+  damage: 0
   fireratePercentage: 0
   movementSpeedPercentage: 0
   projectileCount: 0

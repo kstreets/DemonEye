@@ -16720,6 +16720,8 @@ MonoBehaviour:
   finalWaveStingerClip: {fileID: 11400000, guid: 49d8e84ba4e551a44ad67a6050663888, type: 2}
   ambienceClip: {fileID: 8300000, guid: 48ebfe4e6e022c34b90a2a7f3dde732f, type: 3}
   ambienceMixerGroup: {fileID: -6469774076249759476, guid: 5d1188e598dcb514aa82b03e86c0c627, type: 2}
+  consecutiveCriticalHits: 0
+  lastDoubleCritActivationTime: 0
   allItems: []
 --- !u!114 &2018473790
 MonoBehaviour:

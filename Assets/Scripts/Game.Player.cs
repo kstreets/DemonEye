@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using PrimeTween;
 using UnityEngine;
@@ -10,7 +9,6 @@ public partial class Game {
     public class Player : Entity {
         public Vector3 velocity;
         public bool bleeding;
-        public bool interactingWithPortal;
         
         public int nextIdleAnimHash;
         public int nextIdleDir;
@@ -54,7 +52,6 @@ public partial class Game {
     private void InitPlayer() {
         player.animator.Play(playerIdleDownAnim);
         player.nextIdleAnimHash = playerIdleDownAnim;
-        player.interactingWithPortal = false;
         defaultPlayerPreviewSprite ??= playerPreviewImage.sprite;
     }
     
@@ -91,7 +88,8 @@ public partial class Game {
             return;
         }
 
-        if (InventoryIsOpen || player.interactingWithPortal) return;
+        bool interactingWithPortal = timeSpentSummoningPortal > Mathf.Epsilon;
+        if (InventoryIsOpen || interactingWithPortal) return;
         
         Vector2 moveInput = moveInputAction.ReadValue<Vector2>();
         Vector2 prevPos = player.position;

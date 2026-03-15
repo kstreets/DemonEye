@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7732623a1f1a6254ba2ec8c8a889843a, type: 3}
   m_Name: GameplayConfig
   m_EditorClassIdentifier: Assembly-CSharp::GameplayConfig
-  attackDelay: 0.22
+  attackDelay: 0.24
   cappedMinAttackDelay: 0.1
   damage: 8
   rangeInSeconds: 0.6

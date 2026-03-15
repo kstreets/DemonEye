@@ -1,9 +1,16 @@
 using System.Collections.Generic;
 using PrimeTween;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 public partial class Game {
+    
+    public int consecutiveCriticalHits;
+    public float lastDoubleCritActivationTime;
+    
+    private void ResetDamageHandlingTempData() {
+        consecutiveCriticalHits = default;     
+        lastDoubleCritActivationTime = default;
+    }
     
     private void DamageEnemyAfterDelay(Entity enemy, int damage, bool isCriticalStrike, float delay) {
         enemy.delayedDamage = damage;
@@ -35,10 +42,10 @@ public partial class Game {
             
             bool isCriticalStrike = RollProbability(GetCriticalStrikeProbability(projectile, enemy));
             if (isCriticalStrike) {
-                demonEyeRaidStats.consecutiveCriticalHits++;
+                consecutiveCriticalHits++;
             }
             else {
-                demonEyeRaidStats.consecutiveCriticalHits = 0;
+                consecutiveCriticalHits = 0;
             }
 
             int damage = GetProjectileDamage(projectile, enemy, isCriticalStrike);
@@ -147,28 +154,27 @@ public partial class Game {
             
             if (isCriticalHit) {
                 float critMultiplier = gameplayConfig.defaultCritMulti + GetPlayerStatAdjustment(Player.Stat.CritMulti) + GetEquipmentStatAdjustment(EquipmentStatType.CritMulti);
-                damageMultiplier += critMultiplier;
+                damageMultiplier *= critMultiplier;
             }
             
             if (ProjectileIsType(proj, ProjectileTypeFlags.Trishot) && eyeInstance.trishot.TryGetValue(out var triShot)) {
-                damageMultiplier += triShot.damageMultiplier;
+                damageMultiplier *= triShot.damageMultiplier;
             }
             
             if (equipedEye.doubleCritAugment.TryGetValue(out var doubleCrit)) {
-                int consecutiveCriticalHits = demonEyeRaidStats.consecutiveCriticalHits;
                 if (consecutiveCriticalHits > 0 && consecutiveCriticalHits % 2 == 0) {
-                    demonEyeRaidStats.lastDoubleCritActivationTime = Time.time;
+                    lastDoubleCritActivationTime = Time.time;
                 }
 
-                if (Time.time - demonEyeRaidStats.lastDoubleCritActivationTime <= doubleCrit.multiplierDuration) {
-                    damageMultiplier += doubleCrit.damageMulti;
+                if (Time.time - lastDoubleCritActivationTime <= doubleCrit.multiplierDuration) {
+                    damageMultiplier *= doubleCrit.damageMulti;
                 }
             }
 
             if (equipedEye.penetrationDamageAugment.TryGetValue(out var penetrationDamage)) {
                 int penetrationCountBeforeDamagingThisEnemy = proj.ignoreEntities == null ? 0 : proj.ignoreEntities.Count;
                 if (penetrationCountBeforeDamagingThisEnemy > 0) {
-                    damageMultiplier += penetrationCountBeforeDamagingThisEnemy * penetrationDamage.damageMultiplierPerPenetration;
+                    damageMultiplier *= penetrationCountBeforeDamagingThisEnemy * penetrationDamage.damageMultiplierPerPenetration;
                 }
             }
             

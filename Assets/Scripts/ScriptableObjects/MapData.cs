@@ -9,6 +9,7 @@ public class MapData : ScriptableObject {
 
     [Header("Variables")]
     public int altarSoulPrice;
+    public int exitPortalsCount;
     
     [Header("Spawns")]
     public int minRockCount;

@@ -585,18 +585,13 @@ public partial class Game : MonoBehaviour {
         DeinitRaid();
     }
     
-    private enum RaidState { None, InitialWaves, FinalWave, FinalWaveWithExit, PostFinalWave }
+    private enum RaidState { None, InitialWaves, FinalWave, PostFinalWave }
     private RaidState curRaidState;
     private bool raidStateSwitchedThisFrame;
     private Sequence raidEnterSequence;
     
     private void InitRaid() {
         curRaidState = RaidState.None;
-        demonEyeRaidStats = new();
-        callingExitPortalSequence.Stop();
-        closeExitPortalSequence.Stop();
-        canTakeExitPortal = false;
-        timeSpentSummoningPortal = 0f;
         
         Cursor.visible = false;
         ShowRaidUI();
@@ -616,9 +611,11 @@ public partial class Game : MonoBehaviour {
         cinemachineCamera.ForceCameraPosition(cameraWarpTarget, Quaternion.identity);
         cinemachineCamera.Follow = player.trans;
         
+        ClearInteractions();
+        ResetDamageHandlingTempData();
         InitSpawnManager(loadedMapData.waves);
         SpawnMapResources(loadedMapInst.resourceParent);
-        InitEarlyExitPortal(loadedMapInst.exitPortalsParent, spawnManager.timeUntilFinalWave + loadedMapData.waves.timeBeforePortalSpawns);
+        SpawnInitialExitPortals(loadedMapInst.exitPortalsParent, loadedMapData.exitPortalsCount);
         
         // Animation Sequence
         {
@@ -660,7 +657,7 @@ public partial class Game : MonoBehaviour {
             curRaidState = RaidState.InitialWaves;
         }
         else if (!spawnManager.isFinishedSpawning || enemies.Count > 0) {
-            curRaidState = activeExitPortal ? RaidState.FinalWaveWithExit : RaidState.FinalWave;
+            curRaidState = RaidState.FinalWave;
         }
         else {
             curRaidState = RaidState.PostFinalWave;
@@ -669,14 +666,13 @@ public partial class Game : MonoBehaviour {
         raidStateSwitchedThisFrame = prevState != curRaidState;
         
         if (raidStateSwitchedThisFrame && curRaidState == RaidState.FinalWave) {
-            // DespawnEarlyExitPortal();
             PlayAudioClip(finalWaveStingerClip, player.position);
         }
 
         if (raidStateSwitchedThisFrame && curRaidState == RaidState.PostFinalWave) {
             Tween.Delay(0.25f, static () => {
                 gameInstance.AnimateLargeRaidText(ColorText("Map Cleared!", gameInstance.styles.increaseDescColor), 1.8f);
-                // inst.SpawnFinalExitPortal();
+                gameInstance.SpawnFinalExitPortal();
             });
         }
     }
@@ -699,9 +695,11 @@ public partial class Game : MonoBehaviour {
     // Interactions 
     // *******************************
     
-    private Sequence callingExitPortalSequence;
-    private bool canTakeExitPortal;
     private float timeSpentSummoningPortal;
+    
+    private void ClearInteractions() {
+        timeSpentSummoningPortal = 0f;
+    }
     
     private void CheckForInteractions() { 
         DisableInteractionPrompt();
@@ -762,33 +760,28 @@ public partial class Game : MonoBehaviour {
             }
 
             if (col.CompareTag(Tags.ExitPortal)) {
-                if (timeSpentSummoningPortal < gameplayConfig.portalSummonTime) {
+                ExitPortal portal = GetExitPortalFromTransform(col.transform);
+                
+                if (!portal.hasBeenSummoned && timeSpentSummoningPortal < gameplayConfig.portalSummonTime) {
                     EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Summon Exit Portal");
                     if (interactInputAction.IsPressed()) {
-                        player.interactingWithPortal = true;
                         timeSpentSummoningPortal += Time.deltaTime;
-
-                        if (timeSpentSummoningPortal >= gameplayConfig.portalSummonTime && !callingExitPortalSequence.isAlive) {
-                            player.interactingWithPortal = false;
-                            callingExitPortalSequence = Sequence.Create();
-                            callingExitPortalSequence.ChainDelay(gameplayConfig.portalPostSummonDelay);
-                            callingExitPortalSequence.Chain(Tween.Scale(activeExitPortal, Vector3.one, 0.25f, Ease.OutBack));
-                            callingExitPortalSequence.OnComplete(static () => {
-                                gameInstance.canTakeExitPortal = true; 
-                                gameInstance.OnExitPortalSummoned();
-                            });
+                        if (timeSpentSummoningPortal >= gameplayConfig.portalSummonTime) {
+                            StartSummoningExitPortal(col.transform);
+                            timeSpentSummoningPortal = 0f;
                         }
                     }
                     else {
-                        player.interactingWithPortal = false;
                         timeSpentSummoningPortal = 0f;
                     }
                 }
-                if (canTakeExitPortal) {
+                
+                if (portal.canTake) {
                     EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Take Exit Portal");
                     if (interactInputAction.WasPressedThisFrame()) {
+                        exitPortalTakenByPlayer = portal;
+                        exitPortalTakenByPlayer.closingCountdownSequence.Stop();
                         gameStateMachine.SetStateIfNotCurrent(curRaidState == RaidState.PostFinalWave ? winExitState : earlyExitState);
-                        closeExitPortalSequence.Stop();
                         
                         customQuestEvent?.Invoke("FirstExtract");
                         onReturnedFromRaid?.Invoke(playerInventory.slots);
@@ -884,13 +877,58 @@ public partial class Game : MonoBehaviour {
     // Exit Portals 
     // ***************************
     
-    private Transform activeExitPortal;
-    // private Tween exitPortalTween;
-
-    private void InitEarlyExitPortal(Transform exitPortalParent, float timeBeforePortalsSpawn) {
-        activeExitPortal = null;
+    private List<ExitPortal> activeExitPortals = new();
+    private ExitPortal exitPortalTakenByPlayer;
+    
+    private class ExitPortal {
+        public Transform transform;
+        public Sequence summoningPortalSequence;
+        public Sequence closingCountdownSequence;
+        public bool hasBeenSummoned;
+        public bool canTake;
+    }
+    
+    private void StartSummoningExitPortal(Transform exitPortalTrans) {
+        ExitPortal portal = GetExitPortalFromTransform(exitPortalTrans);
+        portal.hasBeenSummoned = true;
         
-        using var autoRelease = ListPool<Transform>.Get(out List<Transform> possibleExitPortals);
+        portal.summoningPortalSequence = Sequence.Create();
+        portal.summoningPortalSequence.ChainDelay(gameplayConfig.portalPostSummonDelay);
+        portal.summoningPortalSequence.Chain(Tween.Scale(portal.transform, Vector3.one, 0.25f, Ease.OutBack));
+        
+        portal.summoningPortalSequence.OnComplete(portal, static (portal) => {
+            portal.canTake = true;
+            gameInstance.StartClosingExitPortal(portal);
+        });
+    }
+    
+    private void StartClosingExitPortal(ExitPortal portal) {
+        portal.closingCountdownSequence = Sequence.Create();
+        portal.closingCountdownSequence.ChainDelay(gameplayConfig.portalActiveDuration);
+        portal.closingCountdownSequence.ChainCallback(portal, static (portal) => {
+            portal.canTake = false;
+            gameInstance.activeExitPortals.Remove(portal);
+            Tween.Scale(portal.transform, Vector3.zero, 0.25f, Ease.OutCubic);
+        });
+    }
+    
+    private ExitPortal GetExitPortalFromTransform(Transform trans) {
+        foreach (ExitPortal portal in activeExitPortals) {
+            if (portal.transform == trans) {
+                return portal;
+            }
+        }
+        Assert.IsTrue(false, "We should not be requesting a portal from a non-valid transform");
+        return null;
+    }
+    
+    private void SpawnInitialExitPortals(Transform exitPortalParent, int exitPortalsCount) {
+        Assert.IsTrue(exitPortalsCount > 0, $"{nameof(exitPortalsCount)} needs to be 1 or more");
+        
+        activeExitPortals.Clear();
+        exitPortalTakenByPlayer = null;
+        
+        using var _ = ListPool<Transform>.Get(out List<Transform> possibleExitPortals);
         
         foreach (Transform portal in exitPortalParent) {
             portal.gameObject.SetActive(false);
@@ -900,40 +938,14 @@ public partial class Game : MonoBehaviour {
         }
         
         possibleExitPortals.Shuffle();
-        activeExitPortal = possibleExitPortals[0];
-        activeExitPortal.gameObject.SetActive(true);
-        activeExitPortal.transform.localScale = Vector3.one * 0.25f;
-
-        // exitPortalTween = Tween.Delay(timeBeforePortalsSpawn, () => {
-        //     int randomSpawnIndex = Random.Range(0, exitPortalParent.childCount);
-        //     activeExitPortal = exitPortalParent.GetChild(randomSpawnIndex);
-        //     activeExitPortal.gameObject.SetActive(true);
-        //     Tween.Scale(activeExitPortal, 0f, 1f, 0.5f, Ease.OutBack);
-        //     PlayAudioClip(portalSpawnClip, activeExitPortal.position);
-        // });
-    }
-
-    private Sequence closeExitPortalSequence;
-    
-    private void OnExitPortalSummoned() {
-        closeExitPortalSequence = Sequence.Create();
-        closeExitPortalSequence.ChainDelay(gameplayConfig.portalActiveDuration);
-        closeExitPortalSequence.ChainCallback(static () => {
-            gameInstance.canTakeExitPortal = false;
-            Tween.Scale(gameInstance.activeExitPortal, Vector3.zero, 0.25f, Ease.OutCubic);
-        });
-    }
-
-    private void DespawnEarlyExitPortal() {
-        activeExitPortal.GetComponent<Collider2D>().enabled = false;
-        PlayAudioClip(portalDespawnClip, activeExitPortal.position);
         
-        Sequence sequence = Sequence.Create();
-        sequence.Chain(Tween.Scale(activeExitPortal, 1f, 0f, 0.5f, Ease.InBack));
-        sequence.ChainCallback(this, static (inst) => {
-            inst.activeExitPortal.gameObject.SetActive(false);
-            inst.activeExitPortal = null;
-        });
+        for (int i = 0; i < exitPortalsCount; i++) {
+            activeExitPortals.Add(new() {
+                transform = possibleExitPortals[i],
+            });
+            possibleExitPortals[i].gameObject.SetActive(true);
+            possibleExitPortals[i].transform.localScale = Vector3.one * 0.25f;
+        }
     }
     
     private void SpawnFinalExitPortal() {
@@ -943,12 +955,15 @@ public partial class Game : MonoBehaviour {
             
             Transform exitPortalParent = loadedMapInst.exitPortalsParent;
             int randomSpawnIndex = Random.Range(0, exitPortalParent.childCount);
-            activeExitPortal = exitPortalParent.GetChild(randomSpawnIndex);
-            activeExitPortal.gameObject.SetActive(true);
-            activeExitPortal.GetComponent<Collider2D>().enabled = true;
-            activeExitPortal.position = randomPos;
-            Tween.Scale(activeExitPortal, 0f, 1f, 0.5f, Ease.OutBack);
-            PlayAudioClip(portalSpawnClip, activeExitPortal.position);
+            Transform newExitPortal = exitPortalParent.GetChild(randomSpawnIndex);
+            activeExitPortals.Add(new() {
+                transform = newExitPortal,
+            });
+            newExitPortal.gameObject.SetActive(true);
+            newExitPortal.GetComponent<Collider2D>().enabled = true;
+            newExitPortal.position = randomPos;
+            Tween.Scale(newExitPortal, 0f, 1f, 0.5f, Ease.OutBack);
+            PlayAudioClip(portalSpawnClip, newExitPortal.position);
             return;
         }
         

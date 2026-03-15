@@ -262,12 +262,7 @@ public partial class Game {
                 exitPortalActiveNotifier.SetActive(false);
                 finalWaveActiveNotifier.SetActive(true);
                 Tween.Scale(finalWaveActiveNotifier.transform, 0f, 1f, 0.5f, Ease.OutBack);
-            }
-            else if (curRaidState == RaidState.FinalWaveWithExit) {
-                exitPortalCountdownParent.SetActive(false);
-                exitPortalActiveNotifier.SetActive(true);
-                Tween.Scale(exitPortalActiveNotifier.transform, 0f, 1f, 0.5f, Ease.OutBack);
-                AnimateSmallRaidText(ColorText("Exit Portal is Open", styles.increaseDescColor));
+                AnimateSmallRaidText(ColorText("Final Wave", styles.decreaseDescColor));
             }
             else if (curRaidState == RaidState.PostFinalWave) {
                 finalWaveActiveNotifier.SetActive(false);
@@ -393,15 +388,6 @@ public partial class Game {
             pixelPerfectCamera.assetsPPU = (int)val;
         }));
         
-        // There could be a rare case where an exit portal doesn't spawn, which is handled
-        if (activeExitPortal) {
-            sequence.ChainDelay(0.05f);
-            sequence.ChainCallback(static () => {
-                gameInstance.PlayAudioClip(gameInstance.portalDespawnClip, gameInstance.activeExitPortal.position);
-            });
-            sequence.Chain(Tween.Scale(activeExitPortal, Vector3.zero, 0.25f, Ease.InOutBounce));
-        }
-        
         sequence.ChainDelay(0.15f);
         
         deathBackgroundImage.enabled = true;
@@ -434,7 +420,7 @@ public partial class Game {
         }));
         
         sequence.ChainDelay(0.05f);
-        sequence.Chain(Tween.Scale(activeExitPortal.transform, Vector3.zero, 0.25f, Ease.InOutBounce));
+        sequence.Chain(Tween.Scale(exitPortalTakenByPlayer.transform, Vector3.zero, 0.25f, Ease.InOutBounce));
         
         sequence.ChainDelay(0.15f);
         
