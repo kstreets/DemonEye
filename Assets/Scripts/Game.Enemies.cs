@@ -20,7 +20,6 @@ public partial class Game {
     private int enemyReteleportCount;
     
     public class Enemy : Entity {
-        public float teleportTime;
         public float flowFieldAcc;
         public float prevAverageDistFromPlayer;
         public float curRunningSumDistFromPlayer;
@@ -39,11 +38,11 @@ public partial class Game {
     }
     
     private void UpdateEnemies() {
-        bool timeHasPassed = enemyReteleportLimitter.TimeHasPassed(1f);
+        bool timeHasPassed = enemyReteleportLimitter.TimeHasPassed(loadedMapData.waves.delayBetweenEnemyRepositions);
         if (timeHasPassed) {
             enemyReteleportCount = 0;
         }
-        int maxTeleportCount = Mathf.Max(Mathf.RoundToInt(enemies.Count * 0.1f), 8);
+        int maxTeleportCount = Mathf.Max(Mathf.RoundToInt(enemies.Count * 0.25f), loadedMapData.waves.maxEnemyRepositionCount);
         
         for (int i = enemies.Count - 1; i >= 0; i--) {
             Enemy enemy = enemies[i];
@@ -293,7 +292,6 @@ public partial class Game {
         
         Delay(enemy, spawnDelay, static (enemy) => {
             enemy.gameObject.SetActive(true);
-            enemy.teleportTime = 0f;
         });
     }
     

@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BackwardsPiercingAugment
   uuid: 818390779
   modifierDerivedFrom: {fileID: 11400000, guid: f7c724c49aae4c04c96cab2b1076d025, type: 2}
-  chanceToSpawnReduction: 0.3
+  chanceToSpawnReduction: 0.5

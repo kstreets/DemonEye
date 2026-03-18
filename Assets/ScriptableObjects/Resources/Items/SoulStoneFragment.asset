@@ -45,5 +45,5 @@ MonoBehaviour:
   rangeInSeconds: 0
   itemGroupProps: {fileID: 0}
   maxStackCount: 15
-  weight: 5
+  weight: 6
   description: Demonic stone, a powerful tool for building.

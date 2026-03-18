@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 84fed5edb3bb9364cb2a09f0a2cb622f, type: 3}
-  m_Name: Range
+  m_Name: Void
   m_EditorClassIdentifier: Assembly-CSharp::Soulcard
   uuid: -1861983588
-  displayName: Range
+  displayName: Void
   inventorySprite: {fileID: -1877983629, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   dropSprite: {fileID: 0}
   pickupRadius: 0.07
@@ -34,9 +34,9 @@ MonoBehaviour:
   traderStockRange: {x: 1, y: 5}
   barterRequirements:
   - item: {fileID: 11400000, guid: c300cfd9dba50fc438f83dec791af29b, type: 2}
-    count: 5
+    count: 3
   - item: {fileID: 11400000, guid: 0c1ef7ec636b7674886cc5581cc6deff, type: 2}
-    count: 1
+    count: 2
   spawnsFromEnemies: []
   modifiesStats: 1
   armorPercent: 0
@@ -46,7 +46,7 @@ MonoBehaviour:
   fireratePercentage: 0
   movementSpeedPercentage: 0
   projectileCount: 0
-  rangeInSeconds: 0.1
+  rangeInSeconds: 0.15
   itemGroupProps: {fileID: 11400000, guid: 78826f3a685555a4896655f4c68ef737, type: 2}
   maxStackCount: 0
   weight: 0

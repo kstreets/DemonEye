@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18ec88142362a024bb60a50a862448b5, type: 3}
   m_Name: SoulcardProps
   m_EditorClassIdentifier: Assembly-CSharp::ItemGroupProperties
-  maxStackCount: 3
-  weight: 8
+  maxStackCount: 5
+  weight: 10
   description: 

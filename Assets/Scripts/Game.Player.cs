@@ -136,25 +136,18 @@ public partial class Game {
             curStepDistance = 0f;
         }
         
+        bool canShoot = attackLimiter.TimeHasPassed(GetFirerateDelayBasedOnStats());
+        if (!canShoot) return;
+        
         float projCount = 1f + GetPlayerStatAdjustment(Player.Stat.ProjectileCount) + GetEquipmentStatAdjustment(EquipmentStatType.ProjectileCount);
         int targetCount = Mathf.FloorToInt(projCount);
         float extraProjChance = projCount % 1;
         if (RollProbability(extraProjChance)) {
             targetCount++;
         }
-        
-        if (equipedEye.projectileCount.TryGetValue(out var projectileCount)) {
-            for (int i = 0; i < projectileCount.extraProjectileCount; i++) {
-                if (RollProbability(projectileCount.probability)) {
-                    targetCount++;
-                }
-            }
-        }
-        
-        bool canShoot = attackLimiter.TimeHasPassed(GetFirerateDelayBasedOnStats());
 
         List<Vector3> attackTargets = GetAttackTargets(targetCount);
-        if (attackTargets.Count <= 0 || !canShoot) return;
+        if (attackTargets.Count <= 0) return;
         
         PlayAudioClip(shootClip, player.position);
         for (int i = 0; i < attackTargets.Count; i++) {
@@ -164,8 +157,15 @@ public partial class Game {
             if (isPrimaryShot) {
                 ShootProjectile(attackTarget);
             }
-            else if (equipedEye.multiProjectileCritAugment.TryGetValue(out var multiProjCrit)) {
-                ShootProjectile(attackTarget, flatCritChance: multiProjCrit.probability);
+            
+            bool isAdditionalShot = i > 0;
+            if (isAdditionalShot) {
+                if (equipedEye.multiProjectileCritAugment.TryGetValue(out var multiProjCrit)) {
+                    ShootProjectile(attackTarget, flatCritChance: multiProjCrit.probability);
+                }
+                else {
+                    ShootProjectile(attackTarget);
+                }
             }
 
             if (equipedEye.doubleTapAugment.TryGetValue(out var doubleTap) && RollProbability(doubleTap.probability)) { 
@@ -227,7 +227,7 @@ public partial class Game {
         if (entity is Enemy enemy) {
             const float distWeight = 1f;
             const float healthWeight = -0.003f;
-            float bleedingWeight = enemy.bleed.HasValue ? 0.1f : 0f;
+            float bleedingWeight = enemy.bleed.HasValue ? 0.2f : 0f;
             return (dist * distWeight) + (enemy.health * healthWeight) + bleedingWeight;
         }
         

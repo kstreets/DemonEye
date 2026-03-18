@@ -83,7 +83,7 @@ public partial class Game {
     [NonSerialized] private Inventory crucibleInventory;
     [NonSerialized] private Inventory transactionInventory;
     [NonSerialized] private Inventory traderInventory;
-    [NonSerialized] private Inventory lootInvetoryPtr;
+    [NonSerialized] private Inventory lootInventoryPtr;
     [NonSerialized] private InventorySlotUI[] lootInventorySlotUis;
     [NonSerialized] private List<Inventory> allInventories = new();
     
@@ -95,15 +95,9 @@ public partial class Game {
     private const int traderInventoryColCount = 6;
     private const int traderInventoryRowCount = 5;
 
-    private int stashValue;
-
     private bool InventoryIsOpen => playerPanel.gameObject.activeInHierarchy;
     private bool LootInventoryIsOpen => lootInventoryPanel.gameObject.activeInHierarchy;
 
-    private bool OnCharacterTab => characterTabButton.image.sprite == tabSelectedSprite;
-    private bool OnEyeForgeTab => eyeForgeTabButton.image.sprite == tabSelectedSprite;
-    private bool OnTradingTab => traderTabButton.image.sprite == tabSelectedSprite;
-    
     private void InitInventories() {
         const int maxBackpackSize = 30;
         SpawnUiSlots(playerPassiveParent, playerQuickUseSize);
@@ -123,7 +117,7 @@ public partial class Game {
        
         const int cachedLootInventorySize = 12;
         SpawnUiSlots(lootInventoryParent, cachedLootInventorySize); 
-        lootInvetoryPtr = CreateInventory(lootInventoryParent, cachedLootInventorySize);
+        lootInventoryPtr = CreateInventory(lootInventoryParent, cachedLootInventorySize);
         lootInventorySlotUis = lootInventoryParent.GetComponentsInChildren<InventorySlotUI>(true);
 
         const int traderInventorySize = traderInventoryRowCount * traderInventoryColCount;
@@ -136,7 +130,7 @@ public partial class Game {
         transactionInventory = CreateInventory(traderTransactionInventoryParent, transactionInventorySize);
 
         const int maxCrucibleInventorySize = 6;
-        const int startingCrucibleInventorySize = 2;
+        const int startingCrucibleInventorySize = maxCrucibleInventorySize;
         SpawnUiSlots(crucibleParent, maxCrucibleInventorySize, eyeForgeSlotPrefab);
         crucibleInventory = CreateInventory(crucibleParent, startingCrucibleInventorySize + player.crucibleLevel);
         SetupEyeCrucibleInventorySlots();
@@ -198,9 +192,9 @@ public partial class Game {
     }
     
     private InventorySlot[] CreateLootInventoryInstance(List<ItemInstance> inventoryItems) {
-        var slots = new InventorySlot[lootInvetoryPtr.slots.Length];
+        var slots = new InventorySlot[lootInventoryPtr.slots.Length];
         
-        for (int j = 0; j < lootInvetoryPtr.slots.Length; j++) {
+        for (int j = 0; j < lootInventoryPtr.slots.Length; j++) {
             ItemInstance itemInstance = null;
             if (inventoryItems.IndexInRange(j)) {
                 itemInstance = inventoryItems[j];
@@ -331,9 +325,9 @@ public partial class Game {
         
         if (InRaid) {
             if (hoveredInventory == playerInventory && LootInventoryIsOpen) {
-                destinationInventory = lootInvetoryPtr;
+                destinationInventory = lootInventoryPtr;
             }
-            else if (hoveredInventory == lootInvetoryPtr) {
+            else if (hoveredInventory == lootInventoryPtr) {
                 destinationInventory = playerInventory;
             }
         }
@@ -1070,21 +1064,21 @@ public partial class Game {
         discoverLootIndex = -1;
         lootInventoryPanel.gameObject.SetActive(true);
         
-        foreach (InventorySlot slot in lootInvetoryPtr.slots) {
+        foreach (InventorySlot slot in lootInventoryPtr.slots) {
             slot.ui.ClearItem();
             slot.ui.MakeSlotActive();
         }
 
-        for (int i = 0; i < lootInvetoryPtr.slots.Length; i++) {
-            if (lootInvetoryPtr.slots[i].itemInstance == null) continue;
+        for (int i = 0; i < lootInventoryPtr.slots.Length; i++) {
+            if (lootInventoryPtr.slots[i].itemInstance == null) continue;
             
-            InventorySlotUI slotUI = lootInvetoryPtr.slots[i].ui;
+            InventorySlotUI slotUI = lootInventoryPtr.slots[i].ui;
             
-            if (lootInvetoryPtr.slots[i].itemInstance.notDiscovered) {
+            if (lootInventoryPtr.slots[i].itemInstance.notDiscovered) {
                 discoverLootIndex = discoverLootIndex == -1 ? i : discoverLootIndex;
             }
             else {
-                ItemInstance itemInstance = lootInvetoryPtr.slots[i].itemInstance;
+                ItemInstance itemInstance = lootInventoryPtr.slots[i].itemInstance;
                 slotUI.SetItem(itemInstance.ItemRef, itemInstance.count);
             }
         }
@@ -1096,12 +1090,12 @@ public partial class Game {
 
         searchSequence = Sequence.Create();
         
-        for (int i = 0; i < lootInvetoryPtr.slots.Length; i++) {
-            if (lootInvetoryPtr.slots[i].itemInstance == null) continue;
+        for (int i = 0; i < lootInventoryPtr.slots.Length; i++) {
+            if (lootInventoryPtr.slots[i].itemInstance == null) continue;
             
-            InventorySlotUI slotUI = lootInvetoryPtr.slots[i].ui;
+            InventorySlotUI slotUI = lootInventoryPtr.slots[i].ui;
             
-            if (lootInvetoryPtr.slots[i].itemInstance.notDiscovered) {
+            if (lootInventoryPtr.slots[i].itemInstance.notDiscovered) {
                 searchSequence.Chain(Tween.PunchScale(slotUI.rectTransform, Vector3.one * 2f, 0.1f, 2f, startDelay: 0.01f * i));
                 searchSequence.ChainCallback(slotUI, (target) => target.MakeSlotInactive());
             }
@@ -1110,7 +1104,7 @@ public partial class Game {
         searchSequence.ChainDelay(0.15f);
 
         searchSequence.ChainCallback(target: this, (target) => {
-            InventorySlot slot = target.lootInvetoryPtr.slots[target.discoverLootIndex];
+            InventorySlot slot = target.lootInventoryPtr.slots[target.discoverLootIndex];
             if (slot.itemInstance != null) {
                 target.AnimateSlotSearch(slot.ui);
                 target.discoverLootTimer.SetTime(1f);
@@ -1118,10 +1112,10 @@ public partial class Game {
         });
         
         discoverLootTimer.EndAction ??= () => {
-            ItemInstance itemInstance = lootInvetoryPtr.slots[discoverLootIndex].itemInstance;
+            ItemInstance itemInstance = lootInventoryPtr.slots[discoverLootIndex].itemInstance;
             itemInstance.notDiscovered = false;
             
-            InventorySlotUI slotUI = lootInvetoryPtr.slots[discoverLootIndex].ui;
+            InventorySlotUI slotUI = lootInventoryPtr.slots[discoverLootIndex].ui;
             slotUI.MakeSlotActive();
             slotUI.StopSlotSearching();
             slotUI.SetItem(itemInstance.ItemRef, itemInstance.count);
@@ -1130,8 +1124,8 @@ public partial class Game {
             
             discoverLootIndex++;
             
-            if (discoverLootIndex < lootInvetoryPtr.slots.Length && lootInvetoryPtr.slots[discoverLootIndex].itemInstance != null) {
-                slotUI = lootInvetoryPtr.slots[discoverLootIndex].ui;
+            if (discoverLootIndex < lootInventoryPtr.slots.Length && lootInventoryPtr.slots[discoverLootIndex].itemInstance != null) {
+                slotUI = lootInventoryPtr.slots[discoverLootIndex].ui;
                 AnimateSlotSearch(slotUI);
                 discoverLootTimer.SetTime(1f);
             }
@@ -1154,7 +1148,7 @@ public partial class Game {
         searchCirclePopInTween.Stop();
         
         // Reset all tweening properties because the animations might have stopped while playing 
-        foreach (InventorySlot slot in lootInvetoryPtr.slots) {
+        foreach (InventorySlot slot in lootInventoryPtr.slots) {
             slot.ui.rectTransform.localScale = Vector3.one;
             slot.ui.StopSlotSearching();
         }

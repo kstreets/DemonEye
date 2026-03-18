@@ -48,6 +48,6 @@ MonoBehaviour:
   projectileCount: 0
   rangeInSeconds: 0
   itemGroupProps: {fileID: 0}
-  maxStackCount: 6
-  weight: 2
+  maxStackCount: 15
+  weight: 6
   description: A bone from a demon. Traders like to buy this.

@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 32b66477ce1b04b408e4c0eb1cbae335, type: 3}
   m_Name: IntellectSkillUpgradePath
   m_EditorClassIdentifier: Assembly-CSharp::StatUpgradePath
-  soulsNeededPerLevel: e8030000a00f0000401f0000e02e0000983a0000
+  soulsNeededPerLevel: e8030000b80b00008813000070170000581b0000

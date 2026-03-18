@@ -35,7 +35,7 @@ MonoBehaviour:
   traderStockRange: {x: 1, y: 5}
   barterRequirements:
   - item: {fileID: 11400000, guid: c300cfd9dba50fc438f83dec791af29b, type: 2}
-    count: 5
+    count: 3
   - item: {fileID: 11400000, guid: 813a59de02795ad40bfd5fccf7ddc415, type: 2}
     count: 2
   spawnsFromEnemies: []
@@ -53,5 +53,4 @@ MonoBehaviour:
   weight: 0
   description: 
   relativeMechanicDesc: {fileID: 0}
-  augments: []
   probability: 0.3

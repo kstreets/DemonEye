@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a5df0d022d54a7488a42b771db86189, type: 3}
   m_Name: Enemy2
   m_EditorClassIdentifier: 
+  displayName: 
   type: 0
   enemyPrefab: {fileID: 7814119993517076521, guid: 1c6e3ff2b721e124aba2ba33cd3aba16, type: 3}
   animatorOverride: {fileID: 22100000, guid: 71a02aee82e5d1e4abd45350da8f2c56, type: 2}
@@ -26,7 +27,7 @@ MonoBehaviour:
   upAttackOffset: {x: 0, y: 0.203}
   donwAttackOffset: {x: 0, y: -0.018}
   speed: 0.3
-  health: 12
+  health: 25
   damage: 22
   changeToCauseBleed: 0.15
   chanceToDropItem: 0.07

@@ -17,7 +17,6 @@ public class GameplayConfig : ScriptableObject {
 
     [Header("Player")]
     public float baseSpeed;
-    public int postDeathStartingHealth;
     
     [Header("Portal")]
     public float portalSummonTime;

@@ -27,7 +27,7 @@ MonoBehaviour:
   maxBushesCount: 6
   minAltarCount: 5
   maxAltarCount: 8
-  eyeUpgradeOnBodyChance: 0.28
-  eyeUpgradeFromRockChance: 0.37
+  eyeUpgradeOnBodyChance: 0.25
+  eyeUpgradeFromRockChance: 0.32
   maxGemCountPerRock: 2
-  increasedLootRarityChance: -0.1
+  increasedLootRarityChance: -0.4

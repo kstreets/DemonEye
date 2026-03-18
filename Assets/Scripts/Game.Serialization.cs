@@ -133,7 +133,7 @@ public partial class Game {
         }
         
         // We want to make sure that the player health is never <= zero
-        instancedPlayer.health = player.health <= 0f ? gameplayConfig.postDeathStartingHealth : player.health;
+        instancedPlayer.health = player.health <= 0f ? FullPlayerHealth : player.health;
     }
 
 }

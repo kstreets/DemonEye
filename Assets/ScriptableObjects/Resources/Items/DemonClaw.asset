@@ -46,6 +46,6 @@ MonoBehaviour:
   projectileCount: 0
   rangeInSeconds: 0
   itemGroupProps: {fileID: 0}
-  maxStackCount: 10
+  maxStackCount: 15
   weight: 2
   description: A claw from a demon. Traders like to buy this.

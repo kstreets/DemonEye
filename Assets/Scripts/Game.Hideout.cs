@@ -8,6 +8,10 @@ using Random = UnityEngine.Random;
 
 public partial class Game {
     
+    private bool OnCharacterTab => characterTabButton.image.sprite == tabSelectedSprite;
+    private bool OnEyeForgeTab => eyeForgeTabButton.image.sprite == tabSelectedSprite;
+    private bool OnTradingTab => traderTabButton.image.sprite == tabSelectedSprite;
+    
     // ************************
     // Trader
     // ************************
@@ -257,7 +261,7 @@ public partial class Game {
     private enum CrucibleMode { Empty, Forging, ForgingButJustEye, ForgingButWithoutEye, NeedToRemoveDemonEye }
     private CrucibleMode crucibleMode;
 
-    private void UpdateCrucibleState() {
+    private void UpdateForgeState() {
         if (!OnEyeForgeTab) return;
 
         if (playingForgeUpgradeAnimation) {
@@ -287,7 +291,7 @@ public partial class Game {
         }
     }
 
-    private void UpdateCrucibleInfoPanel() {
+    private void UpdateForgeInfoPanel() {
         if (!OnEyeForgeTab) return;
         
         bool forging = crucibleMode is CrucibleMode.Forging;

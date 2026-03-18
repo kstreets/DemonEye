@@ -30,4 +30,4 @@ MonoBehaviour:
   eyeUpgradeOnBodyChance: 0.25
   eyeUpgradeFromRockChance: 0.5
   maxGemCountPerRock: 2
-  increasedLootRarityChance: 0.24
+  increasedLootRarityChance: 0

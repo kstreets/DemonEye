@@ -10,7 +10,7 @@ public class PenetrationModifierItem : ModifierItem {
     
     public int startingGoThroughCount;
     
-    public override void AddInstanceToEye(Game.DemonEyeInstance eyeInstance, int stackCount) {
+    public override void AddInstanceToEye(DemonEyeInstance eyeInstance, int stackCount) {
         eyeInstance.penetration = new() {
             goThroughCount = GetGoThroughCount(stackCount),
         };

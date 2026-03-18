@@ -27,6 +27,8 @@ public class RaidSpawnPattern : ScriptableObject {
     
     public float timeBeforeFirstPhase;
     public float timeBeforePortalSpawns;
+    public float delayBetweenEnemyRepositions;
+    public int maxEnemyRepositionCount;
     public List<SpawnPhase> spawnPhases;
     
 }

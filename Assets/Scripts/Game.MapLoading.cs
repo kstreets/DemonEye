@@ -91,7 +91,8 @@ public partial class Game {
             GameObject prefab = resourceSpawn.GetPrefabToSpawn();
             if (!prefab) continue;
             
-            Entity resourceEntity = SpawnResource<Entity>(prefab, resourceSpawn.transform, 1);
+            int obstacleCellRadius = prefab.CompareTag(Tags.Mineable) ? 1 : 0;
+            Entity resourceEntity = SpawnResource<Entity>(prefab, resourceSpawn.transform, obstacleCellRadius);
 
             switch (resourceEntity.gameObject.tag) {
                 case Tags.Mineable:
@@ -141,7 +142,7 @@ public partial class Game {
         GetUniqueItemsFromDropPool(bodyDropPool, maxDeadBodyItemCount, items);
             
         bool spawnEyeUpgrade = RollProbability(loadedMapData.eyeUpgradeOnBodyChance);
-        while (spawnEyeUpgrade && items.Count < lootInvetoryPtr.slots.Length) {
+        while (spawnEyeUpgrade && items.Count < lootInventoryPtr.slots.Length) {
             items.Add(GetItemFromDropPool(eyeUpgradesDropPool));
             spawnEyeUpgrade = RollProbability(loadedMapData.eyeUpgradeOnBodyChance);
         }

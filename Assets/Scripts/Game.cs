@@ -468,7 +468,7 @@ public partial class Game : MonoBehaviour {
 
     private void LateUpdate() {
         UpdatePlayerPanelUI();
-        UpdateCrucibleInfoPanel();
+        UpdateForgeInfoPanel();
         UpdateHotBarUI();
         UpdateDragAndDropItemToCursor();
         UpdateCurrencyNumbers();
@@ -512,7 +512,7 @@ public partial class Game : MonoBehaviour {
     private void OnHideoutStateUpdate() {
         UpdateInventory();
         RefreshTransactionUI();
-        UpdateCrucibleState();
+        UpdateForgeState();
     }
 
     private void OnMapSelectionEnter() {
@@ -581,7 +581,7 @@ public partial class Game : MonoBehaviour {
     }
     
     private void OnGameOverExit() {
-        player.health = gameplayConfig.postDeathStartingHealth;
+        player.health = FullPlayerHealth;
         DeinitRaid();
     }
     
@@ -732,7 +732,7 @@ public partial class Game : MonoBehaviour {
             if (col.CompareTag(Tags.DeadBody)) {
                 EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), "Search Body");
                 if (interactInputAction.WasPressedThisFrame()) {
-                    lootInvetoryPtr.slots = deadBodySlotsLookup[col.gameObject];
+                    lootInventoryPtr.slots = deadBodySlotsLookup[col.gameObject];
                     OpenPlayerInventory();
                     OpenLootInventory();
                 }
@@ -741,7 +741,7 @@ public partial class Game : MonoBehaviour {
             if (col.CompareTag(Tags.Bush)) {
                 EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), "Search Bush");
                 if (interactInputAction.WasPressedThisFrame()) {
-                    lootInvetoryPtr.slots = bushSlotsLookup[col.gameObject];
+                    lootInventoryPtr.slots = bushSlotsLookup[col.gameObject];
                     OpenPlayerInventory();
                     OpenLootInventory();
                 }
@@ -955,15 +955,18 @@ public partial class Game : MonoBehaviour {
             
             Transform exitPortalParent = loadedMapInst.exitPortalsParent;
             int randomSpawnIndex = Random.Range(0, exitPortalParent.childCount);
-            Transform newExitPortal = exitPortalParent.GetChild(randomSpawnIndex);
+            Transform newExitPortalTrans = exitPortalParent.GetChild(randomSpawnIndex);
+            
+            newExitPortalTrans.gameObject.SetActive(true);
+            newExitPortalTrans.position = randomPos;
+            
             activeExitPortals.Add(new() {
-                transform = newExitPortal,
+                transform = newExitPortalTrans,
+                canTake = true,
             });
-            newExitPortal.gameObject.SetActive(true);
-            newExitPortal.GetComponent<Collider2D>().enabled = true;
-            newExitPortal.position = randomPos;
-            Tween.Scale(newExitPortal, 0f, 1f, 0.5f, Ease.OutBack);
-            PlayAudioClip(portalSpawnClip, newExitPortal.position);
+            
+            Tween.Scale(newExitPortalTrans, 0f, 1f, 0.5f, Ease.OutBack);
+            PlayAudioClip(portalSpawnClip, newExitPortalTrans.position);
             return;
         }
         

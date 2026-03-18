@@ -48,6 +48,6 @@ MonoBehaviour:
   projectileCount: 0
   rangeInSeconds: 0
   itemGroupProps: {fileID: 0}
-  maxStackCount: 5
-  weight: 2
+  maxStackCount: 15
+  weight: 5
   description: The skull of a demon. Traders like to buy this.
