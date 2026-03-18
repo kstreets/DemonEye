@@ -343,8 +343,8 @@ namespace WingmanInspector {
                 GUIContent content = EditorGUIUtility.ObjectContent(comp, comp.GetType());
                 
                 bool displayCompAsEnabled = true;
-                if (comp is Behaviour behaviour) {
-                    displayCompAsEnabled = behaviour.enabled;
+                if (ComponentIsTogglable(comp)) {
+                    displayCompAsEnabled = GetComponentEnabledState(comp);
                 }
                 
                 bool prevToggle = selectedCompIds.Contains(compId);
@@ -1302,11 +1302,33 @@ namespace WingmanInspector {
         private void CheckForShortcutOperations(List<Component> comps, List<Rect> buttonRects) {
             if (activeShortcutToPerform == ShortcutOperation.ToggleComponent) {
                 Component compUnderCursor = GetComponentUnderCursor(comps, buttonRects);
-                if (compUnderCursor && compUnderCursor is Behaviour behaviour) {
-                    behaviour.enabled = !behaviour.enabled;
+                if (compUnderCursor && ComponentIsTogglable(compUnderCursor)) {
+                    ToggleComponent(compUnderCursor);
                 }
             }
             activeShortcutToPerform = ShortcutOperation.Nothing;
+        }
+        
+        private bool ComponentIsTogglable(Component comp) {
+            return comp is Behaviour or Renderer or Collider;
+        }
+        
+        private bool GetComponentEnabledState(Component comp) {
+            return comp switch {
+                Behaviour b => b.enabled,
+                Renderer r  => r.enabled,
+                Collider c  => c.enabled,
+                _           => true,
+            };
+        }
+        
+        private void ToggleComponent(Component comp) {
+            _ = comp switch {
+                Behaviour b => b.enabled = !b.enabled,
+                Renderer r  => r.enabled = !r.enabled,
+                Collider c  => c.enabled = !c.enabled,
+                _           => false,
+            };
         }
 
         private Rect ShiftRectStartVertically(Rect rect, float length) { 
