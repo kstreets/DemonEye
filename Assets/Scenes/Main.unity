@@ -11531,6 +11531,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 848481703}
     m_Modifications:
+    - target: {fileID: 278888951710871808, guid: 4add96f54f6ffed44b65bd2e53c29d92, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 293434087866720289, guid: 4add96f54f6ffed44b65bd2e53c29d92, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 918381908962251433, guid: 4add96f54f6ffed44b65bd2e53c29d92, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5648879043497698102, guid: 4add96f54f6ffed44b65bd2e53c29d92, type: 3}
       propertyPath: m_text
       value: '[ESC] Back'
@@ -14365,12 +14377,20 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1607287958400974976, guid: 0580ab26c15d8bc47b3d901fe38e1fea, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1607287958400974976, guid: 0580ab26c15d8bc47b3d901fe38e1fea, type: 3}
       propertyPath: m_PreferredWidth
       value: 800
       objectReference: {fileID: 0}
     - target: {fileID: 7275213482087096318, guid: 0580ab26c15d8bc47b3d901fe38e1fea, type: 3}
       propertyPath: m_text
       value: Level Up Skills
+      objectReference: {fileID: 0}
+    - target: {fileID: 7925525439210093600, guid: 0580ab26c15d8bc47b3d901fe38e1fea, type: 3}
+      propertyPath: m_Enabled
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
