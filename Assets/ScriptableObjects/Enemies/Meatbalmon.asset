@@ -29,6 +29,7 @@ MonoBehaviour:
   speed: 0.23
   health: 45
   damage: 28
+  collisionDamage: 8
   changeToCauseBleed: 0.15
   chanceToDropItem: 0.05
   soulWorthPerKill: 4

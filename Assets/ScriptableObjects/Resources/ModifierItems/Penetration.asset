@@ -39,15 +39,14 @@ MonoBehaviour:
   - item: {fileID: 11400000, guid: 8799857dd3cea574da43da5e99edb7aa, type: 2}
     count: 3
   spawnsFromEnemies: []
-  modifiesStats: 0
-  armorPercent: 0
+  modifiesStats: 1
   critChance: 0
   critMultiplier: 0
   damage: 0
   fireratePercentage: 0
   movementSpeedPercentage: 0
   projectileCount: 0
-  rangeInSeconds: 0
+  rangePercentage: 0
   itemGroupProps: {fileID: 11400000, guid: 78826f3a685555a4896655f4c68ef737, type: 2}
   maxStackCount: 3
   weight: 0

@@ -62,7 +62,7 @@ public partial class Game {
 
                 if (enemy.prevAverageDistFromPlayer != 0f) {
                     float curAverage = enemy.curRunningSumDistFromPlayer / enemy.curRunningSumFrameCount;
-                    enemy.gettingFurtherFromPlayer = curAverage - enemy.prevAverageDistFromPlayer > 0.1f;
+                    enemy.gettingFurtherFromPlayer = Mathf.Abs(curAverage - enemy.prevAverageDistFromPlayer) <= 0.08f;
                 }
                 
                 enemy.prevAverageDistFromPlayer = enemy.curRunningSumDistFromPlayer / enemy.curRunningSumFrameCount;
@@ -161,7 +161,7 @@ public partial class Game {
                         }
 
                         if (col) {
-                            gameInstance.DamagePlayer(enemy.data.damage, enemy.data.changeToCauseBleed);
+                            gameInstance.DamagePlayer(enemy.data.damage, PlayerDamageType.Normal, enemy.data.changeToCauseBleed);
                         }
                     });
                 }
@@ -169,7 +169,7 @@ public partial class Game {
             
             if (enemy.bleed.TryGetValue(out var bleed)) {
                 if (Time.time - bleed.lastBleedTime > bleed.bleedInterval) {
-                    int bleedDamage = bleed.bleedDamage;
+                    int bleedDamage = Mathf.RoundToInt(GetBaseDamage() * bleed.damageMultiplier);
                     enemy.health -= bleedDamage;
                     bleed.lastBleedTime = Time.time;
                     enemy.bleed = bleed;
@@ -203,6 +203,27 @@ public partial class Game {
                 });
                 enemies.RemoveAt(i);
             }
+        }
+        
+        List<Collider2D> overlapedEnemiesWithPlayer = OverlapCapsule(player.position, player.hurtCollider, Masks.EnemyMask);
+        bool someEnemyOverlapsPlayer = overlapedEnemiesWithPlayer.Count > 0;
+        
+        if (someEnemyOverlapsPlayer) {
+            Vector2 playerPos = player.position;
+            
+            Collider2D closestColToPlayer = overlapedEnemiesWithPlayer[0];
+            float closestDistToPlayer = Vector2.Distance(closestColToPlayer.transform.position, playerPos);
+            
+            foreach (Collider2D col in overlapedEnemiesWithPlayer) {
+                float dist = Vector2.Distance(col.transform.position, playerPos);
+                if (dist < closestDistToPlayer) {
+                    closestDistToPlayer = dist;
+                    closestColToPlayer = col;
+                }
+            }
+            
+            Enemy collidedWithEnemy = entityLookup[closestColToPlayer.gameObject] as Enemy;
+            DamagePlayer(collidedWithEnemy.data.collisionDamage, PlayerDamageType.Collision);
         }
     }
     

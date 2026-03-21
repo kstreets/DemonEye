@@ -26,6 +26,7 @@ public class MapData : ScriptableObject {
     [Header("Eye Upgrade Drop Chances")]
     public float eyeUpgradeOnBodyChance;
     public float eyeUpgradeFromRockChance;
+    public float consecutiveEyeUpgradeChanceReductionOnBody;
 
     [Header("Gem Spawns")]
     public int maxGemCountPerRock;

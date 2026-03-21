@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a5df0d022d54a7488a42b771db86189, type: 3}
   m_Name: Enemy4
   m_EditorClassIdentifier: 
+  displayName: 
   type: 0
   enemyPrefab: {fileID: 7814119993517076521, guid: 4b73114a9fc8cf54b8ff78222ba7c93c, type: 3}
   animatorOverride: {fileID: 22100000, guid: eea5b74bb62af0842893cca5dab41b1f, type: 2}
@@ -28,6 +29,7 @@ MonoBehaviour:
   speed: 0.35
   health: 30
   damage: 20
+  collisionDamage: 8
   changeToCauseBleed: 0.15
   chanceToDropItem: 0.06
   soulWorthPerKill: 4

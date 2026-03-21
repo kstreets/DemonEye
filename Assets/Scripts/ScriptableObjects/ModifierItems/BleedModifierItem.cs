@@ -5,24 +5,24 @@ using static Game;
 public class BleedModifierItem : ModifierItem {
     
     public struct InstanceData {
-        public int bleedDamage;
+        public float damageMultiplier;
         public float bleedInterval;
         public float lastBleedTime;
     }
 
-    public int bleedDamage;
+    public float damageMultiplier;
     public float bleedInterval;
     
     public override void AddInstanceToEnemy(Enemy enemy, int stackCount) {
         if (enemy.bleed.TryGetValue(out InstanceData bleed)) {
-            bleed.bleedDamage = GetBleedDamage(stackCount);
+            bleed.damageMultiplier = GetBleedDamageMultiplier(stackCount);
             bleed.bleedInterval = bleedInterval;
             enemy.bleed = bleed;
             return;
         }
         
         InstanceData instance = new() {
-            bleedDamage = GetBleedDamage(stackCount),
+            damageMultiplier = GetBleedDamageMultiplier(stackCount),
             bleedInterval = bleedInterval,
             lastBleedTime = 0f,
         };
@@ -30,11 +30,11 @@ public class BleedModifierItem : ModifierItem {
     }
 
     protected override string GetModifierDescription(int stackCount) {
-        return $"{DisplayNumber(GetBleedDamage(stackCount))} damage per bleed every {DisplaySeconds(bleedInterval)}";
+        return $"{DisplayProb(1f)} chance to inflict bleed, causing {DisplayMultiplier(GetBleedDamageMultiplier(stackCount))} damage initially and per bleed tick ({DisplaySeconds(bleedInterval)})";
     }
 
-    private int GetBleedDamage(int stackCount) {
-        return TaperInteger(bleedDamage, stackCount, 0.75f);
+    private float GetBleedDamageMultiplier(int stackCount) {
+        return TaperFloat(damageMultiplier, stackCount, 0.6f);
     }
     
 }

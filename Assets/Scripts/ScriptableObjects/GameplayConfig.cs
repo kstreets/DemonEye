@@ -17,6 +17,7 @@ public class GameplayConfig : ScriptableObject {
 
     [Header("Player")]
     public float baseSpeed;
+    public float repeatCollisionDamageDelay;
     
     [Header("Portal")]
     public float portalSummonTime;

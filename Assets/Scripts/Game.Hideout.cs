@@ -105,8 +105,8 @@ public partial class Game {
         int curTraderLevel = GetTraderRepLevel();
         
         float raritySkew = curTraderLevel switch { 
-            0 => 0f, 
-            1 => 0.20f, 
+            0 => 0.13f, 
+            1 => 0.25f, 
             2 => 0.40f,
             3 => 0.50f,
             _ => 0.60f,
@@ -827,8 +827,8 @@ public partial class Game {
         playerStatsPanel.carryCapacityRow.statValueText.text = DisplayIncrease(GetPlayerStatAdjustment(Player.Stat.CarryCapacity));
         playerStatsPanel.critChanceRow.statValueText.text = DisplayProbIncrease(GetPlayerStatAdjustment(Player.Stat.CritChance));
         playerStatsPanel.critMultiRow.statValueText.text = DisplayIncrease(GetPlayerStatAdjustment(Player.Stat.CritMulti));
-        playerStatsPanel.damageRow.statValueText.text = DisplayIncrease(GetPlayerStatAdjustment(Player.Stat.Damage));
-        playerStatsPanel.firerateRow.statValueText.text = DisplayProbIncrease(GetPlayerStatAdjustment(Player.Stat.Firerate));
+        playerStatsPanel.damageRow.statValueText.text = DisplayIncrease(GetPlayerStatAdjustment(Player.Stat.DamageMulti));
+        playerStatsPanel.firerateRow.statValueText.text = DisplayProbIncrease(GetPlayerStatAdjustment(Player.Stat.FireratePercentage));
         playerStatsPanel.healthRow.statValueText.text = DisplayIncrease(GetPlayerStatAdjustment(Player.Stat.Health));
         playerStatsPanel.healingAmountRow.statValueText.text = DisplayIncrease(GetPlayerStatAdjustment(Player.Stat.HealingAmount));
         playerStatsPanel.healingSpeedRow.statValueText.text = DisplayProbIncrease(GetPlayerStatAdjustment(Player.Stat.HealingSpeed));

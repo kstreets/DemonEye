@@ -15,13 +15,13 @@ MonoBehaviour:
   attackDelay: 0.3
   cappedMinAttackDelay: 0.1
   damage: 8
-  rangeInSeconds: 0.6
+  rangeInSeconds: 0.5
   accuracy: 0.7
   projectileSpeed: 2
-  defaultCritChance: 0.15
+  defaultCritChance: 0.1
   defaultCritMulti: 1.5
   baseSpeed: 0.52
-  postDeathStartingHealth: 25
+  repeatCollisionDamageDelay: 1
   portalSummonTime: 4
   portalPostSummonDelay: 8
   portalActiveDuration: 25

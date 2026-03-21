@@ -47,14 +47,13 @@ public class Item : UuidScriptableObject {
     
     public bool modifiesStats;
     [ShowIf(nameof(modifiesStats))]
-    public float armorPercent;
     public float critChance;
     public float critMultiplier;
-    public int damage;
+    public float damageMultiplier;
     public float fireratePercentage;
     public float movementSpeedPercentage;
     public float projectileCount;
-    public float rangeInSeconds;
+    public float rangePercentage;
     [EndIf]
     
     [Space]
@@ -106,7 +105,7 @@ public class Item : UuidScriptableObject {
         if (modifiesStats) {
             if (!Mathf.Approximately(critChance, 0f))              desc += $"\n{DisplayIncDec(critChance)} Crit Chance";
             if (!Mathf.Approximately(critMultiplier, 0f))          desc += $"\n{DisplayIncDec(critMultiplier)} Crit Multiplier";
-            if (damage != 0)                                       desc += $"\n{DisplayIncDec(damage)} Damage";
+            if (!Mathf.Approximately(damageMultiplier, 0f))        desc += $"\n{DisplayMultiplierIncDec(damageMultiplier)} Damage";
             if (!Mathf.Approximately(fireratePercentage, 0f))      desc += $"\n{DisplayProbIncDec(fireratePercentage)} Firerate";
             if (!Mathf.Approximately(movementSpeedPercentage, 0f)) desc += $"\n{DisplayProbIncDec(movementSpeedPercentage)} Movement Speed";
             if (!Mathf.Approximately(projectileCount, 0f)) {
@@ -117,7 +116,7 @@ public class Item : UuidScriptableObject {
                     desc += $"\n{DisplayIncDec(projectileCount * stackCount)} Projectile Count";
                 }
             }
-            if (!Mathf.Approximately(rangeInSeconds, 0f))          desc += $"\n{DisplayIncDec(rangeInSeconds)} Range";
+            if (!Mathf.Approximately(rangePercentage, 0f))          desc += $"\n{DisplayProbIncDec(rangePercentage)} Range";
         }
 
         bool removeFirstNewLine = !string.IsNullOrEmpty(desc);

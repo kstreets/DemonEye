@@ -39,18 +39,17 @@ MonoBehaviour:
     count: 1
   spawnsFromEnemies: []
   modifiesStats: 0
-  armorPercent: 0
   critChance: 0
   critMultiplier: 0
   damage: 0
   fireratePercentage: 0
   movementSpeedPercentage: 0
   projectileCount: 0
-  rangeInSeconds: 0
+  rangePercentage: 0
   itemGroupProps: {fileID: 0}
   maxStackCount: 6
   weight: 1
-  description: Stops bleeding and restores 25 health.
+  description: Stops bleeding and restores 30 health.
   animationType: 2
-  healingAmount: 25
+  healingAmount: 30
   bandageAmount: 1

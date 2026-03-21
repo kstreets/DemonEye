@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a5df0d022d54a7488a42b771db86189, type: 3}
   m_Name: Deermon
   m_EditorClassIdentifier: 
+  displayName: 
   type: 0
   enemyPrefab: {fileID: 7814119993517076521, guid: a1bab1fc17c25654da48b89cc286a314, type: 3}
   animatorOverride: {fileID: 22100000, guid: ea0fb2008e7bcf345a30632e2c74be9a, type: 2}
@@ -28,6 +29,7 @@ MonoBehaviour:
   speed: 0.35
   health: 300
   damage: 15
+  collisionDamage: 10
   changeToCauseBleed: 0.15
   chanceToDropItem: 0.03
   soulWorthPerKill: 4

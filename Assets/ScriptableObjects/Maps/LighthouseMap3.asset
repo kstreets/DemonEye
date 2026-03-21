@@ -29,5 +29,6 @@ MonoBehaviour:
   maxAltarCount: 8
   eyeUpgradeOnBodyChance: 0.25
   eyeUpgradeFromRockChance: 0.5
+  consecutiveEyeUpgradeChanceReductionOnBody: 0.08
   maxGemCountPerRock: 2
   increasedLootRarityChance: 0

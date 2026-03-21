@@ -141,18 +141,22 @@ public partial class Game {
         int maxDeadBodyItemCount = Random.Range(2, 6);
         GetUniqueItemsFromDropPool(bodyDropPool, maxDeadBodyItemCount, items);
             
-        bool spawnEyeUpgrade = RollProbability(loadedMapData.eyeUpgradeOnBodyChance);
+        float eyeUpgradeOnBodyChance = loadedMapData.eyeUpgradeOnBodyChance;
+        bool spawnEyeUpgrade = RollProbability(eyeUpgradeOnBodyChance);
         while (spawnEyeUpgrade && items.Count < lootInventoryPtr.slots.Length) {
+            eyeUpgradeOnBodyChance -= loadedMapData.consecutiveEyeUpgradeChanceReductionOnBody;
             items.Add(GetItemFromDropPool(eyeUpgradesDropPool));
-            spawnEyeUpgrade = RollProbability(loadedMapData.eyeUpgradeOnBodyChance);
+            spawnEyeUpgrade = RollProbability(eyeUpgradeOnBodyChance);
         }
 
         foreach (Item item in items) {
             int stackCount = 1;
-            float spawnRateTaper = 0f;
-            while (RollProbability(item.chanceToSpawnOnBody - spawnRateTaper)) {
+            
+            float stepAmount = (1f - item.chanceToSpawnOnBody) * 0.25f;
+            float taperingChance = Mathf.Lerp(item.chanceToSpawnOnBody, 0f, stepAmount);
+            while (RollProbability(taperingChance)) {
                 stackCount++;
-                spawnRateTaper += item.chanceToSpawnOnBody * 0.15f;
+                taperingChance = Mathf.Lerp(taperingChance, 0f, stepAmount);
             }
                     
             inventoryItems.Add(new() {
