@@ -142,9 +142,6 @@ public partial class Game {
             player.curStepDistance = 0f;
         }
         
-        
-        return;
-        
         bool canShoot = attackLimiter.TimeHasPassed(GetFirerateDelayBasedOnStats());
         if (!canShoot) return;
         

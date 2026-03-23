@@ -11,8 +11,11 @@ public class ItemDescPopup : MonoBehaviour {
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI descText;
     public TextMeshProUGUI metaInfoText;
+    public TextMeshProUGUI augmentDescText;
     public ContentSizeFitter nameContentFitter;
     public ContentSizeFitter descContentFitter;
+    public RectTransform augmentBlockRectTransform;
+    public ContentSizeFitter augmentDescContentFitter;
     public RectTransform tagsParent;
     
     public Image tag1;
@@ -87,6 +90,8 @@ public class ItemDescPopup : MonoBehaviour {
     }
 
     private void SetDescription(ItemInstance itemInstance, Item item) {
+        augmentBlockRectTransform.gameObject.SetActive(false);
+        
         if (item.type == gameInstance.demonEyeType) {
             DemonEyeInstance eyeInstance = gameInstance.eyeInstanceFromItemId[itemInstance.itemOrInstanceUuid];
             string eyeDescription = "";
@@ -103,7 +108,12 @@ public class ItemDescPopup : MonoBehaviour {
         }
         
         if (itemInstance.TryGetUuidObject(out var uuidObject) && uuidObject is Augment augment) {
-            descText.text += $"\n{augment.GetDescription()}";
+            augmentBlockRectTransform.gameObject.SetActive(true);
+            augmentDescText.text = augment.GetDescription();
+            augmentDescContentFitter.ForceRecalculate();
+
+            Rect rect = augmentDescText.rectTransform.rect;
+            augmentBlockRectTransform.sizeDelta = new(augmentBlockRectTransform.rect.x, rect.y);
         }
         
         if (item.type == gameInstance.quickUseType && !itemInstance.traderOwned) {

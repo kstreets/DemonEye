@@ -267,7 +267,7 @@ public partial class Game {
         TweenPopUp(itemDescPopup.rectTransform);
         
         // Fit popup size to text elements
-        FitPopupSize(itemDescPopup.rectTransform, itemDescPopup.tagsParent.rect, itemDescPopup.nameText.rectTransform.rect, itemDescPopup.descText.rectTransform.rect);
+        FitPopupSize(itemDescPopup.rectTransform, itemDescPopup.tagsParent.rect, itemDescPopup.nameText.rectTransform.rect, itemDescPopup.descText.rectTransform.rect, itemDescPopup.augmentDescText.rectTransform.rect);
 
         // Set popup position
         Vector2 hoveredSlotCenter = hoveredSlot.ui.rectTransform.WorldRect().center;
