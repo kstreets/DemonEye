@@ -262,24 +262,20 @@ public partial class Game {
         
         InventorySlot hoveredSlot = info.inventory.slots[info.slotIndex];
         
-        itemDescPopup.gameObject.SetActive(true);
-        itemDescPopup.Set(hoveredSlot.itemInstance);
-        TweenPopUp(itemDescPopup.rectTransform);
-        
-        // Fit popup size to text elements
-        FitPopupSize(itemDescPopup.rectTransform, itemDescPopup.tagsParent.rect, itemDescPopup.nameText.rectTransform.rect, itemDescPopup.descText.rectTransform.rect, itemDescPopup.augmentDescText.rectTransform.rect);
-
         // Set popup position
+        Vector2 popupPosition = Vector2.zero;
         Vector2 hoveredSlotCenter = hoveredSlot.ui.rectTransform.WorldRect().center;
         float halfPopupWidth = itemDescPopup.rectTransform.rect.width / 2f;
         Vector2 popupOffset = new(45 + halfPopupWidth, 40);
         if (hoveredSlotCenter.x < ScreenCenter.x) {
-            itemDescPopup.transform.position = hoveredSlotCenter + popupOffset;
+            popupPosition = hoveredSlotCenter + popupOffset;
         }
         else {
-            itemDescPopup.transform.position = hoveredSlotCenter + new Vector2(-popupOffset.x, popupOffset.y);
+            popupPosition = hoveredSlotCenter + new Vector2(-popupOffset.x, popupOffset.y);
         }
 
+        itemDescPopup.Show(hoveredSlot.itemInstance, popupPosition);
+        
         // Add mechanic desctiption if necessary
         if (hoveredSlot.itemInstance.ItemRef.type == eyeModifierType) {
             ModifierItem modifierItem = (ModifierItem)hoveredSlot.itemInstance.ItemRef;
@@ -299,12 +295,7 @@ public partial class Game {
     }
 
     private void HideInventoryItemPopup() {
-        mechanicDescPopup.gameObject.SetActive(false);
-        
-        itemDescPopup.nameText.text = string.Empty;
-        itemDescPopup.descText.text = string.Empty;
-        itemDescPopup.gameObject.SetActive(false);
-        
+        itemDescPopup.Hide();
         mechanicDescPopup.nameText.text = string.Empty;
         mechanicDescPopup.descText.text = string.Empty;
         mechanicDescPopup.gameObject.SetActive(false);

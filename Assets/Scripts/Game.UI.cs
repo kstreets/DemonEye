@@ -314,7 +314,7 @@ public partial class Game {
     // Pop Ups 
     // *******************************
     
-    public void FitPopupSize(RectTransform popupRect, params Rect[] rects) {
+    public static void FitPopupSize(RectTransform popupRect, params Rect[] rects) {
         float height = 0f;
         foreach (Rect rect in rects) {
             height += rect.height;
@@ -326,7 +326,7 @@ public partial class Game {
         popupRect.sizeDelta = new(newPopupRect.width, newPopupRect.height);
     }
 
-    private void TweenPopUp(RectTransform popupRectTransform) {
+    public static void TweenPopUp(RectTransform popupRectTransform) {
         TweenSettings settings = new() {
             duration = 0.065f,
             ease = Ease.OutQuad,

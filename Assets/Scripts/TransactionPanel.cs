@@ -39,8 +39,7 @@ public class TransactionPanel : MonoBehaviour {
         }
 
         purchasingItemImage.sprite = itemInstance.ItemRef.inventorySprite;
-        purchasingItemDesc.Set(itemInstance);
-        gameInstance.FitPopupSize(purchasingItemDesc.rectTransform, purchasingItemDesc.tagsParent.rect, purchasingItemDesc.nameText.rectTransform.rect, purchasingItemDesc.descText.rectTransform.rect);
+        purchasingItemDesc.Show(itemInstance);
 
         for (int i = 0; i < itemInstance.ItemRef.barterRequirements.Count; i++) {
             ItemWithCount barterReq = itemInstance.ItemRef.barterRequirements[i];

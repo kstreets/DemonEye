@@ -13,10 +13,11 @@ public class ItemDescPopup : MonoBehaviour {
     public TextMeshProUGUI metaInfoText;
     public TextMeshProUGUI augmentDescText;
     public ContentSizeFitter nameContentFitter;
-    public ContentSizeFitter descContentFitter;
-    public RectTransform augmentBlockRectTransform;
-    public ContentSizeFitter augmentDescContentFitter;
     public RectTransform tagsParent;
+    public RectTransform bodyRectTransform;
+    public VerticalLayoutGroup bodyVerticalLayoutGroup;
+    public LayoutElement descTextLayoutElement;
+    public LayoutElement augmentParentLayoutElement;
     
     public Image tag1;
     public Image tag2;
@@ -25,12 +26,35 @@ public class ItemDescPopup : MonoBehaviour {
     public ContentSizeFitter tag1ContentFitter;
     public ContentSizeFitter tag2ContentFitter;
 
-    public void Set(ItemInstance itemInstance) {
+    private void Awake() {
+        // Force to start disabled to avoid the layout system from running,
+        // which causes incorrect sizes on the first time Show() is called
+        gameObject.SetActive(false);
+    }
+
+    public void Show(ItemInstance itemInstance, Vector2? position = default) {
+        gameObject.SetActive(true);
+        
         Item item = itemInstance.ItemRef;
         SetName(item);
         SetTags(item);
         SetMetaInfo(itemInstance, item);
         SetDescription(itemInstance, item);
+        
+        if (position.HasValue) {
+            transform.position = position.Value;
+        }
+        
+        bodyRectTransform.GetComponent<ContentSizeFitter>().ForceRecalculate();
+        
+        TweenPopUp(rectTransform);
+        FitPopupSize(rectTransform, tagsParent.rect, nameText.rectTransform.rect, bodyRectTransform.rect);
+    }
+    
+    public void Hide() {
+        nameText.text = string.Empty;
+        descText.text = string.Empty;
+        gameObject.SetActive(false);
     }
     
     private void SetName(Item item) {
@@ -90,7 +114,7 @@ public class ItemDescPopup : MonoBehaviour {
     }
 
     private void SetDescription(ItemInstance itemInstance, Item item) {
-        augmentBlockRectTransform.gameObject.SetActive(false);
+        augmentParentLayoutElement.gameObject.SetActive(false);
         
         if (item.type == gameInstance.demonEyeType) {
             DemonEyeInstance eyeInstance = gameInstance.eyeInstanceFromItemId[itemInstance.itemOrInstanceUuid];
@@ -108,20 +132,17 @@ public class ItemDescPopup : MonoBehaviour {
         }
         
         if (itemInstance.TryGetUuidObject(out var uuidObject) && uuidObject is Augment augment) {
-            augmentBlockRectTransform.gameObject.SetActive(true);
+            augmentParentLayoutElement.gameObject.SetActive(true);
             augmentDescText.text = augment.GetDescription();
-            augmentDescContentFitter.ForceRecalculate();
-
-            Rect rect = augmentDescText.rectTransform.rect;
-            augmentBlockRectTransform.sizeDelta = new(augmentBlockRectTransform.rect.x, rect.y);
+            
+            Rect augmentTextRect = augmentDescText.rectTransform.rect;
+            augmentParentLayoutElement.preferredHeight = augmentTextRect.height;
         }
         
         if (item.type == gameInstance.quickUseType && !itemInstance.traderOwned) {
             descText.text += $"<line-height=150%>\n<sprite=5 color=#{ColorUtility.ToHtmlStringRGBA(styles.inputIconTint)}> " +
                              $"<size=80%>{ColorText("Right click to consume", styles.inputIconTint)}</size>";
-        } 
-        
-        descContentFitter.ForceRecalculate();
+        }
     }
     
 }

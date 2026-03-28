@@ -35,6 +35,10 @@ public static class Extensions {
     public static void ResizeWidth(this RectTransform rectTransform, float width) {
         rectTransform.sizeDelta = new(width, rectTransform.sizeDelta.y);
     }
+    
+    public static void ResizeHeight(this RectTransform rectTransform, float height) {
+        rectTransform.sizeDelta = new(rectTransform.sizeDelta.x, height);
+    }
 
     public static Color Alpha(this Color color, float alpha) {
         return new(color.r, color.g, color.b, alpha);
