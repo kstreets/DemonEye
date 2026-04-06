@@ -325,6 +325,18 @@ public partial class Game {
         newPopupRect.height = Mathf.Clamp(height, minHeight, Mathf.Infinity);
         popupRect.sizeDelta = new(newPopupRect.width, newPopupRect.height);
     }
+    
+    public static void FitPopupSize(RectTransform popupRect, params ILayoutElement[] layouts) {
+        float height = 0f;
+        foreach (ILayoutElement layoutElm in layouts) {
+            height += layoutElm.preferredHeight;
+        }
+        
+        const int minHeight = 80;
+        Rect newPopupRect = popupRect.rect;
+        newPopupRect.height = Mathf.Clamp(height, minHeight, Mathf.Infinity);
+        popupRect.sizeDelta = new(newPopupRect.width, newPopupRect.height);
+    }
 
     public static void TweenPopUp(RectTransform popupRectTransform) {
         TweenSettings settings = new() {

@@ -66,6 +66,7 @@ public partial class Game {
             // Demon Eye instances will not be in the resourceLookup
             return gameInstance.resourceLookup.TryGetValue(itemOrInstanceUuid, out uuidObject);
         }
+        
     }
     
     public class InventorySlot {

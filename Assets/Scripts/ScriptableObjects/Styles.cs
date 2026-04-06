@@ -40,8 +40,6 @@ public class Styles : ScriptableObject {
     public Color decreaseDescColor;
     public Color timeDescColor;
 
-    public float tagTextPadding;
-    
     public Color GetColorForRarity(Item.Rarity rarity) {
         return rarity switch {
             Item.Rarity.Common    => commonTextColor,
