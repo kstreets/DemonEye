@@ -335,7 +335,7 @@ public partial class Game {
         newPopupRect.height = Mathf.Clamp(height, minHeight, Mathf.Infinity);
         popupRect.sizeDelta = new(newPopupRect.width, newPopupRect.height);
     }
-
+    
     public static void TweenPopUp(RectTransform popupRectTransform) {
         TweenSettings settings = new() {
             duration = 0.065f,

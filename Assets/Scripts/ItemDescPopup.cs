@@ -16,6 +16,7 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
     public ImageTextGroup typeTagGroup;
     public ImageTextGroup rarityTagGroup;
     public ImageTextGroup augmentImageTextGroup;
+    public DemonEyeDescPopup demonEyeDesc;
     
     public void Show(ItemInstance itemInstance, Vector2? position = default) {
         gameObject.SetActive(true);
@@ -93,16 +94,11 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
     private void SetDescription(ItemInstance itemInstance, Item item) {
         augmentImageTextGroup.gameObject.SetActive(false);
         
-        if (item.type == gameInstance.demonEyeType) {
-            DemonEyeInstance eyeInstance = gameInstance.eyeInstanceFromItemId[itemInstance.itemOrInstanceUuid];
-            string eyeDescription = "";
-            foreach (EquipedAugmentInstance augmentInstance in eyeInstance.augmentInstances) {
-                eyeDescription += $"{augmentInstance.Augment.GetDescription()}\n";
-            }
-            foreach (EquipedModInstance modInstance in eyeInstance.modInstances) {
-                eyeDescription += gameInstance.GetDemonEyeModDescription(modInstance.ModifierItem, modInstance.stackCount, null);
-            }
-            descText.text = eyeDescription;
+        descText.gameObject.SetActive(!itemInstance.isDemonEye);
+        demonEyeDesc.gameObject.SetActive(itemInstance.isDemonEye);
+        
+        if (itemInstance.isDemonEye) {
+            demonEyeDesc.UpdateDisplay(gameInstance.ConstructModifierSet(itemInstance.nestedUuids));
         }
         else {
             descText.text = item.GetDescription();

@@ -182,6 +182,7 @@ public partial class Game : MonoBehaviour {
     public ButtonFeel forgeEyeButton;
     public TextMeshProUGUI forgeDetailsForgeText;
     public List<ResourceRequirement> forgeDetailsResourceRequirements;
+    public DemonEyeDescPopup forgeDetailsDemonEyeDesc;
     [EndFoldout]
     
     [Foldout("UI/TraderPanel")]

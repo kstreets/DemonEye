@@ -83,7 +83,7 @@ public partial class Game {
         eyeInstanceFromItemId.Add(itemInstance.itemOrInstanceUuid, newDemonEye);
     }
     
-    private struct ModifierSet {
+    public struct ModifierSet {
         
         public struct Element {
             public ModifierItem modifierItem; 
@@ -95,7 +95,7 @@ public partial class Game {
         public List<Element> elements;
     }
     
-    private ModifierSet ConstructModifierSet(List<int> uuids) {
+    public ModifierSet ConstructModifierSet(List<int> uuids) {
         Dictionary<ModifierItem, int> modCountFromItem = new();
         Dictionary<ModifierItem, HashSet<Augment>> uniqueAugmentsPerModifier = new();
         

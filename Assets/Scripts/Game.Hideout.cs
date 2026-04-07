@@ -359,12 +359,13 @@ public partial class Game {
             }
             
             ModifierSet modifierSet = ConstructModifierSet(uuids);
+            forgeDetailsDemonEyeDesc.UpdateDisplay(modifierSet);
             
-            string eyeDescription = "";
-            foreach (ModifierSet.Element modSetElm in modifierSet.elements) {
-                eyeDescription += GetDemonEyeModDescription(modSetElm.modifierItem, modSetElm.modifierCount, modSetElm.uniqueAugments);
-            }
-            forgeDetailsForgeText.text += eyeDescription;
+            // string eyeDescription = "";
+            // foreach (ModifierSet.Element modSetElm in modifierSet.elements) {
+            //     eyeDescription += GetDemonEyeModDescription(modSetElm.modifierItem, modSetElm.modifierCount, modSetElm.uniqueAugments);
+            // }
+            // forgeDetailsForgeText.text += eyeDescription;
         }
     }
     
