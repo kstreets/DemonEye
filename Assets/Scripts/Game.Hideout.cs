@@ -345,7 +345,7 @@ public partial class Game {
             forgeDetailsForgeText.text = $"Requires at least {DisplayNumber(1)} eye upgrade to forge a Demon Eye";
         }
         else if (crucibleMode == CrucibleMode.ForgingButWithoutEye) {
-            forgeDetailsForgeText.text = $"Missing eyeball in the center";
+            forgeDetailsForgeText.text = "Missing eyeball in the center";
         }
         else {
             int eyeUpgradeCount = GetInventoryItemCount(crucibleInventory) - 1;

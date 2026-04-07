@@ -1,11 +1,9 @@
-using System;
 using System.Collections.Generic;
 using PrimeTween;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using EffectsIndicies = Game.Entity.EffectsIndicies;
 
 public partial class Game {
     

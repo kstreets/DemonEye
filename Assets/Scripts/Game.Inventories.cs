@@ -499,6 +499,7 @@ public partial class Game {
         if (prevEquippedEyeItemInstance != curEyeItemInstance) {
             prevEquippedEyeItemInstance = curEyeItemInstance;
             equipedEye = curEyeItemInstance == null ? emptyDemonEye : eyeInstanceFromItemId[curEyeItemInstance.itemOrInstanceUuid];
+            
             ResetDamageHandlingTempData();
             if (equipedEye != emptyDemonEye) {
                 customQuestEvent?.Invoke("FirstDemonEyeEquiped");

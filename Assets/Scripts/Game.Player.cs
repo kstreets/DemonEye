@@ -555,10 +555,13 @@ public partial class Game {
         GetEncumberingWeightRange(out int startEncumberingWeight, out _);
         playerPanelWeightText.text = $"<color=#98C5CC>{inventoryWeight}</color><size=22>/{startEncumberingWeight}";
         
-        // agilityStatValueText.text = (player.agilityLevel + 1).ToString("0.0");
-        // healthStatValueText.text = (player.healthLevel + 1).ToString("0.0");
-        // bleedResStatValueText.text = (player.bleedResLevel + 1).ToString("0.0");
-        // strengthStatValueText.text = (player.strengthLevel + 1).ToString("0.0");
+        equipedStatsPanel.bleedResistText.text = DisplayProbNoColor(GetAbsoluteStat(Player.Stat.BleedResist));
+        equipedStatsPanel.critChanceText.text = DisplayProbNoColor(GetAbsoluteStat(Player.Stat.CritChance));
+        equipedStatsPanel.critMultiText.text = DisplayMultiplierNoColor(GetAbsoluteStat(Player.Stat.CritMulti));
+        equipedStatsPanel.damageText.text = DisplayMultiplierNoColor(GetAbsoluteStat(Player.Stat.DamageMulti));
+        equipedStatsPanel.firerateText.text = DisplayProbNoColor(GetAbsoluteStat(Player.Stat.FireratePercentage));
+        equipedStatsPanel.projectileCountText.text = DisplayNumberNoColor(GetAbsoluteStat(Player.Stat.ProjectileCount));
+        equipedStatsPanel.rangeText.text = DisplayProbNoColor(GetAbsoluteStat(Player.Stat.RangePercentage));
     }
-
+    
 }

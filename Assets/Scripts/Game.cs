@@ -157,11 +157,8 @@ public partial class Game : MonoBehaviour {
     public RectTransform playerInventoryParent;
     public TextMeshProUGUI playerPanelHealthText;
     public TextMeshProUGUI playerPanelWeightText;
-    public TextMeshProUGUI agilityStatValueText;
-    public TextMeshProUGUI bleedResStatValueText;
-    public TextMeshProUGUI healthStatValueText;
-    public TextMeshProUGUI strengthStatValueText;
     public Image playerPreviewImage;
+    public EquipedStatsPanel equipedStatsPanel;
     [EndFoldout]
     
     [Foldout("UI/StashPanel")]
@@ -334,6 +331,8 @@ public partial class Game : MonoBehaviour {
         player = SpawnEntity<Player>(playerPrefab, Vector3.zero, Quaternion.identity, null, EntityLifetime.Global);
         OnPlayerCreated();
         LoadAndAssignPlayerSaveData(player);
+        
+        equipedEye = emptyDemonEye;
 
         DemonEyeTween.Init();
         CreateDropPools();
@@ -363,8 +362,6 @@ public partial class Game : MonoBehaviour {
         forgeExplosionPool = CreateEntityPool<Entity>(forgeExplosionPrefab, 10, null);
         forgeDustExplosionPool = CreateEntityPool<Entity>(forgeDustExplosionPrefab, 10, null);
         blastPool = CreateEntityPool<Entity>(blastPrefab, 5, null);
-
-        equipedEye = emptyDemonEye;
 
         moveInputAction = InputSystem.actions.FindAction("Move");
         interactInputAction = InputSystem.actions.FindAction("Interact");
