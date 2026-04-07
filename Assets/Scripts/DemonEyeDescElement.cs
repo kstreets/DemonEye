@@ -5,13 +5,14 @@ using static Game;
 
 public class DemonEyeDescElement : MonoBehaviour, ILayoutElement {
     
+    public Styles styles;
     public TextMeshProUGUI nameText;
     public VerticalLayoutGroup bodyVerticalLayout;
     public TextMeshProUGUI descText;
     public ImageTextGroup augmentImageTextGroup;
     
     public void UpdateDisplay(ModifierSet.Element modifierSetElm) {
-        nameText.text = modifierSetElm.modifierItem.displayName;
+        nameText.text = ColorText($"{modifierSetElm.modifierItem.displayName} <size=87%>x{modifierSetElm.modifierCount}</size>", styles.headerTextColor);
         descText.text = modifierSetElm.modifierItem.GetDescription(modifierSetElm.modifierCount);
         
         augmentImageTextGroup.gameObject.SetActive(modifierSetElm.HasUniqueAugments);

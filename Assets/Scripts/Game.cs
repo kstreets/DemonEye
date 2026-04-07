@@ -176,13 +176,9 @@ public partial class Game : MonoBehaviour {
     
     [Foldout("UI/ForgeDetailsPanel")]
     public RectTransform forgeDetailsPanel;
-    public RectTransform forgeDetailsUpgradeScreen;
-    public RectTransform forgeDetailsForgeScreen;
-    public ButtonFeel upgradeForgeButton;
     public ButtonFeel forgeEyeButton;
     public TextMeshProUGUI forgeDetailsForgeText;
-    public List<ResourceRequirement> forgeDetailsResourceRequirements;
-    public DemonEyeDescPopup forgeDetailsDemonEyeDesc;
+    public DemonEyeDescList forgeDetailsDemonEyeDesc;
     [EndFoldout]
     
     [Foldout("UI/TraderPanel")]

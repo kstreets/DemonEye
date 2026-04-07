@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using static Game;
 
-public class DemonEyeDescPopup : MonoBehaviour, ILayoutElement {
+public class DemonEyeDescList : MonoBehaviour, ILayoutElement {
     
     public VerticalLayoutGroup verticalLayout;
     public DemonEyeDescElement[] elements;
@@ -20,15 +20,19 @@ public class DemonEyeDescPopup : MonoBehaviour, ILayoutElement {
             demonEyeDescElm.UpdateDisplay(modifierSet.elements[i]);
         }
     }
-
-    public void CalculateLayoutInputHorizontal() {
-        
+    
+    public void HideAllElements() {
+        foreach (DemonEyeDescElement demonEyeDescElm in elements) {
+            demonEyeDescElm.gameObject.SetActive(false);
+        }
     }
     
     public void CalculateLayoutInputVertical() {
         preferredHeight = verticalLayout.preferredHeight;
         minHeight = preferredHeight;
     }
+    
+    public void CalculateLayoutInputHorizontal() { }
     
     public float minWidth { get; private set; }
     public float preferredWidth { get; private set; }

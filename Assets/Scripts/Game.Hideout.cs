@@ -264,13 +264,6 @@ public partial class Game {
     private void UpdateForgeState() {
         if (!OnEyeForgeTab) return;
 
-        if (playingForgeUpgradeAnimation) {
-            if (!forgeEyeButton.isDisabled) {
-                forgeEyeButton.Disable();
-            }
-            return;
-        }
-
         int crucibleItemCount = GetInventoryItemCount(crucibleInventory);
         ItemInstance eyeSlotItemInstance = crucibleInventory.slots[0].itemInstance;
 
@@ -303,69 +296,31 @@ public partial class Game {
         }
 
         if (PlayingForgeAnimation) return;
-
-        bool showUpgradeScreen = crucibleMode is CrucibleMode.Empty or CrucibleMode.NeedToRemoveDemonEye;
-        forgeDetailsUpgradeScreen.gameObject.SetActive(showUpgradeScreen);
-        forgeDetailsForgeScreen.gameObject.SetActive(!showUpgradeScreen);
-        
-        if (showUpgradeScreen) {
-            bool meetsAllUpgradeRequirements = true;
-            List<UpgradePath.Requirement> curUpgradeReqs = crucibleUpgradePath.pathUpgrades[player.crucibleLevel].requirements;
-            
-            for (int i = 0; i < forgeDetailsResourceRequirements.Count; i++) {
-                if (!curUpgradeReqs.IndexInRange(i)) {
-                    forgeDetailsResourceRequirements[i].gameObject.SetActive(false);
-                    continue;
-                }
-                forgeDetailsResourceRequirements[i].gameObject.SetActive(true);
-                
-                UpgradePath.Requirement req = curUpgradeReqs[i];
-                int ownedCount = GetOwnedCountOfItem(req.item);
-                forgeDetailsResourceRequirements[i].Set(req.item, req.count, ownedCount);
-
-                if (ownedCount < req.count) {
-                    meetsAllUpgradeRequirements = false;
-                }
-            }
-
-            if (upgradeForgeButton.isDisabled && meetsAllUpgradeRequirements) {
-                upgradeForgeButton.Enable();
-            }
-            else if (!upgradeForgeButton.isDisabled && !meetsAllUpgradeRequirements) {
-                upgradeForgeButton.Disable();
-            }
-            
-            return;
-        }
         
         if (crucibleMode == CrucibleMode.Empty) {
             forgeDetailsForgeText.text = "Place an eyeball in the center to start the Demon Eye forging process";
+            forgeDetailsDemonEyeDesc.HideAllElements();
         }
         else if (crucibleMode == CrucibleMode.ForgingButJustEye) {
             forgeDetailsForgeText.text = $"Requires at least {DisplayNumber(1)} eye upgrade to forge a Demon Eye";
-        }
-        else if (crucibleMode == CrucibleMode.ForgingButWithoutEye) {
-            forgeDetailsForgeText.text = "Missing eyeball in the center";
+            forgeDetailsDemonEyeDesc.HideAllElements();
         }
         else {
-            int eyeUpgradeCount = GetInventoryItemCount(crucibleInventory) - 1;
-            int totalUpgradeCount = crucibleInventory.slots.Length - 1;
-            forgeDetailsForgeText.text = $"<size=90%>Previewing Upgrades {ColorText(eyeUpgradeCount.ToString(), styles.timeDescColor)}/{totalUpgradeCount}</size><line-height=150%>\n";
+            if (crucibleMode == CrucibleMode.ForgingButWithoutEye) {
+                forgeDetailsForgeText.text = "Missing eyeball in the center";
+            }
+            else {
+                int eyeUpgradeCount = GetInventoryItemCount(crucibleInventory) - 1;
+                int totalUpgradeCount = crucibleInventory.slots.Length - 1;
+                forgeDetailsForgeText.text = $"Previewing Upgrades {ColorText(eyeUpgradeCount.ToString(), styles.timeDescColor)}/{totalUpgradeCount}";
+            }
             
-            List<int> uuids = new(); // TODO: Performance
+            using var autoRelease = ListPool<int>.Get(out var uuids);
             foreach (InventorySlot slot in crucibleInventory.slots) {
                 if (slot.itemInstance == null || slot.itemInstance.ItemRef.type != eyeModifierType) continue;
                 uuids.Add(slot.itemInstance.itemOrInstanceUuid);
             }
-            
-            ModifierSet modifierSet = ConstructModifierSet(uuids);
-            forgeDetailsDemonEyeDesc.UpdateDisplay(modifierSet);
-            
-            // string eyeDescription = "";
-            // foreach (ModifierSet.Element modSetElm in modifierSet.elements) {
-            //     eyeDescription += GetDemonEyeModDescription(modSetElm.modifierItem, modSetElm.modifierCount, modSetElm.uniqueAugments);
-            // }
-            // forgeDetailsForgeText.text += eyeDescription;
+            forgeDetailsDemonEyeDesc.UpdateDisplay(ConstructModifierSet(uuids));
         }
     }
     
@@ -503,86 +458,6 @@ public partial class Game {
         pentagramFillImage.material.SetFloat(fillParamProperty, value);
     }
     
-    private void OnUpgradeForgePressed() {
-        toggledOffHoverableUIElement = upgradeForgeButton.rectTransform;
-            
-        UpgradePath.UpgradeRequirements requirements = crucibleUpgradePath.pathUpgrades[player.crucibleLevel];
-            
-        bool canUpgrade = true;
-        foreach (UpgradePath.Requirement requirement in requirements.requirements) {
-            if (MeetsSingleUpgradeRequirement(requirement)) continue;
-            canUpgrade = false;
-            break;
-        }
-        
-        if (!canUpgrade) return;
-            
-        foreach (UpgradePath.Requirement requirement in requirements.requirements) {
-            int stashRemoveCount = RemoveNumberOfItemsFromInventory(stashInventory, requirement.item, requirement.count);
-            if (stashRemoveCount == requirement.count) continue;
-            RemoveNumberOfItemsFromInventory(playerInventory, requirement.item, requirement.count - stashRemoveCount);
-        }
-            
-        player.crucibleLevel++;
-        SavePlayerData();
-            
-        upgradeForgeButton.KeepPressed();
-        string prevButtonText = upgradeForgeButton.text.text;
-        upgradeForgeButton.text.text = "Upgrading...";
-            
-        DoForgeUpgradeAnimation(() => {
-            upgradeForgeButton.StopKeepPressed();
-            upgradeForgeButton.text.text = prevButtonText;
-        });
-    }
-    
-    private bool playingForgeUpgradeAnimation;
-    
-    private void DoForgeUpgradeAnimation(Action onAnimationEndCallback) {
-        playingForgeUpgradeAnimation = true;
-        
-        const float explosionDelay = 0.1f;
-        
-        Sequence sequence = Sequence.Create();
-        sequence.ChainDelay(0.25f);
-        
-        for (int i = 1; i < crucibleInventory.slots.Length; i++) {
-            RectTransform slotTransform = crucibleInventory.slots[i].ui.rectTransform;
-            sequence.Group(Tween.Scale(slotTransform, Vector3.one, Vector3.zero, 0.15f, Ease.InOutBounce, startDelay: explosionDelay * i));
-            sequence.Group(Tween.PunchScale(eyeForgePanel, Vector3.one * 0.05f, 0.1f, 15f, startDelay: explosionDelay * i));
-            sequence.Group(Tween.Delay(0.1f * i, () => {
-                Entity forgeExplosion = SpawnEntity(forgeDustExplosionPool, OffsetY(slotTransform.position, 10f), Quaternion.identity, eyeForgePanel);
-                DestroyEntity(forgeExplosion, CurrentClipLength(forgeExplosion.animator));
-            }));
-        }
-        
-        sequence.ChainDelay(0.25f);
-        
-        sequence.ChainCallback(() => {
-            ChangeInventorySize(crucibleInventory, crucibleInventory.slots.Length + 1);
-            SetupEyeCrucibleInventorySlots();
-            crucibleInventory.slots[^1].ui.rectTransform.localScale = Vector3.zero;
-            
-            for (int i = 1; i < crucibleInventory.slots.Length; i++) {
-                RectTransform slotTransform = crucibleInventory.slots[i].ui.rectTransform;
-                Tween.Scale(slotTransform, Vector3.zero, Vector3.one, 0.15f, Ease.InOutBounce, startDelay: explosionDelay * i);
-                Tween.PunchScale(eyeForgePanel, Vector3.one * 0.05f, 0.1f, 15f, startDelay: explosionDelay * i);
-                Tween.Delay(explosionDelay * i, () => {
-                    Entity forgeExplosion = SpawnEntity(forgeDustExplosionPool, OffsetY(slotTransform.position, 10f), Quaternion.identity, eyeForgePanel);
-                    DestroyEntity(forgeExplosion, CurrentClipLength(forgeExplosion.animator));
-                });
-                
-                if (i == crucibleInventory.slots.Length - 1) {
-                    const float additionalCompletionDelay = 0.15f;
-                    Tween.Delay(this, explosionDelay * i + additionalCompletionDelay, (inst) => {
-                        inst.playingForgeUpgradeAnimation = false;
-                        onAnimationEndCallback?.Invoke();
-                    });
-                }
-            }
-        });
-    }
-
     // ************************
     // Quests 
     // ************************

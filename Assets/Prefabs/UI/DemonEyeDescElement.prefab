@@ -274,6 +274,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c771920150808d84894801e0a91fef07, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DemonEyeDescElement
+  styles: {fileID: 11400000, guid: f4b4ae74a1e122340bf1d9d4fa5ab586, type: 2}
   nameText: {fileID: 7137442498480775178}
   bodyVerticalLayout: {fileID: 3343891886177668652}
   descText: {fileID: 8089945725646039104}

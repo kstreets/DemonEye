@@ -16,7 +16,7 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
     public ImageTextGroup typeTagGroup;
     public ImageTextGroup rarityTagGroup;
     public ImageTextGroup augmentImageTextGroup;
-    public DemonEyeDescPopup demonEyeDesc;
+    public DemonEyeDescList demonEyeDesc;
     
     public void Show(ItemInstance itemInstance, Vector2? position = default) {
         gameObject.SetActive(true);
@@ -29,9 +29,8 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
         
         if (position.HasValue) {
             transform.position = position.Value;
+            TweenPopUp(rectTransform);
         }
-        
-        TweenPopUp(rectTransform);
     }
     
     public void Hide() {

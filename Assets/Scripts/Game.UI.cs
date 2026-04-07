@@ -197,7 +197,6 @@ public partial class Game {
         skillsPanel.strengthSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(strengthUpgradePath, player.strengthSkillLevel));
         
         forgeEyeButton.AddListener(OnForgeButtonPressed);
-        upgradeForgeButton.AddListener(OnUpgradeForgePressed);
         
         transactionPanel.buyToggle.AddListener(OnBuyTogglePressed);
         transactionPanel.sellToggle.AddListener(OnSellTogglePressed);
@@ -368,16 +367,6 @@ public partial class Game {
         
         uiElementPopup.gameObject.SetActive(true);
         TweenPopUp(uiElementPopup.rectTransform);
-        
-        if (hoverInfo.hoveringTransform == upgradeForgeButton.rectTransform) {
-            uiElementPopup.descText.text = "Add an additional slot to the pentagram!\nCosts:";
-            List<UpgradePath.Requirement> requirements = crucibleUpgradePath.pathUpgrades[player.crucibleLevel].requirements;
-            foreach (UpgradePath.Requirement req in requirements) {
-                bool meetsSingleReq = MeetsSingleUpgradeRequirement(req); 
-                Color textColor = meetsSingleReq ? styles.increaseDescColor : styles.decreaseDescColor; 
-                uiElementPopup.descText.text += ColorText($"\n{req.item.displayName} x{req.count}", textColor);
-            }
-        }
         
         uiElementPopup.descFitter.ForceRecalculate();
         FitPopupSize(uiElementPopup.rectTransform, uiElementPopup.descText.rectTransform.rect);

@@ -93,7 +93,7 @@ GameObject:
   - component: {fileID: 3236327301168312223}
   - component: {fileID: 6964106232775095231}
   m_Layer: 5
-  m_Name: DemonEyeDescPopUp
+  m_Name: DemonEyeDescList
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
