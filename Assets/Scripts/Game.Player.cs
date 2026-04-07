@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using PrimeTween;
 using UnityEngine;
@@ -45,7 +46,7 @@ public partial class Game {
 
         public enum Stat {
             BleedResist, CarryCapacity, CritChance, CritMulti, DamageMulti, FireratePercentage, Health, 
-            HealingAmount, HealingSpeed, LootingSpeed, MovementSpeedPercentage, ProjectileCount, RangeInSeconds,
+            HealingAmount, HealingSpeed, LootingSpeed, MovementSpeedPercentage, ProjectileCount, RangePercentage,
         }
     }
     
@@ -145,7 +146,7 @@ public partial class Game {
         bool canShoot = attackLimiter.TimeHasPassed(GetFirerateDelayBasedOnStats());
         if (!canShoot) return;
         
-        float projCount = 1f + GetAbsoluteStatAdjustment(Player.Stat.ProjectileCount);
+        float projCount = GetAbsoluteStat(Player.Stat.ProjectileCount);
         int targetCount = Mathf.FloorToInt(projCount);
         float extraProjChance = projCount % 1;
         if (RollProbability(extraProjChance)) {
@@ -425,8 +426,24 @@ public partial class Game {
         };
     }
     
-    private float GetAbsoluteStatAdjustment(Player.Stat stat) {
-        return GetPlayerStatAdjustment(stat) + GetEquipmentStatAdjustment(stat);
+    private float GetAbsoluteStat(Player.Stat stat) {
+        return GetPlayerStat(stat) + GetEquipmentStatAdjustment(stat);
+    }
+    
+    private float GetPlayerStat(Player.Stat stat) {
+        float startingValue = stat switch {
+            Player.Stat.CarryCapacity           => gameplayConfig.defaultStartingEncumberingWeight,
+            Player.Stat.CritChance              => gameplayConfig.defaultCritChance,
+            Player.Stat.CritMulti               => gameplayConfig.defaultCritMulti,
+            Player.Stat.DamageMulti             => 1f,
+            Player.Stat.FireratePercentage      => 1f,
+            Player.Stat.Health                  => 100f,
+            Player.Stat.MovementSpeedPercentage => 1f,
+            Player.Stat.ProjectileCount         => 1f,
+            Player.Stat.RangePercentage         => 1f,
+            _                                   => 0f, 
+        };
+        return startingValue + GetPlayerStatAdjustment(stat);
     }
 
     private float GetPlayerStatAdjustment(Player.Stat stat) {
@@ -434,7 +451,7 @@ public partial class Game {
             Player.Stat.CarryCapacity           => GetPlayerStatLevel(Player.Stat.CarryCapacity) * gameplayConfig.carryCapacityIncPerLevel,
             Player.Stat.CritChance              => GetPlayerStatLevel(Player.Stat.CritChance) * gameplayConfig.critChanceIncPerLevel,
             Player.Stat.CritMulti               => GetPlayerStatLevel(Player.Stat.CritMulti) * gameplayConfig.critMultiplierIncPerLevel,
-            Player.Stat.DamageMulti             => GetPlayerStatLevel(Player.Stat.DamageMulti) * gameplayConfig.damageIncPerLevel,
+            Player.Stat.DamageMulti             => GetPlayerStatLevel(Player.Stat.DamageMulti) * gameplayConfig.damageMultiplierIncPerLevel,
             Player.Stat.FireratePercentage      => GetPlayerStatLevel(Player.Stat.FireratePercentage) * gameplayConfig.firerateIncPerLevel,
             Player.Stat.Health                  => GetPlayerStatLevel(Player.Stat.Health) * gameplayConfig.healthIncPerLevel,
             Player.Stat.HealingAmount           => GetPlayerStatLevel(Player.Stat.HealingAmount) * gameplayConfig.healingIncPerLevel,
@@ -480,7 +497,7 @@ public partial class Game {
                 case Player.Stat.ProjectileCount:
                     statSum += modifierItem.projectileCount; 
                     break;
-                case Player.Stat.RangeInSeconds:
+                case Player.Stat.RangePercentage:
                     statSum += modifierItem.rangePercentage;
                     break;
             }
@@ -492,8 +509,7 @@ public partial class Game {
     private int FullPlayerHealth => 100 + (int)GetPlayerStatAdjustment(Player.Stat.Health);
 
     private float GetPlayerSpeed() {
-        float playerSpeed = gameplayConfig.baseSpeed;
-        playerSpeed += playerSpeed * GetAbsoluteStatAdjustment(Player.Stat.MovementSpeedPercentage);
+        float playerSpeed = gameplayConfig.baseSpeed * GetAbsoluteStat(Player.Stat.MovementSpeedPercentage);
         
         float speedReductionFromWeight = Mathf.Lerp(0f, gameplayConfig.maxEncumberedSpeedReduction, GetOverweightCompletion());
         speedReductionFromWeight = Mathf.Clamp(speedReductionFromWeight, 0f, gameplayConfig.maxEncumberedSpeedReduction);
@@ -507,21 +523,18 @@ public partial class Game {
             return gameplayConfig.attackDelay;
         }
 
-        float attackDelay = gameplayConfig.attackDelay;
-        attackDelay -= attackDelay * GetAbsoluteStatAdjustment(Player.Stat.FireratePercentage);
+        float attackDelay = gameplayConfig.attackDelay / GetAbsoluteStat(Player.Stat.FireratePercentage);
         return Mathf.Clamp(attackDelay, gameplayConfig.cappedMinAttackDelay, gameplayConfig.attackDelay);
     }
     
     private float GetProjectileRangeInSeconds() {
-        float range = gameplayConfig.rangeInSeconds;
-        range += range * GetAbsoluteStatAdjustment(Player.Stat.RangeInSeconds);
-        return range;
+        return gameplayConfig.rangeInSeconds * GetAbsoluteStat(Player.Stat.RangePercentage);
     }
-
+    
     private void GetEncumberingWeightRange(out int startingWeight, out int endingWeight) {
+        startingWeight = (int)GetPlayerStat(Player.Stat.CarryCapacity);
         int encumberingIncreaseFromStrength = (int)GetPlayerStatAdjustment(Player.Stat.CarryCapacity);
         endingWeight = gameplayConfig.maxEncumberedWeight + encumberingIncreaseFromStrength;
-        startingWeight = gameplayConfig.defaultStartingEncumberingWeight + encumberingIncreaseFromStrength;
     }
 
     private float GetOverweightCompletion() {

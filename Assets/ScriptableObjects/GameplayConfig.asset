@@ -33,7 +33,7 @@ MonoBehaviour:
   carryCapacityIncPerLevel: 50
   critChanceIncPerLevel: 0.02
   critMultiplierIncPerLevel: 0.1
-  damageIncPerLevel: 2
+  damageMultiplierIncPerLevel: 0.04
   firerateIncPerLevel: 0.02
   healthIncPerLevel: 10
   healingIncPerLevel: 10

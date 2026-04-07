@@ -37,7 +37,7 @@ public class GameplayConfig : ScriptableObject {
     public int carryCapacityIncPerLevel;
     public float critChanceIncPerLevel;
     public float critMultiplierIncPerLevel;
-    public int damageIncPerLevel;
+    public float damageMultiplierIncPerLevel;
     public float firerateIncPerLevel;
     public int healthIncPerLevel;
     public float healingIncPerLevel;

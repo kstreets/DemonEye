@@ -776,24 +776,24 @@ public partial class Game {
 
     private void InitSkillsPanel() {
         skillsPanel.hasteSkillRow.Init(hasteUpgradePath.MaxLevel, 
-            $"{DisplayIncrease(gameplayConfig.movementSpeedIncPerLevel)} Movement Speed\n" +
-            $"{DisplayIncrease(gameplayConfig.lootingSpeedIncPerLevel)} Looting Speed\n" +
-            $"{DisplayIncrease(gameplayConfig.firerateIncPerLevel)} Firerate"
+            $"{DisplayProbIncrease(gameplayConfig.movementSpeedIncPerLevel)} Movement Speed\n" +
+            $"{DisplayProbIncrease(gameplayConfig.lootingSpeedIncPerLevel)} Looting Speed\n" +
+            $"{DisplayProbIncrease(gameplayConfig.firerateIncPerLevel)} Firerate"
         );
         skillsPanel.intellectSkillRow.Init(intellectUpgradePath.MaxLevel, 
-            $"{DisplayIncrease(gameplayConfig.critChanceIncPerLevel)} Critical Strike Chance\n" +
-            $"{DisplayIncrease(gameplayConfig.critMultiplierIncPerLevel)} Critical Strike Multiplier\n" +
+            $"{DisplayProbIncrease(gameplayConfig.critChanceIncPerLevel)} Critical Strike Chance\n" +
+            $"{DisplayMultiplierIncrease(gameplayConfig.critMultiplierIncPerLevel)} Critical Strike Multiplier\n" +
             $"{DisplayIncrease(gameplayConfig.projectileCountIncPerLevel)} Projectile Count"
         );
         skillsPanel.lifeBloodSkillRow.Init(lifeBloodUpgradePath.MaxLevel, 
             $"{DisplayIncrease(gameplayConfig.healthIncPerLevel)} Health\n" +
-            $"{DisplayIncrease(gameplayConfig.healingSpeedIncPerLevel)} Healing Speed\n" +
-            $"{DisplayIncrease(gameplayConfig.healingIncPerLevel)} Healing Amount"
+            $"{DisplayProbIncrease(gameplayConfig.healingSpeedIncPerLevel)} Healing Speed\n" +
+            $"{DisplayProbIncrease(gameplayConfig.healingIncPerLevel)} Healing Amount"
         );
         skillsPanel.strengthSkillRow.Init(strengthUpgradePath.MaxLevel, 
-            $"{DisplayIncrease(gameplayConfig.bleedResistIncPerLevel)} Bleed Resist\n" +
+            $"{DisplayProbIncrease(gameplayConfig.bleedResistIncPerLevel)} Bleed Resist\n" +
             $"{DisplayIncrease(gameplayConfig.carryCapacityIncPerLevel)} Carry Capacity\n" +
-            $"{DisplayIncrease(gameplayConfig.damageIncPerLevel)} Damage"
+            $"{DisplayMultiplierIncrease(gameplayConfig.damageMultiplierIncPerLevel)} Damage"
         );
     }
 
@@ -824,17 +824,17 @@ public partial class Game {
     }
     
     private void RefreshSkillsPanel() {
-        playerStatsPanel.carryCapacityRow.statValueText.text = DisplayIncrease(GetPlayerStatAdjustment(Player.Stat.CarryCapacity));
-        playerStatsPanel.critChanceRow.statValueText.text = DisplayProbIncrease(GetPlayerStatAdjustment(Player.Stat.CritChance));
-        playerStatsPanel.critMultiRow.statValueText.text = DisplayIncrease(GetPlayerStatAdjustment(Player.Stat.CritMulti));
-        playerStatsPanel.damageRow.statValueText.text = DisplayIncrease(GetPlayerStatAdjustment(Player.Stat.DamageMulti));
-        playerStatsPanel.firerateRow.statValueText.text = DisplayProbIncrease(GetPlayerStatAdjustment(Player.Stat.FireratePercentage));
-        playerStatsPanel.healthRow.statValueText.text = DisplayIncrease(GetPlayerStatAdjustment(Player.Stat.Health));
+        playerStatsPanel.carryCapacityRow.statValueText.text = ((int)GetPlayerStat(Player.Stat.CarryCapacity)).ToString();
+        playerStatsPanel.critChanceRow.statValueText.text = DisplayProbNoColor(GetPlayerStat(Player.Stat.CritChance));
+        playerStatsPanel.critMultiRow.statValueText.text = DisplayMultiplierNoColor(GetPlayerStat(Player.Stat.CritMulti));
+        playerStatsPanel.damageRow.statValueText.text = DisplayMultiplierNoColor(GetPlayerStat(Player.Stat.DamageMulti));
+        playerStatsPanel.firerateRow.statValueText.text = DisplayProbNoColor(GetPlayerStat(Player.Stat.FireratePercentage));
+        playerStatsPanel.healthRow.statValueText.text = ((int)(GetPlayerStat(Player.Stat.Health))).ToString();
         playerStatsPanel.healingAmountRow.statValueText.text = DisplayIncrease(GetPlayerStatAdjustment(Player.Stat.HealingAmount));
         playerStatsPanel.healingSpeedRow.statValueText.text = DisplayProbIncrease(GetPlayerStatAdjustment(Player.Stat.HealingSpeed));
         playerStatsPanel.lootingSpeedRow.statValueText.text = DisplayProbIncrease(GetPlayerStatAdjustment(Player.Stat.LootingSpeed));
-        playerStatsPanel.movementSpeedRow.statValueText.text = DisplayProbIncrease(GetPlayerStatAdjustment(Player.Stat.MovementSpeedPercentage));
-        playerStatsPanel.projectileCountRow.statValueText.text = DisplayIncrease(GetPlayerStatAdjustment(Player.Stat.ProjectileCount));
+        playerStatsPanel.movementSpeedRow.statValueText.text = DisplayProbNoColor(GetPlayerStat(Player.Stat.MovementSpeedPercentage));
+        playerStatsPanel.projectileCountRow.statValueText.text = DisplayNumberNoColor(GetPlayerStat(Player.Stat.ProjectileCount));
         
         RefreshSkillRow(skillsPanel.hasteSkillRow, hasteUpgradePath, player.hasteSkillLevel);
         RefreshSkillRow(skillsPanel.intellectSkillRow, intellectUpgradePath, player.intellectSkillLevel);

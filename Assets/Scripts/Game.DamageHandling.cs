@@ -125,12 +125,10 @@ public partial class Game {
             return 1f;
         }
         
-        float criticalStrikeProb = gameplayConfig.defaultCritChance + GetAbsoluteStatAdjustment(Player.Stat.CritChance);
-
+        float criticalStrikeProb = GetAbsoluteStat(Player.Stat.CritChance);
         if (equipedEye.bleedCritAugment.HasValue && enemy.bleed.HasValue) {
             criticalStrikeProb += equipedEye.bleedCritAugment.Value.probability;
         }
-
         return criticalStrikeProb;
     }
 
@@ -153,8 +151,7 @@ public partial class Game {
             float damageMultiplier = GetDamageMultiplierOnEnemy(enemy);
             
             if (isCriticalHit) {
-                float critMultiplier = gameplayConfig.defaultCritMulti + GetAbsoluteStatAdjustment(Player.Stat.CritMulti);
-                damageMultiplier *= critMultiplier;
+                damageMultiplier *= GetAbsoluteStat(Player.Stat.CritMulti);
             }
             
             if (ProjectileIsType(proj, ProjectileTypeFlags.Trishot) && eyeInstance.trishot.TryGetValue(out var triShot)) {
@@ -185,9 +182,7 @@ public partial class Game {
     }
 
     private int GetBaseDamage() {
-        int damage = gameplayConfig.damage;
-        damage += Mathf.RoundToInt(damage * GetAbsoluteStatAdjustment(Player.Stat.DamageMulti));
-        
+        int damage = Mathf.RoundToInt(gameplayConfig.damage * GetAbsoluteStat(Player.Stat.DamageMulti));
         int damageRange = Mathf.RoundToInt(damage * 0.05f);
         damage += Random.Range(-damageRange, damageRange);
         return Mathf.Clamp(damage, 1, int.MaxValue);

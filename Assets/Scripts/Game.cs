@@ -1211,6 +1211,10 @@ public partial class Game : MonoBehaviour {
     public static string DisplayProb(float probability) {
         return ColorText($"{Mathf.FloorToInt(probability * 100f)}%", gameInstance.styles.timeDescColor);
     }
+    
+    public static string DisplayProbNoColor(float probability) {
+        return $"{Mathf.FloorToInt(probability * 100f)}%";
+    }
 
     public static string DisplayProbIncDec(float probability) {
         return probability >= 0f ? DisplayProbIncrease(probability) : DisplayProbDecrease(probability);
@@ -1230,6 +1234,10 @@ public partial class Game : MonoBehaviour {
     
     public static string DisplayNumber(float number) {
         return ColorText(number.ToString("0.00"), gameInstance.styles.timeDescColor);
+    }
+    
+    public static string DisplayNumberNoColor(float number) {
+        return number.ToString("0.00");
     }
 
     public static string DisplayIncDec(int amount) {
@@ -1259,6 +1267,10 @@ public partial class Game : MonoBehaviour {
     public static string DisplayMultiplier(float multiplier) {
         Color textColor = multiplier >= 1f ? gameInstance.styles.increaseDescColor : gameInstance.styles.decreaseDescColor;
         return ColorText($"{multiplier:0.00}x", textColor);
+    }
+    
+    public static string DisplayMultiplierNoColor(float multiplier) {
+        return $"{multiplier:0.00}x";
     }
 
     public static string DisplayMultiplierIncDec(float multiplier) {
