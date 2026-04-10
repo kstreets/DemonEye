@@ -133,7 +133,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 15, y: 0, z: 15, w: 4}
+  m_margin: {x: 3, y: 0, z: 0, w: 4}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -150,6 +150,7 @@ GameObject:
   - component: {fileID: 8823076275787112847}
   - component: {fileID: 7774683283113787159}
   - component: {fileID: 8630720492754228769}
+  - component: {fileID: 296200390639444103}
   m_Layer: 5
   m_Name: TopDivider
   m_TagString: Untagged
@@ -174,7 +175,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -20, y: 2}
+  m_SizeDelta: {x: 0.000030517578, y: 2}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!222 &7774683283113787159
 CanvasRenderer:
@@ -214,6 +215,26 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &296200390639444103
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1699550738872769670}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.LayoutElement
+  m_IgnoreLayout: 1
+  m_MinWidth: -1
+  m_MinHeight: -1
+  m_PreferredWidth: -1
+  m_PreferredHeight: 2
+  m_FlexibleWidth: -1
+  m_FlexibleHeight: -1
+  m_LayoutPriority: 1
 --- !u!1 &2108799297105034156
 GameObject:
   m_ObjectHideFlags: 0
@@ -225,6 +246,7 @@ GameObject:
   - component: {fileID: 6890227840815060181}
   - component: {fileID: 1992428907538893771}
   - component: {fileID: 8837630035399272141}
+  - component: {fileID: 2774575530947421314}
   m_Layer: 5
   m_Name: DemonEyeDescElement
   m_TagString: Untagged
@@ -277,8 +299,34 @@ MonoBehaviour:
   styles: {fileID: 11400000, guid: f4b4ae74a1e122340bf1d9d4fa5ab586, type: 2}
   nameText: {fileID: 7137442498480775178}
   bodyVerticalLayout: {fileID: 7616105024064892419}
+  augmentText: {fileID: 3064983205847256201}
   descText: {fileID: 8089945725646039104}
-  augmentImageTextGroup: {fileID: 2195843274575904561}
+--- !u!114 &2774575530947421314
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2108799297105034156}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.VerticalLayoutGroup
+  m_Padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: 0
+    m_Bottom: 0
+  m_ChildAlignment: 0
+  m_Spacing: 0
+  m_ChildForceExpandWidth: 0
+  m_ChildForceExpandHeight: 0
+  m_ChildControlWidth: 1
+  m_ChildControlHeight: 1
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
+  m_ReverseArrangement: 0
 --- !u!1 &3112819171762467920
 GameObject:
   m_ObjectHideFlags: 0
@@ -290,7 +338,6 @@ GameObject:
   - component: {fileID: 3342236142758606606}
   - component: {fileID: 6967920448126427400}
   - component: {fileID: 7137442498480775178}
-  - component: {fileID: 1028912747948955536}
   m_Layer: 5
   m_Name: NameText
   m_TagString: Untagged
@@ -313,8 +360,8 @@ RectTransform:
   m_Father: {fileID: 6890227840815060181}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -2}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!222 &6967920448126427400
@@ -411,26 +458,12 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 15, y: 4, z: 15, w: 0}
+  m_margin: {x: 3, y: 6, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &1028912747948955536
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3112819171762467920}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_HorizontalFit: 0
-  m_VerticalFit: 2
 --- !u!1 &5080603184114744737
 GameObject:
   m_ObjectHideFlags: 0
@@ -441,7 +474,6 @@ GameObject:
   m_Component:
   - component: {fileID: 6632666489558308388}
   - component: {fileID: 7616105024064892419}
-  - component: {fileID: 3016910069609457424}
   m_Layer: 5
   m_Name: BodyVerticalLayout
   m_TagString: Untagged
@@ -465,9 +497,9 @@ RectTransform:
   - {fileID: 6332434322774769200}
   m_Father: {fileID: 6890227840815060181}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -32.010002}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &7616105024064892419
@@ -496,20 +528,6 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
---- !u!114 &3016910069609457424
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5080603184114744737}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
-  m_HorizontalFit: 0
-  m_VerticalFit: 2
 --- !u!1001 &2000307387879957504
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -531,12 +549,28 @@ PrefabInstance:
       value: 0.3254902
       objectReference: {fileID: 0}
     - target: {fileID: 2179140789399489324, guid: 0c3b0c93777d83245a7e23bb794938e1, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2179140789399489324, guid: 0c3b0c93777d83245a7e23bb794938e1, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2179140789399489324, guid: 0c3b0c93777d83245a7e23bb794938e1, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2179140789399489324, guid: 0c3b0c93777d83245a7e23bb794938e1, type: 3}
       propertyPath: m_SizeDelta.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2179140789399489324, guid: 0c3b0c93777d83245a7e23bb794938e1, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2179140789399489324, guid: 0c3b0c93777d83245a7e23bb794938e1, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -0.0000019073486
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3852334780765413486, guid: 0c3b0c93777d83245a7e23bb794938e1, type: 3}
       propertyPath: m_Pivot.x
@@ -639,17 +673,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0c3b0c93777d83245a7e23bb794938e1, type: 3}
---- !u!114 &2195843274575904561 stripped
+--- !u!114 &3064983205847256201 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 413125183388932913, guid: 0c3b0c93777d83245a7e23bb794938e1, type: 3}
+  m_CorrespondingSourceObject: {fileID: 3552078984331978889, guid: 0c3b0c93777d83245a7e23bb794938e1, type: 3}
   m_PrefabInstance: {fileID: 2000307387879957504}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 069d67a727bed0942a3bee92d879ae39, type: 3}
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ImageTextGroup
+  m_EditorClassIdentifier: 
 --- !u!224 &3365520336598271086 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3852334780765413486, guid: 0c3b0c93777d83245a7e23bb794938e1, type: 3}

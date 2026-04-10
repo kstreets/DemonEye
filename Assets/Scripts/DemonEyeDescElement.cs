@@ -3,28 +3,27 @@ using UnityEngine;
 using UnityEngine.UI;
 using static Game;
 
-public class DemonEyeDescElement : MonoBehaviour, ILayoutElement {
+public class DemonEyeDescElement : MonoBehaviour  {
     
     public Styles styles;
     public TextMeshProUGUI nameText;
     public VerticalLayoutGroup bodyVerticalLayout;
+    public TextMeshProUGUI augmentText;
     public TextMeshProUGUI descText;
-    public ImageTextGroup augmentImageTextGroup;
     
     public void UpdateDisplay(ModifierSet.Element modifierSetElm) {
         nameText.text = ColorText($"{modifierSetElm.modifierItem.displayName} <size=87%>x{modifierSetElm.modifierCount}</size>", styles.headerTextColor);
         descText.text = modifierSetElm.modifierItem.GetDescription(modifierSetElm.modifierCount);
         
-        augmentImageTextGroup.gameObject.SetActive(modifierSetElm.HasUniqueAugments);
+        augmentText.gameObject.SetActive(modifierSetElm.HasUniqueAugments);
         if (modifierSetElm.HasUniqueAugments) {
-            augmentImageTextGroup.textMesh.text = modifierSetElm.uniqueAugments[0].GetDescription();
+            augmentText.text = modifierSetElm.uniqueAugments[0].GetDescription();
         }
     }
 
     public void CalculateLayoutInputVertical() {
-        float descHeight = descText.GetPreferredValues(400, 0f).y;
-        Debug.Log($"{nameText.preferredHeight} {descText.preferredHeight} {augmentImageTextGroup.preferredHeight}");
-        preferredHeight = nameText.preferredHeight + augmentImageTextGroup.preferredHeight + descHeight;
+        Debug.Log($"{nameText.preferredHeight} {bodyVerticalLayout.preferredHeight}");
+        preferredHeight = nameText.preferredHeight + bodyVerticalLayout.preferredHeight;
         minHeight = preferredHeight;
     }
     

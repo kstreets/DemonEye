@@ -117,7 +117,7 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
     }
 
     public void SetLayoutVertical() {
-        FitPopupSize(rectTransform, tagsLayoutGroup, nameText, bodyLayoutGroup);
+        FitPopupSize(rectTransform, nameText, tagsLayoutGroup, bodyLayoutGroup);
     }
     
     public void SetLayoutHorizontal() { }

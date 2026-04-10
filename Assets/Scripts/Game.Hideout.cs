@@ -300,6 +300,9 @@ public partial class Game {
     
     private void UpdateForgeInfoPanel() {
         if (!OnEyeForgeTab) return;
+        
+        Debug.Break();
+        
         if (PlayingForgeAnimation) return;
         
         if (crucibleMode == CrucibleMode.Empty) {
