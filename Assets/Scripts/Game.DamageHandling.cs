@@ -4,13 +4,12 @@ using UnityEngine;
 
 public partial class Game {
     
-    public int consecutiveCriticalHits;
-    public float lastDoubleCritActivationTime;
-    
-    private void ResetDamageHandlingTempData() {
-        consecutiveCriticalHits = default;     
-        lastDoubleCritActivationTime = default;
+    public struct DamageHandlingVars {
+        public int consecutiveCriticalHits;
+        public float lastDoubleCritActivationTime;
     }
+    
+    private DamageHandlingVars damageHandlingVars;
     
     private void DamageEnemyAfterDelay(Entity enemy, int damage, bool isCriticalStrike, float delay) {
         enemy.delayedDamage = damage;
@@ -42,10 +41,10 @@ public partial class Game {
             
             bool isCriticalStrike = RollProbability(GetCriticalStrikeProbability(projectile, enemy));
             if (isCriticalStrike) {
-                consecutiveCriticalHits++;
+                damageHandlingVars.consecutiveCriticalHits++;
             }
             else {
-                consecutiveCriticalHits = 0;
+                damageHandlingVars.consecutiveCriticalHits = 0;
             }
 
             int damage = GetProjectileDamage(projectile, enemy, isCriticalStrike);
@@ -159,11 +158,11 @@ public partial class Game {
             }
             
             if (equipedEye.doubleCritAugment.TryGetValue(out var doubleCrit)) {
-                if (consecutiveCriticalHits > 0 && consecutiveCriticalHits % 2 == 0) {
-                    lastDoubleCritActivationTime = Time.time;
+                if (damageHandlingVars.consecutiveCriticalHits > 0 && damageHandlingVars.consecutiveCriticalHits % 2 == 0) {
+                    damageHandlingVars.lastDoubleCritActivationTime = Time.time;
                 }
 
-                if (Time.time - lastDoubleCritActivationTime <= doubleCrit.multiplierDuration) {
+                if (Time.time - damageHandlingVars.lastDoubleCritActivationTime <= doubleCrit.multiplierDuration) {
                     damageMultiplier *= doubleCrit.damageMulti;
                 }
             }

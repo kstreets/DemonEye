@@ -179,6 +179,7 @@ public partial class Game : MonoBehaviour {
     public ButtonFeel forgeEyeButton;
     public TextMeshProUGUI forgeDetailsForgeText;
     public DemonEyeDescList forgeDetailsDemonEyeDesc;
+    public PageDots forgeDetailsPageDots;
     [EndFoldout]
     
     [Foldout("UI/TraderPanel")]
@@ -286,6 +287,7 @@ public partial class Game : MonoBehaviour {
     private InputAction quickUse2Action;
     private InputAction quickUse3Action;
     private InputAction quickUse4Action;
+    private InputAction scrollAction;
     
     private EntityPool<Entity> itemDropPool;
     private EntityPool<Entity> bloodDropPool;
@@ -315,7 +317,6 @@ public partial class Game : MonoBehaviour {
     private StateMachine gameStateMachine = new();
 
     public static Action<InventorySlot[]> onSoldItemsToTrader;
-    public static Action<InventorySlot[]> onReturnedFromRaid;
     public static Action<string> customQuestEvent;
     
     private void Start() {
@@ -373,6 +374,7 @@ public partial class Game : MonoBehaviour {
         quickUse2Action = InputSystem.actions.FindAction("QuickUse2");
         quickUse3Action = InputSystem.actions.FindAction("QuickUse3");
         quickUse4Action = InputSystem.actions.FindAction("QuickUse4");
+        scrollAction = InputSystem.actions.FindAction("Scroll");
         
         var menuMove = InputSystem.actions.FindAction("MenuMove");
         menuMove.performed += OnMoveInput;
@@ -463,8 +465,8 @@ public partial class Game : MonoBehaviour {
 
     private void LateUpdate() {
         UpdatePlayerPanelUI();
-        UpdateForgeInfoPanel();
         UpdateHotBarUI();
+        ScrollForgeInfoPanel();
         UpdateDragAndDropItemToCursor();
         UpdateCurrencyNumbers();
         if (InRaid) {
@@ -508,6 +510,8 @@ public partial class Game : MonoBehaviour {
         UpdateInventory();
         RefreshTransactionUI();
         UpdateForgeState();
+        UpdateForgePanel();
+        UpdateForgeInfoPanel();
     }
 
     private void OnMapSelectionEnter() {
@@ -606,8 +610,9 @@ public partial class Game : MonoBehaviour {
         cinemachineCamera.ForceCameraPosition(cameraWarpTarget, Quaternion.identity);
         cinemachineCamera.Follow = player.trans;
         
-        ClearInteractions();
-        ResetDamageHandlingTempData();
+        damageHandlingVars.Reset();
+        interactionVars.Reset();
+        
         InitSpawnManager(loadedMapData.waves);
         SpawnMapResources(loadedMapInst.resourceParent);
         SpawnInitialExitPortals(loadedMapInst.exitPortalsParent, loadedMapData.exitPortalsCount);
@@ -822,11 +827,11 @@ public partial class Game : MonoBehaviour {
     // Interactions 
     // *******************************
     
-    private float timeSpentSummoningPortal;
-    
-    private void ClearInteractions() {
-        timeSpentSummoningPortal = 0f;
+    public struct InteractionVars {
+        public float timeSpentSummoningPortal;
     }
+    
+    public InteractionVars interactionVars;
     
     private void CheckForInteractions() { 
         DisableInteractionPrompt();
@@ -888,6 +893,7 @@ public partial class Game : MonoBehaviour {
 
             if (col.CompareTag(Tags.ExitPortal)) {
                 ExitPortal portal = GetExitPortalFromTransform(col.transform);
+                ref float timeSpentSummoningPortal = ref interactionVars.timeSpentSummoningPortal;
                 
                 if (!portal.hasBeenSummoned && timeSpentSummoningPortal < gameplayConfig.portalSummonTime) {
                     EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Summon Exit Portal");
@@ -911,7 +917,6 @@ public partial class Game : MonoBehaviour {
                         gameStateMachine.SetStateIfNotCurrent(curRaidState == RaidState.PostFinalWave ? winExitState : earlyExitState);
                         
                         customQuestEvent?.Invoke("FirstExtract");
-                        onReturnedFromRaid?.Invoke(playerInventory.slots);
                     }
                 }
             }

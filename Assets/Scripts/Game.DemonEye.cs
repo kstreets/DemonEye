@@ -175,18 +175,4 @@ public partial class Game {
         return sellPrice;
     } 
 
-    public string GetDemonEyeModDescription(ModifierItem modifierItem, int count, List<Augment> augments) {
-        string title = ColorText($"<size=108%>{modifierItem.displayName}</size> <size=87%>x{count}</size>", styles.headerTextColor);
-        string desc = $"<line-height=95%>{title}\n{modifierItem.GetDescription(count)}<line-height=140%>\n";
-        if (augments == null || augments.Count <= 0) {
-            return desc;
-        }
-        
-        string augmentDesc = string.Empty;
-        foreach (Augment augment in augments) {
-            augmentDesc += $"{augment.GetDescription()}\n";
-        }
-        return desc + augmentDesc;
-    }
-
 }

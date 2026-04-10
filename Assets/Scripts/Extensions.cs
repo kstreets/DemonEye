@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
@@ -38,6 +37,10 @@ public static class Extensions {
     
     public static void ResizeHeight(this RectTransform rectTransform, float height) {
         rectTransform.sizeDelta = new(rectTransform.sizeDelta.x, height);
+    }
+    
+    public static void Reset<T>(this ref T structType) where T : struct {
+        structType = new();
     }
 
     public static Color Alpha(this Color color, float alpha) {

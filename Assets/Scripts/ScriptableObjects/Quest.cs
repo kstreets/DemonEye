@@ -3,10 +3,6 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.Events;
-using UnityEngine.Pool;
-using UnityEngine.UIElements;
-using VInspector;
 using static Game;
 
 [CreateAssetMenu(fileName = "Quest", menuName = "Scriptable Objects/Quest")]
@@ -128,7 +124,7 @@ public class Quest : ScriptableObject {
 
     private void OnCustomEvent(string code) {
         foreach (Objective obj in objectives) {
-            if  (obj.type != Objective.Type.Custom || obj.customCode != code) continue;
+            if (obj.type != Objective.Type.Custom || obj.customCode != code) continue;
             obj.progressValue = Mathf.Clamp(++obj.progressValue, 0, obj.targetValue);
             return;
         }

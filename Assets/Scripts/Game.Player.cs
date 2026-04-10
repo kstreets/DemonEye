@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using PrimeTween;
 using UnityEngine;
@@ -95,7 +94,7 @@ public partial class Game {
             return;
         }
 
-        bool interactingWithPortal = timeSpentSummoningPortal > Mathf.Epsilon;
+        bool interactingWithPortal = interactionVars.timeSpentSummoningPortal > Mathf.Epsilon;
         if (InventoryIsOpen || interactingWithPortal) return;
         
         Vector2 moveInput = moveInputAction.ReadValue<Vector2>();
@@ -387,8 +386,8 @@ public partial class Game {
         //     player.bleeding = true;
         // }
         
-        if (timeSpentSummoningPortal < gameplayConfig.portalSummonTime) {
-            timeSpentSummoningPortal = 0f;
+        if (interactionVars.timeSpentSummoningPortal < gameplayConfig.portalSummonTime) {
+            interactionVars.timeSpentSummoningPortal = 0f;
         }
         
         bool ignoreCollisionDamage = !player.enmeyCollisionDamageLimiter.TimeHasPassed(gameplayConfig.repeatCollisionDamageDelay);

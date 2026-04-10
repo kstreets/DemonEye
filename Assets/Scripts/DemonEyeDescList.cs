@@ -4,6 +4,7 @@ using static Game;
 
 public class DemonEyeDescList : MonoBehaviour, ILayoutElement {
     
+    public RectTransform rectTransform;
     public VerticalLayoutGroup verticalLayout;
     public DemonEyeDescElement[] elements;
     
@@ -19,12 +20,16 @@ public class DemonEyeDescList : MonoBehaviour, ILayoutElement {
             demonEyeDescElm.gameObject.SetActive(true);
             demonEyeDescElm.UpdateDisplay(modifierSet.elements[i]);
         }
+        
+        LayoutRebuilder.MarkLayoutForRebuild(rectTransform);
     }
     
     public void HideAllElements() {
         foreach (DemonEyeDescElement demonEyeDescElm in elements) {
             demonEyeDescElm.gameObject.SetActive(false);
         }
+        
+        LayoutRebuilder.MarkLayoutForRebuild(rectTransform);
     }
     
     public void CalculateLayoutInputVertical() {

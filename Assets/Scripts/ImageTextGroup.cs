@@ -1,53 +1,65 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class ImageTextGroup : MonoBehaviour, ILayoutSelfController, ILayoutElement {
-    
-    public enum FollowMode { TextRenderBounds, TextRectTransform }
-    
-    public float horizontalMargin;
-    public float verticalMargin;
-    public FollowMode imageWidthFollowMode;
-    public FollowMode imageHeightFollowMode;
+public class ImageTextGroup : UIBehaviour, ILayoutGroup, ILayoutElement {
     
     [Header("Refs")]
+    public RectTransform rectTransform;
     public Image image;
     public TextMeshProUGUI textMesh;
+    
+    [Header("Settings")]
+    public float horizontalMargin;
+    public float verticalMargin;
+    public float fixedHeight;
     
     private void Awake() {
         image = GetComponentInChildren<Image>();
         textMesh = GetComponentInChildren<TextMeshProUGUI>();
     }
+    
+    protected override void OnEnable() {
+        LayoutRebuilder.MarkLayoutForRebuild(rectTransform);
+    }
 
     public void SetLayoutHorizontal() {
-        image.rectTransform.ResizeWidth(preferredWidth);
+        rectTransform.ForceUpdateRectTransforms();
+        if (fixedHeight > Mathf.Epsilon) {
+            image.rectTransform.ResizeWidth(preferredWidth);
+        }
+        else {
+            image.rectTransform.ResizeWidth(rectTransform.rect.width + horizontalMargin);
+            // textMesh.rectTransform.ResizeWidth(rectTransform.rect.width);
+        }
     }
     
     public void SetLayoutVertical() {
-        image.rectTransform.ResizeHeight(preferredHeight);
+        if (fixedHeight > Mathf.Epsilon) {
+            image.rectTransform.ResizeHeight(fixedHeight + verticalMargin);
+        }
+        else {
+            image.rectTransform.ResizeHeight(preferredHeight);
+        }
     }
 
     public void CalculateLayoutInputHorizontal() {
-        float width = imageWidthFollowMode switch {
-            FollowMode.TextRenderBounds  => textMesh.preferredWidth,
-            FollowMode.TextRectTransform => textMesh.rectTransform.rect.width,
-            _                            => 0f,
-        };
-        preferredWidth = width + horizontalMargin;
-        minWidth = preferredWidth;
+        if (fixedHeight > Mathf.Epsilon) {
+            preferredWidth = textMesh.GetPreferredValues(0f, fixedHeight).x + horizontalMargin;
+        }
+        else {
+            preferredWidth = 400;
+        }
+        minWidth = 0f;
     }
     
     public void CalculateLayoutInputVertical() {
-        float height = imageHeightFollowMode switch {
-            FollowMode.TextRenderBounds  => textMesh.preferredHeight,
-            FollowMode.TextRectTransform => textMesh.rectTransform.rect.height,
-            _                            => 0f,
-        };
-        preferredHeight = height + verticalMargin;
-        minHeight = preferredHeight;
+        preferredHeight = textMesh.preferredHeight + verticalMargin;
+        minHeight = 0f;
+        Debug.Break();
     }
-    
+
     public float minWidth { get; private set; }
     public float preferredWidth { get; private set; }
     public float flexibleWidth => 0f;

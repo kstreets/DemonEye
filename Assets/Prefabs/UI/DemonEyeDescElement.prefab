@@ -276,7 +276,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DemonEyeDescElement
   styles: {fileID: 11400000, guid: f4b4ae74a1e122340bf1d9d4fa5ab586, type: 2}
   nameText: {fileID: 7137442498480775178}
-  bodyVerticalLayout: {fileID: 3343891886177668652}
+  bodyVerticalLayout: {fileID: 7616105024064892419}
   descText: {fileID: 8089945725646039104}
   augmentImageTextGroup: {fileID: 2195843274575904561}
 --- !u!1 &3112819171762467920
@@ -440,7 +440,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6632666489558308388}
-  - component: {fileID: 3343891886177668652}
+  - component: {fileID: 7616105024064892419}
   - component: {fileID: 3016910069609457424}
   m_Layer: 5
   m_Name: BodyVerticalLayout
@@ -470,7 +470,7 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: -32.010002}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 1}
---- !u!114 &3343891886177668652
+--- !u!114 &7616105024064892419
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -486,8 +486,8 @@ MonoBehaviour:
     m_Left: 0
     m_Right: 0
     m_Top: 4
-    m_Bottom: 4
-  m_ChildAlignment: 1
+    m_Bottom: 0
+  m_ChildAlignment: 0
   m_Spacing: 4
   m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 0
@@ -529,6 +529,14 @@ PrefabInstance:
     - target: {fileID: 188187411658061613, guid: 0c3b0c93777d83245a7e23bb794938e1, type: 3}
       propertyPath: m_Color.r
       value: 0.3254902
+      objectReference: {fileID: 0}
+    - target: {fileID: 2179140789399489324, guid: 0c3b0c93777d83245a7e23bb794938e1, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2179140789399489324, guid: 0c3b0c93777d83245a7e23bb794938e1, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -0.0000019073486
       objectReference: {fileID: 0}
     - target: {fileID: 3852334780765413486, guid: 0c3b0c93777d83245a7e23bb794938e1, type: 3}
       propertyPath: m_Pivot.x
@@ -616,11 +624,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7080003097222267909, guid: 0c3b0c93777d83245a7e23bb794938e1, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 380
+      value: 380.15
       objectReference: {fileID: 0}
     - target: {fileID: 7080003097222267909, guid: 0c3b0c93777d83245a7e23bb794938e1, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 38.010002
+      value: 32.010002
       objectReference: {fileID: 0}
     - target: {fileID: 7080003097222267909, guid: 0c3b0c93777d83245a7e23bb794938e1, type: 3}
       propertyPath: m_AnchoredPosition.y

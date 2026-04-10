@@ -131,6 +131,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f84214b1cdf75574f82826a797104614, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DemonEyeDescPopup
+  rectTransform: {fileID: 3236327301168312223}
   verticalLayout: {fileID: 6348838739614827665}
   elements:
   - {fileID: 8429666086990446497}
@@ -288,11 +289,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8756050692381466629, guid: 08f7f2c732ab379479e75da3d934f166, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 380
+      value: 380.15
       objectReference: {fileID: 0}
     - target: {fileID: 8756050692381466629, guid: 08f7f2c732ab379479e75da3d934f166, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 38.010002
+      value: 32.010002
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -465,11 +466,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8756050692381466629, guid: 08f7f2c732ab379479e75da3d934f166, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 380
+      value: 380.15
       objectReference: {fileID: 0}
     - target: {fileID: 8756050692381466629, guid: 08f7f2c732ab379479e75da3d934f166, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 38.010002
+      value: 32.010002
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -642,11 +643,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8756050692381466629, guid: 08f7f2c732ab379479e75da3d934f166, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 380
+      value: 380.15
       objectReference: {fileID: 0}
     - target: {fileID: 8756050692381466629, guid: 08f7f2c732ab379479e75da3d934f166, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 38.010002
+      value: 32.010002
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -819,11 +820,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8756050692381466629, guid: 08f7f2c732ab379479e75da3d934f166, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 380
+      value: 380.15
       objectReference: {fileID: 0}
     - target: {fileID: 8756050692381466629, guid: 08f7f2c732ab379479e75da3d934f166, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 38.010002
+      value: 32.010002
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -996,11 +997,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8756050692381466629, guid: 08f7f2c732ab379479e75da3d934f166, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 380
+      value: 380.15
       objectReference: {fileID: 0}
     - target: {fileID: 8756050692381466629, guid: 08f7f2c732ab379479e75da3d934f166, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 38.010002
+      value: 32.010002
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

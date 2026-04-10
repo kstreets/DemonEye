@@ -93,7 +93,7 @@ MonoBehaviour:
   m_MinWidth: 100
   m_MinHeight: -1
   m_PreferredWidth: 500
-  m_PreferredHeight: 622
+  m_PreferredHeight: 680
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
@@ -200,6 +200,7 @@ MonoBehaviour:
   m_VerticalAlignment: 8192
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0

@@ -283,8 +283,8 @@ public partial class Game {
             crucibleMode = CrucibleMode.Forging;
         }
     }
-
-    private void UpdateForgeInfoPanel() {
+    
+    private void UpdateForgePanel() {
         if (!OnEyeForgeTab) return;
         
         bool forging = crucibleMode is CrucibleMode.Forging;
@@ -294,7 +294,12 @@ public partial class Game {
         else if (!forging && !forgeEyeButton.isDisabled) {
             forgeEyeButton.Disable();
         }
+    }
 
+    private int forgeDetailsPageIndex;
+    
+    private void UpdateForgeInfoPanel() {
+        if (!OnEyeForgeTab) return;
         if (PlayingForgeAnimation) return;
         
         if (crucibleMode == CrucibleMode.Empty) {
@@ -322,6 +327,49 @@ public partial class Game {
             }
             forgeDetailsDemonEyeDesc.UpdateDisplay(ConstructModifierSet(uuids));
         }
+    }
+    
+    private void ScrollForgeInfoPanel() {
+        return;
+        if (!OnEyeForgeTab) return;
+        
+        bool hasOverflow = forgeDetailsDemonEyeDesc.verticalLayout.preferredHeight > forgeDetailsDemonEyeDesc.rectTransform.rect.height;
+        forgeDetailsPageDots.gameObject.SetActive(hasOverflow);
+        
+        if (hasOverflow) {
+            int overflowCount = 0;
+            
+            float verticalElmSpacing = forgeDetailsDemonEyeDesc.verticalLayout.spacing;
+            float curHeight = forgeDetailsDemonEyeDesc.verticalLayout.padding.top;
+            float overflowHeight = forgeDetailsDemonEyeDesc.rectTransform.rect.height;
+            forgeDetailsDemonEyeDesc.verticalLayout.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+            
+            for (int i = 0; i < forgeDetailsDemonEyeDesc.elements.Length; i++) {
+                DemonEyeDescElement descElm = forgeDetailsDemonEyeDesc.elements[i];
+                if (!descElm.gameObject.activeSelf) break;
+                
+                curHeight += descElm.preferredHeight + verticalElmSpacing;
+                Debug.Log($"{curHeight} vs {overflowHeight}");
+                
+                if (curHeight < overflowHeight) continue;
+                
+                overflowCount++;
+                if (overflowCount == forgeDetailsPageIndex) {
+                    float overshoot = forgeDetailsDemonEyeDesc.rectTransform.WorldRect().yMin - descElm.GetComponent<RectTransform>().WorldRect().yMin;
+                    forgeDetailsDemonEyeDesc.verticalLayout.GetComponent<RectTransform>().anchoredPosition = new(0f, overshoot);
+                }
+            }
+            
+            forgeDetailsPageDots.SetPageCount(overflowCount + 1);
+        }
+        
+        float scrollInputDir = scrollAction.ReadValue<float>();
+        if (scrollInputDir < 0f) {
+            forgeDetailsPageDots.SetPage(++forgeDetailsPageIndex);
+        } 
+        if (scrollInputDir > 0f) {
+            forgeDetailsPageDots.SetPage(--forgeDetailsPageIndex);
+        } 
     }
     
     private void OnForgeButtonPressed() {

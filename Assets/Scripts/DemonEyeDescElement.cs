@@ -22,7 +22,9 @@ public class DemonEyeDescElement : MonoBehaviour, ILayoutElement {
     }
 
     public void CalculateLayoutInputVertical() {
-        preferredHeight = nameText.preferredHeight + bodyVerticalLayout.preferredHeight;
+        float descHeight = descText.GetPreferredValues(400, 0f).y;
+        Debug.Log($"{nameText.preferredHeight} {descText.preferredHeight} {augmentImageTextGroup.preferredHeight}");
+        preferredHeight = nameText.preferredHeight + augmentImageTextGroup.preferredHeight + descHeight;
         minHeight = preferredHeight;
     }
     
@@ -30,11 +32,11 @@ public class DemonEyeDescElement : MonoBehaviour, ILayoutElement {
     
     public float minWidth { get; private set; }
     public float preferredWidth { get; private set; }
-    public float flexibleWidth => 0f; 
+    public float flexibleWidth => 1f; 
     
     public float minHeight { get; private set; }
     public float preferredHeight { get; private set; }
-    public float flexibleHeight => 0f;
+    public float flexibleHeight => 1f;
     
     public int layoutPriority => 0;
 }

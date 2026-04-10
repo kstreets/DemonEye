@@ -31,6 +31,8 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
             transform.position = position.Value;
             TweenPopUp(rectTransform);
         }
+        
+        LayoutRebuilder.MarkLayoutForRebuild(rectTransform);
     }
     
     public void Hide() {
