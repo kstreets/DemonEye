@@ -245,8 +245,8 @@ GameObject:
   m_Component:
   - component: {fileID: 6890227840815060181}
   - component: {fileID: 1992428907538893771}
-  - component: {fileID: 8837630035399272141}
   - component: {fileID: 2774575530947421314}
+  - component: {fileID: 8837630035399272141}
   m_Layer: 5
   m_Name: DemonEyeDescElement
   m_TagString: Untagged
@@ -284,23 +284,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2108799297105034156}
   m_CullTransparentMesh: 1
---- !u!114 &8837630035399272141
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2108799297105034156}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c771920150808d84894801e0a91fef07, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DemonEyeDescElement
-  styles: {fileID: 11400000, guid: f4b4ae74a1e122340bf1d9d4fa5ab586, type: 2}
-  nameText: {fileID: 7137442498480775178}
-  bodyVerticalLayout: {fileID: 7616105024064892419}
-  augmentText: {fileID: 3064983205847256201}
-  descText: {fileID: 8089945725646039104}
 --- !u!114 &2774575530947421314
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -327,6 +310,23 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &8837630035399272141
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2108799297105034156}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c771920150808d84894801e0a91fef07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DemonEyeDescElement
+  styles: {fileID: 11400000, guid: f4b4ae74a1e122340bf1d9d4fa5ab586, type: 2}
+  nameText: {fileID: 7137442498480775178}
+  bodyVerticalLayout: {fileID: 7616105024064892419}
+  augmentImageTextGroup: {fileID: 4361472625248857759}
+  descText: {fileID: 8089945725646039104}
 --- !u!1 &3112819171762467920
 GameObject:
   m_ObjectHideFlags: 0
@@ -673,19 +673,19 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0c3b0c93777d83245a7e23bb794938e1, type: 3}
---- !u!114 &3064983205847256201 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3552078984331978889, guid: 0c3b0c93777d83245a7e23bb794938e1, type: 3}
-  m_PrefabInstance: {fileID: 2000307387879957504}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!224 &3365520336598271086 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3852334780765413486, guid: 0c3b0c93777d83245a7e23bb794938e1, type: 3}
   m_PrefabInstance: {fileID: 2000307387879957504}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &4361472625248857759 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2829831520030608031, guid: 0c3b0c93777d83245a7e23bb794938e1, type: 3}
+  m_PrefabInstance: {fileID: 2000307387879957504}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 069d67a727bed0942a3bee92d879ae39, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ImageTextGroup

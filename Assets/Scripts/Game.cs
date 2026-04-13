@@ -178,6 +178,7 @@ public partial class Game : MonoBehaviour {
     public RectTransform forgeDetailsPanel;
     public ButtonFeel forgeEyeButton;
     public TextMeshProUGUI forgeDetailsForgeText;
+    public RectTransform forgeDetailsDemonEyeDescViewport;
     public DemonEyeDescList forgeDetailsDemonEyeDesc;
     public PageDots forgeDetailsPageDots;
     [EndFoldout]

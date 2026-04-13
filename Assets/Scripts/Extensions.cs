@@ -19,6 +19,10 @@ public static class Extensions {
     public static Vector3 ToVector3(this Vector2 vector) {
         return new Vector3(vector.x, vector.y, 0f);
     }
+    
+    public static void SetY(this Vector2 vector, float y) {
+        vector = new(vector.x, y);
+    }
 
     public static void ForceRecalculate(this ContentSizeFitter fitter) {
         fitter.SetLayoutVertical();

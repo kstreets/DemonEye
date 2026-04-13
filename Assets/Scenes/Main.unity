@@ -2404,7 +2404,7 @@ MonoBehaviour:
     m_Right: 12
     m_Top: 0
     m_Bottom: 0
-  m_ChildAlignment: 0
+  m_ChildAlignment: 1
   m_Spacing: 0
   m_ChildForceExpandWidth: 0
   m_ChildForceExpandHeight: 0
@@ -15168,7 +15168,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1928052447148552071, guid: 75ca691462fd6af468ac75e3d86cc0a2, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 687.48004
+      value: 153.33
       objectReference: {fileID: 0}
     - target: {fileID: 1928052447148552071, guid: 75ca691462fd6af468ac75e3d86cc0a2, type: 3}
       propertyPath: m_LocalPosition.x
@@ -16904,6 +16904,7 @@ MonoBehaviour:
   forgeDetailsPanel: {fileID: 1718033708}
   forgeEyeButton: {fileID: 424432582}
   forgeDetailsForgeText: {fileID: 221403293}
+  forgeDetailsDemonEyeDescViewport: {fileID: 227847657}
   forgeDetailsDemonEyeDesc: {fileID: 979375050904411098}
   forgeDetailsPageDots: {fileID: 1657252562}
   traderTransactionPanel: {fileID: 230295141}
@@ -18563,7 +18564,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3236327301168312223, guid: 78f030fc697d81442a420d072491aa2c, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 376.15
+      value: 376.15002
       objectReference: {fileID: 0}
     - target: {fileID: 3236327301168312223, guid: 78f030fc697d81442a420d072491aa2c, type: 3}
       propertyPath: m_SizeDelta.y

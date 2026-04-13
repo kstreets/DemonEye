@@ -299,11 +299,7 @@ public partial class Game {
     private int forgeDetailsPageIndex;
     
     private void UpdateForgeInfoPanel() {
-        if (!OnEyeForgeTab) return;
-        
-        Debug.Break();
-        
-        if (PlayingForgeAnimation) return;
+        if (!OnEyeForgeTab || PlayingForgeAnimation) return;
         
         if (crucibleMode == CrucibleMode.Empty) {
             forgeDetailsForgeText.text = "Place an eyeball in the center to start the Demon Eye forging process";
@@ -333,10 +329,9 @@ public partial class Game {
     }
     
     private void ScrollForgeInfoPanel() {
-        return;
         if (!OnEyeForgeTab) return;
         
-        bool hasOverflow = forgeDetailsDemonEyeDesc.verticalLayout.preferredHeight > forgeDetailsDemonEyeDesc.rectTransform.rect.height;
+        bool hasOverflow = forgeDetailsDemonEyeDesc.verticalLayout.preferredHeight > forgeDetailsDemonEyeDescViewport.rect.height;
         forgeDetailsPageDots.gameObject.SetActive(hasOverflow);
         
         if (hasOverflow) {
@@ -344,22 +339,24 @@ public partial class Game {
             
             float verticalElmSpacing = forgeDetailsDemonEyeDesc.verticalLayout.spacing;
             float curHeight = forgeDetailsDemonEyeDesc.verticalLayout.padding.top;
-            float overflowHeight = forgeDetailsDemonEyeDesc.rectTransform.rect.height;
-            forgeDetailsDemonEyeDesc.verticalLayout.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+            float overflowHeight = forgeDetailsDemonEyeDescViewport.rect.height;
+            
+            float anchorX = forgeDetailsDemonEyeDesc.rectTransform.anchoredPosition.x;
+            forgeDetailsDemonEyeDesc.rectTransform.anchoredPosition = new(anchorX, 0f);
             
             for (int i = 0; i < forgeDetailsDemonEyeDesc.elements.Length; i++) {
                 DemonEyeDescElement descElm = forgeDetailsDemonEyeDesc.elements[i];
                 if (!descElm.gameObject.activeSelf) break;
                 
-                curHeight += descElm.preferredHeight + verticalElmSpacing;
-                Debug.Log($"{curHeight} vs {overflowHeight}");
+                curHeight += descElm.Height + verticalElmSpacing;
                 
                 if (curHeight < overflowHeight) continue;
                 
                 overflowCount++;
                 if (overflowCount == forgeDetailsPageIndex) {
-                    float overshoot = forgeDetailsDemonEyeDesc.rectTransform.WorldRect().yMin - descElm.GetComponent<RectTransform>().WorldRect().yMin;
-                    forgeDetailsDemonEyeDesc.verticalLayout.GetComponent<RectTransform>().anchoredPosition = new(0f, overshoot);
+                    float overshoot = forgeDetailsDemonEyeDescViewport.WorldRect().yMin - descElm.GetComponent<RectTransform>().WorldRect().yMin;
+                    Debug.Log(overshoot);
+                    forgeDetailsDemonEyeDesc.rectTransform.anchoredPosition = new(anchorX, overshoot);
                 }
             }
             
