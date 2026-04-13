@@ -7,7 +7,6 @@ using Unity.Collections;
 using Unity.Jobs;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Profiling;
 using Random = UnityEngine.Random;
 
 public class CoolerGrid : MonoBehaviour {

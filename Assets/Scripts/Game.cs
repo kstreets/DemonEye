@@ -178,9 +178,7 @@ public partial class Game : MonoBehaviour {
     public RectTransform forgeDetailsPanel;
     public ButtonFeel forgeEyeButton;
     public TextMeshProUGUI forgeDetailsForgeText;
-    public RectTransform forgeDetailsDemonEyeDescViewport;
     public DemonEyeDescList forgeDetailsDemonEyeDesc;
-    public PageDots forgeDetailsPageDots;
     [EndFoldout]
     
     [Foldout("UI/TraderPanel")]
@@ -288,7 +286,6 @@ public partial class Game : MonoBehaviour {
     private InputAction quickUse2Action;
     private InputAction quickUse3Action;
     private InputAction quickUse4Action;
-    private InputAction scrollAction;
     
     private EntityPool<Entity> itemDropPool;
     private EntityPool<Entity> bloodDropPool;
@@ -375,7 +372,6 @@ public partial class Game : MonoBehaviour {
         quickUse2Action = InputSystem.actions.FindAction("QuickUse2");
         quickUse3Action = InputSystem.actions.FindAction("QuickUse3");
         quickUse4Action = InputSystem.actions.FindAction("QuickUse4");
-        scrollAction = InputSystem.actions.FindAction("Scroll");
         
         var menuMove = InputSystem.actions.FindAction("MenuMove");
         menuMove.performed += OnMoveInput;
@@ -467,7 +463,6 @@ public partial class Game : MonoBehaviour {
     private void LateUpdate() {
         UpdatePlayerPanelUI();
         UpdateHotBarUI();
-        ScrollForgeInfoPanel();
         UpdateDragAndDropItemToCursor();
         UpdateCurrencyNumbers();
         if (InRaid) {

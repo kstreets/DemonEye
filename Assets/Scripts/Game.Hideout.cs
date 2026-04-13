@@ -296,8 +296,6 @@ public partial class Game {
         }
     }
 
-    private int forgeDetailsPageIndex;
-    
     private void UpdateForgeInfoPanel() {
         if (!OnEyeForgeTab || PlayingForgeAnimation) return;
         
@@ -326,50 +324,6 @@ public partial class Game {
             }
             forgeDetailsDemonEyeDesc.UpdateDisplay(ConstructModifierSet(uuids));
         }
-    }
-    
-    private void ScrollForgeInfoPanel() {
-        if (!OnEyeForgeTab) return;
-        
-        bool hasOverflow = forgeDetailsDemonEyeDesc.verticalLayout.preferredHeight > forgeDetailsDemonEyeDescViewport.rect.height;
-        forgeDetailsPageDots.gameObject.SetActive(hasOverflow);
-        
-        if (hasOverflow) {
-            int overflowCount = 0;
-            
-            float verticalElmSpacing = forgeDetailsDemonEyeDesc.verticalLayout.spacing;
-            float curHeight = forgeDetailsDemonEyeDesc.verticalLayout.padding.top;
-            float overflowHeight = forgeDetailsDemonEyeDescViewport.rect.height;
-            
-            float anchorX = forgeDetailsDemonEyeDesc.rectTransform.anchoredPosition.x;
-            forgeDetailsDemonEyeDesc.rectTransform.anchoredPosition = new(anchorX, 0f);
-            
-            for (int i = 0; i < forgeDetailsDemonEyeDesc.elements.Length; i++) {
-                DemonEyeDescElement descElm = forgeDetailsDemonEyeDesc.elements[i];
-                if (!descElm.gameObject.activeSelf) break;
-                
-                curHeight += descElm.Height + verticalElmSpacing;
-                
-                if (curHeight < overflowHeight) continue;
-                
-                overflowCount++;
-                if (overflowCount == forgeDetailsPageIndex) {
-                    float overshoot = forgeDetailsDemonEyeDescViewport.WorldRect().yMin - descElm.GetComponent<RectTransform>().WorldRect().yMin;
-                    Debug.Log(overshoot);
-                    forgeDetailsDemonEyeDesc.rectTransform.anchoredPosition = new(anchorX, overshoot);
-                }
-            }
-            
-            forgeDetailsPageDots.SetPageCount(overflowCount + 1);
-        }
-        
-        float scrollInputDir = scrollAction.ReadValue<float>();
-        if (scrollInputDir < 0f) {
-            forgeDetailsPageDots.SetPage(++forgeDetailsPageIndex);
-        } 
-        if (scrollInputDir > 0f) {
-            forgeDetailsPageDots.SetPage(--forgeDetailsPageIndex);
-        } 
     }
     
     private void OnForgeButtonPressed() {
