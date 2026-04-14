@@ -471,37 +471,38 @@ public partial class Game {
             
             switch (stat) {
                 case Player.Stat.MovementSpeedPercentage:
-                    statSum += item.movementSpeedPercentage;
+                    statSum += item.GetMovementSpeedPercentage(1);
                     break;
             }
         }
 
         foreach (EquipedModInstance mod in equipedEye.modInstances) {
             ModifierItem modifierItem = mod.ModifierItem;
+            int stackCount = mod.stackCount;
             if (!modifierItem.modifiesStats) continue;
 
             switch (stat) {
                 case Player.Stat.CritChance:
-                    statSum += modifierItem.critChance; 
+                    statSum += modifierItem.GetCritChance(stackCount); 
                     break;
                 case Player.Stat.CritMulti:
-                    statSum += modifierItem.critMultiplier; 
+                    statSum += modifierItem.GetCritMultiplier(stackCount); 
                     break;
                 case Player.Stat.DamageMulti:
-                    statSum += modifierItem.damageMultiplier; 
+                    statSum += modifierItem.GetDamageMultiplier(stackCount); 
                     break;
                 case Player.Stat.FireratePercentage:
-                    statSum += modifierItem.fireratePercentage; 
+                    statSum += modifierItem.GetFireratePercentage(stackCount); 
                     break;
                 case Player.Stat.ProjectileCount:
-                    statSum += modifierItem.projectileCount; 
+                    statSum += modifierItem.GetProjectileCount(stackCount); 
                     break;
                 case Player.Stat.RangePercentage:
-                    statSum += modifierItem.rangePercentage;
+                    statSum += modifierItem.GetRangePercentage(stackCount);
                     break;
             }
         }
-
+        
         return statSum;
     }
 
@@ -554,13 +555,37 @@ public partial class Game {
         GetEncumberingWeightRange(out int startEncumberingWeight, out _);
         playerPanelWeightText.text = $"<color=#98C5CC>{inventoryWeight}</color><size=22>/{startEncumberingWeight}";
         
-        equipedStatsPanel.bleedResistText.text = DisplayProbNoColor(GetAbsoluteStat(Player.Stat.BleedResist));
-        equipedStatsPanel.critChanceText.text = DisplayProbNoColor(GetAbsoluteStat(Player.Stat.CritChance));
-        equipedStatsPanel.critMultiText.text = DisplayMultiplierNoColor(GetAbsoluteStat(Player.Stat.CritMulti));
-        equipedStatsPanel.damageText.text = DisplayMultiplierNoColor(GetAbsoluteStat(Player.Stat.DamageMulti));
-        equipedStatsPanel.firerateText.text = DisplayProbNoColor(GetAbsoluteStat(Player.Stat.FireratePercentage));
-        equipedStatsPanel.projectileCountText.text = DisplayNumberNoColor(GetAbsoluteStat(Player.Stat.ProjectileCount));
-        equipedStatsPanel.rangeText.text = DisplayProbNoColor(GetAbsoluteStat(Player.Stat.RangePercentage));
+        Color boostedColor = styles.increaseDescColor;
+        
+        equipedStatsPanel.bleedResistText.text = Boosted(Player.Stat.BleedResist) ? 
+                                                 DisplayProb(GetAbsoluteStat(Player.Stat.BleedResist), boostedColor) : 
+                                                 DisplayProbNoColor(GetAbsoluteStat(Player.Stat.BleedResist));
+        
+        equipedStatsPanel.critChanceText.text = Boosted(Player.Stat.CritChance) ? 
+                                                DisplayProb(GetAbsoluteStat(Player.Stat.CritChance), boostedColor) :
+                                                DisplayProbNoColor(GetAbsoluteStat(Player.Stat.CritChance));
+        
+        equipedStatsPanel.critMultiText.text = Boosted(Player.Stat.CritMulti) ? 
+                                               DisplayMultiplier(GetAbsoluteStat(Player.Stat.CritMulti), boostedColor) :
+                                               DisplayMultiplierNoColor(GetAbsoluteStat(Player.Stat.CritMulti));
+        
+        equipedStatsPanel.damageText.text = Boosted(Player.Stat.DamageMulti) ? 
+                                            DisplayMultiplier(GetAbsoluteStat(Player.Stat.DamageMulti), boostedColor) :
+                                            DisplayMultiplierNoColor(GetAbsoluteStat(Player.Stat.DamageMulti));
+        
+        equipedStatsPanel.firerateText.text = Boosted(Player.Stat.FireratePercentage) ? 
+                                              DisplayProb(GetAbsoluteStat(Player.Stat.FireratePercentage), boostedColor) :
+                                              DisplayProbNoColor(GetAbsoluteStat(Player.Stat.FireratePercentage));
+        
+        equipedStatsPanel.projectileCountText.text = Boosted(Player.Stat.ProjectileCount) ? 
+                                                     DisplayNumber(GetAbsoluteStat(Player.Stat.ProjectileCount), boostedColor) :
+                                                     DisplayNumberNoColor(GetAbsoluteStat(Player.Stat.ProjectileCount));
+        
+        equipedStatsPanel.rangeText.text = Boosted(Player.Stat.RangePercentage) ? 
+                                           DisplayProb(GetAbsoluteStat(Player.Stat.RangePercentage), boostedColor) :
+                                           DisplayProbNoColor(GetAbsoluteStat(Player.Stat.RangePercentage));
+        
+        bool Boosted(Player.Stat stat) => GetEquipmentStatAdjustment(stat) > 0f; 
     }
     
 }

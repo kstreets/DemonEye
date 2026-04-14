@@ -47,13 +47,13 @@ public class Item : UuidScriptableObject {
     
     public bool modifiesStats;
     [ShowIf(nameof(modifiesStats))]
-    public float critChance;
-    public float critMultiplier;
-    public float damageMultiplier;
-    public float fireratePercentage;
-    public float movementSpeedPercentage;
-    public float projectileCount;
-    public float rangePercentage;
+    [SerializeField] private float critChance;
+    [SerializeField] private float critMultiplier;
+    [SerializeField] private float damageMultiplier;
+    [SerializeField] private float fireratePercentage;
+    [SerializeField] private float movementSpeedPercentage;
+    [SerializeField] private float projectileCount;
+    [SerializeField] private float rangePercentage;
     [EndIf]
     
     [Space]
@@ -103,20 +103,13 @@ public class Item : UuidScriptableObject {
         string desc = string.Empty;
         
         if (modifiesStats) {
-            if (!Mathf.Approximately(critChance, 0f))              desc += $"\n{DisplayIncDec(critChance)} Crit Chance";
-            if (!Mathf.Approximately(critMultiplier, 0f))          desc += $"\n{DisplayIncDec(critMultiplier)} Crit Multiplier";
-            if (!Mathf.Approximately(damageMultiplier, 0f))        desc += $"\n{DisplayMultiplierIncDec(damageMultiplier)} Damage";
-            if (!Mathf.Approximately(fireratePercentage, 0f))      desc += $"\n{DisplayProbIncDec(fireratePercentage)} Firerate";
-            if (!Mathf.Approximately(movementSpeedPercentage, 0f)) desc += $"\n{DisplayProbIncDec(movementSpeedPercentage)} Movement Speed";
-            if (!Mathf.Approximately(projectileCount, 0f)) {
-                if (stackCount == 1) {
-                    desc += $"\n{DisplayIncDec(projectileCount)} Projectile Count";
-                }
-                else {
-                    desc += $"\n{DisplayIncDec(projectileCount * stackCount)} Projectile Count";
-                }
-            }
-            if (!Mathf.Approximately(rangePercentage, 0f))          desc += $"\n{DisplayProbIncDec(rangePercentage)} Range";
+            if (!Mathf.Approximately(critChance, 0f))              desc += $"\n{DisplayProbIncDec(GetCritChance(stackCount))} Crit Chance";
+            if (!Mathf.Approximately(critMultiplier, 0f))          desc += $"\n{DisplayMultiplierIncDec(GetCritMultiplier(stackCount))} Crit Multiplier";
+            if (!Mathf.Approximately(damageMultiplier, 0f))        desc += $"\n{DisplayMultiplierIncDec(GetDamageMultiplier(stackCount))} Damage";
+            if (!Mathf.Approximately(fireratePercentage, 0f))      desc += $"\n{DisplayProbIncDec(GetFireratePercentage(stackCount))} Firerate";
+            if (!Mathf.Approximately(movementSpeedPercentage, 0f)) desc += $"\n{DisplayProbIncDec(GetMovementSpeedPercentage(stackCount))} Movement Speed";
+            if (!Mathf.Approximately(projectileCount, 0f))         desc += $"\n{DisplayIncDec(GetProjectileCount(stackCount))} Projectile Count";
+            if (!Mathf.Approximately(rangePercentage, 0f))         desc += $"\n{DisplayProbIncDec(GetRangePercentage(stackCount))} Range";
         }
 
         bool removeFirstNewLine = !string.IsNullOrEmpty(desc);
@@ -138,6 +131,14 @@ public class Item : UuidScriptableObject {
         
         return !string.IsNullOrEmpty(desc) ? desc : "Item is missing description";
     }
+    
+    public float GetCritChance(int stackCount) => critChance * stackCount;
+    public float GetCritMultiplier(int stackCount) => critMultiplier * stackCount;
+    public float GetDamageMultiplier(int stackCount) => damageMultiplier * stackCount;
+    public float GetFireratePercentage(int stackCount) => fireratePercentage * stackCount;
+    public float GetMovementSpeedPercentage(int stackCount) => movementSpeedPercentage * stackCount;
+    public float GetProjectileCount(int stackCount) => projectileCount * stackCount;
+    public float GetRangePercentage(int stackCount) => rangePercentage * stackCount;
 
     protected virtual string GetModifierDescription(int stackCount) {
         return string.Empty;

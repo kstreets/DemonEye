@@ -1203,8 +1203,9 @@ public partial class Game : MonoBehaviour {
         return $"<color=#{ColorUtility.ToHtmlStringRGBA(color)}>{text}</color>";
     }
     
-    public static string DisplayProb(float probability) {
-        return ColorText($"{Mathf.FloorToInt(probability * 100f)}%", gameInstance.styles.timeDescColor);
+    public static string DisplayProb(float probability, Color? color = default) {
+        Color textColor = color ?? gameInstance.styles.timeDescColor;
+        return ColorText($"{Mathf.FloorToInt(probability * 100f)}%", textColor);
     }
     
     public static string DisplayProbNoColor(float probability) {
@@ -1215,20 +1216,24 @@ public partial class Game : MonoBehaviour {
         return probability >= 0f ? DisplayProbIncrease(probability) : DisplayProbDecrease(probability);
     }
 
-    public static string DisplayProbIncrease(float probability) {
-        return ColorText($"+{Mathf.FloorToInt(probability * 100f)}%", gameInstance.styles.increaseDescColor);
+    public static string DisplayProbIncrease(float probability, Color? color = default) {
+        Color textColor = color ?? gameInstance.styles.increaseDescColor;
+        return ColorText($"+{Mathf.FloorToInt(probability * 100f)}%", textColor);
     }
     
-    public static string DisplayProbDecrease(float probability) {
-        return ColorText($"-{Mathf.Abs(Mathf.FloorToInt(probability * 100f))}%", gameInstance.styles.decreaseDescColor);
+    public static string DisplayProbDecrease(float probability, Color? color = default) {
+        Color textColor = color ?? gameInstance.styles.decreaseDescColor;
+        return ColorText($"-{Mathf.Abs(Mathf.FloorToInt(probability * 100f))}%", textColor);
     }
 
-    public static string DisplayNumber(int number) {
-        return ColorText(number.ToString(), gameInstance.styles.timeDescColor);
+    public static string DisplayNumber(int number, Color? color = default) {
+        Color textColor = color ?? gameInstance.styles.timeDescColor;
+        return ColorText(number.ToString(), textColor);
     }
     
-    public static string DisplayNumber(float number) {
-        return ColorText(number.ToString("0.00"), gameInstance.styles.timeDescColor);
+    public static string DisplayNumber(float number, Color? color = default) {
+        Color textColor = color ?? gameInstance.styles.timeDescColor;
+        return ColorText(number.ToString("0.00"), textColor);
     }
     
     public static string DisplayNumberNoColor(float number) {
@@ -1239,29 +1244,33 @@ public partial class Game : MonoBehaviour {
         return amount >= 0f ? DisplayIncrease(amount) : DisplayDecrease(amount);
     }
 
-    public static string DisplayIncrease(int amount) {
-        return ColorText($"+{amount}", gameInstance.styles.increaseDescColor);
+    public static string DisplayIncrease(int amount, Color? color = default) {
+        Color textColor = color ?? gameInstance.styles.increaseDescColor;
+        return ColorText($"+{amount}", textColor);
     }
     
-    public static string DisplayDecrease(int amount) {
-        return ColorText($"-{Mathf.Abs(amount)}", gameInstance.styles.decreaseDescColor);
+    public static string DisplayDecrease(int amount, Color? color = default) {
+        Color textColor = color ?? gameInstance.styles.decreaseDescColor;
+        return ColorText($"-{Mathf.Abs(amount)}", textColor);
     }
 
     public static string DisplayIncDec(float amount) {
         return amount >= 0f ? DisplayIncrease(amount) : DisplayDecrease(amount);
     }
 
-    public static string DisplayIncrease(float amount) {
-        return ColorText($"+{amount:0.00}", gameInstance.styles.increaseDescColor);
+    public static string DisplayIncrease(float amount, Color? color = default) {
+        Color textColor = color ?? gameInstance.styles.increaseDescColor;
+        return ColorText($"+{amount:0.00}", textColor);
     }
     
-    public static string DisplayDecrease(float amount) {
-        return ColorText($"-{Mathf.Abs(amount):0.00}", gameInstance.styles.decreaseDescColor);
+    public static string DisplayDecrease(float amount, Color? color = default) {
+        Color textColor = color ?? gameInstance.styles.decreaseDescColor;
+        return ColorText($"-{Mathf.Abs(amount):0.00}", textColor);
     }
     
-    public static string DisplayMultiplier(float multiplier) {
+    public static string DisplayMultiplier(float multiplier, Color? color = default) {
         Color textColor = multiplier >= 1f ? gameInstance.styles.increaseDescColor : gameInstance.styles.decreaseDescColor;
-        return ColorText($"{multiplier:0.00}x", textColor);
+        return ColorText($"{multiplier:0.00}x", color ?? textColor);
     }
     
     public static string DisplayMultiplierNoColor(float multiplier) {
@@ -1272,12 +1281,14 @@ public partial class Game : MonoBehaviour {
         return multiplier >= 0f ? DisplayMultiplierIncrease(multiplier) : DisplayMultiplierDecrease(multiplier);
     }
 
-    public static string DisplayMultiplierIncrease(float multiplier) {
-        return ColorText($"+{multiplier:0.00}x", gameInstance.styles.increaseDescColor);
+    public static string DisplayMultiplierIncrease(float multiplier, Color? color = default) {
+        Color textColor = color ?? gameInstance.styles.increaseDescColor;
+        return ColorText($"+{multiplier:0.00}x", textColor);
     }
     
-    public static string DisplayMultiplierDecrease(float multiplier) {
-        return ColorText($"-{multiplier:0.00}x", gameInstance.styles.decreaseDescColor);
+    public static string DisplayMultiplierDecrease(float multiplier, Color? color = default) {
+        Color textColor = color ?? gameInstance.styles.decreaseDescColor;
+        return ColorText($"-{multiplier:0.00}x", textColor);
     }
 
     public static string DisplaySeconds(float time) {
