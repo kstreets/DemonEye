@@ -49,7 +49,7 @@ public partial class Game {
         }
     }
     
-    private Player player;
+    public Player player;
 
     private void OnPlayerCreated() {
         player.hurtCollider = player.gameObject.GetComponentInChildren<CapsuleCollider2D>();

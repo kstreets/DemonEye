@@ -186,6 +186,7 @@ public partial class Game {
     private void OnBuyTogglePressed() {
         transactionState = TransactionState.Buying;
         traderTransactionInventoryParent.gameObject.SetActive(false);
+        
         // Move any selling items back to stash
         foreach (InventorySlot slot in transactionInventory.slots) {
             if (slot.itemInstance == null) continue;

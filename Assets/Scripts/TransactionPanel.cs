@@ -35,20 +35,35 @@ public class TransactionPanel : MonoBehaviour {
         }
         
         if (itemInstance == null) {
+            barterPurchaseButton.Disable();
+            moneyPurchaseButton.Disable();
             return;
         }
-
-        purchasingItemImage.sprite = itemInstance.ItemRef.inventorySprite;
+        
+        Item item = itemInstance.ItemRef;
+        
+        bool canBarter = item.barterRequirements.Count > 0;
+        foreach (ItemWithCount barterReq in item.barterRequirements) {
+            if (gameInstance.GetOwnedCountOfItem(barterReq.item) < barterReq.count) {
+                canBarter = false;
+                break;
+            }
+        }
+        
+        barterPurchaseButton.SetClickableState(canBarter);
+        moneyPurchaseButton.SetClickableState(gameInstance.player.coinCurrency >= item.buyPrice);
+        
+        purchasingItemImage.sprite = item.inventorySprite;
         purchasingItemDesc.Show(itemInstance);
 
-        for (int i = 0; i < itemInstance.ItemRef.barterRequirements.Count; i++) {
+        for (int i = 0; i < item.barterRequirements.Count; i++) {
             ItemWithCount barterReq = itemInstance.ItemRef.barterRequirements[i];
             ResourceRequirement resReq = resourceRequirements[i];
             resReq.gameObject.SetActive(true);
             resReq.Set(barterReq.item, barterReq.count, gameInstance.GetOwnedCountOfItem(barterReq.item));
         }
 
-        string buyPriceString = ColorText(itemInstance.ItemRef.buyPrice.ToString("N0"), styles.coinCurrencyColor);
+        string buyPriceString = ColorText(item.buyPrice.ToString("N0"), styles.coinCurrencyColor);
         moneyPurchaseButton.text.text = $"Purchase for <sprite=0>{buyPriceString}";
     }
 

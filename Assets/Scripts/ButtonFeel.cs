@@ -59,14 +59,20 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
             SetMargin(styles.normalButtonTextMargin);
         }
     }
+    
+    public void SetClickableState(bool clickable) {
+        if (clickable) Enable(); else Disable();
+    }
 
     public void Disable() {
+        if (isDisabled) return;
         isDisabled = true;
         image.sprite = disabledSprite;
         SetMargin(styles.pressedButtonTextMargin);
     }
 
     public void Enable() {
+        if (!isDisabled) return;
         isDisabled = false;
         image.sprite = unpressedSprite;
         SetMargin(styles.normalButtonTextMargin);
