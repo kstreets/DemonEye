@@ -35,6 +35,12 @@ public static class Extensions {
         return new (ltw.MultiplyPoint(new(rect.x, 1f, 1f)).x, ltw.MultiplyPoint(new(1f, rect.y, 1f)).y, rect.width, rect.height);
     } 
     
+    public static Rect WorldRectIgnoreScale(this RectTransform rectTransform) {
+        Rect rect = rectTransform.rect;
+        Matrix4x4 ltw = Matrix4x4.TRS(rectTransform.position, rectTransform.rotation, Vector3.one);
+        return new (ltw.MultiplyPoint(new(rect.x, 1f, 1f)).x, ltw.MultiplyPoint(new(1f, rect.y, 1f)).y, rect.width, rect.height);
+    }
+    
     public static void ResizeWidth(this RectTransform rectTransform, float width) {
         rectTransform.sizeDelta = new(width, rectTransform.sizeDelta.y);
     }

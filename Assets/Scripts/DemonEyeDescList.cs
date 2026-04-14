@@ -4,7 +4,6 @@ using static Game;
 
 public class DemonEyeDescList : MonoBehaviour {
     
-    public RectTransform rectTransform;
     public VerticalLayoutGroup verticalLayout;
     public DemonEyeDescElement[] elements;
     

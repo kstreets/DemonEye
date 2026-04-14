@@ -118,6 +118,26 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
 
     public void SetLayoutVertical() {
         FitPopupSize(rectTransform, nameText, tagsLayoutGroup, bodyLayoutGroup);
+        
+        // Keep popup from going offscreen
+        {
+            float minY = rectTransform.WorldRectIgnoreScale().yMin;
+            float maxY = rectTransform.WorldRectIgnoreScale().yMax;
+        
+            const float screenPadding = 25f;
+        
+            bool offBottomOfScreen = minY < 0f;
+            if (offBottomOfScreen) {
+                float verticalCorrection = Mathf.Abs(minY) + screenPadding;
+                rectTransform.position += new Vector3(0f, verticalCorrection, 0f);
+            }
+        
+            bool offTopOfScreen = maxY > Screen.height;
+            if (offTopOfScreen) {
+                float verticalCorrection = (maxY - Screen.height) + screenPadding;
+                rectTransform.position -= new Vector3(0f, verticalCorrection, 0f);
+            }
+        }
     }
     
     public void SetLayoutHorizontal() { }
