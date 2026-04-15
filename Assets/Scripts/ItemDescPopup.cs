@@ -83,11 +83,11 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
             bool itemIsOwnedByTrader = itemInstance.traderOwned;
             sellOrBuyPrice = itemIsOwnedByTrader ? item.buyPrice : item.GetSellPrice() * itemInstance.count;
         }
-                             
+        
         string coinText = $"<sprite=0>{ColorText(sellOrBuyPrice.ToString("N0"), styles.coinCurrencyColor)}";
         
         string tintedWeightSprite = $"<sprite=2 color=#{ColorUtility.ToHtmlStringRGBA(styles.underWeightColor)}>";
-        string weightText = tintedWeightSprite + ColorText(item.Weight.ToString(), styles.underWeightColor);
+        string weightText = tintedWeightSprite + ColorText((item.Weight * itemInstance.count).ToString(), styles.underWeightColor);
         
         metaInfoText.text = coinText + "  " + weightText;
     }
