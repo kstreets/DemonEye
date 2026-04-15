@@ -13,6 +13,9 @@ public class ToggleButtonGroup : MonoBehaviour {
 
     private void Awake() {
         callbacks.Clear();
+        
+        if (toggles.Count <= 0) return;
+        
         foreach (ToggleButton toggle in toggles) {
             InitializeToggle(toggle);
         } 

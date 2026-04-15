@@ -186,10 +186,7 @@ public partial class Game : MonoBehaviour {
     public RectTransform traderInventoryPanel;
     public RectTransform traderInventoryParent;
     public RectTransform traderTransactionInventoryParent;
-    public TextMeshProUGUI traderTransactionInfoText;
-    public Image traderXpLevelFill;
-    public TextMeshProUGUI traderLevelText;
-    public TextMeshProUGUI traderRemainingXpText;
+    public TraderRepBar traderRepBarInTrading;
     public TextMeshProUGUI traderItemRefreshTimeText;
     public TransactionPanel transactionPanel;
     [EndFoldout]
@@ -204,6 +201,7 @@ public partial class Game : MonoBehaviour {
     public RectTransform questsParent;
     public RectTransform questSelectionParent;
     public ToggleButtonGroup questToggleButtonGroup;
+    public TraderRepBar traderRepBarInQuests;
     [EndFoldout]
     
     [Foldout("UI/SkillsTab")]

@@ -34,7 +34,7 @@ public partial class Game {
     private void InitTrader() {
         traderSaveData = LoadFromFileOrCreateNew<TradersSaveData>(traderSavePath);
         MarkTraderItemsAsTraderOwned();
-        SetTraderRepBar();
+        CalculateAndSetTraderRepBars();
     }
 
     private void UpdateTrader() {
@@ -64,16 +64,15 @@ public partial class Game {
         if (increasedLevel) {
             FillTraderInventoryWithItems();
         }
-        SetTraderRepBar();
+        CalculateAndSetTraderRepBars();
     }
 
-    private void SetTraderRepBar() {
+    private void CalculateAndSetTraderRepBars() {
         int levelIndex = GetTraderRepLevel();
         
         if (ReachedTraderMaxRep()) {
-            traderXpLevelFill.fillAmount = 1f;
-            traderRemainingXpText.text = string.Empty;
-            traderLevelText.text = $"Level {levelIndex} (Max)";
+            SetTraderRepBarViewAsMaxLevel(traderRepBarInTrading, levelIndex);
+            SetTraderRepBarViewAsMaxLevel(traderRepBarInQuests, levelIndex);
             return;
         }
         
@@ -84,10 +83,22 @@ public partial class Game {
         int traderRep = traderSaveData.traderRep;
         int repCompletedAtCurLevel = traderRep - prefixedSumAtPrevLevel;
         int repLeftToGo = prefixedSumAtCurLevel - traderRep;
+        float fill = repCompletedAtCurLevel / (float)repNeededForThisLevel;
         
-        traderXpLevelFill.fillAmount = repCompletedAtCurLevel / (float)repNeededForThisLevel;
-        traderRemainingXpText.text = $"{repLeftToGo} Rep Left";
-        traderLevelText.text = $"Level {levelIndex}";
+        SetTraderRepBarView(traderRepBarInTrading, fill, repLeftToGo, levelIndex);
+        SetTraderRepBarView(traderRepBarInQuests, fill, repLeftToGo, levelIndex);
+    }
+    
+    private void SetTraderRepBarView(TraderRepBar bar, float fill, int repLeftToGo, int level) {
+        bar.xpLevelFill.fillAmount = fill;
+        bar.remainingXpText.text = $"{repLeftToGo} Rep Left";
+        bar.levelText.text = $"Level {level}";
+    }
+    
+    private void SetTraderRepBarViewAsMaxLevel(TraderRepBar bar, int level) {
+        bar.xpLevelFill.fillAmount = 1f;
+        bar.remainingXpText.text = string.Empty;
+        bar.levelText.text = $"Level {level} (Max)";
     }
 
     private int GetTraderRepLevel() {
