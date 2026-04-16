@@ -51,8 +51,8 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
         if (item.type == gameInstance.quickUseType) {
             typeTagGroup.textMesh.text = "Quick Use";
         } 
-        else if (item.type == gameInstance.eyeModifierType) {
-            typeTagGroup.textMesh.text = "Eye Modifier";
+        else if (item.type == gameInstance.eyeUpgradeType) {
+            typeTagGroup.textMesh.text = "Eye Upgrade";
         }
         else if (item.type == gameInstance.wearableModifierType) {
             typeTagGroup.textMesh.text = "Wearable Modifier";

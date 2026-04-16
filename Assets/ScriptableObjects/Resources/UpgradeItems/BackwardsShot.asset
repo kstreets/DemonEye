@@ -9,25 +9,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ca59222e1840b6f4d9a632e2dc2bcfb1, type: 3}
-  m_Name: Bleed
-  m_EditorClassIdentifier: 
-  uuid: -205166182
-  displayName: Bleed
-  inventorySprite: {fileID: -1219428220, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
-  dropSprite: {fileID: 1914876813, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  m_Script: {fileID: 11500000, guid: 34a2c5916bd111f49a9c75af614ad01d, type: 3}
+  m_Name: BackwardsShot
+  m_EditorClassIdentifier: Assembly-CSharp::BackwardsShotSoulcard
+  uuid: -1250846177
+  displayName: Backwards Shot
+  inventorySprite: {fileID: 1981012568, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  dropSprite: {fileID: 0}
   pickupRadius: 0.07
   type: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
   associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
   priceCategory: {fileID: 11400000, guid: 29cfe26cd6da0734197e5840e6724f56, type: 2}
-  buyPrice: 8000
-  sellPrice: 640
+  buyPrice: 5500
+  sellPrice: 440
   spawnsOnAllMaps: 1
   spawnsOnMaps:
-  - {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
+  - {fileID: 11400000, guid: 9353817006d76f54fb1273b8ced36a68, type: 2}
   chanceToSpawnOnBody: 0
-  chanceToSpawnOnTrader: 0.506
-  chanceToSpawnFromRock: 0.62
+  chanceToSpawnOnTrader: 0.615
+  chanceToSpawnFromRock: 0.82
   chanceToSpawnFromEnemy: 0
   chanceToExistInLevel: 0
   chanceToSpawnFromBush: 0
@@ -36,21 +36,20 @@ MonoBehaviour:
   barterRequirements:
   - item: {fileID: 11400000, guid: c300cfd9dba50fc438f83dec791af29b, type: 2}
     count: 3
-  - item: {fileID: 11400000, guid: 8799857dd3cea574da43da5e99edb7aa, type: 2}
+  - item: {fileID: 11400000, guid: 813a59de02795ad40bfd5fccf7ddc415, type: 2}
     count: 2
   spawnsFromEnemies: []
   modifiesStats: 0
   critChance: 0
   critMultiplier: 0
-  damage: 0
+  damageMultiplier: 0
   fireratePercentage: 0
   movementSpeedPercentage: 0
   projectileCount: 0
   rangePercentage: 0
   itemGroupProps: {fileID: 11400000, guid: 78826f3a685555a4896655f4c68ef737, type: 2}
-  maxStackCount: 3
+  maxStackCount: 0
   weight: 0
   description: 
   relativeMechanicDesc: {fileID: 0}
-  damageMultiplier: 0.15
-  bleedInterval: 0.5
+  probability: 0.3

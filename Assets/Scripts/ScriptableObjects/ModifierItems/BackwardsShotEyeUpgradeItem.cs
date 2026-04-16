@@ -2,7 +2,7 @@ using UnityEngine;
 using static Game;
 
 [CreateAssetMenu(fileName = "BackwardsShotModifier", menuName = "Scriptable Objects/Modifiers/BackwardsShotModifier")]
-public class BackwardsShotModifierItem : ModifierItem {
+public class BackwardsShotEyeUpgradeItem : EyeUpgradeItem {
     
     public struct InstanceData {
         public float probability;
@@ -16,7 +16,7 @@ public class BackwardsShotModifierItem : ModifierItem {
         };
     }
 
-    protected override string GetModifierDescription(int stackCount) {
+    protected override string GetUpgradeDescription(int stackCount) {
         return $"{DisplayProb(GetProbability(stackCount))} chance per projectile to shoot a mirrored one with {DisplayProb(1)} critical strike chance";
     }
 

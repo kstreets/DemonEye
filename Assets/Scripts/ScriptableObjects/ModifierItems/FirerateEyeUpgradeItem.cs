@@ -2,7 +2,7 @@ using UnityEngine;
 using static Game;
 
 [CreateAssetMenu(fileName = "FirerateModifier", menuName = "Scriptable Objects/Modifiers/FirerateModifier")]
-public class FirerateModifierItem : ModifierItem {
+public class FirerateEyeUpgradeItem : EyeUpgradeItem {
 
     public struct InstanceData {
         public float rateIncreasePercentage;
@@ -17,7 +17,7 @@ public class FirerateModifierItem : ModifierItem {
         eyeInstance.firerate = instance;
     }
 
-    protected override string GetModifierDescription(int stackCount) {
+    protected override string GetUpgradeDescription(int stackCount) {
         return $"{DisplayProbIncrease(GetReductionPercentage(stackCount))} rate of fire";
     }
 

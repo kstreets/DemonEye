@@ -1,8 +1,8 @@
 using UnityEngine;
 using static Game;
 
-[CreateAssetMenu(fileName = "EyeModifier", menuName = "Scriptable Objects/EyeModifier")]
-public class ModifierItem : Item {
+[CreateAssetMenu(fileName = "EyeUpgrade", menuName = "Scriptable Objects/EyeUpgrade")]
+public class EyeUpgradeItem : Item {
 
     public MechanicDesc relativeMechanicDesc;
     

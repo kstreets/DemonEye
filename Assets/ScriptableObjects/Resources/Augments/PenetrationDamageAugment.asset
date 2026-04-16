@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: PenetrationDamageAugment
   m_EditorClassIdentifier: Assembly-CSharp::PenetrationDamageAugment
   uuid: -1790745789
-  modifierDerivedFrom: {fileID: 11400000, guid: 8a1342e3b7302de4c897cb310bc19b12, type: 2}
+  eyeUpgradeDerivedFrom: {fileID: 11400000, guid: 8a1342e3b7302de4c897cb310bc19b12, type: 2}
   chanceToSpawnReduction: 0.72
   damageMultiplierPerPenetration: 1.5

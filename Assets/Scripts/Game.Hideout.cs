@@ -331,7 +331,7 @@ public partial class Game {
             
             using var autoRelease = ListPool<int>.Get(out var uuids);
             foreach (InventorySlot slot in crucibleInventory.slots) {
-                if (slot.itemInstance == null || slot.itemInstance.ItemRef.type != eyeModifierType) continue;
+                if (slot.itemInstance == null || slot.itemInstance.ItemRef.type != eyeUpgradeType) continue;
                 uuids.Add(slot.itemInstance.itemOrInstanceUuid);
             }
             forgeDetailsDemonEyeDesc.UpdateDisplay(ConstructModifierSet(uuids));
@@ -381,7 +381,7 @@ public partial class Game {
                 
                 if (slot.itemInstance == null) continue;
                 
-                if (slot.ui.OnlyAcceptsType(eyeModifierType)) {
+                if (slot.ui.OnlyAcceptsType(eyeUpgradeType)) {
                     newDemonEyeItemInstance.nestedUuids.Add(slot.itemInstance.itemOrInstanceUuid);
                 }
                 slot.itemInstance = null;
@@ -480,13 +480,10 @@ public partial class Game {
         public QuestGraphRuntime.Node questNode;
         public QuestUI questUI;
         public ToggleButton questToggleButton;
-
-        public void RefreshDisplay() => questUI.Display(questNode.curQuest);
     }
 
     private Queue<QuestPackage> reservedQuestPackages = new();
     private List<QuestPackage> activeQuestPackages = new();
-    
     private QuestPackage presentingQuestPackage;
 
     [Serializable]
@@ -561,7 +558,7 @@ public partial class Game {
         }
     }
 
-    private void RefreshQuestDisplays() {
+    public void RefreshQuestDisplays() {
         if (activeQuestPackages.Count <= 0) return;
 
         if (presentingQuestPackage == null || presentingQuestPackage.questNode == null) {
@@ -574,7 +571,7 @@ public partial class Game {
         }
         
         presentingQuestPackage.questUI.gameObject.SetActive(true);
-        presentingQuestPackage.RefreshDisplay();
+        presentingQuestPackage.questUI.Display(presentingQuestPackage.questNode.curQuest);
     }
 
     private void ActivateQuest(QuestGraphRuntime.Node questNode) {

@@ -28,7 +28,7 @@ public partial class Game {
                 UuidScriptableObject uuidObject = gameInstance.resourceLookup[itemOrInstanceUuid];
                 return uuidObject switch {
                     Item item => item,
-                    Augment augment => augment.augmentedModifierItem,
+                    Augment augment => augment.augmentedEyeUpgradeItem,
                     _ => null, 
                 };
             }
@@ -143,7 +143,7 @@ public partial class Game {
         for (int i = 0; i < inventoryLength; i++) {
             InventorySlotUI slotUI = crucibleInventory.slots[i].ui;
             slotUI.disallowItemStacking = true;
-            slotUI.onlyAcceptedItemType = i == 0 ? eyeType : eyeModifierType;
+            slotUI.onlyAcceptedItemType = i == 0 ? eyeType : eyeUpgradeType;
 
             if (i == 0) {
                 slotUI.gameObject.transform.position = crucibleParent.position;
@@ -278,12 +278,12 @@ public partial class Game {
         itemDescPopup.Show(hoveredSlot.itemInstance, popupPosition);
         
         // Add mechanic desctiption if necessary
-        if (hoveredSlot.itemInstance.ItemRef.type == eyeModifierType) {
-            ModifierItem modifierItem = (ModifierItem)hoveredSlot.itemInstance.ItemRef;
-            if (modifierItem.relativeMechanicDesc) {
+        if (hoveredSlot.itemInstance.ItemRef.type == eyeUpgradeType) {
+            EyeUpgradeItem eyeUpgradeItem = (EyeUpgradeItem)hoveredSlot.itemInstance.ItemRef;
+            if (eyeUpgradeItem.relativeMechanicDesc) {
                 mechanicDescPopup.gameObject.SetActive(true);
-                mechanicDescPopup.nameText.text = modifierItem.relativeMechanicDesc.displayName;
-                mechanicDescPopup.descText.text = modifierItem.relativeMechanicDesc.description;
+                mechanicDescPopup.nameText.text = eyeUpgradeItem.relativeMechanicDesc.displayName;
+                mechanicDescPopup.descText.text = eyeUpgradeItem.relativeMechanicDesc.description;
                 mechanicDescPopup.transform.position = itemDescPopup.rectTransform.WorldRect().min;
                 
                 mechanicDescPopup.nameFitter.ForceRecalculate();
@@ -965,7 +965,7 @@ public partial class Game {
             foreach (InventorySlot slot in stashInventory.slots) {
                 if (slot.itemInstance == null) continue;
                 Item item = slot.itemInstance.ItemRef;
-                if (item.type != eyeType && item.type != eyeModifierType) {
+                if (item.type != eyeType && item.type != eyeUpgradeType) {
                     slot.ui.itemUI.ToggleGray();
                 }
             }

@@ -5,22 +5,22 @@ using static Game;
 
 public class Augment : UuidScriptableObject {
 
-    public ModifierItem modifierDerivedFrom;
+    public EyeUpgradeItem eyeUpgradeDerivedFrom;
     [Range(0f, 0.99f)] public float chanceToSpawnReduction;
     
-    [NonSerialized] public ModifierItem augmentedModifierItem;
+    [NonSerialized] public EyeUpgradeItem augmentedEyeUpgradeItem;
     
     public void CreateAugmentItemFromDerived() {
-        augmentedModifierItem = Instantiate(modifierDerivedFrom);
-        augmentedModifierItem.uuid = uuid;
+        augmentedEyeUpgradeItem = Instantiate(eyeUpgradeDerivedFrom);
+        augmentedEyeUpgradeItem.uuid = uuid;
         
         // Modify item rarity
-        augmentedModifierItem.chanceToSpawnFromRock -= chanceToSpawnReduction;
-        augmentedModifierItem.chanceToSpawnOnBody -= chanceToSpawnReduction;
-        augmentedModifierItem.chanceToSpawnOnTrader -= chanceToSpawnReduction;
-        augmentedModifierItem.chanceToSpawnFromBush -= chanceToSpawnReduction;
-        augmentedModifierItem.chanceToSpawnFromEnemy -= chanceToSpawnReduction;
-        augmentedModifierItem.chanceToExistInLevel -= chanceToSpawnReduction;
+        augmentedEyeUpgradeItem.chanceToSpawnFromRock -= chanceToSpawnReduction;
+        augmentedEyeUpgradeItem.chanceToSpawnOnBody -= chanceToSpawnReduction;
+        augmentedEyeUpgradeItem.chanceToSpawnOnTrader -= chanceToSpawnReduction;
+        augmentedEyeUpgradeItem.chanceToSpawnFromBush -= chanceToSpawnReduction;
+        augmentedEyeUpgradeItem.chanceToSpawnFromEnemy -= chanceToSpawnReduction;
+        augmentedEyeUpgradeItem.chanceToExistInLevel -= chanceToSpawnReduction;
     }
     
     public virtual void AddInstanceToEnemy(Enemy enemy) { }

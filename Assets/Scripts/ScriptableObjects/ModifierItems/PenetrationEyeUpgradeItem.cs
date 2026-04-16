@@ -2,7 +2,7 @@ using UnityEngine;
 using static Game;
 
 [CreateAssetMenu(fileName = "PenetrationModifier", menuName = "Scriptable Objects/Modifiers/PenetrationModifier")]
-public class PenetrationModifierItem : ModifierItem {
+public class PenetrationEyeUpgradeItem : EyeUpgradeItem {
 
     public struct InstanceData {
         public int goThroughCount;
@@ -16,7 +16,7 @@ public class PenetrationModifierItem : ModifierItem {
         };
     }
 
-    protected override string GetModifierDescription(int stackCount) {
+    protected override string GetUpgradeDescription(int stackCount) {
         int throughCount = GetGoThroughCount(stackCount);
         if (throughCount == 1) {
             return $"Projectiles pass through {DisplayNumber(throughCount)} enemy before stopping";

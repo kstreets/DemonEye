@@ -2,7 +2,7 @@ using UnityEngine;
 using static Game;
 
 [CreateAssetMenu(fileName = "OverheatBlast", menuName = "Scriptable Objects/Modifiers/OverheatBlast")]
-public class OverheatBlast : ModifierItem {
+public class OverheatBlast : EyeUpgradeItem {
     
     public struct InstanceData {
         public int numshotsUntilOverheat;
@@ -22,7 +22,7 @@ public class OverheatBlast : ModifierItem {
         };
     }
 
-    protected override string GetModifierDescription(int stackCount) {
+    protected override string GetUpgradeDescription(int stackCount) {
         return $"After {DisplayNumber(GetOverheatShotCount(stackCount))} consecutive shots release a blast causing {DisplayMultiplier(GetDamageMultiplier(stackCount))} damage";
     }
 

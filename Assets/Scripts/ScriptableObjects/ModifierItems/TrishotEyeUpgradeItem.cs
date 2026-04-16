@@ -2,7 +2,7 @@ using UnityEngine;
 using static Game;
 
 [CreateAssetMenu(fileName = "TrishotModifier", menuName = "Scriptable Objects/Modifiers/TrishotModifier")]
-public class TrishotModifierItem : ModifierItem {
+public class TrishotEyeUpgradeItem : EyeUpgradeItem {
 
     public struct InstanceData {
         public float probability;
@@ -10,19 +10,19 @@ public class TrishotModifierItem : ModifierItem {
     }
     
     public float probability;
-    public float damageMultiplier;
+    public float damageMulti;
     
     public override void AddInstanceToEye(DemonEyeInstance eyeInstance, int stackCount) {
         InstanceData instance = new() {
             probability = GetProbability(stackCount),
-            damageMultiplier = damageMultiplier,
+            damageMultiplier = damageMulti,
         };
         eyeInstance.trishot = instance;
     }
 
-    protected override string GetModifierDescription(int stackCount) {
+    protected override string GetUpgradeDescription(int stackCount) {
         return $"{DisplayProb(GetProbability(stackCount))} chance to split a projectile into {DisplayNumber(3)}, " +
-               $"each dealing {DisplayMultiplier(damageMultiplier)} damage";
+               $"each dealing {DisplayMultiplier(damageMulti)} damage";
     }
 
     private float GetProbability(int stackCount) {

@@ -2,7 +2,7 @@ using UnityEngine;
 using static Game;
 
 [CreateAssetMenu(fileName = "PoisonModifier", menuName = "Scriptable Objects/Modifiers/PoisonModifier")]
-public class PoisonModifierItem : ModifierItem {
+public class PoisonEyeUpgradeItem : EyeUpgradeItem {
 
     public struct InstanceData {
         public float duration;
@@ -27,7 +27,7 @@ public class PoisonModifierItem : ModifierItem {
         }
     }
 
-    protected override string GetModifierDescription(int stackCount) {
+    protected override string GetUpgradeDescription(int stackCount) {
         return $"{DisplayProb(GetProbability(stackCount))} chance for a projectile to poison an enemy for {DisplaySeconds(GetDuration(stackCount))}, " +
                $"dealing {DisplayMultiplier(GetDamageMulti(stackCount))} damage to enemies over {DisplayProb(minHealthPercentForMulti)} health.";
     }

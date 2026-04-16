@@ -50,7 +50,7 @@ public partial class Game {
             int damage = GetProjectileDamage(projectile, enemy, isCriticalStrike);
             DamageEnemy(enemy, damage, isCriticalStrike);
             
-            foreach (EquipedModInstance modInstance in eyeInstance.modInstances) {
+            foreach (EquipedUpgradeInstance modInstance in eyeInstance.upgradeInstances) {
                 modInstance.ApplyToEnemy(enemy);
             }
             

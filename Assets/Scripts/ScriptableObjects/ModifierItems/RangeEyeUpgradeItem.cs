@@ -2,7 +2,7 @@ using UnityEngine;
 using static Game;
 
 [CreateAssetMenu(fileName = "RangeModifier", menuName = "Scriptable Objects/Modifiers/RangeModifier")]
-public class RangeModifierItem : ModifierItem {
+public class RangeEyeUpgradeItem : EyeUpgradeItem {
     
     public struct InstanceData {
         public float timeAliveIncrease;
@@ -16,7 +16,7 @@ public class RangeModifierItem : ModifierItem {
         };
     }
 
-    protected override string GetModifierDescription(int stackCount) {
+    protected override string GetUpgradeDescription(int stackCount) {
         return $"{DisplayIncrease(GetTimeIncrease(stackCount))} projectile lifetime";
     }
 

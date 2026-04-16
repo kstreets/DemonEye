@@ -476,29 +476,29 @@ public partial class Game {
             }
         }
 
-        foreach (EquipedModInstance mod in equipedEye.modInstances) {
-            ModifierItem modifierItem = mod.ModifierItem;
+        foreach (EquipedUpgradeInstance mod in equipedEye.upgradeInstances) {
+            EyeUpgradeItem eyeUpgradeItem = mod.EyeUpgradeItem;
             int stackCount = mod.stackCount;
-            if (!modifierItem.modifiesStats) continue;
+            if (!eyeUpgradeItem.modifiesStats) continue;
 
             switch (stat) {
                 case Player.Stat.CritChance:
-                    statSum += modifierItem.GetCritChance(stackCount); 
+                    statSum += eyeUpgradeItem.GetCritChance(stackCount); 
                     break;
                 case Player.Stat.CritMulti:
-                    statSum += modifierItem.GetCritMultiplier(stackCount); 
+                    statSum += eyeUpgradeItem.GetCritMultiplier(stackCount); 
                     break;
                 case Player.Stat.DamageMulti:
-                    statSum += modifierItem.GetDamageMultiplier(stackCount); 
+                    statSum += eyeUpgradeItem.GetDamageMultiplier(stackCount); 
                     break;
                 case Player.Stat.FireratePercentage:
-                    statSum += modifierItem.GetFireratePercentage(stackCount); 
+                    statSum += eyeUpgradeItem.GetFireratePercentage(stackCount); 
                     break;
                 case Player.Stat.ProjectileCount:
-                    statSum += modifierItem.GetProjectileCount(stackCount); 
+                    statSum += eyeUpgradeItem.GetProjectileCount(stackCount); 
                     break;
                 case Player.Stat.RangePercentage:
-                    statSum += modifierItem.GetRangePercentage(stackCount);
+                    statSum += eyeUpgradeItem.GetRangePercentage(stackCount);
                     break;
             }
         }

@@ -13,10 +13,11 @@ MonoBehaviour:
   m_Name: CraftYourFirstEye
   m_EditorClassIdentifier: Assembly-CSharp::Quest
   title: Forging a Demon Eye
-  description: "You won\u2019t get far without stronger attacks.\nSacrificing your
-    collected souls at a Blood Altar will create a Soul Stone, a powerful gem that
-    enhances attacks.\nBring a handful back to the hideout along with an eye, and
-    I\u2019ll show you how to forge a stronger Demon Eye than the one you have now."
+  description: "You won\u2019t get far without stronger attacks.\nYou need to learn
+    how to create Demon Eyes and shove them into your eye socket.\nIt will give your
+    attacks all sorts of upgrades depending on the combination of eye upgrades you
+    forge with.\nBring a handful of eye upgrades back to the hideout along with a
+    regular ole eye and use the forge to create a demon eye."
   traderReputationReward: 100
   objectives:
   - type: 1

@@ -65,7 +65,7 @@ public partial class Game : MonoBehaviour {
     public ItemType eyeType;
     public ItemType demonEyeType;
     public ItemType gemType;
-    public ItemType eyeModifierType;
+    public ItemType eyeUpgradeType;
     public ItemType wearableModifierType;
     [EndFoldout]
 
@@ -81,10 +81,6 @@ public partial class Game : MonoBehaviour {
     public PixelPerfectCamera pixelPerfectCamera;
 
     public GameObject playerPrefab;
-    public GameObject gemRockPrefab;
-    public GameObject deadBodyPrefab;
-    public GameObject altarPrefab;
-    public GameObject bushPrefab;
 
     public Item demonEyeItem;
     

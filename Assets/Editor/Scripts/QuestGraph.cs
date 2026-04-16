@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -49,6 +48,7 @@ public class QuestGraph : Graph {
             graphLogger.LogError($"Quest '{quest.name}' is referenced by ({count}) different nodes, it should just be 1");
         }
     }
+    
 }
 
 public class QuestStartNode : Node {
@@ -60,7 +60,7 @@ public class QuestStartNode : Node {
 }
 
 public class QuestGraphNode : Node {
-
+    
     protected override void OnDefinePorts(IPortDefinitionContext context) {
         context.AddInputPort("Input").Build();
         context.AddOutputPort("Output").Build();

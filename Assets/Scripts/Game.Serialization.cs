@@ -70,7 +70,7 @@ public partial class Game {
     }
     
     public Dictionary<int, UuidScriptableObject> resourceLookup = new();
-    public Dictionary<ModifierItem, List<Augment>> augmentsPerModifierItemLookup = new();
+    public Dictionary<EyeUpgradeItem, List<Augment>> augmentsPerModifierItemLookup = new();
     public List<Item> allItems = new();
     
     private void LoadAllResources() {
@@ -82,11 +82,11 @@ public partial class Game {
             }
             if (res is Augment augment) {
                 augment.CreateAugmentItemFromDerived();
-                if (augmentsPerModifierItemLookup.TryGetValue(augment.modifierDerivedFrom, out var augmentList)) {
+                if (augmentsPerModifierItemLookup.TryGetValue(augment.eyeUpgradeDerivedFrom, out var augmentList)) {
                     augmentList.Add(augment);
                 }
                 else {
-                    augmentsPerModifierItemLookup.Add(augment.modifierDerivedFrom, new() { augment });
+                    augmentsPerModifierItemLookup.Add(augment.eyeUpgradeDerivedFrom, new() { augment });
                 }
             }
         }

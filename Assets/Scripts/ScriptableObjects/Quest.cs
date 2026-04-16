@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
+using VInspector;
 using static Game;
 
 [CreateAssetMenu(fileName = "Quest", menuName = "Scriptable Objects/Quest")]
@@ -42,7 +43,8 @@ public class Quest : ScriptableObject {
     
     [Header("Info")]
     public string title;
-    [TextArea] public string description;
+    [TextArea(minLines: 6, maxLines: 10)] 
+    public string description;
     
     [Header("Rewards")]
     public int traderReputationReward;
@@ -128,8 +130,28 @@ public class Quest : ScriptableObject {
             obj.progressValue = Mathf.Clamp(++obj.progressValue, 0, obj.targetValue);
             return;
         }
-        Assert.IsTrue(true, $"Could not find a matching code for {code}");
+        Assert.IsTrue(false, $"Could not find a matching code for {code}");
     }
+    
+#if UNITY_EDITOR
+    
+    [Button]
+    private void CompleteForTesting() {
+        if (!Application.isPlaying) {
+            Debug.Log("Need to be in playmode to complete quest");
+            return;
+        }
+        foreach (Objective objective in objectives) {
+            objective.progressValue = objective.targetValue;
+            // For fetch quests we need to actually have the items to complete it properly
+            if (objective.type == Objective.Type.Fetch) {
+                gameInstance.TryAddItemToInventory(gameInstance.stashInventory, objective.targetItem, objective.targetValue);
+            }
+        }
+        gameInstance.RefreshQuestDisplays();
+    }
+    
+#endif
 
 }
 

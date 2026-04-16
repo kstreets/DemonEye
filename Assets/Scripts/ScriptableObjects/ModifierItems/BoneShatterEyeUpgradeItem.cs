@@ -2,7 +2,7 @@ using UnityEngine;
 using static Game;
 
 [CreateAssetMenu(fileName = "BoneShatter", menuName = "Scriptable Objects/Modifiers/BoneShatter")]
-public class BoneShatterModifierItem : ModifierItem {
+public class BoneShatterEyeUpgradeItem : EyeUpgradeItem {
     
     public struct InstanceData {
         public int shardsCount;
@@ -25,7 +25,7 @@ public class BoneShatterModifierItem : ModifierItem {
         };
     }
 
-    protected override string GetModifierDescription(int stackCount) {
+    protected override string GetUpgradeDescription(int stackCount) {
         return $"{DisplayProb(GetProbability(stackCount))} chance to shatter an enemy's bone, " +
                $"sending out {DisplayNumber(shardsCount)} bone fragments, each dealing {DisplayMultiplier(GetDamage(stackCount))} damage";
     }

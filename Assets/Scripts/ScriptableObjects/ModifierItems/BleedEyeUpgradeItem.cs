@@ -2,7 +2,7 @@ using UnityEngine;
 using static Game;
 
 [CreateAssetMenu(fileName = "BleedModifier", menuName = "Scriptable Objects/Modifiers/BleedModifier")]
-public class BleedModifierItem : ModifierItem {
+public class BleedEyeUpgradeItem : EyeUpgradeItem {
     
     public struct InstanceData {
         public float damageMultiplier;
@@ -10,7 +10,7 @@ public class BleedModifierItem : ModifierItem {
         public float lastBleedTime;
     }
 
-    public float damageMultiplier;
+    public float damageMulti;
     public float bleedInterval;
     
     public override void AddInstanceToEnemy(Enemy enemy, int stackCount) {
@@ -29,12 +29,12 @@ public class BleedModifierItem : ModifierItem {
         enemy.bleed = instance;
     }
 
-    protected override string GetModifierDescription(int stackCount) {
+    protected override string GetUpgradeDescription(int stackCount) {
         return $"{DisplayProb(1f)} chance to inflict bleed, causing {DisplayMultiplier(GetBleedDamageMultiplier(stackCount))} damage initially and per bleed tick ({DisplaySeconds(bleedInterval)})";
     }
 
     private float GetBleedDamageMultiplier(int stackCount) {
-        return TaperFloat(damageMultiplier, stackCount, 0.6f);
+        return TaperFloat(damageMulti, stackCount, 0.6f);
     }
     
 }

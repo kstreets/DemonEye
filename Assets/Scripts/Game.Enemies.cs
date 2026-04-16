@@ -29,9 +29,9 @@ public partial class Game {
         public Collider2D enemySpacerCollider;
         public EnemyData data;
         public Timer applyDamageTimer;
-        public BleedModifierItem.InstanceData? bleed;
-        public PoisonModifierItem.InstanceData? poison;
-        public SlowModifierItem.InstanceData? slow;
+        public BleedEyeUpgradeItem.InstanceData? bleed;
+        public PoisonEyeUpgradeItem.InstanceData? poison;
+        public SlowEyeUpgradeItem.InstanceData? slow;
         public Vector2 moveDir;
         public Vector2 graphicalDir;
         public Limiter changeDirLimiter;
@@ -425,12 +425,14 @@ public partial class Game {
 
             EnemyData enemyToSpawn = sm.spawnEvents[sm.spawnTimeIndex].enemy;
             Enemy enemy = SpawnEntity<Enemy>(enemyToSpawn.enemyPrefab, randomSpawnPos, Quaternion.identity);
-            enemy.health = enemyToSpawn.health;
-            enemy.data = enemyToSpawn;
-            enemy.animator.runtimeAnimatorController = enemyToSpawn.animatorOverride;
-            enemy.enemySpacerCollider = enemy.trans.GetChild(0).GetComponent<Collider2D>();
-            enemy.enemySpacerCollider.excludeLayers = enemyToSpawn.excludeCollisionLayers;
-            enemy.flowFieldAcc = Random.Range(2.5f, 3.5f);
+            {
+                enemy.health = enemyToSpawn.health;
+                enemy.data = enemyToSpawn;
+                enemy.animator.runtimeAnimatorController = enemyToSpawn.animatorOverride;
+                enemy.enemySpacerCollider = enemy.trans.GetChild(0).GetComponent<Collider2D>();
+                enemy.enemySpacerCollider.excludeLayers = enemyToSpawn.excludeCollisionLayers;
+                enemy.flowFieldAcc = Random.Range(2.5f, 3.5f);
+            }
             enemies.Add(enemy);
             
             TeleportEnemy(enemy, randomSpawnPos, TeleportType.Spawn);

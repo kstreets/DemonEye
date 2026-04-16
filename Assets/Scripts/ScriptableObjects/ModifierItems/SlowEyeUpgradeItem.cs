@@ -2,7 +2,7 @@ using UnityEngine;
 using static Game;
 
 [CreateAssetMenu(fileName = "SlowModifier", menuName = "Scriptable Objects/Modifiers/SlowModifier")]
-public class SlowModifierItem : ModifierItem {
+public class SlowEyeUpgradeItem : EyeUpgradeItem {
     
     public struct InstanceData {
         public float speedReductionPercent;
@@ -22,7 +22,7 @@ public class SlowModifierItem : ModifierItem {
         enemy.slow = slow;
     }
 
-    protected override string GetModifierDescription(int stackCount) {
+    protected override string GetUpgradeDescription(int stackCount) {
         return $"{DisplayProb(GetSpeedReduction(stackCount))} enemy speed reduction for {DisplaySeconds(slowDuration)}";
     }
 

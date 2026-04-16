@@ -53,7 +53,7 @@ public partial class Game {
             if (!spawnsOnCurrentMap) continue;
 
             if (item.chanceToSpawnFromRock > 0f) {
-                if (item.type == eyeModifierType) {
+                if (item.type == eyeUpgradeType) {
                     eyeUpgradesDropPool.items.Add(item);
                 }
                 else {
@@ -129,16 +129,16 @@ public partial class Game {
     }
     
     private Item RollForAugmentedVersion(Item item, DropOrigin origin) {
-        if (item is not ModifierItem modifierItem || !augmentsPerModifierItemLookup.TryGetValue(modifierItem, out var possibleAugments)) {
+        if (item is not EyeUpgradeItem upgradeItem || !augmentsPerModifierItemLookup.TryGetValue(upgradeItem, out var possibleAugments)) {
             return item;
         }
 
         possibleAugments.Shuffle();
         
         foreach (Augment possibleAugment in possibleAugments) {
-            float augmentingChance = GetDropChanceOfItem(possibleAugment.augmentedModifierItem, origin);
+            float augmentingChance = GetDropChanceOfItem(possibleAugment.augmentedEyeUpgradeItem, origin);
             if (RollProbability(augmentingChance)) {
-                return possibleAugment.augmentedModifierItem;
+                return possibleAugment.augmentedEyeUpgradeItem;
             }
         }
 
@@ -146,12 +146,12 @@ public partial class Game {
     }
     
     private float GetDropChanceOfItem(Item item, DropOrigin origin) {
-        float addChanceToSpawnFromLuck = 0f;
+        float addChanceToSpawn = 0f;
         
         if (origin != DropOrigin.Trader) {
             float raritySkewIncreaseFromMap = loadedMapData.increasedLootRarityChance;
-            addChanceToSpawnFromLuck = item.GetRarity() switch {
-                // Scaling the luck increase exponentionally (the adding/subtracting 1 is because rarity skew is a decimal)
+            addChanceToSpawn = item.GetRarity() switch {
+                // Scaling the increase exponentionally (the adding/subtracting 1 is because rarity skew is a decimal)
                 Item.Rarity.Uncommon  => Mathf.Pow(1f + raritySkewIncreaseFromMap, 1.1f) - 1f,
                 Item.Rarity.Rare      => Mathf.Pow(1f + raritySkewIncreaseFromMap, 1.2f) - 1f,
                 Item.Rarity.Legendary => Mathf.Pow(1f + raritySkewIncreaseFromMap, 1.3f) - 1f,
@@ -160,11 +160,11 @@ public partial class Game {
         }
         
         return origin switch {
-            DropOrigin.Rock   => Mathf.Clamp01(item.chanceToSpawnFromRock + addChanceToSpawnFromLuck),
-            DropOrigin.Body   => Mathf.Clamp01(item.chanceToSpawnOnBody + addChanceToSpawnFromLuck),
-            DropOrigin.Trader => Mathf.Clamp01(item.chanceToSpawnOnTrader + addChanceToSpawnFromLuck),
-            DropOrigin.Enemy  => Mathf.Clamp01(item.chanceToSpawnFromEnemy + addChanceToSpawnFromLuck),
-            DropOrigin.Bush   => Mathf.Clamp01(item.chanceToSpawnFromBush + addChanceToSpawnFromLuck),
+            DropOrigin.Rock   => Mathf.Clamp01(item.chanceToSpawnFromRock + addChanceToSpawn),
+            DropOrigin.Body   => Mathf.Clamp01(item.chanceToSpawnOnBody + addChanceToSpawn),
+            DropOrigin.Trader => Mathf.Clamp01(item.chanceToSpawnOnTrader + addChanceToSpawn),
+            DropOrigin.Enemy  => Mathf.Clamp01(item.chanceToSpawnFromEnemy + addChanceToSpawn),
+            DropOrigin.Bush   => Mathf.Clamp01(item.chanceToSpawnFromBush + addChanceToSpawn),
             _                 => 0f,
         };
     }

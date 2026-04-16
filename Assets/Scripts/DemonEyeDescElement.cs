@@ -13,9 +13,9 @@ public class DemonEyeDescElement : MonoBehaviour  {
     
     public float Height => nameText.preferredHeight + bodyVerticalLayout.preferredHeight;
     
-    public void UpdateDisplay(ModifierSet.Element modifierSetElm) {
-        nameText.text = ColorText($"{modifierSetElm.modifierItem.displayName} <size=87%>x{modifierSetElm.modifierCount}</size>", styles.headerTextColor);
-        descText.text = modifierSetElm.modifierItem.GetDescription(modifierSetElm.modifierCount);
+    public void UpdateDisplay(EyeUpgradeSet.Element modifierSetElm) {
+        nameText.text = ColorText($"{modifierSetElm.eyeUpgradeItem.displayName} <size=87%>x{modifierSetElm.upgradeCount}</size>", styles.headerTextColor);
+        descText.text = modifierSetElm.eyeUpgradeItem.GetDescription(modifierSetElm.upgradeCount);
         
         augmentImageTextGroup.gameObject.SetActive(modifierSetElm.HasUniqueAugments);
         if (modifierSetElm.HasUniqueAugments) {

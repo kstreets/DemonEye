@@ -2,7 +2,7 @@ using UnityEngine;
 using static Game;
 
 [CreateAssetMenu(fileName = "StoppingPowerModifier", menuName = "Scriptable Objects/Modifiers/StoppingPowerModifier")]
-public class StoppingPowerModifierItem : ModifierItem {
+public class StoppingPowerEyeUpgradeItem : EyeUpgradeItem {
 
     public struct InstanceData {
         public int extraDamage;
@@ -19,7 +19,7 @@ public class StoppingPowerModifierItem : ModifierItem {
         };
     }
 
-    protected override string GetModifierDescription(int stackCount) {
+    protected override string GetUpgradeDescription(int stackCount) {
         return $"{DisplayIncrease(GetExtraDamage(stackCount))} damage\n{DisplayProbDecrease(percentSpeedReduction)} projectile velocity";
     }
 

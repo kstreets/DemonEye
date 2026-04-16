@@ -117,9 +117,9 @@ public class Item : UuidScriptableObject {
             desc = desc.Remove(0, 1);
         }
 
-        string modifierDesc = GetModifierDescription(stackCount);
-        if (!string.IsNullOrEmpty(modifierDesc)) {
-            desc += string.IsNullOrEmpty(desc) ? modifierDesc : $"\n{modifierDesc}"; 
+        string upgradeDesc = GetUpgradeDescription(stackCount);
+        if (!string.IsNullOrEmpty(upgradeDesc)) {
+            desc += string.IsNullOrEmpty(desc) ? upgradeDesc : $"\n{upgradeDesc}"; 
         }
         
         if (!string.IsNullOrEmpty(description)) {
@@ -140,7 +140,7 @@ public class Item : UuidScriptableObject {
     public float GetProjectileCount(int stackCount) => projectileCount * stackCount;
     public float GetRangePercentage(int stackCount) => rangePercentage * stackCount;
 
-    protected virtual string GetModifierDescription(int stackCount) {
+    protected virtual string GetUpgradeDescription(int stackCount) {
         return string.Empty;
     }
     
@@ -148,7 +148,7 @@ public class Item : UuidScriptableObject {
     
     [OnValueChanged(nameof(buyPrice))]
     private void AutoSetSellPriceOnBuyPriceChanged() {
-        if (this is ModifierItem) {
+        if (this is EyeUpgradeItem) {
             sellPrice = Mathf.RoundToInt(buyPrice * 0.08f);
         }
         else {

@@ -6,7 +6,7 @@ public class BackpackItem : Item {
 
     public int additionalStorageSlots;
     
-    protected override string GetModifierDescription(int stackCount) {
+    protected override string GetUpgradeDescription(int stackCount) {
         return $"{DisplayIncrease(additionalStorageSlots)} inventory slots";
     }
     

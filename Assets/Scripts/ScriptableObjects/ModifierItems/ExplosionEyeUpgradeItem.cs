@@ -2,7 +2,7 @@ using UnityEngine;
 using static Game;
 
 [CreateAssetMenu(fileName = "ExplosionModifier", menuName = "Scriptable Objects/Modifiers/ExplosionModifier")]
-public class ExplosionModifierItem : ModifierItem {
+public class ExplosionEyeUpgradeItem : EyeUpgradeItem {
     
     public struct InstanceData {
         public float probability;
@@ -22,7 +22,7 @@ public class ExplosionModifierItem : ModifierItem {
         };
     }
 
-    protected override string GetModifierDescription(int stackCount) {
+    protected override string GetUpgradeDescription(int stackCount) {
         return $"{DisplayProb(GetProbability(stackCount))} chance for a projectile to explode on impact causing {DisplayMultiplier(GetDamage(stackCount))} damage";
     }
 

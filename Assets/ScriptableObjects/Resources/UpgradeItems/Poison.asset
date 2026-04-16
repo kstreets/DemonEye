@@ -9,48 +9,50 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 54dcc99deb2df7d4caf9825aeeaf1694, type: 3}
-  m_Name: TriShot
-  m_EditorClassIdentifier: 
-  uuid: 2008728135
-  displayName: Triple Shot
-  inventorySprite: {fileID: 1376013578, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  m_Script: {fileID: 11500000, guid: 246f5c6d9527bf847b493232c56a830c, type: 3}
+  m_Name: Poison
+  m_EditorClassIdentifier: Assembly-CSharp::PoisonSoulcard
+  uuid: 13165646
+  displayName: Poison
+  inventorySprite: {fileID: -447762926, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   dropSprite: {fileID: 0}
   pickupRadius: 0.07
   type: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
   associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
   priceCategory: {fileID: 11400000, guid: 29cfe26cd6da0734197e5840e6724f56, type: 2}
-  buyPrice: 20000
-  sellPrice: 1600
+  buyPrice: 10000
+  sellPrice: 800
   spawnsOnAllMaps: 0
   spawnsOnMaps:
   - {fileID: 11400000, guid: e77fcebe0e13696458bf0cfbacf93e5d, type: 2}
   chanceToSpawnOnBody: 0
-  chanceToSpawnOnTrader: 0.035
-  chanceToSpawnFromRock: 0.25
+  chanceToSpawnOnTrader: 0.312
+  chanceToSpawnFromRock: 0.369
   chanceToSpawnFromEnemy: 0
   chanceToExistInLevel: 0
   chanceToSpawnFromBush: 0
-  traderLevelRequired: 3
+  traderLevelRequired: 1
   traderStockRange: {x: 1, y: 5}
   barterRequirements:
   - item: {fileID: 11400000, guid: c300cfd9dba50fc438f83dec791af29b, type: 2}
     count: 3
-  - item: {fileID: 11400000, guid: 5208da11a0273eb40938911e8a5feefc, type: 2}
-    count: 1
+  - item: {fileID: 11400000, guid: e09fbd50ba840464eb5c499181e0fc04, type: 2}
+    count: 2
   spawnsFromEnemies: []
-  modifiesStats: 0
+  modifiesStats: 1
   critChance: 0
   critMultiplier: 0
-  damage: 0
+  damageMultiplier: 0
   fireratePercentage: 0
   movementSpeedPercentage: 0
   projectileCount: 0
   rangePercentage: 0
   itemGroupProps: {fileID: 11400000, guid: 78826f3a685555a4896655f4c68ef737, type: 2}
-  maxStackCount: 3
+  maxStackCount: 0
   weight: 0
   description: 
   relativeMechanicDesc: {fileID: 0}
-  probability: 0.25
-  damageMultiplier: 0.65
+  probability: 0.15
+  duration: 5
+  damageMulti: 2
+  minHealthPercentForMulti: 0.35

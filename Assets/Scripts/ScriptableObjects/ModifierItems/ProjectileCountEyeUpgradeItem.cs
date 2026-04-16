@@ -2,7 +2,7 @@ using UnityEngine;
 using static Game;
 
 [CreateAssetMenu(fileName = "ProjectileCountModifier", menuName = "Scriptable Objects/Modifiers/ProjectileCountModifier")]
-public class ProjectileCountModifierItem : ModifierItem {
+public class ProjectileCountEyeUpgradeItem : EyeUpgradeItem {
 
     public struct InstanceData {
         public float probability;
@@ -18,7 +18,7 @@ public class ProjectileCountModifierItem : ModifierItem {
         };
     }
 
-    protected override string GetModifierDescription(int stackCount) {
+    protected override string GetUpgradeDescription(int stackCount) {
         if (stackCount == 1) {
             return $"{DisplayProb(GetProbability(stackCount))} chance to shoot an extra projectile";
         }
