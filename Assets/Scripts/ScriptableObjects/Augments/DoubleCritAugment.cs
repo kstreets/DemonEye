@@ -12,15 +12,23 @@ public class DoubleCritAugment : Augment {
     public float damageMulti;
     public float multiplierDuration;
     
-    public override void AddInstanceToEye(DemonEyeInstance eyeInstance) {
+    public override void AddInstanceToEye(DemonEyeInstance eyeInstance, int stackCount) {
         eyeInstance.doubleCritAugment = new() {
-            damageMulti = damageMulti,
-            multiplierDuration = multiplierDuration,
+            damageMulti = GetDamageMultiplier(stackCount),
+            multiplierDuration = GetMultiplierDuration(stackCount),
         };
     }
 
-    public override string GetDescription() {
-        return $"{DisplayMultiplier(damageMulti)} damage for {DisplaySeconds(multiplierDuration)} after {DisplayNumber(2)} critical strikes in a row";
+    public override string GetDescription(int stackCount = 1) {
+        return $"{DisplayMultiplier(GetDamageMultiplier(stackCount))} damage for {DisplaySeconds(GetMultiplierDuration(stackCount))} after {DisplayNumber(2)} critical strikes in a row";
+    }
+    
+    private float GetDamageMultiplier(int stackCount) {
+        return TaperFloat(damageMulti, stackCount, 0.25f);
+    }
+    
+    private float GetMultiplierDuration(int stackCount) {
+        return TaperFloat(multiplierDuration, stackCount, 0.25f);
     }
     
 }

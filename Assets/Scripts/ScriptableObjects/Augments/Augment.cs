@@ -6,7 +6,7 @@ using static Game;
 public class Augment : UuidScriptableObject {
 
     public EyeUpgradeItem eyeUpgradeDerivedFrom;
-    [Range(0f, 0.99f)] public float chanceToSpawnReduction;
+    [Range(0f, 0.99f)] public float percentChanceOfDerivedToSpawn;
     
     [NonSerialized] public EyeUpgradeItem augmentedEyeUpgradeItem;
     
@@ -15,23 +15,23 @@ public class Augment : UuidScriptableObject {
         augmentedEyeUpgradeItem.uuid = uuid;
         
         // Modify item rarity
-        augmentedEyeUpgradeItem.chanceToSpawnFromRock -= chanceToSpawnReduction;
-        augmentedEyeUpgradeItem.chanceToSpawnOnBody -= chanceToSpawnReduction;
-        augmentedEyeUpgradeItem.chanceToSpawnOnTrader -= chanceToSpawnReduction;
-        augmentedEyeUpgradeItem.chanceToSpawnFromBush -= chanceToSpawnReduction;
-        augmentedEyeUpgradeItem.chanceToSpawnFromEnemy -= chanceToSpawnReduction;
-        augmentedEyeUpgradeItem.chanceToExistInLevel -= chanceToSpawnReduction;
+        augmentedEyeUpgradeItem.chanceToSpawnFromRock *= percentChanceOfDerivedToSpawn;
+        augmentedEyeUpgradeItem.chanceToSpawnOnBody *= percentChanceOfDerivedToSpawn;
+        augmentedEyeUpgradeItem.chanceToSpawnOnTrader *= percentChanceOfDerivedToSpawn;
+        augmentedEyeUpgradeItem.chanceToSpawnFromBush *= percentChanceOfDerivedToSpawn;
+        augmentedEyeUpgradeItem.chanceToSpawnFromEnemy *= percentChanceOfDerivedToSpawn;
+        augmentedEyeUpgradeItem.chanceToExistInLevel *= percentChanceOfDerivedToSpawn;
     }
     
-    public virtual void AddInstanceToEnemy(Enemy enemy) { }
+    public virtual void AddInstanceToEnemy(Enemy enemy, int stackCount) { }
     
-    public virtual void AddInstanceToEye(DemonEyeInstance eyeInstance) { }
+    public virtual void AddInstanceToEye(DemonEyeInstance eyeInstance, int stackCount) { }
     
-    public virtual string GetDescription() {
+    public virtual string GetDescription(int stackCount = 1) {
         return string.Empty;
     }
     
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
     
     [Button]
     private void AddToStash() {
@@ -42,6 +42,6 @@ public class Augment : UuidScriptableObject {
         gameInstance.TryAddItemToInventory(gameInstance.stashInventory, new(this));
     }
     
-    #endif 
+#endif 
 
 }

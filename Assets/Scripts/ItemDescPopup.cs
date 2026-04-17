@@ -15,7 +15,7 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
     public ImageTextGroup augmentedTagGroup;
     public ImageTextGroup typeTagGroup;
     public ImageTextGroup rarityTagGroup;
-    public ImageTextGroup augmentImageTextGroup;
+    public AugmentDescription augmentDesc;
     public DemonEyeDescList demonEyeDesc;
     
     public void Show(ItemInstance itemInstance, Vector2? position = default) {
@@ -93,21 +93,22 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
     }
 
     private void SetDescription(ItemInstance itemInstance, Item item) {
-        augmentImageTextGroup.gameObject.SetActive(false);
+        augmentDesc.gameObject.SetActive(false);
         
         descText.gameObject.SetActive(!itemInstance.isDemonEye);
         demonEyeDesc.gameObject.SetActive(itemInstance.isDemonEye);
         
         if (itemInstance.isDemonEye) {
-            demonEyeDesc.UpdateDisplay(gameInstance.ConstructModifierSet(itemInstance.nestedUuids));
+            demonEyeDesc.UpdateDisplay(gameInstance.ConstructEyeUpgradeSet(itemInstance.nestedUuids));
         }
         else {
             descText.text = item.GetDescription();
         }
         
         if (itemInstance.TryGetUuidObject(out var uuidObject) && uuidObject is Augment augment) {
-            augmentImageTextGroup.gameObject.SetActive(true);
-            augmentImageTextGroup.textMesh.text = augment.GetDescription();
+            augmentDesc.gameObject.SetActive(true);
+            augmentDesc.descTextMesh.text = augment.GetDescription();
+            augmentDesc.stackCountTextMesh.gameObject.SetActive(false);
         }
         
         if (item.type == gameInstance.quickUseType && !itemInstance.traderOwned) {

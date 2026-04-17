@@ -133,22 +133,10 @@ public partial class Game {
 
     private int GetProjectileDamage(Projectile proj, Enemy enemy, bool isCriticalHit) {
         DemonEyeInstance eyeInstance = proj.eyeInstanceSpawnedFrom;
+        float damageMultiplier = GetDamageMultiplierOnEnemy(enemy);
         
-        int damage = GetBaseDamage();
-        
-        // Phase 1 : Additions
+        // Phase 1 - Multiplications to damage multiplier (Anything with a description of '1.5x Damage' or '0.65x Damage')
         {
-            if (equipedEye.distanceDamage.TryGetValue(out var distDamage)) {
-                float convertedUnits = proj.distTraveled / gameplayConfig.distancePerUnit;
-                int increasedDamageFromDist = Mathf.FloorToInt(convertedUnits) * distDamage.damageIncreasePerUnitTraveled;
-                damage += increasedDamageFromDist;
-            }
-        }
-        
-        // Phase 2 : Multipliers
-        {
-            float damageMultiplier = GetDamageMultiplierOnEnemy(enemy);
-            
             if (isCriticalHit) {
                 damageMultiplier *= GetAbsoluteStat(Player.Stat.CritMulti);
             }
@@ -161,23 +149,29 @@ public partial class Game {
                 if (damageHandlingVars.consecutiveCriticalHits > 0 && damageHandlingVars.consecutiveCriticalHits % 2 == 0) {
                     damageHandlingVars.lastDoubleCritActivationTime = Time.time;
                 }
-
                 if (Time.time - damageHandlingVars.lastDoubleCritActivationTime <= doubleCrit.multiplierDuration) {
                     damageMultiplier *= doubleCrit.damageMulti;
                 }
             }
-
+        }
+        
+        // Phase 2 - Additions to damage multiplier (Anything with a description of '+1.2x Damage' or '+0.25x Damage')
+        {
+            if (equipedEye.distanceDamage.TryGetValue(out var distDamage)) {
+                float convertedUnits = proj.distTraveled / gameplayConfig.distancePerUnit;
+                int increasedDamageMultiFromDist = Mathf.FloorToInt(convertedUnits * distDamage.damageMultiIncreasePerUnitTraveled);
+                damageMultiplier += increasedDamageMultiFromDist;
+            }
+            
             if (equipedEye.penetrationDamageAugment.TryGetValue(out var penetrationDamage)) {
                 int penetrationCountBeforeDamagingThisEnemy = proj.ignoreEntities == null ? 0 : proj.ignoreEntities.Count;
                 if (penetrationCountBeforeDamagingThisEnemy > 0) {
-                    damageMultiplier *= penetrationCountBeforeDamagingThisEnemy * penetrationDamage.damageMultiplierPerPenetration;
+                    damageMultiplier += penetrationCountBeforeDamagingThisEnemy * penetrationDamage.damageMultiplierPerPenetration;
                 }
             }
-            
-            damage = Mathf.RoundToInt(damage * damageMultiplier);
         }
 
-        return damage;
+        return Mathf.RoundToInt(GetBaseDamage() * damageMultiplier);
     }
 
     private int GetBaseDamage() {

@@ -5,19 +5,23 @@ using static Game;
 public class DistanceDamageAugment : Augment {
     
     public struct InstanceData {
-        public int damageIncreasePerUnitTraveled;
+        public float damageMultiIncreasePerUnitTraveled;
     }
     
-    public int damageIncreasePerUnitTraveled;
+    public float damageMultiIncreasePerUnitTraveled;
 
-    public override void AddInstanceToEye(DemonEyeInstance eyeInstance) {
+    public override void AddInstanceToEye(DemonEyeInstance eyeInstance, int stackCount) {
         eyeInstance.distanceDamage = new() {
-            damageIncreasePerUnitTraveled = damageIncreasePerUnitTraveled,
+            damageMultiIncreasePerUnitTraveled = GetDamageMultiplier(stackCount),
         };
     }
 
-    public override string GetDescription() {
-        return $"{DisplayIncrease(damageIncreasePerUnitTraveled)} damage per unit a projectile travels";
+    public override string GetDescription(int stackCount = 1) {
+        return $"{DisplayMultiplierIncDec(GetDamageMultiplier(stackCount))} damage per meter a projectile travels";
+    }
+    
+    private float GetDamageMultiplier(int stackCount) {
+        return TaperFloat(damageMultiIncreasePerUnitTraveled, stackCount, 0.2f);
     }
 
 }

@@ -51,14 +51,14 @@ public partial class Game {
         foreach (Item item in allItems) {
             bool spawnsOnCurrentMap = item.spawnsOnAllMaps || item.spawnsOnMaps.Contains(map);
             if (!spawnsOnCurrentMap) continue;
+            
+            if (item.type == eyeUpgradeType) {
+                eyeUpgradesDropPool.items.Add(item);
+                continue;
+            }
 
             if (item.chanceToSpawnFromRock > 0f) {
-                if (item.type == eyeUpgradeType) {
-                    eyeUpgradesDropPool.items.Add(item);
-                }
-                else {
-                    rockStonesDropPool.items.Add(item);
-                }
+                rockStonesDropPool.items.Add(item);
             }
             if (item.chanceToSpawnOnBody > 0f) {
                 bodyDropPool.items.Add(item);

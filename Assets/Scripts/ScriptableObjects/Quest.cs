@@ -130,7 +130,6 @@ public class Quest : ScriptableObject {
             obj.progressValue = Mathf.Clamp(++obj.progressValue, 0, obj.targetValue);
             return;
         }
-        Assert.IsTrue(false, $"Could not find a matching code for {code}");
     }
     
 #if UNITY_EDITOR

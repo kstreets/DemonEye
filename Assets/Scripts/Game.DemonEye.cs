@@ -14,10 +14,11 @@ public partial class Game {
 
     public struct EquipedAugmentInstance {
         public int uuid;
+        public int stackCount;
         
         public Augment Augment => gameInstance.resourceLookup[uuid] as Augment;
-        public void ApplyToEnemy(Enemy enemy) => Augment.AddInstanceToEnemy(enemy);
-        public void ApplyToEye(DemonEyeInstance eyeInstance) => Augment.AddInstanceToEye(eyeInstance);
+        public void ApplyToEnemy(Enemy enemy) => Augment.AddInstanceToEnemy(enemy, stackCount);
+        public void ApplyToEye(DemonEyeInstance eyeInstance) => Augment.AddInstanceToEye(eyeInstance, stackCount);
     }
     
     public class DemonEyeInstance {
@@ -52,28 +53,32 @@ public partial class Game {
     private void BuildAndRegisterEye(ItemInstance itemInstance) {
         itemInstance.itemOrInstanceUuid = GenerateNewItemUuid();
         
-        List<EquipedUpgradeInstance> equipedMods = new();
+        List<EquipedUpgradeInstance> equipedUpgrades = new();
         List<EquipedAugmentInstance> equipedAugments = new();
-        EyeUpgradeSet eyeUpgradeSet = ConstructModifierSet(itemInstance.nestedUuids);
+        EyeUpgradeSet eyeUpgradeSet = ConstructEyeUpgradeSet(itemInstance.nestedUuids);
         
         foreach (EyeUpgradeSet.Element upgradeSetElm in eyeUpgradeSet.elements) {
-            equipedMods.Add(new() {
+            equipedUpgrades.Add(new() {
                 uuid = upgradeSetElm.eyeUpgradeItem.uuid,
                 stackCount = upgradeSetElm.upgradeCount,
             });
-            if (upgradeSetElm.HasUniqueAugments) {
-                foreach (Augment augment in upgradeSetElm.uniqueAugments) {
-                    equipedAugments.Add(new() { uuid = augment.uuid });        
+            
+            if (upgradeSetElm.HasAugments) {
+                foreach ((Augment augment, int count) in upgradeSetElm.augmentsAndCount) {
+                    equipedAugments.Add(new() {
+                        uuid = augment.uuid,
+                        stackCount = count,
+                    }); 
                 }
             }
         }
         
         DemonEyeInstance newDemonEye = new() {
-            upgradeInstances = equipedMods,
+            upgradeInstances = equipedUpgrades,
             augmentInstances = equipedAugments,
         };
         
-        foreach (EquipedUpgradeInstance upgradeInstance in equipedMods) { 
+        foreach (EquipedUpgradeInstance upgradeInstance in equipedUpgrades) { 
             upgradeInstance.ApplyToEye(newDemonEye); 
         }
         foreach (EquipedAugmentInstance augmentInstance in equipedAugments) { 
@@ -88,27 +93,29 @@ public partial class Game {
         public struct Element {
             public EyeUpgradeItem eyeUpgradeItem; 
             public int upgradeCount;
-            public List<Augment> uniqueAugments;
-            public bool HasUniqueAugments => uniqueAugments != null && uniqueAugments.Count > 0;
+            public List<(Augment, int)> augmentsAndCount;
+            public bool HasAugments => augmentsAndCount != null && augmentsAndCount.Count > 0;
         }
         
         public List<Element> elements;
     }
     
-    public EyeUpgradeSet ConstructModifierSet(List<int> uuids) {
+    public EyeUpgradeSet ConstructEyeUpgradeSet(List<int> uuids) {
         Dictionary<EyeUpgradeItem, int> upgradeCountFromItem = new();
-        Dictionary<EyeUpgradeItem, HashSet<Augment>> uniqueAugmentsPerUpgrade = new();
+        Dictionary<EyeUpgradeItem, Dictionary<Augment, int>> augmentsPerUpgrade = new();
         
         foreach (int uuid in uuids) {
             UuidScriptableObject nestedObject = resourceLookup[uuid];
             ExtractUpgradeAndAugment(nestedObject, out EyeUpgradeItem upgrade, out Augment augment);
             
             if (augment != null) {
-                if (uniqueAugmentsPerUpgrade.TryGetValue(upgrade, out var augmentSet)) {
-                    augmentSet.Add(augment);
+                if (augmentsPerUpgrade.TryGetValue(upgrade, out var augmentCountDictionary)) {
+                    if (!augmentCountDictionary.TryAdd(augment, 1)) {
+                        augmentCountDictionary[augment]++;
+                    }
                 }
                 else {
-                    uniqueAugmentsPerUpgrade.Add(upgrade, new() { augment });
+                    augmentsPerUpgrade.Add(upgrade, new() { {augment, 1} });
                 }
             }
             
@@ -122,16 +129,16 @@ public partial class Game {
         List<(EyeUpgradeItem, int)> sortedUpgradeList = SortUpgradesFromDictionary(upgradeCountFromItem);
         
         EyeUpgradeSet eyeUpgradeSet = new() { elements = new() };
-        foreach ((EyeUpgradeItem upgrade, int count) in sortedUpgradeList) {
+        foreach ((EyeUpgradeItem upgrade, int upgradeCount) in sortedUpgradeList) {
             EyeUpgradeSet.Element element = new() {
                 eyeUpgradeItem = upgrade,
-                upgradeCount = count,
-                uniqueAugments = new(),
+                upgradeCount = upgradeCount,
+                augmentsAndCount = new(),
             };
             
-            if (uniqueAugmentsPerUpgrade.TryGetValue(upgrade, out var augmentSet)) {
-                foreach (Augment augment in augmentSet) {
-                    element.uniqueAugments.Add(augment);
+            if (augmentsPerUpgrade.TryGetValue(upgrade, out var augmentCountDictionary)) {
+                foreach ((Augment augment, int augmentCount) in augmentCountDictionary) {
+                    element.augmentsAndCount.Add((augment, augmentCount));
                 }
             }
             eyeUpgradeSet.elements.Add(element);

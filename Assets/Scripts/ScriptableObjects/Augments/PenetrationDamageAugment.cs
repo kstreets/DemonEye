@@ -10,14 +10,18 @@ public class PenetrationDamageAugment : Augment {
 
     public float damageMultiplierPerPenetration;
     
-    public override void AddInstanceToEye(DemonEyeInstance eyeInstance) {
+    public override void AddInstanceToEye(DemonEyeInstance eyeInstance, int stackCount) {
         eyeInstance.penetrationDamageAugment = new() {
-            damageMultiplierPerPenetration = damageMultiplierPerPenetration,
+            damageMultiplierPerPenetration = GetDamageMultiplierPerPenetration(stackCount),
         };
     }
 
-    public override string GetDescription() {
-        return $"{DisplayMultiplierIncrease(damageMultiplierPerPenetration)} damage per enemy penetrated.";
+    public override string GetDescription(int stackCount = 1) {
+        return $"{DisplayMultiplierIncrease(GetDamageMultiplierPerPenetration(stackCount))} damage per enemy penetrated.";
+    }
+    
+    private float GetDamageMultiplierPerPenetration(int stackCount) {
+        return TaperFloat(damageMultiplierPerPenetration, stackCount, 0.35f);
     }
     
 }

@@ -24,3 +24,4 @@ MonoBehaviour:
     targetItem: {fileID: 0}
     teleportMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
     customCode: FirstExtract
+    keepFetchedItems: 0

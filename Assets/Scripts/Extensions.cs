@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Pool;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
@@ -142,6 +143,13 @@ public static class Extensions {
     public static bool Playing(this Animator animator, int animHash) {
         if (!animator.gameObject.activeInHierarchy) return false;
         return animator.GetCurrentAnimatorStateInfo(0).shortNameHash == animHash;
+    }
+    
+    public static void CreateObjects<T>(this ObjectPool<T> pool, int count) where T : class {
+        if (count <= 0) return;
+        var poolObject = pool.Get();
+        pool.CreateObjects(--count);
+        pool.Release(poolObject); 
     }
     
 #if UNITY_EDITOR

@@ -85,8 +85,7 @@ public partial class Game {
         deadBodySlotsLookup.Clear();
         bushSlotsLookup.Clear();
         
-        var resourceSpawns = resourceSpawnParent.GetComponentsInChildren<ResourceSpawn>().ToList();
-        
+        ResourceSpawn[] resourceSpawns = resourceSpawnParent.GetComponentsInChildren<ResourceSpawn>();
         foreach (ResourceSpawn resourceSpawn in resourceSpawns) { 
             GameObject prefab = resourceSpawn.GetPrefabToSpawn();
             if (!prefab) continue;
@@ -136,64 +135,48 @@ public partial class Game {
     
     private void InitDeadBody(Entity entity) {
         using var _ = ListPool<Item>.Get(out var items);
-        using var __ = ListPool<ItemInstance>.Get(out var inventoryItems);
             
         int maxDeadBodyItemCount = Random.Range(2, 6);
         GetUniqueItemsFromDropPool(bodyDropPool, maxDeadBodyItemCount, items);
             
         float eyeUpgradeOnBodyChance = loadedMapData.eyeUpgradeOnBodyChance;
-        bool spawnEyeUpgrade = RollProbability(eyeUpgradeOnBodyChance);
-        while (spawnEyeUpgrade && items.Count < lootInventoryPtr.slots.Length) {
+        while (RollProbability(eyeUpgradeOnBodyChance) && items.Count < lootInventoryPtr.slots.Length) {
             eyeUpgradeOnBodyChance -= loadedMapData.consecutiveEyeUpgradeChanceReductionOnBody;
             items.Add(GetItemFromDropPool(eyeUpgradesDropPool));
-            spawnEyeUpgrade = RollProbability(eyeUpgradeOnBodyChance);
         }
-
-        foreach (Item item in items) {
-            int stackCount = 1;
-            
-            float stepAmount = (1f - item.chanceToSpawnOnBody) * 0.25f;
-            float taperingChance = Mathf.Lerp(item.chanceToSpawnOnBody, 0f, stepAmount);
-            while (RollProbability(taperingChance)) {
-                stackCount++;
-                taperingChance = Mathf.Lerp(taperingChance, 0f, stepAmount);
-            }
-                    
-            inventoryItems.Add(new() {
-                itemOrInstanceUuid = item.uuid, 
-                count = stackCount,
-                notDiscovered = true,
-            });
-        }
-            
-        deadBodySlotsLookup.Add(entity.gameObject, CreateLootInventoryInstance(inventoryItems));
+        
+        deadBodySlotsLookup.Add(entity.gameObject, CreateLootInventoryFromItems(items, DropOrigin.Body, stackTaperRate: 0.15f));
     }
     
     private Dictionary<GameObject, InventorySlot[]> bushSlotsLookup = new();
     
     private void InitBush(Entity entity) {
         using var _ = ListPool<Item>.Get(out var items);
-        using var __ = ListPool<ItemInstance>.Get(out var inventoryItems);
-            
         int maxBushItemCount = Random.Range(1, 3);
         GetUniqueItemsFromDropPool(bushesDropPool, maxBushItemCount, items);
+        bushSlotsLookup.Add(entity.gameObject, CreateLootInventoryFromItems(items, DropOrigin.Bush, stackTaperRate: 0.15f)); 
+    }
+    
+    private InventorySlot[] CreateLootInventoryFromItems(List<Item> items, DropOrigin dropOrigin, float stackTaperRate) {
+        using var _ = ListPool<ItemInstance>.Get(out var itemInstances);
             
         foreach (Item item in items) {
             int stackCount = 1;
-            float spawnRateTaper = 0f;
-            while (RollProbability(item.chanceToSpawnFromBush - spawnRateTaper)) {
+            
+            float taperingChance = Mathf.Lerp(GetDropChanceOfItem(item, dropOrigin), 0f, stackTaperRate);
+            while (RollProbability(taperingChance)) {
                 stackCount++;
-                spawnRateTaper += item.chanceToSpawnFromBush * 0.15f;
+                taperingChance = Mathf.Lerp(taperingChance, 0f, stackTaperRate);
             }
                     
-            inventoryItems.Add(new() {
+            itemInstances.Add(new() {
                 itemOrInstanceUuid = item.uuid, 
                 count = stackCount,
                 notDiscovered = true,
             });
         }
-            
-        bushSlotsLookup.Add(entity.gameObject, CreateLootInventoryInstance(inventoryItems));
+        
+        return CreateLootInventoryInstance(itemInstances);
     }
     
 }

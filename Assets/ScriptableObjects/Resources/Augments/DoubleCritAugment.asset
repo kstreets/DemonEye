@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DoubleCritAugment
   uuid: -577300191
   eyeUpgradeDerivedFrom: {fileID: 11400000, guid: ba0965bc93d7d704f8f3e330886c9c1d, type: 2}
-  chanceToSpawnReduction: 0.595
+  percentChanceOfDerivedToSpawn: 0.352
   damageMulti: 1.5
   multiplierDuration: 4

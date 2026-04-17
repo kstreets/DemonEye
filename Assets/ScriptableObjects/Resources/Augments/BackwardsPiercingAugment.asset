@@ -10,8 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3ce29d9d1664a8c4786449791b288102, type: 3}
-  m_Name: BackwardsShot.PiercingAugment
+  m_Name: BackwardsPiercingAugment
   m_EditorClassIdentifier: Assembly-CSharp::BackwardsPiercingAugment
   uuid: 818390779
   eyeUpgradeDerivedFrom: {fileID: 11400000, guid: f7c724c49aae4c04c96cab2b1076d025, type: 2}
-  chanceToSpawnReduction: 0.5
+  percentChanceOfDerivedToSpawn: 0.504

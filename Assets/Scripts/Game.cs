@@ -577,7 +577,6 @@ public partial class Game : MonoBehaviour {
     private enum RaidState { None, InitialWaves, FinalWave, PostFinalWave }
     private RaidState curRaidState;
     private bool raidStateSwitchedThisFrame;
-    private Sequence raidEnterSequence;
     
     private void InitRaid() {
         curRaidState = RaidState.None;
@@ -606,38 +605,7 @@ public partial class Game : MonoBehaviour {
         InitSpawnManager(loadedMapData.waves);
         SpawnMapResources(loadedMapInst.resourceParent);
         SpawnInitialExitPortals(loadedMapInst.exitPortalsParent, loadedMapData.exitPortalsCount);
-        
-        // Animation Sequence
-        {
-            int initialPPU = pixelPerfectCamera.assetsPPU;
-            pixelPerfectCamera.assetsPPU = 80;
-            
-            raidEnterSequence = Sequence.Create();
-            
-            deathBackgroundImage.enabled = true;
-            deathBackgroundImage.fillAmount = 1f;
-            raidEnterSequence.Chain(Tween.Alpha(deathBackgroundImage, 1f, 0f, 0.5f, Ease.InCubic));
-            
-            raidEnterSequence.ChainDelay(0.25f);
-
-            raidEnterSequence.ChainCallback(() => {
-                Entity inTeleportEntity = SpawnEntity(teleportInPool, OffsetY(player.position, -0.05f), Quaternion.identity);
-                DestroyEntity(inTeleportEntity, CurrentClipLength(inTeleportEntity.animator));
-                PlayAudioClip(teleportInClip, inTeleportEntity.position);
-            });
-            
-            raidEnterSequence.ChainDelay(0.35f);
-            raidEnterSequence.ChainCallback(() => {
-                player.gameObject.SetActive(true);
-                InitPlayer();
-            });
-            raidEnterSequence.Chain(Tween.Scale(player.trans, 0f, 1f, 0.2f, Ease.InOutBack));
-            
-            raidEnterSequence.ChainDelay(0.6f);
-            raidEnterSequence.Chain(Tween.Custom(pixelPerfectCamera.assetsPPU, initialPPU, 0.25f, ease: Ease.OutQuad, onValueChange: val => {
-                pixelPerfectCamera.assetsPPU = (int)val;
-            }));
-        }
+        AnimateRaidEnterSequence();
     }
 
     private void UpdateRaidState() {
@@ -684,6 +652,39 @@ public partial class Game : MonoBehaviour {
     // *******************************
     // Animation Sequences
     // *******************************
+    
+    private Sequence raidEnterSequence;
+    
+    private void AnimateRaidEnterSequence() {
+        int initialPPU = pixelPerfectCamera.assetsPPU;
+        pixelPerfectCamera.assetsPPU = 80;
+            
+        raidEnterSequence = Sequence.Create();
+            
+        deathBackgroundImage.enabled = true;
+        deathBackgroundImage.fillAmount = 1f;
+        raidEnterSequence.Chain(Tween.Alpha(deathBackgroundImage, 1f, 0f, 0.5f, Ease.InCubic));
+            
+        raidEnterSequence.ChainDelay(0.25f);
+
+        raidEnterSequence.ChainCallback(() => {
+            Entity inTeleportEntity = SpawnEntity(teleportInPool, OffsetY(player.position, -0.05f), Quaternion.identity);
+            DestroyEntity(inTeleportEntity, CurrentClipLength(inTeleportEntity.animator));
+            PlayAudioClip(teleportInClip, inTeleportEntity.position);
+        });
+            
+        raidEnterSequence.ChainDelay(0.35f);
+        raidEnterSequence.ChainCallback(() => {
+            player.gameObject.SetActive(true);
+            InitPlayer();
+        });
+        raidEnterSequence.Chain(Tween.Scale(player.trans, 0f, 1f, 0.2f, Ease.InOutBack));
+            
+        raidEnterSequence.ChainDelay(0.6f);
+        raidEnterSequence.Chain(Tween.Custom(pixelPerfectCamera.assetsPPU, initialPPU, 0.25f, ease: Ease.OutQuad, onValueChange: val => {
+            pixelPerfectCamera.assetsPPU = (int)val;
+        }));
+    }
 
     private void AnimateGameOverSequence(Action onCompleteCallback) {
         Tween.StopAll();

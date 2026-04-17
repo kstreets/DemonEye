@@ -10,14 +10,18 @@ public class BleedCritAugment : Augment {
 
     public float probability;
     
-    public override void AddInstanceToEye(DemonEyeInstance eyeInstance) {
+    public override void AddInstanceToEye(DemonEyeInstance eyeInstance, int stackCount) {
         eyeInstance.bleedCritAugment = new() {
-            probability = probability,
+            probability = GetProbability(stackCount),
         };
     }
 
-    public override string GetDescription() {
-        return $"{DisplayProbIncrease(probability)} critical strike chance on a bleeding enemy";
+    public override string GetDescription(int stackCount = 1) {
+        return $"{DisplayProbIncrease(GetProbability(stackCount))} critical strike chance on a bleeding enemy";
+    }
+    
+    private float GetProbability(int stackCount) {
+        return TaperFloat(probability, stackCount, 0.3f);
     }
     
 }

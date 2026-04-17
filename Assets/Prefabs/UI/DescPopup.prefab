@@ -52,7 +52,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 069d67a727bed0942a3bee92d879ae39, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ImageTextGroup
-  rectTransform: {fileID: 4702772598639998272}
   image: {fileID: 648713396233437070}
   textMesh: {fileID: 7810857712249724352}
 --- !u!222 &1018292014115441920
@@ -287,7 +286,7 @@ MonoBehaviour:
   augmentedTagGroup: {fileID: 7533385006912559101}
   typeTagGroup: {fileID: 5264753171430405640}
   rarityTagGroup: {fileID: 8195806030432153101}
-  augmentImageTextGroup: {fileID: 1718777202771523110}
+  augmentDesc: {fileID: 3679623330329467525}
   demonEyeDesc: {fileID: 5015999166318058334}
 --- !u!1 &2416862499514530632
 GameObject:
@@ -341,7 +340,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 069d67a727bed0942a3bee92d879ae39, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ImageTextGroup
-  rectTransform: {fileID: 53687434786184227}
   image: {fileID: 5353806475679619253}
   textMesh: {fileID: 6568049124819465228}
 --- !u!222 &4870365941808189581
@@ -1028,7 +1026,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 069d67a727bed0942a3bee92d879ae39, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ImageTextGroup
-  rectTransform: {fileID: 7581876355067969287}
   image: {fileID: 6617332139775471933}
   textMesh: {fileID: 247242780607046903}
 --- !u!222 &2680988467106128168
@@ -2565,7 +2562,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4844466621626596933, guid: 0c3b0c93777d83245a7e23bb794938e1, type: 3}
       propertyPath: m_Name
-      value: AugmentDescImageText
+      value: AugmentDesc
       objectReference: {fileID: 0}
     - target: {fileID: 7080003097222267909, guid: 0c3b0c93777d83245a7e23bb794938e1, type: 3}
       propertyPath: m_SizeDelta.x
@@ -2585,14 +2582,14 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 3852334780765413486, guid: 0c3b0c93777d83245a7e23bb794938e1, type: 3}
   m_PrefabInstance: {fileID: 3503736757052816569}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1718777202771523110 stripped
+--- !u!114 &3679623330329467525 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2829831520030608031, guid: 0c3b0c93777d83245a7e23bb794938e1, type: 3}
+  m_CorrespondingSourceObject: {fileID: 256533552690865724, guid: 0c3b0c93777d83245a7e23bb794938e1, type: 3}
   m_PrefabInstance: {fileID: 3503736757052816569}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 069d67a727bed0942a3bee92d879ae39, type: 3}
+  m_Script: {fileID: 11500000, guid: d20751d5358f0c14c83c8eee2163061c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ImageTextGroup
+  m_EditorClassIdentifier: Assembly-CSharp::AugmentDescription

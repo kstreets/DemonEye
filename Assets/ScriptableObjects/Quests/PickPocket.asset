@@ -25,6 +25,7 @@ MonoBehaviour:
     targetItem: {fileID: 0}
     teleportMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
     customCode: 
+    keepFetchedItems: 0
   - type: 3
     taskDescription: 
     targetValue: 1
@@ -32,3 +33,4 @@ MonoBehaviour:
     targetItem: {fileID: 11400000, guid: 81232561f605c1546b430fbe457c269b, type: 2}
     teleportMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
     customCode: 
+    keepFetchedItems: 0
