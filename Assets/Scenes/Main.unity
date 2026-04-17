@@ -16478,8 +16478,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2018473788}
-  - component: {fileID: 2018473790}
   - component: {fileID: 2018473789}
+  - component: {fileID: 2018473790}
   m_Layer: 0
   m_Name: Game
   m_TagString: Untagged

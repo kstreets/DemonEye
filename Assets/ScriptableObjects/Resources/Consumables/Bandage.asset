@@ -39,7 +39,7 @@ MonoBehaviour:
   modifiesStats: 0
   critChance: 0
   critMultiplier: 0
-  damage: 0
+  damageMultiplier: 0
   fireratePercentage: 0
   movementSpeedPercentage: 0
   projectileCount: 0

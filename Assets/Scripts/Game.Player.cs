@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using PrimeTween;
 using UnityEngine;
+using UnityEngine.Assertions;
+using VInspector;
 using Random = UnityEngine.Random;
 
 public partial class Game {
@@ -311,7 +313,7 @@ public partial class Game {
     private int consumingSlotIndex;
     
     private void HavePlayerConsumeItem(Inventory fromInventory, int slotIndex) {
-        if (playerConsumingTween.isAlive) return;
+        if (playerIsHealingOverTime || playerConsumingTween.isAlive) return;
         ConsumableItem item = fromInventory.slots[slotIndex].itemInstance.ItemRef as ConsumableItem;
 
         if (!item) return;
@@ -374,10 +376,54 @@ public partial class Game {
         }))
         .Chain(Tween.Delay(additionalConsumeDelay));
     }
+    
+    public class HealingOverTimeData {
+        public Tween tween;
+        public int healingGiven;
+        public int targetHealing;
+        public float healingPerSecond;
+    } 
+    
+    private HealingOverTimeData healingOverTimeData = new();
+    private bool playerIsHealingOverTime => healingOverTimeData.tween.isAlive;
 
-    private void HealPlayer(int healing) {
-        player.health = Mathf.Clamp(player.health + healing, 0, FullPlayerHealth);
+    private void HealPlayer(int healing, float? duration = null) {
+        if (!duration.HasValue) {
+            player.health = Mathf.Clamp(player.health + healing, 0, FullPlayerHealth);
+            return;
+        }
+        
+        Assert.IsFalse(playerIsHealingOverTime, "Player is already healing over time, only 1 healing over time can be active");
+        
+        var data = healingOverTimeData;
+        data.healingGiven = 0;
+        data.targetHealing = healing;
+        data.healingPerSecond = healing / duration.Value;
+        
+        data.tween = Tween.Delay(duration.Value)
+        .OnUpdate(data, static (data, tween) => {
+            Player player = gameInstance.player;
+            int fullPlayerHealth = gameInstance.FullPlayerHealth;
+            float healingPerSecond = data.healingPerSecond;
+            float elapsedTime = tween.elapsedTime;
+            
+            int curTotalHealing = Mathf.FloorToInt(healingPerSecond * elapsedTime);
+            int healthToAdd = Mathf.Clamp(curTotalHealing - data.healingGiven, 0, int.MaxValue);
+            gameInstance.HealPlayer(healthToAdd);
+            data.healingGiven += healthToAdd;
+            
+            if (player.health == fullPlayerHealth) {
+                tween.Complete();
+            }
+        })
+        .OnComplete(data, static (data) => {
+            int remainingHealthToGiveFromFloatingPointError = Mathf.Clamp(data.targetHealing - data.healingGiven, 0, int.MaxValue);
+            gameInstance.HealPlayer(remainingHealthToGiveFromFloatingPointError);
+        });
     }
+    
+    [Button]
+    private void TestDamagePlayer() => DamagePlayer(15, PlayerDamageType.Normal);
     
     private enum PlayerDamageType { Normal, Collision }
 
