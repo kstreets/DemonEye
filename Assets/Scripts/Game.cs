@@ -469,7 +469,7 @@ public partial class Game : MonoBehaviour {
     }
 
     private void UpdateTimers() {
-        discoverLootTimer.Tick();
+        discoverItemTimer.Tick();
     }
 
     private void OnMainMenuStateEnter() {

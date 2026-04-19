@@ -423,6 +423,8 @@ public partial class Game {
     private enum PlayerDamageType { Normal, Collision }
 
     private void DamagePlayer(int damage, PlayerDamageType damageType, float chanceToBleed = 0f) {
+        chanceToBleed -= GetAbsoluteStat(Player.Stat.BleedResist); 
+        
         if (!player.bleeding && !PlayerHealthIsAtAutoBleedStop() && RollProbability(chanceToBleed)) {
             player.bleeding = true;
         }
@@ -478,6 +480,7 @@ public partial class Game {
             Player.Stat.DamageMulti             => 1f,
             Player.Stat.FireratePercentage      => 1f,
             Player.Stat.Health                  => 100f,
+            Player.Stat.LootingSpeed            => 1f,
             Player.Stat.MovementSpeedPercentage => 1f,
             Player.Stat.ProjectileCount         => 1f,
             Player.Stat.RangePercentage         => 1f,

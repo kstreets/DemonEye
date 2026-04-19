@@ -40,10 +40,14 @@ public class GameplayConfig : ScriptableObject {
     public float damageMultiplierIncPerLevel;
     public float firerateIncPerLevel;
     public int healthIncPerLevel;
-    public float healingIncPerLevel;
+    public int healingIncPerLevel;
     public float healingSpeedIncPerLevel;
     public float lootingSpeedIncPerLevel;
     public float movementSpeedIncPerLevel;
     public float projectileCountIncPerLevel;
+
+    [Header("Searching")] 
+    public float discoverSlotTime;
+    public float discoverItemTime;
 
 }

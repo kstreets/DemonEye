@@ -1044,16 +1044,18 @@ public partial class Game {
         EndDragAndDropItem();
     }
 
-    private Sequence searchSequence;
+    private Sequence discoverSlotsSequence;
     private Tween searchCirclePopInTween;
+    private Timer discoverItemTimer;
+    private int discoverItemIndex;
     
-    private Timer discoverLootTimer;
-    private int discoverLootIndex;
+    private float DiscoverSlotTime => gameplayConfig.discoverSlotTime * GetAbsoluteStat(Player.Stat.LootingSpeed);
+    private float DiscoverItemTime => gameplayConfig.discoverItemTime * GetAbsoluteStat(Player.Stat.LootingSpeed);
     
     private void OpenLootInventory() {
         if (lootInventoryPanel.gameObject.activeInHierarchy) return;
         
-        discoverLootIndex = -1;
+        discoverItemIndex = -1;
         lootInventoryPanel.gameObject.SetActive(true);
         
         foreach (InventorySlot slot in lootInventoryPtr.slots) {
@@ -1067,7 +1069,7 @@ public partial class Game {
             InventorySlotUI slotUI = lootInventoryPtr.slots[i].ui;
             
             if (lootInventoryPtr.slots[i].itemInstance.notDiscovered) {
-                discoverLootIndex = discoverLootIndex == -1 ? i : discoverLootIndex;
+                discoverItemIndex = discoverItemIndex == -1 ? i : discoverItemIndex;
             }
             else {
                 ItemInstance itemInstance = lootInventoryPtr.slots[i].itemInstance;
@@ -1075,12 +1077,12 @@ public partial class Game {
             }
         }
 
-        bool alreadyDiscoveredAll = discoverLootIndex == -1;
+        bool alreadyDiscoveredAll = discoverItemIndex == -1;
         if (alreadyDiscoveredAll) return;
         
         lootSearchingText.SetActive(true);
 
-        searchSequence = Sequence.Create();
+        discoverSlotsSequence = Sequence.Create();
         
         for (int i = 0; i < lootInventoryPtr.slots.Length; i++) {
             if (lootInventoryPtr.slots[i].itemInstance == null) continue;
@@ -1088,41 +1090,45 @@ public partial class Game {
             InventorySlotUI slotUI = lootInventoryPtr.slots[i].ui;
             
             if (lootInventoryPtr.slots[i].itemInstance.notDiscovered) {
-                searchSequence.Chain(Tween.PunchScale(slotUI.rectTransform, Vector3.one * 2f, 0.1f, 2f, startDelay: 0.01f * i));
-                searchSequence.ChainCallback(slotUI, (target) => target.MakeSlotInactive());
+                discoverSlotsSequence.Chain(Tween.PunchScale(slotUI.rectTransform, Vector3.one * 2f, 0.1f, 2f, startDelay: DiscoverSlotTime * i));
+                discoverSlotsSequence.ChainCallback(slotUI, (target) => target.MakeSlotInactive());
             }
         }
 
-        searchSequence.ChainDelay(0.15f);
+        discoverSlotsSequence.ChainDelay(0.15f);
 
-        searchSequence.ChainCallback(target: this, (target) => {
-            InventorySlot slot = target.lootInventoryPtr.slots[target.discoverLootIndex];
+        discoverSlotsSequence.ChainCallback(target: this, static (target) => {
+            InventorySlot slot = target.lootInventoryPtr.slots[target.discoverItemIndex];
             if (slot.itemInstance != null) {
                 target.AnimateSlotSearch(slot.ui);
-                target.discoverLootTimer.SetTime(1f);
+                target.discoverItemTimer.SetTime(target.DiscoverItemTime);
             }
         });
         
-        discoverLootTimer.EndAction ??= () => {
-            ItemInstance itemInstance = lootInventoryPtr.slots[discoverLootIndex].itemInstance;
+        discoverItemTimer.EndAction ??= static () => {
+            Inventory lootInventoryPtr = gameInstance.lootInventoryPtr;
+            ref Timer discoverItemTimer = ref gameInstance.discoverItemTimer;
+            ref int discoverItemIndex = ref gameInstance.discoverItemIndex; 
+            
+            ItemInstance itemInstance = lootInventoryPtr.slots[discoverItemIndex].itemInstance;
             itemInstance.notDiscovered = false;
             
-            InventorySlotUI slotUI = lootInventoryPtr.slots[discoverLootIndex].ui;
+            InventorySlotUI slotUI = lootInventoryPtr.slots[discoverItemIndex].ui;
             slotUI.MakeSlotActive();
             slotUI.StopSlotSearching();
             slotUI.SetItem(itemInstance.ItemRef, itemInstance.count);
 
             Tween.PunchScale(slotUI.itemUI.image.rectTransform, Vector3.one * 4f, 0.1f, 2f); 
             
-            discoverLootIndex++;
+            discoverItemIndex++;
             
-            if (discoverLootIndex < lootInventoryPtr.slots.Length && lootInventoryPtr.slots[discoverLootIndex].itemInstance != null) {
-                slotUI = lootInventoryPtr.slots[discoverLootIndex].ui;
-                AnimateSlotSearch(slotUI);
-                discoverLootTimer.SetTime(1f);
+            if (discoverItemIndex < lootInventoryPtr.slots.Length && lootInventoryPtr.slots[discoverItemIndex].itemInstance != null) {
+                slotUI = lootInventoryPtr.slots[discoverItemIndex].ui;
+                gameInstance.AnimateSlotSearch(slotUI);
+                discoverItemTimer.SetTime(gameInstance.DiscoverItemTime);
             }
             else {
-                lootSearchingText.SetActive(false);
+                gameInstance.lootSearchingText.SetActive(false);
             }
         };
     }
@@ -1135,8 +1141,8 @@ public partial class Game {
     private void CloseLootInventory() {
         lootSearchingText.SetActive(false);
         lootInventoryPanel.gameObject.SetActive(false);
-        discoverLootTimer.Stop();
-        searchSequence.Stop();
+        discoverItemTimer.Stop();
+        discoverSlotsSequence.Stop();
         searchCirclePopInTween.Stop();
         
         // Reset all tweening properties because the animations might have stopped while playing 
