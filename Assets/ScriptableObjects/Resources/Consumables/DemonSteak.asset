@@ -36,14 +36,13 @@ MonoBehaviour:
   spawnsFromEnemies:
   - {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
   modifiesStats: 0
-  armorPercent: 0
   critChance: 0
   critMultiplier: 0
-  damage: 0
+  damageMultiplier: 0
   fireratePercentage: 0
   movementSpeedPercentage: 0
   projectileCount: 0
-  rangeInSeconds: 0
+  rangePercentage: 0
   itemGroupProps: {fileID: 0}
   maxStackCount: 6
   weight: 2
@@ -51,3 +50,4 @@ MonoBehaviour:
   animationType: 1
   healingAmount: 35
   bandageAmount: 0
+  healingDuration: 6

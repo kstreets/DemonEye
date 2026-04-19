@@ -51,3 +51,4 @@ MonoBehaviour:
   animationType: 0
   healingAmount: 35
   bandageAmount: 0
+  healingDuration: 6

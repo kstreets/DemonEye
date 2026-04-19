@@ -1221,6 +1221,10 @@ public partial class Game : MonoBehaviour {
         return ColorText($"-{Mathf.Abs(Mathf.FloorToInt(probability * 100f))}%", textColor);
     }
 
+    public static string DisplayHealth(int health) {
+        return ColorText(health.ToString(), gameInstance.styles.increaseDescColor);
+    }
+
     public static string DisplayNumber(int number, Color? color = default) {
         Color textColor = color ?? gameInstance.styles.timeDescColor;
         return ColorText(number.ToString(), textColor);

@@ -99,7 +99,7 @@ public class Item : UuidScriptableObject {
         };
     }
     
-    public string GetDescription(int stackCount = 1) {
+    public virtual string GetDescription(int stackCount = 1) {
         string desc = string.Empty;
         
         if (modifiesStats) {

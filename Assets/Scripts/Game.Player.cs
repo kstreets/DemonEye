@@ -353,7 +353,7 @@ public partial class Game {
         
         playerConsumingTween = Tween.Delay(item, actionDelay, static (item) => {
             if (item.healingAmount > 0) {
-                gameInstance.HealPlayer(item.healingAmount);
+                gameInstance.HealPlayer(item.healingAmount, item.healingDuration);
             }
             if (item.bandageAmount > 0) {
                 gameInstance.player.bleeding = false;
@@ -387,8 +387,8 @@ public partial class Game {
     private HealingOverTimeData healingOverTimeData = new();
     private bool playerIsHealingOverTime => healingOverTimeData.tween.isAlive;
 
-    private void HealPlayer(int healing, float? duration = null) {
-        if (!duration.HasValue) {
+    private void HealPlayer(int healing, float duration = 0f) {
+        if (duration <= 0f) {
             player.health = Mathf.Clamp(player.health + healing, 0, FullPlayerHealth);
             return;
         }
@@ -398,9 +398,9 @@ public partial class Game {
         var data = healingOverTimeData;
         data.healingGiven = 0;
         data.targetHealing = healing;
-        data.healingPerSecond = healing / duration.Value;
+        data.healingPerSecond = healing / duration;
         
-        data.tween = Tween.Delay(duration.Value)
+        data.tween = Tween.Delay(duration)
         .OnUpdate(data, static (data, tween) => {
             Player player = gameInstance.player;
             int fullPlayerHealth = gameInstance.FullPlayerHealth;
