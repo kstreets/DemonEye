@@ -69,8 +69,6 @@ public partial class Game {
     }
     
     private void UpdatePlayer() {
-        bleedDebuffIcon.gameObject.SetActive(player.bleeding);
-        
         if (raidEnterSequence.isAlive) return;
         
         if (player.bleeding && player.bleedLimiter.TimeHasPassed(3.5f)) {
@@ -422,15 +420,12 @@ public partial class Game {
         });
     }
     
-    [Button]
-    private void TestDamagePlayer() => DamagePlayer(15, PlayerDamageType.Normal);
-    
     private enum PlayerDamageType { Normal, Collision }
 
     private void DamagePlayer(int damage, PlayerDamageType damageType, float chanceToBleed = 0f) {
-        // if (!player.bleeding && !PlayerHealthIsAtAutoBleedStop() && RollProbability(chanceToBleed)) {
-        //     player.bleeding = true;
-        // }
+        if (!player.bleeding && !PlayerHealthIsAtAutoBleedStop() && RollProbability(chanceToBleed)) {
+            player.bleeding = true;
+        }
         
         if (interactionVars.timeSpentSummoningPortal < gameplayConfig.portalSummonTime) {
             interactionVars.timeSpentSummoningPortal = 0f;

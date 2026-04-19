@@ -233,6 +233,7 @@ public partial class Game {
     
     private void UpdateInRaidUI() {
         healthBarFillImage.fillAmount = player.health / (float)FullPlayerHealth;
+        bleedDebuffIcon.gameObject.SetActive(player.bleeding);
         
         GetEncumberingWeightRange(out int startingEncumberingWeight, out _);
         int inventoryWeight = GetInventoryWeight(playerInventory);
