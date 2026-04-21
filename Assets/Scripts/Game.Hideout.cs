@@ -719,7 +719,7 @@ public partial class Game {
         playerStatsPanel.healthRow.statValueText.text = ((int)(GetPlayerStat(Player.Stat.Health))).ToString();
         playerStatsPanel.healingAmountRow.statValueText.text = DisplayIncrease(GetPlayerStatAdjustment(Player.Stat.HealingAmount));
         playerStatsPanel.healingSpeedRow.statValueText.text = DisplayProbIncrease(GetPlayerStatAdjustment(Player.Stat.HealingSpeed));
-        playerStatsPanel.lootingSpeedRow.statValueText.text = DisplayProbIncrease(GetPlayerStatAdjustment(Player.Stat.LootingSpeed));
+        playerStatsPanel.lootingSpeedRow.statValueText.text = DisplayProbNoColor(GetPlayerStat(Player.Stat.LootingSpeed));
         playerStatsPanel.movementSpeedRow.statValueText.text = DisplayProbNoColor(GetPlayerStat(Player.Stat.MovementSpeedPercentage));
         playerStatsPanel.projectileCountRow.statValueText.text = DisplayNumberNoColor(GetPlayerStat(Player.Stat.ProjectileCount));
         

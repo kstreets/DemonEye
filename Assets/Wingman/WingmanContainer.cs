@@ -823,7 +823,7 @@ namespace WingmanInspector {
         private DragAndDropVisualMode SharedHierarchyDropHandler(Object dropTargetObject, HierarchyDropFlags dropMode, Transform parentForDraggedObjects, bool perform) {
             bool copying = dropMode == HierarchyDropFlags.DropUpon;
             bool creating = dropMode == HierarchyDropFlags.DropBetween || dropMode == HierarchyDropFlags.None;
-
+            
             DragAndDropVisualMode visualMode = DragAndDropVisualMode.None;
             if (copying) {
                 visualMode = DragAndDropVisualMode.Copy;

@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 84fed5edb3bb9364cb2a09f0a2cb622f, type: 3}
-  m_Name: Void
+  m_Name: VoidWalker
   m_EditorClassIdentifier: Assembly-CSharp::Soulcard
   uuid: -1861983588
-  displayName: Void
+  displayName: Void Walker
   inventorySprite: {fileID: -1877983629, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   dropSprite: {fileID: 0}
   pickupRadius: 0.07

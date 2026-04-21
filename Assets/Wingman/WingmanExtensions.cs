@@ -1,3 +1,5 @@
+#if UNITY_EDITOR
+
 using UnityEngine;
 
 namespace WingmanInspector {
@@ -15,3 +17,5 @@ namespace WingmanInspector {
     }
     
 }
+
+#endif
