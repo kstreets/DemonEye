@@ -23,7 +23,9 @@ MonoBehaviour:
   buyPrice: 500
   sellPrice: 70
   spawnsOnAllMaps: 1
+  firstSpawnMap: {fileID: 0}
   spawnsOnMaps: []
+  rarity: 0
   chanceToSpawnOnBody: 0.372
   chanceToSpawnOnTrader: 1
   chanceToSpawnFromRock: 0
@@ -31,7 +33,7 @@ MonoBehaviour:
   chanceToExistInLevel: 0
   chanceToSpawnFromBush: 0
   traderLevelRequired: 1
-  traderStockRange: {x: 4, y: 8}
+  traderStockRange: {x: 15, y: 15}
   barterRequirements:
   - item: {fileID: 11400000, guid: aaaec308c8b098340836b9aba4a3d55a, type: 2}
     count: 2
@@ -47,7 +49,7 @@ MonoBehaviour:
   itemGroupProps: {fileID: 0}
   maxStackCount: 6
   weight: 1
-  description: Stops bleeding and restores 15 health.
+  description: 
   animationType: 2
   healingAmount: 15
   bandageAmount: 1

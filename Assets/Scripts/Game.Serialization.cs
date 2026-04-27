@@ -10,12 +10,11 @@ public partial class Game {
     private string playerInventorySavePath;
     private string stashSavePath;
     private string crucibleSavePath;
-    private string hideoutDataSavePath;
-    private string raidDataSavePath;
     private string playerSavePath;
     private string questSavePath;
     private string traderSavePath;
     private string traderInventorySavePath;
+    private string mapUnlocksSavePath;
     private string tutorialSavePath;
     private List<ItemInstance> cachedInventoryForSaving = new(50);
     
@@ -23,12 +22,11 @@ public partial class Game {
         playerInventorySavePath = $"{Application.persistentDataPath}/inventory";
         stashSavePath = $"{Application.persistentDataPath}/stash";
         crucibleSavePath = $"{Application.persistentDataPath}/crucible";
-        hideoutDataSavePath = $"{Application.persistentDataPath}/hideoutData"; 
-        raidDataSavePath = $"{Application.persistentDataPath}/raidStateData";
         playerSavePath = $"{Application.persistentDataPath}/player";
         questSavePath = $"{Application.persistentDataPath}/quests";
         traderSavePath = $"{Application.persistentDataPath}/traders";
         traderInventorySavePath = $"{Application.persistentDataPath}/traderInventory";
+        mapUnlocksSavePath = $"{Application.persistentDataPath}/maps";
         tutorialSavePath = $"{Application.persistentDataPath}/tutorial";
     }
 
@@ -134,6 +132,35 @@ public partial class Game {
         
         // We want to make sure that the player health is never <= zero
         instancedPlayer.health = player.health <= 0f ? FullPlayerHealth : player.health;
+    }
+    
+    [Serializable]
+    private class MapSaves {
+        public List<bool> unlockStates;
+    }
+    
+    private void SaveMaps() {
+        MapSaves mapSaves = new() {
+            unlockStates = new(maps.Count),
+        };
+        foreach (MapData mapData in maps) {
+            mapSaves.unlockStates.Add(mapData.isUnlocked);    
+        }
+        SaveToFile(mapUnlocksSavePath, mapSaves);
+    }
+    
+    private void LoadAndAssignMapSaves(List<MapData> mapDatas) {
+        MapSaves mapSaves = LoadFromFile<MapSaves>(mapUnlocksSavePath);
+        if (mapSaves == null) return;
+        
+        if (mapDatas.Count != mapSaves.unlockStates.Count) {
+            Debug.Log("Maps save does not match current maps. Saves are not going to be loaded");
+            return;
+        }
+        
+        for (int i = 0; i < mapDatas.Count; i++) {
+            mapDatas[i].isUnlocked = mapSaves.unlockStates[i];
+        }
     }
 
 }

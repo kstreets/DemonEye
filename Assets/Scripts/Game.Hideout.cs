@@ -334,7 +334,7 @@ public partial class Game {
                 if (slot.itemInstance == null || slot.itemInstance.ItemRef.type != eyeUpgradeType) continue;
                 uuids.Add(slot.itemInstance.itemOrInstanceUuid);
             }
-            forgeDetailsDemonEyeDesc.UpdateDisplay(ConstructEyeUpgradeSet(uuids));
+            forgeDetailsDemonEyeDesc.UpdateDisplay(EyeUpgradeSetFromIds(uuids));
         }
     }
     

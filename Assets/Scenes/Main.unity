@@ -16518,17 +16518,15 @@ MonoBehaviour:
   startingItems: {fileID: 11400000, guid: 289cab2c4c800154ebe376a64e8eb57a, type: 2}
   styles: {fileID: 11400000, guid: f4b4ae74a1e122340bf1d9d4fa5ab586, type: 2}
   gameplayConfig: {fileID: 11400000, guid: 047f9f114e4a4a540874b19b32b4a4f9, type: 2}
-  questLines:
-  - {fileID: 11400000, guid: 6628f4d6576a6fb40b90774982504b86, type: 2}
   questGraph: {fileID: 7194093555672020370, guid: 8f5c04b849593bf4baec4efb1e04402c, type: 3}
   pickPocketQuest: {fileID: 11400000, guid: efcb77f3e34a9bb47a120bed21367bc2, type: 2}
   potionManTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
   armsDealerTrader: {fileID: 11400000, guid: b04e05a2cdc85404fbe24578a1868a5d, type: 2}
   hatManTrader: {fileID: 11400000, guid: bb3b083a03a70c147a32c54d43dd6569, type: 2}
   maps:
+  - {fileID: 11400000, guid: a084d4e7745af28498dbdbe8ced97dd5, type: 2}
   - {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
   - {fileID: 11400000, guid: e77fcebe0e13696458bf0cfbacf93e5d, type: 2}
-  - {fileID: 11400000, guid: 70e29b5ce27e2494897ae262127e35f4, type: 2}
   itemDropPrefab: {fileID: 6950097619826054733, guid: 76730055c1712874c9ac1c6f28f45cde, type: 3}
   baseProjectilePrefab: {fileID: 2758590605051147821, guid: 490c322ccae8e8149a6dddb96650a50e, type: 3}
   boneShatterProjectilePrefab: {fileID: 2758590605051147821, guid: f7b19a83567c00a4da11c9ce9c266d1f, type: 3}

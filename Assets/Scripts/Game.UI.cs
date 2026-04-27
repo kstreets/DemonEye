@@ -209,7 +209,7 @@ public partial class Game {
             MapData map = maps[i];
             mapSelectionButton.onClick.AddListener(() => {
                 LoadMapAsync(map, () => {
-                    CreateDropPoolsForMap(map);
+                    CreateDropPoolsForCurrentMap();
                     gameStateMachine.SetStateIfNotCurrent(raidState);
                 });
             });
@@ -273,7 +273,7 @@ public partial class Game {
             // exitPortalCountdownText.text = GetCountdownText(exitPortalTween.duration - exitPortalTween.elapsedTime);
         }
         if (finalWaveCountdownText.gameObject.activeInHierarchy) {
-            finalWaveCountdownText.text = GetCountdownText(spawnManager.timeUntilFinalWave);
+            finalWaveCountdownText.text = GetCountdownText(spawnManager.timeUntilFinalPhase);
         }
     }
 

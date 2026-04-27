@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "MapReference", menuName = "Scriptable Objects/MapReference")]
@@ -32,6 +33,12 @@ public class MapData : ScriptableObject {
     public int maxGemCountPerRock;
     
     [Header("Loot Increase")]
-    public float increasedLootRarityChance;
-
+    public float commonLootRarityIncrease;
+    public float uncommonLootRarityIncrease;
+    public float rareLootRarityIncrease;
+    public float epicLootRarityIncrease;
+    public float legendaryLootRarityIncrease;
+    
+    [NonSerialized] public bool isUnlocked;
+    
 }

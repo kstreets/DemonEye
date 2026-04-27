@@ -99,7 +99,7 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
         demonEyeDesc.gameObject.SetActive(itemInstance.isDemonEye);
         
         if (itemInstance.isDemonEye) {
-            demonEyeDesc.UpdateDisplay(gameInstance.ConstructEyeUpgradeSet(itemInstance.nestedUuids));
+            demonEyeDesc.UpdateDisplay(gameInstance.EyeUpgradeSetFromIds(itemInstance.nestedUuids));
         }
         else {
             descText.text = item.GetDescription();

@@ -72,7 +72,7 @@ public partial class Game {
                 for (int i = 0; i < boneShatter.shardsCount; i++) {
                     float randomDelay = Random.Range(0f, 0.06f);
                     float randomSpeedScaler = Random.Range(0.4f, 0.6f);
-                    Vector2 boneShatterVelocity = RandomizeVectorAngle(projectile.velocity * randomSpeedScaler, 40f);
+                    Vector2 boneShatterVelocity = RandomizeVectorAngle(projectile.velocity * randomSpeedScaler, 65f);
                     int boneDamage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(enemy) * boneShatter.perShardDamageMulti);
                     Projectile boneShatterProj = SpawnProjectile(enemy.position, boneShatterVelocity, boneShatterProjectilePool, 
                         rotation: RandomRotation(), spawnDelay: randomDelay, flatDamage: boneDamage, lifetime: boneShatter.lifeTime);

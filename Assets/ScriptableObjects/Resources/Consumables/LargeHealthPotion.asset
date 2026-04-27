@@ -23,6 +23,7 @@ MonoBehaviour:
   buyPrice: 3000
   sellPrice: 896
   spawnsOnAllMaps: 0
+  firstSpawnMap: {fileID: 0}
   spawnsOnMaps: []
   chanceToSpawnOnBody: 0.25
   chanceToSpawnOnTrader: 1
@@ -49,7 +50,7 @@ MonoBehaviour:
   itemGroupProps: {fileID: 0}
   maxStackCount: 6
   weight: 1
-  description: Drink and restore 80 health.
+  description: 
   animationType: 0
   healingAmount: 80
   bandageAmount: 0

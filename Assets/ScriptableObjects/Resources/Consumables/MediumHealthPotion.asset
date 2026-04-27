@@ -23,6 +23,7 @@ MonoBehaviour:
   buyPrice: 1200
   sellPrice: 224
   spawnsOnAllMaps: 0
+  firstSpawnMap: {fileID: 0}
   spawnsOnMaps:
   - {fileID: 11400000, guid: 9353817006d76f54fb1273b8ced36a68, type: 2}
   chanceToSpawnOnBody: 0.25
@@ -48,7 +49,7 @@ MonoBehaviour:
   itemGroupProps: {fileID: 0}
   maxStackCount: 6
   weight: 1
-  description: Drink and restore 60 health.
+  description: 
   animationType: 0
   healingAmount: 60
   bandageAmount: 0

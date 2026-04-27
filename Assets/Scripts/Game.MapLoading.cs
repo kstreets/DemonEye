@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.Pool;
 using UnityEngine.SceneManagement;
@@ -105,6 +104,10 @@ public partial class Game {
                     break;
             }
         } 
+        
+        foreach (ResourceSpawn resourceSpawn in resourceSpawns) {
+            Destroy(resourceSpawn.gameObject);
+        }
         
         if (QuestIsActive(pickPocketQuest)) {
             InventorySlot[] chosenDeadbody = deadBodySlotsLookup.RandomValue();

@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.Pool;
 
 public partial class Game {
     
@@ -55,7 +57,7 @@ public partial class Game {
         
         List<EquipedUpgradeInstance> equipedUpgrades = new();
         List<EquipedAugmentInstance> equipedAugments = new();
-        EyeUpgradeSet eyeUpgradeSet = ConstructEyeUpgradeSet(itemInstance.nestedUuids);
+        EyeUpgradeSet eyeUpgradeSet = EyeUpgradeSetFromIds(itemInstance.nestedUuids);
         
         foreach (EyeUpgradeSet.Element upgradeSetElm in eyeUpgradeSet.elements) {
             equipedUpgrades.Add(new() {
@@ -88,34 +90,45 @@ public partial class Game {
         eyeInstanceFromItemId.Add(itemInstance.itemOrInstanceUuid, newDemonEye);
     }
     
-    public struct EyeUpgradeSet {
+    public class EyeUpgradeSet {
         
-        public struct Element {
+        public class Element {
             public EyeUpgradeItem eyeUpgradeItem; 
             public int upgradeCount;
             public List<(Augment, int)> augmentsAndCount;
             public bool HasAugments => augmentsAndCount != null && augmentsAndCount.Count > 0;
         }
         
-        public List<Element> elements;
+        public List<Element> elements = new();
     }
     
-    public EyeUpgradeSet ConstructEyeUpgradeSet(List<int> uuids) {
-        Dictionary<EyeUpgradeItem, int> upgradeCountFromItem = new();
-        Dictionary<EyeUpgradeItem, Dictionary<Augment, int>> augmentsPerUpgrade = new();
+    private EyeUpgradeSet _eyeUpgradeSet = new();
+    
+    public EyeUpgradeSet EyeUpgradeSetFromIds(List<int> uuids) {
+        foreach (EyeUpgradeSet.Element element in _eyeUpgradeSet.elements) { 
+            ListPool<(Augment, int)>.Release(element.augmentsAndCount);
+            GenericPool<EyeUpgradeSet.Element>.Release(element);
+        }
+        _eyeUpgradeSet.elements.Clear();
+        
+        using var autoRelease1 = DictionaryPool<EyeUpgradeItem, int>.Get(out var upgradeCountFromItem);
+        // Need to release manually because we need to release its value dictionaries first
+        var augmentsPerUpgradeDict = DictionaryPool<EyeUpgradeItem, Dictionary<Augment, int>>.Get();
         
         foreach (int uuid in uuids) {
             UuidScriptableObject nestedObject = resourceLookup[uuid];
             ExtractUpgradeAndAugment(nestedObject, out EyeUpgradeItem upgrade, out Augment augment);
             
             if (augment != null) {
-                if (augmentsPerUpgrade.TryGetValue(upgrade, out var augmentCountDictionary)) {
-                    if (!augmentCountDictionary.TryAdd(augment, 1)) {
-                        augmentCountDictionary[augment]++;
+                if (augmentsPerUpgradeDict.TryGetValue(upgrade, out Dictionary<Augment, int> augmentCountDict)) {
+                    if (!augmentCountDict.TryAdd(augment, 1)) {
+                        augmentCountDict[augment]++;
                     }
                 }
                 else {
-                    augmentsPerUpgrade.Add(upgrade, new() { {augment, 1} });
+                    augmentCountDict = DictionaryPool<Augment, int>.Get();
+                    augmentCountDict.Add(augment, 1);
+                    augmentsPerUpgradeDict.Add(upgrade, augmentCountDict);
                 }
             }
             
@@ -126,34 +139,42 @@ public partial class Game {
             }
         }
         
-        List<(EyeUpgradeItem, int)> sortedUpgradeList = SortUpgradesFromDictionary(upgradeCountFromItem);
+        using var autoRelease2 = ListPool<(EyeUpgradeItem, int)>.Get(out var sortedUpgradeList);
+        SortUpgradesFromDictionaryIntoList(upgradeCountFromItem, sortedUpgradeList);
         
-        EyeUpgradeSet eyeUpgradeSet = new() { elements = new() };
         foreach ((EyeUpgradeItem upgrade, int upgradeCount) in sortedUpgradeList) {
-            EyeUpgradeSet.Element element = new() {
-                eyeUpgradeItem = upgrade,
-                upgradeCount = upgradeCount,
-                augmentsAndCount = new(),
-            };
+            var element = GenericPool<EyeUpgradeSet.Element>.Get();
+            element.eyeUpgradeItem = upgrade;
+            element.upgradeCount = upgradeCount;
+            element.augmentsAndCount = ListPool<(Augment, int)>.Get();
             
-            if (augmentsPerUpgrade.TryGetValue(upgrade, out var augmentCountDictionary)) {
+            if (augmentsPerUpgradeDict.TryGetValue(upgrade, out var augmentCountDictionary)) {
                 foreach ((Augment augment, int augmentCount) in augmentCountDictionary) {
                     element.augmentsAndCount.Add((augment, augmentCount));
                 }
             }
-            eyeUpgradeSet.elements.Add(element);
+            _eyeUpgradeSet.elements.Add(element);
         }
         
-        return eyeUpgradeSet;
+        foreach ((EyeUpgradeItem _, Dictionary<Augment, int> augmentCountDict) in augmentsPerUpgradeDict) {
+            DictionaryPool<Augment, int>.Release(augmentCountDict);
+        }
+        DictionaryPool<EyeUpgradeItem, Dictionary<Augment, int>>.Release(augmentsPerUpgradeDict);
+        
+        return _eyeUpgradeSet;
     }
 
-    private List<(EyeUpgradeItem, int)> SortUpgradesFromDictionary(Dictionary<EyeUpgradeItem, int> upgradesAndStackCount) {
-        List<(EyeUpgradeItem, int)> eyeUpgrades = new();
+    private void SortUpgradesFromDictionaryIntoList(Dictionary<EyeUpgradeItem, int> upgradesAndStackCount, List<(EyeUpgradeItem, int)> outputList) {
         foreach (KeyValuePair<EyeUpgradeItem, int> pair in upgradesAndStackCount) {
-            eyeUpgrades.Add(new(pair.Key, pair.Value));
+            outputList.Add(new(pair.Key, pair.Value));
         }
-        eyeUpgrades = eyeUpgrades.OrderByDescending(m => m.Item1.GetRarity()).ThenBy(m => m.Item1.displayName).ToList();
-        return eyeUpgrades;
+        outputList.Sort(static (x, y) => {
+            int rarityCompare = x.Item1.GetRarity().CompareTo(y.Item1.GetRarity()) * -1; // Flip for sorting in descending order
+            if (rarityCompare != 0) {
+                return rarityCompare;
+            }
+            return x.Item1.displayName.CompareTo(y.Item1.displayName);
+        });
     }
     
     private void ExtractUpgradeAndAugment(UuidScriptableObject uuidObject, out EyeUpgradeItem upgrade, out Augment aug) {

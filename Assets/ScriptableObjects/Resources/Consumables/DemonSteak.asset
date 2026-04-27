@@ -23,6 +23,7 @@ MonoBehaviour:
   buyPrice: 12
   sellPrice: 12
   spawnsOnAllMaps: 1
+  firstSpawnMap: {fileID: 0}
   spawnsOnMaps: []
   chanceToSpawnOnBody: 0.241
   chanceToSpawnOnTrader: 0
@@ -46,7 +47,7 @@ MonoBehaviour:
   itemGroupProps: {fileID: 0}
   maxStackCount: 6
   weight: 2
-  description: Meat of a demon you can eat to restore 35 health.
+  description: 
   animationType: 1
   healingAmount: 35
   bandageAmount: 0

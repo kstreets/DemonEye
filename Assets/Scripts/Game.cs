@@ -25,7 +25,6 @@ public partial class Game : MonoBehaviour {
     public GameplayConfig gameplayConfig;
     
     [Foldout("Quests")]
-    public List<QuestLine> questLines;
     public QuestGraphRuntime questGraph;
     public Quest pickPocketQuest;
     [EndFoldout]
@@ -37,7 +36,7 @@ public partial class Game : MonoBehaviour {
     [EndFoldout]
 
     [Foldout("Maps")]
-    public MapData[] maps;
+    public List<MapData> maps;
     [EndFoldout]
     
     [Foldout("Pooling Prefabs")]
@@ -318,6 +317,8 @@ public partial class Game : MonoBehaviour {
         BuildSavePaths();
         InitAudio();
         
+        LoadAndAssignMapSaves(maps);
+        
         player = SpawnEntity<Player>(playerPrefab, Vector3.zero, Quaternion.identity, null, EntityLifetime.Global);
         OnPlayerCreated();
         LoadAndAssignPlayerSaveData(player);
@@ -555,6 +556,12 @@ public partial class Game : MonoBehaviour {
     }
     
     private void OnWinExitEnter() {
+        int nextMapIndex = maps.IndexOf(loadedMapData) + 1;
+        bool unlockNextMap = maps.IndexInRange(nextMapIndex) && !maps[nextMapIndex].isUnlocked;
+        if (unlockNextMap) {
+            maps[nextMapIndex].isUnlocked = true;
+            SaveMaps();
+        }
         OnSaveWhenRaidIsOver();
         AnimateGameWinSequence(() => gameStateMachine.SetStateIfNotCurrent(mainMenuState));
     }
@@ -611,7 +618,7 @@ public partial class Game : MonoBehaviour {
     private void UpdateRaidState() {
         RaidState prevState = curRaidState;
         
-        if (spawnManager.timeUntilFinalWave >= 0f) {
+        if (spawnManager.timeUntilFinalPhase >= 0f) {
             curRaidState = RaidState.InitialWaves;
         }
         else if (!spawnManager.isFinishedSpawning || enemies.Count > 0) {
@@ -1060,6 +1067,9 @@ public partial class Game : MonoBehaviour {
             }
         }
         
+        Assert.IsTrue(possibleExitPortals.Count >= exitPortalsCount, 
+            $"Not enough portals on map, and or spaced too close together. Expected {exitPortalsCount} got {possibleExitPortals.Count}");
+        
         possibleExitPortals.Shuffle();
         
         for (int i = 0; i < exitPortalsCount; i++) {
@@ -1287,7 +1297,7 @@ public partial class Game : MonoBehaviour {
     
     public static string DisplayMultiplierDecrease(float multiplier, Color? color = default) {
         Color textColor = color ?? gameInstance.styles.decreaseDescColor;
-        return ColorText($"-{multiplier:0.00}x", textColor);
+        return ColorText($"-{Mathf.Abs(multiplier):0.00}x", textColor);
     }
 
     public static string DisplaySeconds(float time) {

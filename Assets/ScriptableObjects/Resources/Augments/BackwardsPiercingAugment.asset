@@ -15,3 +15,9 @@ MonoBehaviour:
   uuid: 818390779
   eyeUpgradeDerivedFrom: {fileID: 11400000, guid: f7c724c49aae4c04c96cab2b1076d025, type: 2}
   percentChanceOfDerivedToSpawn: 0.504
+  spawnsOnAllMaps: 0
+  firstSpawnMap: {fileID: 0}
+  spawnsOnMaps: []
+  traderLevelRequired: 1
+  traderStockRange: {x: 1, y: 2}
+  barterRequirements: []

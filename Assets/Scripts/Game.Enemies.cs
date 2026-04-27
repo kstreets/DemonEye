@@ -57,12 +57,12 @@ public partial class Game {
             enemy.curRunningSumDistFromPlayer += distFromPlayer;
             
             enemy.averageDistFromPlayerTime += Time.deltaTime;
-            if (enemy.averageDistFromPlayerTime > 2.5f) {
+            if (enemy.averageDistFromPlayerTime > 1.5f) {
                 enemy.averageDistFromPlayerTime = 0f;
 
                 if (enemy.prevAverageDistFromPlayer != 0f) {
                     float curAverage = enemy.curRunningSumDistFromPlayer / enemy.curRunningSumFrameCount;
-                    enemy.gettingFurtherFromPlayer = Mathf.Abs(curAverage - enemy.prevAverageDistFromPlayer) <= 0.08f;
+                    enemy.gettingFurtherFromPlayer = Mathf.Abs(curAverage - enemy.prevAverageDistFromPlayer) <= 0.03f;
                 }
                 
                 enemy.prevAverageDistFromPlayer = enemy.curRunningSumDistFromPlayer / enemy.curRunningSumFrameCount;
@@ -72,7 +72,7 @@ public partial class Game {
             
             bool canReteleport = timeHasPassed && enemyReteleportCount < maxTeleportCount;
 
-            if (canReteleport && enemy.gettingFurtherFromPlayer && distFromPlayer > 1.2f) {
+            if (canReteleport && enemy.gettingFurtherFromPlayer && distFromPlayer > 1.14f) {
                 Vector2Int repositionCellRange = spawnManager.CurSpawnPhase.repositionCellRange;
                 Vector2 randomSpawnGridPos = loadedMapInst.grid.GetSpawnPosition(player.position, repositionCellRange.x, repositionCellRange.y);
                 if (Vector2.Distance(randomSpawnGridPos, player.position) < distFromPlayer) {
@@ -317,9 +317,9 @@ public partial class Game {
     }
     
     public class EnemySpawnManager {
-        public float timeInPhase;
+        public float timeInCurPhase;
         public float totalTimeLeft;
-        public float timeUntilFinalWave;
+        public float timeUntilFinalPhase;
         public int curPhaseIndex;
         public RaidSpawnPattern spawnPattern;
         public bool isFinishedSpawning;
@@ -340,31 +340,29 @@ public partial class Game {
         spawnManager.isFinishedSpawning = false;
         spawnManager.spawnPattern = pattern;
         spawnManager.curPhaseIndex = -1;
-        spawnManager.timeInPhase = 0f;
+        spawnManager.timeInCurPhase = 0f;
         spawnManager.totalTimeLeft = pattern.timeBeforeFirstPhase;
         foreach (RaidSpawnPattern.SpawnPhase phase in spawnManager.spawnPattern.spawnPhases) {
             spawnManager.totalTimeLeft += phase.phaseDuration;
         }
-        spawnManager.timeUntilFinalWave = spawnManager.totalTimeLeft - spawnManager.spawnPattern.spawnPhases[^1].phaseDuration;
+        spawnManager.timeUntilFinalPhase = spawnManager.totalTimeLeft - spawnManager.spawnPattern.spawnPhases[^1].phaseDuration;
     }
     
     private Limiter spawnLimiterForEnemyBatching;
     
     private void UpdateSpawnManager() {
         EnemySpawnManager sm = spawnManager;
-        
         if (sm.isFinishedSpawning) return;
         
-        sm.timeInPhase += Time.deltaTime;
+        sm.timeInCurPhase += Time.deltaTime;
         sm.totalTimeLeft -= Time.deltaTime;
-        sm.timeUntilFinalWave -= Time.deltaTime;
+        sm.timeUntilFinalPhase -= Time.deltaTime;
         
-        float waveDuration = sm.curPhaseIndex == -1 ? 
-            sm.spawnPattern.timeBeforeFirstPhase : 
-            sm.spawnPattern.spawnPhases[sm.curPhaseIndex].phaseDuration;
-
-        bool startNextWave = sm.timeInPhase >= waveDuration;
-        if (startNextWave) {
+        float waveDuration = sm.curPhaseIndex == -1 ? sm.spawnPattern.timeBeforeFirstPhase : sm.spawnPattern.spawnPhases[sm.curPhaseIndex].phaseDuration;
+        bool startNextWave = sm.timeInCurPhase >= waveDuration;
+        bool onLastPhase = sm.curPhaseIndex == sm.spawnPattern.spawnPhases.Count - 1;
+        
+        if (startNextWave && !onLastPhase) {
             sm.curPhaseIndex++;
 
             RaidSpawnPattern.SpawnPhase curPhase = sm.spawnPattern.spawnPhases[sm.curPhaseIndex];
@@ -377,7 +375,7 @@ public partial class Game {
             }
             #endif
             
-            sm.timeInPhase = 0f;
+            sm.timeInCurPhase = 0f;
             sm.spawnTimeIndex = 0;
 
             float totalWeight = 0f;
@@ -415,11 +413,9 @@ public partial class Game {
             spawnLimiterForEnemyBatching.MakeCurrent();
         }
 
-        if (sm.spawnEvents.Count <= 0) return;
-
-        if (!spawnLimiterForEnemyBatching.TimeHasPassed(1f)) return;
+        if (!spawnLimiterForEnemyBatching.TimeHasPassed(1f) || sm.spawnEvents.Count <= 0) return;
         
-        while (sm.spawnEvents.IndexInRange(sm.spawnTimeIndex) && sm.spawnEvents[sm.spawnTimeIndex].time <= sm.timeInPhase) {
+        while (sm.spawnEvents.IndexInRange(sm.spawnTimeIndex) && sm.spawnEvents[sm.spawnTimeIndex].time <= sm.timeInCurPhase) {
             Vector2Int spawnCellRange = spawnManager.CurSpawnPhase.spawnCellRange;
             Vector2 randomSpawnPos = loadedMapInst.grid.GetSpawnPosition(player.position, spawnCellRange.x, spawnCellRange.y);
 
@@ -436,16 +432,14 @@ public partial class Game {
             enemies.Add(enemy);
             
             TeleportEnemy(enemy, randomSpawnPos, TeleportType.Spawn);
-
             sm.spawnTimeIndex++;
         }
-
+        
         bool outOfSpawnsInPhase = !sm.spawnEvents.IndexInRange(sm.spawnTimeIndex);
-        bool onLastPhase = sm.spawnPattern.spawnPhases.Count - 1 == sm.curPhaseIndex;
-
         if (outOfSpawnsInPhase && onLastPhase) {
             sm.isFinishedSpawning = true;
         }
+        
     }
     
 }

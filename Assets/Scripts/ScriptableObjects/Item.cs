@@ -23,8 +23,15 @@ public class Item : UuidScriptableObject {
 
     public bool spawnsOnAllMaps;
     [ShowIf(nameof(spawnsOnAllMaps), false)]
+    public MapData firstSpawnMap;
     public List<MapData> spawnsOnMaps;
     [EndIf] 
+    
+    [Space]
+    
+    #if UNITY_EDITOR
+    [ReadOnly] [SerializeField] private Rarity rarity;
+    #endif
     
     [Range(0f, 1f)] public float chanceToSpawnOnBody;
     [Range(0f, 1f)] public float chanceToSpawnOnTrader;
@@ -78,10 +85,10 @@ public class Item : UuidScriptableObject {
             chanceToSpawnFromEnemy > 0 ? chanceToSpawnFromEnemy : float.MinValue,
             chanceToSpawnFromBush > 0 ? chanceToSpawnFromBush : float.MinValue
         );
-        if (maxRarity <= 0.08f) return Rarity.Legendary;
-        if (maxRarity <= 0.20f) return Rarity.Epic;
-        if (maxRarity <= 0.38f) return Rarity.Rare;
-        if (maxRarity <= 0.50f) return Rarity.Uncommon;
+        if (maxRarity <= 0.03f) return Rarity.Legendary;
+        if (maxRarity <= 0.10f) return Rarity.Epic;
+        if (maxRarity <= 0.20f) return Rarity.Rare;
+        if (maxRarity <= 0.38f) return Rarity.Uncommon;
         return Rarity.Common;
     }
     
@@ -145,6 +152,10 @@ public class Item : UuidScriptableObject {
     }
     
 #if UNITY_EDITOR
+    
+    private void OnValidate() {
+        rarity = GetRarity();
+    }
     
     [OnValueChanged(nameof(buyPrice))]
     private void AutoSetSellPriceOnBuyPriceChanged() {

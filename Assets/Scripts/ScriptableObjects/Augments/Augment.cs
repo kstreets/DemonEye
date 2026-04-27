@@ -1,12 +1,26 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using VInspector;
 using static Game;
 
 public class Augment : UuidScriptableObject {
 
+    [Header("Augment")]
     public EyeUpgradeItem eyeUpgradeDerivedFrom;
     [Range(0f, 0.99f)] public float percentChanceOfDerivedToSpawn;
+    
+    [Header("Map Spawning")]
+    public bool spawnsOnAllMaps;
+    [ShowIf(nameof(spawnsOnAllMaps), false)]
+    public MapData firstSpawnMap;
+    public List<MapData> spawnsOnMaps;
+    [EndIf] 
+    
+    [Header("Trader Spawning")]
+    [Range(1, 10)] public int traderLevelRequired;
+    [MinMaxSlider(1, 15)] public Vector2Int traderStockRange;
+    public List<ItemWithCount> barterRequirements;
     
     [NonSerialized] public EyeUpgradeItem augmentedEyeUpgradeItem;
     

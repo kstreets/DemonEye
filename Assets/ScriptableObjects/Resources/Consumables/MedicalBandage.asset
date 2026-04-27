@@ -23,6 +23,7 @@ MonoBehaviour:
   buyPrice: 1000
   sellPrice: 280
   spawnsOnAllMaps: 0
+  firstSpawnMap: {fileID: 0}
   spawnsOnMaps: []
   chanceToSpawnOnBody: 0.372
   chanceToSpawnOnTrader: 1
@@ -49,7 +50,7 @@ MonoBehaviour:
   itemGroupProps: {fileID: 0}
   maxStackCount: 6
   weight: 1
-  description: Stops bleeding and restores 30 health.
+  description: 
   animationType: 2
   healingAmount: 30
   bandageAmount: 1

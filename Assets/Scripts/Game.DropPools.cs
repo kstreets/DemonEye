@@ -1,14 +1,16 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Pool;
+using Random = UnityEngine.Random;
 
 public partial class Game {
     
     private enum DropOrigin { Rock, Body, Trader, Enemy, ExistsInLevel, Bush }
 
     private class DropPool {
-        public List<Item> items;
+        public List<Item> items = new();
         public DropOrigin dropOrigin;
         public bool HasItems => items.Count > 0;
     }
@@ -20,37 +22,39 @@ public partial class Game {
     private DropPool enemyDropPool;
     private DropPool foragingDropPool;
     private DropPool bushesDropPool;
-
+    
+    private DropPool[] globalDropPools;
+    private DropPool[] mapSpecificDropPools;
+    
     private void CreateDropPools() {
-        rockStonesDropPool = new() { items = new(), dropOrigin = DropOrigin.Rock };
-        eyeUpgradesDropPool = new() { items = new(), dropOrigin = DropOrigin.Rock };
-        bodyDropPool = new() { items = new(), dropOrigin = DropOrigin.Body };
-        traderDropPool = new() { items = new(), dropOrigin = DropOrigin.Trader };
-        enemyDropPool = new() { items = new(), dropOrigin = DropOrigin.Enemy };
-        foragingDropPool = new() { items = new(), dropOrigin = DropOrigin.ExistsInLevel };
-        bushesDropPool = new() { items = new(), dropOrigin = DropOrigin.Bush };
-
+        rockStonesDropPool = new() { dropOrigin = DropOrigin.Rock };
+        eyeUpgradesDropPool = new() { dropOrigin = DropOrigin.Rock };
+        bodyDropPool = new() { dropOrigin = DropOrigin.Body };
+        traderDropPool = new() { dropOrigin = DropOrigin.Trader };
+        enemyDropPool = new() { dropOrigin = DropOrigin.Enemy };
+        foragingDropPool = new() { dropOrigin = DropOrigin.ExistsInLevel };
+        bushesDropPool = new() { dropOrigin = DropOrigin.Bush };
+        
+        globalDropPools = new[] { traderDropPool, enemyDropPool };
+        mapSpecificDropPools = new[] { rockStonesDropPool, eyeUpgradesDropPool, bodyDropPool, foragingDropPool, bushesDropPool };
+        
         foreach (Item item in allItems) {
             if (item.chanceToSpawnOnTrader > 0f) {
                 traderDropPool.items.Add(item); 
             }
-
             if (item.chanceToSpawnFromEnemy > 0f) {
                 enemyDropPool.items.Add(item);
             }
         }
     }
     
-    private void CreateDropPoolsForMap(MapData map) { 
-        rockStonesDropPool.items.Clear();
-        eyeUpgradesDropPool.items.Clear();
-        bodyDropPool.items.Clear();
-        foragingDropPool.items.Clear();
-        bushesDropPool.items.Clear();
+    private void CreateDropPoolsForCurrentMap() { 
+        foreach (DropPool dropPool in mapSpecificDropPools) {
+            dropPool.items.Clear();
+        }
         
         foreach (Item item in allItems) {
-            bool spawnsOnCurrentMap = item.spawnsOnAllMaps || item.spawnsOnMaps.Contains(map);
-            if (!spawnsOnCurrentMap) continue;
+            if (!ItemCanSpawnOnCurrentMap(item)) continue;
             
             if (item.type == eyeUpgradeType) {
                 eyeUpgradesDropPool.items.Add(item);
@@ -71,60 +75,59 @@ public partial class Game {
             }
         }
     }
-
-    private Item GetItemFromEnemyDropPool(EnemyData enemy) {
-        DropPool tempEnemyPool = new() {
-            items = ListPool<Item>.Get(),
-            dropOrigin = DropOrigin.Enemy,
-        };
-        
-        foreach (Item enemyItem in enemyDropPool.items) {
-            if (enemyItem.spawnsFromEnemies.Contains(enemy)) {
-                tempEnemyPool.items.Add(enemyItem);
-            }
-        }
-
-        if (tempEnemyPool.items.Count <= 0) {
-            ListPool<Item>.Release(tempEnemyPool.items);
-            return null;
-        }
-        
-        Item item = GetItemFromDropPool(tempEnemyPool);
-        ListPool<Item>.Release(tempEnemyPool.items);
-        return item;
-    }
-
+    
     private Item GetItemFromDropPool(DropPool dropPool) {
         Assert.IsFalse(dropPool.items == enemyDropPool.items, $"Use {nameof(GetItemFromEnemyDropPool)} for enemies");
-        Assert.IsFalse(dropPool.items.Count == 0, $"No items in drop pool, use {nameof(DropPool.HasItems)} before calling"); 
+        Assert.IsFalse(dropPool.items.Count == 0, $"No items in drop pool, use {nameof(DropPool.HasItems)} before calling");
         
-        dropPool.items.Shuffle();
-        
+        float roll = Random.value * GetTotalDropChances(dropPool);
+        float dropThreshold = 0f;
+    
         foreach (Item drop in dropPool.items) {
             float dropChance = GetDropChanceOfItem(drop, dropPool.dropOrigin);
-            if (RollProbability(dropChance)) {
+            dropThreshold += dropChance;
+            if (roll < dropThreshold) {
                 return RollForAugmentedVersion(drop, dropPool.dropOrigin);
             }
         }
         
         return RollForAugmentedVersion(dropPool.items[^1], dropPool.dropOrigin); 
     }
-    
+
+    private Item GetItemFromEnemyDropPool(EnemyData enemy) {
+        using var _ = GenericPool<DropPool>.Get(out var tempDropPool);
+        tempDropPool.items.Clear();
+        tempDropPool.dropOrigin = DropOrigin.Enemy;
+        
+        foreach (Item enemyItem in enemyDropPool.items) {
+            if (enemyItem.spawnsFromEnemies.Contains(enemy)) {
+                tempDropPool.items.Add(enemyItem);
+            }
+        }
+
+        if (tempDropPool.items.Count <= 0) {
+            return null;
+        }
+        
+        Item item = GetItemFromDropPool(tempDropPool);
+        return item;
+    }
+
     private void GetUniqueItemsFromDropPool(DropPool dropPool, int maxCount, List<Item> items, float raritySkew = 0f) {
         Assert.IsFalse(dropPool.items.Count == 0, $"No items in drop pool, use {nameof(DropPool.HasItems)} before calling"); 
         
-        dropPool.items.Shuffle();
-        
+        using var _ = GenericPool<DropPool>.Get(out var tempDropPool);
+        tempDropPool.dropOrigin = dropPool.dropOrigin;
+        tempDropPool.items.Clear();
         foreach (Item item in dropPool.items) {
-            float itemDropChance = GetDropChanceOfItem(item, dropPool.dropOrigin) + raritySkew;
-            if (RollProbability(itemDropChance)) {
-                items.Add(RollForAugmentedVersion(item, dropPool.dropOrigin));
-            }
+            tempDropPool.items.Add(item);
         }
         
-        bool itemListNeedsTrimming = items.Count > maxCount;
-        if (itemListNeedsTrimming) {
-            items.RemoveRange(maxCount, items.Count - maxCount);
+        int selectCount = Mathf.Min(maxCount, tempDropPool.items.Count);
+        for (int i = 0; i < selectCount; i++) {
+            Item itemDrop = GetItemFromDropPool(tempDropPool);
+            items.Add(itemDrop);
+            tempDropPool.items.Remove(itemDrop);
         }
     }
     
@@ -136,6 +139,8 @@ public partial class Game {
         possibleAugments.Shuffle();
         
         foreach (Augment possibleAugment in possibleAugments) {
+            if (!AugmentCanSpawnOnCurrentMap(possibleAugment)) continue;
+            
             float augmentingChance = GetDropChanceOfItem(possibleAugment.augmentedEyeUpgradeItem, origin);
             if (RollProbability(augmentingChance)) {
                 return possibleAugment.augmentedEyeUpgradeItem;
@@ -149,13 +154,13 @@ public partial class Game {
         float addChanceToSpawn = 0f;
         
         if (origin != DropOrigin.Trader) {
-            float raritySkewIncreaseFromMap = loadedMapData.increasedLootRarityChance;
             addChanceToSpawn = item.GetRarity() switch {
-                // Scaling the increase exponentionally (the adding/subtracting 1 is because rarity skew is a decimal)
-                Item.Rarity.Uncommon  => Mathf.Pow(1f + raritySkewIncreaseFromMap, 1.1f) - 1f,
-                Item.Rarity.Rare      => Mathf.Pow(1f + raritySkewIncreaseFromMap, 1.2f) - 1f,
-                Item.Rarity.Legendary => Mathf.Pow(1f + raritySkewIncreaseFromMap, 1.3f) - 1f,
-                _                     => 0f,
+                Item.Rarity.Common    => loadedMapData.commonLootRarityIncrease,
+                Item.Rarity.Uncommon  => loadedMapData.uncommonLootRarityIncrease,
+                Item.Rarity.Rare      => loadedMapData.rareLootRarityIncrease,
+                Item.Rarity.Epic      => loadedMapData.epicLootRarityIncrease,
+                Item.Rarity.Legendary => loadedMapData.legendaryLootRarityIncrease,
+                _                     => throw new ArgumentOutOfRangeException(),
             };
         }
         
@@ -167,6 +172,31 @@ public partial class Game {
             DropOrigin.Bush   => Mathf.Clamp01(item.chanceToSpawnFromBush + addChanceToSpawn),
             _                 => 0f,
         };
+    }
+    
+    private float GetTotalDropChances(DropPool dropPool) {
+        float total = 0f;
+        foreach (Item item in dropPool.items) {
+            total += gameInstance.GetDropChanceOfItem(item, dropPool.dropOrigin);
+        }
+        return total;
+    }
+    
+    private bool ItemCanSpawnOnCurrentMap(Item item) {
+        if (item.spawnsOnAllMaps) return true;
+        if (CurrentlyOnOrPassedMap(item.firstSpawnMap)) return true;
+        return item.spawnsOnMaps.Contains(loadedMapData);
+    }
+    
+    private bool AugmentCanSpawnOnCurrentMap(Augment augment) {
+        if (augment.spawnsOnAllMaps) return true;
+        if (CurrentlyOnOrPassedMap(augment.firstSpawnMap)) return true;
+        return augment.spawnsOnMaps.Contains(loadedMapData);
+    }
+    
+    private bool CurrentlyOnOrPassedMap(MapData map) {
+        if (map == null || loadedMapData == null) return false;
+        return maps.IndexOf(loadedMapData) >= maps.IndexOf(map);
     }
     
 }
