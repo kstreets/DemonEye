@@ -228,8 +228,6 @@ public partial class Game {
     }
     
     private void FixedUpdateEnemies() {
-        if (!InRaid) return;
-        
         foreach (Enemy enemy in enemies) {
             float speed = enemy.data.speed;
             

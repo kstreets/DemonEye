@@ -10,20 +10,20 @@ public class StateMachine {
     private List<State> states = new();
     private List<Transition> anyStateTransitions = new();
 
-    private float timeSinceStateStart;
+    private float timeWhenCurStateStarted;
     
     private State nextStateAfterDelay;
-    private float nextStateDelay;
-    private float curNextStateDelay;
+    private float nextStateAtTime;
+    private float lastUpdateTime;
 
     public bool Transitioning => nextStateAfterDelay != null;
     
-    public State CreateState(Action update, Action enter, Action exit, Action whileExiting = null) {
-        State newState = new(update, enter, exit, whileExiting);
+    public State CreateState(Action update = null, Action fixedUpdate = null, Action lateUpdate = null, 
+        Action enter = null, Action exit = null, Action whileExiting = null) 
+    {
+        State newState = new(update, fixedUpdate, lateUpdate, enter, exit, whileExiting);
         if (states.Count == 0) {
-            CurState = newState;
-            PrevState = newState;
-            CurState.OnStateEnterAction?.Invoke();
+            SetStateImmediate(newState);
         }
         states.Add(newState);
         return newState;
@@ -36,71 +36,84 @@ public class StateMachine {
     }
 
     public void SetState(State state) {
-        nextStateDelay = 0f;
+        nextStateAtTime = 0f;
         nextStateAfterDelay = state;
     }
 
     public bool SetStateIfNotCurrent(State state) {
         if (CurState == state) return false;
-        nextStateDelay = 0f;
-        nextStateAfterDelay = state;
+        SetState(state);
         return true;
     }
 
     public void StopCurrentTransition() {
         nextStateAfterDelay = null;
-        timeSinceStateStart = 0f;
-        curNextStateDelay = 0f;
+        timeWhenCurStateStarted = Time.time;
     }
-    
-    public void Tick() {
-        timeSinceStateStart += Time.deltaTime;
 
-        if (nextStateAfterDelay != null) {
-            UpdateDelayedState();
-            return;
-        }
+    public enum UpdateMode { Update, FixedUpdate, LateUpdate }
+
+    public void Tick(UpdateMode updateMode = UpdateMode.Update) {
+        bool needsUpdating = Time.time != lastUpdateTime;
         
-        UpdateState(anyStateTransitions);
-        UpdateState(CurState.Transitions);
-        CurState.OnStateUpdateAction?.Invoke();
+        if (needsUpdating) {
+            lastUpdateTime = Time.time;
+
+            if (nextStateAfterDelay != null) {
+                UpdateDelayedState();
+                return;
+            }
+        
+            UpdateState(anyStateTransitions);
+            UpdateState(CurState.Transitions);
+        } 
+        
+        switch (updateMode) {
+            case UpdateMode.Update:
+                CurState.OnStateUpdateAction?.Invoke();
+                break;
+            case UpdateMode.FixedUpdate:
+                CurState.OnStateFixedUpdateAction?.Invoke();
+                break;
+            case UpdateMode.LateUpdate:
+                CurState.OnStateLateUpdateAction?.Invoke();
+                break;
+        }
     }
 
     private void UpdateDelayedState() {
-        curNextStateDelay += Time.deltaTime;
-        if (curNextStateDelay < nextStateDelay) {
+        if (Time.time < nextStateAtTime) {
             CurState.WhileExiting?.Invoke();
             return;
         }
-        SetStateImediate(nextStateAfterDelay);
+        SetStateImmediate(nextStateAfterDelay);
     }
 
     private void UpdateState(List<Transition> transitions) {
         foreach (Transition transition in transitions) {
-            if (timeSinceStateStart >= transition.Seconds && transition.EvaluateTransition()) {
-                SetStateImediate(transition.NextState, transition.Delay);
+            float secondsInCurState = Time.time - timeWhenCurStateStarted;
+            if (secondsInCurState >= transition.Seconds && transition.EvaluateTransition()) {
+                SetStateWithDelay(transition.NextState, transition.Delay);
                 break;
             }
         }
     }
     
-    private void SetStateImediate(State state) {
+    private void SetStateImmediate(State state) {
         PrevState = CurState;
         CurState = state;
         nextStateAfterDelay = null;
-        PrevState.OnStateExitAction?.Invoke();
+        PrevState?.OnStateExitAction?.Invoke();
         CurState.OnStateEnterAction?.Invoke();
-        timeSinceStateStart = 0f;
-        curNextStateDelay = 0f;
+        timeWhenCurStateStarted = Time.time;
     }
 
-    private void SetStateImediate(State state, float delay) {
+    private void SetStateWithDelay(State state, float delay) {
         if (delay <= 0f) {
-            SetStateImediate(state);
+            SetStateImmediate(state);
             return;
         }
-
-        nextStateDelay = delay;
+        nextStateAtTime = Time.time + delay;
         nextStateAfterDelay = state;
     }
     

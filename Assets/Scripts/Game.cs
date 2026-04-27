@@ -146,7 +146,6 @@ public partial class Game : MonoBehaviour {
     public RectTransform playerPanel;
     public RectTransform playerEquipmentParent;
     public RectTransform playerPocketParent;
-    // public RectTransform playerBackpackParent;
     public RectTransform playerPocketsBackpackParent;
     public RectTransform playerPassiveParent;
     public RectTransform playerInventoryParent;
@@ -373,13 +372,13 @@ public partial class Game : MonoBehaviour {
 
         escapeInputAction.performed += OnEscapePressed;
 
-        mainMenuState = gameStateMachine.CreateState(null, OnMainMenuStateEnter, OnMainMenuStateExit);
-        hideoutState = gameStateMachine.CreateState(OnHideoutStateUpdate, OnHideoutStateEnter, OnHideoutStateExit);
-        mapSelectionState = gameStateMachine.CreateState(OnMapSelectionUpdate, OnMapSelectionEnter, OnMapSelectionExit);
-        raidState = gameStateMachine.CreateState(OnRaidStateUpdate, OnRaidStateEnter, OnRaidStateExit);
-        gameOverState = gameStateMachine.CreateState(null, OnGameOverEnter, OnGameOverExit);
-        earlyExitState = gameStateMachine.CreateState(null, OnEarlyExitEnter, OnEarlyExitExit);
-        winExitState = gameStateMachine.CreateState(null, OnWinExitEnter, OnWinExitExit);
+        mainMenuState = gameStateMachine.CreateState(enter: OnMainMenuStateEnter, exit: OnMainMenuStateExit);
+        hideoutState = gameStateMachine.CreateState(update: OnHideoutStateUpdate, lateUpdate: OnHideoutStateLateUpdate, enter: OnHideoutStateEnter, exit: OnHideoutStateExit);
+        mapSelectionState = gameStateMachine.CreateState(update: OnMapSelectionUpdate, lateUpdate: OnMapSelectionLateUpdate, enter: OnMapSelectionEnter, exit: OnMapSelectionExit);
+        raidState = gameStateMachine.CreateState(update: OnRaidStateUpdate, fixedUpdate: OnRaidStateFixedUpdate, lateUpdate: OnRaidStateLateUpdate, enter: OnRaidStateEnter, exit: OnRaidStateExit);
+        gameOverState = gameStateMachine.CreateState(enter: OnGameOverEnter, exit: OnGameOverExit);
+        earlyExitState = gameStateMachine.CreateState(enter: OnEarlyExitEnter, exit: OnEarlyExitExit);
+        winExitState = gameStateMachine.CreateState(enter: OnWinExitEnter, exit: OnWinExitExit);
         
         raidState.To(gameOverState).When(() => player.health <= 0);
     }
@@ -433,36 +432,23 @@ public partial class Game : MonoBehaviour {
         DemonEyeTween.Update();
         UpdateTrader();
         UpdateQuests();
-        foreach (Inventory inventory in allInventories) {
-            RefreshInventoryDisplay(inventory);
-        }
-        UpdateGraySlots();
         
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         if (Mouse.current != null && Mouse.current.middleButton.isPressed) {
             Time.timeScale = 4f;
         }
         else {
             Time.timeScale = 1f;
         }
-        #endif
+#endif
     }
 
     private void FixedUpdate() {
-        if (!InRaid) return;
-        loadedMapInst.grid.CompleteFlowFieldCalculation();
-        loadedMapInst.grid.ScheduleFlowFieldCalculation(player.position);
-        FixedUpdateEnemies();
+        gameStateMachine.Tick(StateMachine.UpdateMode.FixedUpdate);
     }
 
     private void LateUpdate() {
-        UpdatePlayerPanelUI();
-        UpdateHotBarUI();
-        UpdateDragAndDropItemToCursor();
-        UpdateCurrencyNumbers();
-        if (InRaid) {
-            UpdateInRaidUI();
-        }
+        gameStateMachine.Tick(StateMachine.UpdateMode.LateUpdate);
     }
 
     private void OnApplicationQuit() {
@@ -503,6 +489,14 @@ public partial class Game : MonoBehaviour {
         UpdateForgeState();
         UpdateForgePanel();
         UpdateForgeInfoPanel();
+        RefreshAllInventoryDisplays();
+        UpdateGraySlots();
+    }
+
+    private void OnHideoutStateLateUpdate() {
+        UpdatePlayerPanelUI();
+        UpdateDragAndDropItemToCursor();
+        UpdateCurrencyNumbers();
     }
 
     private void OnMapSelectionEnter() {
@@ -516,6 +510,12 @@ public partial class Game : MonoBehaviour {
     private void OnMapSelectionUpdate() {
         CheckForHotBarInteractions();
         UpdateInventory();
+        RefreshAllInventoryDisplays();
+    }
+
+    private void OnMapSelectionLateUpdate() {
+        UpdatePlayerPanelUI();
+        UpdateDragAndDropItemToCursor();
     }
 
     private void OnRaidStateEnter() {
@@ -544,6 +544,21 @@ public partial class Game : MonoBehaviour {
         UpdateSpawnManager();
         loadedMapInst.grid.FeedPlayerVelocity(player.position, player.velocity);
         UpdateEnemies();
+        RefreshAllInventoryDisplays();
+    }
+
+    private void OnRaidStateFixedUpdate() {
+        loadedMapInst.grid.CompleteFlowFieldCalculation();
+        loadedMapInst.grid.ScheduleFlowFieldCalculation(player.position);
+        FixedUpdateEnemies();
+    }
+
+    private void OnRaidStateLateUpdate() {
+        UpdateInRaidUI();
+        UpdatePlayerPanelUI();
+        UpdateHotBarUI();
+        UpdateDragAndDropItemToCursor();
+        UpdateCurrencyNumbers();
     }
 
     private void OnEarlyExitEnter() {

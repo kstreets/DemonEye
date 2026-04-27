@@ -949,6 +949,9 @@ public partial class Game {
     }
 
     public void RefreshInventoryDisplay(Inventory inventory) {
+        bool notBeingShown = !inventory.parent.gameObject.activeInHierarchy;
+        if (notBeingShown) return;
+        
         foreach (InventorySlot slot in inventory.slots) {
             slot.ui.ClearItem();
         }
@@ -957,6 +960,12 @@ public partial class Game {
             ItemInstance itemInstance = inventory.slots[i].itemInstance;
             if (itemInstance == null || itemInstance.notDiscovered) continue;
             inventory.slots[i].ui.SetItem(itemInstance.ItemRef, itemInstance.count);
+        }
+    }
+
+    private void RefreshAllInventoryDisplays() {
+        foreach (Inventory inventory in allInventories) {
+            RefreshInventoryDisplay(inventory);
         }
     }
     
