@@ -542,14 +542,12 @@ public partial class Game : MonoBehaviour {
         UpdatePlayer();
         UpdateProjectiles();
         UpdateSpawnManager();
-        loadedMapInst.grid.FeedPlayerVelocity(player.position, player.velocity);
+        UpdateMapGrid();
         UpdateEnemies();
         RefreshAllInventoryDisplays();
     }
 
     private void OnRaidStateFixedUpdate() {
-        loadedMapInst.grid.CompleteFlowFieldCalculation();
-        loadedMapInst.grid.ScheduleFlowFieldCalculation(player.position);
         FixedUpdateEnemies();
     }
 
@@ -607,9 +605,7 @@ public partial class Game : MonoBehaviour {
         ShowRaidUI();
 
         deathBackgroundImage.enabled = false;
-        
         loadedMapInst.gameObject.SetActive(true);
-        loadedMapInst.grid.Init();
 
         int randomSpawnIndex = Random.Range(0, loadedMapInst.spawnPositionsParent.childCount);
         Vector2 randomSpawnPos = loadedMapInst.spawnPositionsParent.GetChild(randomSpawnIndex).position;
@@ -624,11 +620,13 @@ public partial class Game : MonoBehaviour {
         damageHandlingVars.Reset();
         interactionVars.Reset();
         
+        InitMapGrid();
         InitSpawnManager(loadedMapData.waves);
         SpawnMapResources(loadedMapInst.resourceParent);
         SpawnInitialExitPortals(loadedMapInst.exitPortalsParent, loadedMapData.exitPortalsCount);
         AnimateRaidEnterSequence();
     }
+    
 
     private void UpdateRaidState() {
         RaidState prevState = curRaidState;
@@ -660,7 +658,7 @@ public partial class Game : MonoBehaviour {
     private void DeinitRaid() {
         enemies.Clear();
         projectiles.Clear();
-        loadedMapInst.grid.Deinit();
+        DeinitMapGrid();
         DestroyEntities(EntityLifetime.Level);
         UnloadCurrentMapAsync();
     }
@@ -1120,6 +1118,35 @@ public partial class Game : MonoBehaviour {
         
         // This is a fail safe incase we couldn't spawn the final portal
         gameStateMachine.SetState(winExitState);
+    }
+
+    private Vector2 lastPlayerGridPos;
+    private Limiter flowFieldLimiter;
+
+    private void InitMapGrid() {
+        loadedMapInst.grid.Init();
+        lastPlayerGridPos = new(float.MaxValue, float.MaxValue);
+    }
+
+    private void DeinitMapGrid() {
+        loadedMapInst.grid.Deinit();
+    }
+    
+    private void UpdateMapGrid() {
+        CoolerGrid grid = loadedMapInst.grid;
+        grid.FeedPlayerVelocity(player.position, player.velocity);
+
+        const float fixedUpdateRate = 1f / 5f;
+        if (enemies.Count <= 0 || !flowFieldLimiter.TimeHasPassed(fixedUpdateRate)) return;
+        
+        Vector2 curPlayerGridPos = grid.GetCellPosition(player.position);
+        bool playerMovedCells = curPlayerGridPos != lastPlayerGridPos;
+        if (playerMovedCells) {
+            Debug.Log("Scheduled");
+            grid.CompleteFlowFieldCalculation();
+            grid.ScheduleFlowFieldCalculation(player.position);
+            lastPlayerGridPos = curPlayerGridPos;
+        }
     }
     
     // ***************************

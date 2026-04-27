@@ -7,6 +7,7 @@ using Unity.Collections;
 using Unity.Jobs;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Pool;
 using Random = UnityEngine.Random;
 
 public class CoolerGrid : MonoBehaviour {
@@ -29,7 +30,7 @@ public class CoolerGrid : MonoBehaviour {
 
     private List<GridCell> spawnCells = new(30);
     private Vector2 gridGameObjectPosition;
-    private Vector2 predicetedPlayerPos;
+    private Vector2 predictedPlayerPos;
     private float totalSpawnCellsWeight;
     private float lastUpdateTime;
     
@@ -109,7 +110,7 @@ public class CoolerGrid : MonoBehaviour {
     public void FeedPlayerVelocity(Vector2 playerPos, Vector2 playerVelocity) {
         const float lookAheadTime = 2.1f;
         const float lookAheadSpeed = 1.3f;
-        predicetedPlayerPos = Vector2.Lerp(predicetedPlayerPos, playerPos + playerVelocity * lookAheadTime, Time.deltaTime * lookAheadSpeed);
+        predictedPlayerPos = Vector2.Lerp(predictedPlayerPos, playerPos + playerVelocity * lookAheadTime, Time.deltaTime * lookAheadSpeed);
     }
 
     public Vector3 GetSpawnPosition(Vector2 playerPosition, int innerCellRadius, int outerCellRadius) {
@@ -150,7 +151,7 @@ public class CoolerGrid : MonoBehaviour {
         DijkstraJob dijkstraJob = new() {
             distances = nativeDistances,
             traversable = nativeTraversables,
-            gridWitdh = width,
+            gridWidth = width,
             gridHeight = height,
             startingIndex = sourceIndex,
         };
@@ -160,7 +161,7 @@ public class CoolerGrid : MonoBehaviour {
             traversables = nativeTraversables,
             positions = nativePositions,
             results = flowFieldJobResults,
-            gridWitdh = width,
+            gridWidth = width,
             gridHeight = height,
         };
 
@@ -183,6 +184,13 @@ public class CoolerGrid : MonoBehaviour {
     public Vector2 GetFlowFieldDirection(Vector2 position) {
         if (TryGetCellAtPosition(position, out GridCell cell)) {
             return cell.flowDir;
+        }
+        return Vector2.zero;
+    }
+
+    public Vector2 GetCellPosition(Vector2 position) {
+        if (TryGetCellAtPosition(position, out GridCell cell)) {
+            return cell.position;
         }
         return Vector2.zero;
     }
@@ -226,7 +234,7 @@ public class CoolerGrid : MonoBehaviour {
                 if (!TryGetCellAtPosition(neighborPos, out GridCell neighbor)) continue;
                 if (!neighbor.traversable || neighbor.isObstacleObstructed) continue;
                     
-                // Player is in unreacheable position, add anyways so we have something in the list
+                // Player is in unreachable position, add anyways so we have something in the list
                 if (neighbor.distFromPlayerCell == int.MaxValue) {
                     spawnCells.Add(neighbor); 
                     Debug.Log("Player is unreachable");
@@ -247,10 +255,10 @@ public class CoolerGrid : MonoBehaviour {
             useLayerMask = true,
             layerMask = Masks.EnemyMask,
         };
-        List<Collider2D> colList = UnityEngine.Pool.ListPool<Collider2D>.Get();
+        List<Collider2D> colList = ListPool<Collider2D>.Get();
 
-        float distFromCellToPredictedPlayerPos = Vector2.Distance(predicetedPlayerPos, playerCell.position);
-        Vector2 dirToPredictedPos = (predicetedPlayerPos - playerCell.position).normalized;
+        float distFromCellToPredictedPlayerPos = Vector2.Distance(predictedPlayerPos, playerCell.position);
+        Vector2 dirToPredictedPos = (predictedPlayerPos - playerCell.position).normalized;
         
         const float minDistToIncludeDirectionWeight = 0.12f;
         bool addDirectionalWeight = distFromCellToPredictedPlayerPos > minDistToIncludeDirectionWeight;
@@ -275,7 +283,7 @@ public class CoolerGrid : MonoBehaviour {
             totalSpawnCellsWeight += weight;
         }
 
-        UnityEngine.Pool.ListPool<Collider2D>.Release(colList);
+        ListPool<Collider2D>.Release(colList);
     }
 
     private Vector2 CalculateCellPosition(int widthIndex, int heightIndex) {
@@ -289,7 +297,7 @@ public class CoolerGrid : MonoBehaviour {
         public int startingIndex;
         public NativeArray<int> distances;
         [ReadOnly] public NativeArray<bool> traversable;
-        public int gridWitdh;
+        public int gridWidth;
         public int gridHeight;
 
         private struct QueueItem : IComparable<QueueItem>, IEquatable<QueueItem> {
@@ -315,7 +323,7 @@ public class CoolerGrid : MonoBehaviour {
                 visited[curCell.indexIntoArrays] = true;
 
                 for (int i = 0; i < 9; i++) {
-                    int neighborIndex = GetNeighborIndex(gridWitdh, gridHeight, curCell.indexIntoArrays, i);
+                    int neighborIndex = GetNeighborIndex(gridWidth, gridHeight, curCell.indexIntoArrays, i);
                     if (neighborIndex == -1 || !traversable[neighborIndex]) continue;
                     
                     bool neighborIsDiagonal = i == 0 || i == 2 || i == 6 || i == 8;
@@ -353,7 +361,7 @@ public class CoolerGrid : MonoBehaviour {
         [ReadOnly] public NativeArray<bool> traversables;
         [ReadOnly] public NativeArray<Vector2> positions;
         [WriteOnly] public NativeArray<Vector2> results;
-        public int gridWitdh;
+        public int gridWidth;
         public int gridHeight;
 
         public void Execute(int index) {
@@ -363,7 +371,7 @@ public class CoolerGrid : MonoBehaviour {
             for (int i = 0; i < 9; i++) {
                 if (i == 4) continue;
                 if (!traversables[index] && (i == 0 || i == 2 || i == 6 || i == 8)) continue;
-                int neighborIndex = GetNeighborIndex(gridWitdh, gridHeight, index, i);
+                int neighborIndex = GetNeighborIndex(gridWidth, gridHeight, index, i);
                 
                 if (neighborIndex == -1 || !traversables[neighborIndex]) continue;
 
@@ -393,7 +401,7 @@ public class CoolerGrid : MonoBehaviour {
             int averageCount = 0;
             for (int i = 0; i < 9; i++) {
                 if (i == 4) continue;
-                int neighborIndex = GetNeighborIndex(gridWitdh, gridHeight, index, i);
+                int neighborIndex = GetNeighborIndex(gridWidth, gridHeight, index, i);
 
                 if (neighborIndex == -1 || !traversables[neighborIndex]) continue;
                 if (distances[neighborIndex] == smallestDist) {
