@@ -31,8 +31,6 @@ public class CoolerGrid : MonoBehaviour {
     private List<GridCell> spawnCells = new(30);
     private Vector2 gridGameObjectPosition;
     private Vector2 predictedPlayerPos;
-    private float totalSpawnCellsWeight;
-    private float lastUpdateTime;
     
     private JobHandle? flowFieldJobHandle;
     private NativeArray<int> nativeDistances;
@@ -114,30 +112,28 @@ public class CoolerGrid : MonoBehaviour {
     }
 
     public Vector3 GetSpawnPosition(Vector2 playerPosition, int innerCellRadius, int outerCellRadius) {
-        bool needToRecalculate = lastUpdateTime != Time.time;
-        lastUpdateTime = Time.time;
-
-        if (needToRecalculate) {
-            if (TryGetCellAtPosition(playerPosition, out GridCell playerCell)) {
-                UpdateDataForSpawnCells(playerCell, innerCellRadius, outerCellRadius);
-            }
-            else {
-                return Vector2.zero;
-            }
+        if (TryGetCellAtPosition(playerPosition, out GridCell playerCell)) {
+            UpdateDataForSpawnCells(playerCell, innerCellRadius, outerCellRadius);
         }
-
-        Vector2 slightRandomOffset = Random.insideUnitCircle * (cellSize * 0.90f);
-        
-        List<GridCell> sortedCells = spawnCells.OrderByDescending(static cell => cell.spawnWeight).ToList();
-        int maxIndex = Mathf.RoundToInt(sortedCells.Count * 0.2f);
-        if (maxIndex > 0 && maxIndex < sortedCells.Count) {
-            return sortedCells[Random.Range(0, maxIndex)].position; 
+        else {
+            return Vector2.zero;
         }
         
+        spawnCells.Sort(static (x, y) => y.spawnWeight.CompareTo(x.spawnWeight)); // Sort in descending order 
+        
+        int maxIndex = Mathf.RoundToInt(spawnCells.Count * 0.2f);
+        if (maxIndex > 0 && maxIndex < spawnCells.Count) {
+            return spawnCells[Random.Range(0, maxIndex)].position; 
+        }
+        
+        Vector2 slightRandomOffset = Random.insideUnitCircle * (cellSize * Random.Range(0f, 0.9f));
         return spawnCells[0].position + slightRandomOffset;
     }
     
     public void ScheduleFlowFieldCalculation(Vector2 sourcePosition) {
+        // Make sure that we finish the previous job before starting this new one
+        UpdateFlowFieldFromPreviousJob(forceComplete: true);
+        
         int sourceIndex = GetCellIndexAtPosition(sourcePosition);
         if (sourceIndex < 0 || sourceIndex >= gridCells.Length) return;
         
@@ -169,16 +165,22 @@ public class CoolerGrid : MonoBehaviour {
         flowFieldJobHandle = flowFieldJob.Schedule(gridCells.Length, 128, dijkstraJobHandle);
     }
     
-    public void CompleteFlowFieldCalculation() {
-        if (!flowFieldJobHandle.HasValue) return;
+    public void UpdateFlowFieldFromPreviousJob(bool forceComplete = false) {
+        bool jobExists = flowFieldJobHandle.HasValue;
+        if (!jobExists) return;
         
-        flowFieldJobHandle?.Complete();
+        bool jobHasntFinishedYet = !flowFieldJobHandle.Value.IsCompleted;
+        if (jobHasntFinishedYet && !forceComplete) return;
+        
+        flowFieldJobHandle.Value.Complete();
 
         for (int i = 0; i < gridCells.Length; i++) {
             ref GridCell cell = ref gridCells[i];  // Must be an array for this to work
             cell.flowDir = flowFieldJobResults[i];
             cell.distFromPlayerCell = nativeDistances[i];
         }
+        
+        flowFieldJobHandle = null;
     }
 
     public Vector2 GetFlowFieldDirection(Vector2 position) {
@@ -249,13 +251,12 @@ public class CoolerGrid : MonoBehaviour {
             }
         }
 
-        totalSpawnCellsWeight = 0f;
-
         ContactFilter2D filter = new() {
             useLayerMask = true,
             layerMask = Masks.EnemyMask,
         };
-        List<Collider2D> colList = ListPool<Collider2D>.Get();
+        
+        using var _ = ListPool<Collider2D>.Get(out var colList);
 
         float distFromCellToPredictedPlayerPos = Vector2.Distance(predictedPlayerPos, playerCell.position);
         Vector2 dirToPredictedPos = (predictedPlayerPos - playerCell.position).normalized;
@@ -279,11 +280,7 @@ public class CoolerGrid : MonoBehaviour {
 
             cell.spawnWeight = weight;
             spawnCells[i] = cell;
-            
-            totalSpawnCellsWeight += weight;
         }
-
-        ListPool<Collider2D>.Release(colList);
     }
 
     private Vector2 CalculateCellPosition(int widthIndex, int heightIndex) {
@@ -511,7 +508,7 @@ public class CoolerGrid : MonoBehaviour {
         
         Init();
         ScheduleFlowFieldCalculation(sourcePosForTesting.position);
-        CompleteFlowFieldCalculation();
+        UpdateFlowFieldFromPreviousJob();
         Deinit();
     }
 

@@ -7,7 +7,7 @@ using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.InputSystem;
-using UnityEngine.Pool;
+using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
@@ -535,6 +535,7 @@ public partial class Game : MonoBehaviour {
 
     private void OnRaidStateUpdate() {
         UpdateRaidState();
+        UpdateMapGrid();
         UpdateTimers();
         CheckForInteractions();
         CheckForHotBarInteractions();
@@ -542,7 +543,6 @@ public partial class Game : MonoBehaviour {
         UpdatePlayer();
         UpdateProjectiles();
         UpdateSpawnManager();
-        UpdateMapGrid();
         UpdateEnemies();
         RefreshAllInventoryDisplays();
     }
@@ -627,7 +627,6 @@ public partial class Game : MonoBehaviour {
         AnimateRaidEnterSequence();
     }
     
-
     private void UpdateRaidState() {
         RaidState prevState = curRaidState;
         
@@ -669,6 +668,40 @@ public partial class Game : MonoBehaviour {
         SaveActiveQuestProgresses();
     }
     
+    // ***************************
+    // Map Flow Field 
+    // ***************************
+
+    private Vector2 lastPlayerGridPos;
+    private Limiter flowFieldLimiter;
+
+    private void InitMapGrid() {
+        loadedMapInst.grid.Init();
+        lastPlayerGridPos = new(float.MaxValue, float.MaxValue);
+    }
+
+    private void DeinitMapGrid() {
+        loadedMapInst.grid.Deinit();
+    }
+    
+    private void UpdateMapGrid() {
+        CoolerGrid grid = loadedMapInst.grid;
+        grid.FeedPlayerVelocity(player.position, player.velocity);
+        grid.UpdateFlowFieldFromPreviousJob();
+
+        const float fixedUpdateRate = 1f / 6f;
+        const float slowFixedUpdateRate = 1f / 2f; // Spawning enemies relies on updated flow field distances so we can't just not update them
+        float curUpdateRate = enemies.Count > 0 ? fixedUpdateRate : slowFixedUpdateRate;
+        if (!flowFieldLimiter.TimeHasPassed(curUpdateRate)) return;
+            
+        Vector2 curPlayerGridPos = grid.GetCellPosition(player.position);
+        bool playerMovedCells = curPlayerGridPos != lastPlayerGridPos;
+        if (playerMovedCells) {
+            grid.ScheduleFlowFieldCalculation(player.position);
+            lastPlayerGridPos = curPlayerGridPos;
+        }
+    }
+
     // *******************************
     // Animation Sequences
     // *******************************
@@ -1071,7 +1104,7 @@ public partial class Game : MonoBehaviour {
         activeExitPortals.Clear();
         exitPortalTakenByPlayer = null;
         
-        using var _ = ListPool<Transform>.Get(out List<Transform> possibleExitPortals);
+        using var _ = UnityEngine.Pool.ListPool<Transform>.Get(out List<Transform> possibleExitPortals);
         
         foreach (Transform portal in exitPortalParent) {
             portal.gameObject.SetActive(false);
@@ -1118,35 +1151,6 @@ public partial class Game : MonoBehaviour {
         
         // This is a fail safe incase we couldn't spawn the final portal
         gameStateMachine.SetState(winExitState);
-    }
-
-    private Vector2 lastPlayerGridPos;
-    private Limiter flowFieldLimiter;
-
-    private void InitMapGrid() {
-        loadedMapInst.grid.Init();
-        lastPlayerGridPos = new(float.MaxValue, float.MaxValue);
-    }
-
-    private void DeinitMapGrid() {
-        loadedMapInst.grid.Deinit();
-    }
-    
-    private void UpdateMapGrid() {
-        CoolerGrid grid = loadedMapInst.grid;
-        grid.FeedPlayerVelocity(player.position, player.velocity);
-
-        const float fixedUpdateRate = 1f / 5f;
-        if (enemies.Count <= 0 || !flowFieldLimiter.TimeHasPassed(fixedUpdateRate)) return;
-        
-        Vector2 curPlayerGridPos = grid.GetCellPosition(player.position);
-        bool playerMovedCells = curPlayerGridPos != lastPlayerGridPos;
-        if (playerMovedCells) {
-            Debug.Log("Scheduled");
-            grid.CompleteFlowFieldCalculation();
-            grid.ScheduleFlowFieldCalculation(player.position);
-            lastPlayerGridPos = curPlayerGridPos;
-        }
     }
     
     // ***************************
