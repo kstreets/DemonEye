@@ -23,7 +23,7 @@ MonoBehaviour:
   buyPrice: 10000
   sellPrice: 800
   spawnsOnAllMaps: 0
-  firstSpawnMap: {fileID: 11400000, guid: e77fcebe0e13696458bf0cfbacf93e5d, type: 2}
+  firstSpawnMap: {fileID: 0}
   spawnsOnMaps: []
   rarity: 1
   chanceToSpawnOnBody: 0

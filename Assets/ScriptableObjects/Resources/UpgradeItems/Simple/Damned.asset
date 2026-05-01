@@ -41,10 +41,10 @@ MonoBehaviour:
     count: 1
   spawnsFromEnemies: []
   modifiesStats: 1
-  critChance: 0.2
-  critMultiplier: 0.3
+  critChance: 0.3
+  critMultiplier: 0.4
   damageMultiplier: 0
-  fireratePercentage: 0
+  fireratePercentage: -0.05
   movementSpeedPercentage: 0
   projectileCount: 0
   rangePercentage: 0

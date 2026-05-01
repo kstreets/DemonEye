@@ -558,19 +558,24 @@ public class CoolerGrid : MonoBehaviour {
         // }
 
         if (precomputedCells != null && !showFlowField) {
-            foreach (PrecomputedCellData cell in precomputedCells) {
+            for (int i = 0; i < precomputedCells.Count; i++) {
+                PrecomputedCellData cell = precomputedCells[i];
                 if (!cell.traversable) continue;
-                
+
+                if (gridCells != null && gridCells.Length > 0) {
+                    if (gridCells[i].isObstacleObstructed) continue;
+                }
+
                 Bounds bounds = new() {
-                    center = cell.position,
-                    size = Vector3.one * cellSize,
+                center = cell.position,
+                size = Vector3.one * cellSize,
                 };
-                
+
                 DebugExtension.DrawBounds(bounds, gridColor);
                 Gizmos.color = gridFill;
                 Gizmos.DrawCube(cell.position, Vector3.one * cellSize);
             }
-            
+
             return;
         }
         

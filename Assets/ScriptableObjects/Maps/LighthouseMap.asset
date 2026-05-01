@@ -13,10 +13,11 @@ MonoBehaviour:
   m_Name: LighthouseMap
   m_EditorClassIdentifier: Assembly-CSharp::MapData
   displayName: Lighthouse
-  sceneReference: LighthouseExpansion
+  sceneReference: Lighthouse
   waves: {fileID: 11400000, guid: c3f7f6d7c8bc62a4993a44c716d126e0, type: 2}
   altarSoulPrice: 100
-  exitPortalsCount: 3
+  exitPortalsCount: 2
+  playerCantBleed: 0
   minRockCount: 8
   maxRockCount: 11
   minBodyCount: 3

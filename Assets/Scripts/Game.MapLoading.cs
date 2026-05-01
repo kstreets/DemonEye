@@ -89,7 +89,7 @@ public partial class Game {
             GameObject prefab = resourceSpawn.GetPrefabToSpawn();
             if (!prefab) continue;
             
-            int obstacleCellRadius = prefab.CompareTag(Tags.Mineable) ? 1 : 0;
+            int obstacleCellRadius = prefab.TryGetComponent(out GridObstacle gridObstacle) ? gridObstacle.cellRadius : 0;
             Entity resourceEntity = SpawnResource<Entity>(prefab, resourceSpawn.transform, obstacleCellRadius);
 
             switch (resourceEntity.gameObject.tag) {

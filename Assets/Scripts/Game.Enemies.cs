@@ -17,6 +17,7 @@ public partial class Game {
     private int attackUpAnim = Animator.StringToHash("AttackUp");
     private int attackDownAnim = Animator.StringToHash("AttackDown");
     
+    private const float enemySlowedMass = 1e6f;
     private float lastReteleportTime;
     
     public class Enemy : Entity {
@@ -25,6 +26,7 @@ public partial class Game {
         public float curRunningSumDistFromPlayer;
         public int curRunningSumFrameCount;
         public float averageDistFromPlayerTime;
+        public float postSlowMass;
         public bool notProgressingTowardsPlayer;
         public Collider2D enemySpacerCollider;
         public EnemyData data;
@@ -251,9 +253,15 @@ public partial class Game {
             float totalSlowPercentage = 0f;
             if (enemy.slow.TryGetValue(out var slow)) {
                 totalSlowPercentage += slow.speedReductionPercent;
-                enemy.enemySpacerCollider.excludeLayers = Masks.EnemySpacerMask;
+                
+                bool enemyNeedsLargerMass = Mathf.Approximately(enemy.rigidbody.mass, enemySlowedMass);
+                if (enemyNeedsLargerMass) {
+                    enemy.postSlowMass = enemy.rigidbody.mass;
+                    enemy.rigidbody.mass = enemySlowedMass;
+                }
+                
                 if (Time.time > slow.activationTime + slow.duration) {
-                    enemy.enemySpacerCollider.excludeLayers = 0;
+                    enemy.rigidbody.mass = enemy.postSlowMass;
                     enemy.slow = null;
                 }
             }

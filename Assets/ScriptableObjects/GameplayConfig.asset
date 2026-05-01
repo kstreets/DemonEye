@@ -18,7 +18,7 @@ MonoBehaviour:
   rangeInSeconds: 0.5
   accuracy: 0.7
   projectileSpeed: 2
-  defaultCritChance: 0.1
+  defaultCritChance: 0.15
   defaultCritMulti: 1.5
   baseSpeed: 0.48
   repeatCollisionDamageDelay: 1
@@ -33,7 +33,7 @@ MonoBehaviour:
   carryCapacityIncPerLevel: 50
   critChanceIncPerLevel: 0.02
   critMultiplierIncPerLevel: 0.1
-  damageMultiplierIncPerLevel: 0.04
+  damageMultiplierIncPerLevel: 0.05
   firerateIncPerLevel: 0.02
   healthIncPerLevel: 10
   healingIncPerLevel: 10
