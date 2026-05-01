@@ -83,7 +83,7 @@ SpriteRenderer:
   m_SortingLayer: 3
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -1408892197, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  m_Sprite: {fileID: -1199818641, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -143,4 +143,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemDrop
   circleCollider: {fileID: 7466694696425137802}
   spriteRenderer: {fileID: 8895226616037506392}
-  item: {fileID: 11400000, guid: b74700219c5d37047b0c9061ea0df5b2, type: 2}
+  item: {fileID: 11400000, guid: b9ddb0c0d37e9004a95479548062900b, type: 2}

@@ -21,7 +21,7 @@ public class BackwardsShotEyeUpgradeItem : EyeUpgradeItem {
     }
 
     private float GetProbability(int stackCount) {
-        return TaperFloat(probability, stackCount, 0.5f);
+        return TaperFloat(probability, stackCount, 0.3f);
     }
 
 }

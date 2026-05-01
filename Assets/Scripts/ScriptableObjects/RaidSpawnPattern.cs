@@ -31,4 +31,13 @@ public class RaidSpawnPattern : ScriptableObject {
     public int maxEnemyRepositionCount;
     public List<SpawnPhase> spawnPhases;
     
+#if UNITY_EDITOR
+
+    private void OnValidate() {
+        if (spawnPhases == null || spawnPhases.Count <= 0) return;
+        spawnPhases[^1].phaseDuration = spawnPhases[^1].spawnDuration;
+    }
+
+#endif
+    
 }

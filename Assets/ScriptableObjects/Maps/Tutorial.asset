@@ -15,8 +15,9 @@ MonoBehaviour:
   displayName: Tutorial
   sceneReference: Tutorial
   waves: {fileID: 11400000, guid: a6539f0178f4a554a84cbbaa445e68eb, type: 2}
-  altarSoulPrice: 100
-  exitPortalsCount: 1
+  altarSoulPrice: 25
+  exitPortalsCount: 2
+  playerCantBleed: 1
   minRockCount: 8
   maxRockCount: 11
   minBodyCount: 3
@@ -27,8 +28,8 @@ MonoBehaviour:
   maxBushesCount: 6
   minAltarCount: 5
   maxAltarCount: 8
-  eyeUpgradeOnBodyChance: 0.15
-  eyeUpgradeFromRockChance: 0.2
+  eyeUpgradeOnBodyChance: 0.1
+  eyeUpgradeFromRockChance: 0.15
   consecutiveEyeUpgradeChanceReductionOnBody: 0.08
   maxGemCountPerRock: 2
   commonLootRarityIncrease: 0

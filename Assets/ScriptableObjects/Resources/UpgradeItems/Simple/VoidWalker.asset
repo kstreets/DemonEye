@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Soulcard
   uuid: -1861983588
   displayName: Void Walker
-  inventorySprite: {fileID: -1877983629, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  inventorySprite: {fileID: -1193305089, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   dropSprite: {fileID: 0}
   pickupRadius: 0.07
   type: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
@@ -23,22 +23,20 @@ MonoBehaviour:
   buyPrice: 5000
   sellPrice: 400
   spawnsOnAllMaps: 0
-  firstSpawnMap: {fileID: 11400000, guid: e77fcebe0e13696458bf0cfbacf93e5d, type: 2}
+  firstSpawnMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
   spawnsOnMaps: []
   rarity: 0
   chanceToSpawnOnBody: 0
   chanceToSpawnOnTrader: 0.448
-  chanceToSpawnFromRock: 0.739
+  chanceToSpawnFromRock: 0.7
   chanceToSpawnFromEnemy: 0
   chanceToExistInLevel: 0
   chanceToSpawnFromBush: 0
   traderLevelRequired: 2
   traderStockRange: {x: 1, y: 5}
   barterRequirements:
-  - item: {fileID: 11400000, guid: c300cfd9dba50fc438f83dec791af29b, type: 2}
-    count: 3
-  - item: {fileID: 11400000, guid: 0c1ef7ec636b7674886cc5581cc6deff, type: 2}
-    count: 2
+  - item: {fileID: 11400000, guid: 67595d8fd1980a14790ab2f5f2a40952, type: 2}
+    count: 5
   spawnsFromEnemies: []
   modifiesStats: 1
   critChance: 0
@@ -47,7 +45,7 @@ MonoBehaviour:
   fireratePercentage: 0
   movementSpeedPercentage: 0
   projectileCount: 0
-  rangePercentage: 0.25
+  rangePercentage: 0.15
   itemGroupProps: {fileID: 11400000, guid: 78826f3a685555a4896655f4c68ef737, type: 2}
   maxStackCount: 0
   weight: 0

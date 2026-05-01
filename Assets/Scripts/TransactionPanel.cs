@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.UI;
 using static Game;
 
@@ -44,6 +45,7 @@ public class TransactionPanel : MonoBehaviour {
         
         bool canBarter = item.barterRequirements.Count > 0;
         foreach (ItemWithCount barterReq in item.barterRequirements) {
+            Assert.IsNotNull(barterReq.item, $"Null barter item for {item.displayName}. Fix it or remove it.");
             if (gameInstance.GetOwnedCountOfItem(barterReq.item) < barterReq.count) {
                 canBarter = false;
                 break;

@@ -25,6 +25,7 @@ MonoBehaviour:
   spawnsOnAllMaps: 0
   firstSpawnMap: {fileID: 0}
   spawnsOnMaps: []
+  rarity: 0
   chanceToSpawnOnBody: 0.25
   chanceToSpawnOnTrader: 1
   chanceToSpawnFromRock: 0
@@ -34,10 +35,8 @@ MonoBehaviour:
   traderLevelRequired: 4
   traderStockRange: {x: 4, y: 8}
   barterRequirements:
-  - item: {fileID: 11400000, guid: 802eecda14249c045a3d45c3c44cd088, type: 2}
-    count: 1
-  - item: {fileID: 11400000, guid: b74700219c5d37047b0c9061ea0df5b2, type: 2}
-    count: 2
+  - item: {fileID: 11400000, guid: 25f66d397bb56ce4f8e6101d8a5bab7d, type: 2}
+    count: 5
   spawnsFromEnemies: []
   modifiesStats: 0
   critChance: 0

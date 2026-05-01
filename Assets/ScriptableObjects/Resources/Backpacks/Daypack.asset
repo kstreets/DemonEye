@@ -25,12 +25,13 @@ MonoBehaviour:
   spawnsOnAllMaps: 1
   firstSpawnMap: {fileID: 0}
   spawnsOnMaps: []
-  chanceToSpawnOnBody: 0
+  rarity: 0
+  chanceToSpawnOnBody: 0.05
   chanceToSpawnOnTrader: 1
   chanceToSpawnFromRock: 0
   chanceToSpawnFromEnemy: 0
   chanceToExistInLevel: 0
-  chanceToSpawnFromBush: 0
+  chanceToSpawnFromBush: 0.05
   traderLevelRequired: 1
   traderStockRange: {x: 3, y: 5}
   barterRequirements:

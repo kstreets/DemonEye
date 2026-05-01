@@ -7,6 +7,7 @@ using Unity.Collections;
 using Unity.Jobs;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.Pool;
 using Random = UnityEngine.Random;
 
@@ -221,6 +222,8 @@ public class CoolerGrid : MonoBehaviour {
     }
 
     private void UpdateDataForSpawnCells(GridCell playerCell, int innerRadius, int outerRadius) {
+        Assert.IsTrue(innerRadius != outerRadius, $"{nameof(innerRadius)} cannot equal {nameof(outerRadius)}");
+        
         spawnCells.Clear();
 
         const float maxDistScaler = 1.3f;
@@ -264,18 +267,25 @@ public class CoolerGrid : MonoBehaviour {
         const float minDistToIncludeDirectionWeight = 0.12f;
         bool addDirectionalWeight = distFromCellToPredictedPlayerPos > minDistToIncludeDirectionWeight;
 
-        float expandedSizeForEnemyTesting = cellSize * 5f;
+        float expandedSizeForEnemyTesting = cellSize * 10f;
         for (int i = 0; i < spawnCells.Count; i++) {
             GridCell cell = spawnCells[i];
             const float enemyWeight = 1f;
-            const float dirWeight = 2f;
+            const float dirWeight = 1f;
 
             int enemyCount = Physics2D.OverlapCircle(cell.position, expandedSizeForEnemyTesting, filter, colList);
             float weight = (1f / (enemyCount + 1f)) * enemyWeight;
 
             if (addDirectionalWeight) {
                 Vector2 dir = (cell.position - playerCell.position).normalized;
-                weight += (Vector2.Dot(dir, dirToPredictedPos) + 1 * 0.5f) * dirWeight;
+                float dotInRange01 = (Vector2.Dot(dir, dirToPredictedPos) + 1) * 0.5f;
+                float sectorWeight = dotInRange01 switch {
+                    >= 0.75f => 1f,
+                    >= 0.50f => 0.8f,
+                    >= 0.25f => 0.4f,
+                    _ => 0f,
+                };
+                weight += sectorWeight * dirWeight;
             }
 
             cell.spawnWeight = weight;

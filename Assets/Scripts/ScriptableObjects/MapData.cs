@@ -11,6 +11,7 @@ public class MapData : ScriptableObject {
     [Header("Variables")]
     public int altarSoulPrice;
     public int exitPortalsCount;
+    public bool playerCantBleed;
     
     [Header("Spawns")]
     public int minRockCount;

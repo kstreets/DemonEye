@@ -26,8 +26,8 @@ MonoBehaviour:
   sideAttackOffset: {x: 0.165, y: 0.098}
   upAttackOffset: {x: 0, y: 0.203}
   donwAttackOffset: {x: 0, y: -0.018}
-  speed: 0.3
-  health: 25
+  speed: 0.38
+  health: 24
   damage: 16
   collisionDamage: 5
   changeToCauseBleed: 0.15

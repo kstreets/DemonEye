@@ -28,7 +28,7 @@ MonoBehaviour:
   rarity: 0
   chanceToSpawnOnBody: 0
   chanceToSpawnOnTrader: 0.213
-  chanceToSpawnFromRock: 0.45
+  chanceToSpawnFromRock: 0.55
   chanceToSpawnFromEnemy: 0
   chanceToExistInLevel: 0
   chanceToSpawnFromBush: 0
@@ -53,7 +53,7 @@ MonoBehaviour:
   weight: 0
   description: 
   relativeMechanicDesc: {fileID: 0}
-  probability: 0.4
-  shardsCount: 6
-  perShardDamageMulti: 0.25
+  probability: 0.3
+  shardsCount: 4
+  perShardDamageMulti: 0.35
   projectileLifetime: 0.5

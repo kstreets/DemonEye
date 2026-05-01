@@ -10,29 +10,30 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9bc23522601a56f4d89295cf565d360b, type: 3}
-  m_Name: PlantFiber
+  m_Name: MushroomTailCap
   m_EditorClassIdentifier: Assembly-CSharp::Item
-  uuid: -988106354
-  displayName: Plant Fiber
-  inventorySprite: {fileID: -394989852, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
-  dropSprite: {fileID: 0}
+  uuid: -1850260592
+  displayName: Tail Cap
+  inventorySprite: {fileID: 1951717284, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  dropSprite: {fileID: -1127904995, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   pickupRadius: 0.07
   type: {fileID: 0}
   associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
   priceCategory: {fileID: 11400000, guid: 1b413ce208f37d445884e80008464342, type: 2}
   buyPrice: 0
-  sellPrice: 9
-  spawnsOnAllMaps: 1
+  sellPrice: 22
+  spawnsOnAllMaps: 0
   firstSpawnMap: {fileID: 0}
   spawnsOnMaps:
   - {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
+  - {fileID: 11400000, guid: e77fcebe0e13696458bf0cfbacf93e5d, type: 2}
   rarity: 0
-  chanceToSpawnOnBody: 0.503
+  chanceToSpawnOnBody: 0.294
   chanceToSpawnOnTrader: 0
   chanceToSpawnFromRock: 0
   chanceToSpawnFromEnemy: 0
-  chanceToExistInLevel: 0
-  chanceToSpawnFromBush: 1
+  chanceToExistInLevel: 0.485
+  chanceToSpawnFromBush: 0.414
   traderLevelRequired: 0
   traderStockRange: {x: 0, y: 0}
   barterRequirements: []

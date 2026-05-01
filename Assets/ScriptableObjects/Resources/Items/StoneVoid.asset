@@ -10,30 +10,30 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9bc23522601a56f4d89295cf565d360b, type: 3}
-  m_Name: BloodStone
-  m_EditorClassIdentifier: Assembly-CSharp::Item
-  uuid: -399222435
-  displayName: Blood Stone
+  m_Name: StoneVoid
+  m_EditorClassIdentifier: 
+  uuid: 846715743
+  displayName: Void Crystal
   inventorySprite: {fileID: -1368018455, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
-  dropSprite: {fileID: 0}
+  dropSprite: {fileID: 1785539404, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   pickupRadius: 0.07
-  type: {fileID: 11400000, guid: 3aa9d6e5cf74e89469679d25c1a431eb, type: 2}
+  type: {fileID: 0}
   associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
   priceCategory: {fileID: 11400000, guid: 1b413ce208f37d445884e80008464342, type: 2}
   buyPrice: 0
-  sellPrice: 20
-  spawnsOnAllMaps: 1
+  sellPrice: 4
+  spawnsOnAllMaps: 0
   firstSpawnMap: {fileID: 0}
   spawnsOnMaps: []
   rarity: 0
-  chanceToSpawnOnBody: 0
+  chanceToSpawnOnBody: 0.2
   chanceToSpawnOnTrader: 0
-  chanceToSpawnFromRock: 0.444
+  chanceToSpawnFromRock: 1
   chanceToSpawnFromEnemy: 0
   chanceToExistInLevel: 0
   chanceToSpawnFromBush: 0
-  traderLevelRequired: 0
-  traderStockRange: {x: 1, y: 1}
+  traderLevelRequired: 1
+  traderStockRange: {x: 0, y: 0}
   barterRequirements: []
   spawnsFromEnemies: []
   modifiesStats: 0
@@ -44,7 +44,7 @@ MonoBehaviour:
   movementSpeedPercentage: 0
   projectileCount: 0
   rangePercentage: 0
-  itemGroupProps: {fileID: 11400000, guid: d6cdda62e69bb8d409c3ae50dc007477, type: 2}
-  maxStackCount: 0
-  weight: 2
-  description: 
+  itemGroupProps: {fileID: 0}
+  maxStackCount: 15
+  weight: 6
+  description: A foundational component for eye upgrades

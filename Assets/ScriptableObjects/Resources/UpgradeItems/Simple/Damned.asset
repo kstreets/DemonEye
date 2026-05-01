@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Soulcard
   uuid: 1541665357
   displayName: Damned
-  inventorySprite: {fileID: -1877983629, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  inventorySprite: {fileID: -1678527319, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   dropSprite: {fileID: 0}
   pickupRadius: 0.07
   type: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
@@ -23,12 +23,12 @@ MonoBehaviour:
   buyPrice: 5000
   sellPrice: 400
   spawnsOnAllMaps: 0
-  firstSpawnMap: {fileID: 11400000, guid: e77fcebe0e13696458bf0cfbacf93e5d, type: 2}
+  firstSpawnMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
   spawnsOnMaps: []
   rarity: 0
   chanceToSpawnOnBody: 0
   chanceToSpawnOnTrader: 0.288
-  chanceToSpawnFromRock: 0.727
+  chanceToSpawnFromRock: 0.7
   chanceToSpawnFromEnemy: 0
   chanceToExistInLevel: 0
   chanceToSpawnFromBush: 0
@@ -43,7 +43,7 @@ MonoBehaviour:
   modifiesStats: 1
   critChance: 0.2
   critMultiplier: 0.3
-  damageMultiplier: -0.05
+  damageMultiplier: 0
   fireratePercentage: 0
   movementSpeedPercentage: 0
   projectileCount: 0

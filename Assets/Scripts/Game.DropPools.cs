@@ -12,6 +12,7 @@ public partial class Game {
     private class DropPool {
         public List<Item> items = new();
         public DropOrigin dropOrigin;
+        public Item lastDroppedItem;
         public bool HasItems => items.Count > 0;
     }
 
@@ -23,7 +24,6 @@ public partial class Game {
     private DropPool foragingDropPool;
     private DropPool bushesDropPool;
     
-    private DropPool[] globalDropPools;
     private DropPool[] mapSpecificDropPools;
     
     private void CreateDropPools() {
@@ -35,7 +35,6 @@ public partial class Game {
         foragingDropPool = new() { dropOrigin = DropOrigin.ExistsInLevel };
         bushesDropPool = new() { dropOrigin = DropOrigin.Bush };
         
-        globalDropPools = new[] { traderDropPool, enemyDropPool };
         mapSpecificDropPools = new[] { rockStonesDropPool, eyeUpgradesDropPool, bodyDropPool, foragingDropPool, bushesDropPool };
         
         foreach (Item item in allItems) {
@@ -51,6 +50,7 @@ public partial class Game {
     private void CreateDropPoolsForCurrentMap() { 
         foreach (DropPool dropPool in mapSpecificDropPools) {
             dropPool.items.Clear();
+            dropPool.lastDroppedItem = null;
         }
         
         foreach (Item item in allItems) {
@@ -80,18 +80,26 @@ public partial class Game {
         Assert.IsFalse(dropPool.items == enemyDropPool.items, $"Use {nameof(GetItemFromEnemyDropPool)} for enemies");
         Assert.IsFalse(dropPool.items.Count == 0, $"No items in drop pool, use {nameof(DropPool.HasItems)} before calling");
         
-        float roll = Random.value * GetTotalDropChances(dropPool);
+        using var _ = ListPool<float>.Get(out var dropChances);
+        
+        Item rolledItem = null;
+        float roll = Random.value * GetTotalDropChances(dropPool, ref dropChances);
         float dropThreshold = 0f;
-    
-        foreach (Item drop in dropPool.items) {
-            float dropChance = GetDropChanceOfItem(drop, dropPool.dropOrigin);
+
+        for (int i = 0; i < dropPool.items.Count; i++) {
+            Item drop = dropPool.items[i];
+            float dropChance = dropChances[i];
+            
             dropThreshold += dropChance;
             if (roll < dropThreshold) {
-                return RollForAugmentedVersion(drop, dropPool.dropOrigin);
+                rolledItem = RollForAugmentedVersion(drop, dropPool.dropOrigin);
+                break;
             }
         }
         
-        return RollForAugmentedVersion(dropPool.items[^1], dropPool.dropOrigin); 
+        rolledItem ??= RollForAugmentedVersion(dropPool.items[^1], dropPool.dropOrigin);
+        dropPool.lastDroppedItem = rolledItem;
+        return rolledItem;
     }
 
     private Item GetItemFromEnemyDropPool(EnemyData enemy) {
@@ -174,10 +182,19 @@ public partial class Game {
         };
     }
     
-    private float GetTotalDropChances(DropPool dropPool) {
+    private float GetTotalDropChances(DropPool dropPool, ref List<float> dropChances) {
         float total = 0f;
         foreach (Item item in dropPool.items) {
-            total += gameInstance.GetDropChanceOfItem(item, dropPool.dropOrigin);
+            float dropChance = GetDropChanceOfItem(item, dropPool.dropOrigin);
+            
+            bool reduceChanceForRepeatItem = dropPool.lastDroppedItem == item; 
+            if (reduceChanceForRepeatItem) {
+                const float defaultPercentReduction = 0.5f;
+                dropChance *= defaultPercentReduction;
+            }
+            
+            dropChances.Add(dropChance);
+            total += dropChance;
         }
         return total;
     }

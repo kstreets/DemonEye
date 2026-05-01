@@ -23,7 +23,9 @@ MonoBehaviour:
   buyPrice: 2000
   sellPrice: 9
   spawnsOnAllMaps: 1
+  firstSpawnMap: {fileID: 0}
   spawnsOnMaps: []
+  rarity: 0
   chanceToSpawnOnBody: 0.387
   chanceToSpawnOnTrader: 1
   chanceToSpawnFromRock: 0
@@ -32,11 +34,14 @@ MonoBehaviour:
   chanceToSpawnFromBush: 0
   traderLevelRequired: 1
   traderStockRange: {x: 4, y: 9}
-  barterRequirements:
-  - item: {fileID: 11400000, guid: b74700219c5d37047b0c9061ea0df5b2, type: 2}
-    count: 3
+  barterRequirements: []
   spawnsFromEnemies:
   - {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
+  - {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
+  - {fileID: 11400000, guid: cc0cbb56eaca641408b7d1856ed0d048, type: 2}
+  - {fileID: 11400000, guid: ec9149e42a27186489ef2d08d286c80a, type: 2}
+  - {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
+  - {fileID: 11400000, guid: 8a749b46a2a7d944892efbf025fbe2a1, type: 2}
   modifiesStats: 0
   critChance: 0
   critMultiplier: 0

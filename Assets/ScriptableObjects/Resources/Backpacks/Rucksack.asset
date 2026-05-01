@@ -22,15 +22,16 @@ MonoBehaviour:
   priceCategory: {fileID: 11400000, guid: 494f743dba8aba74393d971bca57c731, type: 2}
   buyPrice: 15000
   sellPrice: 4200
-  spawnsOnAllMaps: 1
-  firstSpawnMap: {fileID: 0}
+  spawnsOnAllMaps: 0
+  firstSpawnMap: {fileID: 11400000, guid: e77fcebe0e13696458bf0cfbacf93e5d, type: 2}
   spawnsOnMaps: []
-  chanceToSpawnOnBody: 0
+  rarity: 0
+  chanceToSpawnOnBody: 0.02
   chanceToSpawnOnTrader: 1
   chanceToSpawnFromRock: 0
   chanceToSpawnFromEnemy: 0
   chanceToExistInLevel: 0
-  chanceToSpawnFromBush: 0
+  chanceToSpawnFromBush: 0.02
   traderLevelRequired: 2
   traderStockRange: {x: 3, y: 5}
   barterRequirements:

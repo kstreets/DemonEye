@@ -97,9 +97,9 @@ public partial class Game {
                 PlayAudioClip(stoneBreakClip, entity.position);
 
                 DropPool dropPool = rockStonesDropPool;
-                if (RollProbability(loadedMapData.eyeUpgradeFromRockChance)) {
-                    dropPool = eyeUpgradesDropPool;
-                }
+                // if (RollProbability(loadedMapData.eyeUpgradeFromRockChance)) {
+                //     dropPool = eyeUpgradesDropPool;
+                // }
                 
                 Item dropItem = GetItemFromDropPool(dropPool);
                 Entity rockDropEntity = SpawnItemAsEntity(dropItem, 1, entity.position, Quaternion.identity);

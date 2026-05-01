@@ -425,7 +425,7 @@ public partial class Game {
     private void DamagePlayer(int damage, PlayerDamageType damageType, float chanceToBleed = 0f) {
         chanceToBleed -= GetAbsoluteStat(Player.Stat.BleedResist); 
         
-        if (!player.bleeding && !PlayerHealthIsAtAutoBleedStop() && RollProbability(chanceToBleed)) {
+        if (!player.bleeding && !loadedMapData.playerCantBleed && !PlayerHealthIsAtAutoBleedStop() && RollProbability(chanceToBleed)) {
             player.bleeding = true;
         }
         

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Pool;
 using Random = UnityEngine.Random;
 
 public partial class Game {
@@ -16,8 +17,7 @@ public partial class Game {
     private int attackUpAnim = Animator.StringToHash("AttackUp");
     private int attackDownAnim = Animator.StringToHash("AttackDown");
     
-    private Limiter enemyReteleportLimitter;
-    private int enemyReteleportCount;
+    private float lastReteleportTime;
     
     public class Enemy : Entity {
         public float flowFieldAcc;
@@ -25,7 +25,7 @@ public partial class Game {
         public float curRunningSumDistFromPlayer;
         public int curRunningSumFrameCount;
         public float averageDistFromPlayerTime;
-        public bool gettingFurtherFromPlayer;
+        public bool notProgressingTowardsPlayer;
         public Collider2D enemySpacerCollider;
         public EnemyData data;
         public Timer applyDamageTimer;
@@ -38,11 +38,38 @@ public partial class Game {
     }
     
     private void UpdateEnemies() {
-        bool timeHasPassed = enemyReteleportLimitter.TimeHasPassed(loadedMapData.waves.delayBetweenEnemyRepositions);
-        if (timeHasPassed) {
-            enemyReteleportCount = 0;
+        bool reteleportTimeHasPassed = Time.time - lastReteleportTime >= loadedMapData.waves.delayBetweenEnemyRepositions;
+        
+        if (reteleportTimeHasPassed) {
+            int maxTeleportCount = loadedMapData.waves.maxEnemyRepositionCount;
+            using var _ = ListPool<(Enemy, float)>.Get(out var reteleportCandidates);
+            
+            foreach (Enemy enemy in enemies) {
+                float distFromPlayer = Vector2.Distance(player.Center, enemy.Center);
+                bool farFromPlayer = distFromPlayer > 1f;
+                if (farFromPlayer && enemy.notProgressingTowardsPlayer) {
+                    reteleportCandidates.Add((enemy, distFromPlayer));
+                }
+            }
+            
+            int minCountNeeded = Mathf.Max(1, Mathf.RoundToInt(enemies.Count * 0.15f));
+            if (reteleportCandidates.Count >= minCountNeeded) {
+                // Teleport top N by distance
+                reteleportCandidates.Sort(static (a, b) => b.Item2.CompareTo(a.Item2));
+
+                int teleportCount = Mathf.Min(reteleportCandidates.Count, maxTeleportCount);
+                for (int i = 0; i < teleportCount; i++) {
+                    (Enemy enemy, float distFromPlayer) = reteleportCandidates[i];
+                    Vector2Int repositionCellRange = spawnManager.CurSpawnPhase.repositionCellRange;
+                    Vector2 spawnPos = loadedMapInst.grid.GetSpawnPosition(player.position, repositionCellRange.x, repositionCellRange.y);
+
+                    if (Vector2.Distance(spawnPos, player.position) < distFromPlayer) {
+                        TeleportEnemy(enemy, spawnPos, TeleportType.Reposition);
+                        lastReteleportTime = Time.time; // Only reset the time if we actually teleport an enemy
+                    }
+                } 
+            }
         }
-        int maxTeleportCount = Mathf.Max(Mathf.RoundToInt(enemies.Count * 0.25f), loadedMapData.waves.maxEnemyRepositionCount);
         
         for (int i = enemies.Count - 1; i >= 0; i--) {
             Enemy enemy = enemies[i];
@@ -57,29 +84,19 @@ public partial class Game {
             enemy.curRunningSumDistFromPlayer += distFromPlayer;
             
             enemy.averageDistFromPlayerTime += Time.deltaTime;
-            if (enemy.averageDistFromPlayerTime > 1.5f) {
+            if (enemy.averageDistFromPlayerTime > 1f) {
                 enemy.averageDistFromPlayerTime = 0f;
 
                 if (enemy.prevAverageDistFromPlayer != 0f) {
                     float curAverage = enemy.curRunningSumDistFromPlayer / enemy.curRunningSumFrameCount;
-                    enemy.gettingFurtherFromPlayer = Mathf.Abs(curAverage - enemy.prevAverageDistFromPlayer) <= 0.03f;
+                    bool furtherAway = curAverage >= enemy.prevAverageDistFromPlayer;
+                    bool aboutTheSameAway = Mathf.Abs(curAverage - enemy.prevAverageDistFromPlayer) < 0.01f;
+                    enemy.notProgressingTowardsPlayer = furtherAway || aboutTheSameAway;
                 }
                 
                 enemy.prevAverageDistFromPlayer = enemy.curRunningSumDistFromPlayer / enemy.curRunningSumFrameCount;
                 enemy.curRunningSumDistFromPlayer = 0f;
                 enemy.curRunningSumFrameCount = 0;
-            }
-            
-            bool canReteleport = timeHasPassed && enemyReteleportCount < maxTeleportCount;
-
-            if (canReteleport && enemy.gettingFurtherFromPlayer && distFromPlayer > 1.14f) {
-                Vector2Int repositionCellRange = spawnManager.CurSpawnPhase.repositionCellRange;
-                Vector2 randomSpawnGridPos = loadedMapInst.grid.GetSpawnPosition(player.position, repositionCellRange.x, repositionCellRange.y);
-                if (Vector2.Distance(randomSpawnGridPos, player.position) < distFromPlayer) {
-                    TeleportEnemy(enemy, randomSpawnGridPos, TeleportType.Reposition);
-                    enemyReteleportCount++;
-                }
-                continue;
             }
             
             bool playingAttackAnimation = EnemyPlayingAttackAnimation(enemy);
@@ -362,16 +379,15 @@ public partial class Game {
         
         if (startNextWave && !onLastPhase) {
             sm.curPhaseIndex++;
-
             RaidSpawnPattern.SpawnPhase curPhase = sm.spawnPattern.spawnPhases[sm.curPhaseIndex];
 
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
             foreach (RaidSpawnPattern.EnemyBatch batch in curPhase.enemyBatches) {
                 if (batch.enemyCount >= EnemySpawnManager.prefixedSumResolution) {
                     Debug.LogError($"Wave cannot have more enemies than {nameof(EnemySpawnManager.prefixedSumResolution)}");
                 }
             }
-            #endif
+#endif
             
             sm.timeInCurPhase = 0f;
             sm.spawnTimeIndex = 0;

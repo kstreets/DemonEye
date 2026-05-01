@@ -16,7 +16,7 @@ MonoBehaviour:
   eyeUpgradeDerivedFrom: {fileID: 11400000, guid: 8a1342e3b7302de4c897cb310bc19b12, type: 2}
   percentChanceOfDerivedToSpawn: 0.44
   spawnsOnAllMaps: 0
-  firstSpawnMap: {fileID: 0}
+  firstSpawnMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
   spawnsOnMaps: []
   traderLevelRequired: 1
   traderStockRange: {x: 1, y: 1}

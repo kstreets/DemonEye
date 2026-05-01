@@ -10,27 +10,31 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9bc23522601a56f4d89295cf565d360b, type: 3}
-  m_Name: SoulStone
-  m_EditorClassIdentifier: 
-  uuid: -1725347430
-  displayName: Soul Stone
-  inventorySprite: {fileID: 1172067732, guid: f5f130e61e73c674ba01af3a5a5f58ea, type: 3}
-  dropSprite: {fileID: 1172067732, guid: f5f130e61e73c674ba01af3a5a5f58ea, type: 3}
+  m_Name: MushroomBlackTruffle
+  m_EditorClassIdentifier: Assembly-CSharp::Item
+  uuid: -1499243680
+  displayName: Black Truffle
+  inventorySprite: {fileID: -1226021664, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  dropSprite: {fileID: -1144475554, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   pickupRadius: 0.07
   type: {fileID: 0}
   associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
   priceCategory: {fileID: 11400000, guid: 1b413ce208f37d445884e80008464342, type: 2}
   buyPrice: 0
-  sellPrice: 4
-  spawnsOnAllMaps: 1
-  spawnsOnMaps: []
-  chanceToSpawnOnBody: 0.2
+  sellPrice: 22
+  spawnsOnAllMaps: 0
+  firstSpawnMap: {fileID: 0}
+  spawnsOnMaps:
+  - {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
+  - {fileID: 11400000, guid: e77fcebe0e13696458bf0cfbacf93e5d, type: 2}
+  rarity: 0
+  chanceToSpawnOnBody: 0.294
   chanceToSpawnOnTrader: 0
-  chanceToSpawnFromRock: 1
+  chanceToSpawnFromRock: 0
   chanceToSpawnFromEnemy: 0
-  chanceToExistInLevel: 0
-  chanceToSpawnFromBush: 0
-  traderLevelRequired: 1
+  chanceToExistInLevel: 0.485
+  chanceToSpawnFromBush: 0.414
+  traderLevelRequired: 0
   traderStockRange: {x: 0, y: 0}
   barterRequirements: []
   spawnsFromEnemies: []
@@ -42,7 +46,7 @@ MonoBehaviour:
   movementSpeedPercentage: 0
   projectileCount: 0
   rangePercentage: 0
-  itemGroupProps: {fileID: 0}
-  maxStackCount: 15
-  weight: 6
-  description: A foundational component for eye upgrades
+  itemGroupProps: {fileID: 11400000, guid: 4f50fd0a36a2ac4499f3d9ca7dc28a72, type: 2}
+  maxStackCount: 0
+  weight: 0
+  description: 

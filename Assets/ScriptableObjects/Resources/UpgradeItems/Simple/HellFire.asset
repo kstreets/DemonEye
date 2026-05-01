@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Soulcard
   uuid: -2012234451
   displayName: Hell Fire
-  inventorySprite: {fileID: -1877983629, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  inventorySprite: {fileID: -1415971690, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   dropSprite: {fileID: 0}
   pickupRadius: 0.07
   type: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
@@ -28,7 +28,7 @@ MonoBehaviour:
   rarity: 0
   chanceToSpawnOnBody: 0
   chanceToSpawnOnTrader: 0.291
-  chanceToSpawnFromRock: 0.609
+  chanceToSpawnFromRock: 0.7
   chanceToSpawnFromEnemy: 0
   chanceToExistInLevel: 0
   chanceToSpawnFromBush: 0
@@ -44,10 +44,10 @@ MonoBehaviour:
   critChance: 0
   critMultiplier: 0
   damageMultiplier: 0
-  fireratePercentage: 0.08
+  fireratePercentage: 0.1
   movementSpeedPercentage: 0
-  projectileCount: 0.25
-  rangePercentage: -0.1
+  projectileCount: 0
+  rangePercentage: 0
   itemGroupProps: {fileID: 11400000, guid: 78826f3a685555a4896655f4c68ef737, type: 2}
   maxStackCount: 0
   weight: 0
