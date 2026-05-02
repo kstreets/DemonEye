@@ -85,10 +85,10 @@ public class Item : UuidScriptableObject {
             chanceToSpawnFromEnemy > 0 ? chanceToSpawnFromEnemy : float.MinValue,
             chanceToSpawnFromBush > 0 ? chanceToSpawnFromBush : float.MinValue
         );
-        if (maxRarity <= 0.03f) return Rarity.Legendary;
-        if (maxRarity <= 0.10f) return Rarity.Epic;
-        if (maxRarity <= 0.20f) return Rarity.Rare;
-        if (maxRarity <= 0.38f) return Rarity.Uncommon;
+        if (maxRarity <= 0.06f) return Rarity.Legendary;
+        if (maxRarity <= 0.12f) return Rarity.Epic;
+        if (maxRarity <= 0.25f) return Rarity.Rare;
+        if (maxRarity <= 0.5f) return Rarity.Uncommon;
         return Rarity.Common;
     }
     

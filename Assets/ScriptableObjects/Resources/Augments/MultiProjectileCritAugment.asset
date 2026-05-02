@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MultiProjectileCritAugment
   uuid: -950171248
   eyeUpgradeDerivedFrom: {fileID: 11400000, guid: 397aeb580ff1a8546a185c24e5d667f2, type: 2}
-  percentChanceOfDerivedToSpawn: 0.392
+  percentChanceOfDerivedToSpawn: 0.444
   spawnsOnAllMaps: 0
   firstSpawnMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
   spawnsOnMaps: []

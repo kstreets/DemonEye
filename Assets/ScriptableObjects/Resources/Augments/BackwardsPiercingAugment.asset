@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BackwardsPiercingAugment
   uuid: 818390779
   eyeUpgradeDerivedFrom: {fileID: 11400000, guid: f7c724c49aae4c04c96cab2b1076d025, type: 2}
-  percentChanceOfDerivedToSpawn: 0.504
+  percentChanceOfDerivedToSpawn: 0.615
   spawnsOnAllMaps: 0
   firstSpawnMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
   spawnsOnMaps: []

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DoubleTapAugment
   uuid: -1505730100
   eyeUpgradeDerivedFrom: {fileID: 11400000, guid: 5208da11a0273eb40938911e8a5feefc, type: 2}
-  percentChanceOfDerivedToSpawn: 0.656
+  percentChanceOfDerivedToSpawn: 0.68
   spawnsOnAllMaps: 0
   firstSpawnMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
   spawnsOnMaps: []
