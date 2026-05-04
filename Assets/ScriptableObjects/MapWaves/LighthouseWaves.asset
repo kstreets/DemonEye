@@ -12,14 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6be7b725e872d8544a676cc6767aad0a, type: 3}
   m_Name: LighthouseWaves
   m_EditorClassIdentifier: 
-  timeBeforeFirstPhase: 22
+  timeBeforeFirstPhase: 30
   timeBeforePortalSpawns: 12
   delayBetweenEnemyRepositions: 1
   maxEnemyRepositionCount: 8
   spawnPhases:
-  - phaseDuration: 35
+  - phaseDuration: 45
     spawnDuration: 22
-    spawnCellRange: {x: 10, y: 14}
+    spawnCellRange: {x: 10, y: 12}
     repositionCellRange: {x: 9, y: 11}
     spawnRateCurve:
       serializedVersion: 2
@@ -48,9 +48,9 @@ MonoBehaviour:
     enemyBatches:
     - enemyCount: 35
       enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
-  - phaseDuration: 50
+  - phaseDuration: 60
     spawnDuration: 30
-    spawnCellRange: {x: 10, y: 14}
+    spawnCellRange: {x: 10, y: 12}
     repositionCellRange: {x: 9, y: 11}
     spawnRateCurve:
       serializedVersion: 2
@@ -82,8 +82,39 @@ MonoBehaviour:
     - enemyCount: 20
       enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
   - phaseDuration: 60
-    spawnDuration: 35
-    spawnCellRange: {x: 10, y: 14}
+    spawnDuration: 30
+    spawnCellRange: {x: 10, y: 12}
+    repositionCellRange: {x: 9, y: 11}
+    spawnRateCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 34
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 34
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 0
+    enemyBatches:
+    - enemyCount: 40
+      enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
+  - phaseDuration: 70
+    spawnDuration: 30
+    spawnCellRange: {x: 10, y: 12}
     repositionCellRange: {x: 9, y: 11}
     spawnRateCurve:
       serializedVersion: 2
@@ -116,9 +147,42 @@ MonoBehaviour:
       enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
     - enemyCount: 20
       enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
-  - phaseDuration: 50
+  - phaseDuration: 70
     spawnDuration: 30
-    spawnCellRange: {x: 11, y: 15}
+    spawnCellRange: {x: 10, y: 12}
+    repositionCellRange: {x: 9, y: 11}
+    spawnRateCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 34
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 34
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 0
+    enemyBatches:
+    - enemyCount: 55
+      enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
+    - enemyCount: 35
+      enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
+  - phaseDuration: 70
+    spawnDuration: 40
+    spawnCellRange: {x: 10, y: 12}
     repositionCellRange: {x: 10, y: 12}
     spawnRateCurve:
       serializedVersion: 2
@@ -145,13 +209,13 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 0
     enemyBatches:
-    - enemyCount: 80
+    - enemyCount: 50
       enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
     - enemyCount: 50
-      enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
-  - phaseDuration: 45
+      enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
+  - phaseDuration: 60
     spawnDuration: 35
-    spawnCellRange: {x: 10, y: 14}
+    spawnCellRange: {x: 10, y: 12}
     repositionCellRange: {x: 8, y: 12}
     spawnRateCurve:
       serializedVersion: 2
@@ -184,7 +248,7 @@ MonoBehaviour:
       enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
   - phaseDuration: 45
     spawnDuration: 45
-    spawnCellRange: {x: 11, y: 15}
+    spawnCellRange: {x: 10, y: 12}
     repositionCellRange: {x: 10, y: 12}
     spawnRateCurve:
       serializedVersion: 2

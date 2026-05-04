@@ -240,7 +240,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -409,7 +409,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -578,7 +578,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -820,6 +820,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1196299453}
     m_Modifications:
+    - target: {fileID: 5460070503375905790, guid: 66225f48543f6f74fa3a636b2ddf000d, type: 3}
+      propertyPath: m_Name
+      value: Grass1 (2)
+      objectReference: {fileID: 0}
     - target: {fileID: 7400352565814995612, guid: 66225f48543f6f74fa3a636b2ddf000d, type: 3}
       propertyPath: m_LocalPosition.x
       value: -8.29
@@ -859,10 +863,6 @@ PrefabInstance:
     - target: {fileID: 7400352565814995612, guid: 66225f48543f6f74fa3a636b2ddf000d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5460070503375905790, guid: 66225f48543f6f74fa3a636b2ddf000d, type: 3}
-      propertyPath: m_Name
-      value: Grass1 (2)
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1305,7 +1305,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1536,7 +1536,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1658,7 +1658,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1998,7 +1998,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2229,7 +2229,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2336,7 +2336,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2383,7 +2383,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawn
   elements:
   - prefab: {fileID: 5684300478470835813, guid: 9a1d6fd835fa2474a9cdbed7d6ada3f8, type: 3}
-    spawnChance: 0.7
+    spawnChance: 0.8
 --- !u!1001 &392492130
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2505,7 +2505,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2860,7 +2860,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2967,7 +2967,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3317,18 +3317,6 @@ PrefabInstance:
       propertyPath: m_LocalPosition.y
       value: -2.498
       objectReference: {fileID: 0}
-    - target: {fileID: 7491086395343718916, guid: 8dfa7eb87e04f2747b29ffe71fd307fe, type: 3}
-      propertyPath: m_Name
-      value: Tree1 (1)
-      objectReference: {fileID: 0}
-    - target: {fileID: 7264462497661616851, guid: 8dfa7eb87e04f2747b29ffe71fd307fe, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -11.17
-      objectReference: {fileID: 0}
-    - target: {fileID: 7264462497661616851, guid: 8dfa7eb87e04f2747b29ffe71fd307fe, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -2.498
-      objectReference: {fileID: 0}
     - target: {fileID: 7264462497661616851, guid: 8dfa7eb87e04f2747b29ffe71fd307fe, type: 3}
       propertyPath: m_LocalPosition.z
       value: 0
@@ -3360,6 +3348,10 @@ PrefabInstance:
     - target: {fileID: 7264462497661616851, guid: 8dfa7eb87e04f2747b29ffe71fd307fe, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7491086395343718916, guid: 8dfa7eb87e04f2747b29ffe71fd307fe, type: 3}
+      propertyPath: m_Name
+      value: Tree1 (1)
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -3430,7 +3422,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3599,7 +3591,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4237,7 +4229,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -41978,7 +41970,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -42209,7 +42201,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -42256,7 +42248,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawn
   elements:
   - prefab: {fileID: 5684300478470835813, guid: 9a1d6fd835fa2474a9cdbed7d6ada3f8, type: 3}
-    spawnChance: 0.7
+    spawnChance: 1
 --- !u!1001 &730530072
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -42378,7 +42370,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -42485,7 +42477,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -56824,7 +56816,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -56931,7 +56923,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -57111,10 +57103,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1196299453}
     m_Modifications:
-    - target: {fileID: 4758116028804296925, guid: 24c61231a7dd08d40b73014b9f007d4a, type: 3}
-      propertyPath: m_Name
-      value: Tree3 (1)
-      objectReference: {fileID: 0}
     - target: {fileID: 4000788040661944078, guid: 24c61231a7dd08d40b73014b9f007d4a, type: 3}
       propertyPath: m_LocalPosition.x
       value: -4.68
@@ -57154,6 +57142,10 @@ PrefabInstance:
     - target: {fileID: 4000788040661944078, guid: 24c61231a7dd08d40b73014b9f007d4a, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4758116028804296925, guid: 24c61231a7dd08d40b73014b9f007d4a, type: 3}
+      propertyPath: m_Name
+      value: Tree3 (1)
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -57326,10 +57318,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1196299453}
     m_Modifications:
-    - target: {fileID: 7491086395343718916, guid: 8dfa7eb87e04f2747b29ffe71fd307fe, type: 3}
-      propertyPath: m_Name
-      value: Tree1 (3)
-      objectReference: {fileID: 0}
     - target: {fileID: 7264462497661616851, guid: 8dfa7eb87e04f2747b29ffe71fd307fe, type: 3}
       propertyPath: m_LocalPosition.x
       value: -1.03
@@ -57369,6 +57357,10 @@ PrefabInstance:
     - target: {fileID: 7264462497661616851, guid: 8dfa7eb87e04f2747b29ffe71fd307fe, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7491086395343718916, guid: 8dfa7eb87e04f2747b29ffe71fd307fe, type: 3}
+      propertyPath: m_Name
+      value: Tree1 (3)
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -57805,7 +57797,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -57927,7 +57919,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -57960,6 +57952,60 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!21 &921551104
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Shader Graphs/OutlineShader
+  m_Shader: {fileID: -6465566751694194690, guid: 6e58b502c0aea8a4abecc63899a3c8fb, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _ColorMask: 15
+    - _Stencil: 0
+    - _StencilComp: 8
+    - _StencilOp: 0
+    - _StencilReadMask: 255
+    - _StencilWriteMask: 255
+    - _UIMaskSoftnessX: 1
+    - _UIMaskSoftnessY: 1
+    m_Colors:
+    - _ClipRect: {r: 0, g: 0, b: 0, a: 0}
+    - _Color: {r: 1, g: 0.4980392, b: 0.3137255, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
 --- !u!1001 &954501526
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -58329,7 +58375,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -58622,7 +58668,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -58977,7 +59023,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -59281,10 +59327,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1196299453}
     m_Modifications:
-    - target: {fileID: 7491086395343718916, guid: 8dfa7eb87e04f2747b29ffe71fd307fe, type: 3}
-      propertyPath: m_Name
-      value: Tree1 (2)
-      objectReference: {fileID: 0}
     - target: {fileID: 7264462497661616851, guid: 8dfa7eb87e04f2747b29ffe71fd307fe, type: 3}
       propertyPath: m_LocalPosition.x
       value: -3.68
@@ -59324,6 +59366,10 @@ PrefabInstance:
     - target: {fileID: 7264462497661616851, guid: 8dfa7eb87e04f2747b29ffe71fd307fe, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7491086395343718916, guid: 8dfa7eb87e04f2747b29ffe71fd307fe, type: 3}
+      propertyPath: m_Name
+      value: Tree1 (2)
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -59456,7 +59502,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -59897,6 +59943,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1196299453}
     m_Modifications:
+    - target: {fileID: 3655312168027216467, guid: bf75e86a693207f4989ab5583182497f, type: 3}
+      propertyPath: m_Name
+      value: Tree2 (6)
+      objectReference: {fileID: 0}
     - target: {fileID: 6491445802372427977, guid: bf75e86a693207f4989ab5583182497f, type: 3}
       propertyPath: m_LocalPosition.x
       value: -7.4
@@ -59936,10 +59986,6 @@ PrefabInstance:
     - target: {fileID: 6491445802372427977, guid: bf75e86a693207f4989ab5583182497f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3655312168027216467, guid: bf75e86a693207f4989ab5583182497f, type: 3}
-      propertyPath: m_Name
-      value: Tree2 (6)
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -83545,7 +83591,7 @@ MonoBehaviour:
   height: 93
   cellSize: 0.16
   sourcePosForTesting: {fileID: 0}
-  drawGizmos: 1
+  drawGizmos: 0
   showFlowField: 0
 --- !u!4 &1315907622
 Transform:
@@ -83694,6 +83740,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1196299453}
     m_Modifications:
+    - target: {fileID: 3655312168027216467, guid: bf75e86a693207f4989ab5583182497f, type: 3}
+      propertyPath: m_Name
+      value: Tree2
+      objectReference: {fileID: 0}
     - target: {fileID: 6491445802372427977, guid: bf75e86a693207f4989ab5583182497f, type: 3}
       propertyPath: m_LocalPosition.x
       value: -12.196
@@ -83733,10 +83783,6 @@ PrefabInstance:
     - target: {fileID: 6491445802372427977, guid: bf75e86a693207f4989ab5583182497f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3655312168027216467, guid: bf75e86a693207f4989ab5583182497f, type: 3}
-      propertyPath: m_Name
-      value: Tree2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -83869,7 +83915,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -84038,7 +84084,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -84085,7 +84131,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawn
   elements:
   - prefab: {fileID: 5684300478470835813, guid: 9a1d6fd835fa2474a9cdbed7d6ada3f8, type: 3}
-    spawnChance: 0.7
+    spawnChance: 1
 --- !u!1 &1454004615
 GameObject:
   m_ObjectHideFlags: 0
@@ -84176,7 +84222,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -84283,7 +84329,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -84390,7 +84436,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -84559,7 +84605,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -84852,7 +84898,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -84970,10 +85016,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1196299453}
     m_Modifications:
-    - target: {fileID: 4758116028804296925, guid: 24c61231a7dd08d40b73014b9f007d4a, type: 3}
-      propertyPath: m_Name
-      value: Tree3 (2)
-      objectReference: {fileID: 0}
     - target: {fileID: 4000788040661944078, guid: 24c61231a7dd08d40b73014b9f007d4a, type: 3}
       propertyPath: m_LocalPosition.x
       value: -1.13
@@ -85013,6 +85055,10 @@ PrefabInstance:
     - target: {fileID: 4000788040661944078, guid: 24c61231a7dd08d40b73014b9f007d4a, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4758116028804296925, guid: 24c61231a7dd08d40b73014b9f007d4a, type: 3}
+      propertyPath: m_Name
+      value: Tree3 (2)
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -85145,7 +85191,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -85252,7 +85298,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -85421,7 +85467,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -85590,7 +85636,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -85637,7 +85683,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawn
   elements:
   - prefab: {fileID: 5684300478470835813, guid: 9a1d6fd835fa2474a9cdbed7d6ada3f8, type: 3}
-    spawnChance: 0.7
+    spawnChance: 1
 --- !u!1001 &1733790033
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -85774,7 +85820,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -85962,60 +86008,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1160074037910697895, guid: c9f97500c447d584682c855316495500, type: 3}
   m_PrefabInstance: {fileID: 1834163618}
   m_PrefabAsset: {fileID: 0}
---- !u!21 &1834226816
-Material:
-  serializedVersion: 8
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: Shader Graphs/OutlineShader
-  m_Shader: {fileID: -6465566751694194690, guid: 6e58b502c0aea8a4abecc63899a3c8fb, type: 3}
-  m_Parent: {fileID: 0}
-  m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
-  m_InvalidKeywords: []
-  m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
-  disabledShaderPasses: []
-  m_LockedProperties: 
-  m_SavedProperties:
-    serializedVersion: 3
-    m_TexEnvs:
-    - _MainTex:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - unity_Lightmaps:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - unity_LightmapsInd:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - unity_ShadowMasks:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    m_Ints: []
-    m_Floats:
-    - _ColorMask: 15
-    - _Stencil: 0
-    - _StencilComp: 8
-    - _StencilOp: 0
-    - _StencilReadMask: 255
-    - _StencilWriteMask: 255
-    - _UIMaskSoftnessX: 1
-    - _UIMaskSoftnessY: 1
-    m_Colors:
-    - _ClipRect: {r: 0, g: 0, b: 0, a: 0}
-    - _Color: {r: 1, g: 0.4980392, b: 0.3137255, a: 1}
-  m_BuildTextureStacks: []
-  m_AllowLocking: 1
 --- !u!1001 &1835964823
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -86137,7 +86129,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -86368,7 +86360,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -86583,7 +86575,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -87016,7 +87008,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -87247,7 +87239,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -87602,7 +87594,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -87740,7 +87732,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1834226816}
+  - {fileID: 921551104}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -87787,7 +87779,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawn
   elements:
   - prefab: {fileID: 5684300478470835813, guid: 9a1d6fd835fa2474a9cdbed7d6ada3f8, type: 3}
-    spawnChance: 0.7
+    spawnChance: 0.8
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
