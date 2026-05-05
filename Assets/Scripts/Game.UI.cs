@@ -209,7 +209,7 @@ public partial class Game {
             MapData map = maps[i];
             mapSelectionButton.onClick.AddListener(() => {
                 LoadMapAsync(map, () => {
-                    CreateDropPoolsForCurrentMap();
+                    CreateDropPoolsForMap(map);
                     gameStateMachine.SetStateIfNotCurrent(raidState);
                 });
             });

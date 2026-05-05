@@ -1,0 +1,9 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <Style src="project://database/Assets/Editor/GameplayTestingWindow/GameplayTestingWindow.uss?fileID=7433441132597879392&amp;guid=5997612c885686748a7d3f4be9a3d2cf&amp;type=3#GameplayTestingWindow"/>
+    <ui:VisualElement name="Panel" style="flex-grow: 1; margin-top: 5px;">
+        <uie:ObjectField label="Map" type="MapData, Assembly-CSharp" name="MapField" allow-scene-objects="false"/>
+        <ui:VisualElement name="ItemPool" style="flex-grow: initial; flex-basis: auto; height: auto; padding-left: 0; padding-top: 10px; padding-right: 0; padding-bottom: 10px; align-items: flex-start; flex-direction: row; flex-wrap: wrap; max-height: none; align-self: auto;"/>
+        <ui:Button text="Place Items in Stash" name="PlaceItemsBttn"/>
+        <ui:Button text="Refresh" name="RefreshBttn"/>
+    </ui:VisualElement>
+</ui:UXML>

@@ -4,7 +4,7 @@ using UnityEngine;
 using VInspector;
 using static Game;
 
-public class Augment : UuidScriptableObject {
+public class Augment : UuidScriptableObject, IEyeUpgrade {
 
     [Header("Augment")]
     public EyeUpgradeItem eyeUpgradeDerivedFrom;
@@ -45,6 +45,15 @@ public class Augment : UuidScriptableObject {
         return string.Empty;
     }
     
+    // IEyeUpgradeInterface
+    public bool IsAugment => true;
+    public bool SpawnsOnAllMaps => spawnsOnAllMaps;
+    public MapData FirstSpawnMap => firstSpawnMap;
+    public List<MapData> SpawnsOnMaps => spawnsOnMaps;
+    public UuidScriptableObject GetUuidObject => this;
+    public Sprite InventorySprite => eyeUpgradeDerivedFrom.inventorySprite;
+    public string DisplayName => eyeUpgradeDerivedFrom.displayName;
+    
 #if UNITY_EDITOR
     
     [Button]
@@ -56,6 +65,5 @@ public class Augment : UuidScriptableObject {
         gameInstance.TryAddItemToInventory(gameInstance.stashInventory, new(this));
     }
     
-#endif 
-
+#endif
 }

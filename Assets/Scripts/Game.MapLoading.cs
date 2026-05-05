@@ -166,7 +166,7 @@ public partial class Game {
         foreach (Item item in items) {
             int stackCount = 1;
             
-            float taperingChance = Mathf.Lerp(GetDropChanceOfItem(item, dropOrigin), 0f, stackTaperRate);
+            float taperingChance = Mathf.Lerp(GetDropChanceOfItem(item, dropOrigin, loadedMapData), 0f, stackTaperRate);
             while (RollProbability(taperingChance)) {
                 stackCount++;
                 taperingChance = Mathf.Lerp(taperingChance, 0f, stackTaperRate);

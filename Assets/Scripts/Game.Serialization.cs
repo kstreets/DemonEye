@@ -69,7 +69,7 @@ public partial class Game {
     
     public Dictionary<int, UuidScriptableObject> resourceLookup = new();
     public Dictionary<EyeUpgradeItem, List<Augment>> augmentsPerModifierItemLookup = new();
-    public List<Item> allItems = new();
+    [NonSerialized] public List<Item> allItems = new();
     
     private void LoadAllResources() {
         UuidScriptableObject[] resourceObjects = Resources.LoadAll<UuidScriptableObject>(string.Empty);
