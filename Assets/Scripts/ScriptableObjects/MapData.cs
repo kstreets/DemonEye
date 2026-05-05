@@ -42,13 +42,18 @@ public class MapData : ScriptableObject {
     
     [NonSerialized] public bool isUnlocked;
     
-    public event Func<RaidSpawnPattern> OnInjectRaidSpawnPattern;
+    // -------------------------------------------------------------
+    // Interface to inject different raid spawn patterns for testing
+    // -------------------------------------------------------------
+    
+    private Func<RaidSpawnPattern> GetInjectedRaidSpawnPattern;
+    
+    public void SetRaidSpawnPatternInjection(Func<RaidSpawnPattern> injectedFunc) {
+        GetInjectedRaidSpawnPattern = injectedFunc;
+    }
     
     public RaidSpawnPattern GetWaveSpawnPattern() {
-        if (OnInjectRaidSpawnPattern == null) {
-            return waves;
-        }
-        return OnInjectRaidSpawnPattern();
+        return GetInjectedRaidSpawnPattern != null ? GetInjectedRaidSpawnPattern() : waves;
     }
     
 }
