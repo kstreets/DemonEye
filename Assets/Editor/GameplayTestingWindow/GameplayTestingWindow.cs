@@ -10,9 +10,11 @@ public class GameplayTestingWindow : EditorWindow {
     
     [SerializeField] private VisualTreeAsset visualTreeAsset;
     [SerializeField] private MapData currentMap;
+    [SerializeField] private bool hideInactive;
     
     private VisualElement root => rootVisualElement;
     private ObjectField MapField => root.Q<ObjectField>("MapField");
+    private Toggle HideInactiveToggle => root.Q<Toggle>("HideInactive");
     private VisualElement ItemPoolContainer => root.Q<VisualElement>("ItemPool");
     private Button RefreshButton => root.Q<Button>("RefreshBttn");
     private Button PlaceItemsButton => root.Q<Button>("PlaceItemsBttn");
@@ -20,7 +22,7 @@ public class GameplayTestingWindow : EditorWindow {
     private List<MapData> Maps => _gameMapsBackingField ??= FindFirstObjectByType<Game>().maps;
     private List<MapData> _gameMapsBackingField;
 
-    [MenuItem("Window/UI Toolkit/GameplayTestingWindow")]
+    [MenuItem("Window/UI Toolkit/Gameplay Testing")]
     public static void ShowExample() {
         GameplayTestingWindow wnd = GetWindow<GameplayTestingWindow>();
         wnd.titleContent = new("GameplayTestingWindow");
@@ -30,12 +32,22 @@ public class GameplayTestingWindow : EditorWindow {
         VisualElement labelFromUXML = visualTreeAsset.Instantiate();
         root.Add(labelFromUXML);
         
+        Selection.selectionChanged -= RefreshImageBackgrounds;
+        Selection.selectionChanged += RefreshImageBackgrounds;
+        
         MapField.RegisterCallback<ChangeEvent<Object>>(OnMapDataChanged);
+        HideInactiveToggle.RegisterCallback<ChangeEvent<bool>>(OnHideInactiveToggled);
         RefreshButton.RegisterCallback<ClickEvent>(OnRefreshClicked);
         PlaceItemsButton.RegisterCallback<ClickEvent>(OnPlaceItemsClicked);
         
-        // Restore selected map after domain reload
+        // Restore settings after domain reload
         MapField.value = currentMap;
+        HideInactiveToggle.value = hideInactive;
+    }
+    
+    private void OnHideInactiveToggled(ChangeEvent<bool> changeEvent) {
+        hideInactive = changeEvent.newValue;
+        ListItemPoolForMap();
     }
     
     private void OnRefreshClicked(ClickEvent e) {
@@ -66,20 +78,21 @@ public class GameplayTestingWindow : EditorWindow {
         if (currentMap == null) return;
         
         List<IEyeUpgrade> eyeUpgrades = LoadAllEyeUpgrades();
-        eyeUpgrades = eyeUpgrades.Where(ItemIsApartOfCurrentDropPool).ToList();
         eyeUpgrades.Sort(CompareItemsSpawnMaps);
+        
+        if (hideInactive) {
+            eyeUpgrades = eyeUpgrades.Where(ItemIsApartOfCurrentDropPool).ToList();
+        }
         
         foreach (IEyeUpgrade eyeUpgrade in eyeUpgrades) {
             Image image = new() {
-            sprite = eyeUpgrade.InventorySprite,
-            style = { width = 40, height = 40, backgroundColor = GetBackgroundColorByMap(eyeUpgrade) },
-            tooltip = eyeUpgrade.IsAugment ? $"{eyeUpgrade.DisplayName} (Augmented)" : $"{eyeUpgrade.DisplayName}",
+                sprite = eyeUpgrade.InventorySprite,
+                style = { width = 40, height = 40, backgroundColor = GetBackgroundColor(eyeUpgrade) },
+                tooltip = eyeUpgrade.IsAugment ? $"{eyeUpgrade.DisplayName} (Augmented)" : $"{eyeUpgrade.DisplayName}",
+                userData = eyeUpgrade,
             };
             
-            image.RegisterCallback<ClickEvent>((_) => {
-                Selection.activeObject = eyeUpgrade.GetUuidObject;
-            });
-            
+            image.RegisterCallback<ClickEvent>(_ => OnImageClicked(eyeUpgrade));
             ItemPoolContainer.Add(image);
         } 
     }
@@ -97,9 +110,17 @@ public class GameplayTestingWindow : EditorWindow {
     }
     
     private int CompareItemsSpawnMaps(IEyeUpgrade x, IEyeUpgrade y) {
-        int xIndex = x.SpawnsOnAllMaps ? -1 : Maps.IndexOf(x.FirstSpawnMap);
-        int yIndex = y.SpawnsOnAllMaps ? -1 : Maps.IndexOf(y.FirstSpawnMap);
-        return xIndex.CompareTo(yIndex);
+        return GetMapIndex(x).CompareTo(GetMapIndex(y));
+    }
+    
+    private int GetMapIndex(IEyeUpgrade eyeUpgrade) {
+        if (eyeUpgrade.SpawnsOnAllMaps) {
+            return -1;
+        } 
+        if (eyeUpgrade.FirstSpawnMap != null) {
+            return Maps.IndexOf(eyeUpgrade.FirstSpawnMap);
+        }
+        return int.MaxValue;
     }
     
     private List<IEyeUpgrade> LoadAllEyeUpgrades() {
@@ -116,11 +137,38 @@ public class GameplayTestingWindow : EditorWindow {
         return eyeUpgrades;
     }
     
-    private Color GetBackgroundColorByMap(IEyeUpgrade eyeUpgrade) {
-        int index = eyeUpgrade.SpawnsOnAllMaps ? 0 : Maps.IndexOf(eyeUpgrade.FirstSpawnMap);
-        string colorString = index % 2 == 0 ? "#383838" : "#2A2A2A";
+    private Color GetBackgroundColor(IEyeUpgrade eyeUpgrade) {
+        int curMapIndex = Maps.IndexOf(currentMap);
+        int firstMapItemIndex = GetMapIndex(eyeUpgrade);
+        
+        string colorString;
+        if (Selection.activeObject == eyeUpgrade.GetUuidObject) {
+            colorString = "#2C5D87";
+        }
+        else if (firstMapItemIndex < curMapIndex) {
+            colorString = "#383838";
+        }
+        else if (curMapIndex == firstMapItemIndex) {
+            colorString = "#4D4D4D";
+        }
+        else {
+            colorString = "#2A2A2A";
+        }
+        
         ColorUtility.TryParseHtmlString(colorString, out Color color);
         return color;
+    }
+    
+    private void OnImageClicked(IEyeUpgrade eyeUpgrade) {
+        if (Selection.activeObject == eyeUpgrade.GetUuidObject) {
+            Selection.activeObject = null;
+            return;
+        }
+        Selection.activeObject = eyeUpgrade.GetUuidObject;
+    }
+    
+    private void RefreshImageBackgrounds() {
+        ItemPoolContainer.Query<Image>().ForEach(img => img.style.backgroundColor = GetBackgroundColor(img.userData as IEyeUpgrade));
     }
     
 }
