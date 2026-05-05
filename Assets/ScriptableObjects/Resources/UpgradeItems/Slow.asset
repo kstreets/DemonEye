@@ -25,10 +25,10 @@ MonoBehaviour:
   spawnsOnAllMaps: 0
   firstSpawnMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
   spawnsOnMaps: []
-  rarity: 0
+  rarity: 1
   chanceToSpawnOnBody: 0
-  chanceToSpawnOnTrader: 0.642
-  chanceToSpawnFromRock: 0.7
+  chanceToSpawnOnTrader: 0.39
+  chanceToSpawnFromRock: 0.45
   chanceToSpawnFromEnemy: 0
   chanceToExistInLevel: 0
   chanceToSpawnFromBush: 0

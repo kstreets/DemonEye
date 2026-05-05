@@ -11,6 +11,7 @@ public class GameplayTestingWindow : EditorWindow {
     [SerializeField] private VisualTreeAsset visualTreeAsset;
     [SerializeField] private MapData currentMap;
     [SerializeField] private bool hideInactive;
+    [SerializeField] private int startWaveIndex;
     
     private VisualElement root => rootVisualElement;
     private ObjectField MapField => root.Q<ObjectField>("MapField");
@@ -18,6 +19,7 @@ public class GameplayTestingWindow : EditorWindow {
     private VisualElement ItemPoolContainer => root.Q<VisualElement>("ItemPool");
     private Button RefreshButton => root.Q<Button>("RefreshBttn");
     private Button PlaceItemsButton => root.Q<Button>("PlaceItemsBttn");
+    private SliderInt StartWaveSlider => root.Q<SliderInt>("StartWaveSlider");
     
     private List<MapData> Maps => _gameMapsBackingField ??= FindFirstObjectByType<Game>().maps;
     private List<MapData> _gameMapsBackingField;
@@ -32,19 +34,27 @@ public class GameplayTestingWindow : EditorWindow {
         VisualElement labelFromUXML = visualTreeAsset.Instantiate();
         root.Add(labelFromUXML);
         
-        Selection.selectionChanged -= RefreshImageBackgrounds;
         Selection.selectionChanged += RefreshImageBackgrounds;
         
         MapField.RegisterCallback<ChangeEvent<Object>>(OnMapDataChanged);
         HideInactiveToggle.RegisterCallback<ChangeEvent<bool>>(OnHideInactiveToggled);
         RefreshButton.RegisterCallback<ClickEvent>(OnRefreshClicked);
         PlaceItemsButton.RegisterCallback<ClickEvent>(OnPlaceItemsClicked);
+        StartWaveSlider.RegisterValueChangedCallback(OnStartWaveSliderChanged);
         
         // Restore settings after domain reload
         MapField.value = currentMap;
         HideInactiveToggle.value = hideInactive;
+        StartWaveSlider.value = startWaveIndex;
     }
-    
+
+    private void OnDisable() {
+        Selection.selectionChanged -= RefreshImageBackgrounds;
+        if (currentMap != null) {
+            currentMap.OnInjectRaidSpawnPattern -= InjectRaidSpawnPattern;
+        }
+    }
+
     private void OnHideInactiveToggled(ChangeEvent<bool> changeEvent) {
         hideInactive = changeEvent.newValue;
         ListItemPoolForMap();
@@ -52,6 +62,22 @@ public class GameplayTestingWindow : EditorWindow {
     
     private void OnRefreshClicked(ClickEvent e) {
         ListItemPoolForMap();
+    }
+    
+    private void OnStartWaveSliderChanged(ChangeEvent<int> changeEvent) {
+        startWaveIndex = changeEvent.newValue;
+    }
+    
+    private void UpdateStartWaveSliderMinMax() {
+        if (currentMap == null) {
+            StartWaveSlider.lowValue = 0;
+            StartWaveSlider.highValue = 0;
+            return;
+        }
+        
+        StartWaveSlider.lowValue = 0;
+        StartWaveSlider.highValue = currentMap.waves.spawnPhases.Count - 1;
+        StartWaveSlider.value = startWaveIndex;
     }
     
     private void OnPlaceItemsClicked(ClickEvent e) {
@@ -69,8 +95,18 @@ public class GameplayTestingWindow : EditorWindow {
     }
     
     private void OnMapDataChanged(ChangeEvent<Object> changeEvent) {
+        MapData prevMap = changeEvent.previousValue as MapData;
+        if (prevMap != null) {
+            currentMap.OnInjectRaidSpawnPattern -= InjectRaidSpawnPattern;
+        }
+        
         currentMap = changeEvent.newValue as MapData;
+        if (currentMap != null) {
+            currentMap.OnInjectRaidSpawnPattern += InjectRaidSpawnPattern;
+        }
+        
         ListItemPoolForMap();
+        UpdateStartWaveSliderMinMax();
     }
     
     private void ListItemPoolForMap() {
@@ -169,6 +205,17 @@ public class GameplayTestingWindow : EditorWindow {
     
     private void RefreshImageBackgrounds() {
         ItemPoolContainer.Query<Image>().ForEach(img => img.style.backgroundColor = GetBackgroundColor(img.userData as IEyeUpgrade));
+    }
+    
+    private RaidSpawnPattern InjectRaidSpawnPattern() {
+        if (startWaveIndex <= 0) {
+            return currentMap.waves;
+        }
+        
+        RaidSpawnPattern clonedWaves = Instantiate(currentMap.waves);
+        clonedWaves.timeBeforeFirstPhase = 5f;
+        clonedWaves.spawnPhases.RemoveRange(0, startWaveIndex);
+        return clonedWaves;
     }
     
 }

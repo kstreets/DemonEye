@@ -28,7 +28,7 @@ MonoBehaviour:
   rarity: 0
   chanceToSpawnOnBody: 0
   chanceToSpawnOnTrader: 0.288
-  chanceToSpawnFromRock: 0.7
+  chanceToSpawnFromRock: 0.55
   chanceToSpawnFromEnemy: 0
   chanceToExistInLevel: 0
   chanceToSpawnFromBush: 0

@@ -621,7 +621,7 @@ public partial class Game : MonoBehaviour {
         interactionVars.Reset();
         
         InitMapGrid();
-        InitSpawnManager(loadedMapData.waves);
+        InitSpawnManager(loadedMapData.GetWaveSpawnPattern());
         SpawnMapResources(loadedMapInst.resourceParent);
         SpawnInitialExitPortals(loadedMapInst.exitPortalsParent, loadedMapData.exitPortalsCount);
         AnimateRaidEnterSequence();

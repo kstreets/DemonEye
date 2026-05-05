@@ -56,4 +56,4 @@ MonoBehaviour:
   probability: 0.15
   duration: 5
   damageMulti: 2
-  minHealthPercentForMulti: 0.35
+  minHealthPercentForMulti: 0.3

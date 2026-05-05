@@ -248,7 +248,7 @@ MonoBehaviour:
       enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
   - phaseDuration: 45
     spawnDuration: 45
-    spawnCellRange: {x: 10, y: 12}
+    spawnCellRange: {x: 11, y: 13}
     repositionCellRange: {x: 10, y: 12}
     spawnRateCurve:
       serializedVersion: 2
@@ -275,7 +275,9 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 0
     enemyBatches:
-    - enemyCount: 100
+    - enemyCount: 40
       enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
-    - enemyCount: 80
+    - enemyCount: 60
       enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
+    - enemyCount: 80
+      enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}

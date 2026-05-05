@@ -1,10 +1,15 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
     <Style src="project://database/Assets/Editor/GameplayTestingWindow/GameplayTestingWindow.uss?fileID=7433441132597879392&amp;guid=5997612c885686748a7d3f4be9a3d2cf&amp;type=3#GameplayTestingWindow"/>
-    <ui:VisualElement name="Panel" style="flex-grow: 1; margin-top: 5px;">
+    <ui:VisualElement name="Panel" style="flex-grow: 1; margin-top: 5px; margin-left: 5px; margin-right: 5px;">
         <uie:ObjectField label="Map" type="MapData, Assembly-CSharp" name="MapField" allow-scene-objects="false"/>
+        <ui:VisualElement name="Divider" style="flex-grow: 0; background-color: rgb(42, 42, 42); height: 1px; margin-top: 5px; margin-bottom: 5px;"/>
         <ui:Toggle label="Hide Inactive" name="HideInactive" style="border-top-width: 0;"/>
         <ui:VisualElement name="ItemPool" style="flex-grow: initial; flex-basis: auto; height: auto; padding-left: 0; padding-top: 10px; padding-right: 0; padding-bottom: 10px; align-items: flex-start; flex-direction: row; flex-wrap: wrap; max-height: none; align-self: auto;"/>
-        <ui:Button text="Place Items in Stash" name="PlaceItemsBttn"/>
-        <ui:Button text="Refresh" name="RefreshBttn"/>
+        <ui:VisualElement name="" style="flex-grow: 0; flex-direction: row; flex-wrap: wrap; justify-content: space-between; align-items: auto;">
+            <ui:Button text="Place Items in Stash" name="PlaceItemsBttn"/>
+            <ui:Button text="Refresh" name="RefreshBttn"/>
+        </ui:VisualElement>
+        <ui:VisualElement name="Divider" style="flex-grow: 0; background-color: rgb(42, 42, 42); height: 1px; margin-top: 5px; margin-bottom: 5px;"/>
+        <ui:SliderInt label="Starting Wave Index" value="42" high-value="100" name="StartWaveSlider" show-input-field="true"/>
     </ui:VisualElement>
 </ui:UXML>
