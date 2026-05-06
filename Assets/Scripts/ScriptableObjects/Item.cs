@@ -29,10 +29,11 @@ public class Item : UuidScriptableObject {
     
     [Space]
     
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
     [ReadOnly] [SerializeField] private Rarity rarity;
-    #endif
+#endif
     
+    [Range(0f, 1f)] public float chanceToSpawnFromAltar;
     [Range(0f, 1f)] public float chanceToSpawnOnBody;
     [Range(0f, 1f)] public float chanceToSpawnOnTrader;
     [Range(0f, 1f)] public float chanceToSpawnFromRock;
@@ -79,16 +80,17 @@ public class Item : UuidScriptableObject {
 
     public Rarity GetRarity() {
         float maxRarity = Mathf.Max(
-            chanceToSpawnOnBody   > 0 ? chanceToSpawnOnBody   : float.MinValue,
-            chanceToSpawnOnTrader > 0 ? chanceToSpawnOnTrader : float.MinValue,
-            chanceToSpawnFromRock > 0 ? chanceToSpawnFromRock : float.MinValue,
+            chanceToSpawnFromAltar > 0 ? chanceToSpawnFromAltar : float.MinValue,
+            chanceToSpawnOnBody    > 0 ? chanceToSpawnOnBody    : float.MinValue,
+            chanceToSpawnOnTrader  > 0 ? chanceToSpawnOnTrader  : float.MinValue,
+            chanceToSpawnFromRock  > 0 ? chanceToSpawnFromRock  : float.MinValue,
             chanceToSpawnFromEnemy > 0 ? chanceToSpawnFromEnemy : float.MinValue,
-            chanceToSpawnFromBush > 0 ? chanceToSpawnFromBush : float.MinValue
+            chanceToSpawnFromBush  > 0 ? chanceToSpawnFromBush  : float.MinValue
         );
-        if (maxRarity <= 0.06f) return Rarity.Legendary;
-        if (maxRarity <= 0.12f) return Rarity.Epic;
-        if (maxRarity <= 0.25f) return Rarity.Rare;
-        if (maxRarity <= 0.5f) return Rarity.Uncommon;
+        if (maxRarity <= 0.08f) return Rarity.Legendary;
+        if (maxRarity <= 0.20f) return Rarity.Epic;
+        if (maxRarity <= 0.35f) return Rarity.Rare;
+        if (maxRarity <= 0.50f) return Rarity.Uncommon;
         return Rarity.Common;
     }
     

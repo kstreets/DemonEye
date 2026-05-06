@@ -25,8 +25,9 @@ MonoBehaviour:
   spawnsOnAllMaps: 0
   firstSpawnMap: {fileID: 0}
   spawnsOnMaps: []
-  rarity: 2
-  chanceToSpawnOnBody: 0.213
+  rarity: 1
+  chanceToSpawnFromAltar: 0
+  chanceToSpawnOnBody: 0.412
   chanceToSpawnOnTrader: 0
   chanceToSpawnFromRock: 0
   chanceToSpawnFromEnemy: 0

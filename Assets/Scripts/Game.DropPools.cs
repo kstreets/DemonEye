@@ -7,7 +7,7 @@ using Random = UnityEngine.Random;
 
 public partial class Game {
     
-    public enum DropOrigin { Rock, Body, Trader, Enemy, ExistsInLevel, Bush }
+    public enum DropOrigin { Rock, Altar, Body, Trader, Enemy, ExistsInLevel, Bush }
 
     public class DropPool {
         public List<Item> items = new();
@@ -28,7 +28,7 @@ public partial class Game {
     
     private void CreateDropPools() {
         rockStonesDropPool = new() { dropOrigin = DropOrigin.Rock };
-        eyeUpgradesDropPool = new() { dropOrigin = DropOrigin.Rock };
+        eyeUpgradesDropPool = new() { dropOrigin = DropOrigin.Altar };
         bodyDropPool = new() { dropOrigin = DropOrigin.Body };
         traderDropPool = new() { dropOrigin = DropOrigin.Trader };
         enemyDropPool = new() { dropOrigin = DropOrigin.Enemy };
@@ -56,11 +56,9 @@ public partial class Game {
         foreach (Item item in allItems) {
             if (!ItemCanSpawnOnMap(item, map)) continue;
             
-            if (item.type == eyeUpgradeType) {
+            if (item.chanceToSpawnFromAltar > 0f) {
                 eyeUpgradesDropPool.items.Add(item);
-                continue;
             }
-
             if (item.chanceToSpawnFromRock > 0f) {
                 rockStonesDropPool.items.Add(item);
             }
