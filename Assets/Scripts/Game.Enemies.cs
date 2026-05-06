@@ -40,10 +40,11 @@ public partial class Game {
     }
     
     private void UpdateEnemies() {
-        bool reteleportTimeHasPassed = Time.time - lastReteleportTime >= loadedMapData.waves.delayBetweenEnemyRepositions;
+        RaidSpawnPattern curSpawnPattern = loadedMapData.waves;
+        bool reteleportTimeHasPassed = Time.time - lastReteleportTime >= curSpawnPattern.delayBetweenEnemyRepositions;
         
         if (reteleportTimeHasPassed) {
-            int maxTeleportCount = loadedMapData.waves.maxEnemyRepositionCount;
+            int maxTeleportCount = curSpawnPattern.maxEnemyRepositionCount;
             using var _ = ListPool<(Enemy, float)>.Get(out var reteleportCandidates);
             
             foreach (Enemy enemy in enemies) {

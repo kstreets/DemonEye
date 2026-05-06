@@ -14,21 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MapData
   displayName: Ice
   sceneReference: Ice
-  waves: {fileID: 11400000, guid: d178d276342dd7a4b88f61a1e82034c7, type: 2}
+  waves: {fileID: 11400000, guid: c3f7f6d7c8bc62a4993a44c716d126e0, type: 2}
   altarSoulPrice: 150
   exitPortalsCount: 0
-  minRockCount: 0
-  maxRockCount: 0
-  minBodyCount: 0
-  maxBodyCount: 0
-  minForageCount: 0
-  maxForageCount: 0
-  minBushesCount: 0
-  maxBushesCount: 0
-  minAltarCount: 0
-  maxAltarCount: 0
+  playerCantBleed: 0
   eyeUpgradeOnBodyChance: 0.12
-  eyeUpgradeFromRockChance: 0.2
   consecutiveEyeUpgradeChanceReductionOnBody: 0.08
-  maxGemCountPerRock: 2
-  increasedLootRarityChance: 0.06
+  commonLootRarityIncrease: 0
+  uncommonLootRarityIncrease: 0
+  rareLootRarityIncrease: 0
+  epicLootRarityIncrease: 0
+  legendaryLootRarityIncrease: 0

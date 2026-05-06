@@ -1,4 +1,5 @@
 using System;
+using UnityEditor;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "MapReference", menuName = "Scriptable Objects/MapReference")]
@@ -13,26 +14,10 @@ public class MapData : ScriptableObject {
     public int exitPortalsCount;
     public bool playerCantBleed;
     
-    [Header("Spawns")]
-    public int minRockCount;
-    public int maxRockCount;
-    public int minBodyCount;
-    public int maxBodyCount;
-    public int minForageCount;
-    public int maxForageCount;
-    public int minBushesCount;
-    public int maxBushesCount;
-    public int minAltarCount;
-    public int maxAltarCount;
-    
     [Header("Eye Upgrade Drop Chances")]
     public float eyeUpgradeOnBodyChance;
-    public float eyeUpgradeFromRockChance;
     public float consecutiveEyeUpgradeChanceReductionOnBody;
 
-    [Header("Gem Spawns")]
-    public int maxGemCountPerRock;
-    
     [Header("Loot Increase")]
     public float commonLootRarityIncrease;
     public float uncommonLootRarityIncrease;
@@ -45,6 +30,8 @@ public class MapData : ScriptableObject {
     // -------------------------------------------------------------
     // Interface to inject different raid spawn patterns for testing
     // -------------------------------------------------------------
+
+#if UNITY_EDITOR
     
     private Func<RaidSpawnPattern> GetInjectedRaidSpawnPattern;
     
@@ -52,8 +39,28 @@ public class MapData : ScriptableObject {
         GetInjectedRaidSpawnPattern = injectedFunc;
     }
     
-    public RaidSpawnPattern GetWaveSpawnPattern() {
-        return GetInjectedRaidSpawnPattern != null ? GetInjectedRaidSpawnPattern() : waves;
+    private void OnEnable() {
+        EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
     }
     
+    private void OnDisable() {
+        EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+    }
+    
+    private RaidSpawnPattern originalRaidSpawnPattern;
+    
+    private void OnPlayModeStateChanged(PlayModeStateChange stateChange) {
+        switch (stateChange) {
+            case PlayModeStateChange.EnteredPlayMode:
+                originalRaidSpawnPattern = waves;
+                waves = GetInjectedRaidSpawnPattern != null ? GetInjectedRaidSpawnPattern() : waves;
+                break;
+            case PlayModeStateChange.ExitingPlayMode:
+                waves = originalRaidSpawnPattern;
+                break;
+        }     
+    }
+    
+#endif
+
 }

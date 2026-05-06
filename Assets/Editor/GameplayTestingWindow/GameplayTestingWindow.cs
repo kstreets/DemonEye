@@ -50,6 +50,22 @@ public class GameplayTestingWindow : EditorWindow {
         StartWaveSlider.value = startWaveIndex;
     }
 
+    private void OnEnable() {
+        EditorApplication.playModeStateChanged += OnPlaymodeStateChanged;
+    }
+    
+    private void OnDisable() {
+        EditorApplication.playModeStateChanged -= OnPlaymodeStateChanged;
+    }
+
+    // Disable being able to change things because we can only inject a custom spawn pattern when entering playmode
+    private void OnPlaymodeStateChanged(PlayModeStateChange changeEvent) {
+        bool enabled = changeEvent is PlayModeStateChange.EnteredEditMode or PlayModeStateChange.ExitingPlayMode;
+        MapField.SetEnabled(enabled);
+        OverrideWavesToggle.SetEnabled(enabled);
+        StartWaveSlider.SetEnabled(enabled);
+    }
+    
     private void OnSelectionChange() { 
         RefreshImageBackgrounds();
     }
