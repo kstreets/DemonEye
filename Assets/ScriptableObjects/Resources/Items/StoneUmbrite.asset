@@ -22,13 +22,13 @@ MonoBehaviour:
   priceCategory: {fileID: 11400000, guid: 1b413ce208f37d445884e80008464342, type: 2}
   buyPrice: 0
   sellPrice: 4
-  spawnsOnAllMaps: 0
+  spawnsOnAllMaps: 1
   firstSpawnMap: {fileID: 0}
   spawnsOnMaps: []
   rarity: 0
   chanceToSpawnOnBody: 0.2
   chanceToSpawnOnTrader: 0
-  chanceToSpawnFromRock: 1
+  chanceToSpawnFromRock: 0.65
   chanceToSpawnFromEnemy: 0
   chanceToExistInLevel: 0
   chanceToSpawnFromBush: 0
@@ -47,4 +47,4 @@ MonoBehaviour:
   itemGroupProps: {fileID: 0}
   maxStackCount: 15
   weight: 6
-  description: A foundational component for eye upgrades
+  description: Known for its brittleness and can be easily shattered.

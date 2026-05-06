@@ -76,11 +76,11 @@ public partial class Game {
         }
     }
     
-    public Item GetItemFromDropPool(DropPool dropPool, MapData map = null) {
+    private Item GetItemFromDropPool(DropPool dropPool) => GetItemFromDropPool(dropPool, loadedMapData);
+    
+    public Item GetItemFromDropPool(DropPool dropPool, MapData map) {
         Assert.IsFalse(dropPool.items == enemyDropPool.items, $"Use {nameof(GetItemFromEnemyDropPool)} for enemies");
         Assert.IsFalse(dropPool.items.Count == 0, $"No items in drop pool, use {nameof(DropPool.HasItems)} before calling");
-        
-        map ??= loadedMapData;
         
         using var _ = ListPool<float>.Get(out var dropChances);
         
@@ -123,7 +123,7 @@ public partial class Game {
         return item;
     }
 
-    private void GetUniqueItemsFromDropPool(DropPool dropPool, int maxCount, List<Item> items, float raritySkew = 0f) {
+    private void GetUniqueItemsFromDropPool(DropPool dropPool, int maxCount, List<Item> items) {
         Assert.IsFalse(dropPool.items.Count == 0, $"No items in drop pool, use {nameof(DropPool.HasItems)} before calling"); 
         
         using var _ = GenericPool<DropPool>.Get(out var tempDropPool);
@@ -201,13 +201,13 @@ public partial class Game {
         return total;
     }
     
-    public bool ItemCanSpawnOnMap(Item item, MapData map) {
+    private bool ItemCanSpawnOnMap(Item item, MapData map) {
         if (item.spawnsOnAllMaps) return true;
         if (MapIsOnOrPassed(item.firstSpawnMap, map)) return true;
         return item.spawnsOnMaps.Contains(map);
     }
     
-    public bool AugmentCanSpawnOnCurrentMap(Augment augment, MapData map) {
+    private bool AugmentCanSpawnOnCurrentMap(Augment augment, MapData map) {
         if (augment.spawnsOnAllMaps) return true;
         if (MapIsOnOrPassed(augment.firstSpawnMap, map)) return true;
         return augment.spawnsOnMaps.Contains(loadedMapData);

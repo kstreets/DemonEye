@@ -32,13 +32,13 @@ MonoBehaviour:
   chanceToSpawnFromEnemy: 0
   chanceToExistInLevel: 0
   chanceToSpawnFromBush: 0
-  traderLevelRequired: 3
+  traderLevelRequired: 2
   traderStockRange: {x: 1, y: 5}
   barterRequirements:
   - item: {fileID: 11400000, guid: c300cfd9dba50fc438f83dec791af29b, type: 2}
-    count: 3
-  - item: {fileID: 11400000, guid: 5208da11a0273eb40938911e8a5feefc, type: 2}
-    count: 1
+    count: 5
+  - item: {fileID: 11400000, guid: 27c971c009f757f4da645a16777716dc, type: 2}
+    count: 4
   spawnsFromEnemies: []
   modifiesStats: 0
   critChance: 0

@@ -10,32 +10,36 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9bc23522601a56f4d89295cf565d360b, type: 3}
-  m_Name: StoneNetherite
-  m_EditorClassIdentifier: 
-  uuid: -1499919210
-  displayName: Netherite
-  inventorySprite: {fileID: 564901494, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
-  dropSprite: {fileID: -1528942586, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  m_Name: DemonHeart
+  m_EditorClassIdentifier: Assembly-CSharp::Item
+  uuid: -700801697
+  displayName: Demon Heart
+  inventorySprite: {fileID: -438173525, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  dropSprite: {fileID: -1926587322, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   pickupRadius: 0.07
   type: {fileID: 0}
   associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
   priceCategory: {fileID: 11400000, guid: 1b413ce208f37d445884e80008464342, type: 2}
   buyPrice: 0
-  sellPrice: 4
+  sellPrice: 20
   spawnsOnAllMaps: 1
   firstSpawnMap: {fileID: 0}
   spawnsOnMaps: []
-  rarity: 0
-  chanceToSpawnOnBody: 0.2
+  rarity: 2
+  chanceToSpawnOnBody: 0.1
   chanceToSpawnOnTrader: 0
-  chanceToSpawnFromRock: 0.55
-  chanceToSpawnFromEnemy: 0
+  chanceToSpawnFromRock: 0
+  chanceToSpawnFromEnemy: 0.17
   chanceToExistInLevel: 0
   chanceToSpawnFromBush: 0
   traderLevelRequired: 1
-  traderStockRange: {x: 0, y: 0}
+  traderStockRange: {x: 1, y: 1}
   barterRequirements: []
-  spawnsFromEnemies: []
+  spawnsFromEnemies:
+  - {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
+  - {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
+  - {fileID: 11400000, guid: cc0cbb56eaca641408b7d1856ed0d048, type: 2}
+  - {fileID: 11400000, guid: ec9149e42a27186489ef2d08d286c80a, type: 2}
   modifiesStats: 0
   critChance: 0
   critMultiplier: 0
@@ -46,5 +50,5 @@ MonoBehaviour:
   rangePercentage: 0
   itemGroupProps: {fileID: 0}
   maxStackCount: 15
-  weight: 6
-  description: Contains harmful properties and should be handled with care
+  weight: 4
+  description: The organ of a demon. Traders like to buy this.

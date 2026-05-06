@@ -36,8 +36,8 @@ MonoBehaviour:
   traderStockRange: {x: 1, y: 5}
   barterRequirements:
   - item: {fileID: 11400000, guid: c300cfd9dba50fc438f83dec791af29b, type: 2}
-    count: 3
-  - item: {fileID: 11400000, guid: 3663bc49c2abaee43b142fa80eb566bd, type: 2}
+    count: 5
+  - item: {fileID: 11400000, guid: 805d2183f2ab0c240b541d95dbd30c42, type: 2}
     count: 3
   spawnsFromEnemies: []
   modifiesStats: 1
