@@ -18,7 +18,7 @@ MonoBehaviour:
     attacks all sorts of upgrades depending on the combination of eye upgrades you
     forge with.\nBring a handful of eye upgrades back to the hideout along with a
     regular ole eye and use the forge to create a demon eye."
-  traderReputationReward: 250
+  traderReputationReward: 100
   objectives:
   - type: 1
     taskDescription: Create a Demon Eye and equip it

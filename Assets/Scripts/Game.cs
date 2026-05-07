@@ -7,7 +7,6 @@ using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.InputSystem;
-using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;

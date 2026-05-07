@@ -16,7 +16,7 @@ MonoBehaviour:
   description: Another demon of mine went to Lighthouse with my necklace and never
     came back. Must have died while there. Can you search its body and bring me back
     the necklace? I'd like to sell it again to someone else.
-  traderReputationReward: 250
+  traderReputationReward: 100
   objectives:
   - type: 4
     taskDescription: 

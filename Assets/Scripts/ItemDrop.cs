@@ -10,18 +10,18 @@ public class ItemDrop : MonoBehaviour {
     
     [NonSerialized] private ItemInstance itemInstance;
     
+    // If we instantiate a prefab with this component it would not have an item instance.
+    // Example, spawning a mushroom on a map
     public ItemInstance ItemInstance {
         get {
-            // If we instantiate a prefab with this component it would not have an item instance.
-            // Example, spawning a mushroom on a map
             itemInstance ??= new(item);
             return itemInstance;
         }
     }
     
-    public void Init(ItemInstance _itemInstance) {
-        itemInstance = _itemInstance;
-        Item itemRef = _itemInstance.ItemRef;
+    public void Init(ItemInstance passedItemInstance) {
+        itemInstance = passedItemInstance;
+        Item itemRef = passedItemInstance.ItemRef;
         spriteRenderer.sprite = itemRef.dropSprite == null ? itemRef.inventorySprite : itemRef.dropSprite;
         circleCollider.radius = itemRef.pickupRadius;
         circleCollider.enabled = true;

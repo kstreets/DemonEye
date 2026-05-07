@@ -106,6 +106,15 @@ public static class Extensions {
     public static bool IndexInRange<T>(this T[] array, int index) {
         return index >= 0 && index < array.Length;
     }
+    
+    public static bool Contains<T>(this T[] array, T element) {
+        for (int i = 0; i < array.Length; i++) {
+            if (array[i].Equals(element)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public static bool IndexInRange<T>(this T[,] array, Vector2 index) {
         int x = (int)index.x;
@@ -116,7 +125,7 @@ public static class Extensions {
     public static bool IndexInRange<T>(this List<T> list, int index) {
         return index >= 0 && index < list.Count;
     }
-
+    
     public static V RandomValue<K, V>(this Dictionary<K, V> dictionary) where V : class {
         int target = UnityEngine.Random.Range(0, dictionary.Count);
 

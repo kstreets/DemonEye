@@ -96,12 +96,7 @@ public partial class Game {
                 
                 PlayAudioClip(stoneBreakClip, entity.position);
 
-                DropPool dropPool = rockStonesDropPool;
-                // if (RollProbability(loadedMapData.eyeUpgradeFromRockChance)) {
-                //     dropPool = eyeUpgradesDropPool;
-                // }
-                
-                Item dropItem = GetItemFromDropPool(dropPool);
+                Item dropItem = GetItemFromDropPool(rockStonesDropPool);
                 Entity rockDropEntity = SpawnItemAsEntity(dropItem, 1, entity.position, Quaternion.identity);
 
                 Vector3 endPos = entity.position + RotationVector(Random.Range(0f, 360f), 0.18f, 0.25f);

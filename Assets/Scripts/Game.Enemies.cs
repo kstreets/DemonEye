@@ -26,7 +26,6 @@ public partial class Game {
         public float curRunningSumDistFromPlayer;
         public int curRunningSumFrameCount;
         public float averageDistFromPlayerTime;
-        public float postSlowMass;
         public bool notProgressingTowardsPlayer;
         public Collider2D enemySpacerCollider;
         public EnemyData data;
@@ -49,7 +48,7 @@ public partial class Game {
             
             foreach (Enemy enemy in enemies) {
                 float distFromPlayer = Vector2.Distance(player.Center, enemy.Center);
-                bool farFromPlayer = distFromPlayer > 1f;
+                bool farFromPlayer = distFromPlayer > 1.1f;
                 if (farFromPlayer && enemy.notProgressingTowardsPlayer) {
                     reteleportCandidates.Add((enemy, distFromPlayer));
                 }
@@ -64,7 +63,7 @@ public partial class Game {
                 for (int i = 0; i < teleportCount; i++) {
                     (Enemy enemy, float distFromPlayer) = reteleportCandidates[i];
                     Vector2Int repositionCellRange = spawnManager.CurSpawnPhase.repositionCellRange;
-                    Vector2 spawnPos = loadedMapInst.grid.GetSpawnPosition(player.position, repositionCellRange.x, repositionCellRange.y);
+                    Vector2 spawnPos = loadedMapInst.grid.GetSpawnPosition(player.position, repositionCellRange.x, repositionCellRange.y, predictPlayerPos: true);
 
                     if (Vector2.Distance(spawnPos, player.position) < distFromPlayer) {
                         TeleportEnemy(enemy, spawnPos, TeleportType.Reposition);
@@ -254,15 +253,9 @@ public partial class Game {
             float totalSlowPercentage = 0f;
             if (enemy.slow.TryGetValue(out var slow)) {
                 totalSlowPercentage += slow.speedReductionPercent;
-                
-                bool enemyNeedsLargerMass = Mathf.Approximately(enemy.rigidbody.mass, enemySlowedMass);
-                if (enemyNeedsLargerMass) {
-                    enemy.postSlowMass = enemy.rigidbody.mass;
-                    enemy.rigidbody.mass = enemySlowedMass;
-                }
-                
+                enemy.rigidbody.mass = enemySlowedMass;
                 if (Time.time > slow.activationTime + slow.duration) {
-                    enemy.rigidbody.mass = enemy.postSlowMass;
+                    enemy.rigidbody.mass = enemy.data.defualtMass;
                     enemy.slow = null;
                 }
             }
@@ -440,7 +433,7 @@ public partial class Game {
         
         while (sm.spawnEvents.IndexInRange(sm.spawnTimeIndex) && sm.spawnEvents[sm.spawnTimeIndex].time <= sm.timeInCurPhase) {
             Vector2Int spawnCellRange = spawnManager.CurSpawnPhase.spawnCellRange;
-            Vector2 randomSpawnPos = loadedMapInst.grid.GetSpawnPosition(player.position, spawnCellRange.x, spawnCellRange.y);
+            Vector2 randomSpawnPos = loadedMapInst.grid.GetSpawnPosition(player.position, spawnCellRange.x, spawnCellRange.y, predictPlayerPos: false);
 
             EnemyData enemyToSpawn = sm.spawnEvents[sm.spawnTimeIndex].enemy;
             Enemy enemy = SpawnEntity<Enemy>(enemyToSpawn.enemyPrefab, randomSpawnPos, Quaternion.identity);
@@ -451,6 +444,7 @@ public partial class Game {
                 enemy.enemySpacerCollider = enemy.trans.GetChild(0).GetComponent<Collider2D>();
                 enemy.enemySpacerCollider.excludeLayers = enemyToSpawn.excludeCollisionLayers;
                 enemy.flowFieldAcc = Random.Range(2.5f, 3.5f);
+                enemy.rigidbody.mass = enemyToSpawn.defualtMass;
             }
             enemies.Add(enemy);
             

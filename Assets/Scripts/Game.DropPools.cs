@@ -25,6 +25,7 @@ public partial class Game {
     public DropPool bushesDropPool;
     
     private DropPool[] mapSpecificDropPools;
+    private readonly DropOrigin[] reducedDuplicateDropPools = { DropOrigin.Altar };
     
     private void CreateDropPools() {
         rockStonesDropPool = new() { dropOrigin = DropOrigin.Rock };
@@ -80,26 +81,46 @@ public partial class Game {
         Assert.IsFalse(dropPool.items == enemyDropPool.items, $"Use {nameof(GetItemFromEnemyDropPool)} for enemies");
         Assert.IsFalse(dropPool.items.Count == 0, $"No items in drop pool, use {nameof(DropPool.HasItems)} before calling");
         
-        using var _ = ListPool<float>.Get(out var dropChances);
+        const int smallPoolThreshold = 4;
+        bool useShufflePickMethod = dropPool.items.Count <= smallPoolThreshold;
+        Item rolledItem = useShufflePickMethod ? PerformShufflePick(dropPool, map) : PerformWeightedPick(dropPool, map);
         
-        Item rolledItem = null;
-        float roll = Random.value * GetTotalDropChances(dropPool, ref dropChances, map);
-        float dropThreshold = 0f;
-
+        rolledItem = RollForAugmentedVersion(rolledItem, dropPool.dropOrigin, map);
+        dropPool.lastDroppedItem = rolledItem;
+        
+        return rolledItem;
+    }
+    
+    private Item PerformShufflePick(DropPool dropPool, MapData map) {
+        using var _ = ListPool<float>.Get(out var dropChances);
+        GetTotalDropChances(dropPool, ref dropChances, map);
+        
+        dropPool.items.Shuffle();
+        
         for (int i = 0; i < dropPool.items.Count; i++) {
-            Item drop = dropPool.items[i];
             float dropChance = dropChances[i];
-            
-            dropThreshold += dropChance;
-            if (roll < dropThreshold) {
-                rolledItem = RollForAugmentedVersion(drop, dropPool.dropOrigin, map);
-                break;
+            if (RollProbability(dropChance)) {
+                return dropPool.items[i];
             }
         }
         
-        rolledItem ??= RollForAugmentedVersion(dropPool.items[^1], dropPool.dropOrigin, map);
-        dropPool.lastDroppedItem = rolledItem;
-        return rolledItem;
+        return dropPool.items[^1];
+    }
+    
+    private Item PerformWeightedPick(DropPool dropPool, MapData map) {
+        using var _ = ListPool<float>.Get(out var dropChances);
+        float roll = Random.value * GetTotalDropChances(dropPool, ref dropChances, map);
+        float dropThreshold = 0f;
+        
+        for (int i = 0; i < dropPool.items.Count; i++) {
+            float dropChance = dropChances[i];
+            dropThreshold += dropChance;
+            if (roll < dropThreshold) {
+                return dropPool.items[i];    
+            }
+        }
+        
+        return dropPool.items[^1];
     }
 
     private Item GetItemFromEnemyDropPool(EnemyData enemy) {
@@ -173,12 +194,14 @@ public partial class Game {
         }
         
         return origin switch {
-            DropOrigin.Rock   => Mathf.Clamp01(item.chanceToSpawnFromRock + addChanceToSpawn),
-            DropOrigin.Body   => Mathf.Clamp01(item.chanceToSpawnOnBody + addChanceToSpawn),
-            DropOrigin.Trader => Mathf.Clamp01(item.chanceToSpawnOnTrader + addChanceToSpawn),
-            DropOrigin.Enemy  => Mathf.Clamp01(item.chanceToSpawnFromEnemy + addChanceToSpawn),
-            DropOrigin.Bush   => Mathf.Clamp01(item.chanceToSpawnFromBush + addChanceToSpawn),
-            _                 => 0f,
+            DropOrigin.Altar         => Mathf.Clamp01(item.chanceToSpawnFromAltar + addChanceToSpawn),
+            DropOrigin.Rock          => Mathf.Clamp01(item.chanceToSpawnFromRock + addChanceToSpawn),
+            DropOrigin.Body          => Mathf.Clamp01(item.chanceToSpawnOnBody + addChanceToSpawn),
+            DropOrigin.Trader        => Mathf.Clamp01(item.chanceToSpawnOnTrader + addChanceToSpawn),
+            DropOrigin.Enemy         => Mathf.Clamp01(item.chanceToSpawnFromEnemy + addChanceToSpawn),
+            DropOrigin.Bush          => Mathf.Clamp01(item.chanceToSpawnFromBush + addChanceToSpawn),
+            DropOrigin.ExistsInLevel => Mathf.Clamp01(item.chanceToExistInLevel + addChanceToSpawn),
+            _                        => throw new ArgumentOutOfRangeException(),
         };
     }
     
@@ -187,8 +210,9 @@ public partial class Game {
         foreach (Item item in dropPool.items) {
             float dropChance = GetDropChanceOfItem(item, dropPool.dropOrigin, map);
             
-            bool reduceChanceForRepeatItem = dropPool.lastDroppedItem == item; 
-            if (reduceChanceForRepeatItem) {
+            bool reduceForDropPool = reducedDuplicateDropPools.Contains(dropPool.dropOrigin);
+            bool itemIsRepeat = dropPool.lastDroppedItem == item; 
+            if (reduceForDropPool && itemIsRepeat) {
                 const float defaultPercentReduction = 0.5f;
                 dropChance *= defaultPercentReduction;
             }

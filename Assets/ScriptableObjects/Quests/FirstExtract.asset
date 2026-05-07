@@ -15,7 +15,7 @@ MonoBehaviour:
   title: First Extract
   description: 'It helps to bring back the loot you find in a raid. You''ll need
     to find and activate the exit portal somewhere on the map to return back safely.  '
-  traderReputationReward: 250
+  traderReputationReward: 100
   objectives:
   - type: 1
     taskDescription: Extract from Lighthouse

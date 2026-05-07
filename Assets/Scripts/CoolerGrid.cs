@@ -112,14 +112,12 @@ public class CoolerGrid : MonoBehaviour {
         predictedPlayerPos = Vector2.Lerp(predictedPlayerPos, playerPos + playerVelocity * lookAheadTime, Time.deltaTime * lookAheadSpeed);
     }
 
-    public Vector3 GetSpawnPosition(Vector2 playerPosition, int innerCellRadius, int outerCellRadius) {
-        if (TryGetCellAtPosition(playerPosition, out GridCell playerCell)) {
-            UpdateDataForSpawnCells(playerCell, innerCellRadius, outerCellRadius);
-        }
-        else {
+    public Vector3 GetSpawnPosition(Vector2 playerPosition, int innerCellRadius, int outerCellRadius, bool predictPlayerPos) {
+        if (!TryGetCellAtPosition(playerPosition, out GridCell playerCell)) {
             return Vector2.zero;
         }
         
+        UpdateDataForSpawnCells(playerCell, innerCellRadius, outerCellRadius, predictPlayerPos);
         spawnCells.Sort(static (x, y) => y.spawnWeight.CompareTo(x.spawnWeight)); // Sort in descending order 
         
         int maxIndex = Mathf.RoundToInt(spawnCells.Count * 0.2f);
@@ -221,7 +219,7 @@ public class CoolerGrid : MonoBehaviour {
         return y * width + x;
     }
 
-    private void UpdateDataForSpawnCells(GridCell playerCell, int innerRadius, int outerRadius) {
+    private void UpdateDataForSpawnCells(GridCell playerCell, int innerRadius, int outerRadius, bool predictPlayerPos) {
         Assert.IsTrue(innerRadius != outerRadius, $"{nameof(innerRadius)} cannot equal {nameof(outerRadius)}");
         
         spawnCells.Clear();
@@ -265,7 +263,7 @@ public class CoolerGrid : MonoBehaviour {
         Vector2 dirToPredictedPos = (predictedPlayerPos - playerCell.position).normalized;
         
         const float minDistToIncludeDirectionWeight = 0.12f;
-        bool addDirectionalWeight = distFromCellToPredictedPlayerPos > minDistToIncludeDirectionWeight;
+        bool addDirectionalWeight = predictPlayerPos && distFromCellToPredictedPlayerPos > minDistToIncludeDirectionWeight;
 
         float expandedSizeForEnemyTesting = cellSize * 10f;
         for (int i = 0; i < spawnCells.Count; i++) {

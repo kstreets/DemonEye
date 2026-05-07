@@ -61,9 +61,9 @@ public class GameplayTestingWindow : EditorWindow {
     // Disable being able to change things because we can only inject a custom spawn pattern when entering playmode
     private void OnPlaymodeStateChanged(PlayModeStateChange changeEvent) {
         bool enabled = changeEvent is PlayModeStateChange.EnteredEditMode or PlayModeStateChange.ExitingPlayMode;
-        MapField.SetEnabled(enabled);
-        OverrideWavesToggle.SetEnabled(enabled);
-        StartWaveSlider.SetEnabled(enabled);
+        MapField?.SetEnabled(enabled);
+        OverrideWavesToggle?.SetEnabled(enabled);
+        StartWaveSlider?.SetEnabled(enabled);
     }
     
     private void OnSelectionChange() { 

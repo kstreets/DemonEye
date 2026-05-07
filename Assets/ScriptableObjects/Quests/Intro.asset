@@ -16,7 +16,7 @@ MonoBehaviour:
   description: Prove yourself useful and draw out some Lesser Spawns on lighthouse.
     Killing 80 of them should be good enough for now. Meet me back here when thats
     done. I have more to show you.
-  traderReputationReward: 250
+  traderReputationReward: 100
   objectives:
   - type: 4
     taskDescription: 
