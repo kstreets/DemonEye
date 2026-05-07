@@ -28,6 +28,9 @@ public class Augment : UuidScriptableObject, IEyeUpgrade {
         augmentedEyeUpgradeItem = Instantiate(eyeUpgradeDerivedFrom);
         augmentedEyeUpgradeItem.uuid = uuid;
         
+        float priceMultiplier = 1f -  percentChanceOfDerivedToSpawn;
+        augmentedEyeUpgradeItem.buyPrice += Mathf.RoundToInt(augmentedEyeUpgradeItem.buyPrice * priceMultiplier);
+        
         // Modify item rarity
         augmentedEyeUpgradeItem.chanceToSpawnFromRock *= percentChanceOfDerivedToSpawn;
         augmentedEyeUpgradeItem.chanceToSpawnOnBody *= percentChanceOfDerivedToSpawn;

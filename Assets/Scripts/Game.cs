@@ -1140,6 +1140,7 @@ public partial class Game : MonoBehaviour {
             
             activeExitPortals.Add(new() {
                 transform = newExitPortalTrans,
+                hasBeenSummoned = true,
                 canTake = true,
             });
             

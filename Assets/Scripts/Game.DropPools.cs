@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Pool;
@@ -40,7 +41,7 @@ public partial class Game {
         
         foreach (Item item in allItems) {
             if (item.chanceToSpawnOnTrader > 0f) {
-                traderDropPool.items.Add(item); 
+                traderDropPool.items.Add(item);
             }
             if (item.chanceToSpawnFromEnemy > 0f) {
                 enemyDropPool.items.Add(item);
@@ -77,7 +78,7 @@ public partial class Game {
     
     private Item GetItemFromDropPool(DropPool dropPool) => GetItemFromDropPool(dropPool, loadedMapData);
     
-    public Item GetItemFromDropPool(DropPool dropPool, MapData map) {
+    public Item GetItemFromDropPool(DropPool dropPool, [CanBeNull] MapData map) {
         Assert.IsFalse(dropPool.items == enemyDropPool.items, $"Use {nameof(GetItemFromEnemyDropPool)} for enemies");
         Assert.IsFalse(dropPool.items.Count == 0, $"No items in drop pool, use {nameof(DropPool.HasItems)} before calling");
         
@@ -91,7 +92,7 @@ public partial class Game {
         return rolledItem;
     }
     
-    private Item PerformShufflePick(DropPool dropPool, MapData map) {
+    private Item PerformShufflePick(DropPool dropPool, [CanBeNull] MapData map) {
         using var _ = ListPool<float>.Get(out var dropChances);
         GetTotalDropChances(dropPool, ref dropChances, map);
         
@@ -107,7 +108,7 @@ public partial class Game {
         return dropPool.items[^1];
     }
     
-    private Item PerformWeightedPick(DropPool dropPool, MapData map) {
+    private Item PerformWeightedPick(DropPool dropPool, [CanBeNull] MapData map) {
         using var _ = ListPool<float>.Get(out var dropChances);
         float roll = Random.value * GetTotalDropChances(dropPool, ref dropChances, map);
         float dropThreshold = 0f;
@@ -160,7 +161,7 @@ public partial class Game {
         }
     }
     
-    private Item RollForAugmentedVersion(Item item, DropOrigin origin, MapData map) {
+    private Item RollForAugmentedVersion(Item item, DropOrigin origin, [CanBeNull] MapData map) {
         if (item is not EyeUpgradeItem upgradeItem || !augmentsPerModifierItemLookup.TryGetValue(upgradeItem, out var possibleAugments)) {
             return item;
         }
@@ -168,7 +169,7 @@ public partial class Game {
         possibleAugments.Shuffle();
         
         foreach (Augment possibleAugment in possibleAugments) {
-            if (!AugmentCanSpawnOnCurrentMap(possibleAugment, map)) continue;
+            if (map != null && !AugmentCanSpawnOnMap(possibleAugment, map)) continue;
             
             float augmentingChance = GetDropChanceOfItem(possibleAugment.augmentedEyeUpgradeItem, origin, map);
             if (RollProbability(augmentingChance)) {
@@ -179,10 +180,28 @@ public partial class Game {
         return item;
     }
     
-    private float GetDropChanceOfItem(Item item, DropOrigin origin, MapData map) {
+    private float GetTotalDropChances(DropPool dropPool, ref List<float> dropChances, [CanBeNull] MapData map) {
+        float total = 0f;
+        foreach (Item item in dropPool.items) {
+            float dropChance = GetDropChanceOfItem(item, dropPool.dropOrigin, map);
+            
+            bool reduceForDropPool = reducedDuplicateDropPools.Contains(dropPool.dropOrigin);
+            bool itemIsRepeat = dropPool.lastDroppedItem == item; 
+            if (reduceForDropPool && itemIsRepeat) {
+                const float defaultPercentReduction = 0.5f;
+                dropChance *= defaultPercentReduction;
+            }
+            
+            dropChances.Add(dropChance);
+            total += dropChance;
+        }
+        return total;
+    }
+    
+    private float GetDropChanceOfItem(Item item, DropOrigin origin, [CanBeNull] MapData map) {
         float addChanceToSpawn = 0f;
         
-        if (origin != DropOrigin.Trader) {
+        if (map != null) {
             addChanceToSpawn = item.GetRarity() switch {
                 Item.Rarity.Common    => map.commonLootRarityIncrease,
                 Item.Rarity.Uncommon  => map.uncommonLootRarityIncrease,
@@ -205,31 +224,15 @@ public partial class Game {
         };
     }
     
-    private float GetTotalDropChances(DropPool dropPool, ref List<float> dropChances, MapData map) {
-        float total = 0f;
-        foreach (Item item in dropPool.items) {
-            float dropChance = GetDropChanceOfItem(item, dropPool.dropOrigin, map);
-            
-            bool reduceForDropPool = reducedDuplicateDropPools.Contains(dropPool.dropOrigin);
-            bool itemIsRepeat = dropPool.lastDroppedItem == item; 
-            if (reduceForDropPool && itemIsRepeat) {
-                const float defaultPercentReduction = 0.5f;
-                dropChance *= defaultPercentReduction;
-            }
-            
-            dropChances.Add(dropChance);
-            total += dropChance;
-        }
-        return total;
-    }
-    
-    private bool ItemCanSpawnOnMap(Item item, MapData map) {
+    private bool ItemCanSpawnOnMap(Item item, [NotNull] MapData map) {
+        Assert.IsNotNull(map);
         if (item.spawnsOnAllMaps) return true;
         if (MapIsOnOrPassed(item.firstSpawnMap, map)) return true;
         return item.spawnsOnMaps.Contains(map);
     }
     
-    private bool AugmentCanSpawnOnCurrentMap(Augment augment, MapData map) {
+    private bool AugmentCanSpawnOnMap(Augment augment, [NotNull] MapData map) {
+        Assert.IsNotNull(map);
         if (augment.spawnsOnAllMaps) return true;
         if (MapIsOnOrPassed(augment.firstSpawnMap, map)) return true;
         return augment.spawnsOnMaps.Contains(loadedMapData);

@@ -208,27 +208,14 @@ public partial class Game {
         
         return slots;
     }
-
+    
     private void UpdateInventory() {
         CheckForEquipmentChange();
+        HandleInventoryVisibility();
         
-        if (InRaid) {
-            if (inventoryInputAction.WasPressedThisFrame()) {
-                if (!InventoryIsOpen) {
-                    OpenPlayerInventory();
-                }
-                else {
-                    ClosePlayerInventory();
-                }
-                if (LootInventoryIsOpen) {
-                    CloseLootInventory();
-                }
-            }
-            
-            if (!InventoryIsOpen && !LootInventoryIsOpen) {
-                HideInventoryItemPopup();
-                return;
-            }
+        if (NoOpenInventories()) {
+            HideInventoryItemPopup();
+            return;
         }
         
         InventoryHoverInfo invHoverInfo = UpdateInventoryHover();
@@ -242,6 +229,28 @@ public partial class Game {
             UpdateInventoryItemPopup(invHoverInfo);
             CheckToConsumeItem(invHoverInfo);
         }
+    }
+    
+    private void HandleInventoryVisibility() {
+        if (!InRaid || !inventoryInputAction.WasPressedThisFrame()) return;
+        if (InventoryIsOpen) {
+            ClosePlayerInventory(); 
+        }
+        else {
+            OpenPlayerInventory();
+        }
+        if (LootInventoryIsOpen) {
+            CloseLootInventory();
+        }
+    }
+    
+    private bool NoOpenInventories() {
+        foreach (Inventory inventory in allInventories) {
+            if (inventory.parent.gameObject.activeInHierarchy) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void UpdateInventoryItemPopup(InventoryHoverInfo invHoverInfo) {

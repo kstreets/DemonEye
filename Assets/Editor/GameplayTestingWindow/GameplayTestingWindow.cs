@@ -23,8 +23,7 @@ public class GameplayTestingWindow : EditorWindow {
     private Toggle OverrideWavesToggle => root.Q<Toggle>("OverrideWavesToggle");
     private SliderInt StartWaveSlider => root.Q<SliderInt>("StartWaveSlider");
     
-    private List<MapData> Maps => _gameMapsBackingField ??= FindFirstObjectByType<Game>().maps;
-    private List<MapData> _gameMapsBackingField;
+    private List<MapData> Maps => FindFirstObjectByType<Game>().maps;
 
     [MenuItem("Window/UI Toolkit/Gameplay Testing")]
     public static void ShowExample() {
@@ -169,7 +168,9 @@ public class GameplayTestingWindow : EditorWindow {
             return -1;
         } 
         if (eyeUpgrade.FirstSpawnMap != null) {
-            return Maps.IndexOf(eyeUpgrade.FirstSpawnMap);
+            int index = Maps.IndexOf(eyeUpgrade.FirstSpawnMap);
+            bool mapNotInMapList = index == -1;
+            return mapNotInMapList ? int.MaxValue : index;
         }
         return int.MaxValue;
     }
