@@ -13,22 +13,15 @@ MonoBehaviour:
   m_Name: CustomsMap
   m_EditorClassIdentifier: Assembly-CSharp::MapData
   displayName: Customs
-  sceneReference: CustomsExpansion
+  sceneReference: Customs
   waves: {fileID: 11400000, guid: 2c90f18555a522640ae7b505570226b0, type: 2}
-  altarSoulPrice: 150
-  exitPortalsCount: 0
-  minRockCount: 20
-  maxRockCount: 35
-  minBodyCount: 8
-  maxBodyCount: 15
-  minForageCount: 15
-  maxForageCount: 20
-  minBushesCount: 0
-  maxBushesCount: 0
-  minAltarCount: 4
-  maxAltarCount: 7
+  altarSoulPrice: 125
+  exitPortalsCount: 2
+  playerCantBleed: 0
   eyeUpgradeOnBodyChance: 0.12
-  eyeUpgradeFromRockChance: 0.2
   consecutiveEyeUpgradeChanceReductionOnBody: 0.08
-  maxGemCountPerRock: 2
-  increasedLootRarityChance: 0.06
+  commonLootRarityIncrease: 0
+  uncommonLootRarityIncrease: 0
+  rareLootRarityIncrease: 0
+  epicLootRarityIncrease: 0
+  legendaryLootRarityIncrease: 0

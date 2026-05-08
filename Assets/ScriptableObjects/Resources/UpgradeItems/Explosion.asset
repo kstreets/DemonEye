@@ -23,7 +23,7 @@ MonoBehaviour:
   buyPrice: 20000
   sellPrice: 1600
   spawnsOnAllMaps: 0
-  firstSpawnMap: {fileID: 11400000, guid: e77fcebe0e13696458bf0cfbacf93e5d, type: 2}
+  firstSpawnMap: {fileID: 11400000, guid: 9353817006d76f54fb1273b8ced36a68, type: 2}
   spawnsOnMaps: []
   rarity: 2
   chanceToSpawnFromAltar: 0.3

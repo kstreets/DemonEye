@@ -16525,7 +16525,7 @@ MonoBehaviour:
   maps:
   - {fileID: 11400000, guid: a084d4e7745af28498dbdbe8ced97dd5, type: 2}
   - {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
-  - {fileID: 11400000, guid: e77fcebe0e13696458bf0cfbacf93e5d, type: 2}
+  - {fileID: 11400000, guid: 9353817006d76f54fb1273b8ced36a68, type: 2}
   itemDropPrefab: {fileID: 6950097619826054733, guid: 76730055c1712874c9ac1c6f28f45cde, type: 3}
   baseProjectilePrefab: {fileID: 2758590605051147821, guid: 490c322ccae8e8149a6dddb96650a50e, type: 3}
   boneShatterProjectilePrefab: {fileID: 2758590605051147821, guid: f7b19a83567c00a4da11c9ce9c266d1f, type: 3}

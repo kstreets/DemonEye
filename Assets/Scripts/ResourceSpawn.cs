@@ -42,7 +42,10 @@ public class ResourceSpawn : MonoBehaviour {
         if (!TryGetComponent(out SpriteRenderer spriteRenderer)) {
             spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
         }
-        var prefabSpriteRenderer = elements[0]?.prefab.GetComponent<SpriteRenderer>();
+        
+        if (elements == null || elements.Count <= 0) return;
+        
+        var prefabSpriteRenderer = elements[0].prefab?.GetComponent<SpriteRenderer>();
         if (prefabSpriteRenderer == null) return;
         
         if (outlineMaterial == null) {
