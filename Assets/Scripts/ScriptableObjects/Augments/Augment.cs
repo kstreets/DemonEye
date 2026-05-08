@@ -31,13 +31,9 @@ public class Augment : UuidScriptableObject, IEyeUpgrade {
         float priceMultiplier = 1f -  percentChanceOfDerivedToSpawn;
         augmentedEyeUpgradeItem.buyPrice += Mathf.RoundToInt(augmentedEyeUpgradeItem.buyPrice * priceMultiplier);
         
-        // Modify item rarity
-        augmentedEyeUpgradeItem.chanceToSpawnFromRock *= percentChanceOfDerivedToSpawn;
-        augmentedEyeUpgradeItem.chanceToSpawnOnBody *= percentChanceOfDerivedToSpawn;
-        augmentedEyeUpgradeItem.chanceToSpawnOnTrader *= percentChanceOfDerivedToSpawn;
-        augmentedEyeUpgradeItem.chanceToSpawnFromBush *= percentChanceOfDerivedToSpawn;
-        augmentedEyeUpgradeItem.chanceToSpawnFromEnemy *= percentChanceOfDerivedToSpawn;
-        augmentedEyeUpgradeItem.chanceToExistInLevel *= percentChanceOfDerivedToSpawn;
+        foreach (DropOrigin origin in augmentedEyeUpgradeItem.dropOrigins) {
+            origin.chanceToSpawn *= percentChanceOfDerivedToSpawn;
+        }
     }
     
     public virtual void AddInstanceToEnemy(Enemy enemy, int stackCount) { }

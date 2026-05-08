@@ -58,37 +58,6 @@ public partial class Game {
         }
         return null;
     }
-    
-    private int GenerateNewItemUuid() {
-        int newItemId = UuidScriptableObject.GetIntUuid();
-        while (resourceLookup.ContainsKey(newItemId)) {
-            newItemId = UuidScriptableObject.GetIntUuid();
-        }
-        return newItemId;
-    }
-    
-    public Dictionary<int, UuidScriptableObject> resourceLookup = new();
-    public Dictionary<EyeUpgradeItem, List<Augment>> augmentsPerModifierItemLookup = new();
-    [NonSerialized] public List<Item> allItems = new();
-    
-    private void LoadAllResources() {
-        UuidScriptableObject[] resourceObjects = Resources.LoadAll<UuidScriptableObject>(string.Empty);
-        foreach (UuidScriptableObject res in resourceObjects) {
-            resourceLookup.Add(res.uuid, res);
-            if (res is Item item) {
-                allItems.Add(item);
-            }
-            if (res is Augment augment) {
-                augment.CreateAugmentItemFromDerived();
-                if (augmentsPerModifierItemLookup.TryGetValue(augment.eyeUpgradeDerivedFrom, out var augmentList)) {
-                    augmentList.Add(augment);
-                }
-                else {
-                    augmentsPerModifierItemLookup.Add(augment.eyeUpgradeDerivedFrom, new() { augment });
-                }
-            }
-        }
-    }
 
     [Serializable]
     private class PlayerSaveData {

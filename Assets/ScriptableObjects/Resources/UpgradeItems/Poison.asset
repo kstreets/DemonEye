@@ -26,13 +26,11 @@ MonoBehaviour:
   firstSpawnMap: {fileID: 11400000, guid: 9353817006d76f54fb1273b8ced36a68, type: 2}
   spawnsOnMaps: []
   rarity: 1
-  chanceToSpawnFromAltar: 0.369
-  chanceToSpawnOnBody: 0
-  chanceToSpawnOnTrader: 0.312
-  chanceToSpawnFromRock: 0
-  chanceToSpawnFromEnemy: 0
-  chanceToExistInLevel: 0
-  chanceToSpawnFromBush: 0
+  dropOrigins:
+  - dropPool: {fileID: 11400000, guid: 447693d567ac32848b6d0306b40001c5, type: 2}
+    chanceToSpawn: 0.369
+  - dropPool: {fileID: 11400000, guid: ac65e2b20c03fcb43989ec16398ae8cd, type: 2}
+    chanceToSpawn: 0.312
   traderLevelRequired: 3
   traderStockRange: {x: 1, y: 5}
   barterRequirements:
@@ -40,7 +38,6 @@ MonoBehaviour:
     count: 3
   - item: {fileID: 11400000, guid: e09fbd50ba840464eb5c499181e0fc04, type: 2}
     count: 2
-  spawnsFromEnemies: []
   modifiesStats: 1
   critChance: 0
   critMultiplier: 0

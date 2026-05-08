@@ -204,7 +204,7 @@ public partial class Game {
                 const float deathDelay = 0.12f;
                 Delay(deadEnemy, deathDelay, static (deadEnemy) => {
                     if (RollProbability(deadEnemy.data.chanceToDropItem)) {
-                        Item dropItem = gameInstance.GetItemFromEnemyDropPool(deadEnemy.data);
+                        Item dropItem = gameInstance.GetItemFromDropPool(deadEnemy.data.dropPool);
                         if (dropItem) {
                             gameInstance.SpawnItemAsEntity(dropItem, 1, deadEnemy.position, Quaternion.identity);
                         }

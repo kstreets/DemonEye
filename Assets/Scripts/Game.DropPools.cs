@@ -8,44 +8,24 @@ using Random = UnityEngine.Random;
 
 public partial class Game {
     
-    public enum DropOrigin { Rock, Altar, Body, Trader, Enemy, ExistsInLevel, Bush }
-
-    public class DropPool {
-        public List<Item> items = new();
-        public DropOrigin dropOrigin;
-        public Item lastDroppedItem;
-        public bool HasItems => items.Count > 0;
+    [Serializable]
+    public class DropOrigin {
+        public DropPool dropPool;
+        public float chanceToSpawn;
     }
-
-    public DropPool rockStonesDropPool;
-    public DropPool eyeUpgradesDropPool;
-    public DropPool bodyDropPool;
-    public DropPool traderDropPool;
-    public DropPool enemyDropPool;
-    public DropPool foragingDropPool;
-    public DropPool bushesDropPool;
     
-    private DropPool[] mapSpecificDropPools;
-    private readonly DropOrigin[] reducedDuplicateDropPools = { DropOrigin.Altar };
+    [NonSerialized] public List<DropPool> globalDropPools = new();
+    [NonSerialized] public List<DropPool> mapSpecificDropPools = new();
     
-    private void CreateDropPools() {
-        rockStonesDropPool = new() { dropOrigin = DropOrigin.Rock };
-        eyeUpgradesDropPool = new() { dropOrigin = DropOrigin.Altar };
-        bodyDropPool = new() { dropOrigin = DropOrigin.Body };
-        traderDropPool = new() { dropOrigin = DropOrigin.Trader };
-        enemyDropPool = new() { dropOrigin = DropOrigin.Enemy };
-        foragingDropPool = new() { dropOrigin = DropOrigin.ExistsInLevel };
-        bushesDropPool = new() { dropOrigin = DropOrigin.Bush };
-        
-        mapSpecificDropPools = new[] { rockStonesDropPool, eyeUpgradesDropPool, bodyDropPool, foragingDropPool, bushesDropPool };
+    private void InitDropPools() {
+        foreach (DropPool dropPool in allDropPools) {
+            dropPool.items = new();
+            var dropPoolList = dropPool.isMapSpecific ? mapSpecificDropPools : globalDropPools;
+            dropPoolList.Add(dropPool);
+        }
         
         foreach (Item item in allItems) {
-            if (item.chanceToSpawnOnTrader > 0f) {
-                traderDropPool.items.Add(item);
-            }
-            if (item.chanceToSpawnFromEnemy > 0f) {
-                enemyDropPool.items.Add(item);
-            }
+            RegisterItemToDropPools(item, globalDropPools);
         }
     }
     
@@ -57,21 +37,15 @@ public partial class Game {
         
         foreach (Item item in allItems) {
             if (!ItemCanSpawnOnMap(item, map)) continue;
-            
-            if (item.chanceToSpawnFromAltar > 0f) {
-                eyeUpgradesDropPool.items.Add(item);
-            }
-            if (item.chanceToSpawnFromRock > 0f) {
-                rockStonesDropPool.items.Add(item);
-            }
-            if (item.chanceToSpawnOnBody > 0f) {
-                bodyDropPool.items.Add(item);
-            }
-            if (item.chanceToExistInLevel > 0f) {
-                foragingDropPool.items.Add(item);
-            }
-            if (item.chanceToSpawnFromBush > 0f) {
-                bushesDropPool.items.Add(item);
+            RegisterItemToDropPools(item, mapSpecificDropPools);
+        }
+    }
+    
+    private void RegisterItemToDropPools(Item item, List<DropPool> dropPools) {
+        foreach (DropPool dropPool in dropPools) {
+            foreach (DropOrigin dropOrigin in item.dropOrigins) {
+                if (dropPool != dropOrigin.dropPool) continue;
+                dropPool.items.Add(item);
             }
         }
     }
@@ -79,14 +53,14 @@ public partial class Game {
     private Item GetItemFromDropPool(DropPool dropPool) => GetItemFromDropPool(dropPool, loadedMapData);
     
     public Item GetItemFromDropPool(DropPool dropPool, [CanBeNull] MapData map) {
-        Assert.IsFalse(dropPool.items == enemyDropPool.items, $"Use {nameof(GetItemFromEnemyDropPool)} for enemies");
+        Assert.IsNotNull(dropPool, "Droppool cannot be null");
         Assert.IsFalse(dropPool.items.Count == 0, $"No items in drop pool, use {nameof(DropPool.HasItems)} before calling");
         
         const int smallPoolThreshold = 4;
         bool useShufflePickMethod = dropPool.items.Count <= smallPoolThreshold;
         Item rolledItem = useShufflePickMethod ? PerformShufflePick(dropPool, map) : PerformWeightedPick(dropPool, map);
         
-        rolledItem = RollForAugmentedVersion(rolledItem, dropPool.dropOrigin, map);
+        rolledItem = RollForAugmentedVersion(rolledItem, dropPool, map);
         dropPool.lastDroppedItem = rolledItem;
         
         return rolledItem;
@@ -124,44 +98,28 @@ public partial class Game {
         return dropPool.items[^1];
     }
 
-    private Item GetItemFromEnemyDropPool(EnemyData enemy) {
-        using var _ = GenericPool<DropPool>.Get(out var tempDropPool);
-        tempDropPool.items.Clear();
-        tempDropPool.dropOrigin = DropOrigin.Enemy;
-        
-        foreach (Item enemyItem in enemyDropPool.items) {
-            if (enemyItem.spawnsFromEnemies.Contains(enemy)) {
-                tempDropPool.items.Add(enemyItem);
-            }
-        }
+    private void GetUniqueItemsFromDropPool(DropPool dropPool, int maxCount, ref List<Item> items) {
+        Assert.IsFalse(dropPool.items.Count == 0, $"No items in drop pool, use {nameof(DropPool.HasItems)} before calling");
 
-        if (tempDropPool.items.Count <= 0) {
-            return null;
-        }
-        
-        Item item = GetItemFromDropPool(tempDropPool);
-        return item;
-    }
-
-    private void GetUniqueItemsFromDropPool(DropPool dropPool, int maxCount, List<Item> items) {
-        Assert.IsFalse(dropPool.items.Count == 0, $"No items in drop pool, use {nameof(DropPool.HasItems)} before calling"); 
-        
-        using var _ = GenericPool<DropPool>.Get(out var tempDropPool);
-        tempDropPool.dropOrigin = dropPool.dropOrigin;
-        tempDropPool.items.Clear();
+        using var _ = ListPool<Item>.Get(out var tempDropPoolItems);
         foreach (Item item in dropPool.items) {
-            tempDropPool.items.Add(item);
+            tempDropPoolItems.Add(item);
         }
         
-        int selectCount = Mathf.Min(maxCount, tempDropPool.items.Count);
+        var restoreList = dropPool.items;
+        dropPool.items = tempDropPoolItems;
+        
+        int selectCount = Mathf.Min(maxCount, dropPool.items.Count);
         for (int i = 0; i < selectCount; i++) {
-            Item itemDrop = GetItemFromDropPool(tempDropPool);
+            Item itemDrop = GetItemFromDropPool(dropPool);
             items.Add(itemDrop);
-            tempDropPool.items.Remove(itemDrop);
+            dropPool.items.Remove(itemDrop);
         }
+        
+        dropPool.items = restoreList;
     }
     
-    private Item RollForAugmentedVersion(Item item, DropOrigin origin, [CanBeNull] MapData map) {
+    private Item RollForAugmentedVersion(Item item, DropPool dropPool, [CanBeNull] MapData map) {
         if (item is not EyeUpgradeItem upgradeItem || !augmentsPerModifierItemLookup.TryGetValue(upgradeItem, out var possibleAugments)) {
             return item;
         }
@@ -171,7 +129,7 @@ public partial class Game {
         foreach (Augment possibleAugment in possibleAugments) {
             if (map != null && !AugmentCanSpawnOnMap(possibleAugment, map)) continue;
             
-            float augmentingChance = GetDropChanceOfItem(possibleAugment.augmentedEyeUpgradeItem, origin, map);
+            float augmentingChance = GetDropChanceOfItem(possibleAugment.augmentedEyeUpgradeItem, dropPool, map);
             if (RollProbability(augmentingChance)) {
                 return possibleAugment.augmentedEyeUpgradeItem;
             }
@@ -183,11 +141,10 @@ public partial class Game {
     private float GetTotalDropChances(DropPool dropPool, ref List<float> dropChances, [CanBeNull] MapData map) {
         float total = 0f;
         foreach (Item item in dropPool.items) {
-            float dropChance = GetDropChanceOfItem(item, dropPool.dropOrigin, map);
-            
-            bool reduceForDropPool = reducedDuplicateDropPools.Contains(dropPool.dropOrigin);
+            float dropChance = GetDropChanceOfItem(item, dropPool, map);
+
             bool itemIsRepeat = dropPool.lastDroppedItem == item; 
-            if (reduceForDropPool && itemIsRepeat) {
+            if (dropPool.reduceDuplicates && itemIsRepeat) {
                 const float defaultPercentReduction = 0.5f;
                 dropChance *= defaultPercentReduction;
             }
@@ -198,7 +155,7 @@ public partial class Game {
         return total;
     }
     
-    private float GetDropChanceOfItem(Item item, DropOrigin origin, [CanBeNull] MapData map) {
+    private float GetDropChanceOfItem(Item item, DropPool dropPool, [CanBeNull] MapData map) {
         float addChanceToSpawn = 0f;
         
         if (map != null) {
@@ -212,16 +169,16 @@ public partial class Game {
             };
         }
         
-        return origin switch {
-            DropOrigin.Altar         => Mathf.Clamp01(item.chanceToSpawnFromAltar + addChanceToSpawn),
-            DropOrigin.Rock          => Mathf.Clamp01(item.chanceToSpawnFromRock + addChanceToSpawn),
-            DropOrigin.Body          => Mathf.Clamp01(item.chanceToSpawnOnBody + addChanceToSpawn),
-            DropOrigin.Trader        => Mathf.Clamp01(item.chanceToSpawnOnTrader + addChanceToSpawn),
-            DropOrigin.Enemy         => Mathf.Clamp01(item.chanceToSpawnFromEnemy + addChanceToSpawn),
-            DropOrigin.Bush          => Mathf.Clamp01(item.chanceToSpawnFromBush + addChanceToSpawn),
-            DropOrigin.ExistsInLevel => Mathf.Clamp01(item.chanceToExistInLevel + addChanceToSpawn),
-            _                        => throw new ArgumentOutOfRangeException(),
-        };
+        DropOrigin dropOrigin = GetItemDropOrigin(item, dropPool);
+        return Mathf.Clamp01(dropOrigin.chanceToSpawn + addChanceToSpawn);
+    }
+    
+    private DropOrigin GetItemDropOrigin(Item item, DropPool dropPool) {
+        foreach (DropOrigin dropOrigin in item.dropOrigins) {
+            if (dropPool != dropOrigin.dropPool) continue;
+            return dropOrigin;
+        }
+        return null;
     }
     
     private bool ItemCanSpawnOnMap(Item item, [NotNull] MapData map) {

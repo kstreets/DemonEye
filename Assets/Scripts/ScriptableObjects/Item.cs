@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using VInspector;
 using static Game;
@@ -33,23 +35,11 @@ public class Item : UuidScriptableObject {
     [ReadOnly] [SerializeField] private Rarity rarity;
 #endif
     
-    [Range(0f, 1f)] public float chanceToSpawnFromAltar;
-    [Range(0f, 1f)] public float chanceToSpawnOnBody;
-    [Range(0f, 1f)] public float chanceToSpawnOnTrader;
-    [Range(0f, 1f)] public float chanceToSpawnFromRock;
-    [Range(0f, 1f)] public float chanceToSpawnFromEnemy;
-    [Range(0f, 1f)] public float chanceToExistInLevel;
-    [Range(0f, 1f)] public float chanceToSpawnFromBush;
-
-    [HideIf(nameof(chanceToSpawnOnTrader), 0f)]
+    public List<DropOrigin> dropOrigins;
+    
     [Range(1, 10)] public int traderLevelRequired;
     [MinMaxSlider(1, 15)] public Vector2Int traderStockRange;
     public List<ItemWithCount> barterRequirements;
-    [EndIf]
-
-    [HideIf(nameof(chanceToSpawnFromEnemy), 0f)]
-    public List<EnemyData> spawnsFromEnemies;
-    [EndIf]
 
     [Space]
     
@@ -79,14 +69,10 @@ public class Item : UuidScriptableObject {
     public enum Rarity { Common, Uncommon, Rare, Epic, Legendary }
 
     public Rarity GetRarity() {
-        float maxRarity = Mathf.Max(
-            chanceToSpawnFromAltar > 0 ? chanceToSpawnFromAltar : float.MinValue,
-            chanceToSpawnOnBody    > 0 ? chanceToSpawnOnBody    : float.MinValue,
-            chanceToSpawnOnTrader  > 0 ? chanceToSpawnOnTrader  : float.MinValue,
-            chanceToSpawnFromRock  > 0 ? chanceToSpawnFromRock  : float.MinValue,
-            chanceToSpawnFromEnemy > 0 ? chanceToSpawnFromEnemy : float.MinValue,
-            chanceToSpawnFromBush  > 0 ? chanceToSpawnFromBush  : float.MinValue
-        );
+        float maxRarity = 0f;
+        foreach (DropOrigin origin in dropOrigins) {
+            maxRarity = Mathf.Max(maxRarity, origin.chanceToSpawn);
+        }
         if (maxRarity <= 0.08f) return Rarity.Legendary;
         if (maxRarity <= 0.20f) return Rarity.Epic;
         if (maxRarity <= 0.35f) return Rarity.Rare;
@@ -105,6 +91,7 @@ public class Item : UuidScriptableObject {
             Rarity.Rare      => priceCategory.rarePrice,
             Rarity.Epic      => priceCategory.epicPrice,
             Rarity.Legendary => priceCategory.legendaryPrice,
+            _                    => throw new ArgumentOutOfRangeException(),
         };
     }
     
@@ -157,6 +144,7 @@ public class Item : UuidScriptableObject {
     
     private void OnValidate() {
         rarity = GetRarity();
+        dropOrigins.Sort((a, b) => string.Compare(a.dropPool?.name, b.dropPool?.name, StringComparison.Ordinal));
     }
     
     [OnValueChanged(nameof(buyPrice))]

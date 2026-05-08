@@ -38,6 +38,15 @@ public partial class Game : MonoBehaviour {
     public List<MapData> maps;
     [EndFoldout]
     
+    [Foldout("DropPools")]
+    public DropPool rockStonesDropPool;
+    public DropPool eyeUpgradesDropPool;
+    public DropPool bodyDropPool;
+    public DropPool traderDropPool;
+    public DropPool foragingDropPool;
+    public DropPool bushesDropPool;
+    [EndFoldout]
+    
     [Foldout("Pooling Prefabs")]
     public GameObject itemDropPrefab;
     public GameObject baseProjectilePrefab;
@@ -324,7 +333,7 @@ public partial class Game : MonoBehaviour {
         equipedEye = emptyDemonEye;
 
         DemonEyeTween.Init();
-        CreateDropPools();
+        InitDropPools();
         
         InitInventories();
         InitButtonCallbacks();

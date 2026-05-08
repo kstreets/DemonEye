@@ -25,18 +25,17 @@ MonoBehaviour:
   spawnsOnAllMaps: 1
   firstSpawnMap: {fileID: 0}
   spawnsOnMaps: []
-  chanceToSpawnOnBody: 0.356
-  chanceToSpawnOnTrader: 0
-  chanceToSpawnFromRock: 0
-  chanceToSpawnFromEnemy: 0.507
-  chanceToExistInLevel: 0
-  chanceToSpawnFromBush: 0
+  rarity: 0
+  dropOrigins:
+  - dropPool: {fileID: 11400000, guid: 3c4ecb30986cb144bb8b92852af68d07, type: 2}
+    chanceToSpawn: 0.356
+  - dropPool: {fileID: 11400000, guid: 9eeed80dc208fd04986551102c8859ff, type: 2}
+    chanceToSpawn: 0.7
+  - dropPool: {fileID: 11400000, guid: 2f1280ced8a9a0b4eaa9045d5741fb8b, type: 2}
+    chanceToSpawn: 0.7
   traderLevelRequired: 1
   traderStockRange: {x: 1, y: 1}
   barterRequirements: []
-  spawnsFromEnemies:
-  - {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
-  - {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
   modifiesStats: 0
   critChance: 0
   critMultiplier: 0

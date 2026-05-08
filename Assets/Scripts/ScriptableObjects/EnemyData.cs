@@ -12,6 +12,10 @@ public class EnemyData : ScriptableObject {
     public GameObject enemyPrefab;
     public AnimatorOverrideController animatorOverride;
     
+    [Header("Drops")]
+    public DropPool dropPool;
+    public float chanceToDropItem;
+    
     [Header("Movement")]
     public bool usesFlowField;
     public LayerMask excludeCollisionLayers;
@@ -30,7 +34,6 @@ public class EnemyData : ScriptableObject {
     public int damage;
     public int collisionDamage;
     public float changeToCauseBleed;
-    public float chanceToDropItem;
     public int soulWorthPerKill;
     
     [Header("Info")]
