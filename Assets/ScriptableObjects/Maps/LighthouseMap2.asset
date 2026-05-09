@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: LighthouseMap2
   m_EditorClassIdentifier: Assembly-CSharp::MapData
   displayName: Lighthouse
-  sceneReference: Lighthouse
+  sceneReference: LighthouseExpansion
   waves: {fileID: 11400000, guid: 3aa85a5582e39464ea951bcb151e03ef, type: 2}
   altarSoulPrice: 100
   exitPortalsCount: 2

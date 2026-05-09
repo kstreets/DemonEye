@@ -12,6 +12,7 @@ TagManager:
   - Altar
   - Bush
   - Mineable
+  - Chest
   layers:
   - Default
   - TransparentFX
