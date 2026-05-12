@@ -8,5 +8,6 @@ public static class Tags {
     public const string DeadBody = "DeadBody";
     public const string Altar = "Altar";
     public const string Bush = "Bush";
+    public const string Chest = "Chest";
 
 }

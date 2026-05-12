@@ -32,7 +32,7 @@ MonoBehaviour:
   - dropPool: {fileID: 11400000, guid: 033f356ebabda714cb2141a7d950c759, type: 2}
     chanceToSpawn: 1
   traderLevelRequired: 1
-  traderStockRange: {x: 0, y: 0}
+  traderStockRange: {x: 1, y: 1}
   barterRequirements: []
   modifiesStats: 0
   critChance: 0

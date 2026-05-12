@@ -10,28 +10,25 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9bc23522601a56f4d89295cf565d360b, type: 3}
-  m_Name: PlantFiber
+  m_Name: Book
   m_EditorClassIdentifier: Assembly-CSharp::Item
-  uuid: -988106354
-  displayName: Plant Fiber
-  inventorySprite: {fileID: -394989852, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
-  dropSprite: {fileID: 0}
+  uuid: -912546282
+  displayName: Book
+  inventorySprite: {fileID: 52047638, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  dropSprite: {fileID: 1376013578, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   pickupRadius: 0.07
   type: {fileID: 0}
-  associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
-  priceCategory: {fileID: 11400000, guid: 1b413ce208f37d445884e80008464342, type: 2}
+  associatedTrader: {fileID: 0}
+  priceCategory: {fileID: 0}
   buyPrice: 0
-  sellPrice: 9
+  sellPrice: 3000
   spawnsOnAllMaps: 1
   firstSpawnMap: {fileID: 0}
-  spawnsOnMaps:
-  - {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
+  spawnsOnMaps: []
   rarity: 0
   dropOrigins:
-  - dropPool: {fileID: 11400000, guid: 3c4ecb30986cb144bb8b92852af68d07, type: 2}
-    chanceToSpawn: 0.503
-  - dropPool: {fileID: 11400000, guid: 403e542a49d6e3d4c834cdb48dce1626, type: 2}
-    chanceToSpawn: 1
+  - dropPool: {fileID: 11400000, guid: ac36b359b2819ad4f84ed57cf20ba475, type: 2}
+    chanceToSpawn: 0.7
   traderLevelRequired: 0
   traderStockRange: {x: 1, y: 1}
   barterRequirements: []
@@ -43,7 +40,7 @@ MonoBehaviour:
   movementSpeedPercentage: 0
   projectileCount: 0
   rangePercentage: 0
-  itemGroupProps: {fileID: 11400000, guid: 4f50fd0a36a2ac4499f3d9ca7dc28a72, type: 2}
-  maxStackCount: 0
-  weight: 0
+  itemGroupProps: {fileID: 0}
+  maxStackCount: 5
+  weight: 2
   description: 

@@ -195,18 +195,44 @@ public partial class Game {
     private InventorySlot[] CreateLootInventoryInstance(List<ItemInstance> inventoryItems) {
         var slots = new InventorySlot[lootInventoryPtr.slots.Length];
         
-        for (int j = 0; j < lootInventoryPtr.slots.Length; j++) {
+        for (int i = 0; i < lootInventoryPtr.slots.Length; i++) {
             ItemInstance itemInstance = null;
-            if (inventoryItems.IndexInRange(j)) {
-                itemInstance = inventoryItems[j];
+            if (inventoryItems.IndexInRange(i)) {
+                itemInstance = inventoryItems[i];
             }
-            slots[j] = new() {
+            slots[i] = new() {
                 itemInstance = itemInstance,
-                ui = lootInventorySlotUis[j],
+                ui = lootInventorySlotUis[i],
             };
         }
         
         return slots;
+    }
+    
+    private InventorySlot[] CreateLootInventoryFromItems(List<Item> items, DropPool dropPool, float stackTaperRate) {
+        using var _ = ListPool<ItemInstance>.Get(out var itemInstances);
+            
+        foreach (Item item in items) {
+            int stackCount = 1;
+            
+            float taperingChance = Mathf.Lerp(GetDropChanceOfItem(item, dropPool, loadedMapData), 0f, stackTaperRate);
+            while (RollProbability(taperingChance)) {
+                stackCount++;
+                taperingChance = Mathf.Lerp(taperingChance, 0f, stackTaperRate);
+            }
+            itemInstances.Add(new(item, stackCount) { notDiscovered = true });
+        }
+        
+        return CreateLootInventoryInstance(itemInstances);
+    }
+    
+    private bool AppendToLootInventory(InventorySlot[] lootSlots, Item item, int stackCount) {
+        foreach (InventorySlot slot in lootSlots) {
+            if (slot.itemInstance != null) continue;
+            slot.itemInstance = new(item, stackCount) { notDiscovered = true };
+            return true;
+        }
+        return false;
     }
     
     private void UpdateInventory() {

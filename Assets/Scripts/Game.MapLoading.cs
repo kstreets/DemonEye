@@ -141,14 +141,16 @@ public partial class Game {
             
         int maxDeadBodyItemCount = Random.Range(2, 6);
         GetUniqueItemsFromDropPool(bodyDropPool, maxDeadBodyItemCount, ref items);
-            
+        InventorySlot[] lootInventory = CreateLootInventoryFromItems(items, bodyDropPool, stackTaperRate: 0.15f);
+        
         float eyeUpgradeOnBodyChance = loadedMapData.eyeUpgradeOnBodyChance;
-        while (RollProbability(eyeUpgradeOnBodyChance) && items.Count < lootInventoryPtr.slots.Length) {
+        while (RollProbability(eyeUpgradeOnBodyChance)) {
             eyeUpgradeOnBodyChance -= loadedMapData.consecutiveEyeUpgradeChanceReductionOnBody;
-            items.Add(GetItemFromDropPool(eyeUpgradesDropPool));
+            bool success = AppendToLootInventory(lootInventory, GetItemFromDropPool(eyeUpgradesDropPool), 1);
+            if (!success) break;
         }
         
-        deadBodySlotsLookup.Add(entity.gameObject, CreateLootInventoryFromItems(items, bodyDropPool, stackTaperRate: 0.15f));
+        deadBodySlotsLookup.Add(entity.gameObject, lootInventory);
     }
     
     private Dictionary<GameObject, InventorySlot[]> bushSlotsLookup = new();
@@ -158,28 +160,6 @@ public partial class Game {
         int maxBushItemCount = Random.Range(1, 3);
         GetUniqueItemsFromDropPool(bushesDropPool, maxBushItemCount, ref items);
         bushSlotsLookup.Add(entity.gameObject, CreateLootInventoryFromItems(items, bushesDropPool, stackTaperRate: 0.15f)); 
-    }
-    
-    private InventorySlot[] CreateLootInventoryFromItems(List<Item> items, DropPool dropPool, float stackTaperRate) {
-        using var _ = ListPool<ItemInstance>.Get(out var itemInstances);
-            
-        foreach (Item item in items) {
-            int stackCount = 1;
-            
-            float taperingChance = Mathf.Lerp(GetDropChanceOfItem(item, dropPool, loadedMapData), 0f, stackTaperRate);
-            while (RollProbability(taperingChance)) {
-                stackCount++;
-                taperingChance = Mathf.Lerp(taperingChance, 0f, stackTaperRate);
-            }
-                    
-            itemInstances.Add(new() {
-                itemOrInstanceUuid = item.uuid, 
-                count = stackCount,
-                notDiscovered = true,
-            });
-        }
-        
-        return CreateLootInventoryInstance(itemInstances);
     }
     
 }

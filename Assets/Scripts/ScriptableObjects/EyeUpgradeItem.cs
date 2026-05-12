@@ -15,7 +15,7 @@ public class EyeUpgradeItem : Item, IEyeUpgrade {
     public bool SpawnsOnAllMaps => spawnsOnAllMaps;
     public MapData FirstSpawnMap => firstSpawnMap;
     public List<MapData> SpawnsOnMaps => spawnsOnMaps;
-    public UuidScriptableObject GetUuidObject => this;
+    public UuidScriptableObject UuidObject => this;
     public Sprite InventorySprite => inventorySprite;
     public string DisplayName => displayName;
 }

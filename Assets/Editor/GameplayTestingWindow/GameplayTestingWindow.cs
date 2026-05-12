@@ -194,7 +194,7 @@ public class GameplayTestingWindow : EditorWindow {
         int firstMapItemIndex = GetMapIndex(eyeUpgrade);
         
         string colorString;
-        if (Selection.activeObject == eyeUpgrade.GetUuidObject) {
+        if (Selection.activeObject == eyeUpgrade.UuidObject) {
             colorString = "#2C5D87";
         }
         else if (firstMapItemIndex < curMapIndex) {
@@ -212,11 +212,11 @@ public class GameplayTestingWindow : EditorWindow {
     }
     
     private void OnImageClicked(IEyeUpgrade eyeUpgrade) {
-        if (Selection.activeObject == eyeUpgrade.GetUuidObject) {
+        if (Selection.activeObject == eyeUpgrade.UuidObject) {
             Selection.activeObject = null;
             return;
         }
-        Selection.activeObject = eyeUpgrade.GetUuidObject;
+        Selection.activeObject = eyeUpgrade.UuidObject;
     }
     
     private void RefreshImageBackgrounds() {

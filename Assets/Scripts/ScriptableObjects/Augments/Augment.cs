@@ -49,7 +49,7 @@ public class Augment : UuidScriptableObject, IEyeUpgrade {
     public bool SpawnsOnAllMaps => spawnsOnAllMaps;
     public MapData FirstSpawnMap => firstSpawnMap;
     public List<MapData> SpawnsOnMaps => spawnsOnMaps;
-    public UuidScriptableObject GetUuidObject => this;
+    public UuidScriptableObject UuidObject => this;
     public Sprite InventorySprite => eyeUpgradeDerivedFrom.inventorySprite;
     public string DisplayName => eyeUpgradeDerivedFrom.displayName;
     

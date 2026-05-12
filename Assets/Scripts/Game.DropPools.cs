@@ -184,20 +184,23 @@ public partial class Game {
     private bool ItemCanSpawnOnMap(Item item, [NotNull] MapData map) {
         Assert.IsNotNull(map);
         if (item.spawnsOnAllMaps) return true;
-        if (MapIsOnOrPassed(item.firstSpawnMap, map)) return true;
+        if (MapIsEqualOrGreater(map, item.firstSpawnMap)) return true;
         return item.spawnsOnMaps.Contains(map);
     }
     
     private bool AugmentCanSpawnOnMap(Augment augment, [NotNull] MapData map) {
         Assert.IsNotNull(map);
         if (augment.spawnsOnAllMaps) return true;
-        if (MapIsOnOrPassed(augment.firstSpawnMap, map)) return true;
-        return augment.spawnsOnMaps.Contains(loadedMapData);
+        if (MapIsEqualOrGreater(map, augment.firstSpawnMap)) return true;
+        return augment.spawnsOnMaps.Contains(map);
     }
     
-    private bool MapIsOnOrPassed(MapData map, MapData currentMap) {
-        if (map == null || currentMap == null) return false;
-        return maps.IndexOf(currentMap) >= maps.IndexOf(map);
+    private bool MapIsEqualOrGreater(MapData left, MapData right) {
+        if (left == null || right == null) return false;
+        int leftIndex = maps.IndexOf(left);
+        int rightIndex = maps.IndexOf(right);
+        if (leftIndex == -1 || rightIndex == -1) return false;
+        return leftIndex >= rightIndex;
     }
     
 }

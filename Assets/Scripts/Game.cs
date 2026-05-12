@@ -45,6 +45,7 @@ public partial class Game : MonoBehaviour {
     public DropPool traderDropPool;
     public DropPool foragingDropPool;
     public DropPool bushesDropPool;
+    public DropPool chestsDropPool;
     [EndFoldout]
     
     [Foldout("Pooling Prefabs")]
@@ -939,6 +940,17 @@ public partial class Game : MonoBehaviour {
                     Item dropItem = GetItemFromDropPool(eyeUpgradesDropPool);
                     Entity item = SpawnItemAsEntity(dropItem, 1, OffsetY(col.transform.position, 0.2f), Quaternion.identity);
                     item.spriteRenderer.sortingOrder = 1;
+                    col.enabled = false;
+                }
+            }
+            
+            if (col.CompareTag(Tags.Chest)) {
+                EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), "Open Chest");
+                if (interactInputAction.WasPressedThisFrame()) {
+                    Item dropItem = GetItemFromDropPool(chestsDropPool);
+                    Entity item = SpawnItemAsEntity(dropItem, 1, OffsetY(col.transform.position, 0.1f), Quaternion.identity);
+                    Vector3 endPos = item.position + RotationVector(Random.Range(0f, 360f), 0.18f, 0.25f);
+                    AddBounceEffect(item, endPos, 0.25f);
                     col.enabled = false;
                 }
             }
