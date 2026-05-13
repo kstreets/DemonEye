@@ -10,7 +10,7 @@ public class Styles : ScriptableObject {
     public Color legendaryTextColor;
 
     public Color headerTextColor;
-    public Color subHeaderTextColor;
+    public Color popInTextColor;
     
     public Color coinCurrencyColor;
     public Color inputIconTint;
@@ -50,6 +50,5 @@ public class Styles : ScriptableObject {
             _                     => commonTextColor,
         };
     }
-
 
 }

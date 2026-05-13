@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using PrimeTween;
 using UnityEngine;
 using UnityEngine.Assertions;
-using VInspector;
 using Random = UnityEngine.Random;
 
 public partial class Game {
@@ -52,6 +51,15 @@ public partial class Game {
     }
     
     public Player player;
+    
+    public struct Trinkets {
+        public Trinket current;
+        public Duration activeDuration;
+        public Duration cooldownDuration;
+        public int trackingCount;
+    }
+    
+    private Trinkets trinkets;
 
     private void OnPlayerCreated() {
         player.hurtCollider = player.gameObject.GetComponentInChildren<CapsuleCollider2D>();
@@ -66,6 +74,21 @@ public partial class Game {
     private void DeinitPlayer() {
         player.bleeding = false;
         playerPreviewImage.sprite = player.defaultPlayerPreviewSprite;
+    }
+    
+    private void PlayerOnEquipTrinket(Trinket trinket) {
+        trinkets.Reset();
+        trinkets.current = trinket;
+    }
+    
+    private void PlayerOnEnemyDeath(Enemy enemy) {
+        if (trinkets.current is SpeedBoostTrinket speedBoost) {
+            if (++trinkets.trackingCount >= speedBoost.killsPerBoost) {
+                trinkets.trackingCount = 0;
+                trinkets.activeDuration.Add(speedBoost.duration);
+            }
+        }
+        player.soulCurrency += enemy.data.soulWorthPerKill;
     }
     
     private void UpdatePlayer() {
@@ -94,7 +117,7 @@ public partial class Game {
             return;
         }
 
-        bool interactingWithPortal = interactionVars.timeSpentSummoningPortal > Mathf.Epsilon;
+        bool interactingWithPortal = interactions.timeSpentSummoningPortal > Mathf.Epsilon;
         if (InventoryIsOpen || interactingWithPortal) return;
         
         Vector2 moveInput = moveInputAction.ReadValue<Vector2>();
@@ -135,11 +158,19 @@ public partial class Game {
             player.animator.Play(player.nextIdleAnimHash);
         }
         
-        if (moveInput != Vector2.zero && player.curStepDistance > 0.18f) {
+        bool playerStepped = moveInput != Vector2.zero && player.curStepDistance > 0.18f;
+        if (playerStepped) {
             Entity runSmokeEntity = SpawnEntity(runSmokePool, OffsetY(player.position, 0.01f), Quaternion.identity);
             DestroyEntity(runSmokeEntity, CurrentClipLength(runSmokeEntity.animator));
             PlayAudioClip(footStepClip, player.position);
             player.curStepDistance = 0f;
+            
+            if (trinkets.current is HealingStepsTrinket healingSteps) {
+                if (++trinkets.trackingCount >= healingSteps.stepsPerHeal) {
+                    HealPlayer(healingSteps.healing);
+                    trinkets.trackingCount = 0;
+                }
+            }
         }
         
         bool canShoot = attackLimiter.TimeHasPassed(GetFirerateDelayBasedOnStats());
@@ -269,43 +300,11 @@ public partial class Game {
         
         // Helper method just to forward the passed in parameters
         void _SpawnProjectile(Vector2 pos, Vector2 vel, EntityPool<Projectile> pool, ProjectileTypeFlags flgs = ProjectileTypeFlags.None) {
-            SpawnProjectile(pos, vel, pool, typeFlags: flgs, spawnDelay: spawnDelay, flatCritChance: flatCritChance);
+            float lifeTime = GetProjectileRangeInSeconds();
+            SpawnProjectile(pool, pos, vel, lifeTime, player, typeFlags: flgs, spawnDelay: spawnDelay, flatCritChance: flatCritChance);
         }
     }
 
-    private Projectile SpawnProjectile(Vector2 spawnPos, Vector2 velocity, EntityPool<Projectile> pool, 
-        Quaternion? rotation = default, int? flatDamage = default, float? spawnDelay = default, float? lifetime = default, 
-        float? flatCritChance = default, LayerMask? layermask = default, ProjectileTypeFlags typeFlags = ProjectileTypeFlags.None) 
-    {
-        Quaternion projectileRotation = rotation ?? Quaternion.AngleAxis(Vector2.SignedAngle(Vector2.right, velocity.normalized), Vector3.forward);
-        Projectile projectile = SpawnEntity(pool, spawnPos, projectileRotation);
-        
-        projectile.velocity = velocity;
-        projectile.eyeInstanceSpawnedFrom = equipedEye;
-        projectile.flatDamage = flatDamage;
-        projectile.flatCritChance = flatCritChance;
-        projectile.lifeTimeDuration = lifetime ?? GetProjectileRangeInSeconds();
-        projectile.layerMask = layermask ?? Masks.DamagableMask;
-        projectile.typeFlags = typeFlags;
-
-        if (!spawnDelay.HasValue) {
-            projectiles.Add(projectile);
-            projectile.trans.localScale = Vector3.zero;
-            Tween.Scale(projectile.trans, Vector3.one, 0.025f, Ease.InBounce);
-            return projectile;
-        }
-
-        projectile.gameObject.SetActive(false);
-        Delay(projectile, spawnDelay.Value, static (projectile) => {
-            projectile.gameObject.SetActive(true);
-            gameInstance.projectiles.Add(projectile);
-            projectile.trans.localScale = Vector3.zero;
-            Tween.Scale(projectile.trans, Vector3.one, 0.025f, Ease.InBounce);
-        });
-
-        return projectile;
-    }
-    
     private Tween playerConsumingTween;
     private Inventory consumingInventory;
     private int consumingSlotIndex;
@@ -422,15 +421,10 @@ public partial class Game {
     
     private enum PlayerDamageType { Normal, Collision }
 
-    private void DamagePlayer(int damage, PlayerDamageType damageType, float chanceToBleed = 0f) {
+    private void DamagePlayer(int damage, PlayerDamageType damageType, Entity sourceEntity, float chanceToBleed = 0f) {
         chanceToBleed -= GetAbsoluteStat(Player.Stat.BleedResist); 
-        
         if (!player.bleeding && !loadedMapData.playerCantBleed && !PlayerHealthIsAtAutoBleedStop() && RollProbability(chanceToBleed)) {
             player.bleeding = true;
-        }
-        
-        if (interactionVars.timeSpentSummoningPortal < gameplayConfig.portalSummonTime) {
-            interactionVars.timeSpentSummoningPortal = 0f;
         }
         
         bool ignoreCollisionDamage = !player.enmeyCollisionDamageLimiter.TimeHasPassed(gameplayConfig.repeatCollisionDamageDelay);
@@ -439,13 +433,25 @@ public partial class Game {
         player.health -= damage;
         AddFlashHitEffect(player);
         SpawnDamageNumber(player.position, damage, DamageColor.Blood);
+        CancelPortalSummoning();
+        
+        if (trinkets.current is Thorns damageReflect && trinkets.cooldownDuration.HasPassed()) {
+            Entity damageEntity = sourceEntity switch {
+                Enemy enemy => enemy,
+                Projectile proj => proj.sourceEntity, 
+                _ => null,
+            };
+            DamageEnemy(damageEntity, damage, isCriticalStrike: false);
+            SpawnTextPopIn(OffsetY(player.position, -0.1f), damageReflect.activationPopUpText);
+            trinkets.cooldownDuration.Reset(damageReflect.cooldownTime);
+        }
     }
     
     private bool PlayerHealthIsAtAutoBleedStop() {
         const float percentageOfHealthBleedingStops = 0.10f;
         return player.health <= FullPlayerHealth * percentageOfHealthBleedingStops;
     }
-
+    
     private int GetPlayerStatLevel(Player.Stat stat) {
         return stat switch {
             Player.Stat.FireratePercentage      => player.hasteSkillLevel,
@@ -508,18 +514,6 @@ public partial class Game {
     
     private float GetEquipmentStatAdjustment(Player.Stat stat) {
         float statSum = 0f;
-        
-        for (int i = 0; i < playerEquipmentSize; i++) {
-            Item item = playerInventory.slots[i].itemInstance?.ItemRef;
-            if (!item || !item.modifiesStats) continue;
-            
-            switch (stat) {
-                case Player.Stat.MovementSpeedPercentage:
-                    statSum += item.GetMovementSpeedPercentage(1);
-                    break;
-            }
-        }
-
         foreach (EquipedUpgradeInstance mod in equipedEye.upgradeInstances) {
             EyeUpgradeItem eyeUpgradeItem = mod.EyeUpgradeItem;
             int stackCount = mod.stackCount;
@@ -546,7 +540,6 @@ public partial class Game {
                     break;
             }
         }
-        
         return statSum;
     }
 
@@ -559,6 +552,13 @@ public partial class Game {
         speedReductionFromWeight = Mathf.Clamp(speedReductionFromWeight, 0f, gameplayConfig.maxEncumberedSpeedReduction);
 
         playerSpeed -= speedReductionFromWeight;
+        
+        if (trinkets.current is SpeedBoostTrinket speedBoost) {
+            if (trinkets.activeDuration.IsAlive()) {
+                playerSpeed += playerSpeed * speedBoost.percentSpeedIncrease;
+            }
+        }
+        
         return playerSpeed;
     }
 

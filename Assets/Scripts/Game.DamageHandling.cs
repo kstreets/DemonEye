@@ -74,8 +74,10 @@ public partial class Game {
                     float randomSpeedScaler = Random.Range(0.4f, 0.6f);
                     Vector2 boneShatterVelocity = RandomizeVectorAngle(projectile.velocity * randomSpeedScaler, 65f);
                     int boneDamage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(enemy) * boneShatter.perShardDamageMulti);
-                    Projectile boneShatterProj = SpawnProjectile(enemy.position, boneShatterVelocity, boneShatterProjectilePool, 
-                        rotation: RandomRotation(), spawnDelay: randomDelay, flatDamage: boneDamage, lifetime: boneShatter.lifeTime);
+                    Projectile boneShatterProj = SpawnProjectile(
+                        boneShatterProjectilePool, enemy.position, boneShatterVelocity, boneShatter.lifeTime, player,
+                        rotation: RandomRotation(), spawnDelay: randomDelay, flatDamage: boneDamage
+                    );
                     ProjectileMarkEntityToIgnore(boneShatterProj, enemy);
                 }
             }
@@ -186,74 +188,6 @@ public partial class Game {
         }
 
         return damageMultiplier;
-    }
-
-    private enum DamageColor { Normal, Crit, Blood, Poison }
-
-    private void SpawnDamageNumber(Vector3 spawnPos, int damage, DamageColor damageColor) {
-        Vector3 startSize = Vector3.one * 0.8f;
-        Vector3 endSize = Vector3.one * damageColor switch {
-            DamageColor.Normal => 1.0f,
-            DamageColor.Crit   => 1.25f,
-            DamageColor.Blood  => 0.8f,
-            DamageColor.Poison => 0.8f,
-            _                  => 1f,
-        };
-        
-        float xOffset = Random.Range(-0.08f, 0.08f);
-        float yOffset = Random.Range(0.05f, 0.1f);
-        Vector2 endDamageNumPos;
-        
-        if (damageColor == DamageColor.Blood) {
-            spawnPos = OffsetY(spawnPos, 0.05f);
-            endDamageNumPos = OffsetY(spawnPos, yOffset * 2.3f);
-        }
-        else {
-            endDamageNumPos = OffsetY(OffsetX(spawnPos, xOffset), yOffset);
-        }
-        
-        Entity damageNumber = SpawnEntity(damageNumberPool, spawnPos, Quaternion.identity, damageNumbersParent);
-        damageNumber.textMesh.text = damage.ToString();
-        
-        const float alpha = 0.68f;
-        switch (damageColor) {
-            case DamageColor.Normal:
-                damageNumber.textMesh.color = styles.normalDamageColor.Alpha(alpha);
-                break;
-            case DamageColor.Crit:
-                damageNumber.textMesh.color = styles.critDamageColor.Alpha(alpha);
-                break;
-            case DamageColor.Blood:
-                damageNumber.textMesh.color = styles.bleedDamageColor.Alpha(alpha);
-                break;
-            case DamageColor.Poison:
-                damageNumber.textMesh.color = styles.poisonDamageColor.Alpha(alpha);
-                break;
-        }
-
-        if (damageColor == DamageColor.Blood) {
-            const float bloodMoveDuration = 0.65f;
-            const float bloodScaleUpDuration = 0.25f;
-            const float bloodPopOutDuration = 0.3f;
-            Tween.Position(damageNumber.trans, endDamageNumPos, bloodMoveDuration, Ease.OutCubic)
-            .Group(Tween.Scale(damageNumber.trans, startSize, endSize, bloodScaleUpDuration, Ease.InOutBack))
-            .Chain(Tween.Scale(damageNumber.trans, 0f, bloodPopOutDuration, Ease.InBack));
-            DestroyEntity(damageNumber, bloodMoveDuration + bloodPopOutDuration);
-            return;
-        }
-
-        float moveDuration = damageColor == DamageColor.Crit ? Random.Range(0.37f, 0.4f) : Random.Range(0.3f, 0.35f);
-        const float scaleUpDuration = 0.25f;
-        const float popOutDuration = 0.3f;
-
-        Tween.Position(damageNumber.trans, endDamageNumPos, moveDuration, Ease.OutBack)
-        .Group(Tween.Scale(damageNumber.trans, startSize, endSize, scaleUpDuration, Ease.InOutBack))
-        .Chain(Tween.Scale(damageNumber.trans, 0f, popOutDuration, Ease.InBack));
-        DestroyEntity(damageNumber, moveDuration + popOutDuration);
-    }
-
-    private Vector3 EnemyDamageNumberSpawnPos(Entity entity) {
-        return OffsetY(entity.position, 0.28f);
     }
     
 }

@@ -143,8 +143,12 @@ public partial class Game {
                         for (int i = 0; i <  projectileCount; i++) {
                             float randomAngle = (angleDeltaPerDrop * i) + Random.Range(-randomRangePerDrop, randomRangePerDrop);
                             Vector3 velocity = gameInstance.RotationVector(randomAngle) * 0.62f;
-                            gameInstance.SpawnProjectile(gameInstance.OffsetY(enemy.position, 0.2f), velocity, gameInstance.gooProjectilePool, 
-                                flatDamage: enemy.data.damage, lifetime: 2f, layermask: Masks.PlayerHurtMask);
+                            Vector3 position = gameInstance.OffsetY(enemy.position, 0.2f);
+                            const float lifetime = 2f;
+                            gameInstance.SpawnProjectile(
+                                gameInstance.gooProjectilePool, position, velocity, lifetime, enemy, 
+                                flatDamage: enemy.data.damage, layermask: Masks.PlayerHurtMask
+                            );
                         }
                         
                         enemy.health = 0;
@@ -180,7 +184,7 @@ public partial class Game {
                         }
 
                         if (col) {
-                            gameInstance.DamagePlayer(enemy.data.damage, PlayerDamageType.Normal, enemy.data.changeToCauseBleed);
+                            gameInstance.DamagePlayer(enemy.data.damage, PlayerDamageType.Normal, enemy, enemy.data.changeToCauseBleed);
                         }
                     });
                 }
@@ -209,15 +213,14 @@ public partial class Game {
                             gameInstance.SpawnItemAsEntity(dropItem, 1, deadEnemy.position, Quaternion.identity);
                         }
                     }
-
-                    gameInstance.player.soulCurrency += deadEnemy.data.soulWorthPerKill;
+                    
+                    gameInstance.PlayerOnEnemyDeath(deadEnemy);
                     onEnemyDeath?.Invoke(deadEnemy);
                     
                     Entity bloodSplatterEntity = gameInstance.SpawnEntity(gameInstance.bloodSplatterPool, deadEnemy.position, Quaternion.identity);
                     gameInstance.DestroyEntity(bloodSplatterEntity, gameInstance.CurrentClipLength(bloodSplatterEntity.animator));
                     
                     gameInstance.PlayAudioClip(gameInstance.bloodBurstClip, deadEnemy.position);
-
                     gameInstance.DestroyEntity(deadEnemy);
                 });
                 enemies.RemoveAt(i);
@@ -242,7 +245,7 @@ public partial class Game {
             }
             
             Enemy collidedWithEnemy = entityLookup[closestColToPlayer.gameObject] as Enemy;
-            DamagePlayer(collidedWithEnemy.data.collisionDamage, PlayerDamageType.Collision);
+            DamagePlayer(collidedWithEnemy.data.collisionDamage, PlayerDamageType.Collision, collidedWithEnemy);
         }
     }
     

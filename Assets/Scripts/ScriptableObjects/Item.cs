@@ -48,7 +48,6 @@ public class Item : UuidScriptableObject {
     [SerializeField] private float critMultiplier;
     [SerializeField] private float damageMultiplier;
     [SerializeField] private float fireratePercentage;
-    [SerializeField] private float movementSpeedPercentage;
     [SerializeField] private float projectileCount;
     [SerializeField] private float rangePercentage;
     [EndIf]
@@ -98,13 +97,12 @@ public class Item : UuidScriptableObject {
         string desc = string.Empty;
         
         if (modifiesStats) {
-            if (!Mathf.Approximately(critChance, 0f))              desc += $"\n{DisplayProbIncDec(GetCritChance(stackCount))} Crit Chance";
-            if (!Mathf.Approximately(critMultiplier, 0f))          desc += $"\n{DisplayMultiplierIncDec(GetCritMultiplier(stackCount))} Crit Multiplier";
-            if (!Mathf.Approximately(damageMultiplier, 0f))        desc += $"\n{DisplayMultiplierIncDec(GetDamageMultiplier(stackCount))} Damage";
-            if (!Mathf.Approximately(fireratePercentage, 0f))      desc += $"\n{DisplayProbIncDec(GetFireratePercentage(stackCount))} Firerate";
-            if (!Mathf.Approximately(movementSpeedPercentage, 0f)) desc += $"\n{DisplayProbIncDec(GetMovementSpeedPercentage(stackCount))} Movement Speed";
-            if (!Mathf.Approximately(projectileCount, 0f))         desc += $"\n{DisplayIncDec(GetProjectileCount(stackCount))} Projectile Count";
-            if (!Mathf.Approximately(rangePercentage, 0f))         desc += $"\n{DisplayProbIncDec(GetRangePercentage(stackCount))} Range";
+            if (!Mathf.Approximately(critChance, 0f))         desc += $"\n{DisplayProbIncDec(GetCritChance(stackCount))} Crit Chance";
+            if (!Mathf.Approximately(critMultiplier, 0f))     desc += $"\n{DisplayMultiplierIncDec(GetCritMultiplier(stackCount))} Crit Multiplier";
+            if (!Mathf.Approximately(damageMultiplier, 0f))   desc += $"\n{DisplayMultiplierIncDec(GetDamageMultiplier(stackCount))} Damage";
+            if (!Mathf.Approximately(fireratePercentage, 0f)) desc += $"\n{DisplayProbIncDec(GetFireratePercentage(stackCount))} Firerate";
+            if (!Mathf.Approximately(projectileCount, 0f))    desc += $"\n{DisplayIncDec(GetProjectileCount(stackCount))} Projectile Count";
+            if (!Mathf.Approximately(rangePercentage, 0f))    desc += $"\n{DisplayProbIncDec(GetRangePercentage(stackCount))} Range";
         }
 
         bool removeFirstNewLine = !string.IsNullOrEmpty(desc);
@@ -131,7 +129,6 @@ public class Item : UuidScriptableObject {
     public float GetCritMultiplier(int stackCount) => critMultiplier * stackCount;
     public float GetDamageMultiplier(int stackCount) => damageMultiplier * stackCount;
     public float GetFireratePercentage(int stackCount) => fireratePercentage * stackCount;
-    public float GetMovementSpeedPercentage(int stackCount) => movementSpeedPercentage * stackCount;
     public float GetProjectileCount(int stackCount) => projectileCount * stackCount;
     public float GetRangePercentage(int stackCount) => rangePercentage * stackCount;
 
@@ -144,16 +141,6 @@ public class Item : UuidScriptableObject {
     private void OnValidate() {
         rarity = GetRarity();
         dropOrigins.Sort((a, b) => string.Compare(a.dropPool?.name, b.dropPool?.name, StringComparison.Ordinal));
-    }
-    
-    [OnValueChanged(nameof(buyPrice))]
-    private void AutoSetSellPriceOnBuyPriceChanged() {
-        if (this is EyeUpgradeItem) {
-            sellPrice = Mathf.RoundToInt(buyPrice * 0.08f);
-        }
-        else {
-            sellPrice = Mathf.RoundToInt(buyPrice * 0.28f);
-        }
     }
     
     [Button]

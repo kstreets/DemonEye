@@ -627,7 +627,7 @@ public partial class Game : MonoBehaviour {
         cinemachineCamera.Follow = player.trans;
         
         damageHandlingVars.Reset();
-        interactionVars.Reset();
+        interactions.Reset();
         
         InitMapGrid();
         InitSpawnManager(loadedMapData.waves);
@@ -884,7 +884,11 @@ public partial class Game : MonoBehaviour {
         public float timeSpentSummoningPortal;
     }
     
-    public InteractionVars interactionVars;
+    public InteractionVars interactions;
+    
+    private void CancelPortalSummoning() {
+        interactions.timeSpentSummoningPortal = 0f;
+    }
     
     private void CheckForInteractions() { 
         DisableInteractionPrompt();
@@ -957,7 +961,7 @@ public partial class Game : MonoBehaviour {
 
             if (col.CompareTag(Tags.ExitPortal)) {
                 ExitPortal portal = GetExitPortalFromTransform(col.transform);
-                ref float timeSpentSummoningPortal = ref interactionVars.timeSpentSummoningPortal;
+                ref float timeSpentSummoningPortal = ref interactions.timeSpentSummoningPortal;
                 
                 if (!portal.hasBeenSummoned && timeSpentSummoningPortal < gameplayConfig.portalSummonTime) {
                     EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Summon Exit Portal");
@@ -1400,4 +1404,9 @@ public partial class Game : MonoBehaviour {
         return vector.y > 0 ? CardinalDir.Up : CardinalDir.Down;
     }
 
+}
+
+// Allows for the use of init
+namespace System.Runtime.CompilerServices {
+    public interface IsExternalInit { }
 }

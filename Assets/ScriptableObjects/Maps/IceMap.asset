@@ -16,7 +16,7 @@ MonoBehaviour:
   sceneReference: Ice
   waves: {fileID: 11400000, guid: c3f7f6d7c8bc62a4993a44c716d126e0, type: 2}
   altarSoulPrice: 150
-  exitPortalsCount: 0
+  exitPortalsCount: 1
   playerCantBleed: 0
   eyeUpgradeOnBodyChance: 0.12
   consecutiveEyeUpgradeChanceReductionOnBody: 0.08

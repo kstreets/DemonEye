@@ -20,6 +20,7 @@ public partial class Game {
         public Vector2 velocity;
         public LayerMask layerMask;
         public DemonEyeInstance eyeInstanceSpawnedFrom;
+        public Entity sourceEntity;
         public List<Entity> ignoreEntities;
     }
     
@@ -33,12 +34,48 @@ public partial class Game {
         projectile.velocity = default;
         projectile.layerMask = default;
         projectile.eyeInstanceSpawnedFrom = default;
+        projectile.sourceEntity = default;
         if (projectile.ignoreEntities != null) {
             ListPool<Entity>.Release(projectile.ignoreEntities);
         }
         projectile.ignoreEntities = default;
     }
     
+    private Projectile SpawnProjectile(
+        EntityPool<Projectile> pool, Vector2 spawnPos, Vector2 velocity, float lifetime, Entity sourceEntity,
+        Quaternion? rotation = default, int? flatDamage = default, float? spawnDelay = default, float? flatCritChance = default, 
+        LayerMask? layermask = default, ProjectileTypeFlags typeFlags = ProjectileTypeFlags.None) 
+    {
+        Quaternion projectileRotation = rotation ?? Quaternion.AngleAxis(Vector2.SignedAngle(Vector2.right, velocity.normalized), Vector3.forward);
+        Projectile projectile = SpawnEntity(pool, spawnPos, projectileRotation);
+        
+        projectile.velocity = velocity;
+        projectile.eyeInstanceSpawnedFrom = equipedEye;
+        projectile.sourceEntity = sourceEntity;
+        projectile.lifeTimeDuration = lifetime;
+        projectile.flatDamage = flatDamage;
+        projectile.flatCritChance = flatCritChance;
+        projectile.layerMask = layermask ?? Masks.DamagableMask;
+        projectile.typeFlags = typeFlags;
+
+        if (!spawnDelay.HasValue) {
+            projectiles.Add(projectile);
+            projectile.trans.localScale = Vector3.zero;
+            Tween.Scale(projectile.trans, Vector3.one, 0.025f, Ease.InBounce);
+            return projectile;
+        }
+
+        projectile.gameObject.SetActive(false);
+        Delay(projectile, spawnDelay.Value, static (projectile) => {
+            projectile.gameObject.SetActive(true);
+            gameInstance.projectiles.Add(projectile);
+            projectile.trans.localScale = Vector3.zero;
+            Tween.Scale(projectile.trans, Vector3.one, 0.025f, Ease.InBounce);
+        });
+
+        return projectile;
+    }
+
     private void UpdateProjectiles() {
         const float projectileRadius = 0.035f;
         
@@ -54,7 +91,7 @@ public partial class Game {
             // Hack for identifying if the projectile hit the player 
             if (proj.layerMask == Masks.PlayerHurtMask) {
                 Assert.IsTrue(proj.flatDamage.HasValue, "Projectiles that damage the player need to have a flat damage value");
-                DamagePlayer(proj.flatDamage.Value, PlayerDamageType.Normal);
+                DamagePlayer(proj.flatDamage.Value, PlayerDamageType.Normal, proj);
                 DestroyEntity(projectiles[i]);
                 projectiles.RemoveAt(i);
                 continue;

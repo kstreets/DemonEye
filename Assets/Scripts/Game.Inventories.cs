@@ -530,6 +530,7 @@ public partial class Game {
     private void CheckForEquipmentChange() {
         ItemInstance curEyeItemInstance = playerInventory.slots[0].itemInstance;
         ItemInstance curBackpackItemInstance = playerInventory.slots[1].itemInstance;
+        ItemInstance curTrinketItemInstance = playerInventory.slots[2].itemInstance;
 
         if (prevEquippedEyeItemInstance != curEyeItemInstance) {
             prevEquippedEyeItemInstance = curEyeItemInstance;
@@ -544,11 +545,20 @@ public partial class Game {
             prevEquippedBackpackItemInstance = curBackpackItemInstance;
             if (curBackpackItemInstance != null) {
                 Assert.IsTrue(curBackpackItemInstance.ItemRef is BackpackItem);
-                int backpackSize = (curBackpackItemInstance.ItemRef as BackpackItem).additionalStorageSlots;
+                int backpackSize = (curBackpackItemInstance.ItemRef as BackpackItem)!.additionalStorageSlots;
                 ChangeInventorySize(playerInventory, NakedPlayerInventorySize + backpackSize);
             }
             else {
                 ChangeInventorySize(playerInventory, NakedPlayerInventorySize);
+            }
+        }
+        
+        if (prevEquippedTrinketItemInstance != curTrinketItemInstance) {
+            prevEquippedTrinketItemInstance = curTrinketItemInstance;
+            if (curTrinketItemInstance != null) {
+                Assert.IsTrue(curTrinketItemInstance.ItemRef is Trinket);
+                Trinket trinket = curTrinketItemInstance.ItemRef as Trinket;
+                PlayerOnEquipTrinket(trinket);
             }
         }
     }

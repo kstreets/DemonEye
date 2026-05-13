@@ -143,7 +143,7 @@ public static class Extensions {
         value = nullableStruct.GetValueOrDefault();
         return nullableStruct.HasValue;
     }
-
+    
     public static void PlayIfNotAlready(this Animator animator, int animHash) {
         if (!animator.gameObject.activeInHierarchy || animator.Playing(animHash)) return;
         animator.Play(animHash);

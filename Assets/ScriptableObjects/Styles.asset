@@ -18,7 +18,7 @@ MonoBehaviour:
   epicTextColor: {r: 0.78431374, g: 0.2, b: 0.46666667, a: 1}
   legendaryTextColor: {r: 0.8352941, g: 0.27058825, b: 0.27450982, a: 1}
   headerTextColor: {r: 0.7490196, g: 0.6627451, b: 0.57254905, a: 1}
-  subHeaderTextColor: {r: 0.7490196, g: 0.6627451, b: 0.57254905, a: 1}
+  popInTextColor: {r: 1, g: 0.8562826, b: 0.43710685, a: 1}
   coinCurrencyColor: {r: 0.95686275, g: 0.6, b: 0.25882354, a: 1}
   inputIconTint: {r: 0.8235294, g: 0.7019608, b: 0.6901961, a: 1}
   underWeightColor: {r: 0.6901961, g: 0.7882353, b: 0.8117647, a: 1}
@@ -39,4 +39,3 @@ MonoBehaviour:
   increaseDescColor: {r: 0.35686275, g: 0.7725491, b: 0.35686275, a: 1}
   decreaseDescColor: {r: 0.8352942, g: 0.27058825, b: 0.27450982, a: 1}
   timeDescColor: {r: 0.7610062, g: 0.45321578, b: 0.380503, a: 1}
-  tagTextPadding: 20
