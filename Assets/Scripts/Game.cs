@@ -954,7 +954,7 @@ public partial class Game : MonoBehaviour {
                     Item dropItem = GetItemFromDropPool(chestsDropPool);
                     Entity item = SpawnItemAsEntity(dropItem, 1, OffsetY(col.transform.position, 0.1f), Quaternion.identity);
                     Vector3 endPos = item.position + RotationVector(Random.Range(0f, 360f), 0.18f, 0.25f);
-                    AddBounceEffect(item, endPos, 0.25f);
+                    AddBounceEffect(item, endPos, 0.6f);
                     col.enabled = false;
                 }
             }

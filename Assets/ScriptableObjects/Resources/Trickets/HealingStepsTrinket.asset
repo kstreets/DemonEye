@@ -25,8 +25,10 @@ MonoBehaviour:
   spawnsOnAllMaps: 1
   firstSpawnMap: {fileID: 0}
   spawnsOnMaps: []
-  rarity: 4
-  dropOrigins: []
+  rarity: 0
+  dropOrigins:
+  - dropPool: {fileID: 11400000, guid: ac36b359b2819ad4f84ed57cf20ba475, type: 2}
+    chanceToSpawn: 0.6
   traderLevelRequired: 0
   traderStockRange: {x: 1, y: 1}
   barterRequirements: []

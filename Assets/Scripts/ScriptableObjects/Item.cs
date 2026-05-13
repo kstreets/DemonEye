@@ -15,7 +15,6 @@ public class Item : UuidScriptableObject {
 
     [Space]
 
-    public Trader associatedTrader;
     public PriceCategory priceCategory;
     public int buyPrice;
     public int sellPrice;

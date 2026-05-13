@@ -380,6 +380,10 @@ public partial class Game {
         return OffsetY(entity.position, 0.28f);
     }
     
+    private void SpawnTrinketActivationText(string text) {
+        SpawnTextPopIn(OffsetY(player.position, -0.1f), text);
+    }
+    
     private void SpawnTextPopIn(Vector3 spawnPos, string text, Vector3? endPos = default) {
         Entity textEntity = SpawnEntity(damageNumberPool, spawnPos, Quaternion.identity, damageNumbersParent);
         textEntity.textMesh.text = text; 

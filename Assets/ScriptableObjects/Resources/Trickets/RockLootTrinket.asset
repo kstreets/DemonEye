@@ -9,26 +9,26 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9bc23522601a56f4d89295cf565d360b, type: 3}
-  m_Name: Book
-  m_EditorClassIdentifier: Assembly-CSharp::Item
-  uuid: -912546282
-  displayName: Book
-  inventorySprite: {fileID: 52047638, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
-  dropSprite: {fileID: 1376013578, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  m_Script: {fileID: 11500000, guid: 3d020ea3f566e2f47a808fc7f3f542fc, type: 3}
+  m_Name: RockLootTrinket
+  m_EditorClassIdentifier: Assembly-CSharp::RockLootTrinket
+  uuid: 520884591
+  displayName: Rock Looter
+  inventorySprite: {fileID: 1959194128, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  dropSprite: {fileID: 0}
   pickupRadius: 0.07
-  type: {fileID: 0}
+  type: {fileID: 11400000, guid: 91804a8de7d984648aff2f6ae72e2331, type: 2}
   associatedTrader: {fileID: 0}
   priceCategory: {fileID: 0}
   buyPrice: 0
-  sellPrice: 3000
+  sellPrice: 0
   spawnsOnAllMaps: 1
   firstSpawnMap: {fileID: 0}
   spawnsOnMaps: []
   rarity: 0
   dropOrigins:
   - dropPool: {fileID: 11400000, guid: ac36b359b2819ad4f84ed57cf20ba475, type: 2}
-    chanceToSpawn: 1
+    chanceToSpawn: 0.55
   traderLevelRequired: 0
   traderStockRange: {x: 1, y: 1}
   barterRequirements: []
@@ -39,7 +39,8 @@ MonoBehaviour:
   fireratePercentage: 0
   projectileCount: 0
   rangePercentage: 0
-  itemGroupProps: {fileID: 0}
-  maxStackCount: 5
-  weight: 2
+  itemGroupProps: {fileID: 11400000, guid: 90924a9c2dcc93047893323f772f23f5, type: 2}
+  maxStackCount: 0
+  weight: 0
   description: 
+  chanceForSecondDrop: 0.5

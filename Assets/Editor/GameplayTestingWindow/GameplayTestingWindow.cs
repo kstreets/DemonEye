@@ -22,6 +22,8 @@ public class GameplayTestingWindow : EditorWindow {
     private Button PlaceItemsButton => root.Q<Button>("PlaceItemsBttn");
     private Toggle OverrideWavesToggle => root.Q<Toggle>("OverrideWavesToggle");
     private SliderInt StartWaveSlider => root.Q<SliderInt>("StartWaveSlider");
+    private Button PlayerDamageButton => root.Q<Button>("PlayerDamageBttn");
+    private Button PlayerBleedButton => root.Q<Button>("PlayerBleedBttn");
     
     private List<MapData> Maps => FindFirstObjectByType<Game>().maps;
 
@@ -41,6 +43,8 @@ public class GameplayTestingWindow : EditorWindow {
         PlaceItemsButton.RegisterCallback<ClickEvent>(OnPlaceItemsClicked);
         OverrideWavesToggle.RegisterCallback<ChangeEvent<bool>>(OnOverrideWavesToggle);
         StartWaveSlider.RegisterValueChangedCallback(OnStartWaveSliderChanged);
+        PlayerDamageButton.RegisterCallback<ClickEvent>(OnDamagePlayer);
+        PlayerBleedButton.RegisterCallback<ClickEvent>(OnMakePlayerBleed);
         
         // Restore settings after domain reload
         MapField.value = currentMap;
@@ -232,6 +236,16 @@ public class GameplayTestingWindow : EditorWindow {
         clonedWaves.timeBeforeFirstPhase = 5f;
         clonedWaves.spawnPhases.RemoveRange(0, startWaveIndex);
         return clonedWaves;
+    }
+    
+    private void OnDamagePlayer(ClickEvent e) {
+        if (!Application.isPlaying) return;
+        Game.gameInstance.DamagePlayer(10, Game.PlayerDamageType.Normal, null);
+    }
+    
+    private void OnMakePlayerBleed(ClickEvent e) {
+        if (!Application.isPlaying) return;
+        Game.gameInstance.player.bleeding = true;
     }
     
 }

@@ -12,5 +12,8 @@
         <ui:VisualElement name="Divider" style="flex-grow: 0; background-color: rgb(42, 42, 42); height: 1px; margin-top: 5px; margin-bottom: 5px;"/>
         <ui:Toggle label="Override Waves" name="OverrideWavesToggle"/>
         <ui:SliderInt label="Starting Wave Index" value="42" high-value="100" name="StartWaveSlider" show-input-field="true" enabled="true"/>
+        <ui:VisualElement name="Divider" style="flex-grow: 0; background-color: rgb(42, 42, 42); height: 1px; margin-top: 5px; margin-bottom: 5px;"/>
+        <ui:Button text="Damage Player" name="PlayerDamageBttn"/>
+        <ui:Button text="Apply Bleed To Player" name="PlayerBleedBttn"/>
     </ui:VisualElement>
 </ui:UXML>

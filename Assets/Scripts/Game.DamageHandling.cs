@@ -95,14 +95,22 @@ public partial class Game {
                 Entity smokeEntity = SpawnEntity<Entity>(rockSmokePrefab, entity.position, Quaternion.identity);
                 DestroyEntity(smokeEntity, 0.417f);
                 DestroyEntity(entity);
-                
                 PlayAudioClip(stoneBreakClip, entity.position);
+                
+                int dropCount = 1;
+                if (trinkets.current is RockLootTrinket rockLoot) {
+                    if (RollProbability(rockLoot.chanceForSecondDrop)) {
+                        dropCount++;
+                    }    
+                }
+                
+                for (int i = 0; i < dropCount; i++) {
+                    Item dropItem = GetItemFromDropPool(rockStonesDropPool);
+                    Entity rockDropEntity = SpawnItemAsEntity(dropItem, 1, entity.position, Quaternion.identity);
 
-                Item dropItem = GetItemFromDropPool(rockStonesDropPool);
-                Entity rockDropEntity = SpawnItemAsEntity(dropItem, 1, entity.position, Quaternion.identity);
-
-                Vector3 endPos = entity.position + RotationVector(Random.Range(0f, 360f), 0.18f, 0.25f);
-                AddBounceEffect(rockDropEntity, endPos, 0.8f);
+                    Vector3 endPos = entity.position + RotationVector(Random.Range(0f, 360f), 0.18f, 0.25f);
+                    AddBounceEffect(rockDropEntity, endPos, 0.8f);
+                }
             }
             else {
                 AddFlashHitEffect(entity);
@@ -111,7 +119,7 @@ public partial class Game {
             }
         }
     }
-
+    
     private float GetCriticalStrikeProbability(Projectile proj, Enemy enemy) {
         if (proj.flatCritChance.TryGetValue(out float flatCrit)) {
             return flatCrit;

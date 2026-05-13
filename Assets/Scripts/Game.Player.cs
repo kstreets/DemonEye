@@ -193,6 +193,12 @@ public partial class Game {
             bool isPrimaryShot = i == 0;
             if (isPrimaryShot) {
                 ShootProjectile(attackTarget);
+                if (trinkets.current is CauterizingWoundsTrinket cauterizingWounds) {
+                    if (player.bleeding && RollProbability(cauterizingWounds.chancePerShotToStopBleeding)) {
+                        player.bleeding = false;
+                        SpawnTrinketActivationText(cauterizingWounds.activationText);
+                    }
+                }
             }
             
             bool isAdditionalShot = i > 0;
@@ -419,9 +425,9 @@ public partial class Game {
         });
     }
     
-    private enum PlayerDamageType { Normal, Collision }
+    public enum PlayerDamageType { Normal, Collision }
 
-    private void DamagePlayer(int damage, PlayerDamageType damageType, Entity sourceEntity, float chanceToBleed = 0f) {
+    public void DamagePlayer(int damage, PlayerDamageType damageType, Entity sourceEntity, float chanceToBleed = 0f) {
         chanceToBleed -= GetAbsoluteStat(Player.Stat.BleedResist); 
         if (!player.bleeding && !loadedMapData.playerCantBleed && !PlayerHealthIsAtAutoBleedStop() && RollProbability(chanceToBleed)) {
             player.bleeding = true;
@@ -435,15 +441,17 @@ public partial class Game {
         SpawnDamageNumber(player.position, damage, DamageColor.Blood);
         CancelPortalSummoning();
         
-        if (trinkets.current is Thorns damageReflect && trinkets.cooldownDuration.HasPassed()) {
+        if (trinkets.current is Thorns thorns && trinkets.cooldownDuration.HasPassed()) {
             Entity damageEntity = sourceEntity switch {
                 Enemy enemy => enemy,
                 Projectile proj => proj.sourceEntity, 
                 _ => null,
             };
-            DamageEnemy(damageEntity, damage, isCriticalStrike: false);
-            SpawnTextPopIn(OffsetY(player.position, -0.1f), damageReflect.activationPopUpText);
-            trinkets.cooldownDuration.Reset(damageReflect.cooldownTime);
+            if (damageEntity != null) {
+                DamageEnemy(damageEntity, damage, isCriticalStrike: false);
+                SpawnTrinketActivationText(thorns.activationPopUpText);
+                trinkets.cooldownDuration.Reset(thorns.cooldownTime);
+            }
         }
     }
     
