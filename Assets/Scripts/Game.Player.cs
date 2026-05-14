@@ -18,7 +18,6 @@ public partial class Game {
         
         public Limiter enmeyCollisionDamageLimiter;
         
-        public int crucibleLevel;
         public int soulCurrency;
         public int coinCurrency;
         

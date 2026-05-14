@@ -30,7 +30,7 @@ public class Quest : ScriptableObject {
                 Type.Kill => $"Kill {targetValue} {targetEnemy.displayName}s", 
                 Type.Fetch => targetValue == 1 ? $"Return with a {targetItem.displayName}" : $"Return with {targetValue} {targetItem.displayName}s",
                 Type.Teleport => $"Teleport to {teleportMap?.displayName}", 
-                Type.Sell => $"Sell {targetValue} {targetItem.displayName} to {targetItem.associatedTrader.traderName}", 
+                Type.Sell => $"Sell {targetValue} {targetItem.displayName} to the trader", 
                 _ => taskDescription,
             };
         }

@@ -1405,8 +1405,3 @@ public partial class Game : MonoBehaviour {
     }
 
 }
-
-// Allows for the use of init
-namespace System.Runtime.CompilerServices {
-    public interface IsExternalInit { }
-}

@@ -130,10 +130,9 @@ public partial class Game {
         SpawnUiSlots(traderTransactionInventoryParent, transactionInventorySize);
         transactionInventory = CreateInventory(traderTransactionInventoryParent, transactionInventorySize);
 
-        const int maxCrucibleInventorySize = 6;
-        const int startingCrucibleInventorySize = maxCrucibleInventorySize;
-        SpawnUiSlots(crucibleParent, maxCrucibleInventorySize, eyeForgeSlotPrefab);
-        crucibleInventory = CreateInventory(crucibleParent, startingCrucibleInventorySize + player.crucibleLevel);
+        const int crucibleInventorySize = 6;
+        SpawnUiSlots(crucibleParent, crucibleInventorySize, eyeForgeSlotPrefab);
+        crucibleInventory = CreateInventory(crucibleParent, crucibleInventorySize);
         SetupEyeCrucibleInventorySlots();
         LoadInventory(crucibleInventory);
     }

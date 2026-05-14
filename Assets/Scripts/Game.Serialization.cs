@@ -75,7 +75,6 @@ public partial class Game {
     private void SavePlayerData() {
         PlayerSaveData data = new() {
             health = player.health,
-            crucibleLevel = player.crucibleLevel,
             soulCurrency = player.soulCurrency,
             coinCurrency = player.coinCurrency,
             hasteSkillLevel = player.hasteSkillLevel,
@@ -90,7 +89,6 @@ public partial class Game {
         PlayerSaveData data = LoadFromFile<PlayerSaveData>(playerSavePath);
         if (data != null) {
             instancedPlayer.health = data.health;
-            instancedPlayer.crucibleLevel = data.crucibleLevel;
             instancedPlayer.soulCurrency = data.soulCurrency;
             instancedPlayer.coinCurrency = data.coinCurrency;
             instancedPlayer.hasteSkillLevel = data.hasteSkillLevel;
