@@ -229,7 +229,7 @@ public partial class Game {
             Entity expEntity = SpawnEntity(blastPool, spawnPos, Quaternion.identity); 
             DestroyEntity(expEntity, CurrentClipLength(expEntity.animator));
             
-            List<Collider2D> cols = OverlapCircle(spawnPos, blast.radius, Masks.EnemyMask);
+            List<Collider2D> cols = Physics.OverlapCircle(spawnPos, blast.radius, Masks.EnemyMask);
             foreach (Collider2D col in cols) {
                 Enemy enemy = entityLookup[col.gameObject] as Enemy;
                 int damage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(enemy) * blast.damageMulti);
@@ -242,10 +242,10 @@ public partial class Game {
     
     private List<Vector3> GetAttackTargets(int targetCount) {
         float overlapDist = gameplayConfig.projectileSpeed * GetProjectileRangeInSeconds();
-        List<Collider2D> cols = OverlapCircle(player.position, overlapDist, Masks.EnemyMask);
+        List<Collider2D> cols = Physics.OverlapCircle(player.position, overlapDist, Masks.EnemyMask);
         
         if (cols.Count <= 0) {
-            cols = OverlapCircle(player.position, overlapDist, Masks.MineableMask);
+            cols = Physics.OverlapCircle(player.position, overlapDist, Masks.MineableMask);
         }
         
         cols.Sort(static (a, b) => {

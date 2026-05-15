@@ -19,6 +19,8 @@ public partial class Game : MonoBehaviour {
 
     public static Game gameInstance;
     
+    public GameData gameData;
+    
     public StartingItemsConfig startingItems;
     public Styles styles;
     public GameplayConfig gameplayConfig;
@@ -26,12 +28,6 @@ public partial class Game : MonoBehaviour {
     [Foldout("Quests")]
     public QuestGraphRuntime questGraph;
     public Quest pickPocketQuest;
-    [EndFoldout]
-
-    [Foldout("Traders")]
-    public Trader potionManTrader;
-    public Trader armsDealerTrader;
-    public Trader hatManTrader;
     [EndFoldout]
 
     [Foldout("Maps")]
@@ -894,7 +890,7 @@ public partial class Game : MonoBehaviour {
         DisableInteractionPrompt();
         
         Vector2 checkCenter = player.position + new Vector3(0f, 0.05f, 0f);
-        List<Collider2D> cols = OverlapCircle(checkCenter, 0.1f, Masks.ItemMask);
+        List<Collider2D> cols = Physics.OverlapCircle(checkCenter, 0.1f, Masks.ItemMask);
         
         foreach (Collider2D col in cols) {
             if (col.CompareTag(Tags.Pickup)) {
@@ -1154,7 +1150,7 @@ public partial class Game : MonoBehaviour {
     private void SpawnFinalExitPortal() {
         for (int i = 0; i < 100; i++) {
             Vector2 randomPos = player.position.ToVector2() + Random.insideUnitCircle * Random.Range(0.5f, 1.5f);
-            if (OverlapCircle(randomPos, 0.2f, Masks.StaticLevelMask).Count > 0) continue;
+            if (Physics.OverlapCircle(randomPos, 0.2f, Masks.StaticLevelMask).Count > 0) continue;
             
             Transform exitPortalParent = loadedMapInst.exitPortalsParent;
             int randomSpawnIndex = Random.Range(0, exitPortalParent.childCount);
@@ -1232,38 +1228,6 @@ public partial class Game : MonoBehaviour {
         return anim.GetCurrentAnimatorStateInfo(0).length;
     }
 
-    private List<Collider2D> _overlapCircleResults = new(1000);
-    
-    private List<Collider2D> OverlapCircle(Vector2 center, float radius, LayerMask mask) {
-        _overlapCircleResults.Clear();
-        
-        ContactFilter2D contactFilter = new() {
-            layerMask = mask, 
-            useLayerMask = true,
-        };
-        
-        int count = Physics2D.OverlapCircle(center, radius, contactFilter, _overlapCircleResults);
-        Assert.IsFalse(count > _overlapCircleResults.Capacity);
-        
-        return _overlapCircleResults;
-    }
-    
-    private List<Collider2D> _overlapCapsuleResults = new(100);
-    
-    private List<Collider2D> OverlapCapsule(Vector2 center, CapsuleCollider2D capsule, LayerMask mask) {
-        _overlapCapsuleResults.Clear();
-        
-        ContactFilter2D contactFilter = new() {
-            layerMask = mask, 
-            useLayerMask = true,
-        };
-        
-        int count = Physics2D.OverlapCapsule(center, capsule.size, capsule.direction, 0f, contactFilter, _overlapCapsuleResults);
-        Assert.IsFalse(count > _overlapCircleResults.Capacity);
-        
-        return _overlapCapsuleResults;
-    }
-    
     private string GetCountdownText(float timeLeft) {
         float time = Mathf.Clamp(timeLeft, 0f, float.MaxValue);
         int minutesLeft = Mathf.FloorToInt(time / 60f);

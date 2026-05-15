@@ -28,95 +28,101 @@ public partial class Game {
     
     private void HandleDamage(Projectile projectile, Entity entity) {
         if (entity == null) return;
-        
-        DemonEyeInstance eyeInstance = projectile.eyeInstanceSpawnedFrom;
-        
         if (entity.gameObject.CompareTag(Tags.Enemy)) {
-            if (entityLookup[entity.gameObject] is not Enemy enemy) return;
-
-            if (projectile.flatDamage.HasValue) {
-                DamageEnemy(enemy, projectile.flatDamage.Value, false);
-                return;
-            }
-            
-            bool isCriticalStrike = RollProbability(GetCriticalStrikeProbability(projectile, enemy));
-            if (isCriticalStrike) {
-                damageHandlingVars.consecutiveCriticalHits++;
-            }
-            else {
-                damageHandlingVars.consecutiveCriticalHits = 0;
-            }
-
-            int damage = GetProjectileDamage(projectile, enemy, isCriticalStrike);
-            DamageEnemy(enemy, damage, isCriticalStrike);
-            
-            foreach (EquipedUpgradeInstance modInstance in eyeInstance.upgradeInstances) {
-                modInstance.ApplyToEnemy(enemy);
-            }
-            
-            if (eyeInstance.explosion.TryGetValue(out var explosion) && RollProbability(explosion.probability)) {
-                Vector2 expSpawnPos = projectile.position + (enemy.position - projectile.position) / 2f;
-                
-                Entity expEntity = SpawnEntity(explosionPool, expSpawnPos, Quaternion.identity); 
-                DestroyEntity(expEntity, CurrentClipLength(expEntity.animator));
-                
-                List<Collider2D> cols = OverlapCircle(expSpawnPos, explosion.radius, Masks.EnemyMask);
-                foreach (Collider2D col in cols) {
-                    Enemy explosionEnemy = entityLookup[col.gameObject] as Enemy;
-                    int explosionDamage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(explosionEnemy) * explosion.damageMulti);
-                    DamageEnemyAfterDelay(entityLookup[col.gameObject], explosionDamage, false, 0.1f);
-                }
-            }
-            
-            if (equipedEye.boneShatter.TryGetValue(out var boneShatter) && RollProbability(boneShatter.probability)) {
-                for (int i = 0; i < boneShatter.shardsCount; i++) {
-                    float randomDelay = Random.Range(0f, 0.06f);
-                    float randomSpeedScaler = Random.Range(0.4f, 0.6f);
-                    Vector2 boneShatterVelocity = RandomizeVectorAngle(projectile.velocity * randomSpeedScaler, 65f);
-                    int boneDamage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(enemy) * boneShatter.perShardDamageMulti);
-                    Projectile boneShatterProj = SpawnProjectile(
-                        boneShatterProjectilePool, enemy.position, boneShatterVelocity, boneShatter.lifeTime, player,
-                        rotation: RandomRotation(), spawnDelay: randomDelay, flatDamage: boneDamage
-                    );
-                    ProjectileMarkEntityToIgnore(boneShatterProj, enemy);
-                }
-            }
+            HandleDamageEnemy(projectile, entity);
         }
         else {
-            entity.health -= gameplayConfig.damage;
+            HandleDamageRock(projectile, entity);
+        }
+    }
+    
+    private void HandleDamageEnemy(Projectile projectile, Entity entity) {
+        if (entityLookup[entity.gameObject] is not Enemy enemy) return;
 
-            PlayAudioClip(stoneHitClip, entity.position);
-                
-            if (entity.health <= 0) {
-                if (entity.obstacleCellRadius > 0) {
-                    loadedMapInst.grid.ClearObstacle(entity.obstaclePosition, entity.obstacleCellRadius);
-                }
-                
-                Entity smokeEntity = SpawnEntity<Entity>(rockSmokePrefab, entity.position, Quaternion.identity);
-                DestroyEntity(smokeEntity, 0.417f);
-                DestroyEntity(entity);
-                PlayAudioClip(stoneBreakClip, entity.position);
-                
-                int dropCount = 1;
-                if (trinkets.current is RockLootTrinket rockLoot) {
-                    if (RollProbability(rockLoot.chanceForSecondDrop)) {
-                        dropCount++;
-                    }    
-                }
-                
-                for (int i = 0; i < dropCount; i++) {
-                    Item dropItem = GetItemFromDropPool(rockStonesDropPool);
-                    Entity rockDropEntity = SpawnItemAsEntity(dropItem, 1, entity.position, Quaternion.identity);
+        if (projectile.flatDamage.HasValue) {
+            DamageEnemy(enemy, projectile.flatDamage.Value, false);
+            return;
+        }
+        
+        bool isCriticalStrike = RollProbability(GetCriticalStrikeProbability(projectile, enemy));
+        if (isCriticalStrike) {
+            damageHandlingVars.consecutiveCriticalHits++;
+        }
+        else {
+            damageHandlingVars.consecutiveCriticalHits = 0;
+        }
 
-                    Vector3 endPos = entity.position + RotationVector(Random.Range(0f, 360f), 0.18f, 0.25f);
-                    AddBounceEffect(rockDropEntity, endPos, 0.8f);
-                }
+        int damage = GetProjectileDamage(projectile, enemy, isCriticalStrike);
+        DamageEnemy(enemy, damage, isCriticalStrike);
+        
+        DemonEyeInstance eyeInstance = projectile.eyeInstanceSpawnedFrom;
+        foreach (EquipedUpgradeInstance modInstance in eyeInstance.upgradeInstances) {
+            modInstance.ApplyToEnemy(enemy);
+        }
+        
+        if (eyeInstance.explosion.TryGetValue(out var explosion) && RollProbability(explosion.probability)) {
+            Vector2 expSpawnPos = projectile.position + (enemy.position - projectile.position) / 2f;
+            
+            Entity expEntity = SpawnEntity(explosionPool, expSpawnPos, Quaternion.identity); 
+            DestroyEntity(expEntity, CurrentClipLength(expEntity.animator));
+            
+            List<Collider2D> cols = Physics.OverlapCircle(expSpawnPos, explosion.radius, Masks.EnemyMask);
+            foreach (Collider2D col in cols) {
+                Enemy explosionEnemy = entityLookup[col.gameObject] as Enemy;
+                int explosionDamage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(explosionEnemy) * explosion.damageMulti);
+                DamageEnemyAfterDelay(entityLookup[col.gameObject], explosionDamage, false, 0.1f);
             }
-            else {
-                AddFlashHitEffect(entity);
-                AddShakeEffect(entity, 8f, 0.038f, 0.35f, shakeCurve);
-                Tween.PunchScale(entity.trans, Vector3.one * 0.12f, 0.1f, 15f);
+        }
+        
+        if (equipedEye.boneShatter.TryGetValue(out var boneShatter) && RollProbability(boneShatter.probability)) {
+            for (int i = 0; i < boneShatter.shardsCount; i++) {
+                float randomDelay = Random.Range(0f, 0.06f);
+                float randomSpeedScaler = Random.Range(0.4f, 0.6f);
+                Vector2 boneShatterVelocity = RandomizeVectorAngle(projectile.velocity * randomSpeedScaler, 65f);
+                int boneDamage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(enemy) * boneShatter.perShardDamageMulti);
+                Projectile boneShatterProj = SpawnProjectile(
+                    boneShatterProjectilePool, enemy.position, boneShatterVelocity, boneShatter.lifeTime, player,
+                    rotation: RandomRotation(), spawnDelay: randomDelay, flatDamage: boneDamage
+                );
+                ProjectileMarkEntityToIgnore(boneShatterProj, enemy);
             }
+        }
+    }
+    
+    private void HandleDamageRock(Projectile projectile, Entity entity) {
+        entity.health -= gameplayConfig.damage;
+
+        PlayAudioClip(stoneHitClip, entity.position);
+        
+        if (entity.health > 0) {
+            AddFlashHitEffect(entity);
+            AddShakeEffect(entity, 8f, 0.038f, 0.35f, shakeCurve);
+            Tween.PunchScale(entity.trans, Vector3.one * 0.12f, 0.1f, 15f);
+            return;
+        }
+                
+        if (entity.obstacleCellRadius > 0) {
+            loadedMapInst.grid.ClearObstacle(entity.obstaclePosition, entity.obstacleCellRadius);
+        }
+            
+        Entity smokeEntity = SpawnEntity<Entity>(rockSmokePrefab, entity.position, Quaternion.identity);
+        DestroyEntity(smokeEntity, 0.417f);
+        DestroyEntity(entity);
+        PlayAudioClip(stoneBreakClip, entity.position);
+            
+        int dropCount = 1;
+        if (trinkets.current is RockLootTrinket rockLoot) {
+            if (RollProbability(rockLoot.chanceForSecondDrop)) {
+                dropCount++;
+            }    
+        }
+            
+        for (int i = 0; i < dropCount; i++) {
+            Item dropItem = GetItemFromDropPool(rockStonesDropPool);
+            Entity rockDropEntity = SpawnItemAsEntity(dropItem, 1, entity.position, Quaternion.identity);
+
+            Vector3 endPos = entity.position + RotationVector(Random.Range(0f, 360f), 0.18f, 0.25f);
+            AddBounceEffect(rockDropEntity, endPos, 0.8f);
         }
     }
     

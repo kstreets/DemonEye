@@ -227,7 +227,7 @@ public partial class Game {
             }
         }
         
-        List<Collider2D> overlapedEnemiesWithPlayer = OverlapCapsule(player.position, player.hurtCollider, Masks.EnemyMask);
+        List<Collider2D> overlapedEnemiesWithPlayer = Physics.OverlapCapsule(player.position, player.hurtCollider, Masks.EnemyMask);
         bool someEnemyOverlapsPlayer = overlapedEnemiesWithPlayer.Count > 0;
         
         if (someEnemyOverlapsPlayer) {
