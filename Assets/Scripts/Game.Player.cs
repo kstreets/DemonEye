@@ -60,9 +60,27 @@ public partial class Game {
     
     private Trinkets trinkets;
 
-    private void OnPlayerCreated() {
+    private Player MakePlayer() {
+        player = SpawnEntity<Player>(playerPrefab, Vector3.zero, Quaternion.identity, null, EntityLifetime.Global);
+        LoadAndAssignPlayerSaveData(player);
         player.hurtCollider = player.gameObject.GetComponentInChildren<CapsuleCollider2D>();
         player.defaultPlayerPreviewSprite = playerPreviewImage.sprite;
+        return player;
+    }
+    
+    private void LoadAndAssignPlayerSaveData(Player instancedPlayer) {
+        PlayerSaveData data = LoadFromFile<PlayerSaveData>(playerSavePath);
+        if (data != null) {
+            instancedPlayer.health = data.health;
+            instancedPlayer.soulCurrency = data.soulCurrency;
+            instancedPlayer.coinCurrency = data.coinCurrency;
+            instancedPlayer.hasteSkillLevel = data.hasteSkillLevel;
+            instancedPlayer.intellectSkillLevel = data.intellectSkillLevel;
+            instancedPlayer.lifeBloodSkillLevel = data.lifeBloodSkillLevel;
+            instancedPlayer.strengthSkillLevel = data.strengthSkillLevel;
+        }
+        // We want to make sure that the player health is never <= zero
+        instancedPlayer.health = player.health <= 0f ? FullPlayerHealth : player.health;
     }
     
     private void InitPlayer() {
@@ -231,16 +249,16 @@ public partial class Game {
             
             List<Collider2D> cols = Physics.OverlapCircle(spawnPos, blast.radius, Masks.EnemyMask);
             foreach (Collider2D col in cols) {
-                Enemy enemy = entityLookup[col.gameObject] as Enemy;
+                Enemy enemy = gameData.entities.lookup[col.gameObject] as Enemy;
                 int damage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(enemy) * blast.damageMulti);
-                DamageEnemyAfterDelay(entityLookup[col.gameObject], damage, false, 0.15f);
+                DamageEnemyAfterDelay(enemy, damage, false, 0.15f);
             }
         }
             
         player.lastShotTime = Time.time;
     }
     
-    private List<Vector3> GetAttackTargets(int targetCount) {
+    internal List<Vector3> GetAttackTargets(int targetCount) {
         float overlapDist = gameplayConfig.projectileSpeed * GetProjectileRangeInSeconds();
         List<Collider2D> cols = Physics.OverlapCircle(player.position, overlapDist, Masks.EnemyMask);
         
@@ -257,13 +275,13 @@ public partial class Game {
         int count = Mathf.Min(targetCount, cols.Count);
         List<Vector3> targets = new();
         for (int i = 0; i < count; i++) {
-            targets.Add(entityLookup[cols[i].gameObject].Center);
+            targets.Add(gameData.entities.lookup[cols[i].gameObject].Center);
         }
         return targets;
     }
 
     private static float GetTargetScore(Collider2D col) {
-        Entity entity = gameInstance.entityLookup[col.gameObject];
+        Entity entity = gameInstance.gameData.entities.lookup[col.gameObject];
         float dist = Vector2.Distance(col.transform.position, gameInstance.player.position);
 
         if (entity is Enemy enemy) {

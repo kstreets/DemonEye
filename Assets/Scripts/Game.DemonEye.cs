@@ -7,7 +7,7 @@ public partial class Game {
         public int uuid;
         public int stackCount;
         
-        public EyeUpgradeItem EyeUpgradeItem => gameInstance.resourceLookup[uuid] as EyeUpgradeItem;
+        public EyeUpgradeItem EyeUpgradeItem => gameInstance.gameData.res.lookup[uuid] as EyeUpgradeItem;
         public void ApplyToEnemy(Enemy enemy) => EyeUpgradeItem.AddInstanceToEnemy(enemy, stackCount);
         public void ApplyToEye(DemonEyeInstance eyeInstance) => EyeUpgradeItem.AddInstanceToEye(eyeInstance, stackCount);
     }
@@ -16,7 +16,7 @@ public partial class Game {
         public int uuid;
         public int stackCount;
         
-        public Augment Augment => gameInstance.resourceLookup[uuid] as Augment;
+        public Augment Augment => gameInstance.gameData.res.lookup[uuid] as Augment;
         public void ApplyToEnemy(Enemy enemy) => Augment.AddInstanceToEnemy(enemy, stackCount);
         public void ApplyToEye(DemonEyeInstance eyeInstance) => Augment.AddInstanceToEye(eyeInstance, stackCount);
     }
@@ -51,7 +51,7 @@ public partial class Game {
     private Limiter attackLimiter;
 
     private void BuildAndRegisterEye(ItemInstance itemInstance) {
-        itemInstance.itemOrInstanceUuid = GenerateNewItemUuid();
+        itemInstance.itemOrInstanceUuid = UuidScriptableObject.GenerateNewItemUuid(gameData.res.lookup);
         
         List<EquipedUpgradeInstance> equipedUpgrades = new();
         List<EquipedAugmentInstance> equipedAugments = new();
@@ -114,7 +114,7 @@ public partial class Game {
         var augmentsPerUpgradeDict = DictionaryPool<EyeUpgradeItem, Dictionary<Augment, int>>.Get();
         
         foreach (int uuid in uuids) {
-            UuidScriptableObject nestedObject = resourceLookup[uuid];
+            UuidScriptableObject nestedObject = gameData.res.lookup[uuid];
             ExtractUpgradeAndAugment(nestedObject, out EyeUpgradeItem upgrade, out Augment augment);
             
             if (augment != null) {

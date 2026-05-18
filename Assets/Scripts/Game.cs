@@ -317,20 +317,14 @@ public partial class Game : MonoBehaviour {
     private void Start() {
         gameInstance = this;
         
-        LoadAllResources();
+        InitGameData();
         BuildSavePaths();
-        InitAudio();
         
         LoadAndAssignMapSaves(maps);
-        
-        player = SpawnEntity<Player>(playerPrefab, Vector3.zero, Quaternion.identity, null, EntityLifetime.Global);
-        OnPlayerCreated();
-        LoadAndAssignPlayerSaveData(player);
         
         equipedEye = emptyDemonEye;
 
         DemonEyeTween.Init();
-        InitDropPools();
         
         InitInventories();
         InitButtonCallbacks();
@@ -747,7 +741,7 @@ public partial class Game : MonoBehaviour {
     private void AnimateGameOverSequence(Action onCompleteCallback) {
         Tween.StopAll();
         
-        foreach (Entity entity in entities) {
+        foreach (Entity entity in gameData.entities.all) {
             if (entity.rigidbody) {
                 entity.rigidbody.linearVelocity = Vector2.zero;
             }
@@ -904,7 +898,7 @@ public partial class Game : MonoBehaviour {
                 if (interactInputAction.WasPressedThisFrame()) {
                     InventoryAddResult result = TryAddItemToInventory(playerInventory, itemDrop.ItemInstance);
                     if (result.type == InventoryAddResult.ResultType.Success) {
-                        Entity droppedEntity = entityLookup[itemDrop.gameObject];
+                        Entity droppedEntity = gameData.entities.lookup[itemDrop.gameObject];
                         PickupDroppedItem(droppedEntity); 
                         itemDrop.circleCollider.enabled = false;
                     }

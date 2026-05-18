@@ -244,7 +244,7 @@ public partial class Game {
                 }
             }
             
-            Enemy collidedWithEnemy = entityLookup[closestColToPlayer.gameObject] as Enemy;
+            Enemy collidedWithEnemy = gameData.entities.lookup[closestColToPlayer.gameObject] as Enemy;
             DamagePlayer(collidedWithEnemy.data.collisionDamage, PlayerDamageType.Collision, collidedWithEnemy);
         }
     }

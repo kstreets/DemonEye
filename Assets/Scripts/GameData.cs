@@ -8,6 +8,7 @@ using UnityEngine.Audio;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
+using static Game;
 
 [Serializable]
 public class GameData {
@@ -293,6 +294,10 @@ public class GameData {
         public DynamicClip finalWaveStingerClip;
         public AudioClip ambienceClip;
         public AudioMixerGroup ambienceMixerGroup;
+        
+        [NonSerialized] public AudioSource ambienceSource;
+        public Dictionary<int, List<DynamicClipRecord>> records = new(50);
+        public Queue<AudioSource> reservedSources;
     }
     public Audio audio; 
     
@@ -311,28 +316,28 @@ public class GameData {
         public InputAction quickUse3Action;
         public InputAction quickUse4Action;
     }
-    public Input input;
+    public Input input = new();
     
     public class EntityPools {
-        public Game.EntityPool<Game.Entity> itemDrop;
-        public Game.EntityPool<Game.Entity> bloodDrop;
-        public Game.EntityPool<Game.Projectile> projectile;
-        public Game.EntityPool<Game.Projectile> boneShatterProjectile;
-        public Game.EntityPool<Game.Projectile> gooProjectile;
-        public Game.EntityPool<Game.Projectile> piercingShotProjectile;
-        public Game.EntityPool<Game.Entity> poisonDebuff;
-        public Game.EntityPool<Game.Entity> explosion;
-        public Game.EntityPool<Game.Entity> projectileImpact;
-        public Game.EntityPool<Game.Entity> teleportIn;
-        public Game.EntityPool<Game.Entity> teleportOut;
-        public Game.EntityPool<Game.Entity> bloodSplatter;
-        public Game.EntityPool<Game.Entity> runSmoke;
-        public Game.EntityPool<Game.Entity> damageNumber;
-        public Game.EntityPool<Game.Entity> forgeExplosion;
-        public Game.EntityPool<Game.Entity> forgeDustExplosion;
-        public Game.EntityPool<Game.Entity> blast;
+        public EntityPool<Entity> itemDrop;
+        public EntityPool<Entity> bloodDrop;
+        public EntityPool<Projectile> projectile;
+        public EntityPool<Projectile> boneShatterProjectile;
+        public EntityPool<Projectile> gooProjectile;
+        public EntityPool<Projectile> piercingShotProjectile;
+        public EntityPool<Entity> poisonDebuff;
+        public EntityPool<Entity> explosion;
+        public EntityPool<Entity> projectileImpact;
+        public EntityPool<Entity> teleportIn;
+        public EntityPool<Entity> teleportOut;
+        public EntityPool<Entity> bloodSplatter;
+        public EntityPool<Entity> runSmoke;
+        public EntityPool<Entity> damageNumber;
+        public EntityPool<Entity> forgeExplosion;
+        public EntityPool<Entity> forgeDustExplosion;
+        public EntityPool<Entity> blast;
     }
-    public EntityPools entityPools;
+    public EntityPools entityPools = new();
     
     public class States {
         public State mainMenuState;
@@ -342,15 +347,25 @@ public class GameData {
         public State gameOverState;
         public State winExitState;
         public State earlyExitState;
-        public StateMachine gameStateMachine = new();
+        public StateMachine gameStateMachine;
     }
-    public States states;
+    public States states = new();
     
     public class Entities {
-        public List<Game.Entity> all = new();
-        public Dictionary<GameObject, Game.Entity> lookup = new();
-        public Game.Player player;
+        public List<Entity> all = new();
+        public Dictionary<GameObject, Entity> lookup = new();
+        public Player player;
     }
-    public Entities entities;
+    public Entities entities = new();
+    
+    public class Resources {
+        public Dictionary<int, UuidScriptableObject> lookup = new();
+        public Dictionary<EyeUpgradeItem, List<Augment>> eyeUpgradeAugmentsLookup = new();
+        public List<Item> items = new();
+        public List<DropPool> dropPools = new();
+        public List<DropPool> globalDropPools = new();
+        public List<DropPool> mapSpecificDropPools = new();
+    }
+    public Resources res = new();
     
 }

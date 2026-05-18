@@ -37,6 +37,7 @@ public partial class Game {
     }
     
     private void HandleDamageEnemy(Projectile projectile, Entity entity) {
+        var entityLookup = gameData.entities.lookup;
         if (entityLookup[entity.gameObject] is not Enemy enemy) return;
 
         if (projectile.flatDamage.HasValue) {

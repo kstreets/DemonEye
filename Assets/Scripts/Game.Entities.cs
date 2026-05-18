@@ -10,9 +10,6 @@ using Random = UnityEngine.Random;
 
 public partial class Game {
     
-    [NonSerialized] public List<Entity> entities = new();
-    [NonSerialized] public Dictionary<GameObject, Entity> entityLookup = new();
-    
     public interface IEntityPooler { 
         public void ReleaseEntity(Entity entity);
     }
@@ -71,8 +68,8 @@ public partial class Game {
         public ParentToEntity parentEffect;
         public ShakeEffect shakeEffect;
 
-        public enum EffectsIndicies { HitFlash, Poisoned, Bounce, Parent, Shake }
-        public readonly Tween[] tweenEffects = new Tween[5];
+        public enum EffectsIndicies { HitFlash, Poisoned, Bounce, Parent, Shake, Count }
+        public readonly Tween[] tweenEffects = new Tween[(int)EffectsIndicies.Count];
         
         public Vector3 position {
             get => trans.position;
@@ -86,7 +83,7 @@ public partial class Game {
     }
 
     private bool EntityIsValid(Entity entity) {
-        return entity.trans && gameInstance.entityLookup.ContainsKey(entity.gameObject);
+        return entity.trans && gameData.entities.lookup.ContainsKey(entity.gameObject);
     }
 
     private Entity SpawnItemAsEntity(Item item, int count, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level) {
@@ -150,11 +147,12 @@ public partial class Game {
     }
 
     private void RegisterEntity<T>(T entity) where T : Entity {
-        entities.Add(entity);
-        entityLookup.Add(entity.gameObject, entity);
+        gameData.entities.all.Add(entity);
+        gameData.entities.lookup.Add(entity.gameObject, entity);
     }
     
     private void DestroyEntities(EntityLifetime lifetime) {
+        var entities = gameData.entities.all;
         for (int i = entities.Count - 1; i >= 0; i--) {
             if (entities[i].lifetime == lifetime) {
                 DestroyEntity(entities[i]);
@@ -171,16 +169,16 @@ public partial class Game {
                 entity.tweenEffects[i].Complete();
             }
             
-            bool enemyWasInLookup = entityLookup.Remove(entity.gameObject, out _);
+            bool enemyWasInLookup = gameData.entities.lookup.Remove(entity.gameObject, out _);
             if (enemyWasInLookup) {
-                entities.Remove(entity);
+                gameData.entities.all.Remove(entity);
                 DestroyOrReleaseEntitysGameObject(entity);
             }
         }
     }
 
     private void GetEntityHierarchy(Transform root, List<Entity> entityHierarchy) {
-        if (entityLookup.TryGetValue(root.gameObject, out Entity associatedEntity)) {
+        if (gameData.entities.lookup.TryGetValue(root.gameObject, out Entity associatedEntity)) {
             entityHierarchy.Add(associatedEntity);
         }
         foreach (Transform trans in root) {

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using Random = UnityEngine.Random;
+using GameResLookup = System.Collections.Generic.Dictionary<int, UuidScriptableObject>;
 
 [CreateAssetMenu(fileName = "UuidScriptableObject", menuName = "Scriptable Objects/UuidScriptableObject")]
 public class UuidScriptableObject : ScriptableObject {
@@ -10,6 +11,14 @@ public class UuidScriptableObject : ScriptableObject {
 
     public static int GetIntUuid() {
         return Random.Range(int.MinValue, int.MaxValue);
+    }
+    
+    public static int GenerateNewItemUuid(GameResLookup resourceLookup) {
+        int newItemId = GetIntUuid();
+        while (resourceLookup.ContainsKey(newItemId)) {
+            newItemId = GetIntUuid();
+        }
+        return newItemId; 
     }
     
 #if UNITY_EDITOR

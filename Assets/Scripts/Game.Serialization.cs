@@ -85,21 +85,6 @@ public partial class Game {
         SaveToFile(playerSavePath, data);
     }
 
-    private void LoadAndAssignPlayerSaveData(Player instancedPlayer) {
-        PlayerSaveData data = LoadFromFile<PlayerSaveData>(playerSavePath);
-        if (data != null) {
-            instancedPlayer.health = data.health;
-            instancedPlayer.soulCurrency = data.soulCurrency;
-            instancedPlayer.coinCurrency = data.coinCurrency;
-            instancedPlayer.hasteSkillLevel = data.hasteSkillLevel;
-            instancedPlayer.intellectSkillLevel = data.intellectSkillLevel;
-            instancedPlayer.lifeBloodSkillLevel = data.lifeBloodSkillLevel;
-            instancedPlayer.strengthSkillLevel = data.strengthSkillLevel;
-        }
-        
-        // We want to make sure that the player health is never <= zero
-        instancedPlayer.health = player.health <= 0f ? FullPlayerHealth : player.health;
-    }
     
     [Serializable]
     private class MapSaves {

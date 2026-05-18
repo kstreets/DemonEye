@@ -25,7 +25,7 @@ public partial class Game {
                     return gameInstance.demonEyeItem;
                 }
                 
-                UuidScriptableObject uuidObject = gameInstance.resourceLookup[itemOrInstanceUuid];
+                UuidScriptableObject uuidObject = gameInstance.gameData.res.lookup[itemOrInstanceUuid];
                 return uuidObject switch {
                     Item item => item,
                     Augment augment => augment.augmentedEyeUpgradeItem,
@@ -64,7 +64,7 @@ public partial class Game {
         
         public bool TryGetUuidObject(out UuidScriptableObject uuidObject) { 
             // Demon Eye instances will not be in the resourceLookup
-            return gameInstance.resourceLookup.TryGetValue(itemOrInstanceUuid, out uuidObject);
+            return gameInstance.gameData.res.lookup.TryGetValue(itemOrInstanceUuid, out uuidObject);
         }
         
     }

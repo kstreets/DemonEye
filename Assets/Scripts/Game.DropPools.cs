@@ -14,30 +14,15 @@ public partial class Game {
         public float chanceToSpawn;
     }
     
-    [NonSerialized] public List<DropPool> globalDropPools = new();
-    [NonSerialized] public List<DropPool> mapSpecificDropPools = new();
-    
-    private void InitDropPools() {
-        foreach (DropPool dropPool in allDropPools) {
-            dropPool.items = new();
-            var dropPoolList = dropPool.isMapSpecific ? mapSpecificDropPools : globalDropPools;
-            dropPoolList.Add(dropPool);
-        }
-        
-        foreach (Item item in allItems) {
-            RegisterItemToDropPools(item, globalDropPools);
-        }
-    }
-    
     public void CreateDropPoolsForMap(MapData map) { 
-        foreach (DropPool dropPool in mapSpecificDropPools) {
+        foreach (DropPool dropPool in gameData.res.mapSpecificDropPools) {
             dropPool.items.Clear();
             dropPool.lastDroppedItem = null;
         }
         
-        foreach (Item item in allItems) {
+        foreach (Item item in gameData.res.items) {
             if (!ItemCanSpawnOnMap(item, map)) continue;
-            RegisterItemToDropPools(item, mapSpecificDropPools);
+            RegisterItemToDropPools(item, gameData.res.mapSpecificDropPools);
         }
     }
     
@@ -120,7 +105,12 @@ public partial class Game {
     }
     
     private Item RollForAugmentedVersion(Item item, DropPool dropPool, [CanBeNull] MapData map) {
-        if (item is not EyeUpgradeItem upgradeItem || !augmentsPerModifierItemLookup.TryGetValue(upgradeItem, out var possibleAugments)) {
+        if (item is not EyeUpgradeItem upgradeItem) {
+            return item;
+        }
+        
+        bool hasAugments = gameData.res.eyeUpgradeAugmentsLookup.TryGetValue(upgradeItem, out var possibleAugments);
+        if (!hasAugments) {
             return item;
         }
 

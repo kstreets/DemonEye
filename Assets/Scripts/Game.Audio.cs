@@ -3,29 +3,16 @@ using UnityEngine;
 
 public partial class Game {
     
-    private Dictionary<int, List<DynamicClipRecord>> clipRecords = new(50);
-    private Queue<AudioSource> reservedAudioSources;
-    
-    private struct DynamicClipRecord {
+    public struct DynamicClipRecord {
         public float timePlayed;
         public Vector2 positionPlayed;
-    }
-
-    private void InitAudio() {
-        const int numberOfSources = 20;
-        reservedAudioSources = new(numberOfSources);
-        
-        for (int i = 0; i < numberOfSources; i++) {
-            GameObject audioGo = Instantiate(dynamicAudioSourcePrefab, transform);
-            reservedAudioSources.Enqueue(audioGo.GetComponent<AudioSource>());
-        }
     }
     
     private void PlayAudioClip(DynamicClip dynamicClip, Vector2 position, float volumeScaler = 1f) {
         if (ClipIsViolatingLocalArea(dynamicClip, position)) return;
         
-        AudioSource source = reservedAudioSources.Dequeue();
-        reservedAudioSources.Enqueue(source);
+        AudioSource source = gameData.audio.reservedSources.Dequeue();
+        gameData.audio.reservedSources.Enqueue(source);
 
         float distFromPlayer = Vector2.Distance(player.position, position);
         float volumeLerp = distFromPlayer / dynamicClip.maxDistance;
@@ -48,6 +35,7 @@ public partial class Game {
             return false;
         }
         
+        var clipRecords = gameData.audio.records;
         bool recordsExits = clipRecords.TryGetValue(clip.GetInstanceID(), out List<DynamicClipRecord> records);
         
         if (!recordsExits) {
@@ -56,7 +44,7 @@ public partial class Game {
             
             newRecords.Add(new() {  
                 timePlayed = Time.time, 
-                positionPlayed = clipPos 
+                positionPlayed = clipPos, 
             });
             
             clipRecords.Add(clip.GetInstanceID(), newRecords);
@@ -90,27 +78,28 @@ public partial class Game {
         return false;
     }
     
-    private AudioSource ambienceAudioSource;
-    
     private void PlayAmbience() {
-        ambienceAudioSource = reservedAudioSources.Dequeue();
-        ambienceAudioSource.transform.position = Vector3.zero;
-        ambienceAudioSource.volume = 1f;
-        ambienceAudioSource.pitch = 1f;
-        ambienceAudioSource.rolloffMode = AudioRolloffMode.Linear;
-        ambienceAudioSource.minDistance = 500;
-        ambienceAudioSource.maxDistance = 500;
+        var ambience = gameData.audio.ambienceSource;
+        
+        ambience = gameData.audio.reservedSources.Dequeue();
+        ambience.transform.position = Vector3.zero;
+        ambience.volume = 1f;
+        ambience.pitch = 1f;
+        ambience.rolloffMode = AudioRolloffMode.Linear;
+        ambience.minDistance = 500;
+        ambience.maxDistance = 500;
 
-        ambienceAudioSource.loop = true;
-        ambienceAudioSource.clip = ambienceClip;
-        ambienceAudioSource.outputAudioMixerGroup = ambienceMixerGroup;
-        ambienceAudioSource.Play();
+        ambience.loop = true;
+        ambience.clip = ambienceClip;
+        ambience.outputAudioMixerGroup = ambienceMixerGroup;
+        ambience.Play();
     }
 
     private void StopAmbience() {
-        ambienceAudioSource.Stop();
-        reservedAudioSources.Enqueue(ambienceAudioSource);
-        ambienceAudioSource = null;
+        var ambience = gameData.audio.ambienceSource;
+        ambience.Stop();
+        gameData.audio.reservedSources.Enqueue(ambience);
+        ambience = null;
     }
     
 }

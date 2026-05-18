@@ -97,7 +97,7 @@ public partial class Game {
                 continue;
             }
             
-            Entity entity = entityLookup[col.gameObject];
+            Entity entity = gameData.entities.lookup[col.gameObject];
                     
             if (!ProjectileIsIgnoringEntity(proj, entity)) {
                 HandleDamage(proj, entity);
