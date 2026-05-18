@@ -27,12 +27,12 @@ public partial class Game {
     private TradersSaveData traderSaveData;
 
     private void SaveTrader() {
-        SaveToFile(traderSavePath, traderSaveData);
+        SaveToFile(gameData.savePaths.trader, traderSaveData);
         SaveInventory(traderInventory);
     }
 
     private void InitTrader() {
-        traderSaveData = LoadFromFileOrCreateNew<TradersSaveData>(traderSavePath);
+        traderSaveData = LoadFromFileOrCreateNew<TradersSaveData>(gameData.savePaths.trader);
         MarkTraderItemsAsTraderOwned();
         CalculateAndSetTraderRepBars();
     }
@@ -276,8 +276,8 @@ public partial class Game {
     private void UpdateForgeState() {
         if (!OnEyeForgeTab) return;
 
-        int crucibleItemCount = GetInventoryItemCount(crucibleInventory);
-        ItemInstance eyeSlotItemInstance = crucibleInventory.slots[0].itemInstance;
+        int crucibleItemCount = GetInventoryItemCount(eyeForgeInventory);
+        ItemInstance eyeSlotItemInstance = eyeForgeInventory.slots[0].itemInstance;
 
         if (crucibleItemCount <= 0) {
             crucibleMode = CrucibleMode.Empty;
@@ -324,13 +324,13 @@ public partial class Game {
                 forgeDetailsForgeText.text = "Missing eyeball in the center";
             }
             else {
-                int eyeUpgradeCount = GetInventoryItemCount(crucibleInventory) - 1;
-                int totalUpgradeCount = crucibleInventory.slots.Length - 1;
+                int eyeUpgradeCount = GetInventoryItemCount(eyeForgeInventory) - 1;
+                int totalUpgradeCount = eyeForgeInventory.slots.Length - 1;
                 forgeDetailsForgeText.text = $"Previewing Upgrades {ColorText(eyeUpgradeCount.ToString(), styles.timeDescColor)}/{totalUpgradeCount}";
             }
             
             using var autoRelease = ListPool<int>.Get(out var uuids);
-            foreach (InventorySlot slot in crucibleInventory.slots) {
+            foreach (InventorySlot slot in eyeForgeInventory.slots) {
                 if (slot.itemInstance == null || slot.itemInstance.ItemRef.type != eyeUpgradeType) continue;
                 uuids.Add(slot.itemInstance.itemOrInstanceUuid);
             }
@@ -344,8 +344,8 @@ public partial class Game {
         int eyeSlotIndex = 0;
         ItemInstance eyeItemInstance = null;
 
-        for (int i = 0; i < crucibleInventory.slots.Length; i++) {
-            InventorySlot slot = crucibleInventory.slots[i];
+        for (int i = 0; i < eyeForgeInventory.slots.Length; i++) {
+            InventorySlot slot = eyeForgeInventory.slots[i];
             if (slot.ui.OnlyAcceptsType(eyeType)) {
                 eyeItemInstance = slot.itemInstance;
                 eyeSlotIndex = i;
@@ -354,10 +354,10 @@ public partial class Game {
 
         if (eyeItemInstance == null) return;
 
-        for (int i = 0; i < crucibleInventory.slots.Length; i++) {
+        for (int i = 0; i < eyeForgeInventory.slots.Length; i++) {
             if (i == eyeSlotIndex) continue;
-            if (crucibleInventory.slots[i].itemInstance != null) break;
-            if (i == crucibleInventory.slots.Length - 1) return;
+            if (eyeForgeInventory.slots[i].itemInstance != null) break;
+            if (i == eyeForgeInventory.slots.Length - 1) return;
         }
 
         toggledOffHoverableUIElement = forgeEyeButton.rectTransform;
@@ -375,7 +375,7 @@ public partial class Game {
                 isDemonEye = true,
             };
 
-            foreach (InventorySlot slot in crucibleInventory.slots) {
+            foreach (InventorySlot slot in eyeForgeInventory.slots) {
                 slot.ui.itemUI.rectTransform.anchoredPosition = Vector2.zero;
                 slot.ui.itemUI.rectTransform.localScale = Vector3.one;
                 
@@ -388,7 +388,7 @@ public partial class Game {
             }
             
             BuildAndRegisterEye(newDemonEyeItemInstance);
-            crucibleInventory.slots[eyeSlotIndex].itemInstance = newDemonEyeItemInstance;
+            eyeForgeInventory.slots[eyeSlotIndex].itemInstance = newDemonEyeItemInstance;
         });
     }
     
@@ -400,7 +400,7 @@ public partial class Game {
         const float perUpgradeExplosionDelay = 0.15f;
         const float popOutDuration = 0.15f;
 
-        float upgradeExplosionsDuration = perUpgradeExplosionDelay * (GetInventoryItemCount(crucibleInventory) - 1);
+        float upgradeExplosionsDuration = perUpgradeExplosionDelay * (GetInventoryItemCount(eyeForgeInventory) - 1);
         float totalAnimationDuration = fillDuration + upgradeExplosionsDuration + popOutDuration;
 
         Tween.Custom(this, 0f, 1f, fillDuration, ease: Ease.Linear, onValueChange: (target, val) => {
@@ -411,8 +411,8 @@ public partial class Game {
             target.SetPentagramFill(target.pentagramFillCurve.Evaluate(val));
         });
 
-        for (int i = 0; i < crucibleInventory.slots.Length; i++) {
-            InventorySlot slot = crucibleInventory.slots[i];
+        for (int i = 0; i < eyeForgeInventory.slots.Length; i++) {
+            InventorySlot slot = eyeForgeInventory.slots[i];
             if (slot.itemInstance == null) continue;
 
             RectTransform rectTransform = slot.ui.itemUI.rectTransform;
@@ -499,17 +499,17 @@ public partial class Game {
             QuestGraphRuntime.Node node = questPackage.questNode;
             questSaveData.progressSaves[node.saveIndex] = node.curQuest.GetProgressSave();
         }
-        SaveToFile(questSavePath, questSaveData);
+        SaveToFile(gameData.savePaths.quest, questSaveData);
     }
 
     private void SaveAndMarkQuestAsSubmitted(QuestGraphRuntime.Node questNode) {
         questSaveData.submissionStates[questNode.saveIndex] = true;
         questSaveData.progressSaves[questNode.saveIndex] = questNode.curQuest.GetProgressSave();
-        SaveToFile(questSavePath, questSaveData);
+        SaveToFile(gameData.savePaths.quest, questSaveData);
     }
 
     private void InitQuests() {
-        questSaveData = LoadFromFile<QuestSaveData>(questSavePath);
+        questSaveData = LoadFromFile<QuestSaveData>(gameData.savePaths.quest);
         
         if (questSaveData == null) {
             questSaveData = new() {
@@ -517,7 +517,7 @@ public partial class Game {
                 submissionStates = new bool[questGraph.questCount],
             };
             questSaveData.progressSaves.InitalizeWithDefault();
-            SaveToFile(questSavePath, questSaveData);
+            SaveToFile(gameData.savePaths.quest, questSaveData);
         }
         
         HashSet<QuestGraphRuntime.Node> initialQuestNodes = new();

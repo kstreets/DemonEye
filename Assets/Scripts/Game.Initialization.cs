@@ -1,72 +1,74 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public partial class Game {
     
-    private void InitGameData() {
+    private void InitAll() {
+        BuildSavePaths();
         InitResources();
         InitEntities();
         InitAudio();
-    }
-    
-    private void InitResources() {
-        LoadAllItems(); 
-        LoadAllDropPools();
-    }
-    
-    private void LoadAllItems() {
-        GameData.Resources res = gameData.res;
-        UuidScriptableObject[] resourceObjects = Resources.LoadAll<UuidScriptableObject>(string.Empty);
-        
-        foreach (UuidScriptableObject resObject in resourceObjects) {
-            res.lookup.Add(resObject.uuid, resObject);
-            if (resObject is Item item) {
-                res.items.Add(item);
-            }
-            if (resObject is Augment augment) {
-                augment.CreateAugmentItemFromDerived();
-                if (res.eyeUpgradeAugmentsLookup.TryGetValue(augment.eyeUpgradeDerivedFrom, out var augmentList)) {
-                    augmentList.Add(augment);
-                }
-                else {
-                    res.eyeUpgradeAugmentsLookup.Add(augment.eyeUpgradeDerivedFrom, new() { augment });
-                }
-            }
-        }
-    }
-    
-    private void LoadAllDropPools() {
-        GameData.Resources res = gameData.res;
-        DropPool[] dropPoolSOs = Resources.LoadAll<DropPool>(string.Empty);
-        
-        foreach (DropPool dropPool in dropPoolSOs) {
-            dropPool.items = new();
-            res.dropPools.Add(dropPool);
-            if (dropPool.isMapSpecific) {
-                res.mapSpecificDropPools.Add(dropPool);
-                continue;
-            }
-            res.globalDropPools.Add(dropPool);
-        }
-        
-        foreach (Item item in res.items) {
-            RegisterItemToDropPools(item, res.globalDropPools);
-        }
+        LoadAndAssignMapSaves(maps);
+        DemonEyeTween.Init();
+        InitInventories();
+        InitButtonCallbacks();
+        InitTrader();
+        InitQuests();
+        OnGameStartInitUI();
+        InitEntityPools();
+        InitInput();
+        InitGameStates();
+        InitMenuNavigation();
     }
     
     private void InitEntities() {
         gameData.entities.player = MakePlayer();
     }
-    
-    private void InitAudio() {
-        const int numberOfSources = 20;
-        var reservedAudioSources = gameData.audio.reservedSources;
-        var audioSourcePrefab = gameData.prefabs.audioSource;
-        
-        reservedAudioSources = new(numberOfSources);
-        for (int i = 0; i < numberOfSources; i++) {
-            GameObject audioGo = Instantiate(audioSourcePrefab, transform);
-            reservedAudioSources.Enqueue(audioGo.GetComponent<AudioSource>());
-        }
+
+    private void InitEntityPools() {
+        gameData.entityPools.itemDrop = CreateEntityPool<Entity>(gameData.prefabs.itemDrop, 20, null);
+        gameData.entityPools.bloodDrop = CreateEntityPool<Entity>(gameData.prefabs.bloodDrop, 10, null);
+        gameData.entityPools.projectile = CreateEntityPool<Projectile>(gameData.prefabs.baseProjectile, 20, OnSpawnProjectile);
+        gameData.entityPools.boneShatterProjectile = CreateEntityPool<Projectile>(gameData.prefabs.boneShatterProjectile, 20, OnSpawnProjectile);
+        gameData.entityPools.gooProjectile = CreateEntityPool<Projectile>(gameData.prefabs.gooProjectile, 20, OnSpawnProjectile);
+        gameData.entityPools.piercingShotProjectile = CreateEntityPool<Projectile>(gameData.prefabs.piercingProjectile, 20, OnSpawnProjectile);
+        gameData.entityPools.poisonDebuff = CreateEntityPool<Entity>(gameData.prefabs.poisonDebuff, 10, null);
+        gameData.entityPools.explosion = CreateEntityPool<Entity>(gameData.prefabs.explosion, 5, null);
+        gameData.entityPools.projectileImpact = CreateEntityPool<Entity>(gameData.prefabs.projectileImpact, 20, null);
+        gameData.entityPools.teleportIn = CreateEntityPool<Entity>(gameData.prefabs.teleportIn, 20, null);
+        gameData.entityPools.teleportOut = CreateEntityPool<Entity>(gameData.prefabs.teleportOut, 20, null);
+        gameData.entityPools.bloodSplatter = CreateEntityPool<Entity>(gameData.prefabs.bloodSplatter, 20, null);
+        gameData.entityPools.runSmoke = CreateEntityPool<Entity>(gameData.prefabs.runSmoke, 5, null);
+        gameData.entityPools.damageNumber = CreateEntityPool<Entity>(gameData.prefabs.damageNumber, 20, null);
+        gameData.entityPools.forgeExplosion = CreateEntityPool<Entity>(gameData.prefabs.forgeExplosion, 10, null);
+        gameData.entityPools.blast = CreateEntityPool<Entity>(gameData.prefabs.blast, 5, null);
+    }
+
+    private void InitInput() {
+        gameData.input.moveInputAction = InputSystem.actions.FindAction("Move");
+        gameData.input.interactInputAction = InputSystem.actions.FindAction("Interact");
+        gameData.input.inventoryInputAction = InputSystem.actions.FindAction("Inventory");
+        gameData.input.selectItemInputAction = InputSystem.actions.FindAction("SelectItem");
+        gameData.input.placeSingleItemInputAction = InputSystem.actions.FindAction("PlaceSingleItem");
+        gameData.input.splitStackInputAction = InputSystem.actions.FindAction("SplitStack");
+        gameData.input.moveStackInputAction = InputSystem.actions.FindAction("MoveStack");
+        gameData.input.useItemInputAction = InputSystem.actions.FindAction("UseItem");
+        gameData.input.escapeInputAction = InputSystem.actions.FindAction("Escape");
+        gameData.input.quickUse1Action = InputSystem.actions.FindAction("QuickUse1");
+        gameData.input.quickUse2Action = InputSystem.actions.FindAction("QuickUse2");
+        gameData.input.quickUse3Action = InputSystem.actions.FindAction("QuickUse3");
+        gameData.input.quickUse4Action = InputSystem.actions.FindAction("QuickUse4");
+    }
+
+    private void InitGameStates() {
+        gameData.states.mainMenu = gameStateMachine.CreateState(enter: OnMainMenuStateEnter, exit: OnMainMenuStateExit);
+        gameData.states.hideout = gameStateMachine.CreateState(update: OnHideoutStateUpdate, lateUpdate: OnHideoutStateLateUpdate, enter: OnHideoutStateEnter, exit: OnHideoutStateExit);
+        gameData.states.mapSelection = gameStateMachine.CreateState(update: OnMapSelectionUpdate, lateUpdate: OnMapSelectionLateUpdate, enter: OnMapSelectionEnter, exit: OnMapSelectionExit);
+        gameData.states.raid = gameStateMachine.CreateState(update: OnRaidStateUpdate, fixedUpdate: OnRaidStateFixedUpdate, lateUpdate: OnRaidStateLateUpdate, enter: OnRaidStateEnter, exit: OnRaidStateExit);
+        gameData.states.gameOver = gameStateMachine.CreateState(enter: OnGameOverEnter, exit: OnGameOverExit);
+        gameData.states.earlyExit = gameStateMachine.CreateState(enter: OnEarlyExitEnter, exit: OnEarlyExitExit);
+        gameData.states.winExit = gameStateMachine.CreateState(enter: OnWinExitEnter, exit: OnWinExitExit);
+        gameData.states.raid.To(gameOverState).When(() => player.health <= 0);
     }
     
 }

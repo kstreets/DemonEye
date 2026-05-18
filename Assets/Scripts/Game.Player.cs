@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using PrimeTween;
 using UnityEngine;
@@ -16,7 +17,7 @@ public partial class Game {
         public bool bleeding;
         public Limiter bleedLimiter;
         
-        public Limiter enmeyCollisionDamageLimiter;
+        public Limiter enemyCollisionDamageLimiter;
         
         public int soulCurrency;
         public int coinCurrency;
@@ -66,21 +67,6 @@ public partial class Game {
         player.hurtCollider = player.gameObject.GetComponentInChildren<CapsuleCollider2D>();
         player.defaultPlayerPreviewSprite = playerPreviewImage.sprite;
         return player;
-    }
-    
-    private void LoadAndAssignPlayerSaveData(Player instancedPlayer) {
-        PlayerSaveData data = LoadFromFile<PlayerSaveData>(playerSavePath);
-        if (data != null) {
-            instancedPlayer.health = data.health;
-            instancedPlayer.soulCurrency = data.soulCurrency;
-            instancedPlayer.coinCurrency = data.coinCurrency;
-            instancedPlayer.hasteSkillLevel = data.hasteSkillLevel;
-            instancedPlayer.intellectSkillLevel = data.intellectSkillLevel;
-            instancedPlayer.lifeBloodSkillLevel = data.lifeBloodSkillLevel;
-            instancedPlayer.strengthSkillLevel = data.strengthSkillLevel;
-        }
-        // We want to make sure that the player health is never <= zero
-        instancedPlayer.health = player.health <= 0f ? FullPlayerHealth : player.health;
     }
     
     private void InitPlayer() {
@@ -450,7 +436,7 @@ public partial class Game {
             player.bleeding = true;
         }
         
-        bool ignoreCollisionDamage = !player.enmeyCollisionDamageLimiter.TimeHasPassed(gameplayConfig.repeatCollisionDamageDelay);
+        bool ignoreCollisionDamage = !player.enemyCollisionDamageLimiter.TimeHasPassed(gameplayConfig.repeatCollisionDamageDelay);
         if (damageType == PlayerDamageType.Collision && ignoreCollisionDamage) return;
         
         player.health -= damage;
@@ -655,6 +641,47 @@ public partial class Game {
             DisplayProbNoColor(GetAbsoluteStat(Player.Stat.RangePercentage));
         
         bool Boosted(Player.Stat stat) => GetEquipmentStatAdjustment(stat) > 0f; 
+    }
+    
+    [Serializable]
+    private class PlayerSaveData {
+        public int health;
+        public int crucibleLevel;
+        public int soulCurrency;
+        public int coinCurrency;
+        
+        public int hasteSkillLevel;
+        public int intellectSkillLevel;
+        public int lifeBloodSkillLevel;
+        public int strengthSkillLevel;
+    }
+
+    private void SavePlayerData() {
+        PlayerSaveData data = new() {
+            health = player.health,
+            soulCurrency = player.soulCurrency,
+            coinCurrency = player.coinCurrency,
+            hasteSkillLevel = player.hasteSkillLevel,
+            intellectSkillLevel = player.intellectSkillLevel,
+            lifeBloodSkillLevel = player.lifeBloodSkillLevel,
+            strengthSkillLevel = player.strengthSkillLevel,
+        };
+        SaveToFile(gameData.savePaths.player, data);
+    }
+
+    private void LoadAndAssignPlayerSaveData(Player instancedPlayer) {
+        PlayerSaveData data = LoadFromFile<PlayerSaveData>(gameData.savePaths.player);
+        if (data != null) {
+            instancedPlayer.health = data.health;
+            instancedPlayer.soulCurrency = data.soulCurrency;
+            instancedPlayer.coinCurrency = data.coinCurrency;
+            instancedPlayer.hasteSkillLevel = data.hasteSkillLevel;
+            instancedPlayer.intellectSkillLevel = data.intellectSkillLevel;
+            instancedPlayer.lifeBloodSkillLevel = data.lifeBloodSkillLevel;
+            instancedPlayer.strengthSkillLevel = data.strengthSkillLevel;
+        }
+        // We want to make sure that the player health is never <= zero
+        instancedPlayer.health = player.health <= 0f ? FullPlayerHealth : player.health;
     }
     
 }

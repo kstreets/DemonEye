@@ -8,6 +8,15 @@ public partial class Game {
         public Vector2 positionPlayed;
     }
     
+    private void InitAudio() {
+        const int numberOfSources = 20;
+        gameData.audio.reservedSources = new(numberOfSources);
+        for (int i = 0; i < numberOfSources; i++) {
+            GameObject audioGo = Instantiate(gameData.prefabs.audioSource, transform);
+            gameData.audio.reservedSources.Enqueue(audioGo.GetComponent<AudioSource>());
+        }
+    }
+    
     private void PlayAudioClip(DynamicClip dynamicClip, Vector2 position, float volumeScaler = 1f) {
         if (ClipIsViolatingLocalArea(dynamicClip, position)) return;
         

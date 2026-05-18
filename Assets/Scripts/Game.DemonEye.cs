@@ -51,7 +51,7 @@ public partial class Game {
     private Limiter attackLimiter;
 
     private void BuildAndRegisterEye(ItemInstance itemInstance) {
-        itemInstance.itemOrInstanceUuid = UuidScriptableObject.GenerateNewItemUuid(gameData.res.lookup);
+        itemInstance.itemOrInstanceUuid = GenerateNewItemUuid();
         
         List<EquipedUpgradeInstance> equipedUpgrades = new();
         List<EquipedAugmentInstance> equipedAugments = new();

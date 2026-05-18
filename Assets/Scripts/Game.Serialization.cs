@@ -7,34 +7,22 @@ using UnityEngine.Assertions;
 
 public partial class Game {
     
-    private string playerInventorySavePath;
-    private string stashSavePath;
-    private string crucibleSavePath;
-    private string playerSavePath;
-    private string questSavePath;
-    private string traderSavePath;
-    private string traderInventorySavePath;
-    private string mapUnlocksSavePath;
-    private string tutorialSavePath;
-    private List<ItemInstance> cachedInventoryForSaving = new(50);
-    
     private void BuildSavePaths() {
-        playerInventorySavePath = $"{Application.persistentDataPath}/inventory";
-        stashSavePath = $"{Application.persistentDataPath}/stash";
-        crucibleSavePath = $"{Application.persistentDataPath}/crucible";
-        playerSavePath = $"{Application.persistentDataPath}/player";
-        questSavePath = $"{Application.persistentDataPath}/quests";
-        traderSavePath = $"{Application.persistentDataPath}/traders";
-        traderInventorySavePath = $"{Application.persistentDataPath}/traderInventory";
-        mapUnlocksSavePath = $"{Application.persistentDataPath}/maps";
-        tutorialSavePath = $"{Application.persistentDataPath}/tutorial";
+        gameData.savePaths.playerInventory = $"{Application.persistentDataPath}/playerInventory";
+        gameData.savePaths.stashInventory = $"{Application.persistentDataPath}/stashInventory";
+        gameData.savePaths.eyeForgeInventory = $"{Application.persistentDataPath}/eyeForgeInventory";
+        gameData.savePaths.player = $"{Application.persistentDataPath}/player";
+        gameData.savePaths.quest = $"{Application.persistentDataPath}/quests";
+        gameData.savePaths.trader = $"{Application.persistentDataPath}/trader";
+        gameData.savePaths.traderInventory = $"{Application.persistentDataPath}/traderInventory";
+        gameData.savePaths.mapUnlocks = $"{Application.persistentDataPath}/maps";
     }
 
     private string GetInventorySavePath(Inventory inventory) {
-        if (inventory == playerInventory) return playerInventorySavePath;
-        if (inventory == stashInventory) return stashSavePath;
-        if (inventory == crucibleInventory) return crucibleSavePath;
-        if (inventory == traderInventory) return traderInventorySavePath;
+        if (inventory == playerInventory) return gameData.savePaths.playerInventory;
+        if (inventory == stashInventory) return gameData.savePaths.stashInventory;
+        if (inventory == eyeForgeInventory) return gameData.savePaths.eyeForgeInventory;
+        if (inventory == traderInventory) return gameData.savePaths.traderInventory;
         Assert.IsTrue(false, "Inventory does not have associated save path");
         return string.Empty;
     }
@@ -60,33 +48,6 @@ public partial class Game {
     }
 
     [Serializable]
-    private class PlayerSaveData {
-        public int health;
-        public int crucibleLevel;
-        public int soulCurrency;
-        public int coinCurrency;
-        
-        public int hasteSkillLevel;
-        public int intellectSkillLevel;
-        public int lifeBloodSkillLevel;
-        public int strengthSkillLevel;
-    }
-
-    private void SavePlayerData() {
-        PlayerSaveData data = new() {
-            health = player.health,
-            soulCurrency = player.soulCurrency,
-            coinCurrency = player.coinCurrency,
-            hasteSkillLevel = player.hasteSkillLevel,
-            intellectSkillLevel = player.intellectSkillLevel,
-            lifeBloodSkillLevel = player.lifeBloodSkillLevel,
-            strengthSkillLevel = player.strengthSkillLevel,
-        };
-        SaveToFile(playerSavePath, data);
-    }
-
-    
-    [Serializable]
     private class MapSaves {
         public List<bool> unlockStates;
     }
@@ -98,11 +59,11 @@ public partial class Game {
         foreach (MapData mapData in maps) {
             mapSaves.unlockStates.Add(mapData.isUnlocked);    
         }
-        SaveToFile(mapUnlocksSavePath, mapSaves);
+        SaveToFile(gameData.savePaths.mapUnlocks, mapSaves);
     }
     
     private void LoadAndAssignMapSaves(List<MapData> mapDatas) {
-        MapSaves mapSaves = LoadFromFile<MapSaves>(mapUnlocksSavePath);
+        MapSaves mapSaves = LoadFromFile<MapSaves>(gameData.savePaths.mapUnlocks);
         if (mapSaves == null) return;
         
         if (mapDatas.Count != mapSaves.unlockStates.Count) {

@@ -334,19 +334,18 @@ public class GameData {
         public EntityPool<Entity> runSmoke;
         public EntityPool<Entity> damageNumber;
         public EntityPool<Entity> forgeExplosion;
-        public EntityPool<Entity> forgeDustExplosion;
         public EntityPool<Entity> blast;
     }
     public EntityPools entityPools = new();
     
     public class States {
-        public State mainMenuState;
-        public State mapSelectionState;
-        public State hideoutState;
-        public State raidState;
-        public State gameOverState;
-        public State winExitState;
-        public State earlyExitState;
+        public State mainMenu;
+        public State mapSelection;
+        public State hideout;
+        public State raid;
+        public State gameOver;
+        public State winExit;
+        public State earlyExit;
         public StateMachine gameStateMachine;
     }
     public States states = new();
@@ -367,5 +366,17 @@ public class GameData {
         public List<DropPool> mapSpecificDropPools = new();
     }
     public Resources res = new();
-    
+
+    public class SavePaths {
+        public string playerInventory;
+        public string stashInventory;
+        public string eyeForgeInventory;
+        public string player;
+        public string quest;
+        public string trader;
+        public string traderInventory;
+        public string mapUnlocks;
+    }
+    public SavePaths savePaths = new();
+
 }

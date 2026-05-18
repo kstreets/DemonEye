@@ -13,14 +13,6 @@ public class UuidScriptableObject : ScriptableObject {
         return Random.Range(int.MinValue, int.MaxValue);
     }
     
-    public static int GenerateNewItemUuid(GameResLookup resourceLookup) {
-        int newItemId = GetIntUuid();
-        while (resourceLookup.ContainsKey(newItemId)) {
-            newItemId = GetIntUuid();
-        }
-        return newItemId; 
-    }
-    
 #if UNITY_EDITOR
     
     public void CreateUuid() {

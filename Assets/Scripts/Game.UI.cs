@@ -8,15 +8,13 @@ using UnityEngine.UI;
 public partial class Game {
     
     private void OnGameStartInitUI() {
+        Cursor.visible = true;
         CloseHideoutUI();
         CloseRaidUI();
         ShowMainMenuUI();
-        
         InitSkillsPanel();
-        
         menuBackButton.gameObject.SetActive(false);
         largeRaidTextTypewriter.gameObject.SetActive(false);
-
         SetPentagramFill(0f);
     }
 
@@ -142,16 +140,6 @@ public partial class Game {
         }
     }
 
-    private void OnEscapePressed(InputAction.CallbackContext context) {
-        if (InMapSelection || InHideout) {
-            gameStateMachine.SetState(mainMenuState);
-        }
-        if (InRaid && InventoryIsOpen) {
-            ClosePlayerInventory();
-            CloseLootInventory(); 
-        }
-    }
-    
     private void InitButtonCallbacks() {
         mainMenuPlayButton.AddListener(() => {
             gameStateMachine.SetStateIfNotCurrent(mapSelectionState);

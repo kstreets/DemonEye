@@ -299,7 +299,6 @@ public partial class Game : MonoBehaviour {
     private EntityPool<Entity> runSmokePool;
     private EntityPool<Entity> damageNumberPool;
     private EntityPool<Entity> forgeExplosionPool;
-    private EntityPool<Entity> forgeDustExplosionPool;
     private EntityPool<Entity> blastPool;
     
     private State mainMenuState;
@@ -316,114 +315,9 @@ public partial class Game : MonoBehaviour {
     
     private void Start() {
         gameInstance = this;
-        
-        InitGameData();
-        BuildSavePaths();
-        
-        LoadAndAssignMapSaves(maps);
-        
+        InitAll();
         equipedEye = emptyDemonEye;
-
-        DemonEyeTween.Init();
         
-        InitInventories();
-        InitButtonCallbacks();
-        InitTrader();
-        InitQuests();
-        
-        Cursor.visible = true;
-        OnGameStartInitUI();
-        
-        itemDropPool = CreateEntityPool<Entity>(itemDropPrefab, 20, null);
-        bloodDropPool = CreateEntityPool<Entity>(bloodDropPrefab, 10, null);
-        projectilePool = CreateEntityPool<Projectile>(baseProjectilePrefab, 20, OnSpawnProjectile);
-        boneShatterProjectilePool = CreateEntityPool<Projectile>(boneShatterProjectilePrefab, 20, OnSpawnProjectile);
-        gooProjectilePool = CreateEntityPool<Projectile>(gooProjectilePrefab, 20, OnSpawnProjectile);
-        piercingShotProjectilePool = CreateEntityPool<Projectile>(piercingProjectilePrefab, 20, OnSpawnProjectile);
-        poisonDebuffPool = CreateEntityPool<Entity>(poisonDebuffPrefab, 10, null);
-        explosionPool = CreateEntityPool<Entity>(explosionPrefab, 5, null);
-        projectileImpactPool = CreateEntityPool<Entity>(projectileImpactPrefab, 20, null);
-        teleportInPool = CreateEntityPool<Entity>(teleportInPrefab, 20, null);
-        teleportOutPool = CreateEntityPool<Entity>(teleportOutPrefab, 20, null);
-        bloodSplatterPool = CreateEntityPool<Entity>(bloodSplatterPrefab, 20, null);
-        runSmokePool = CreateEntityPool<Entity>(runSmokePrefab, 5, null);
-        damageNumberPool = CreateEntityPool<Entity>(damageNumberPrefab, 20, null);
-        forgeExplosionPool = CreateEntityPool<Entity>(forgeExplosionPrefab, 10, null);
-        forgeDustExplosionPool = CreateEntityPool<Entity>(forgeDustExplosionPrefab, 10, null);
-        blastPool = CreateEntityPool<Entity>(blastPrefab, 5, null);
-
-        moveInputAction = InputSystem.actions.FindAction("Move");
-        interactInputAction = InputSystem.actions.FindAction("Interact");
-        inventoryInputAction = InputSystem.actions.FindAction("Inventory");
-        selectItemInputAction = InputSystem.actions.FindAction("SelectItem");
-        placeSingleItemInputAction = InputSystem.actions.FindAction("PlaceSingleItem");
-        splitStackInputAction = InputSystem.actions.FindAction("SplitStack");
-        moveStackInputAction = InputSystem.actions.FindAction("MoveStack");
-        useItemInputAction = InputSystem.actions.FindAction("UseItem");
-        escapeInputAction = InputSystem.actions.FindAction("Escape");
-        quickUse1Action = InputSystem.actions.FindAction("QuickUse1");
-        quickUse2Action = InputSystem.actions.FindAction("QuickUse2");
-        quickUse3Action = InputSystem.actions.FindAction("QuickUse3");
-        quickUse4Action = InputSystem.actions.FindAction("QuickUse4");
-        
-        var menuMove = InputSystem.actions.FindAction("MenuMove");
-        menuMove.performed += OnMoveInput;
-
-        escapeInputAction.performed += OnEscapePressed;
-
-        mainMenuState = gameStateMachine.CreateState(enter: OnMainMenuStateEnter, exit: OnMainMenuStateExit);
-        hideoutState = gameStateMachine.CreateState(update: OnHideoutStateUpdate, lateUpdate: OnHideoutStateLateUpdate, enter: OnHideoutStateEnter, exit: OnHideoutStateExit);
-        mapSelectionState = gameStateMachine.CreateState(update: OnMapSelectionUpdate, lateUpdate: OnMapSelectionLateUpdate, enter: OnMapSelectionEnter, exit: OnMapSelectionExit);
-        raidState = gameStateMachine.CreateState(update: OnRaidStateUpdate, fixedUpdate: OnRaidStateFixedUpdate, lateUpdate: OnRaidStateLateUpdate, enter: OnRaidStateEnter, exit: OnRaidStateExit);
-        gameOverState = gameStateMachine.CreateState(enter: OnGameOverEnter, exit: OnGameOverExit);
-        earlyExitState = gameStateMachine.CreateState(enter: OnEarlyExitEnter, exit: OnEarlyExitExit);
-        winExitState = gameStateMachine.CreateState(enter: OnWinExitEnter, exit: OnWinExitExit);
-        
-        raidState.To(gameOverState).When(() => player.health <= 0);
-    }
-
-    Vector2 controllerPos;
-    
-    private void OnMoveInput(InputAction.CallbackContext context) {
-        if (!context.performed) return;
-        
-        GameObject[,] mainMenuGrid = new GameObject[4, 1];
-        mainMenuGrid[0, 0] = mainMenuPlayButton.gameObject;
-        mainMenuGrid[1, 0] = mainMenuHideoutButton.gameObject;
-        mainMenuGrid[2, 0] = mainMenuSettingsButton.gameObject;
-        mainMenuGrid[3, 0] = mainMenuExitButton.gameObject;
-        
-        Vector2 dir = context.ReadValue<Vector2>();
-        dir = new(dir.x, -dir.y);
-        
-        if (gameStateMachine.CurState == mainMenuState) {
-            if (!mainMenuGrid.IndexInRange(controllerPos + dir)) return;
-            controllerPos += dir;
-            
-            GameObject selected = mainMenuGrid[(int)controllerPos.y, (int)controllerPos.x];
-            HightlightControllerSelection(selected);
-            print(selected.gameObject.name);
-        }
-    }
-
-    private GameObject currentlyHiglighted;
-    
-    private void HightlightControllerSelection(GameObject selectedGameObject) {
-        if (currentlyHiglighted) {
-            DehighlightControllerSelection(currentlyHiglighted);     
-        }
-        
-        if (selectedGameObject.TryGetComponent(out ButtonFeel button)) {
-            button.OnPointerEnter(null);
-        }
-        
-        currentlyHiglighted = selectedGameObject;
-    }
-    
-    private void DehighlightControllerSelection(GameObject selectedGameObject) {
-        if (selectedGameObject.TryGetComponent(out ButtonFeel button)) {
-            button.OnPointerExit(null);
-        }
     }
 
     private void Update() {
@@ -478,7 +372,7 @@ public partial class Game : MonoBehaviour {
         SaveTrader();
         SaveInventory(playerInventory);
         SaveInventory(stashInventory);
-        SaveInventory(crucibleInventory);
+        SaveInventory(eyeForgeInventory);
         SaveActiveQuestProgresses();
     }
 

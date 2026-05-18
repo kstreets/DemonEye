@@ -81,7 +81,7 @@ public partial class Game {
     
     [NonSerialized] public Inventory playerInventory;
     [NonSerialized] public Inventory stashInventory;
-    [NonSerialized] private Inventory crucibleInventory;
+    [NonSerialized] private Inventory eyeForgeInventory;
     [NonSerialized] private Inventory transactionInventory;
     [NonSerialized] private Inventory traderInventory;
     [NonSerialized] private Inventory lootInventoryPtr;
@@ -132,15 +132,15 @@ public partial class Game {
 
         const int crucibleInventorySize = 6;
         SpawnUiSlots(crucibleParent, crucibleInventorySize, eyeForgeSlotPrefab);
-        crucibleInventory = CreateInventory(crucibleParent, crucibleInventorySize);
-        SetupEyeCrucibleInventorySlots();
-        LoadInventory(crucibleInventory);
+        eyeForgeInventory = CreateInventory(crucibleParent, crucibleInventorySize);
+        SetupEyeForgeInventorySlots();
+        LoadInventory(eyeForgeInventory);
     }
     
-    private void SetupEyeCrucibleInventorySlots() {
-        int inventoryLength = crucibleInventory.slots.Length;
+    private void SetupEyeForgeInventorySlots() {
+        int inventoryLength = eyeForgeInventory.slots.Length;
         for (int i = 0; i < inventoryLength; i++) {
-            InventorySlotUI slotUI = crucibleInventory.slots[i].ui;
+            InventorySlotUI slotUI = eyeForgeInventory.slots[i].ui;
             slotUI.disallowItemStacking = true;
             slotUI.onlyAcceptedItemType = i == 0 ? eyeType : eyeUpgradeType;
 
@@ -156,11 +156,12 @@ public partial class Game {
     }
     
     private void SaveInventory(Inventory inventory) {
-        cachedInventoryForSaving.Clear();
+        using var _ = ListPool<ItemInstance>.Get(out var saveList);
+        saveList.Clear();
         foreach (InventorySlot slot in inventory.slots) {
-            cachedInventoryForSaving.Add(slot.itemInstance); 
+            saveList.Add(slot.itemInstance); 
         }
-        SaveToFile(GetInventorySavePath(inventory), cachedInventoryForSaving);
+        SaveToFile(GetInventorySavePath(inventory), saveList);
     }
 
     private void LoadInventory(Inventory inventory) {
@@ -368,9 +369,9 @@ public partial class Game {
         else if (OnEyeForgeTab) {
             if (hoveredInventory == stashInventory) {
                 bool hoveredItemIsDemonEye = hoveredItem.ItemRef.type == demonEyeType;
-                destinationInventory = hoveredItemIsDemonEye ? playerInventory : crucibleInventory;
+                destinationInventory = hoveredItemIsDemonEye ? playerInventory : eyeForgeInventory;
             }
-            else if (hoveredInventory == crucibleInventory) {
+            else if (hoveredInventory == eyeForgeInventory) {
                 destinationInventory = stashInventory;
             }
             else if (hoveredInventory == playerInventory) {
@@ -452,7 +453,7 @@ public partial class Game {
         if (playerConsumingTween.isAlive && info.inventory == consumingInventory && info.slotIndex == consumingSlotIndex) {
             return true;
         }
-        if (info.inventory == crucibleInventory && PlayingForgeAnimation) {
+        if (info.inventory == eyeForgeInventory && PlayingForgeAnimation) {
             return true;
         }
         return false;

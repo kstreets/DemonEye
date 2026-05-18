@@ -4,42 +4,57 @@ using UnityEngine;
 
 public partial class Game {
     
-    // public Dictionary<int, UuidScriptableObject> resourceLookup = new();
-    // public Dictionary<EyeUpgradeItem, List<Augment>> augmentsPerModifierItemLookup = new();
-    //
-    // [NonSerialized] public List<Item> allItems = new();
-    // [NonSerialized] public List<DropPool> allDropPools = new();
+    private void InitResources() {
+        LoadAllItems(); 
+        LoadAllDropPools();
+    }
     
-    // private void LoadAllResources() {
-    //     LoadAllItems();
-    //     LoadAllDropPools();
-    // }
-    //
-    // private void LoadAllItems() {
-    //      UuidScriptableObject[] resourceObjects = Resources.LoadAll<UuidScriptableObject>(string.Empty);
-    //      foreach (UuidScriptableObject res in resourceObjects) {
-    //          resourceLookup.Add(res.uuid, res);
-    //          if (res is Item item) {
-    //              allItems.Add(item);
-    //          }
-    //
-    //          if (res is Augment augment) {
-    //              augment.CreateAugmentItemFromDerived();
-    //              if (augmentsPerModifierItemLookup.TryGetValue(augment.eyeUpgradeDerivedFrom, out var augmentList)) {
-    //                  augmentList.Add(augment);
-    //              }
-    //              else {
-    //                  augmentsPerModifierItemLookup.Add(augment.eyeUpgradeDerivedFrom, new() { augment });
-    //              }
-    //          }
-    //      }
-    // }
-    //
-    // private void LoadAllDropPools() {
-    //     DropPool[] dropPoolSOs = Resources.LoadAll<DropPool>(string.Empty);
-    //     foreach (DropPool dropPoolSO in dropPoolSOs) {
-    //         allDropPools.Add(dropPoolSO);
-    //     }
-    // }
+    private void LoadAllItems() {
+        GameData.Resources res = gameData.res;
+        UuidScriptableObject[] resourceObjects = Resources.LoadAll<UuidScriptableObject>(string.Empty);
+        
+        foreach (UuidScriptableObject resObject in resourceObjects) {
+            res.lookup.Add(resObject.uuid, resObject);
+            if (resObject is Item item) {
+                res.items.Add(item);
+            }
+            if (resObject is Augment augment) {
+                augment.CreateAugmentItemFromDerived();
+                if (res.eyeUpgradeAugmentsLookup.TryGetValue(augment.eyeUpgradeDerivedFrom, out var augmentList)) {
+                    augmentList.Add(augment);
+                }
+                else {
+                    res.eyeUpgradeAugmentsLookup.Add(augment.eyeUpgradeDerivedFrom, new() { augment });
+                }
+            }
+        }
+    }
+    
+    private void LoadAllDropPools() {
+        GameData.Resources res = gameData.res;
+        DropPool[] dropPoolSOs = Resources.LoadAll<DropPool>(string.Empty);
+        
+        foreach (DropPool dropPool in dropPoolSOs) {
+            dropPool.items = new();
+            res.dropPools.Add(dropPool);
+            if (dropPool.isMapSpecific) {
+                res.mapSpecificDropPools.Add(dropPool);
+                continue;
+            }
+            res.globalDropPools.Add(dropPool);
+        }
+        
+        foreach (Item item in res.items) {
+            RegisterItemToDropPools(item, res.globalDropPools);
+        }
+    }
+    
+    private int GenerateNewItemUuid() {
+        int newItemId = UuidScriptableObject.GetIntUuid();
+        while (gameData.res.lookup.ContainsKey(newItemId)) {
+            newItemId = UuidScriptableObject.GetIntUuid();
+        }
+        return newItemId; 
+    }
     
 }
