@@ -378,5 +378,53 @@ public class GameData {
         public string mapUnlocks;
     }
     public SavePaths savePaths = new();
-
+    
+    public class DemonEye {
+        public DemonEyeInstance equiped;
+        public Dictionary<int, DemonEyeInstance> instanceFromItemId = new();
+        public readonly DemonEyeInstance empty = new();
+    }
+    public DemonEye demonEye = new();
+    
+    public class CurrentRaid {
+        public RaidState state;
+        public bool stateSwitchedThisFrame;
+        
+        public MapData map;
+        public MapInstance mapInstance;
+        public MapLoadingState mapLoadingState;
+        
+        public Vector2 lastPlayerGridPos;
+        public Limiter flowFieldLimiter;
+        
+        public Dictionary<GameObject, InventorySlot[]> bushSlotsLookup = new();
+        public Dictionary<GameObject, InventorySlot[]> deadBodySlotsLookup = new();
+        
+        // Data that gets reset every time a new raid starts
+        public struct Temp {
+            public DamagingData damagingData;
+            public InteractionData interactionData;
+        }
+        public Temp temp;
+    } 
+    public CurrentRaid curRaid = new();
+    
+    public class Inventories {
+        public Inventory player;
+        public Inventory stash;
+        public Inventory eyeForge;
+        public Inventory transaction;
+        public Inventory trader;
+        public Inventory lootPtr;
+        public InventorySlotUI[] lootSlotUis;
+        public List<Inventory> all = new();
+    }
+    public Inventories inventories = new();
+    
+    public class HotBar {
+        public List<InputAction> quickUseActions;
+        public InventorySlotUI[] slotUIs;
+    }
+    public HotBar hotBar = new();
+    
 }

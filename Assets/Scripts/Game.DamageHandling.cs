@@ -4,12 +4,10 @@ using UnityEngine;
 
 public partial class Game {
     
-    public struct DamageHandlingVars {
+    public struct DamagingData {
         public int consecutiveCriticalHits;
         public float lastDoubleCritActivationTime;
     }
-    
-    private DamageHandlingVars damageHandlingVars;
     
     private void DamageEnemyAfterDelay(Entity enemy, int damage, bool isCriticalStrike, float delay) {
         enemy.delayedDamage = damage;
@@ -46,11 +44,12 @@ public partial class Game {
         }
         
         bool isCriticalStrike = RollProbability(GetCriticalStrikeProbability(projectile, enemy));
+        ref int consecutiveCriticalHits = ref gameData.curRaid.temp.damagingData.consecutiveCriticalHits;
         if (isCriticalStrike) {
-            damageHandlingVars.consecutiveCriticalHits++;
+            consecutiveCriticalHits++;
         }
         else {
-            damageHandlingVars.consecutiveCriticalHits = 0;
+            consecutiveCriticalHits = 0;
         }
 
         int damage = GetProjectileDamage(projectile, enemy, isCriticalStrike);
@@ -64,7 +63,7 @@ public partial class Game {
         if (eyeInstance.explosion.TryGetValue(out var explosion) && RollProbability(explosion.probability)) {
             Vector2 expSpawnPos = projectile.position + (enemy.position - projectile.position) / 2f;
             
-            Entity expEntity = SpawnEntity(explosionPool, expSpawnPos, Quaternion.identity); 
+            Entity expEntity = SpawnEntity(gameData.entityPools.explosion, expSpawnPos, Quaternion.identity); 
             DestroyEntity(expEntity, CurrentClipLength(expEntity.animator));
             
             List<Collider2D> cols = Physics.OverlapCircle(expSpawnPos, explosion.radius, Masks.EnemyMask);
@@ -75,14 +74,14 @@ public partial class Game {
             }
         }
         
-        if (equipedEye.boneShatter.TryGetValue(out var boneShatter) && RollProbability(boneShatter.probability)) {
+        if (gameData.demonEye.equiped.boneShatter.TryGetValue(out var boneShatter) && RollProbability(boneShatter.probability)) {
             for (int i = 0; i < boneShatter.shardsCount; i++) {
                 float randomDelay = Random.Range(0f, 0.06f);
                 float randomSpeedScaler = Random.Range(0.4f, 0.6f);
                 Vector2 boneShatterVelocity = RandomizeVectorAngle(projectile.velocity * randomSpeedScaler, 65f);
                 int boneDamage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(enemy) * boneShatter.perShardDamageMulti);
                 Projectile boneShatterProj = SpawnProjectile(
-                    boneShatterProjectilePool, enemy.position, boneShatterVelocity, boneShatter.lifeTime, player,
+                    gameData.entityPools.boneShatterProjectile, enemy.position, boneShatterVelocity, boneShatter.lifeTime, player,
                     rotation: RandomRotation(), spawnDelay: randomDelay, flatDamage: boneDamage
                 );
                 ProjectileMarkEntityToIgnore(boneShatterProj, enemy);
@@ -103,7 +102,7 @@ public partial class Game {
         }
                 
         if (entity.obstacleCellRadius > 0) {
-            loadedMapInst.grid.ClearObstacle(entity.obstaclePosition, entity.obstacleCellRadius);
+            gameData.curRaid.mapInstance.grid.ClearObstacle(entity.obstaclePosition, entity.obstacleCellRadius);
         }
             
         Entity smokeEntity = SpawnEntity<Entity>(rockSmokePrefab, entity.position, Quaternion.identity);
@@ -137,8 +136,8 @@ public partial class Game {
         }
         
         float criticalStrikeProb = GetAbsoluteStat(Player.Stat.CritChance);
-        if (equipedEye.bleedCritAugment.HasValue && enemy.bleed.HasValue) {
-            criticalStrikeProb += equipedEye.bleedCritAugment.Value.probability;
+        if (gameData.demonEye.equiped.bleedCritAugment.HasValue && enemy.bleed.HasValue) {
+            criticalStrikeProb += gameData.demonEye.equiped.bleedCritAugment.Value.probability;
         }
         return criticalStrikeProb;
     }
@@ -157,11 +156,14 @@ public partial class Game {
                 damageMultiplier *= triShot.damageMultiplier;
             }
             
-            if (equipedEye.doubleCritAugment.TryGetValue(out var doubleCrit)) {
-                if (damageHandlingVars.consecutiveCriticalHits > 0 && damageHandlingVars.consecutiveCriticalHits % 2 == 0) {
-                    damageHandlingVars.lastDoubleCritActivationTime = Time.time;
+            ref int consecutiveCriticalHits = ref gameData.curRaid.temp.damagingData.consecutiveCriticalHits;
+            ref float lastDoubleCritActivationTime = ref gameData.curRaid.temp.damagingData.lastDoubleCritActivationTime;
+            
+            if (gameData.demonEye.equiped.doubleCritAugment.TryGetValue(out var doubleCrit)) {
+                if (consecutiveCriticalHits > 0 && consecutiveCriticalHits % 2 == 0) {
+                    lastDoubleCritActivationTime = Time.time;
                 }
-                if (Time.time - damageHandlingVars.lastDoubleCritActivationTime <= doubleCrit.multiplierDuration) {
+                if (Time.time - lastDoubleCritActivationTime <= doubleCrit.multiplierDuration) {
                     damageMultiplier *= doubleCrit.damageMulti;
                 }
             }
@@ -169,13 +171,13 @@ public partial class Game {
         
         // Phase 2 - Additions to damage multiplier (Anything with a description of '+1.2x Damage' or '+0.25x Damage')
         {
-            if (equipedEye.distanceDamage.TryGetValue(out var distDamage)) {
+            if (gameData.demonEye.equiped.distanceDamage.TryGetValue(out var distDamage)) {
                 float convertedUnits = proj.distTraveled / gameplayConfig.distancePerUnit;
                 int increasedDamageMultiFromDist = Mathf.FloorToInt(convertedUnits * distDamage.damageMultiIncreasePerUnitTraveled);
                 damageMultiplier += increasedDamageMultiFromDist;
             }
             
-            if (equipedEye.penetrationDamageAugment.TryGetValue(out var penetrationDamage)) {
+            if (gameData.demonEye.equiped.penetrationDamageAugment.TryGetValue(out var penetrationDamage)) {
                 int penetrationCountBeforeDamagingThisEnemy = proj.ignoreEntities == null ? 0 : proj.ignoreEntities.Count;
                 if (penetrationCountBeforeDamagingThisEnemy > 0) {
                     damageMultiplier += penetrationCountBeforeDamagingThisEnemy * penetrationDamage.damageMultiplierPerPenetration;

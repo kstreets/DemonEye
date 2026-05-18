@@ -2,20 +2,19 @@ using System.Collections.Generic;
 using PrimeTween;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public partial class Game {
     
-    private void OnGameStartInitUI() {
+    private void InitUI() {
         Cursor.visible = true;
         CloseHideoutUI();
         CloseRaidUI();
         ShowMainMenuUI();
-        InitSkillsPanel();
         menuBackButton.gameObject.SetActive(false);
         largeRaidTextTypewriter.gameObject.SetActive(false);
-        SetPentagramFill(0f);
     }
 
     private Sequence mainMenuSequence;
@@ -140,70 +139,6 @@ public partial class Game {
         }
     }
 
-    private void InitButtonCallbacks() {
-        mainMenuPlayButton.AddListener(() => {
-            gameStateMachine.SetStateIfNotCurrent(mapSelectionState);
-        });
-        
-        mainMenuHideoutButton.AddListener(() => {
-            gameStateMachine.SetStateIfNotCurrent(hideoutState);
-        });
-        
-        menuBackButton.AddListener(() => {
-            OnEscapePressed(new());
-        });
-        
-        characterTabButton.onClick.AddListener(() => {
-            ToggleHideoutTab(characterTabButton, characterTabText);
-            ToggleHideoutPanels(playerPanel, stashPanel);
-        });
-        
-        eyeForgeTabButton.onClick.AddListener(() => {
-            ToggleHideoutTab(eyeForgeTabButton, eyeForgeTabText);
-            ToggleHideoutPanels(forgeDetailsPanel, eyeForgePanel, stashPanel);
-        });
-        
-        traderTabButton.onClick.AddListener(() => {
-            ToggleHideoutTab(traderTabButton, traderTabText);
-            ToggleHideoutPanels(traderInventoryPanel, traderTransactionPanel, stashPanel);
-        });
-        
-        questsTabButton.onClick.AddListener(() => {
-            ToggleHideoutTab(questsTabButton, questsTabText);
-            ToggleHideoutPanels(questsPanel);
-            RefreshQuestDisplays();
-        });
-        
-        skillsTabButton.onClick.AddListener(() => {
-            ToggleHideoutTab(skillsTabButton, skillsTabText);
-            ToggleHideoutPanels(skillsPanel.rectTransform, playerStatsPanel.rectTransform);
-        });
-
-        skillsPanel.hasteSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(hasteUpgradePath, player.hasteSkillLevel));
-        skillsPanel.intellectSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(intellectUpgradePath, player.intellectSkillLevel));
-        skillsPanel.lifeBloodSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(lifeBloodUpgradePath, player.lifeBloodSkillLevel));
-        skillsPanel.strengthSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(strengthUpgradePath, player.strengthSkillLevel));
-        
-        forgeEyeButton.AddListener(OnForgeButtonPressed);
-        
-        transactionPanel.buyToggle.AddListener(OnBuyTogglePressed);
-        transactionPanel.sellToggle.AddListener(OnSellTogglePressed);
-        transactionPanel.sellButton.AddListener(OnSellButtonPressed);
-        transactionPanel.moneyPurchaseButton.AddListener(OnMoneyPurchaseButtonPressed);
-        transactionPanel.barterPurchaseButton.AddListener(OnBarterPurchaseButtonPressed);
-
-        for (int i = 0; i < mapSelectionButtons.Length; i++) {
-            Button mapSelectionButton = mapSelectionButtons[i];
-            MapData map = maps[i];
-            mapSelectionButton.onClick.AddListener(() => {
-                LoadMapAsync(map, () => {
-                    CreateDropPoolsForMap(map);
-                    gameStateMachine.SetStateIfNotCurrent(raidState);
-                });
-            });
-        }
-    }
-
     // Here just so that we don't allocate strings every frame
     private int prevSoulCurrency = int.MinValue;
     private int prevCoinCurrency = int.MinValue;
@@ -224,7 +159,7 @@ public partial class Game {
         bleedDebuffIcon.gameObject.SetActive(player.bleeding);
         
         GetEncumberingWeightRange(out int startingEncumberingWeight, out _);
-        int inventoryWeight = GetInventoryWeight(playerInventory);
+        int inventoryWeight = GetInventoryWeight(gameData.inventories.player);
         weightBarFillImage.fillAmount = Mathf.Clamp01(inventoryWeight / (float)startingEncumberingWeight);
         
         float overweightComp = GetOverweightCompletion();
@@ -235,22 +170,22 @@ public partial class Game {
             weightBarFillImage.color = styles.underWeightColor;
         }
         
-        if (raidStateSwitchedThisFrame) {
-            if (curRaidState == RaidState.InitialWaves) {
+        if (gameData.curRaid.stateSwitchedThisFrame) {
+            if (gameData.curRaid.state == RaidState.InitialWaves) {
                 finalWaveCountdownParent.SetActive(true); 
                 exitPortalCountdownParent.SetActive(true);
                 finalWaveActiveNotifier.SetActive(false);
                 exitPortalActiveNotifier.SetActive(false);
                 finalExitPortalNotifier.SetActive(false);
             }
-            else if (curRaidState == RaidState.FinalWave) {
+            else if (gameData.curRaid.state == RaidState.FinalWave) {
                 finalWaveCountdownParent.SetActive(false); 
                 exitPortalActiveNotifier.SetActive(false);
                 finalWaveActiveNotifier.SetActive(true);
                 Tween.Scale(finalWaveActiveNotifier.transform, 0f, 1f, 0.5f, Ease.OutBack);
                 AnimateSmallRaidText(ColorText("Final Wave", styles.decreaseDescColor));
             }
-            else if (curRaidState == RaidState.PostFinalWave) {
+            else if (gameData.curRaid.state == RaidState.PostFinalWave) {
                 finalWaveActiveNotifier.SetActive(false);
                 finalExitPortalNotifier.SetActive(true);
                 Tween.Scale(finalExitPortalNotifier.transform, 0f, 1f, 0.5f, Ease.OutBack);
@@ -262,6 +197,20 @@ public partial class Game {
         }
         if (finalWaveCountdownText.gameObject.activeInHierarchy) {
             finalWaveCountdownText.text = GetCountdownText(spawnManager.timeUntilFinalPhase);
+        }
+    }
+    
+    private void UpdateHotBarUI() {
+        if (!hotBarParent.gameObject.activeInHierarchy) return;
+
+        for (int i = 0; i < playerQuickUseSize; i++) {
+            int itemIndex = i + playerEquipmentSize;
+            gameData.hotBar.slotUIs[i].ClearItem();
+
+            ItemInstance itemInstance = gameData.inventories.player.slots[itemIndex].itemInstance;
+            if (itemInstance != null) {
+                gameData.hotBar.slotUIs[i].SetItem(itemInstance.ItemRef, itemInstance.count);
+            } 
         }
     }
 
@@ -324,7 +273,7 @@ public partial class Game {
             endDamageNumPos = OffsetY(OffsetX(spawnPos, xOffset), yOffset);
         }
         
-        Entity damageNumber = SpawnEntity(damageNumberPool, spawnPos, Quaternion.identity, damageNumbersParent);
+        Entity damageNumber = SpawnEntity(gameData.entityPools.damageNumber, spawnPos, Quaternion.identity, damageNumbersParent);
         damageNumber.textMesh.text = damage.ToString();
         
         const float alpha = 0.68f;
@@ -373,7 +322,7 @@ public partial class Game {
     }
     
     private void SpawnTextPopIn(Vector3 spawnPos, string text, Vector3? endPos = default) {
-        Entity textEntity = SpawnEntity(damageNumberPool, spawnPos, Quaternion.identity, damageNumbersParent);
+        Entity textEntity = SpawnEntity(gameData.entityPools.damageNumber, spawnPos, Quaternion.identity, damageNumbersParent);
         textEntity.textMesh.text = text; 
         textEntity.textMesh.color = styles.popInTextColor;
         
@@ -511,7 +460,6 @@ public partial class Game {
         return info;
     }
 
-    
     private void EnableInteractionPrompt(Vector3 position, string detailsString) {
         interactionDetails.gameObject.SetActive(true);
         interactionDetails.text = detailsString;

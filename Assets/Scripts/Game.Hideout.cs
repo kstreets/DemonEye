@@ -12,6 +12,13 @@ public partial class Game {
     private bool OnEyeForgeTab => eyeForgeTabButton.image.sprite == tabSelectedSprite;
     private bool OnTradingTab => traderTabButton.image.sprite == tabSelectedSprite;
     
+    private void InitHideout() {
+        InitTrader();
+        InitQuests();
+        InitSkillsPanel();
+        SetPentagramFill(0f);
+    }
+    
     // ************************
     // Trader
     // ************************
@@ -28,7 +35,7 @@ public partial class Game {
 
     private void SaveTrader() {
         SaveToFile(gameData.savePaths.trader, traderSaveData);
-        SaveInventory(traderInventory);
+        SaveInventory(gameData.inventories.trader);
     }
 
     private void InitTrader() {
@@ -112,7 +119,7 @@ public partial class Game {
     }
 
     private void FillTraderInventoryWithItems() {
-        ClearInventory(traderInventory);
+        ClearInventory(gameData.inventories.trader);
         int curTraderLevel = GetTraderRepLevel();
         
         float raritySkew = curTraderLevel switch { 
@@ -146,15 +153,15 @@ public partial class Game {
                 weightedUpperRange++;
             }
             int stackCount = Random.Range(lowerRange, weightedUpperRange); 
-            TryAddItemToInventory(traderInventory, item, stackCount);
+            TryAddItemToInventory(gameData.inventories.trader, item, stackCount);
         }
         
         MarkTraderItemsAsTraderOwned();
     }
     
     private void MarkTraderItemsAsTraderOwned() {
-        for (int i = 0; i < traderInventory.slots.Length; i++) {
-            InventorySlot slot = traderInventory.slots[i];
+        for (int i = 0; i < gameData.inventories.trader.slots.Length; i++) {
+            InventorySlot slot = gameData.inventories.trader.slots[i];
             if (slot.itemInstance == null) continue;
             slot.itemInstance.traderOwned = true;
             slot.itemInstance.traderSlotIndex = i;
@@ -185,7 +192,7 @@ public partial class Game {
     }
 
     private void ReduceTradingItemStock() {
-        bool reducedToNothing = ReduceItemCountInInventory(traderInventory, curTradingItemInstance.traderSlotIndex);
+        bool reducedToNothing = ReduceItemCountInInventory(gameData.inventories.trader, curTradingItemInstance.traderSlotIndex);
         if (reducedToNothing) {
             SetTradingItem(null);
         }
@@ -199,11 +206,11 @@ public partial class Game {
         traderTransactionInventoryParent.gameObject.SetActive(false);
         
         // Move any selling items back to stash
-        foreach (InventorySlot slot in transactionInventory.slots) {
+        foreach (InventorySlot slot in gameData.inventories.transaction.slots) {
             if (slot.itemInstance == null) continue;
-            TryAddItemToInventory(stashInventory, slot.itemInstance);
+            TryAddItemToInventory(gameData.inventories.stash, slot.itemInstance);
         }
-        ClearInventory(transactionInventory);
+        ClearInventory(gameData.inventories.transaction);
     }
     
     private void OnSellTogglePressed() {
@@ -213,12 +220,12 @@ public partial class Game {
     }
     
     private void OnSellButtonPressed() {
-        if (transactionState == TransactionState.Selling && GetInventoryItemCount(transactionInventory) <= 0) return;
-        int sellPrice = GetInventoryValue(transactionInventory, InventoryValueType.Sell);
+        if (transactionState == TransactionState.Selling && GetInventoryItemCount(gameData.inventories.transaction) <= 0) return;
+        int sellPrice = GetInventoryValue(gameData.inventories.transaction, InventoryValueType.Sell);
         // Before selling items we pass the transaction inventory to callbacks that want to know what we sold
-        onSoldItemsToTrader?.Invoke(transactionInventory.slots); 
+        onSoldItemsToTrader?.Invoke(gameData.inventories.transaction.slots); 
         player.coinCurrency += sellPrice;
-        ClearInventory(transactionInventory);
+        ClearInventory(gameData.inventories.transaction);
     }
     
     private void OnMoneyPurchaseButtonPressed() {
@@ -226,10 +233,10 @@ public partial class Game {
         int buyPrice = curTradingItemInstance.ItemRef.buyPrice;
         if (player.coinCurrency >= buyPrice) {
             player.coinCurrency -= buyPrice;
-            TryAddItemToInventory(stashInventory, curTradingItemInstance.ItemRef, 1);
+            TryAddItemToInventory(gameData.inventories.stash, curTradingItemInstance.ItemRef, 1);
             ReduceTradingItemStock();
             // After buying items we just make sure all items in stash are no longer trader owned
-            ClearItemsAsTraderOwned(stashInventory);
+            ClearItemsAsTraderOwned(gameData.inventories.stash);
         }
     }
     
@@ -241,14 +248,14 @@ public partial class Game {
         }
             
         foreach (ItemWithCount barterReq in curTradingItemInstance.ItemRef.barterRequirements) {
-            int removedCount = RemoveNumberOfItemsFromInventory(stashInventory, barterReq.item, barterReq.count);
+            int removedCount = RemoveNumberOfItemsFromInventory(gameData.inventories.stash, barterReq.item, barterReq.count);
             if (removedCount != barterReq.count) {
                 int additionalRemoveCount = barterReq.count - removedCount;
-                RemoveNumberOfItemsFromInventory(playerInventory, barterReq.item, additionalRemoveCount);
+                RemoveNumberOfItemsFromInventory(gameData.inventories.player, barterReq.item, additionalRemoveCount);
             }
         }
 
-        TryAddItemToInventory(stashInventory, curTradingItemInstance.ItemRef, 1);
+        TryAddItemToInventory(gameData.inventories.stash, curTradingItemInstance.ItemRef, 1);
         ReduceTradingItemStock();
     }
     
@@ -260,7 +267,7 @@ public partial class Game {
             transactionPanel.toggleGroup.ManualyToggleCosmetically(transactionPanel.buyToggle);
         }
         else if (transactionState == TransactionState.Selling) {
-            int sellPrice = GetInventoryValue(transactionInventory, InventoryValueType.Sell);
+            int sellPrice = GetInventoryValue(gameData.inventories.transaction, InventoryValueType.Sell);
             transactionPanel.UpdateSellPrice(sellPrice);
             transactionPanel.toggleGroup.ManualyToggleCosmetically(transactionPanel.sellToggle);
         }
@@ -276,8 +283,8 @@ public partial class Game {
     private void UpdateForgeState() {
         if (!OnEyeForgeTab) return;
 
-        int crucibleItemCount = GetInventoryItemCount(eyeForgeInventory);
-        ItemInstance eyeSlotItemInstance = eyeForgeInventory.slots[0].itemInstance;
+        int crucibleItemCount = GetInventoryItemCount(gameData.inventories.eyeForge);
+        ItemInstance eyeSlotItemInstance = gameData.inventories.eyeForge.slots[0].itemInstance;
 
         if (crucibleItemCount <= 0) {
             crucibleMode = CrucibleMode.Empty;
@@ -324,13 +331,13 @@ public partial class Game {
                 forgeDetailsForgeText.text = "Missing eyeball in the center";
             }
             else {
-                int eyeUpgradeCount = GetInventoryItemCount(eyeForgeInventory) - 1;
-                int totalUpgradeCount = eyeForgeInventory.slots.Length - 1;
+                int eyeUpgradeCount = GetInventoryItemCount(gameData.inventories.eyeForge) - 1;
+                int totalUpgradeCount = gameData.inventories.eyeForge.slots.Length - 1;
                 forgeDetailsForgeText.text = $"Previewing Upgrades {ColorText(eyeUpgradeCount.ToString(), styles.timeDescColor)}/{totalUpgradeCount}";
             }
             
             using var autoRelease = ListPool<int>.Get(out var uuids);
-            foreach (InventorySlot slot in eyeForgeInventory.slots) {
+            foreach (InventorySlot slot in gameData.inventories.eyeForge.slots) {
                 if (slot.itemInstance == null || slot.itemInstance.ItemRef.type != eyeUpgradeType) continue;
                 uuids.Add(slot.itemInstance.itemOrInstanceUuid);
             }
@@ -344,8 +351,8 @@ public partial class Game {
         int eyeSlotIndex = 0;
         ItemInstance eyeItemInstance = null;
 
-        for (int i = 0; i < eyeForgeInventory.slots.Length; i++) {
-            InventorySlot slot = eyeForgeInventory.slots[i];
+        for (int i = 0; i < gameData.inventories.eyeForge.slots.Length; i++) {
+            InventorySlot slot = gameData.inventories.eyeForge.slots[i];
             if (slot.ui.OnlyAcceptsType(eyeType)) {
                 eyeItemInstance = slot.itemInstance;
                 eyeSlotIndex = i;
@@ -354,10 +361,10 @@ public partial class Game {
 
         if (eyeItemInstance == null) return;
 
-        for (int i = 0; i < eyeForgeInventory.slots.Length; i++) {
+        for (int i = 0; i < gameData.inventories.eyeForge.slots.Length; i++) {
             if (i == eyeSlotIndex) continue;
-            if (eyeForgeInventory.slots[i].itemInstance != null) break;
-            if (i == eyeForgeInventory.slots.Length - 1) return;
+            if (gameData.inventories.eyeForge.slots[i].itemInstance != null) break;
+            if (i == gameData.inventories.eyeForge.slots.Length - 1) return;
         }
 
         toggledOffHoverableUIElement = forgeEyeButton.rectTransform;
@@ -375,7 +382,7 @@ public partial class Game {
                 isDemonEye = true,
             };
 
-            foreach (InventorySlot slot in eyeForgeInventory.slots) {
+            foreach (InventorySlot slot in gameData.inventories.eyeForge.slots) {
                 slot.ui.itemUI.rectTransform.anchoredPosition = Vector2.zero;
                 slot.ui.itemUI.rectTransform.localScale = Vector3.one;
                 
@@ -388,7 +395,7 @@ public partial class Game {
             }
             
             BuildAndRegisterEye(newDemonEyeItemInstance);
-            eyeForgeInventory.slots[eyeSlotIndex].itemInstance = newDemonEyeItemInstance;
+            gameData.inventories.eyeForge.slots[eyeSlotIndex].itemInstance = newDemonEyeItemInstance;
         });
     }
     
@@ -400,7 +407,7 @@ public partial class Game {
         const float perUpgradeExplosionDelay = 0.15f;
         const float popOutDuration = 0.15f;
 
-        float upgradeExplosionsDuration = perUpgradeExplosionDelay * (GetInventoryItemCount(eyeForgeInventory) - 1);
+        float upgradeExplosionsDuration = perUpgradeExplosionDelay * (GetInventoryItemCount(gameData.inventories.eyeForge) - 1);
         float totalAnimationDuration = fillDuration + upgradeExplosionsDuration + popOutDuration;
 
         Tween.Custom(this, 0f, 1f, fillDuration, ease: Ease.Linear, onValueChange: (target, val) => {
@@ -411,8 +418,8 @@ public partial class Game {
             target.SetPentagramFill(target.pentagramFillCurve.Evaluate(val));
         });
 
-        for (int i = 0; i < eyeForgeInventory.slots.Length; i++) {
-            InventorySlot slot = eyeForgeInventory.slots[i];
+        for (int i = 0; i < gameData.inventories.eyeForge.slots.Length; i++) {
+            InventorySlot slot = gameData.inventories.eyeForge.slots[i];
             if (slot.itemInstance == null) continue;
 
             RectTransform rectTransform = slot.ui.itemUI.rectTransform;
@@ -436,7 +443,7 @@ public partial class Game {
                 }));
                 
                 sequence.Group(Tween.Delay(0f, () => {
-                    Entity forgeExplosion = SpawnEntity(forgeExplosionPool, slot.ui.rectTransform.position, Quaternion.identity, eyeForgePanel);
+                    Entity forgeExplosion = SpawnEntity(gameData.entityPools.forgeExplosion, slot.ui.rectTransform.position, Quaternion.identity, eyeForgePanel);
                     DestroyEntity(forgeExplosion, CurrentClipLength(forgeExplosion.animator));
                     Tween.PunchScale(eyeForgePanel, Vector3.one * 0.05f, 1f, 15f);
                 }));
@@ -458,7 +465,7 @@ public partial class Game {
                 }));
                 
                 sequence.Group(Tween.Delay(popOutDuration / 2f, () => {
-                    Entity forgeExplosion = SpawnEntity(forgeExplosionPool, slot.ui.rectTransform.position, Quaternion.identity, eyeForgePanel);
+                    Entity forgeExplosion = SpawnEntity(gameData.entityPools.forgeExplosion, slot.ui.rectTransform.position, Quaternion.identity, eyeForgePanel);
                     DestroyEntity(forgeExplosion, CurrentClipLength(forgeExplosion.animator));
                     Tween.PunchScale(eyeForgePanel, Vector3.one * 0.04f, 0.15f, 15f);
                 }));
@@ -631,8 +638,8 @@ public partial class Game {
         foreach (Quest.Objective objective in questPackage.questNode.curQuest.objectives) {
             if (objective.type == Quest.Objective.Type.Fetch && !objective.keepFetchedItems) {
                 RemoveNumberOfOwnedItems(objective.targetItem, objective.targetValue);
-                SaveInventory(playerInventory);
-                SaveInventory(stashInventory);
+                SaveInventory(gameData.inventories.player);
+                SaveInventory(gameData.inventories.stash);
             }    
         }
         

@@ -45,10 +45,9 @@ public partial class Game {
         public MultiProjectileCritAugment.InstanceData? multiProjectileCritAugment;
     }
     
-    private DemonEyeInstance equipedEye;
-    public Dictionary<int, DemonEyeInstance> eyeInstanceFromItemId = new();
-    private readonly DemonEyeInstance emptyDemonEye = new();
-    private Limiter attackLimiter;
+    private void InitDemonEye() {
+        gameData.demonEye.equiped = gameData.demonEye.empty;
+    }
 
     private void BuildAndRegisterEye(ItemInstance itemInstance) {
         itemInstance.itemOrInstanceUuid = GenerateNewItemUuid();
@@ -85,7 +84,7 @@ public partial class Game {
             augmentInstance.ApplyToEye(newDemonEye); 
         }
         
-        eyeInstanceFromItemId.Add(itemInstance.itemOrInstanceUuid, newDemonEye);
+        gameData.demonEye.instanceFromItemId.Add(itemInstance.itemOrInstanceUuid, newDemonEye);
     }
     
     public class EyeUpgradeSet {
@@ -192,7 +191,7 @@ public partial class Game {
     
     public int GetDemonEyeSellPrice(ItemInstance demonEyeItemInstance) {
         // We need to use the InventoryItem's ID because the Item's ID is the demon eye Scriptable Object
-        DemonEyeInstance demonEye = eyeInstanceFromItemId[demonEyeItemInstance.itemOrInstanceUuid]; 
+        DemonEyeInstance demonEye = gameData.demonEye.instanceFromItemId[demonEyeItemInstance.itemOrInstanceUuid]; 
         
         int sellPrice = 0;
         foreach (EquipedUpgradeInstance upgradeInstance in demonEye.upgradeInstances) {

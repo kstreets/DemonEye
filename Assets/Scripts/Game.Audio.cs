@@ -88,9 +88,9 @@ public partial class Game {
     }
     
     private void PlayAmbience() {
+        gameData.audio.ambienceSource = gameData.audio.reservedSources.Dequeue();
         var ambience = gameData.audio.ambienceSource;
         
-        ambience = gameData.audio.reservedSources.Dequeue();
         ambience.transform.position = Vector3.zero;
         ambience.volume = 1f;
         ambience.pitch = 1f;
@@ -108,7 +108,7 @@ public partial class Game {
         var ambience = gameData.audio.ambienceSource;
         ambience.Stop();
         gameData.audio.reservedSources.Enqueue(ambience);
-        ambience = null;
+        gameData.audio.ambienceSource = null;
     }
     
 }

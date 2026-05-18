@@ -1,28 +1,46 @@
-using UnityEngine;
+using NUnit.Framework;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public partial class Game {
     
-    private void InitAll() {
+    private void InitGame() {
         BuildSavePaths();
+        InitInput();
         InitResources();
         InitEntities();
         InitAudio();
-        LoadAndAssignMapSaves(maps);
+        InitMapSaves();
         DemonEyeTween.Init();
+        InitDemonEye();
         InitInventories();
         InitButtonCallbacks();
-        InitTrader();
-        InitQuests();
-        OnGameStartInitUI();
         InitEntityPools();
-        InitInput();
         InitGameStates();
         InitMenuNavigation();
+        InitHotBar();
+        InitUI();
+        InitHideout();
     }
     
     private void InitEntities() {
         gameData.entities.player = MakePlayer();
+    }
+    
+    private void InitInput() {
+        gameData.input.moveInputAction = InputSystem.actions.FindAction("Move");
+        gameData.input.interactInputAction = InputSystem.actions.FindAction("Interact");
+        gameData.input.inventoryInputAction = InputSystem.actions.FindAction("Inventory");
+        gameData.input.selectItemInputAction = InputSystem.actions.FindAction("SelectItem");
+        gameData.input.placeSingleItemInputAction = InputSystem.actions.FindAction("PlaceSingleItem");
+        gameData.input.splitStackInputAction = InputSystem.actions.FindAction("SplitStack");
+        gameData.input.moveStackInputAction = InputSystem.actions.FindAction("MoveStack");
+        gameData.input.useItemInputAction = InputSystem.actions.FindAction("UseItem");
+        gameData.input.escapeInputAction = InputSystem.actions.FindAction("Escape");
+        gameData.input.quickUse1Action = InputSystem.actions.FindAction("QuickUse1");
+        gameData.input.quickUse2Action = InputSystem.actions.FindAction("QuickUse2");
+        gameData.input.quickUse3Action = InputSystem.actions.FindAction("QuickUse3");
+        gameData.input.quickUse4Action = InputSystem.actions.FindAction("QuickUse4");
     }
 
     private void InitEntityPools() {
@@ -44,23 +62,10 @@ public partial class Game {
         gameData.entityPools.blast = CreateEntityPool<Entity>(gameData.prefabs.blast, 5, null);
     }
 
-    private void InitInput() {
-        gameData.input.moveInputAction = InputSystem.actions.FindAction("Move");
-        gameData.input.interactInputAction = InputSystem.actions.FindAction("Interact");
-        gameData.input.inventoryInputAction = InputSystem.actions.FindAction("Inventory");
-        gameData.input.selectItemInputAction = InputSystem.actions.FindAction("SelectItem");
-        gameData.input.placeSingleItemInputAction = InputSystem.actions.FindAction("PlaceSingleItem");
-        gameData.input.splitStackInputAction = InputSystem.actions.FindAction("SplitStack");
-        gameData.input.moveStackInputAction = InputSystem.actions.FindAction("MoveStack");
-        gameData.input.useItemInputAction = InputSystem.actions.FindAction("UseItem");
-        gameData.input.escapeInputAction = InputSystem.actions.FindAction("Escape");
-        gameData.input.quickUse1Action = InputSystem.actions.FindAction("QuickUse1");
-        gameData.input.quickUse2Action = InputSystem.actions.FindAction("QuickUse2");
-        gameData.input.quickUse3Action = InputSystem.actions.FindAction("QuickUse3");
-        gameData.input.quickUse4Action = InputSystem.actions.FindAction("QuickUse4");
-    }
-
     private void InitGameStates() {
+        gameData.states.gameStateMachine = new();
+        var gameStateMachine = gameData.states.gameStateMachine;
+        
         gameData.states.mainMenu = gameStateMachine.CreateState(enter: OnMainMenuStateEnter, exit: OnMainMenuStateExit);
         gameData.states.hideout = gameStateMachine.CreateState(update: OnHideoutStateUpdate, lateUpdate: OnHideoutStateLateUpdate, enter: OnHideoutStateEnter, exit: OnHideoutStateExit);
         gameData.states.mapSelection = gameStateMachine.CreateState(update: OnMapSelectionUpdate, lateUpdate: OnMapSelectionLateUpdate, enter: OnMapSelectionEnter, exit: OnMapSelectionExit);
@@ -68,7 +73,83 @@ public partial class Game {
         gameData.states.gameOver = gameStateMachine.CreateState(enter: OnGameOverEnter, exit: OnGameOverExit);
         gameData.states.earlyExit = gameStateMachine.CreateState(enter: OnEarlyExitEnter, exit: OnEarlyExitExit);
         gameData.states.winExit = gameStateMachine.CreateState(enter: OnWinExitEnter, exit: OnWinExitExit);
-        gameData.states.raid.To(gameOverState).When(() => player.health <= 0);
+        
+        gameData.states.raid.To(gameData.states.gameOver).When(() => player.health <= 0);
+    }
+    
+    private void InitButtonCallbacks() {
+        mainMenuPlayButton.AddListener(() => {
+            gameData.states.gameStateMachine.SetStateIfNotCurrent(gameData.states.mapSelection);
+        });
+        
+        mainMenuHideoutButton.AddListener(() => {
+            gameData.states.gameStateMachine.SetStateIfNotCurrent(gameData.states.hideout);
+        });
+        
+        menuBackButton.AddListener(() => {
+            OnEscapePressed(new());
+        });
+        
+        characterTabButton.onClick.AddListener(() => {
+            ToggleHideoutTab(characterTabButton, characterTabText);
+            ToggleHideoutPanels(playerPanel, stashPanel);
+        });
+        
+        eyeForgeTabButton.onClick.AddListener(() => {
+            ToggleHideoutTab(eyeForgeTabButton, eyeForgeTabText);
+            ToggleHideoutPanels(forgeDetailsPanel, eyeForgePanel, stashPanel);
+        });
+        
+        traderTabButton.onClick.AddListener(() => {
+            ToggleHideoutTab(traderTabButton, traderTabText);
+            ToggleHideoutPanels(traderInventoryPanel, traderTransactionPanel, stashPanel);
+        });
+        
+        questsTabButton.onClick.AddListener(() => {
+            ToggleHideoutTab(questsTabButton, questsTabText);
+            ToggleHideoutPanels(questsPanel);
+            RefreshQuestDisplays();
+        });
+        
+        skillsTabButton.onClick.AddListener(() => {
+            ToggleHideoutTab(skillsTabButton, skillsTabText);
+            ToggleHideoutPanels(skillsPanel.rectTransform, playerStatsPanel.rectTransform);
+        });
+
+        skillsPanel.hasteSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(hasteUpgradePath, player.hasteSkillLevel));
+        skillsPanel.intellectSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(intellectUpgradePath, player.intellectSkillLevel));
+        skillsPanel.lifeBloodSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(lifeBloodUpgradePath, player.lifeBloodSkillLevel));
+        skillsPanel.strengthSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(strengthUpgradePath, player.strengthSkillLevel));
+        
+        forgeEyeButton.AddListener(OnForgeButtonPressed);
+        
+        transactionPanel.buyToggle.AddListener(OnBuyTogglePressed);
+        transactionPanel.sellToggle.AddListener(OnSellTogglePressed);
+        transactionPanel.sellButton.AddListener(OnSellButtonPressed);
+        transactionPanel.moneyPurchaseButton.AddListener(OnMoneyPurchaseButtonPressed);
+        transactionPanel.barterPurchaseButton.AddListener(OnBarterPurchaseButtonPressed);
+
+        for (int i = 0; i < mapSelectionButtons.Length; i++) {
+            Button mapSelectionButton = mapSelectionButtons[i];
+            MapData map = maps[i];
+            mapSelectionButton.onClick.AddListener(() => {
+                LoadMapAsync(map, () => {
+                    CreateDropPoolsForMap(map);
+                    gameData.states.gameStateMachine.SetStateIfNotCurrent(gameData.states.raid);
+                });
+            });
+        }
+    }
+    
+    private void InitHotBar() {
+        gameData.hotBar.quickUseActions = new() {
+            gameData.input.quickUse1Action, 
+            gameData.input.quickUse2Action, 
+            gameData.input.quickUse3Action, 
+            gameData.input.quickUse4Action,
+        };
+        gameData.hotBar.slotUIs = hotBarParent.GetComponentsInChildren<InventorySlotUI>();
+        Assert.IsTrue(gameData.hotBar.slotUIs.Length == playerQuickUseSize, "Make sure to match hot bar inventory UIs count with quick use count");
     }
     
 }

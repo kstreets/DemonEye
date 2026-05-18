@@ -17,6 +17,7 @@ public partial class Game {
         public bool bleeding;
         public Limiter bleedLimiter;
         
+        public Limiter attackLimiter;
         public Limiter enemyCollisionDamageLimiter;
         
         public int soulCurrency;
@@ -101,7 +102,7 @@ public partial class Game {
             const int bleedDamage = 5;
             player.health -= bleedDamage;
             
-            Entity bloodDrop = SpawnEntity(bloodDropPool, OffsetY(player.position, 0.11f), Quaternion.identity);
+            Entity bloodDrop = SpawnEntity(gameData.entityPools.bloodDrop, OffsetY(player.position, 0.11f), Quaternion.identity);
             AddParentEffect(bloodDrop, player, 0.4f);
             DestroyEntity(bloodDrop, 0.8f);
             
@@ -120,10 +121,9 @@ public partial class Game {
             return;
         }
 
-        bool interactingWithPortal = interactions.timeSpentSummoningPortal > Mathf.Epsilon;
-        if (InventoryIsOpen || interactingWithPortal) return;
+        if (InventoryIsOpen || InteractingWithPortal()) return;
         
-        Vector2 moveInput = moveInputAction.ReadValue<Vector2>();
+        Vector2 moveInput = gameData.input.moveInputAction.ReadValue<Vector2>();
         Vector2 prevPos = player.position;
         
         float speed = GetPlayerSpeed();
@@ -163,7 +163,7 @@ public partial class Game {
         
         bool playerStepped = moveInput != Vector2.zero && player.curStepDistance > 0.18f;
         if (playerStepped) {
-            Entity runSmokeEntity = SpawnEntity(runSmokePool, OffsetY(player.position, 0.01f), Quaternion.identity);
+            Entity runSmokeEntity = SpawnEntity(gameData.entityPools.runSmoke, OffsetY(player.position, 0.01f), Quaternion.identity);
             DestroyEntity(runSmokeEntity, CurrentClipLength(runSmokeEntity.animator));
             PlayAudioClip(footStepClip, player.position);
             player.curStepDistance = 0f;
@@ -176,7 +176,7 @@ public partial class Game {
             }
         }
         
-        bool canShoot = attackLimiter.TimeHasPassed(GetFirerateDelayBasedOnStats());
+        bool canShoot = player.attackLimiter.TimeHasPassed(GetFirerateDelayBasedOnStats());
         if (!canShoot) return;
         
         float projCount = GetAbsoluteStat(Player.Stat.ProjectileCount);
@@ -206,7 +206,7 @@ public partial class Game {
             
             bool isAdditionalShot = i > 0;
             if (isAdditionalShot) {
-                if (equipedEye.multiProjectileCritAugment.TryGetValue(out var multiProjCrit)) {
+                if (gameData.demonEye.equiped.multiProjectileCritAugment.TryGetValue(out var multiProjCrit)) {
                     ShootProjectile(attackTarget, flatCritChance: multiProjCrit.probability);
                 }
                 else {
@@ -214,7 +214,7 @@ public partial class Game {
                 }
             }
 
-            if (equipedEye.doubleTapAugment.TryGetValue(out var doubleTap) && RollProbability(doubleTap.probability)) { 
+            if (gameData.demonEye.equiped.doubleTapAugment.TryGetValue(out var doubleTap) && RollProbability(doubleTap.probability)) { 
                 ShootProjectile(attackTarget, spawnDelay: doubleTap.delayBetweenShots);
             }
         }
@@ -227,10 +227,10 @@ public partial class Game {
             player.consecutiveShotCount = 0;
         }
         
-        if (equipedEye.blast.TryGetValue(out var blast) && player.consecutiveShotCount > 0 && player.consecutiveShotCount % blast.numshotsUntilOverheat == 0) {
+        if (gameData.demonEye.equiped.blast.TryGetValue(out var blast) && player.consecutiveShotCount > 0 && player.consecutiveShotCount % blast.numshotsUntilOverheat == 0) {
             Vector2 spawnPos = OffsetY(player.position, 0.1f);
             
-            Entity expEntity = SpawnEntity(blastPool, spawnPos, Quaternion.identity); 
+            Entity expEntity = SpawnEntity(gameData.entityPools.blast, spawnPos, Quaternion.identity); 
             DestroyEntity(expEntity, CurrentClipLength(expEntity.animator));
             
             List<Collider2D> cols = Physics.OverlapCircle(spawnPos, blast.radius, Masks.EnemyMask);
@@ -288,22 +288,22 @@ public partial class Game {
         float accuracyAngle = Random.Range(-maxAccuracyAngle, maxAccuracyAngle);
 
         float projectileSpeed = gameplayConfig.projectileSpeed;
-        Vector2 dir = (targetPos - PlayerEyePos.ToVector2()).normalized;
+        Vector2 dir = (targetPos - (Vector2)PlayerEyePos).normalized;
         dir = Quaternion.AngleAxis(accuracyAngle, Vector3.forward) * dir;
         Vector2 velocity = dir * projectileSpeed; 
-        _SpawnProjectile(PlayerEyePos, velocity, projectilePool);
+        _SpawnProjectile(PlayerEyePos, velocity, gameData.entityPools.projectile);
         
-        if (equipedEye.trishot.TryGetValue(out var trishot) && RollProbability(trishot.probability)) {
+        if (gameData.demonEye.equiped.trishot.TryGetValue(out var trishot) && RollProbability(trishot.probability)) {
             const float baseTriShotAngle = 8f;
             Vector2 secondShotVelocity = Quaternion.AngleAxis(baseTriShotAngle, Vector3.forward) * velocity;
-            _SpawnProjectile(PlayerEyePos, secondShotVelocity, projectilePool, flgs: ProjectileTypeFlags.Trishot);
+            _SpawnProjectile(PlayerEyePos, secondShotVelocity, gameData.entityPools.projectile, flgs: ProjectileTypeFlags.Trishot);
             Vector2 thirdShotVelocity = Quaternion.AngleAxis(-baseTriShotAngle, Vector3.forward) * velocity;
-            _SpawnProjectile(PlayerEyePos, thirdShotVelocity, projectilePool, flgs: ProjectileTypeFlags.Trishot);
+            _SpawnProjectile(PlayerEyePos, thirdShotVelocity, gameData.entityPools.projectile, flgs: ProjectileTypeFlags.Trishot);
         }
 
-        if (equipedEye.backwardShot.TryGetValue(out var backShot) && RollProbability(backShot.probability)) {
+        if (gameData.demonEye.equiped.backwardShot.TryGetValue(out var backShot) && RollProbability(backShot.probability)) {
             const float backwardsShotSpeedScaler = 1.1f;
-            EntityPool<Projectile> pool = equipedEye.backwardsPiercingAugment.HasValue ? piercingShotProjectilePool : projectilePool; 
+            EntityPool<Projectile> pool = gameData.demonEye.equiped.backwardsPiercingAugment.HasValue ? gameData.entityPools.piercingShotProjectile : gameData.entityPools.projectile; 
             _SpawnProjectile(PlayerEyePos, -velocity * backwardsShotSpeedScaler, pool, flgs: ProjectileTypeFlags.BackwardsShot);
         }
         
@@ -432,7 +432,7 @@ public partial class Game {
 
     public void DamagePlayer(int damage, PlayerDamageType damageType, Entity sourceEntity, float chanceToBleed = 0f) {
         chanceToBleed -= GetAbsoluteStat(Player.Stat.BleedResist); 
-        if (!player.bleeding && !loadedMapData.playerCantBleed && !PlayerHealthIsAtAutoBleedStop() && RollProbability(chanceToBleed)) {
+        if (!player.bleeding && !gameData.curRaid.map.playerCantBleed && !PlayerHealthIsAtAutoBleedStop() && RollProbability(chanceToBleed)) {
             player.bleeding = true;
         }
         
@@ -525,7 +525,7 @@ public partial class Game {
     
     private float GetEquipmentStatAdjustment(Player.Stat stat) {
         float statSum = 0f;
-        foreach (EquipedUpgradeInstance mod in equipedEye.upgradeInstances) {
+        foreach (EquipedUpgradeInstance mod in gameData.demonEye.equiped.upgradeInstances) {
             EyeUpgradeItem eyeUpgradeItem = mod.EyeUpgradeItem;
             int stackCount = mod.stackCount;
             if (!eyeUpgradeItem.modifiesStats) continue;
@@ -574,7 +574,7 @@ public partial class Game {
     }
 
     private float GetFirerateDelayBasedOnStats() {
-        if (equipedEye == emptyDemonEye) {
+        if (gameData.demonEye.equiped == gameData.demonEye.empty) {
             return gameplayConfig.attackDelay;
         }
 
@@ -594,7 +594,7 @@ public partial class Game {
 
     private float GetOverweightCompletion() {
         GetEncumberingWeightRange(out int startingEncumberingWeight, out int endingEncumberingWeight);
-        int inventoryWeight = GetInventoryWeight(playerInventory);
+        int inventoryWeight = GetInventoryWeight(gameData.inventories.player);
         int curOverweightAmount = Mathf.Clamp(inventoryWeight - startingEncumberingWeight, 0, int.MaxValue);
         float maxOverweightAmount = (float)endingEncumberingWeight - startingEncumberingWeight;
         float overweightComp = curOverweightAmount / maxOverweightAmount;
@@ -606,7 +606,7 @@ public partial class Game {
             
         playerPanelHealthText.text = $"<color=#5CF25B>{player.health}</color><size=22>/{FullPlayerHealth}";
 
-        int inventoryWeight = GetInventoryWeight(playerInventory);
+        int inventoryWeight = GetInventoryWeight(gameData.inventories.player);
         GetEncumberingWeightRange(out int startEncumberingWeight, out _);
         playerPanelWeightText.text = $"<color=#98C5CC>{inventoryWeight}</color><size=22>/{startEncumberingWeight}";
         

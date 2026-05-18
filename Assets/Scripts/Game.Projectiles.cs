@@ -50,7 +50,7 @@ public partial class Game {
         Projectile projectile = SpawnEntity(pool, spawnPos, projectileRotation);
         
         projectile.velocity = velocity;
-        projectile.eyeInstanceSpawnedFrom = equipedEye;
+        projectile.eyeInstanceSpawnedFrom = gameData.demonEye.equiped;
         projectile.sourceEntity = sourceEntity;
         projectile.lifeTimeDuration = lifetime;
         projectile.flatDamage = flatDamage;
@@ -82,7 +82,7 @@ public partial class Game {
         for (int i = projectiles.Count - 1; i >= 0; i--) {
             Projectile proj = projectiles[i];
             proj.curTimeAlive += Time.deltaTime;
-            proj.trans.position += proj.velocity.ToVector3() * Time.deltaTime;
+            proj.trans.position += (Vector3)proj.velocity * Time.deltaTime;
             proj.distTraveled += proj.velocity.magnitude * Time.deltaTime;
             
             Collider2D col = Physics2D.OverlapCircle(proj.trans.position, projectileRadius, proj.layerMask);
@@ -106,7 +106,7 @@ public partial class Game {
 
             if (entity is Enemy && ProjectileShouldPassThrough(proj, entity)) continue;
             
-            Entity impact = SpawnEntity(projectileImpactPool, proj.position, RandomRotation());
+            Entity impact = SpawnEntity(gameData.entityPools.projectileImpact, proj.position, RandomRotation());
             DestroyEntity(impact, CurrentClipLength(impact.animator));
             
             DestroyEntity(projectiles[i]);

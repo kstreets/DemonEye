@@ -6,12 +6,12 @@ public partial class Game {
     private void InitMenuNavigation() {
         var menuMove = InputSystem.actions.FindAction("MenuMove");
         menuMove.performed += OnMoveInput;
-        escapeInputAction.performed += OnEscapePressed;
+        gameData.input.escapeInputAction.performed += OnEscapePressed;
     }
     
     private void OnEscapePressed(InputAction.CallbackContext context) {
         if (InMapSelection || InHideout) {
-            gameStateMachine.SetState(mainMenuState);
+            gameData.states.gameStateMachine.SetState(gameData.states.mainMenu);
         }
         if (InRaid && InventoryIsOpen) {
             ClosePlayerInventory();
@@ -33,7 +33,7 @@ public partial class Game {
         Vector2 dir = context.ReadValue<Vector2>();
         dir = new(dir.x, -dir.y);
         
-        if (gameStateMachine.CurState == mainMenuState) {
+        if (gameData.states.gameStateMachine.CurState == gameData.states.mainMenu) {
             if (!mainMenuGrid.IndexInRange(controllerPos + dir)) return;
             controllerPos += dir;
             

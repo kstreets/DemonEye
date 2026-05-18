@@ -270,58 +270,16 @@ public partial class Game : MonoBehaviour {
     public AudioMixerGroup ambienceMixerGroup;
     [EndFoldout]
     
-    private InputAction moveInputAction;
-    private InputAction interactInputAction;
-    private InputAction inventoryInputAction;
-    private InputAction selectItemInputAction;
-    private InputAction placeSingleItemInputAction;
-    private InputAction useItemInputAction;
-    private InputAction moveStackInputAction;
-    private InputAction splitStackInputAction;
-    private InputAction escapeInputAction;
-    private InputAction quickUse1Action;
-    private InputAction quickUse2Action;
-    private InputAction quickUse3Action;
-    private InputAction quickUse4Action;
-    
-    private EntityPool<Entity> itemDropPool;
-    private EntityPool<Entity> bloodDropPool;
-    private EntityPool<Projectile> projectilePool;
-    private EntityPool<Projectile> boneShatterProjectilePool;
-    private EntityPool<Projectile> gooProjectilePool;
-    private EntityPool<Projectile> piercingShotProjectilePool;
-    private EntityPool<Entity> poisonDebuffPool;
-    private EntityPool<Entity> explosionPool;
-    private EntityPool<Entity> projectileImpactPool;
-    private EntityPool<Entity> teleportInPool;
-    private EntityPool<Entity> teleportOutPool;
-    private EntityPool<Entity> bloodSplatterPool;
-    private EntityPool<Entity> runSmokePool;
-    private EntityPool<Entity> damageNumberPool;
-    private EntityPool<Entity> forgeExplosionPool;
-    private EntityPool<Entity> blastPool;
-    
-    private State mainMenuState;
-    private State mapSelectionState;
-    private State hideoutState;
-    private State raidState;
-    private State gameOverState;
-    private State winExitState;
-    private State earlyExitState;
-    private StateMachine gameStateMachine = new();
-
     public static Action<InventorySlot[]> onSoldItemsToTrader;
     public static Action<string> customQuestEvent;
     
     private void Start() {
         gameInstance = this;
-        InitAll();
-        equipedEye = emptyDemonEye;
-        
+        InitGame();
     }
 
     private void Update() {
-        gameStateMachine.Tick();
+        gameData.states.gameStateMachine.Tick();
         DemonEyeTween.Update();
         UpdateTrader();
         UpdateQuests();
@@ -337,11 +295,11 @@ public partial class Game : MonoBehaviour {
     }
 
     private void FixedUpdate() {
-        gameStateMachine.Tick(StateMachine.UpdateMode.FixedUpdate);
+        gameData.states.gameStateMachine.Tick(StateMachine.UpdateMode.FixedUpdate);
     }
 
     private void LateUpdate() {
-        gameStateMachine.Tick(StateMachine.UpdateMode.LateUpdate);
+        gameData.states.gameStateMachine.Tick(StateMachine.UpdateMode.LateUpdate);
     }
 
     private void OnApplicationQuit() {
@@ -349,7 +307,7 @@ public partial class Game : MonoBehaviour {
     }
 
     private void UpdateTimers() {
-        discoverItemTimer.Tick();
+        gameData.curRaid.temp.interactionData.discoverItemTimer.Tick();
     }
 
     private void OnMainMenuStateEnter() {
@@ -370,9 +328,9 @@ public partial class Game : MonoBehaviour {
         CloseHideoutUI();
         SavePlayerData();
         SaveTrader();
-        SaveInventory(playerInventory);
-        SaveInventory(stashInventory);
-        SaveInventory(eyeForgeInventory);
+        SaveInventory(gameData.inventories.player);
+        SaveInventory(gameData.inventories.stash);
+        SaveInventory(gameData.inventories.eyeForge);
         SaveActiveQuestProgresses();
     }
 
@@ -454,7 +412,7 @@ public partial class Game : MonoBehaviour {
 
     private void OnEarlyExitEnter() {
         OnSaveWhenRaidIsOver();
-        AnimateEarlyExitSequence(() => gameStateMachine.SetStateIfNotCurrent(mainMenuState));
+        AnimateEarlyExitSequence(() => gameData.states.gameStateMachine.SetStateIfNotCurrent(gameData.states.mainMenu));
     }
     
     private void OnEarlyExitExit() {
@@ -462,14 +420,14 @@ public partial class Game : MonoBehaviour {
     }
     
     private void OnWinExitEnter() {
-        int nextMapIndex = maps.IndexOf(loadedMapData) + 1;
+        int nextMapIndex = maps.IndexOf(gameData.curRaid.map) + 1;
         bool unlockNextMap = maps.IndexInRange(nextMapIndex) && !maps[nextMapIndex].isUnlocked;
         if (unlockNextMap) {
             maps[nextMapIndex].isUnlocked = true;
             SaveMaps();
         }
         OnSaveWhenRaidIsOver();
-        AnimateGameWinSequence(() => gameStateMachine.SetStateIfNotCurrent(mainMenuState));
+        AnimateGameWinSequence(() => gameData.states.gameStateMachine.SetStateIfNotCurrent(gameData.states.mainMenu));
     }
 
     private void OnWinExitExit() {
@@ -477,9 +435,9 @@ public partial class Game : MonoBehaviour {
     }
 
     private void OnGameOverEnter() {
-        ClearInventory(playerInventory);
+        ClearInventory(gameData.inventories.player);
         OnSaveWhenRaidIsOver();
-        AnimateGameOverSequence(() => gameStateMachine.SetStateIfNotCurrent(mainMenuState)); 
+        AnimateGameOverSequence(() => gameData.states.gameStateMachine.SetStateIfNotCurrent(gameData.states.mainMenu)); 
     }
     
     private void OnGameOverExit() {
@@ -487,21 +445,20 @@ public partial class Game : MonoBehaviour {
         DeinitRaid();
     }
     
-    private enum RaidState { None, InitialWaves, FinalWave, PostFinalWave }
-    private RaidState curRaidState;
-    private bool raidStateSwitchedThisFrame;
+    public enum RaidState { None, InitialWaves, FinalWave, PostFinalWave }
     
     private void InitRaid() {
-        curRaidState = RaidState.None;
+        gameData.curRaid.state = RaidState.None;
+        gameData.curRaid.temp.Reset();
         
         Cursor.visible = false;
         ShowRaidUI();
 
         deathBackgroundImage.enabled = false;
-        loadedMapInst.gameObject.SetActive(true);
+        gameData.curRaid.mapInstance.gameObject.SetActive(true);
 
-        int randomSpawnIndex = Random.Range(0, loadedMapInst.spawnPositionsParent.childCount);
-        Vector2 randomSpawnPos = loadedMapInst.spawnPositionsParent.GetChild(randomSpawnIndex).position;
+        int randomSpawnIndex = Random.Range(0, gameData.curRaid.mapInstance.spawnPositionsParent.childCount);
+        Vector2 randomSpawnPos = gameData.curRaid.mapInstance.spawnPositionsParent.GetChild(randomSpawnIndex).position;
         
         player.position = randomSpawnPos;
         player.gameObject.SetActive(false);
@@ -510,36 +467,33 @@ public partial class Game : MonoBehaviour {
         cinemachineCamera.ForceCameraPosition(cameraWarpTarget, Quaternion.identity);
         cinemachineCamera.Follow = player.trans;
         
-        damageHandlingVars.Reset();
-        interactions.Reset();
-        
         InitMapGrid();
-        InitSpawnManager(loadedMapData.waves);
-        SpawnMapResources(loadedMapInst.resourceParent);
-        SpawnInitialExitPortals(loadedMapInst.exitPortalsParent, loadedMapData.exitPortalsCount);
+        InitSpawnManager(gameData.curRaid.map.waves);
+        SpawnMapResources(gameData.curRaid.mapInstance.resourceParent);
+        SpawnInitialExitPortals(gameData.curRaid.mapInstance.exitPortalsParent, gameData.curRaid.map.exitPortalsCount);
         AnimateRaidEnterSequence();
     }
     
     private void UpdateRaidState() {
-        RaidState prevState = curRaidState;
+        RaidState prevState = gameData.curRaid.state;
         
         if (spawnManager.timeUntilFinalPhase >= 0f) {
-            curRaidState = RaidState.InitialWaves;
+            gameData.curRaid.state = RaidState.InitialWaves;
         }
         else if (!spawnManager.isFinishedSpawning || enemies.Count > 0) {
-            curRaidState = RaidState.FinalWave;
+            gameData.curRaid.state = RaidState.FinalWave;
         }
         else {
-            curRaidState = RaidState.PostFinalWave;
+            gameData.curRaid.state = RaidState.PostFinalWave;
         }
 
-        raidStateSwitchedThisFrame = prevState != curRaidState;
+        gameData.curRaid.stateSwitchedThisFrame = prevState != gameData.curRaid.state;
         
-        if (raidStateSwitchedThisFrame && curRaidState == RaidState.FinalWave) {
+        if (gameData.curRaid.stateSwitchedThisFrame && gameData.curRaid.state == RaidState.FinalWave) {
             PlayAudioClip(finalWaveStingerClip, player.position);
         }
 
-        if (raidStateSwitchedThisFrame && curRaidState == RaidState.PostFinalWave) {
+        if (gameData.curRaid.stateSwitchedThisFrame && gameData.curRaid.state == RaidState.PostFinalWave) {
             Tween.Delay(0.25f, static () => {
                 gameInstance.AnimateLargeRaidText(ColorText("Map Cleared!", gameInstance.styles.increaseDescColor), 1.8f);
                 gameInstance.SpawnFinalExitPortal();
@@ -556,45 +510,18 @@ public partial class Game : MonoBehaviour {
     }
     
     private void OnSaveWhenRaidIsOver() {
-        SaveInventory(playerInventory);
+        SaveInventory(gameData.inventories.player);
         SavePlayerData();
         SaveActiveQuestProgresses();
     }
     
-    // ***************************
-    // Map Flow Field 
-    // ***************************
-
-    private Vector2 lastPlayerGridPos;
-    private Limiter flowFieldLimiter;
-
-    private void InitMapGrid() {
-        loadedMapInst.grid.Init();
-        lastPlayerGridPos = new(float.MaxValue, float.MaxValue);
-    }
-
-    private void DeinitMapGrid() {
-        loadedMapInst.grid.Deinit();
-    }
-    
-    private void UpdateMapGrid() {
-        CoolerGrid grid = loadedMapInst.grid;
-        grid.FeedPlayerVelocity(player.position, player.velocity);
-        grid.UpdateFlowFieldFromPreviousJob();
-
-        const float fixedUpdateRate = 1f / 6f;
-        const float slowFixedUpdateRate = 1f / 2f; // Spawning enemies relies on updated flow field distances so we can't just not update them
-        float curUpdateRate = enemies.Count > 0 ? fixedUpdateRate : slowFixedUpdateRate;
-        if (!flowFieldLimiter.TimeHasPassed(curUpdateRate)) return;
-            
-        Vector2 curPlayerGridPos = grid.GetCellPosition(player.position);
-        bool playerMovedCells = curPlayerGridPos != lastPlayerGridPos;
-        if (playerMovedCells) {
-            grid.ScheduleFlowFieldCalculation(player.position);
-            lastPlayerGridPos = curPlayerGridPos;
+    private void OnDemonEyeEquipmentChanged() {
+        gameData.curRaid.temp.damagingData.Reset();
+        if (gameData.demonEye.equiped != gameData.demonEye.empty) {
+            customQuestEvent?.Invoke("FirstDemonEyeEquiped");
         }
     }
-
+    
     // *******************************
     // Animation Sequences
     // *******************************
@@ -614,7 +541,7 @@ public partial class Game : MonoBehaviour {
         raidEnterSequence.ChainDelay(0.25f);
 
         raidEnterSequence.ChainCallback(() => {
-            Entity inTeleportEntity = SpawnEntity(teleportInPool, OffsetY(player.position, -0.05f), Quaternion.identity);
+            Entity inTeleportEntity = SpawnEntity(gameData.entityPools.teleportIn, OffsetY(player.position, -0.05f), Quaternion.identity);
             DestroyEntity(inTeleportEntity, CurrentClipLength(inTeleportEntity.animator));
             PlayAudioClip(teleportInClip, inTeleportEntity.position);
         });
@@ -694,7 +621,7 @@ public partial class Game : MonoBehaviour {
     }
     
     private void AnimateGameWinSequence(Action onCompleteCallback) {
-        Entity outTeleportFxEntity = SpawnEntity(teleportOutPool, player.position, Quaternion.identity);
+        Entity outTeleportFxEntity = SpawnEntity(gameData.entityPools.teleportOut, player.position, Quaternion.identity);
         DestroyEntity(outTeleportFxEntity, CurrentClipLength(outTeleportFxEntity.animator));
         PlayAudioClip(teleportOutClip, outTeleportFxEntity.position);
         player.gameObject.SetActive(false);
@@ -725,7 +652,7 @@ public partial class Game : MonoBehaviour {
     }
     
     private void AnimateEarlyExitSequence(Action onCompleteCallback) {
-        Entity outTeleportFxEntity = SpawnEntity(teleportOutPool, player.position, Quaternion.identity);
+        Entity outTeleportFxEntity = SpawnEntity(gameData.entityPools.teleportOut, player.position, Quaternion.identity);
         DestroyEntity(outTeleportFxEntity, CurrentClipLength(outTeleportFxEntity.animator));
         PlayAudioClip(teleportOutClip, outTeleportFxEntity.position);
         player.gameObject.SetActive(false);
@@ -758,502 +685,6 @@ public partial class Game : MonoBehaviour {
             pixelPerfectCamera.assetsPPU = initialPPU;
             onCompleteCallback?.Invoke();
         });
-    }
-
-    // *******************************
-    // Interactions 
-    // *******************************
-    
-    public struct InteractionVars {
-        public float timeSpentSummoningPortal;
-    }
-    
-    public InteractionVars interactions;
-    
-    private void CancelPortalSummoning() {
-        interactions.timeSpentSummoningPortal = 0f;
-    }
-    
-    private void CheckForInteractions() { 
-        DisableInteractionPrompt();
-        
-        Vector2 checkCenter = player.position + new Vector3(0f, 0.05f, 0f);
-        List<Collider2D> cols = Physics.OverlapCircle(checkCenter, 0.1f, Masks.ItemMask);
-        
-        foreach (Collider2D col in cols) {
-            if (col.CompareTag(Tags.Pickup)) {
-                ItemDrop itemDrop = col.GetComponent<ItemDrop>();
-                Item dropItemRef = itemDrop.ItemInstance.ItemRef;
-                
-                Color itemColor = styles.GetColorForRarity(dropItemRef.GetRarity());
-                string details = ColorText($"{dropItemRef.displayName} x{itemDrop.ItemInstance.count}", itemColor);
-                EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), details);
-                
-                if (interactInputAction.WasPressedThisFrame()) {
-                    InventoryAddResult result = TryAddItemToInventory(playerInventory, itemDrop.ItemInstance);
-                    if (result.type == InventoryAddResult.ResultType.Success) {
-                        Entity droppedEntity = gameData.entities.lookup[itemDrop.gameObject];
-                        PickupDroppedItem(droppedEntity); 
-                        itemDrop.circleCollider.enabled = false;
-                    }
-                    else if (result.type == InventoryAddResult.ResultType.FailureToAddAll) {
-                        itemDrop.ItemInstance.count -= result.addedCount;
-                    }
-                }
-            }
-
-            if (col.CompareTag(Tags.DeadBody)) {
-                EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), "Search Body");
-                if (interactInputAction.WasPressedThisFrame()) {
-                    lootInventoryPtr.slots = deadBodySlotsLookup[col.gameObject];
-                    OpenPlayerInventory();
-                    OpenLootInventory();
-                }
-            }
-            
-            if (col.CompareTag(Tags.Bush)) {
-                EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), "Search Bush");
-                if (interactInputAction.WasPressedThisFrame()) {
-                    lootInventoryPtr.slots = bushSlotsLookup[col.gameObject];
-                    OpenPlayerInventory();
-                    OpenLootInventory();
-                }
-            }
-
-            if (col.CompareTag(Tags.Altar)) {
-                int soulsPrice = loadedMapData.altarSoulPrice;
-                EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), $"{soulsPrice} Souls");
-                if (interactInputAction.WasPressedThisFrame() && player.soulCurrency >= soulsPrice) {
-                    player.soulCurrency -= soulsPrice;
-                    Item dropItem = GetItemFromDropPool(eyeUpgradesDropPool);
-                    Entity item = SpawnItemAsEntity(dropItem, 1, OffsetY(col.transform.position, 0.2f), Quaternion.identity);
-                    item.spriteRenderer.sortingOrder = 1;
-                    col.enabled = false;
-                }
-            }
-            
-            if (col.CompareTag(Tags.Chest)) {
-                EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), "Open Chest");
-                if (interactInputAction.WasPressedThisFrame()) {
-                    Item dropItem = GetItemFromDropPool(chestsDropPool);
-                    Entity item = SpawnItemAsEntity(dropItem, 1, OffsetY(col.transform.position, 0.1f), Quaternion.identity);
-                    Vector3 endPos = item.position + RotationVector(Random.Range(0f, 360f), 0.18f, 0.25f);
-                    AddBounceEffect(item, endPos, 0.6f);
-                    col.enabled = false;
-                }
-            }
-
-            if (col.CompareTag(Tags.ExitPortal)) {
-                ExitPortal portal = GetExitPortalFromTransform(col.transform);
-                ref float timeSpentSummoningPortal = ref interactions.timeSpentSummoningPortal;
-                
-                if (!portal.hasBeenSummoned && timeSpentSummoningPortal < gameplayConfig.portalSummonTime) {
-                    EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Summon Exit Portal");
-                    if (interactInputAction.IsPressed()) {
-                        timeSpentSummoningPortal += Time.deltaTime;
-                        if (timeSpentSummoningPortal >= gameplayConfig.portalSummonTime) {
-                            StartSummoningExitPortal(col.transform);
-                            timeSpentSummoningPortal = 0f;
-                        }
-                    }
-                    else {
-                        timeSpentSummoningPortal = 0f;
-                    }
-                }
-                
-                if (portal.canTake) {
-                    EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Take Exit Portal");
-                    if (interactInputAction.WasPressedThisFrame()) {
-                        exitPortalTakenByPlayer = portal;
-                        exitPortalTakenByPlayer.closingCountdownSequence.Stop();
-                        gameStateMachine.SetStateIfNotCurrent(curRaidState == RaidState.PostFinalWave ? winExitState : earlyExitState);
-                        
-                        customQuestEvent?.Invoke("FirstExtract");
-                    }
-                }
-            }
-        }
-    }
-
-    private void PickupDroppedItem(Entity droppedEntity) {
-        Vector3 playerPickupTarget = new(0f, 0.07f, 0f);
-        
-        droppedEntity.GetEffect(EffectsIndicies.Bounce).Stop();
-        droppedEntity.trans.SetParent(player.trans, true);
-        
-        TweenSettings horizontalSettings = new() {
-            duration = 0.15f,
-            ease = Ease.InQuart,
-        };
-        
-        TweenSettings verticalSettings = new() {
-            duration = 0.09f,
-            ease = Ease.InQuart,
-        };
-        
-        TweenSettings itemScaleSettings = new() {
-            startDelay = 0.03f,
-            duration = 0.15f,
-            ease = Ease.InCubic,
-        };
-        
-        ShakeSettings playerScaleSettings = new() {
-            startDelay = 0.1f,
-            duration = 0.08f,
-            strength = Vector2.one * 0.15f,
-            frequency = 5f,
-        };
-        
-        Tween.LocalPositionX(droppedEntity.trans, playerPickupTarget.x, horizontalSettings)
-        .Group(Tween.LocalPositionY(droppedEntity.trans, playerPickupTarget.y, verticalSettings))
-        .Group(Tween.Scale(droppedEntity.trans, 0f,itemScaleSettings))
-        .Group(Tween.PunchScale(player.trans, playerScaleSettings))
-        .OnComplete(() => DestroyEntity(droppedEntity));
-    }
-    
-    // *******************************
-    // Hot Bar 
-    // *******************************
-    
-    private InventorySlotUI[] hotBarItemUIs;
-    
-    private void UpdateHotBarUI() {
-        if (!hotBarParent.gameObject.activeInHierarchy) return;
-
-        hotBarItemUIs ??= hotBarParent.GetComponentsInChildren<InventorySlotUI>();
-        Assert.IsTrue(hotBarItemUIs.Length == playerQuickUseSize, "Make sure to match hot bar inventory UIs count with quick use count");
-
-        for (int i = 0; i < playerQuickUseSize; i++) {
-            int itemIndex = i + playerEquipmentSize;
-            hotBarItemUIs[i].ClearItem();
-
-            ItemInstance itemInstance = playerInventory.slots[itemIndex].itemInstance;
-            if (itemInstance != null) {
-                hotBarItemUIs[i].SetItem(itemInstance.ItemRef, itemInstance.count);
-            } 
-        }
-    }
-
-    private List<InputAction> quickUseActions;
-    
-    private void CheckForHotBarInteractions() {
-        Item itemToConsume = null;
-        
-        quickUseActions ??= new() {
-            quickUse1Action, quickUse2Action, quickUse3Action, quickUse4Action,
-        };
-
-        int playerInventorySlotIndex = playerEquipmentSize;
-        foreach (InputAction action in quickUseActions) {
-            if (action.WasPressedThisFrame()) {
-                itemToConsume = playerInventory.slots[playerInventorySlotIndex].itemInstance?.ItemRef;
-                break;
-            }
-            playerInventorySlotIndex++;
-        }
-
-        if (itemToConsume) {
-            HavePlayerConsumeItem(playerInventory, playerInventorySlotIndex);
-        }
-    }
-
-    // ***************************
-    // Exit Portals 
-    // ***************************
-    
-    private List<ExitPortal> activeExitPortals = new();
-    private ExitPortal exitPortalTakenByPlayer;
-    
-    private class ExitPortal {
-        public Transform transform;
-        public Sequence summoningPortalSequence;
-        public Sequence closingCountdownSequence;
-        public bool hasBeenSummoned;
-        public bool canTake;
-    }
-    
-    private void StartSummoningExitPortal(Transform exitPortalTrans) {
-        ExitPortal portal = GetExitPortalFromTransform(exitPortalTrans);
-        portal.hasBeenSummoned = true;
-        
-        portal.summoningPortalSequence = Sequence.Create();
-        portal.summoningPortalSequence.ChainDelay(gameplayConfig.portalPostSummonDelay);
-        portal.summoningPortalSequence.Chain(Tween.Scale(portal.transform, Vector3.one, 0.25f, Ease.OutBack));
-        
-        portal.summoningPortalSequence.OnComplete(portal, static (portal) => {
-            portal.canTake = true;
-            gameInstance.StartClosingExitPortal(portal);
-        });
-    }
-    
-    private void StartClosingExitPortal(ExitPortal portal) {
-        portal.closingCountdownSequence = Sequence.Create();
-        portal.closingCountdownSequence.ChainDelay(gameplayConfig.portalActiveDuration);
-        portal.closingCountdownSequence.ChainCallback(portal, static (portal) => {
-            portal.canTake = false;
-            gameInstance.activeExitPortals.Remove(portal);
-            Tween.Scale(portal.transform, Vector3.zero, 0.25f, Ease.OutCubic);
-        });
-    }
-    
-    private ExitPortal GetExitPortalFromTransform(Transform trans) {
-        foreach (ExitPortal portal in activeExitPortals) {
-            if (portal.transform == trans) {
-                return portal;
-            }
-        }
-        Assert.IsTrue(false, "We should not be requesting a portal from a non-valid transform");
-        return null;
-    }
-    
-    private void SpawnInitialExitPortals(Transform exitPortalParent, int exitPortalsCount) {
-        Assert.IsTrue(exitPortalsCount > 0, $"{nameof(exitPortalsCount)} needs to be 1 or more");
-        
-        activeExitPortals.Clear();
-        exitPortalTakenByPlayer = null;
-        
-        using var _ = UnityEngine.Pool.ListPool<Transform>.Get(out List<Transform> possibleExitPortals);
-        
-        foreach (Transform portal in exitPortalParent) {
-            portal.gameObject.SetActive(false);
-            if (Vector2.Distance(player.position, portal.position) > 5) {
-                possibleExitPortals.Add(portal);
-            }
-        }
-        
-        Assert.IsTrue(possibleExitPortals.Count >= exitPortalsCount, 
-            $"Not enough portals on map, and or spaced too close together. Expected {exitPortalsCount} got {possibleExitPortals.Count}");
-        
-        possibleExitPortals.Shuffle();
-        
-        for (int i = 0; i < exitPortalsCount; i++) {
-            activeExitPortals.Add(new() {
-                transform = possibleExitPortals[i],
-            });
-            possibleExitPortals[i].gameObject.SetActive(true);
-            possibleExitPortals[i].transform.localScale = Vector3.one * 0.25f;
-        }
-    }
-    
-    private void SpawnFinalExitPortal() {
-        for (int i = 0; i < 100; i++) {
-            Vector2 randomPos = player.position.ToVector2() + Random.insideUnitCircle * Random.Range(0.5f, 1.5f);
-            if (Physics.OverlapCircle(randomPos, 0.2f, Masks.StaticLevelMask).Count > 0) continue;
-            
-            Transform exitPortalParent = loadedMapInst.exitPortalsParent;
-            int randomSpawnIndex = Random.Range(0, exitPortalParent.childCount);
-            Transform newExitPortalTrans = exitPortalParent.GetChild(randomSpawnIndex);
-            
-            newExitPortalTrans.gameObject.SetActive(true);
-            newExitPortalTrans.position = randomPos;
-            
-            activeExitPortals.Add(new() {
-                transform = newExitPortalTrans,
-                hasBeenSummoned = true,
-                canTake = true,
-            });
-            
-            Tween.Scale(newExitPortalTrans, 0f, 1f, 0.5f, Ease.OutBack);
-            PlayAudioClip(portalSpawnClip, newExitPortalTrans.position);
-            return;
-        }
-        
-        // This is a fail safe incase we couldn't spawn the final portal
-        gameStateMachine.SetState(winExitState);
-    }
-    
-    // ***************************
-    // Helpers 
-    // ***************************
-
-    public static bool RollProbability(float probability) {
-        return Random.value <= probability;
-    }
-    
-    private Vector2 ScreenCenter => new(Screen.width / 2f, Screen.height / 2f);
-    
-    private bool InHideout => gameStateMachine.CurState == hideoutState;
-    
-    private bool InMapSelection => gameStateMachine.CurState == mapSelectionState;
-    
-    public bool InRaid => gameStateMachine.CurState == raidState;
-
-    public bool ControllerPluggedIn => Gamepad.current != null;
-
-    private Vector3 RotationVector360(float minDist, float maxDist) {
-        return Quaternion.AngleAxis(Random.Range(0, 360), Vector3.forward) * Vector3.right * Random.Range(minDist, maxDist);
-    }
-    
-    private Vector3 RotationVector(float degrees) {
-        return Quaternion.AngleAxis(degrees, Vector3.forward) * Vector3.right;
-    }
-    
-    private Vector3 RotationVector(float degrees, float minDist, float maxDist) {
-        return Quaternion.AngleAxis(degrees, Vector3.forward) * Vector3.right * Random.Range(minDist, maxDist);
-    }
-
-    private Vector3 RandomizeVectorAngle(Vector3 vector, float degreeDelta) {
-        return Quaternion.AngleAxis(Random.Range(-degreeDelta, degreeDelta), Vector3.forward) * vector;
-    }
-    
-    private Quaternion RandomRotation() {
-        return Quaternion.AngleAxis(Random.Range(0f, 360f), Vector3.forward);
-    }
-    
-    private Vector2 OffsetY(Vector2 pos, float yOffset) {
-        return new(pos.x, pos.y + yOffset);
-    }
-    
-    private Vector2 OffsetX(Vector2 pos, float xOffset) {
-        return new(pos.x + xOffset, pos.y);
-    }
-
-    private float RandomSign() {
-        return Random.Range(-1, 2);
-    }
-
-    private float CurrentClipLength(Animator anim) {
-        return anim.GetCurrentAnimatorStateInfo(0).length;
-    }
-
-    private string GetCountdownText(float timeLeft) {
-        float time = Mathf.Clamp(timeLeft, 0f, float.MaxValue);
-        int minutesLeft = Mathf.FloorToInt(time / 60f);
-        int secondsLeft = Mathf.FloorToInt(time % 60f);
-        return $"{minutesLeft:00}:{secondsLeft:00}";
-    }
-
-    private static string SizeText(string text, int fontSize) {
-        return $"<size={fontSize}>{text}</size>";
-    }
-    
-    public static string ColorText(string text, Color color) {
-        return $"<color=#{ColorUtility.ToHtmlStringRGBA(color)}>{text}</color>";
-    }
-    
-    public static string DisplayProb(float probability, Color? color = default) {
-        Color textColor = color ?? gameInstance.styles.timeDescColor;
-        return ColorText($"{Mathf.FloorToInt(probability * 100f)}%", textColor);
-    }
-    
-    public static string DisplayProbNoColor(float probability) {
-        return $"{Mathf.FloorToInt(probability * 100f)}%";
-    }
-
-    public static string DisplayProbIncDec(float probability) {
-        return probability >= 0f ? DisplayProbIncrease(probability) : DisplayProbDecrease(probability);
-    }
-
-    public static string DisplayProbIncrease(float probability, Color? color = default) {
-        Color textColor = color ?? gameInstance.styles.increaseDescColor;
-        return ColorText($"+{Mathf.FloorToInt(probability * 100f)}%", textColor);
-    }
-    
-    public static string DisplayProbDecrease(float probability, Color? color = default) {
-        Color textColor = color ?? gameInstance.styles.decreaseDescColor;
-        return ColorText($"-{Mathf.Abs(Mathf.FloorToInt(probability * 100f))}%", textColor);
-    }
-
-    public static string DisplayHealth(int health) {
-        return ColorText(health.ToString(), gameInstance.styles.increaseDescColor);
-    }
-
-    public static string DisplayNumber(int number, Color? color = default) {
-        Color textColor = color ?? gameInstance.styles.timeDescColor;
-        return ColorText(number.ToString(), textColor);
-    }
-    
-    public static string DisplayNumber(float number, Color? color = default) {
-        Color textColor = color ?? gameInstance.styles.timeDescColor;
-        return ColorText(number.ToString("0.00"), textColor);
-    }
-    
-    public static string DisplayNumberNoColor(float number) {
-        return number.ToString("0.00");
-    }
-
-    public static string DisplayIncDec(int amount) {
-        return amount >= 0f ? DisplayIncrease(amount) : DisplayDecrease(amount);
-    }
-
-    public static string DisplayIncrease(int amount, Color? color = default) {
-        Color textColor = color ?? gameInstance.styles.increaseDescColor;
-        return ColorText($"+{amount}", textColor);
-    }
-    
-    public static string DisplayDecrease(int amount, Color? color = default) {
-        Color textColor = color ?? gameInstance.styles.decreaseDescColor;
-        return ColorText($"-{Mathf.Abs(amount)}", textColor);
-    }
-
-    public static string DisplayIncDec(float amount) {
-        return amount >= 0f ? DisplayIncrease(amount) : DisplayDecrease(amount);
-    }
-
-    public static string DisplayIncrease(float amount, Color? color = default) {
-        Color textColor = color ?? gameInstance.styles.increaseDescColor;
-        return ColorText($"+{amount:0.00}", textColor);
-    }
-    
-    public static string DisplayDecrease(float amount, Color? color = default) {
-        Color textColor = color ?? gameInstance.styles.decreaseDescColor;
-        return ColorText($"-{Mathf.Abs(amount):0.00}", textColor);
-    }
-    
-    public static string DisplayMultiplier(float multiplier, Color? color = default) {
-        Color textColor = multiplier >= 1f ? gameInstance.styles.increaseDescColor : gameInstance.styles.decreaseDescColor;
-        return ColorText($"{multiplier:0.00}x", color ?? textColor);
-    }
-    
-    public static string DisplayMultiplierNoColor(float multiplier) {
-        return $"{multiplier:0.00}x";
-    }
-
-    public static string DisplayMultiplierIncDec(float multiplier) {
-        return multiplier >= 0f ? DisplayMultiplierIncrease(multiplier) : DisplayMultiplierDecrease(multiplier);
-    }
-
-    public static string DisplayMultiplierIncrease(float multiplier, Color? color = default) {
-        Color textColor = color ?? gameInstance.styles.increaseDescColor;
-        return ColorText($"+{multiplier:0.00}x", textColor);
-    }
-    
-    public static string DisplayMultiplierDecrease(float multiplier, Color? color = default) {
-        Color textColor = color ?? gameInstance.styles.decreaseDescColor;
-        return ColorText($"-{Mathf.Abs(multiplier):0.00}x", textColor);
-    }
-
-    public static string DisplaySeconds(float time) {
-        if (time == 1f) {
-            return ColorText($"{time:0}<space=0.12em>s", gameInstance.styles.timeDescColor);
-        }
-        
-        bool isWholeNumber = time % 1 == 0;
-        if (isWholeNumber) {
-            return ColorText($"{time:0}<space=0.12em>s", gameInstance.styles.timeDescColor);
-        }
-        
-        return ColorText($"{time:0.0#}<space=0.12em>s", gameInstance.styles.timeDescColor);
-    }
-    
-    public static int TaperInteger(int value, int stackCount, float taper) {
-        Assert.IsFalse(taper >= 1f && taper <= 0f, "Taper needs to be between 0 and 1");
-        return Mathf.RoundToInt(value * Mathf.Pow(stackCount, taper));
-    }
-
-    public static float TaperFloat(float value, int stackCount, float taper) {
-        Assert.IsFalse(taper >= 1f && taper <= 0f, "Taper needs to be between 0 and 1");
-        return value * Mathf.Pow(stackCount, taper);
-    }
-
-    private enum CardinalDir { Right, Left, Up, Down }
-
-    private CardinalDir CardinalDirFromVector(Vector2 vector) {
-        float dot = Vector2.Dot(Vector2.right, vector.normalized);
-        if (Mathf.Abs(dot) >= 0.2f) {
-            return vector.x > 0 ? CardinalDir.Right : CardinalDir.Left;
-        } 
-        return vector.y > 0 ? CardinalDir.Up : CardinalDir.Down;
     }
 
 }

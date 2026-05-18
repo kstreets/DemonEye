@@ -87,7 +87,7 @@ public partial class Game {
     }
 
     private Entity SpawnItemAsEntity(Item item, int count, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level) {
-        Entity entity = SpawnEntity(itemDropPool, position, rotation, parent, lifetime);
+        Entity entity = SpawnEntity(gameData.entityPools.itemDrop, position, rotation, parent, lifetime);
         ItemInstance itemInstance = new(item, count);
         entity.gameObject.GetComponent<ItemDrop>().Init(itemInstance);
         return entity;
@@ -228,7 +228,7 @@ public partial class Game {
     
     public void AddPoisonedEffect(Entity entity, float duration) {
         if (!entity.GetEffect(EffectsIndicies.Poisoned).isAlive) {
-            Entity poisonDebuff = SpawnEntity(poisonDebuffPool, OffsetY(entity.position, -0.01f), Quaternion.identity, entity.trans);
+            Entity poisonDebuff = SpawnEntity(gameData.entityPools.poisonDebuff, OffsetY(entity.position, -0.01f), Quaternion.identity, entity.trans);
             entity.poisonedEffect = new() {
                 poisonDebuffEntity = poisonDebuff,
             };
@@ -284,7 +284,7 @@ public partial class Game {
                 entity.GetEffect(EffectsIndicies.Parent).Stop();
                 return;
             }
-            entity.position = entity.parentEffect.parentEntity.position + entity.parentEffect.localOffset.ToVector3();
+            entity.position = entity.parentEffect.parentEntity.position + (Vector3)entity.parentEffect.localOffset;
         });
         
         entity.SetEffect(EffectsIndicies.Parent, tween);

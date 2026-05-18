@@ -35,7 +35,7 @@ public partial class Game {
         }
     }
     
-    private Item GetItemFromDropPool(DropPool dropPool) => GetItemFromDropPool(dropPool, loadedMapData);
+    private Item GetItemFromDropPool(DropPool dropPool) => GetItemFromDropPool(dropPool, gameData.curRaid.map);
     
     public Item GetItemFromDropPool(DropPool dropPool, [CanBeNull] MapData map) {
         Assert.IsNotNull(dropPool, "Droppool cannot be null");

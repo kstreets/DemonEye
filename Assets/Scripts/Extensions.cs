@@ -13,18 +13,6 @@ public static class Extensions {
         return new Vector2(transform.position.x, transform.position.y);
     }
     
-    public static Vector2 ToVector2(this Vector3 vector) {
-        return new Vector2(vector.x, vector.y);
-    }
-    
-    public static Vector3 ToVector3(this Vector2 vector) {
-        return new Vector3(vector.x, vector.y, 0f);
-    }
-    
-    public static void SetY(this Vector2 vector, float y) {
-        vector = new(vector.x, y);
-    }
-
     public static void ForceRecalculate(this ContentSizeFitter fitter) {
         fitter.SetLayoutVertical();
         fitter.SetLayoutHorizontal();
@@ -127,7 +115,7 @@ public static class Extensions {
     }
     
     public static V RandomValue<K, V>(this Dictionary<K, V> dictionary) where V : class {
-        int target = UnityEngine.Random.Range(0, dictionary.Count);
+        int target = Random.Range(0, dictionary.Count);
 
         int i = 0;
         foreach (var kvp in dictionary) {

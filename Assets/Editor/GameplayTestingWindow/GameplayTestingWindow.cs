@@ -112,7 +112,7 @@ public class GameplayTestingWindow : EditorWindow {
         game.CreateDropPoolsForMap(currentMap); 
         for (int i = 0; i < 5; i++) {
             Item item = game.GetItemFromDropPool(game.eyeUpgradesDropPool, currentMap);
-            game.TryAddItemToInventory(game.stashInventory, item, 1);
+            game.TryAddItemToInventory(game.gameData.inventories.stash, item, 1);
         }
     }
     
