@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using PrimeTween;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Assertions;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
@@ -13,8 +12,8 @@ public partial class Game {
         CloseHideoutUI();
         CloseRaidUI();
         ShowMainMenuUI();
-        menuBackButton.gameObject.SetActive(false);
-        largeRaidTextTypewriter.gameObject.SetActive(false);
+        gameData.ui.menuBackButton.gameObject.SetActive(false);
+        gameData.ui.largeRaidTextTypewriter.gameObject.SetActive(false);
     }
 
     private Sequence mainMenuSequence;
@@ -23,35 +22,40 @@ public partial class Game {
         if (mainMenuSequence.isAlive) return;
         
         float halfScreenHeight = Screen.height / 2f;
+        var logo = gameData.mainMenu.logo;
+        var playButton = gameData.mainMenu.playButton;
+        var hideoutButton = gameData.mainMenu.hideoutButton;
+        var settingsButton = gameData.mainMenu.settingsButton;
+        var exitButton = gameData.mainMenu.exitButton;
         
         mainMenuSequence = Sequence.Create();
-        mainMenuSequence.Group(Tween.UIAnchoredPositionY(mainMenuLogo, halfScreenHeight, mainMenuLogo.anchoredPosition.y, 0.8f, Ease.OutExpo));
-        mainMenuSequence.Group(Tween.UIAnchoredPositionY(mainMenuPlayButton.rectTransform, -halfScreenHeight, mainMenuPlayButton.rectTransform.anchoredPosition.y, 0.8f, Ease.OutExpo));
-        mainMenuSequence.Group(Tween.UIAnchoredPositionY(mainMenuHideoutButton.rectTransform, -halfScreenHeight, mainMenuHideoutButton.rectTransform.anchoredPosition.y, 0.8f, Ease.OutExpo, startDelay: 0.1f));
-        mainMenuSequence.Group(Tween.UIAnchoredPositionY(mainMenuSettingsButton.rectTransform, -halfScreenHeight, mainMenuSettingsButton.rectTransform.anchoredPosition.y, 0.8f, Ease.OutExpo, startDelay: 0.2f));
-        mainMenuSequence.Group(Tween.UIAnchoredPositionY(mainMenuExitButton.rectTransform, -halfScreenHeight, mainMenuExitButton.rectTransform.anchoredPosition.y, 0.8f, Ease.OutExpo, startDelay: 0.3f));
+        mainMenuSequence.Group(Tween.UIAnchoredPositionY(logo, halfScreenHeight, logo.anchoredPosition.y, 0.8f, Ease.OutExpo));
+        mainMenuSequence.Group(Tween.UIAnchoredPositionY(playButton.rectTransform, -halfScreenHeight, playButton.rectTransform.anchoredPosition.y, 0.8f, Ease.OutExpo));
+        mainMenuSequence.Group(Tween.UIAnchoredPositionY(hideoutButton.rectTransform, -halfScreenHeight, hideoutButton.rectTransform.anchoredPosition.y, 0.8f, Ease.OutExpo, startDelay: 0.1f));
+        mainMenuSequence.Group(Tween.UIAnchoredPositionY(settingsButton.rectTransform, -halfScreenHeight, settingsButton.rectTransform.anchoredPosition.y, 0.8f, Ease.OutExpo, startDelay: 0.2f));
+        mainMenuSequence.Group(Tween.UIAnchoredPositionY(exitButton.rectTransform, -halfScreenHeight, exitButton.rectTransform.anchoredPosition.y, 0.8f, Ease.OutExpo, startDelay: 0.3f));
 
-        mainMenuPlayButton.rectTransform.anchoredPosition = new(mainMenuPlayButton.rectTransform.anchoredPosition.x, -halfScreenHeight);
-        mainMenuHideoutButton.rectTransform.anchoredPosition = new(mainMenuHideoutButton.rectTransform.anchoredPosition.x, -halfScreenHeight);
-        mainMenuSettingsButton.rectTransform.anchoredPosition = new(mainMenuSettingsButton.rectTransform.anchoredPosition.x, -halfScreenHeight);
-        mainMenuExitButton.rectTransform.anchoredPosition = new(mainMenuExitButton.rectTransform.anchoredPosition.x, -halfScreenHeight);
+        playButton.rectTransform.anchoredPosition = new(playButton.rectTransform.anchoredPosition.x, -halfScreenHeight);
+        hideoutButton.rectTransform.anchoredPosition = new(hideoutButton.rectTransform.anchoredPosition.x, -halfScreenHeight);
+        settingsButton.rectTransform.anchoredPosition = new(settingsButton.rectTransform.anchoredPosition.x, -halfScreenHeight);
+        exitButton.rectTransform.anchoredPosition = new(exitButton.rectTransform.anchoredPosition.x, -halfScreenHeight);
     }
 
     private void ShowMainMenuUI() {
-        hideoutParent.gameObject.SetActive(true);
-        menuBackgroundImage.gameObject.SetActive(true);
-        mainMenuParent.gameObject.SetActive(true);
+        gameData.ui.hideoutParent.gameObject.SetActive(true);
+        gameData.ui.animatedBgImage.gameObject.SetActive(true);
+        gameData.mainMenu.parent.gameObject.SetActive(true);
         AnimateInMainMenu();
     }
 
     private void CloseMainMenuUI() {
-        menuBackgroundImage.gameObject.SetActive(false);
-        mainMenuParent.gameObject.SetActive(false);
+        gameData.ui.animatedBgImage.gameObject.SetActive(false);
+        gameData.mainMenu.parent.gameObject.SetActive(false);
     }
 
     private void ShowMapSelectionUI() {
         ShowHideoutUI();
-        hideoutTabsParent.gameObject.SetActive(false);
+        gameData.hideoutTabs.parent.gameObject.SetActive(false);
         playerInfoParent.gameObject.SetActive(false);
         ToggleHideoutPanels(playerPanel, mapSelectionPanel);
     }
@@ -61,26 +65,26 @@ public partial class Game {
     }
     
     private void ShowHideoutUI() {
-        ToggleHideoutTab(characterTabButton, characterTabText);
+        ToggleHideoutTab(gameData.hideoutTabs.characterButton, gameData.hideoutTabs.characterText);
         ToggleHideoutPanels(playerPanel, stashPanel);
-        menuBackButton.gameObject.SetActive(true);
+        gameData.ui.menuBackButton.gameObject.SetActive(true);
         coinsCurrencyParent.gameObject.SetActive(true);
         soulsCurrencyParent.gameObject.SetActive(true);
         healthBarParent.gameObject.SetActive(false);
         weightBarParent.gameObject.SetActive(false);
         playerInfoParent.gameObject.SetActive(true);
-        menuBackgroundImage.gameObject.SetActive(true);
-        hideoutTabsParent.gameObject.SetActive(true);
+        gameData.ui.animatedBgImage.gameObject.SetActive(true);
+        gameData.hideoutTabs.parent.gameObject.SetActive(true);
     }
 
     private void CloseHideoutUI() {
         ToggleHideoutPanels();
         HideInventoryItemPopup(); 
         HideUIElementPopup();
-        menuBackButton.gameObject.SetActive(false);
+        gameData.ui.menuBackButton.gameObject.SetActive(false);
         playerInfoParent.gameObject.SetActive(false);
-        menuBackgroundImage.gameObject.SetActive(false);
-        hideoutTabsParent.gameObject.SetActive(false);
+        gameData.ui.animatedBgImage.gameObject.SetActive(false);
+        gameData.hideoutTabs.parent.gameObject.SetActive(false);
     }
 
     private void ShowRaidUI() {
@@ -90,7 +94,7 @@ public partial class Game {
         soulsCurrencyParent.gameObject.SetActive(true);
         playerInfoParent.gameObject.SetActive(true);
         raidInfoPanelParent.SetActive(true);
-        hotBarParent.gameObject.SetActive(true);
+        gameData.ui.hotBarParent.gameObject.SetActive(true);
     }
 
     private void CloseRaidUI() {
@@ -101,24 +105,27 @@ public partial class Game {
         playerInfoParent.gameObject.SetActive(false);
         raidInfoPanelParent.SetActive(false);
         portalArrow.gameObject.SetActive(false);
-        hotBarParent.gameObject.SetActive(false);
+        gameData.ui.hotBarParent.gameObject.SetActive(false);
     }
 
     private void ToggleHideoutTab(Button button, TextMeshProUGUI text) {
-        characterTabButton.image.sprite = tabNonSelectedSprite;
-        eyeForgeTabButton.image.sprite = tabNonSelectedSprite;
-        traderTabButton.image.sprite = tabNonSelectedSprite;
-        questsTabButton.image.sprite = tabNonSelectedSprite;
-        skillsTabButton.image.sprite = tabNonSelectedSprite;
+        Sprite tabSelectedSprite = gameData.hideoutTabs.selectedSprite;
+        Sprite tabNonSelectedSprite = gameData.hideoutTabs.nonSelectedSprite;
         
-        characterTabText.margin = styles.nonSelectedHideoutTabMargin;
-        eyeForgeTabText.margin = styles.nonSelectedHideoutTabMargin;
-        traderTabText.margin = styles.nonSelectedHideoutTabMargin;
-        questsTabText.margin = styles.nonSelectedHideoutTabMargin;
-        skillsTabText.margin = styles.nonSelectedHideoutTabMargin;
+        gameData.hideoutTabs.characterButton.image.sprite = tabNonSelectedSprite;
+        gameData.hideoutTabs.eyeForgeButton.image.sprite = tabNonSelectedSprite;
+        gameData.hideoutTabs.traderButton.image.sprite = tabNonSelectedSprite;
+        gameData.hideoutTabs.questsButton.image.sprite = tabNonSelectedSprite;
+        gameData.hideoutTabs.skillsButton.image.sprite = tabNonSelectedSprite;
+        
+        gameData.hideoutTabs.characterText.margin = Styles.instance.nonSelectedHideoutTabMargin;
+        gameData.hideoutTabs.eyeForgeText.margin = Styles.instance.nonSelectedHideoutTabMargin;
+        gameData.hideoutTabs.traderText.margin = Styles.instance.nonSelectedHideoutTabMargin;
+        gameData.hideoutTabs.questsText.margin = Styles.instance.nonSelectedHideoutTabMargin;
+        gameData.hideoutTabs.skillsText.margin = Styles.instance.nonSelectedHideoutTabMargin;
         
         button.image.sprite = tabSelectedSprite;
-        text.margin = styles.selectedHideoutTabMargin;
+        text.margin = Styles.instance.selectedHideoutTabMargin;
     }
 
     private void ToggleHideoutPanels(params RectTransform[] panels) {
@@ -164,10 +171,10 @@ public partial class Game {
         
         float overweightComp = GetOverweightCompletion();
         if (overweightComp > 0f) {
-            weightBarFillImage.color = Color.Lerp(styles.startingOverWeightColor, styles.endingOverWeightColor, overweightComp);
+            weightBarFillImage.color = Color.Lerp(Styles.instance.startingOverWeightColor, Styles.instance.endingOverWeightColor, overweightComp);
         }
         else {
-            weightBarFillImage.color = styles.underWeightColor;
+            weightBarFillImage.color = Styles.instance.underWeightColor;
         }
         
         if (gameData.curRaid.stateSwitchedThisFrame) {
@@ -183,7 +190,7 @@ public partial class Game {
                 exitPortalActiveNotifier.SetActive(false);
                 finalWaveActiveNotifier.SetActive(true);
                 Tween.Scale(finalWaveActiveNotifier.transform, 0f, 1f, 0.5f, Ease.OutBack);
-                AnimateSmallRaidText(ColorText("Final Wave", styles.decreaseDescColor));
+                AnimateSmallRaidText(ColorText("Final Wave", Styles.instance.decreaseDescColor));
             }
             else if (gameData.curRaid.state == RaidState.PostFinalWave) {
                 finalWaveActiveNotifier.SetActive(false);
@@ -201,7 +208,7 @@ public partial class Game {
     }
     
     private void UpdateHotBarUI() {
-        if (!hotBarParent.gameObject.activeInHierarchy) return;
+        if (!gameData.ui.hotBarParent.gameObject.activeInHierarchy) return;
 
         for (int i = 0; i < playerQuickUseSize; i++) {
             int itemIndex = i + playerEquipmentSize;
@@ -215,33 +222,33 @@ public partial class Game {
     }
 
     private void AnimateLargeRaidText(string text, float typewriterSpeed) {
-        largeRaidText.characterSpacing = 0;
-        largeRaidText.gameObject.SetActive(true);
-        largeRaidTextTypewriter.ShowText($"{{incr}}{{fade}}{{wave}}{{#fade}}{{#wave}}{text}");
-        largeRaidTextTypewriter.SetTypewriterSpeed(typewriterSpeed);
+        gameData.ui.largeRaidText.characterSpacing = 0;
+        gameData.ui.largeRaidText.gameObject.SetActive(true);
+        gameData.ui.largeRaidTextTypewriter.ShowText($"{{incr}}{{fade}}{{wave}}{{#fade}}{{#wave}}{text}");
+        gameData.ui.largeRaidTextTypewriter.SetTypewriterSpeed(typewriterSpeed);
         
-        largeRaidTextTypewriter.onTextShowed.AddListener(OnTypewriterFinish);
+        gameData.ui.largeRaidTextTypewriter.onTextShowed.AddListener(OnTypewriterFinish);
         
         void OnTypewriterFinish() {
             Sequence sequence = Sequence.Create();
             sequence.Chain(Tween.Custom(0, 30, 0.5f, startDelay: 0.3f, ease: Ease.OutBack, onValueChange: static (val) => {
-                gameInstance.largeRaidText.characterSpacing = val;
+                gameInstance.gameData.ui.largeRaidText.characterSpacing = val;
             }));
             sequence.ChainDelay(0.35f);
-            sequence.ChainCallback(static () => gameInstance.largeRaidTextTypewriter.StartDisappearingText());
+            sequence.ChainCallback(static () => gameInstance.gameData.ui.largeRaidTextTypewriter.StartDisappearingText());
         }
     }
 
     private void AnimateSmallRaidText(string text) {
-        smallRaidText.gameObject.SetActive(true);
-        smallRaidTextTypewriter.ShowText($"{{incr}}{{fade}}{{smallwave}}{{#fade}}{{#smallwave}}{text}");
+        gameData.ui.smallRaidText.gameObject.SetActive(true);
+        gameData.ui.smallRaidTextTypewriter.ShowText($"{{incr}}{{fade}}{{smallwave}}{{#fade}}{{#smallwave}}{text}");
         
-        smallRaidTextTypewriter.onTextShowed.AddListener(OnTypewriterFinish);
+        gameData.ui.smallRaidTextTypewriter.onTextShowed.AddListener(OnTypewriterFinish);
         
         void OnTypewriterFinish() {
             Sequence sequence = Sequence.Create();
             sequence.ChainDelay(0.8f);
-            sequence.ChainCallback(static () => gameInstance.smallRaidTextTypewriter.StartDisappearingText());
+            sequence.ChainCallback(static () => gameInstance.gameData.ui.smallRaidTextTypewriter.StartDisappearingText());
         }
     }
     
@@ -279,16 +286,16 @@ public partial class Game {
         const float alpha = 0.68f;
         switch (damageColor) {
             case DamageColor.Normal:
-                damageNumber.textMesh.color = styles.normalDamageColor.Alpha(alpha);
+                damageNumber.textMesh.color = Styles.instance.normalDamageColor.Alpha(alpha);
                 break;
             case DamageColor.Crit:
-                damageNumber.textMesh.color = styles.critDamageColor.Alpha(alpha);
+                damageNumber.textMesh.color = Styles.instance.critDamageColor.Alpha(alpha);
                 break;
             case DamageColor.Blood:
-                damageNumber.textMesh.color = styles.bleedDamageColor.Alpha(alpha);
+                damageNumber.textMesh.color = Styles.instance.bleedDamageColor.Alpha(alpha);
                 break;
             case DamageColor.Poison:
-                damageNumber.textMesh.color = styles.poisonDamageColor.Alpha(alpha);
+                damageNumber.textMesh.color = Styles.instance.poisonDamageColor.Alpha(alpha);
                 break;
         }
 
@@ -324,7 +331,7 @@ public partial class Game {
     private void SpawnTextPopIn(Vector3 spawnPos, string text, Vector3? endPos = default) {
         Entity textEntity = SpawnEntity(gameData.entityPools.damageNumber, spawnPos, Quaternion.identity, damageNumbersParent);
         textEntity.textMesh.text = text; 
-        textEntity.textMesh.color = styles.popInTextColor;
+        textEntity.textMesh.color = Styles.instance.popInTextColor;
         
         float moveDuration = Random.Range(0.37f, 0.4f);
         const float scaleUpDuration = 0.25f;
@@ -395,22 +402,22 @@ public partial class Game {
     }
 
     private void ShowUIElementPopup(UIHoverInfo hoverInfo) {
-        if (uiElementPopup.gameObject.activeInHierarchy) return;
+        if (gameData.ui.uiElementPopup.gameObject.activeInHierarchy) return;
         
-        uiElementPopup.gameObject.SetActive(true);
-        TweenPopUp(uiElementPopup.rectTransform);
+        gameData.ui.uiElementPopup.gameObject.SetActive(true);
+        TweenPopUp(gameData.ui.uiElementPopup.rectTransform);
         
-        uiElementPopup.descFitter.ForceRecalculate();
-        FitPopupSize(uiElementPopup.rectTransform, uiElementPopup.descText.rectTransform.rect);
+        gameData.ui.uiElementPopup.descFitter.ForceRecalculate();
+        FitPopupSize(gameData.ui.uiElementPopup.rectTransform, gameData.ui.uiElementPopup.descText.rectTransform.rect);
         
         // Set popup position
         Vector2 hoveredCenter = hoverInfo.hoveringTransform.WorldRect().center;
         Vector2 popupOffset = new(0f, hoverInfo.hoveringTransform.rect.height);
-        uiElementPopup.transform.position = hoveredCenter + popupOffset;
+        gameData.ui.uiElementPopup.transform.position = hoveredCenter + popupOffset;
     }
 
     private void HideUIElementPopup() {
-        uiElementPopup.gameObject.SetActive(false);
+        gameData.ui.uiElementPopup.gameObject.SetActive(false);
     }
     
     private List<RectTransform> hoverableUIElements = new();
@@ -465,8 +472,8 @@ public partial class Game {
         interactionDetails.text = detailsString;
         
         interactPrompt.gameObject.SetActive(true);
-        interactPrompt.text = $"<sprite=5 color=#{ColorUtility.ToHtmlStringRGBA(styles.inputIconTint)}>";
-        interactPrompt.transform.position = mainCamera.WorldToScreenPoint(position);
+        interactPrompt.text = $"<sprite=5 color=#{ColorUtility.ToHtmlStringRGBA(Styles.instance.inputIconTint)}>";
+        interactPrompt.transform.position = gameData.camera.main.WorldToScreenPoint(position);
     }
     
     private void DisableInteractionPrompt() {

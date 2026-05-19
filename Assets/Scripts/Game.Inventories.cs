@@ -22,7 +22,7 @@ public partial class Game {
         public Item ItemRef {
             get {
                 if (gameInstance.gameData.demonEye.instanceFromItemId.ContainsKey(itemOrInstanceUuid)) {
-                    return gameInstance.demonEyeItem;
+                    return gameInstance.gameData.itemRefs.demonEye;
                 }
                 
                 UuidScriptableObject uuidObject = gameInstance.gameData.res.lookup[itemOrInstanceUuid];
@@ -98,7 +98,7 @@ public partial class Game {
 
         InventorySlotUI[] quickUseSlots = playerPassiveParent.GetComponentsInChildren<InventorySlotUI>();
         foreach (InventorySlotUI slotUI in quickUseSlots) {
-            slotUI.onlyAcceptedItemType = quickUseType;
+            slotUI.onlyAcceptedItemType = gameData.itemTypes.quickUse;
         }
         
         const int stashInventorySize = 40;
@@ -121,7 +121,7 @@ public partial class Game {
         gameData.inventories.transaction = CreateInventory(traderTransactionInventoryParent, transactionInventorySize);
 
         const int crucibleInventorySize = 6;
-        SpawnUiSlots(crucibleParent, crucibleInventorySize, eyeForgeSlotPrefab);
+        SpawnUiSlots(crucibleParent, crucibleInventorySize, gameData.prefabs.eyeForgeSlot);
         gameData.inventories.eyeForge = CreateInventory(crucibleParent, crucibleInventorySize);
         SetupEyeForgeInventorySlots();
         LoadInventory(gameData.inventories.eyeForge);
@@ -132,7 +132,7 @@ public partial class Game {
         for (int i = 0; i < inventoryLength; i++) {
             InventorySlotUI slotUI = gameData.inventories.eyeForge.slots[i].ui;
             slotUI.disallowItemStacking = true;
-            slotUI.onlyAcceptedItemType = i == 0 ? eyeType : eyeUpgradeType;
+            slotUI.onlyAcceptedItemType = i == 0 ? gameData.itemTypes.eye : gameData.itemTypes.eyeUpgrade;
 
             if (i == 0) {
                 slotUI.gameObject.transform.position = crucibleParent.position;
@@ -248,7 +248,7 @@ public partial class Game {
     }
     
     private void HandleInventoryVisibility() {
-        if (!InRaid || !gameData.input.inventoryInputAction.WasPressedThisFrame()) return;
+        if (!InRaid || !gameData.input.inventory.WasPressedThisFrame()) return;
         if (InventoryIsOpen) {
             ClosePlayerInventory(); 
         }
@@ -284,14 +284,14 @@ public partial class Game {
     }
     
     private void ShowInventoryItemPopup(InventoryHoverInfo info) {
-        if (itemDescPopup.gameObject.activeInHierarchy) return;
+        if (gameData.ui.itemDescPopup.gameObject.activeInHierarchy) return;
         
         InventorySlot hoveredSlot = info.inventory.slots[info.slotIndex];
         
         // Set popup position
         Vector2 popupPosition = Vector2.zero;
         Vector2 hoveredSlotCenter = hoveredSlot.ui.rectTransform.WorldRect().center;
-        float halfPopupWidth = itemDescPopup.rectTransform.rect.width / 2f;
+        float halfPopupWidth = gameData.ui.itemDescPopup.rectTransform.rect.width / 2f;
         Vector2 popupOffset = new(45 + halfPopupWidth, 40);
         if (hoveredSlotCenter.x < ScreenCenter.x) {
             popupPosition = hoveredSlotCenter + popupOffset;
@@ -299,36 +299,39 @@ public partial class Game {
         else {
             popupPosition = hoveredSlotCenter + new Vector2(-popupOffset.x, popupOffset.y);
         }
-
-        itemDescPopup.Show(hoveredSlot.itemInstance, popupPosition);
+            
+        gameData.ui.itemDescPopup.Show(hoveredSlot.itemInstance, popupPosition);
         
         // Add mechanic desctiption if necessary
-        if (hoveredSlot.itemInstance.ItemRef.type == eyeUpgradeType) {
+        if (hoveredSlot.itemInstance.ItemRef.type == gameData.itemTypes.eyeUpgrade) {
             EyeUpgradeItem eyeUpgradeItem = (EyeUpgradeItem)hoveredSlot.itemInstance.ItemRef;
             if (eyeUpgradeItem.relativeMechanicDesc) {
-                mechanicDescPopup.gameObject.SetActive(true);
-                mechanicDescPopup.nameText.text = eyeUpgradeItem.relativeMechanicDesc.displayName;
-                mechanicDescPopup.descText.text = eyeUpgradeItem.relativeMechanicDesc.description;
-                mechanicDescPopup.transform.position = itemDescPopup.rectTransform.WorldRect().min;
+                gameData.ui.mechanicDescPopup.gameObject.SetActive(true);
+                gameData.ui.mechanicDescPopup.nameText.text = eyeUpgradeItem.relativeMechanicDesc.displayName;
+                gameData.ui.mechanicDescPopup.descText.text = eyeUpgradeItem.relativeMechanicDesc.description;
+                gameData.ui.mechanicDescPopup.transform.position = gameData.ui.itemDescPopup.rectTransform.WorldRect().min;
                 
-                mechanicDescPopup.nameFitter.ForceRecalculate();
-                mechanicDescPopup.descFitter.ForceRecalculate();
-                FitPopupSize(mechanicDescPopup.rectTransform, mechanicDescPopup.nameText.rectTransform.rect, mechanicDescPopup.descText.rectTransform.rect);
-                
-                TweenPopUp(mechanicDescPopup.rectTransform);
+                gameData.ui.mechanicDescPopup.nameFitter.ForceRecalculate();
+                gameData.ui.mechanicDescPopup.descFitter.ForceRecalculate();
+                FitPopupSize(
+                    gameData.ui.mechanicDescPopup.rectTransform,
+                    gameData.ui.mechanicDescPopup.nameText.rectTransform.rect, 
+                    gameData.ui.mechanicDescPopup.descText.rectTransform.rect
+                );
+                TweenPopUp(gameData.ui.mechanicDescPopup.rectTransform);
             } 
         }
     }
 
     private void HideInventoryItemPopup() {
-        itemDescPopup.Hide();
-        mechanicDescPopup.nameText.text = string.Empty;
-        mechanicDescPopup.descText.text = string.Empty;
-        mechanicDescPopup.gameObject.SetActive(false);
+        gameData.ui.itemDescPopup.Hide();
+        gameData.ui.mechanicDescPopup.nameText.text = string.Empty;
+        gameData.ui.mechanicDescPopup.descText.text = string.Empty;
+        gameData.ui.mechanicDescPopup.gameObject.SetActive(false);
     }
     
     private void CheckToMoveItem(InventoryHoverInfo invHoverInfo) {
-        if (!gameData.input.moveStackInputAction.WasPressedThisFrame()) return;
+        if (!gameData.input.moveStack.WasPressedThisFrame()) return;
 
         Inventory hoveredInventory = invHoverInfo.inventory;
         if (hoveredInventory == null) return;
@@ -358,7 +361,7 @@ public partial class Game {
         }
         else if (OnEyeForgeTab) {
             if (hoveredInventory == gameData.inventories.stash) {
-                bool hoveredItemIsDemonEye = hoveredItem.ItemRef.type == demonEyeType;
+                bool hoveredItemIsDemonEye = hoveredItem.ItemRef.type == gameData.itemTypes.demonEye;
                 destinationInventory = hoveredItemIsDemonEye ? gameData.inventories.player : gameData.inventories.eyeForge;
             }
             else if (hoveredInventory == gameData.inventories.eyeForge) {
@@ -384,9 +387,9 @@ public partial class Game {
     }
 
     private void CheckToConsumeItem(InventoryHoverInfo invHoverInfo) {
-        if (!gameData.input.useItemInputAction.WasPressedThisFrame()) return;
+        if (!gameData.input.useItem.WasPressedThisFrame()) return;
         if (!TryGetItemFromHoverInfo(invHoverInfo, out ItemInstance hoveredItem)) return;
-        if (hoveredItem.ItemRef.type != quickUseType) return;
+        if (hoveredItem.ItemRef.type != gameData.itemTypes.quickUse) return;
         HavePlayerConsumeItem(invHoverInfo.inventory, invHoverInfo.slotIndex);
     }
 
@@ -432,7 +435,7 @@ public partial class Game {
     
     private void SpawnUiSlots(RectTransform parent, int numSlots, GameObject slotPrefab = null) {
         for (int i = 0; i < numSlots; i++) {
-            Instantiate(slotPrefab ? slotPrefab : inventorySlotPrefab, Vector3.zero, Quaternion.identity, parent);
+            Instantiate(slotPrefab ? slotPrefab : gameData.prefabs.inventorySlot, Vector3.zero, Quaternion.identity, parent);
         }
     }
     
@@ -488,7 +491,7 @@ public partial class Game {
     }
     
     private bool ClickedOnEquipedBackpackWithItems(Inventory inventory, int slotIndex) {
-        if (inventory.slots[slotIndex].itemInstance.ItemRef.type != backpackType) {
+        if (inventory.slots[slotIndex].itemInstance.ItemRef.type != gameData.itemTypes.backpack) {
             return false;
         }
         return IsEquipmentSlot(inventory, slotIndex) && EquipedBackpackHasItems();
@@ -586,8 +589,8 @@ public partial class Game {
     private bool IsDraggingItem => dragItemInstance != null;
 
     private bool UpdateInventoryDragAndDrop(InventoryHoverInfo hoverInfo) {
-        bool pickupInputUsed = gameData.input.selectItemInputAction.WasPressedThisFrame() || gameData.input.splitStackInputAction.WasPressedThisFrame();
-        bool placeInputUsed = gameData.input.selectItemInputAction.WasPressedThisFrame() || gameData.input.placeSingleItemInputAction.WasPressedThisFrame();
+        bool pickupInputUsed = gameData.input.selectItem.WasPressedThisFrame() || gameData.input.splitStack.WasPressedThisFrame();
+        bool placeInputUsed = gameData.input.selectItem.WasPressedThisFrame() || gameData.input.placeSingleItem.WasPressedThisFrame();
         
         if (!pickupInputUsed && !placeInputUsed) {
             return IsDraggingItem;
@@ -621,7 +624,7 @@ public partial class Game {
                 return IsDraggingItem;
             }
 
-            bool splittingStack = gameData.input.splitStackInputAction.WasPressedThisFrame() && item.count > 1;
+            bool splittingStack = gameData.input.splitStack.WasPressedThisFrame() && item.count > 1;
             if (splittingStack) {
                 int firstHalf = item.count / 2;
                 int secondHalf = item.count - firstHalf;
@@ -637,9 +640,9 @@ public partial class Game {
             }
 
             startDragInfo = hoverInfo;
-            dragAndDropItemUI.gameObject.SetActive(true);
-            dragAndDropItemUI.SetItem(dragItemInstance.ItemRef, dragItemInstance.count);
-            TweenItemMove(dragAndDropItemUI);
+            gameData.ui.dragAndDropItemUI.gameObject.SetActive(true);
+            gameData.ui.dragAndDropItemUI.SetItem(dragItemInstance.ItemRef, dragItemInstance.count);
+            TweenItemMove(gameData.ui.dragAndDropItemUI);
         }
 
         bool placingItem = !pickingUpItem;
@@ -656,7 +659,7 @@ public partial class Game {
 
             bool droppingItemInRaid = hoverInfo.inventory == null && InRaid;
             if (droppingItemInRaid) {
-                bool droppingEntireStack = gameData.input.selectItemInputAction.WasPressedThisFrame();
+                bool droppingEntireStack = gameData.input.selectItem.WasPressedThisFrame();
                 if (droppingEntireStack) {
                     DropItemFromInventory(dragItemInstance);
                     dragItemInstance.count = 0;
@@ -664,7 +667,7 @@ public partial class Game {
                 else {
                     DropItemFromInventory(dragItemInstance, 1);
                     dragItemInstance.count--;
-                    dragAndDropItemUI.UpdateCount(dragItemInstance.count);
+                    gameData.ui.dragAndDropItemUI.UpdateCount(dragItemInstance.count);
                 }
 
                 if (dragItemInstance.count <= 0) {
@@ -676,7 +679,7 @@ public partial class Game {
             bool swappingItems = false;
             if (TryGetItemFromHoverInfo(hoverInfo, out ItemInstance swapItem)) {
                 bool itemsCanSwap = swapItem != dragItemInstance || (swapItem.IsFullStack || dragItemInstance.IsFullStack);
-                swappingItems = itemsCanSwap && gameData.input.selectItemInputAction.WasPressedThisFrame();
+                swappingItems = itemsCanSwap && gameData.input.selectItem.WasPressedThisFrame();
             }
             
             if (swappingItems && IsHoveredItemGrayedOut(hoverInfo)) {
@@ -694,13 +697,13 @@ public partial class Game {
 
                 targetSlot.itemInstance = dragItemInstance;
                 dragItemInstance = swapItem;
-                dragAndDropItemUI.SetItem(dragItemInstance.ItemRef, dragItemInstance.count);
-                TweenItemMove(dragAndDropItemUI);
+                gameData.ui.dragAndDropItemUI.SetItem(dragItemInstance.ItemRef, dragItemInstance.count);
+                TweenItemMove(gameData.ui.dragAndDropItemUI);
 
                 return IsDraggingItem;
             }
 
-            bool placingSingleItemFromStack = gameData.input.placeSingleItemInputAction.WasPressedThisFrame();
+            bool placingSingleItemFromStack = gameData.input.placeSingleItem.WasPressedThisFrame();
             if (placingSingleItemFromStack) {
                 InventoryAddResult result = TryAddItemToInventory(hoverInfo.inventory, dragItemInstance.ItemRef, 1, hoverInfo.slotIndex);
 
@@ -709,8 +712,8 @@ public partial class Game {
                     EndDragAndDropItem();
                 }
                 else {
-                    dragAndDropItemUI.SetItem(dragItemInstance.ItemRef, dragItemInstance.count);
-                    TweenItemMove(dragAndDropItemUI);
+                    gameData.ui.dragAndDropItemUI.SetItem(dragItemInstance.ItemRef, dragItemInstance.count);
+                    TweenItemMove(gameData.ui.dragAndDropItemUI);
                 }
             }
 
@@ -723,8 +726,8 @@ public partial class Game {
                 }
                 else if (result.type == InventoryAddResult.ResultType.FailureToAddAll) {
                     dragItemInstance.count -= result.addedCount;
-                    dragAndDropItemUI.SetItem(dragItemInstance.ItemRef, dragItemInstance.count);
-                    TweenItemMove(dragAndDropItemUI);
+                    gameData.ui.dragAndDropItemUI.SetItem(dragItemInstance.ItemRef, dragItemInstance.count);
+                    TweenItemMove(gameData.ui.dragAndDropItemUI);
                 }
             }
         }
@@ -733,7 +736,7 @@ public partial class Game {
     }
 
     private void DropItemFromInventory(ItemInstance itemInstance, int count = -1) {
-        Vector2 mouseWorldPos = mainCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+        Vector2 mouseWorldPos = gameData.camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
         Vector2 dropDir = (mouseWorldPos - (Vector2)player.position).normalized;
         
         int dropCount = count == -1 ? itemInstance.count : count;
@@ -747,14 +750,14 @@ public partial class Game {
     private void UpdateDragAndDropItemToCursor() {
         if (dragItemInstance == null) return;
         Vector2 mousePos = Mouse.current.position.ReadValue();
-        dragAndDropItemUI.GetComponent<RectTransform>().position = mousePos;
+        gameData.ui.dragAndDropItemUI.GetComponent<RectTransform>().position = mousePos;
     }
     
     private void EndDragAndDropItem() {
         if (dragItemInstance == null) return;
         dragItemInstance = null;
-        dragAndDropItemUI.ClearItem();
-        dragAndDropItemUI.gameObject.SetActive(false);
+        gameData.ui.dragAndDropItemUI.ClearItem();
+        gameData.ui.dragAndDropItemUI.gameObject.SetActive(false);
     }
 
     public struct InventoryAddResult {
@@ -987,7 +990,7 @@ public partial class Game {
             foreach (InventorySlot slot in gameData.inventories.stash.slots) {
                 if (slot.itemInstance == null) continue;
                 Item item = slot.itemInstance.ItemRef;
-                if (item.type != eyeType && item.type != eyeUpgradeType) {
+                if (item.type != gameData.itemTypes.eye && item.type != gameData.itemTypes.eyeUpgrade) {
                     slot.ui.itemUI.ToggleGray();
                 }
             }
@@ -1045,10 +1048,10 @@ public partial class Game {
             if (slot.itemInstance == null) continue;
             switch (valueType) {
                 case InventoryValueType.Buy:
-                    value += slot.itemInstance.ItemRef.type == demonEyeType ? GetDemonEyeSellPrice(slot.itemInstance) : slot.itemInstance.ItemRef.buyPrice * slot.itemInstance.count;
+                    value += slot.itemInstance.ItemRef.type == gameData.itemTypes.demonEye ? GetDemonEyeSellPrice(slot.itemInstance) : slot.itemInstance.ItemRef.buyPrice * slot.itemInstance.count;
                     break;
                 case InventoryValueType.Sell:
-                    value += slot.itemInstance.ItemRef.type == demonEyeType ? GetDemonEyeSellPrice(slot.itemInstance) : slot.itemInstance.ItemRef.GetSellPrice() * slot.itemInstance.count;
+                    value += slot.itemInstance.ItemRef.type == gameData.itemTypes.demonEye ? GetDemonEyeSellPrice(slot.itemInstance) : slot.itemInstance.ItemRef.GetSellPrice() * slot.itemInstance.count;
                     break;
             }
         }

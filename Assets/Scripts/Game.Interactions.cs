@@ -33,11 +33,11 @@ public partial class Game {
                 ItemDrop itemDrop = col.GetComponent<ItemDrop>();
                 Item dropItemRef = itemDrop.ItemInstance.ItemRef;
                 
-                Color itemColor = styles.GetColorForRarity(dropItemRef.GetRarity());
+                Color itemColor = Styles.instance.GetColorForRarity(dropItemRef.GetRarity());
                 string details = ColorText($"{dropItemRef.displayName} x{itemDrop.ItemInstance.count}", itemColor);
                 EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), details);
                 
-                if (gameData.input.interactInputAction.WasPressedThisFrame()) {
+                if (gameData.input.interact.WasPressedThisFrame()) {
                     InventoryAddResult result = TryAddItemToInventory(gameData.inventories.player, itemDrop.ItemInstance);
                     if (result.type == InventoryAddResult.ResultType.Success) {
                         Entity droppedEntity = gameData.entities.lookup[itemDrop.gameObject];
@@ -52,7 +52,7 @@ public partial class Game {
 
             if (col.CompareTag(Tags.DeadBody)) {
                 EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), "Search Body");
-                if (gameData.input.interactInputAction.WasPressedThisFrame()) {
+                if (gameData.input.interact.WasPressedThisFrame()) {
                     gameData.inventories.lootPtr.slots = gameData.curRaid.deadBodySlotsLookup[col.gameObject];
                     OpenPlayerInventory();
                     OpenLootInventory();
@@ -61,7 +61,7 @@ public partial class Game {
             
             if (col.CompareTag(Tags.Bush)) {
                 EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), "Search Bush");
-                if (gameData.input.interactInputAction.WasPressedThisFrame()) {
+                if (gameData.input.interact.WasPressedThisFrame()) {
                     gameData.inventories.lootPtr.slots = gameData.curRaid.bushSlotsLookup[col.gameObject];
                     OpenPlayerInventory();
                     OpenLootInventory();
@@ -71,9 +71,9 @@ public partial class Game {
             if (col.CompareTag(Tags.Altar)) {
                 int soulsPrice = gameData.curRaid.map.altarSoulPrice;
                 EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), $"{soulsPrice} Souls");
-                if (gameData.input.interactInputAction.WasPressedThisFrame() && player.soulCurrency >= soulsPrice) {
+                if (gameData.input.interact.WasPressedThisFrame() && player.soulCurrency >= soulsPrice) {
                     player.soulCurrency -= soulsPrice;
-                    Item dropItem = GetItemFromDropPool(eyeUpgradesDropPool);
+                    Item dropItem = GetItemFromDropPool(gameData.dropPools.eyeUpgrades);
                     Entity item = SpawnItemAsEntity(dropItem, 1, OffsetY(col.transform.position, 0.2f), Quaternion.identity);
                     item.spriteRenderer.sortingOrder = 1;
                     col.enabled = false;
@@ -82,8 +82,8 @@ public partial class Game {
             
             if (col.CompareTag(Tags.Chest)) {
                 EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), "Open Chest");
-                if (gameData.input.interactInputAction.WasPressedThisFrame()) {
-                    Item dropItem = GetItemFromDropPool(chestsDropPool);
+                if (gameData.input.interact.WasPressedThisFrame()) {
+                    Item dropItem = GetItemFromDropPool(gameData.dropPools.chests);
                     Entity item = SpawnItemAsEntity(dropItem, 1, OffsetY(col.transform.position, 0.1f), Quaternion.identity);
                     Vector3 endPos = item.position + RotationVector(Random.Range(0f, 360f), 0.18f, 0.25f);
                     AddBounceEffect(item, endPos, 0.6f);
@@ -95,11 +95,11 @@ public partial class Game {
                 ExitPortal portal = GetExitPortalFromTransform(col.transform);
                 ref float timeSpentSummoningPortal = ref gameData.curRaid.temp.interactionData.timeSpentSummoningPortal;
                 
-                if (!portal.hasBeenSummoned && timeSpentSummoningPortal < gameplayConfig.portalSummonTime) {
+                if (!portal.hasBeenSummoned && timeSpentSummoningPortal < gameData.config.gameplay.portalSummonTime) {
                     EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Summon Exit Portal");
-                    if (gameData.input.interactInputAction.IsPressed()) {
+                    if (gameData.input.interact.IsPressed()) {
                         timeSpentSummoningPortal += Time.deltaTime;
-                        if (timeSpentSummoningPortal >= gameplayConfig.portalSummonTime) {
+                        if (timeSpentSummoningPortal >= gameData.config.gameplay.portalSummonTime) {
                             StartSummoningExitPortal(col.transform);
                             timeSpentSummoningPortal = 0f;
                         }
@@ -111,7 +111,7 @@ public partial class Game {
                 
                 if (portal.canTake) {
                     EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Take Exit Portal");
-                    if (gameData.input.interactInputAction.WasPressedThisFrame()) {
+                    if (gameData.input.interact.WasPressedThisFrame()) {
                         exitPortalTakenByPlayer = portal;
                         exitPortalTakenByPlayer.closingCountdownSequence.Stop();
                         gameData.states.gameStateMachine.SetStateIfNotCurrent(
@@ -161,8 +161,8 @@ public partial class Game {
         .OnComplete(() => DestroyEntity(droppedEntity));
     }
     
-    private float DiscoverSlotTime => gameplayConfig.discoverSlotTime * GetAbsoluteStat(Player.Stat.LootingSpeed);
-    private float DiscoverItemTime => gameplayConfig.discoverItemTime * GetAbsoluteStat(Player.Stat.LootingSpeed);
+    private float DiscoverSlotTime => gameData.config.gameplay.discoverSlotTime * GetAbsoluteStat(Player.Stat.LootingSpeed);
+    private float DiscoverItemTime => gameData.config.gameplay.discoverItemTime * GetAbsoluteStat(Player.Stat.LootingSpeed);
     
     private void OpenLootInventory() {
         if (LootInventoryIsOpen) return;

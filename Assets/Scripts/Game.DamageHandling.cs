@@ -90,13 +90,13 @@ public partial class Game {
     }
     
     private void HandleDamageRock(Projectile projectile, Entity entity) {
-        entity.health -= gameplayConfig.damage;
+        entity.health -= gameData.config.gameplay.damage;
 
         PlayAudioClip(stoneHitClip, entity.position);
         
         if (entity.health > 0) {
             AddFlashHitEffect(entity);
-            AddShakeEffect(entity, 8f, 0.038f, 0.35f, shakeCurve);
+            AddShakeEffect(entity, 8f, 0.038f, 0.35f, gameData.curves.shake);
             Tween.PunchScale(entity.trans, Vector3.one * 0.12f, 0.1f, 15f);
             return;
         }
@@ -105,7 +105,7 @@ public partial class Game {
             gameData.curRaid.mapInstance.grid.ClearObstacle(entity.obstaclePosition, entity.obstacleCellRadius);
         }
             
-        Entity smokeEntity = SpawnEntity<Entity>(rockSmokePrefab, entity.position, Quaternion.identity);
+        Entity smokeEntity = SpawnEntity<Entity>(gameData.prefabs.rockSmokePrefab, entity.position, Quaternion.identity);
         DestroyEntity(smokeEntity, 0.417f);
         DestroyEntity(entity);
         PlayAudioClip(stoneBreakClip, entity.position);
@@ -118,7 +118,7 @@ public partial class Game {
         }
             
         for (int i = 0; i < dropCount; i++) {
-            Item dropItem = GetItemFromDropPool(rockStonesDropPool);
+            Item dropItem = GetItemFromDropPool(gameData.dropPools.rockStones);
             Entity rockDropEntity = SpawnItemAsEntity(dropItem, 1, entity.position, Quaternion.identity);
 
             Vector3 endPos = entity.position + RotationVector(Random.Range(0f, 360f), 0.18f, 0.25f);
@@ -172,7 +172,7 @@ public partial class Game {
         // Phase 2 - Additions to damage multiplier (Anything with a description of '+1.2x Damage' or '+0.25x Damage')
         {
             if (gameData.demonEye.equiped.distanceDamage.TryGetValue(out var distDamage)) {
-                float convertedUnits = proj.distTraveled / gameplayConfig.distancePerUnit;
+                float convertedUnits = proj.distTraveled / gameData.config.gameplay.distancePerUnit;
                 int increasedDamageMultiFromDist = Mathf.FloorToInt(convertedUnits * distDamage.damageMultiIncreasePerUnitTraveled);
                 damageMultiplier += increasedDamageMultiFromDist;
             }
@@ -189,7 +189,7 @@ public partial class Game {
     }
 
     private int GetBaseDamage() {
-        int damage = Mathf.RoundToInt(gameplayConfig.damage * GetAbsoluteStat(Player.Stat.DamageMulti));
+        int damage = Mathf.RoundToInt(gameData.config.gameplay.damage * GetAbsoluteStat(Player.Stat.DamageMulti));
         int damageRange = Mathf.RoundToInt(damage * 0.05f);
         damage += Random.Range(-damageRange, damageRange);
         return Mathf.Clamp(damage, 1, int.MaxValue);

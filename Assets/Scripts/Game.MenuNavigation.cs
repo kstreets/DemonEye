@@ -6,7 +6,7 @@ public partial class Game {
     private void InitMenuNavigation() {
         var menuMove = InputSystem.actions.FindAction("MenuMove");
         menuMove.performed += OnMoveInput;
-        gameData.input.escapeInputAction.performed += OnEscapePressed;
+        gameData.input.escape.performed += OnEscapePressed;
     }
     
     private void OnEscapePressed(InputAction.CallbackContext context) {
@@ -25,10 +25,10 @@ public partial class Game {
         if (!context.performed) return;
         
         GameObject[,] mainMenuGrid = new GameObject[4, 1];
-        mainMenuGrid[0, 0] = mainMenuPlayButton.gameObject;
-        mainMenuGrid[1, 0] = mainMenuHideoutButton.gameObject;
-        mainMenuGrid[2, 0] = mainMenuSettingsButton.gameObject;
-        mainMenuGrid[3, 0] = mainMenuExitButton.gameObject;
+        mainMenuGrid[0, 0] = gameData.mainMenu.playButton.gameObject;
+        mainMenuGrid[1, 0] = gameData.mainMenu.hideoutButton.gameObject;
+        mainMenuGrid[2, 0] = gameData.mainMenu.settingsButton.gameObject;
+        mainMenuGrid[3, 0] = gameData.mainMenu.exitButton.gameObject;
         
         Vector2 dir = context.ReadValue<Vector2>();
         dir = new(dir.x, -dir.y);

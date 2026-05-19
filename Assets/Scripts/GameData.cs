@@ -25,13 +25,13 @@ public class GameData {
     
     [Serializable]
     public class DropPools {
-        public DropPool rockStonesDropPool;
-        public DropPool eyeUpgradesDropPool;
-        public DropPool bodyDropPool;
-        public DropPool traderDropPool;
-        public DropPool foragingDropPool;
-        public DropPool bushesDropPool;
-        public DropPool chestsDropPool;
+        public DropPool rockStones;
+        public DropPool eyeUpgrades;
+        public DropPool body;
+        public DropPool trader;
+        public DropPool foraging;
+        public DropPool bushes;
+        public DropPool chests;
     }
     public DropPools dropPools;
     
@@ -80,7 +80,7 @@ public class GameData {
     
     [Serializable]
     public class Quests {
-        public QuestGraphRuntime questGraph;
+        public QuestGraphRuntime graph;
         public Quest pickPocketQuest;
     }
     public Quests quests;
@@ -102,7 +102,7 @@ public class GameData {
     
     [Serializable]
     public class Camera {
-        public Camera main;
+        public UnityEngine.Camera main;
         public CinemachineCamera cinemachine;
         public PixelPerfectCamera pixelPerfect;
     }
@@ -127,8 +127,8 @@ public class GameData {
         public RectTransform hideoutParent;
         public RectTransform hotBarParent;
         public ItemUI dragAndDropItemUI;
-        public Image animatedBackgroundImage;
-        public Image deathBackgroundImage;
+        public Image animatedBgImage;
+        public Image deathBgImage;
         public ButtonFeel menuBackButton;
         public TextMeshProUGUI smallRaidText;
         public TypewriterComponent smallRaidTextTypewriter;
@@ -302,19 +302,19 @@ public class GameData {
     public Audio audio; 
     
     public class Input {
-        public InputAction moveInputAction;
-        public InputAction interactInputAction;
-        public InputAction inventoryInputAction;
-        public InputAction selectItemInputAction;
-        public InputAction placeSingleItemInputAction;
-        public InputAction useItemInputAction;
-        public InputAction moveStackInputAction;
-        public InputAction splitStackInputAction;
-        public InputAction escapeInputAction;
-        public InputAction quickUse1Action;
-        public InputAction quickUse2Action;
-        public InputAction quickUse3Action;
-        public InputAction quickUse4Action;
+        public InputAction move;
+        public InputAction interact;
+        public InputAction inventory;
+        public InputAction selectItem;
+        public InputAction placeSingleItem;
+        public InputAction useItem;
+        public InputAction moveStack;
+        public InputAction splitStack;
+        public InputAction escape;
+        public InputAction quickUse1;
+        public InputAction quickUse2;
+        public InputAction quickUse3;
+        public InputAction quickUse4;
     }
     public Input input = new();
     

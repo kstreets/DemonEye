@@ -63,7 +63,7 @@ public partial class Game {
     private Trinkets trinkets;
 
     private Player MakePlayer() {
-        player = SpawnEntity<Player>(playerPrefab, Vector3.zero, Quaternion.identity, null, EntityLifetime.Global);
+        player = SpawnEntity<Player>(gameData.prefabs.player, Vector3.zero, Quaternion.identity, null, EntityLifetime.Global);
         LoadAndAssignPlayerSaveData(player);
         player.hurtCollider = player.gameObject.GetComponentInChildren<CapsuleCollider2D>();
         player.defaultPlayerPreviewSprite = playerPreviewImage.sprite;
@@ -123,7 +123,7 @@ public partial class Game {
 
         if (InventoryIsOpen || InteractingWithPortal()) return;
         
-        Vector2 moveInput = gameData.input.moveInputAction.ReadValue<Vector2>();
+        Vector2 moveInput = gameData.input.move.ReadValue<Vector2>();
         Vector2 prevPos = player.position;
         
         float speed = GetPlayerSpeed();
@@ -219,7 +219,7 @@ public partial class Game {
             }
         }
 
-        float consecutiveShotDelay = gameplayConfig.attackDelay * 1.5f;
+        float consecutiveShotDelay = gameData.config.gameplay.attackDelay * 1.5f;
         if (Time.time - player.lastShotTime <= consecutiveShotDelay) {
             player.consecutiveShotCount++;
         }
@@ -245,7 +245,7 @@ public partial class Game {
     }
     
     internal List<Vector3> GetAttackTargets(int targetCount) {
-        float overlapDist = gameplayConfig.projectileSpeed * GetProjectileRangeInSeconds();
+        float overlapDist = gameData.config.gameplay.projectileSpeed * GetProjectileRangeInSeconds();
         List<Collider2D> cols = Physics.OverlapCircle(player.position, overlapDist, Masks.EnemyMask);
         
         if (cols.Count <= 0) {
@@ -284,10 +284,10 @@ public partial class Game {
     
     private void ShootProjectile(Vector2 targetPos, float? spawnDelay = default, float? flatCritChance = default) {
         const float maxInaccuracyAngle = 18f;
-        float maxAccuracyAngle = maxInaccuracyAngle * (1f - gameplayConfig.accuracy);
+        float maxAccuracyAngle = maxInaccuracyAngle * (1f - gameData.config.gameplay.accuracy);
         float accuracyAngle = Random.Range(-maxAccuracyAngle, maxAccuracyAngle);
 
-        float projectileSpeed = gameplayConfig.projectileSpeed;
+        float projectileSpeed = gameData.config.gameplay.projectileSpeed;
         Vector2 dir = (targetPos - (Vector2)PlayerEyePos).normalized;
         dir = Quaternion.AngleAxis(accuracyAngle, Vector3.forward) * dir;
         Vector2 velocity = dir * projectileSpeed; 
@@ -436,7 +436,7 @@ public partial class Game {
             player.bleeding = true;
         }
         
-        bool ignoreCollisionDamage = !player.enemyCollisionDamageLimiter.TimeHasPassed(gameplayConfig.repeatCollisionDamageDelay);
+        bool ignoreCollisionDamage = !player.enemyCollisionDamageLimiter.TimeHasPassed(gameData.config.gameplay.repeatCollisionDamageDelay);
         if (damageType == PlayerDamageType.Collision && ignoreCollisionDamage) return;
         
         player.health -= damage;
@@ -491,9 +491,9 @@ public partial class Game {
     
     private float GetPlayerStat(Player.Stat stat) {
         float startingValue = stat switch {
-            Player.Stat.CarryCapacity           => gameplayConfig.defaultStartingEncumberingWeight,
-            Player.Stat.CritChance              => gameplayConfig.defaultCritChance,
-            Player.Stat.CritMulti               => gameplayConfig.defaultCritMulti,
+            Player.Stat.CarryCapacity           => gameData.config.gameplay.defaultStartingEncumberingWeight,
+            Player.Stat.CritChance              => gameData.config.gameplay.defaultCritChance,
+            Player.Stat.CritMulti               => gameData.config.gameplay.defaultCritMulti,
             Player.Stat.DamageMulti             => 1f,
             Player.Stat.FireratePercentage      => 1f,
             Player.Stat.Health                  => 100f,
@@ -508,17 +508,17 @@ public partial class Game {
 
     private float GetPlayerStatAdjustment(Player.Stat stat) {
         return stat switch {
-            Player.Stat.CarryCapacity           => GetPlayerStatLevel(Player.Stat.CarryCapacity) * gameplayConfig.carryCapacityIncPerLevel,
-            Player.Stat.CritChance              => GetPlayerStatLevel(Player.Stat.CritChance) * gameplayConfig.critChanceIncPerLevel,
-            Player.Stat.CritMulti               => GetPlayerStatLevel(Player.Stat.CritMulti) * gameplayConfig.critMultiplierIncPerLevel,
-            Player.Stat.DamageMulti             => GetPlayerStatLevel(Player.Stat.DamageMulti) * gameplayConfig.damageMultiplierIncPerLevel,
-            Player.Stat.FireratePercentage      => GetPlayerStatLevel(Player.Stat.FireratePercentage) * gameplayConfig.firerateIncPerLevel,
-            Player.Stat.Health                  => GetPlayerStatLevel(Player.Stat.Health) * gameplayConfig.healthIncPerLevel,
-            Player.Stat.HealingAmount           => GetPlayerStatLevel(Player.Stat.HealingAmount) * gameplayConfig.healingIncPerLevel,
-            Player.Stat.HealingSpeed            => GetPlayerStatLevel(Player.Stat.HealingSpeed) * gameplayConfig.healingSpeedIncPerLevel,
-            Player.Stat.LootingSpeed            => GetPlayerStatLevel(Player.Stat.LootingSpeed) * gameplayConfig.lootingSpeedIncPerLevel,
-            Player.Stat.MovementSpeedPercentage => GetPlayerStatLevel(Player.Stat.MovementSpeedPercentage) * gameplayConfig.movementSpeedIncPerLevel,
-            Player.Stat.ProjectileCount         => GetPlayerStatLevel(Player.Stat.ProjectileCount) * gameplayConfig.projectileCountIncPerLevel,
+            Player.Stat.CarryCapacity           => GetPlayerStatLevel(Player.Stat.CarryCapacity) * gameData.config.gameplay.carryCapacityIncPerLevel,
+            Player.Stat.CritChance              => GetPlayerStatLevel(Player.Stat.CritChance) * gameData.config.gameplay.critChanceIncPerLevel,
+            Player.Stat.CritMulti               => GetPlayerStatLevel(Player.Stat.CritMulti) * gameData.config.gameplay.critMultiplierIncPerLevel,
+            Player.Stat.DamageMulti             => GetPlayerStatLevel(Player.Stat.DamageMulti) * gameData.config.gameplay.damageMultiplierIncPerLevel,
+            Player.Stat.FireratePercentage      => GetPlayerStatLevel(Player.Stat.FireratePercentage) * gameData.config.gameplay.firerateIncPerLevel,
+            Player.Stat.Health                  => GetPlayerStatLevel(Player.Stat.Health) * gameData.config.gameplay.healthIncPerLevel,
+            Player.Stat.HealingAmount           => GetPlayerStatLevel(Player.Stat.HealingAmount) * gameData.config.gameplay.healingIncPerLevel,
+            Player.Stat.HealingSpeed            => GetPlayerStatLevel(Player.Stat.HealingSpeed) * gameData.config.gameplay.healingSpeedIncPerLevel,
+            Player.Stat.LootingSpeed            => GetPlayerStatLevel(Player.Stat.LootingSpeed) * gameData.config.gameplay.lootingSpeedIncPerLevel,
+            Player.Stat.MovementSpeedPercentage => GetPlayerStatLevel(Player.Stat.MovementSpeedPercentage) * gameData.config.gameplay.movementSpeedIncPerLevel,
+            Player.Stat.ProjectileCount         => GetPlayerStatLevel(Player.Stat.ProjectileCount) * gameData.config.gameplay.projectileCountIncPerLevel,
             _                                   => 0f,
         };
     }
@@ -557,10 +557,10 @@ public partial class Game {
     private int FullPlayerHealth => 100 + (int)GetPlayerStatAdjustment(Player.Stat.Health);
 
     private float GetPlayerSpeed() {
-        float playerSpeed = gameplayConfig.baseSpeed * GetAbsoluteStat(Player.Stat.MovementSpeedPercentage);
+        float playerSpeed = gameData.config.gameplay.baseSpeed * GetAbsoluteStat(Player.Stat.MovementSpeedPercentage);
         
-        float speedReductionFromWeight = Mathf.Lerp(0f, gameplayConfig.maxEncumberedSpeedReduction, GetOverweightCompletion());
-        speedReductionFromWeight = Mathf.Clamp(speedReductionFromWeight, 0f, gameplayConfig.maxEncumberedSpeedReduction);
+        float speedReductionFromWeight = Mathf.Lerp(0f, gameData.config.gameplay.maxEncumberedSpeedReduction, GetOverweightCompletion());
+        speedReductionFromWeight = Mathf.Clamp(speedReductionFromWeight, 0f, gameData.config.gameplay.maxEncumberedSpeedReduction);
 
         playerSpeed -= speedReductionFromWeight;
         
@@ -575,21 +575,21 @@ public partial class Game {
 
     private float GetFirerateDelayBasedOnStats() {
         if (gameData.demonEye.equiped == gameData.demonEye.empty) {
-            return gameplayConfig.attackDelay;
+            return gameData.config.gameplay.attackDelay;
         }
 
-        float attackDelay = gameplayConfig.attackDelay / GetAbsoluteStat(Player.Stat.FireratePercentage);
-        return Mathf.Clamp(attackDelay, gameplayConfig.cappedMinAttackDelay, gameplayConfig.attackDelay);
+        float attackDelay = gameData.config.gameplay.attackDelay / GetAbsoluteStat(Player.Stat.FireratePercentage);
+        return Mathf.Clamp(attackDelay, gameData.config.gameplay.cappedMinAttackDelay, gameData.config.gameplay.attackDelay);
     }
     
     private float GetProjectileRangeInSeconds() {
-        return gameplayConfig.rangeInSeconds * GetAbsoluteStat(Player.Stat.RangePercentage);
+        return gameData.config.gameplay.rangeInSeconds * GetAbsoluteStat(Player.Stat.RangePercentage);
     }
     
     private void GetEncumberingWeightRange(out int startingWeight, out int endingWeight) {
         startingWeight = (int)GetPlayerStat(Player.Stat.CarryCapacity);
         int encumberingIncreaseFromStrength = (int)GetPlayerStatAdjustment(Player.Stat.CarryCapacity);
-        endingWeight = gameplayConfig.maxEncumberedWeight + encumberingIncreaseFromStrength;
+        endingWeight = gameData.config.gameplay.maxEncumberedWeight + encumberingIncreaseFromStrength;
     }
 
     private float GetOverweightCompletion() {
@@ -610,7 +610,7 @@ public partial class Game {
         GetEncumberingWeightRange(out int startEncumberingWeight, out _);
         playerPanelWeightText.text = $"<color=#98C5CC>{inventoryWeight}</color><size=22>/{startEncumberingWeight}";
         
-        Color boostedColor = styles.increaseDescColor;
+        Color boostedColor = Styles.instance.increaseDescColor;
         
         equipedStatsPanel.bleedResistText.text = Boosted(Player.Stat.BleedResist) ? 
             DisplayProb(GetAbsoluteStat(Player.Stat.BleedResist), boostedColor) : 

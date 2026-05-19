@@ -17,7 +17,7 @@ public partial class Game {
     
     private void SaveMaps() {
         MapSaves mapSaves = new() {
-            unlockStates = new(maps.Count),
+            unlockStates = new(gameData.config.maps.Count),
         };
         foreach (MapData mapData in gameData.config.maps) {
             mapSaves.unlockStates.Add(mapData.isUnlocked);    
@@ -43,7 +43,7 @@ public partial class Game {
 
     public enum MapLoadingState { Unloaded, Loaded, Loading, Unloading }
 
-    public void LoadMapAsync(MapData mapData, Action onLoadedCallback) {
+    public void LoadMapAsync(MapData mapData) {
         if (LoadingMapInProgress()) return;
 
         AsyncOperation loadOperation = SceneManager.LoadSceneAsync(mapData.sceneReference, LoadSceneMode.Additive);
@@ -60,7 +60,7 @@ public partial class Game {
             gameData.curRaid.mapLoadingState = MapLoadingState.Loaded;
             gameData.curRaid.map = mapData;
 
-            List<GameObject> loadedMapRoots = ListPool<GameObject>.Get();
+            using var _ = ListPool<GameObject>.Get(out var loadedMapRoots);
             
             Scene loadedMapScene = SceneManager.GetSceneByName(mapData.sceneReference);
             loadedMapScene.GetRootGameObjects(loadedMapRoots);
@@ -72,8 +72,7 @@ public partial class Game {
                 break;
             }
             
-            ListPool<GameObject>.Release(loadedMapRoots);
-            onLoadedCallback?.Invoke();
+            OnMapLoaded(mapData);
         }
     }
 
@@ -138,12 +137,12 @@ public partial class Game {
             Destroy(resourceSpawn.gameObject);
         }
         
-        if (QuestIsActive(pickPocketQuest)) {
+        if (QuestIsActive(gameData.quests.pickPocketQuest)) {
             InventorySlot[] chosenDeadbody = gameData.curRaid.deadBodySlotsLookup.RandomValue();
             for (int i = 0; i < chosenDeadbody.Length; i++) {
                 if (chosenDeadbody[i].itemInstance == null) {
                     chosenDeadbody[i].itemInstance = new() {
-                        itemOrInstanceUuid = pickPocketQuest.objectives[1].targetItem.uuid,
+                        itemOrInstanceUuid = gameData.quests.pickPocketQuest.objectives[1].targetItem.uuid,
                         count = 1,
                         notDiscovered = true,
                     };
@@ -167,13 +166,13 @@ public partial class Game {
         using var _ = ListPool<Item>.Get(out var items);
             
         int maxDeadBodyItemCount = Random.Range(2, 6);
-        GetUniqueItemsFromDropPool(bodyDropPool, maxDeadBodyItemCount, ref items);
-        InventorySlot[] lootInventory = CreateLootInventoryFromItems(items, bodyDropPool, stackTaperRate: 0.15f);
+        GetUniqueItemsFromDropPool(gameData.dropPools.body, maxDeadBodyItemCount, ref items);
+        InventorySlot[] lootInventory = CreateLootInventoryFromItems(items, gameData.dropPools.body, stackTaperRate: 0.15f);
         
         float eyeUpgradeOnBodyChance = gameData.curRaid.map.eyeUpgradeOnBodyChance;
         while (RollProbability(eyeUpgradeOnBodyChance)) {
             eyeUpgradeOnBodyChance -= gameData.curRaid.map.consecutiveEyeUpgradeChanceReductionOnBody;
-            bool success = AppendToLootInventory(lootInventory, GetItemFromDropPool(eyeUpgradesDropPool), 1);
+            bool success = AppendToLootInventory(lootInventory, GetItemFromDropPool(gameData.dropPools.eyeUpgrades), 1);
             if (!success) break;
         }
         
@@ -183,8 +182,8 @@ public partial class Game {
     private void InitBush(Entity entity) {
         using var _ = ListPool<Item>.Get(out var items);
         int maxBushItemCount = Random.Range(1, 3);
-        GetUniqueItemsFromDropPool(bushesDropPool, maxBushItemCount, ref items);
-        gameData.curRaid.bushSlotsLookup.Add(entity.gameObject, CreateLootInventoryFromItems(items, bushesDropPool, stackTaperRate: 0.15f)); 
+        GetUniqueItemsFromDropPool(gameData.dropPools.bushes, maxBushItemCount, ref items);
+        gameData.curRaid.bushSlotsLookup.Add(entity.gameObject, CreateLootInventoryFromItems(items, gameData.dropPools.bushes, stackTaperRate: 0.15f)); 
     }
     
     private void InitMapGrid() {
@@ -230,7 +229,7 @@ public partial class Game {
         portal.hasBeenSummoned = true;
         
         portal.summoningPortalSequence = Sequence.Create();
-        portal.summoningPortalSequence.ChainDelay(gameplayConfig.portalPostSummonDelay);
+        portal.summoningPortalSequence.ChainDelay(gameData.config.gameplay.portalPostSummonDelay);
         portal.summoningPortalSequence.Chain(Tween.Scale(portal.transform, Vector3.one, 0.25f, Ease.OutBack));
         
         portal.summoningPortalSequence.OnComplete(portal, static (portal) => {
@@ -241,7 +240,7 @@ public partial class Game {
     
     private void StartClosingExitPortal(ExitPortal portal) {
         portal.closingCountdownSequence = Sequence.Create();
-        portal.closingCountdownSequence.ChainDelay(gameplayConfig.portalActiveDuration);
+        portal.closingCountdownSequence.ChainDelay(gameData.config.gameplay.portalActiveDuration);
         portal.closingCountdownSequence.ChainCallback(portal, static (portal) => {
             portal.canTake = false;
             gameInstance.activeExitPortals.Remove(portal);

@@ -66,7 +66,7 @@ public partial class Game {
     }
     
     public static string DisplayProb(float probability, Color? color = default) {
-        Color textColor = color ?? gameInstance.styles.timeDescColor;
+        Color textColor = color ?? Styles.instance.timeDescColor;
         return ColorText($"{Mathf.FloorToInt(probability * 100f)}%", textColor);
     }
     
@@ -79,26 +79,26 @@ public partial class Game {
     }
 
     public static string DisplayProbIncrease(float probability, Color? color = default) {
-        Color textColor = color ?? gameInstance.styles.increaseDescColor;
+        Color textColor = color ?? Styles.instance.increaseDescColor;
         return ColorText($"+{Mathf.FloorToInt(probability * 100f)}%", textColor);
     }
     
     public static string DisplayProbDecrease(float probability, Color? color = default) {
-        Color textColor = color ?? gameInstance.styles.decreaseDescColor;
+        Color textColor = color ?? Styles.instance.decreaseDescColor;
         return ColorText($"-{Mathf.Abs(Mathf.FloorToInt(probability * 100f))}%", textColor);
     }
 
     public static string DisplayHealth(int health) {
-        return ColorText(health.ToString(), gameInstance.styles.increaseDescColor);
+        return ColorText(health.ToString(), Styles.instance.increaseDescColor);
     }
 
     public static string DisplayNumber(int number, Color? color = default) {
-        Color textColor = color ?? gameInstance.styles.timeDescColor;
+        Color textColor = color ?? Styles.instance.timeDescColor;
         return ColorText(number.ToString(), textColor);
     }
     
     public static string DisplayNumber(float number, Color? color = default) {
-        Color textColor = color ?? gameInstance.styles.timeDescColor;
+        Color textColor = color ?? Styles.instance.timeDescColor;
         return ColorText(number.ToString("0.00"), textColor);
     }
     
@@ -111,12 +111,12 @@ public partial class Game {
     }
 
     public static string DisplayIncrease(int amount, Color? color = default) {
-        Color textColor = color ?? gameInstance.styles.increaseDescColor;
+        Color textColor = color ?? Styles.instance.increaseDescColor;
         return ColorText($"+{amount}", textColor);
     }
     
     public static string DisplayDecrease(int amount, Color? color = default) {
-        Color textColor = color ?? gameInstance.styles.decreaseDescColor;
+        Color textColor = color ?? Styles.instance.decreaseDescColor;
         return ColorText($"-{Mathf.Abs(amount)}", textColor);
     }
 
@@ -125,17 +125,17 @@ public partial class Game {
     }
 
     public static string DisplayIncrease(float amount, Color? color = default) {
-        Color textColor = color ?? gameInstance.styles.increaseDescColor;
+        Color textColor = color ?? Styles.instance.increaseDescColor;
         return ColorText($"+{amount:0.00}", textColor);
     }
     
     public static string DisplayDecrease(float amount, Color? color = default) {
-        Color textColor = color ?? gameInstance.styles.decreaseDescColor;
+        Color textColor = color ?? Styles.instance.decreaseDescColor;
         return ColorText($"-{Mathf.Abs(amount):0.00}", textColor);
     }
     
     public static string DisplayMultiplier(float multiplier, Color? color = default) {
-        Color textColor = multiplier >= 1f ? gameInstance.styles.increaseDescColor : gameInstance.styles.decreaseDescColor;
+        Color textColor = multiplier >= 1f ? Styles.instance.increaseDescColor : Styles.instance.decreaseDescColor;
         return ColorText($"{multiplier:0.00}x", color ?? textColor);
     }
     
@@ -148,26 +148,26 @@ public partial class Game {
     }
 
     public static string DisplayMultiplierIncrease(float multiplier, Color? color = default) {
-        Color textColor = color ?? gameInstance.styles.increaseDescColor;
+        Color textColor = color ?? Styles.instance.increaseDescColor;
         return ColorText($"+{multiplier:0.00}x", textColor);
     }
     
     public static string DisplayMultiplierDecrease(float multiplier, Color? color = default) {
-        Color textColor = color ?? gameInstance.styles.decreaseDescColor;
+        Color textColor = color ?? Styles.instance.decreaseDescColor;
         return ColorText($"-{Mathf.Abs(multiplier):0.00}x", textColor);
     }
 
     public static string DisplaySeconds(float time) {
         if (time == 1f) {
-            return ColorText($"{time:0}<space=0.12em>s", gameInstance.styles.timeDescColor);
+            return ColorText($"{time:0}<space=0.12em>s", Styles.instance.timeDescColor);
         }
         
         bool isWholeNumber = time % 1 == 0;
         if (isWholeNumber) {
-            return ColorText($"{time:0}<space=0.12em>s", gameInstance.styles.timeDescColor);
+            return ColorText($"{time:0}<space=0.12em>s", Styles.instance.timeDescColor);
         }
         
-        return ColorText($"{time:0.0#}<space=0.12em>s", gameInstance.styles.timeDescColor);
+        return ColorText($"{time:0.0#}<space=0.12em>s", Styles.instance.timeDescColor);
     }
     
     public static int TaperInteger(int value, int stackCount, float taper) {

@@ -1,152 +1,20 @@
 using System;
-using System.Collections.Generic;
-using Febucci.TextAnimatorForUnity;
 using PrimeTween;
 using TMPro;
-using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.InputSystem;
-using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 using VInspector;
-using Assert = UnityEngine.Assertions.Assert;
 using Vector3 = UnityEngine.Vector3;
 using EffectsIndicies = Game.Entity.EffectsIndicies;
 
 public partial class Game : MonoBehaviour {
 
     public static Game gameInstance;
-    
     public GameData gameData;
     
-    public StartingItemsConfig startingItems;
-    public Styles styles;
-    public GameplayConfig gameplayConfig;
-    
-    [Foldout("Quests")]
-    public QuestGraphRuntime questGraph;
-    public Quest pickPocketQuest;
-    [EndFoldout]
-
-    [Foldout("Maps")]
-    public List<MapData> maps;
-    [EndFoldout]
-    
-    [Foldout("DropPools")]
-    public DropPool rockStonesDropPool;
-    public DropPool eyeUpgradesDropPool;
-    public DropPool bodyDropPool;
-    public DropPool traderDropPool;
-    public DropPool foragingDropPool;
-    public DropPool bushesDropPool;
-    public DropPool chestsDropPool;
-    [EndFoldout]
-    
-    [Foldout("Pooling Prefabs")]
-    public GameObject itemDropPrefab;
-    public GameObject baseProjectilePrefab;
-    public GameObject boneShatterProjectilePrefab;
-    public GameObject bloodDropPrefab;
-    public GameObject poisonDebuffPrefab;
-    public GameObject explosionPrefab;
-    public GameObject boomonExplosionPrefab;
-    public GameObject gooProjectilePrefab;
-    public GameObject piercingProjectilePrefab;
-    public GameObject projectileImpactPrefab;
-    public GameObject teleportInPrefab;
-    public GameObject teleportOutPrefab;
-    public GameObject bloodSplatterPrefab;
-    public GameObject runSmokePrefab;
-    public GameObject slamSmokePrefab;
-    public GameObject blastPrefab;
-    [EndFoldout]
-    
-    [Foldout("Item Type Refs")]
-    public ItemType quickUseType;
-    public ItemType backpackType;
-    public ItemType eyeType;
-    public ItemType demonEyeType;
-    public ItemType gemType;
-    public ItemType eyeUpgradeType;
-    public ItemType wearableModifierType;
-    [EndFoldout]
-
-    [Foldout("Skill Upgrade Paths")]
-    public SkillUpgradePath hasteUpgradePath;
-    public SkillUpgradePath intellectUpgradePath;
-    public SkillUpgradePath lifeBloodUpgradePath;
-    public SkillUpgradePath strengthUpgradePath;
-    [EndFoldout]
-    
-    public Camera mainCamera;
-    public CinemachineCamera cinemachineCamera;
-    public PixelPerfectCamera pixelPerfectCamera;
-
-    public GameObject playerPrefab;
-
-    public Item demonEyeItem;
-    
-    [Foldout("Effects")]
-    public AnimationCurve hitFlashCurve;
-    public AnimationCurve bounceCurve;
-    public AnimationCurve shakeCurve;
-    [EndFoldout]
-
-    [Foldout("UI/Prefabs")]
-    public GameObject inventorySlotPrefab;
-    public GameObject eyeForgeSlotPrefab;
-    public GameObject rockSmokePrefab;
-    public GameObject damageNumberPrefab;
-    public GameObject forgeExplosionPrefab;
-    public GameObject forgeDustExplosionPrefab;
-    public GameObject questSelectionTogglePrefab;
-    public GameObject questPrefab;
-    [EndFoldout]
-
-    [Foldout("UI/MiscRefs")]
-    public RectTransform mainCanvasRectTransform;
-    public ItemDescPopup itemDescPopup;
-    public MechanicDescPopup mechanicDescPopup;
-    public UIElementPopup uiElementPopup;
-    public RectTransform hideoutParent;
-    public RectTransform hotBarParent;
-    public ItemUI dragAndDropItemUI;
-    public Image menuBackgroundImage;
-    public Image deathBackgroundImage;
-    public ButtonFeel menuBackButton;
-    public TextMeshProUGUI smallRaidText;
-    public TypewriterComponent smallRaidTextTypewriter;
-    public TextMeshProUGUI largeRaidText;
-    public TypewriterComponent largeRaidTextTypewriter;
-    [EndFoldout]
-    
-    [Foldout("UI/Main Menu")]
-    public RectTransform mainMenuParent;
-    public RectTransform mainMenuLogo;
-    public ButtonFeel mainMenuPlayButton;
-    public ButtonFeel mainMenuHideoutButton;
-    public ButtonFeel mainMenuSettingsButton;
-    public ButtonFeel mainMenuExitButton;
-    [EndFoldout]
-    
-    [Foldout("UI/HideoutTabs")]
-    public RectTransform hideoutTabsParent;
-    public Sprite tabNonSelectedSprite;
-    public Sprite tabSelectedSprite;
-    public Button characterTabButton;
-    public Button eyeForgeTabButton;
-    public Button traderTabButton;
-    public Button questsTabButton;
-    public Button skillsTabButton;
-    public TextMeshProUGUI characterTabText;
-    public TextMeshProUGUI eyeForgeTabText;
-    public TextMeshProUGUI traderTabText;
-    public TextMeshProUGUI questsTabText;
-    public TextMeshProUGUI skillsTabText;
-    [EndFoldout]
-
     [Foldout("UI/PlayerPanel")]
     public RectTransform playerPanel;
     public RectTransform playerEquipmentParent;
@@ -420,6 +288,7 @@ public partial class Game : MonoBehaviour {
     }
     
     private void OnWinExitEnter() {
+        var maps = gameData.config.maps;
         int nextMapIndex = maps.IndexOf(gameData.curRaid.map) + 1;
         bool unlockNextMap = maps.IndexInRange(nextMapIndex) && !maps[nextMapIndex].isUnlocked;
         if (unlockNextMap) {
@@ -454,7 +323,7 @@ public partial class Game : MonoBehaviour {
         Cursor.visible = false;
         ShowRaidUI();
 
-        deathBackgroundImage.enabled = false;
+        gameData.ui.deathBgImage.enabled = false;
         gameData.curRaid.mapInstance.gameObject.SetActive(true);
 
         int randomSpawnIndex = Random.Range(0, gameData.curRaid.mapInstance.spawnPositionsParent.childCount);
@@ -463,9 +332,9 @@ public partial class Game : MonoBehaviour {
         player.position = randomSpawnPos;
         player.gameObject.SetActive(false);
         
-        Vector3 cameraWarpTarget = new(player.position.x, player.position.y, cinemachineCamera.transform.position.z);
-        cinemachineCamera.ForceCameraPosition(cameraWarpTarget, Quaternion.identity);
-        cinemachineCamera.Follow = player.trans;
+        Vector3 cameraWarpTarget = new(player.position.x, player.position.y, gameData.camera.cinemachine.transform.position.z);
+        gameData.camera.cinemachine.ForceCameraPosition(cameraWarpTarget, Quaternion.identity);
+        gameData.camera.cinemachine.Follow = player.trans;
         
         InitMapGrid();
         InitSpawnManager(gameData.curRaid.map.waves);
@@ -495,7 +364,7 @@ public partial class Game : MonoBehaviour {
 
         if (gameData.curRaid.stateSwitchedThisFrame && gameData.curRaid.state == RaidState.PostFinalWave) {
             Tween.Delay(0.25f, static () => {
-                gameInstance.AnimateLargeRaidText(ColorText("Map Cleared!", gameInstance.styles.increaseDescColor), 1.8f);
+                gameInstance.AnimateLargeRaidText(ColorText("Map Cleared!", Styles.instance.increaseDescColor), 1.8f);
                 gameInstance.SpawnFinalExitPortal();
             });
         }
@@ -515,6 +384,11 @@ public partial class Game : MonoBehaviour {
         SaveActiveQuestProgresses();
     }
     
+    private void OnMapLoaded(MapData map) {
+        CreateDropPoolsForMap(map);
+        gameData.states.gameStateMachine.SetStateIfNotCurrent(gameData.states.raid);
+    }
+    
     private void OnDemonEyeEquipmentChanged() {
         gameData.curRaid.temp.damagingData.Reset();
         if (gameData.demonEye.equiped != gameData.demonEye.empty) {
@@ -529,14 +403,14 @@ public partial class Game : MonoBehaviour {
     private Sequence raidEnterSequence;
     
     private void AnimateRaidEnterSequence() {
-        int initialPPU = pixelPerfectCamera.assetsPPU;
-        pixelPerfectCamera.assetsPPU = 80;
+        int initialPPU = gameData.camera.pixelPerfect.assetsPPU;
+        gameData.camera.pixelPerfect.assetsPPU = 80;
             
         raidEnterSequence = Sequence.Create();
             
-        deathBackgroundImage.enabled = true;
-        deathBackgroundImage.fillAmount = 1f;
-        raidEnterSequence.Chain(Tween.Alpha(deathBackgroundImage, 1f, 0f, 0.5f, Ease.InCubic));
+        gameData.ui.deathBgImage.enabled = true;
+        gameData.ui.deathBgImage.fillAmount = 1f;
+        raidEnterSequence.Chain(Tween.Alpha(gameData.ui.deathBgImage, 1f, 0f, 0.5f, Ease.InCubic));
             
         raidEnterSequence.ChainDelay(0.25f);
 
@@ -554,8 +428,8 @@ public partial class Game : MonoBehaviour {
         raidEnterSequence.Chain(Tween.Scale(player.trans, 0f, 1f, 0.2f, Ease.InOutBack));
             
         raidEnterSequence.ChainDelay(0.6f);
-        raidEnterSequence.Chain(Tween.Custom(pixelPerfectCamera.assetsPPU, initialPPU, 0.25f, ease: Ease.OutQuad, onValueChange: val => {
-            pixelPerfectCamera.assetsPPU = (int)val;
+        raidEnterSequence.Chain(Tween.Custom(gameData.camera.pixelPerfect.assetsPPU, initialPPU, 0.25f, ease: Ease.OutQuad, onValueChange: val => {
+            gameData.camera.pixelPerfect.assetsPPU = (int)val;
         }));
     }
 
@@ -578,13 +452,13 @@ public partial class Game : MonoBehaviour {
         player.matPropertyBlock.SetFloat(damageFlashTintPropertyId, 1f);
         player.spriteRenderer.SetPropertyBlock(player.matPropertyBlock);
         
-        deathBackgroundImage.enabled = true;
-        deathBackgroundImage.fillAmount = 0f;
-        deathBackgroundImage.color = deathBackgroundImage.color.Alpha(1f);
+        gameData.ui.deathBgImage.enabled = true;
+        gameData.ui.deathBgImage.fillAmount = 0f;
+        gameData.ui.deathBgImage.color = gameData.ui.deathBgImage.color.Alpha(1f);
 
         Sequence sequence = Sequence.Create();
         sequence.ChainDelay(0.25f);
-        sequence.Chain(Tween.UIFillAmount(deathBackgroundImage, 1f, 1f, Ease.InOutQuad));
+        sequence.Chain(Tween.UIFillAmount(gameData.ui.deathBgImage, 1f, 1f, Ease.InOutQuad));
         sequence.ChainCallback(() => {
             player.animator.enabled = true;
             player.animator.Play(player.deathAnim);
@@ -596,26 +470,26 @@ public partial class Game : MonoBehaviour {
             player.spriteRenderer.SetPropertyBlock(player.matPropertyBlock);
         }, Ease.OutExpo));
         
-        int initialPPU = pixelPerfectCamera.assetsPPU;
+        int initialPPU = gameData.camera.pixelPerfect.assetsPPU;
         
-        sequence.Group(Tween.Custom(pixelPerfectCamera.assetsPPU, 80, 0.8f, val => {
-            pixelPerfectCamera.assetsPPU = (int)val;
+        sequence.Group(Tween.Custom(gameData.camera.pixelPerfect.assetsPPU, 80, 0.8f, val => {
+            gameData.camera.pixelPerfect.assetsPPU = (int)val;
         }, Ease.InOutQuad));
 
-        sequence.Group(Tween.Delay(0.25f, () => AnimateLargeRaidText(ColorText("YOU DIED", styles.decreaseDescColor), 1f)));
+        sequence.Group(Tween.Delay(0.25f, () => AnimateLargeRaidText(ColorText("YOU DIED", Styles.instance.decreaseDescColor), 1f)));
         
         sequence.ChainDelay(1f);
-
-        menuBackgroundImage.gameObject.SetActive(true);
-        menuBackgroundImage.color = new(1f, 1f, 1f, 0f);
-        sequence.Chain(Tween.Alpha(menuBackgroundImage, 0f, 1f, 1f, Ease.InCubic, startDelay: 0.5f));
+        
+        gameData.ui.animatedBgImage.gameObject.SetActive(true);
+        gameData.ui.animatedBgImage.color = new(1f, 1f, 1f, 0f);
+        sequence.Chain(Tween.Alpha(gameData.ui.animatedBgImage, 0f, 1f, 1f, Ease.InCubic, startDelay: 0.5f));
 
         sequence.Group(Tween.Scale(player.trans, Vector3.zero, 1.5f, Ease.InOutQuint, startDelay: 0.35f));
         
         sequence.OnComplete(() => {
             player.spriteRenderer.sortingLayerName = "Entity";
             player.trans.localScale = Vector3.one;
-            pixelPerfectCamera.assetsPPU = initialPPU;
+            gameData.camera.pixelPerfect.assetsPPU = initialPPU;
             onCompleteCallback?.Invoke();
         });
     }
@@ -628,25 +502,25 @@ public partial class Game : MonoBehaviour {
         
         Sequence sequence = Sequence.Create();
 
-        int initialPPU = pixelPerfectCamera.assetsPPU;
-        sequence.Chain(Tween.Custom(pixelPerfectCamera.assetsPPU, 80, 0.5f, ease: Ease.InOutQuad, onValueChange: val => {
-            pixelPerfectCamera.assetsPPU = (int)val;
+        int initialPPU = gameData.camera.pixelPerfect.assetsPPU;
+        sequence.Chain(Tween.Custom(gameData.camera.pixelPerfect.assetsPPU, 80, 0.5f, ease: Ease.InOutQuad, onValueChange: val => {
+            gameData.camera.pixelPerfect.assetsPPU = (int)val;
         }));
         
         sequence.ChainDelay(0.15f);
         
-        deathBackgroundImage.enabled = true;
-        deathBackgroundImage.fillAmount = 1f;
-        sequence.Chain(Tween.Alpha(deathBackgroundImage, 0f, 1f, 0.75f, Ease.InOutQuad));
+        gameData.ui.deathBgImage.enabled = true;
+        gameData.ui.deathBgImage.fillAmount = 1f;
+        sequence.Chain(Tween.Alpha(gameData.ui.deathBgImage, 0f, 1f, 0.75f, Ease.InOutQuad));
         
-        menuBackgroundImage.gameObject.SetActive(true);
-        menuBackgroundImage.color = new(1f, 1f, 1f, 0f);
-        sequence.Group(Tween.Alpha(menuBackgroundImage, 0f, 1f, 1f, Ease.InCubic, startDelay: 0.1f));
+        gameData.ui.animatedBgImage.gameObject.SetActive(true);
+        gameData.ui.animatedBgImage.color = new(1f, 1f, 1f, 0f);
+        sequence.Group(Tween.Alpha(gameData.ui.animatedBgImage, 0f, 1f, 1f, Ease.InCubic, startDelay: 0.1f));
         sequence.ChainDelay(0.15f);
 
         sequence.OnComplete(() => {
             player.gameObject.SetActive(true);
-            pixelPerfectCamera.assetsPPU = initialPPU;
+            gameData.camera.pixelPerfect.assetsPPU = initialPPU;
             onCompleteCallback?.Invoke();
         });
     }
@@ -659,9 +533,9 @@ public partial class Game : MonoBehaviour {
         
         Sequence sequence = Sequence.Create();
 
-        int initialPPU = pixelPerfectCamera.assetsPPU;
-        sequence.Chain(Tween.Custom(pixelPerfectCamera.assetsPPU, 80, 0.5f, ease: Ease.InOutQuad, onValueChange: val => {
-            pixelPerfectCamera.assetsPPU = (int)val;
+        int initialPPU = gameData.camera.pixelPerfect.assetsPPU;
+        sequence.Chain(Tween.Custom(gameData.camera.pixelPerfect.assetsPPU, 80, 0.5f, ease: Ease.InOutQuad, onValueChange: val => {
+            gameData.camera.pixelPerfect.assetsPPU = (int)val;
         }));
         
         sequence.ChainDelay(0.05f);
@@ -669,20 +543,20 @@ public partial class Game : MonoBehaviour {
         
         sequence.ChainDelay(0.15f);
         
-        deathBackgroundImage.enabled = true;
-        deathBackgroundImage.fillAmount = 1f;
-        sequence.Chain(Tween.Alpha(deathBackgroundImage, 0f, 1f, 0.75f, Ease.InOutQuad));
+        gameData.ui.deathBgImage.enabled = true;
+        gameData.ui.deathBgImage.fillAmount = 1f;
+        sequence.Chain(Tween.Alpha(gameData.ui.deathBgImage, 0f, 1f, 0.75f, Ease.InOutQuad));
         
-        sequence.Group(Tween.Delay(0.35f, () => AnimateLargeRaidText(ColorText("EARLY EXIT TAKEN", styles.increaseDescColor), 3.8f)));
+        sequence.Group(Tween.Delay(0.35f, () => AnimateLargeRaidText(ColorText("EARLY EXIT TAKEN", Styles.instance.increaseDescColor), 3.8f)));
         
-        menuBackgroundImage.gameObject.SetActive(true);
-        menuBackgroundImage.color = new(1f, 1f, 1f, 0f);
-        sequence.Group(Tween.Alpha(menuBackgroundImage, 0f, 1f, 1f, Ease.InCubic, startDelay: 0.1f));
+        gameData.ui.animatedBgImage.gameObject.SetActive(true);
+        gameData.ui.animatedBgImage.color = new(1f, 1f, 1f, 0f);
+        sequence.Group(Tween.Alpha(gameData.ui.animatedBgImage, 0f, 1f, 1f, Ease.InCubic, startDelay: 0.1f));
         sequence.ChainDelay(1.6f);
 
         sequence.OnComplete(() => {
             player.gameObject.SetActive(true);
-            pixelPerfectCamera.assetsPPU = initialPPU;
+            gameData.camera.pixelPerfect.assetsPPU = initialPPU;
             onCompleteCallback?.Invoke();
         });
     }

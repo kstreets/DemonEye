@@ -187,8 +187,8 @@ public partial class Game {
     
     private bool MapIsEqualOrGreater(MapData left, MapData right) {
         if (left == null || right == null) return false;
-        int leftIndex = maps.IndexOf(left);
-        int rightIndex = maps.IndexOf(right);
+        int leftIndex = gameData.config.maps.IndexOf(left);
+        int rightIndex = gameData.config.maps.IndexOf(right);
         if (leftIndex == -1 || rightIndex == -1) return false;
         return leftIndex >= rightIndex;
     }

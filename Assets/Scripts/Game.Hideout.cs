@@ -8,9 +8,9 @@ using Random = UnityEngine.Random;
 
 public partial class Game {
     
-    private bool OnCharacterTab => characterTabButton.image.sprite == tabSelectedSprite;
-    private bool OnEyeForgeTab => eyeForgeTabButton.image.sprite == tabSelectedSprite;
-    private bool OnTradingTab => traderTabButton.image.sprite == tabSelectedSprite;
+    private bool OnCharacterTab => gameData.hideoutTabs.characterButton.image.sprite == gameData.hideoutTabs.selectedSprite;
+    private bool OnEyeForgeTab => gameData.hideoutTabs.eyeForgeButton.image.sprite == gameData.hideoutTabs.selectedSprite;
+    private bool OnTradingTab => gameData.hideoutTabs.traderButton.image.sprite == gameData.hideoutTabs.selectedSprite;
     
     private void InitHideout() {
         InitTrader();
@@ -140,7 +140,7 @@ public partial class Game {
         };
         
         using var _ = ListPool<Item>.Get(out List<Item> items);
-        GetUniqueItemsFromDropPool(traderDropPool, traderInventoryColCount * traderInventoryRowCount, ref items);
+        GetUniqueItemsFromDropPool(gameData.dropPools.trader, traderInventoryColCount * traderInventoryRowCount, ref items);
         items = items.OrderBy(x => x.type.name).ThenBy(x => x.GetRarity()).ThenBy(x => x.buyPrice).ToList();
         
         foreach (Item item in items) {
@@ -289,7 +289,7 @@ public partial class Game {
         if (crucibleItemCount <= 0) {
             crucibleMode = CrucibleMode.Empty;
         }
-        else if (eyeSlotItemInstance != null && eyeSlotItemInstance.ItemRef.type == demonEyeType) {
+        else if (eyeSlotItemInstance != null && eyeSlotItemInstance.ItemRef.type == gameData.itemTypes.demonEye) {
             crucibleMode = CrucibleMode.NeedToRemoveDemonEye;
         }
         else if (eyeSlotItemInstance != null && crucibleItemCount == 1) {
@@ -333,12 +333,12 @@ public partial class Game {
             else {
                 int eyeUpgradeCount = GetInventoryItemCount(gameData.inventories.eyeForge) - 1;
                 int totalUpgradeCount = gameData.inventories.eyeForge.slots.Length - 1;
-                forgeDetailsForgeText.text = $"Previewing Upgrades {ColorText(eyeUpgradeCount.ToString(), styles.timeDescColor)}/{totalUpgradeCount}";
+                forgeDetailsForgeText.text = $"Previewing Upgrades {ColorText(eyeUpgradeCount.ToString(), Styles.instance.timeDescColor)}/{totalUpgradeCount}";
             }
             
             using var autoRelease = ListPool<int>.Get(out var uuids);
             foreach (InventorySlot slot in gameData.inventories.eyeForge.slots) {
-                if (slot.itemInstance == null || slot.itemInstance.ItemRef.type != eyeUpgradeType) continue;
+                if (slot.itemInstance == null || slot.itemInstance.ItemRef.type != gameData.itemTypes.eyeUpgrade) continue;
                 uuids.Add(slot.itemInstance.itemOrInstanceUuid);
             }
             forgeDetailsDemonEyeDesc.UpdateDisplay(EyeUpgradeSetFromIds(uuids));
@@ -353,7 +353,7 @@ public partial class Game {
 
         for (int i = 0; i < gameData.inventories.eyeForge.slots.Length; i++) {
             InventorySlot slot = gameData.inventories.eyeForge.slots[i];
-            if (slot.ui.OnlyAcceptsType(eyeType)) {
+            if (slot.ui.OnlyAcceptsType(gameData.itemTypes.eye)) {
                 eyeItemInstance = slot.itemInstance;
                 eyeSlotIndex = i;
             }
@@ -388,7 +388,7 @@ public partial class Game {
                 
                 if (slot.itemInstance == null) continue;
                 
-                if (slot.ui.OnlyAcceptsType(eyeUpgradeType)) {
+                if (slot.ui.OnlyAcceptsType(gameData.itemTypes.eyeUpgrade)) {
                     newDemonEyeItemInstance.nestedUuids.Add(slot.itemInstance.itemOrInstanceUuid);
                 }
                 slot.itemInstance = null;
@@ -429,7 +429,7 @@ public partial class Game {
 
             Sequence sequence = Sequence.Create();
 
-            if (slot.itemInstance.ItemRef.type == eyeType) {
+            if (slot.itemInstance.ItemRef.type == gameData.itemTypes.eye) {
                 sequence.Chain(Tween.Scale(rectTransform, Vector3.one, Vector3.one * 1.25f, new() {
                     duration = fillDuration,
                     ease = Ease.InCubic,
@@ -520,15 +520,15 @@ public partial class Game {
         
         if (questSaveData == null) {
             questSaveData = new() {
-                progressSaves = new Quest.ProgressSave[questGraph.questCount],
-                submissionStates = new bool[questGraph.questCount],
+                progressSaves = new Quest.ProgressSave[gameData.quests.graph.questCount],
+                submissionStates = new bool[gameData.quests.graph.questCount],
             };
             questSaveData.progressSaves.InitalizeWithDefault();
             SaveToFile(gameData.savePaths.quest, questSaveData);
         }
         
         HashSet<QuestGraphRuntime.Node> initialQuestNodes = new();
-        foreach (QuestGraphRuntime.Node node in questGraph.rootNode.nextNodes) {
+        foreach (QuestGraphRuntime.Node node in gameData.quests.graph.rootNode.nextNodes) {
             FindStartingQuestNodes(initialQuestNodes, node);
         }
         
@@ -608,9 +608,9 @@ public partial class Game {
     }
     
     private QuestPackage CreateQuestPackage() {
-        QuestUI ui = Instantiate(questPrefab, questsParent).GetComponent<QuestUI>();
+        QuestUI ui = Instantiate(gameData.prefabs.quest, questsParent).GetComponent<QuestUI>();
         
-        ToggleButton toggle = Instantiate(questSelectionTogglePrefab, questSelectionParent).GetComponent<ToggleButton>();
+        ToggleButton toggle = Instantiate(gameData.prefabs.questSelectionToggle, questSelectionParent).GetComponent<ToggleButton>();
         questToggleButtonGroup.Add(toggle);
         
         QuestPackage questPackage = new() {
@@ -669,25 +669,25 @@ public partial class Game {
     // ************************
 
     private void InitSkillsPanel() {
-        skillsPanel.hasteSkillRow.Init(hasteUpgradePath.MaxLevel, 
-            $"{DisplayProbIncrease(gameplayConfig.movementSpeedIncPerLevel)} Movement Speed\n" +
-            $"{DisplayProbIncrease(gameplayConfig.lootingSpeedIncPerLevel)} Looting Speed\n" +
-            $"{DisplayProbIncrease(gameplayConfig.firerateIncPerLevel)} Firerate"
+        skillsPanel.hasteSkillRow.Init(gameData.skillUpgradePaths.haste.MaxLevel, 
+            $"{DisplayProbIncrease(gameData.config.gameplay.movementSpeedIncPerLevel)} Movement Speed\n" +
+            $"{DisplayProbIncrease(gameData.config.gameplay.lootingSpeedIncPerLevel)} Looting Speed\n" +
+            $"{DisplayProbIncrease(gameData.config.gameplay.firerateIncPerLevel)} Firerate"
         );
-        skillsPanel.intellectSkillRow.Init(intellectUpgradePath.MaxLevel, 
-            $"{DisplayProbIncrease(gameplayConfig.critChanceIncPerLevel)} Critical Strike Chance\n" +
-            $"{DisplayMultiplierIncrease(gameplayConfig.critMultiplierIncPerLevel)} Critical Strike Multiplier\n" +
-            $"{DisplayIncrease(gameplayConfig.projectileCountIncPerLevel)} Projectile Count"
+        skillsPanel.intellectSkillRow.Init(gameData.skillUpgradePaths.intellect.MaxLevel, 
+            $"{DisplayProbIncrease(gameData.config.gameplay.critChanceIncPerLevel)} Critical Strike Chance\n" +
+            $"{DisplayMultiplierIncrease(gameData.config.gameplay.critMultiplierIncPerLevel)} Critical Strike Multiplier\n" +
+            $"{DisplayIncrease(gameData.config.gameplay.projectileCountIncPerLevel)} Projectile Count"
         );
-        skillsPanel.lifeBloodSkillRow.Init(lifeBloodUpgradePath.MaxLevel, 
-            $"{DisplayIncrease(gameplayConfig.healthIncPerLevel)} Health\n" +
-            $"{DisplayProbIncrease(gameplayConfig.healingSpeedIncPerLevel)} Healing Speed\n" +
-            $"{DisplayProbIncrease(gameplayConfig.healingIncPerLevel)} Healing Amount"
+        skillsPanel.lifeBloodSkillRow.Init(gameData.skillUpgradePaths.lifeBlood.MaxLevel, 
+            $"{DisplayIncrease(gameData.config.gameplay.healthIncPerLevel)} Health\n" +
+            $"{DisplayProbIncrease(gameData.config.gameplay.healingSpeedIncPerLevel)} Healing Speed\n" +
+            $"{DisplayProbIncrease(gameData.config.gameplay.healingIncPerLevel)} Healing Amount"
         );
-        skillsPanel.strengthSkillRow.Init(strengthUpgradePath.MaxLevel, 
-            $"{DisplayProbIncrease(gameplayConfig.bleedResistIncPerLevel)} Bleed Resist\n" +
-            $"{DisplayIncrease(gameplayConfig.carryCapacityIncPerLevel)} Carry Capacity\n" +
-            $"{DisplayMultiplierIncrease(gameplayConfig.damageMultiplierIncPerLevel)} Damage"
+        skillsPanel.strengthSkillRow.Init(gameData.skillUpgradePaths.strength.MaxLevel, 
+            $"{DisplayProbIncrease(gameData.config.gameplay.bleedResistIncPerLevel)} Bleed Resist\n" +
+            $"{DisplayIncrease(gameData.config.gameplay.carryCapacityIncPerLevel)} Carry Capacity\n" +
+            $"{DisplayMultiplierIncrease(gameData.config.gameplay.damageMultiplierIncPerLevel)} Damage"
         );
     }
 
@@ -697,19 +697,19 @@ public partial class Game {
         
         player.soulCurrency -= upgradePath.soulsNeededPerLevel[playerStatLevel];
 
-        if (upgradePath == hasteUpgradePath) {
+        if (upgradePath == gameData.skillUpgradePaths.haste) {
             player.hasteSkillLevel++;
         }
-        else if (upgradePath == intellectUpgradePath) {
+        else if (upgradePath == gameData.skillUpgradePaths.intellect) {
             player.intellectSkillLevel++;
         }
-        else if (upgradePath == lifeBloodUpgradePath) {
+        else if (upgradePath == gameData.skillUpgradePaths.lifeBlood) {
             int prevFullPlayerHealth = FullPlayerHealth;
             player.lifeBloodSkillLevel++;
             int newFullPlayerHealth = FullPlayerHealth;
             player.health += newFullPlayerHealth - prevFullPlayerHealth;
         }
-        else if (upgradePath == strengthUpgradePath) {
+        else if (upgradePath == gameData.skillUpgradePaths.strength) {
             player.strengthSkillLevel++;
         }
         
@@ -730,10 +730,10 @@ public partial class Game {
         playerStatsPanel.movementSpeedRow.statValueText.text = DisplayProbNoColor(GetPlayerStat(Player.Stat.MovementSpeedPercentage));
         playerStatsPanel.projectileCountRow.statValueText.text = DisplayNumberNoColor(GetPlayerStat(Player.Stat.ProjectileCount));
         
-        RefreshSkillRow(skillsPanel.hasteSkillRow, hasteUpgradePath, player.hasteSkillLevel);
-        RefreshSkillRow(skillsPanel.intellectSkillRow, intellectUpgradePath, player.intellectSkillLevel);
-        RefreshSkillRow(skillsPanel.lifeBloodSkillRow, lifeBloodUpgradePath, player.lifeBloodSkillLevel);
-        RefreshSkillRow(skillsPanel.strengthSkillRow, strengthUpgradePath, player.strengthSkillLevel);
+        RefreshSkillRow(skillsPanel.hasteSkillRow, gameData.skillUpgradePaths.haste, player.hasteSkillLevel);
+        RefreshSkillRow(skillsPanel.intellectSkillRow, gameData.skillUpgradePaths.intellect, player.intellectSkillLevel);
+        RefreshSkillRow(skillsPanel.lifeBloodSkillRow, gameData.skillUpgradePaths.lifeBlood, player.lifeBloodSkillLevel);
+        RefreshSkillRow(skillsPanel.strengthSkillRow, gameData.skillUpgradePaths.strength, player.strengthSkillLevel);
     }
 
     private void RefreshSkillRow(SkillLevelUpRow skillLevelRow, SkillUpgradePath upgradePath, int playerStatLevel) {

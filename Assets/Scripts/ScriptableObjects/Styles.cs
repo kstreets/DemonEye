@@ -1,7 +1,8 @@
+using UnityEditor;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "Styles", menuName = "Scriptable Objects/Styles")]
-public class Styles : ScriptableObject {
+public class Styles : ScriptableSingleton<Styles> {
 
     public Color commonTextColor;
     public Color uncommonTextColor;

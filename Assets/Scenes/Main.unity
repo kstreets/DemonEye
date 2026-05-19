@@ -16525,13 +16525,13 @@ MonoBehaviour:
       - {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
       - {fileID: 11400000, guid: aac23282a2cd7784ab5861d2a0508e69, type: 2}
     dropPools:
-      rockStonesDropPool: {fileID: 11400000, guid: 033f356ebabda714cb2141a7d950c759, type: 2}
-      eyeUpgradesDropPool: {fileID: 11400000, guid: 447693d567ac32848b6d0306b40001c5, type: 2}
-      bodyDropPool: {fileID: 11400000, guid: 3c4ecb30986cb144bb8b92852af68d07, type: 2}
-      traderDropPool: {fileID: 11400000, guid: ac65e2b20c03fcb43989ec16398ae8cd, type: 2}
-      foragingDropPool: {fileID: 11400000, guid: f37e913033eb638489d499179b70040d, type: 2}
-      bushesDropPool: {fileID: 11400000, guid: 403e542a49d6e3d4c834cdb48dce1626, type: 2}
-      chestsDropPool: {fileID: 11400000, guid: ac36b359b2819ad4f84ed57cf20ba475, type: 2}
+      rockStones: {fileID: 11400000, guid: 033f356ebabda714cb2141a7d950c759, type: 2}
+      eyeUpgrades: {fileID: 11400000, guid: 447693d567ac32848b6d0306b40001c5, type: 2}
+      body: {fileID: 11400000, guid: 3c4ecb30986cb144bb8b92852af68d07, type: 2}
+      trader: {fileID: 11400000, guid: ac65e2b20c03fcb43989ec16398ae8cd, type: 2}
+      foraging: {fileID: 11400000, guid: f37e913033eb638489d499179b70040d, type: 2}
+      bushes: {fileID: 11400000, guid: 403e542a49d6e3d4c834cdb48dce1626, type: 2}
+      chests: {fileID: 11400000, guid: ac36b359b2819ad4f84ed57cf20ba475, type: 2}
     prefabs:
       audioSource: {fileID: 5439488755613148949, guid: 4b311635e9def224f8e43b4470a75ea4, type: 3}
       player: {fileID: 8860443116720004057, guid: 875c5190ef7b0da479d25cffb7b23ae3, type: 3}
@@ -16568,7 +16568,7 @@ MonoBehaviour:
       eyeUpgrade: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
       wearableModifier: {fileID: 11400000, guid: 91804a8de7d984648aff2f6ae72e2331, type: 2}
     quests:
-      questGraph: {fileID: 7194093555672020370, guid: 8f5c04b849593bf4baec4efb1e04402c, type: 3}
+      graph: {fileID: 7194093555672020370, guid: 8f5c04b849593bf4baec4efb1e04402c, type: 3}
       pickPocketQuest: {fileID: 11400000, guid: efcb77f3e34a9bb47a120bed21367bc2, type: 2}
     itemRefs:
       demonEye: {fileID: 11400000, guid: 69e3a2fe6ea20814e8199b4a7f6979ff, type: 2}
@@ -16578,6 +16578,7 @@ MonoBehaviour:
       lifeBlood: {fileID: 11400000, guid: 9f654f88ce793424fa5079b7bf08d38a, type: 2}
       strength: {fileID: 11400000, guid: b674e3db6b327ae47be5280a7b0a1a9d, type: 2}
     camera:
+      main: {fileID: 519420031}
       cinemachine: {fileID: 519420036}
       pixelPerfect: {fileID: 519420033}
     curves:
@@ -16799,8 +16800,8 @@ MonoBehaviour:
       hideoutParent: {fileID: 1336251045}
       hotBarParent: {fileID: 572975474}
       dragAndDropItemUI: {fileID: 1508474436}
-      animatedBackgroundImage: {fileID: 808721578}
-      deathBackgroundImage: {fileID: 1795314868}
+      animatedBgImage: {fileID: 808721578}
+      deathBgImage: {fileID: 1795314868}
       menuBackButton: {fileID: 1296183962}
       smallRaidText: {fileID: 1801391313}
       smallRaidTextTypewriter: {fileID: 1801391312}
@@ -16909,226 +16910,6 @@ MonoBehaviour:
       finalWaveStingerClip: {fileID: 11400000, guid: 49d8e84ba4e551a44ad67a6050663888, type: 2}
       ambienceClip: {fileID: 8300000, guid: 48ebfe4e6e022c34b90a2a7f3dde732f, type: 3}
       ambienceMixerGroup: {fileID: -6469774076249759476, guid: 5d1188e598dcb514aa82b03e86c0c627, type: 2}
-  startingItems: {fileID: 11400000, guid: 289cab2c4c800154ebe376a64e8eb57a, type: 2}
-  styles: {fileID: 11400000, guid: f4b4ae74a1e122340bf1d9d4fa5ab586, type: 2}
-  gameplayConfig: {fileID: 11400000, guid: 047f9f114e4a4a540874b19b32b4a4f9, type: 2}
-  questGraph: {fileID: 7194093555672020370, guid: 8f5c04b849593bf4baec4efb1e04402c, type: 3}
-  pickPocketQuest: {fileID: 11400000, guid: efcb77f3e34a9bb47a120bed21367bc2, type: 2}
-  maps:
-  - {fileID: 11400000, guid: a084d4e7745af28498dbdbe8ced97dd5, type: 2}
-  - {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
-  - {fileID: 11400000, guid: aac23282a2cd7784ab5861d2a0508e69, type: 2}
-  rockStonesDropPool: {fileID: 11400000, guid: 033f356ebabda714cb2141a7d950c759, type: 2}
-  eyeUpgradesDropPool: {fileID: 11400000, guid: 447693d567ac32848b6d0306b40001c5, type: 2}
-  bodyDropPool: {fileID: 11400000, guid: 3c4ecb30986cb144bb8b92852af68d07, type: 2}
-  traderDropPool: {fileID: 11400000, guid: ac65e2b20c03fcb43989ec16398ae8cd, type: 2}
-  foragingDropPool: {fileID: 11400000, guid: f37e913033eb638489d499179b70040d, type: 2}
-  bushesDropPool: {fileID: 11400000, guid: 403e542a49d6e3d4c834cdb48dce1626, type: 2}
-  chestsDropPool: {fileID: 11400000, guid: ac36b359b2819ad4f84ed57cf20ba475, type: 2}
-  itemDropPrefab: {fileID: 6950097619826054733, guid: 76730055c1712874c9ac1c6f28f45cde, type: 3}
-  baseProjectilePrefab: {fileID: 2758590605051147821, guid: 490c322ccae8e8149a6dddb96650a50e, type: 3}
-  boneShatterProjectilePrefab: {fileID: 2758590605051147821, guid: f7b19a83567c00a4da11c9ce9c266d1f, type: 3}
-  bloodDropPrefab: {fileID: 2835100544158664230, guid: a3700393b2b39cc44a28e9dee1a285c8, type: 3}
-  poisonDebuffPrefab: {fileID: 9042913863694245120, guid: b52083b254543e949b6579beea5aef46, type: 3}
-  explosionPrefab: {fileID: 1132575347036418292, guid: 97edbac11773f6b4d8f88d6785f366e1, type: 3}
-  boomonExplosionPrefab: {fileID: 1132575347036418292, guid: 5807414c1cfb26b468b88be1b10a569d, type: 3}
-  gooProjectilePrefab: {fileID: 2758590605051147821, guid: f6c4b75dd44ae6b48a2058ea0b780741, type: 3}
-  piercingProjectilePrefab: {fileID: 2758590605051147821, guid: 6f116d426ad964547bee23e2facdf618, type: 3}
-  projectileImpactPrefab: {fileID: 1029373551851069770, guid: 4e9a043ef50fe0146ac2f805702ce90f, type: 3}
-  teleportInPrefab: {fileID: 3234620779380181516, guid: c3ff9460cbebf9d488affacfb6e9f421, type: 3}
-  teleportOutPrefab: {fileID: 6668224194367103619, guid: f2492c473fe22234f8435f7a2fe2718d, type: 3}
-  bloodSplatterPrefab: {fileID: 6976199733450676790, guid: 0254a536d11a93d4098c129b54678c27, type: 3}
-  runSmokePrefab: {fileID: 4378626395619131299, guid: 6bdba9655f698ac44b5a53bb65691265, type: 3}
-  slamSmokePrefab: {fileID: 5935938718941175970, guid: 4171e8b273ae10f42a6b38c11eb7bc66, type: 3}
-  blastPrefab: {fileID: 7981613312970761855, guid: e7be5f74a1a834f478c26f3db82143c1, type: 3}
-  quickUseType: {fileID: 11400000, guid: 229fbe8e9203e95499f73ff3b9ecfb68, type: 2}
-  backpackType: {fileID: 11400000, guid: b4838a3d7e08dae4fbca579b80e09e71, type: 2}
-  eyeType: {fileID: 11400000, guid: 5cca30c9ef87dc746b52b824dea7ceca, type: 2}
-  demonEyeType: {fileID: 11400000, guid: fd77ee936723b1448b554eb40ddbf4f4, type: 2}
-  gemType: {fileID: 11400000, guid: 3aa9d6e5cf74e89469679d25c1a431eb, type: 2}
-  eyeUpgradeType: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
-  wearableModifierType: {fileID: 11400000, guid: 91804a8de7d984648aff2f6ae72e2331, type: 2}
-  hasteUpgradePath: {fileID: 11400000, guid: 9b4b23beb415ea942a94e6d0d55348f1, type: 2}
-  intellectUpgradePath: {fileID: 11400000, guid: a1b66b1e6c77f6c468a4dd921fab87b3, type: 2}
-  lifeBloodUpgradePath: {fileID: 11400000, guid: 9f654f88ce793424fa5079b7bf08d38a, type: 2}
-  strengthUpgradePath: {fileID: 11400000, guid: b674e3db6b327ae47be5280a7b0a1a9d, type: 2}
-  mainCamera: {fileID: 519420031}
-  cinemachineCamera: {fileID: 519420036}
-  pixelPerfectCamera: {fileID: 519420033}
-  playerPrefab: {fileID: 8860443116720004057, guid: 875c5190ef7b0da479d25cffb7b23ae3, type: 3}
-  demonEyeItem: {fileID: 11400000, guid: 69e3a2fe6ea20814e8199b4a7f6979ff, type: 2}
-  hitFlashCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0.4
-      inSlope: 7.462547
-      outSlope: 7.462547
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0.13746819
-    - serializedVersion: 3
-      time: 0.12605846
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.18881263
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.3620692
-      value: 0
-      inSlope: -8.515357
-      outSlope: -8.515357
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.087055966
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  bounceCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 1.157485
-      outSlope: 1.157485
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0.12235061
-    - serializedVersion: 3
-      time: 0.21861184
-      value: 0.17990398
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.4148927
-      value: 0
-      inSlope: -2.0666153
-      outSlope: 0.74175394
-      tangentMode: 1
-      weightedMode: 0
-      inWeight: 0.107839346
-      outWeight: 0.3722839
-    - serializedVersion: 3
-      time: 0.60433805
-      value: 0.08086705
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.7767278
-      value: 0
-      inSlope: -0.85087955
-      outSlope: 0.69031626
-      tangentMode: 1
-      weightedMode: 0
-      inWeight: 0.2951816
-      outWeight: 0.2770129
-    - serializedVersion: 3
-      time: 0.87439245
-      value: 0.032275036
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.9773421
-      value: 0
-      inSlope: -0.85204023
-      outSlope: 0
-      tangentMode: 1
-      weightedMode: 0
-      inWeight: 0.5094103
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 1
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 34
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  shakeCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 1
-      value: 0
-      inSlope: -0.3624106
-      outSlope: -0.3624106
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.07860893
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  inventorySlotPrefab: {fileID: 5872114115220716725, guid: 0412bcb04847baa4d920e89c3e52615d, type: 3}
-  eyeForgeSlotPrefab: {fileID: 8023374429727989156, guid: 5503973d75b5c7547a3df9680e233e9f, type: 3}
-  rockSmokePrefab: {fileID: 5935938718941175970, guid: d08dafda554f85a4db705e94aa604f77, type: 3}
-  damageNumberPrefab: {fileID: 5909869051241108679, guid: 50a717d9d3a10204da7d29b281113572, type: 3}
-  forgeExplosionPrefab: {fileID: 6371517284440137291, guid: 2f37c03c471070a4baa989e5d15637ed, type: 3}
-  forgeDustExplosionPrefab: {fileID: 8036104380610038385, guid: 25f9fb5d1792ce8469e19830c925f3bc, type: 3}
-  questSelectionTogglePrefab: {fileID: 8186757792818746842, guid: 56d645af1dfcddf4ea2f3a6f6d6974eb, type: 3}
-  questPrefab: {fileID: 7601280925113951189, guid: a542f2fd657b8f44d925aa64fa59b3fd, type: 3}
-  mainCanvasRectTransform: {fileID: 848481703}
-  itemDescPopup: {fileID: 570121183}
-  mechanicDescPopup: {fileID: 775932238}
-  uiElementPopup: {fileID: 8720132374794845543}
-  hideoutParent: {fileID: 1336251045}
-  hotBarParent: {fileID: 572975474}
-  dragAndDropItemUI: {fileID: 1508474436}
-  menuBackgroundImage: {fileID: 808721578}
-  deathBackgroundImage: {fileID: 1795314868}
-  menuBackButton: {fileID: 1296183962}
-  smallRaidText: {fileID: 1801391313}
-  smallRaidTextTypewriter: {fileID: 1801391312}
-  largeRaidText: {fileID: 1340749077}
-  largeRaidTextTypewriter: {fileID: 1340749079}
-  mainMenuParent: {fileID: 245440995}
-  mainMenuLogo: {fileID: 876120830}
-  mainMenuPlayButton: {fileID: 1332264258}
-  mainMenuHideoutButton: {fileID: 673993281}
-  mainMenuSettingsButton: {fileID: 1482196823}
-  mainMenuExitButton: {fileID: 1397955494}
   hideoutTabsParent: {fileID: 888674549}
   tabNonSelectedSprite: {fileID: 1949233253, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
   tabSelectedSprite: {fileID: -2041690214, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}

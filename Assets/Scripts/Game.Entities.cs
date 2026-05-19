@@ -202,13 +202,13 @@ public partial class Game {
     private static int damageFlashTintPropertyId = Shader.PropertyToID("_DamageFlashTint");
     
     private void AddFlashHitEffect(Entity entity) {
-        float duration = hitFlashCurve.keys[^1].time;
+        float duration = gameData.curves.hitFlash.keys[^1].time;
         
         entity.GetEffect(EffectsIndicies.HitFlash).Stop();
         
         Tween tween = Tween.Custom(entity, 0f, 1f, duration, ease: Ease.Linear, onValueChange: static (entity, val) => {
             entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
-            entity.matPropertyBlock.SetFloat(damageFlashTintPropertyId, gameInstance.hitFlashCurve.Evaluate(val));
+            entity.matPropertyBlock.SetFloat(damageFlashTintPropertyId, gameInstance.gameData.curves.hitFlash.Evaluate(val));
             entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
         })
         .OnComplete(entity, static entity => {
@@ -262,7 +262,7 @@ public partial class Game {
         };
         
         Tween.Custom(entity, 0f, 1f, duration, ease: Ease.Linear, onValueChange: static (entity, val) => {
-            float yPos = gameInstance.bounceCurve.Evaluate(val);
+            float yPos = gameInstance.gameData.curves.bounce.Evaluate(val);
             Vector2 newPos = Vector2.Lerp(entity.bounceEffect.initialPos, entity.bounceEffect.targetPos, val);
             entity.position = new(newPos.x, newPos.y + yPos, entity.position.z);
         });
