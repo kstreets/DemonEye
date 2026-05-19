@@ -508,8 +508,8 @@ public partial class Game {
 
         if (prevEquippedEyeItemInstance != curEyeItemInstance) {
             prevEquippedEyeItemInstance = curEyeItemInstance;
-            demonEye.equiped = curEyeItemInstance == null ? demonEye.empty : demonEye.instanceFromItemId[curEyeItemInstance.itemOrInstanceUuid];
-            OnDemonEyeEquipmentChanged();
+            DemonEyeInstance newDemonEye = curEyeItemInstance == null ? demonEye.empty : demonEye.instanceFromItemId[curEyeItemInstance.itemOrInstanceUuid];
+            OnEquipDemonEye(newDemonEye);
         }
         
         if (prevEquippedBackpackItemInstance != curBackpackItemInstance) {
@@ -529,7 +529,7 @@ public partial class Game {
             if (curTrinketItemInstance != null) {
                 Assert.IsTrue(curTrinketItemInstance.ItemRef is Trinket);
                 Trinket trinket = curTrinketItemInstance.ItemRef as Trinket;
-                PlayerOnEquipTrinket(trinket);
+                OnEquipTrinket(trinket);
             }
         }
     }

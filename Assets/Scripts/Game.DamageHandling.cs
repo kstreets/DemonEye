@@ -111,7 +111,7 @@ public partial class Game {
         PlayAudioClip(audio.stoneBreakClip, entity.position);
             
         int dropCount = 1;
-        if (trinkets.current is RockLootTrinket rockLoot) {
+        if (trinkets.equiped is RockLootTrinket rockLoot) {
             if (RollProbability(rockLoot.chanceForSecondDrop)) {
                 dropCount++;
             }    

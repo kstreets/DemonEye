@@ -55,15 +55,6 @@ public partial class Game {
         }
     }
     
-    public struct Trinkets {
-        public Trinket current;
-        public Duration activeDuration;
-        public Duration cooldownDuration;
-        public int trackingCount;
-    }
-    
-    private Trinkets trinkets;
-
     private Player MakePlayer() {
         Player newPlayer = SpawnEntity<Player>(prefabs.player, Vector3.zero, Quaternion.identity, null, EntityLifetime.Global);
         LoadAndAssignPlayerSaveData(newPlayer);
@@ -82,16 +73,11 @@ public partial class Game {
         playerPanel.previewImage.sprite = player.defaultPlayerPreviewSprite;
     }
     
-    private void PlayerOnEquipTrinket(Trinket trinket) {
-        trinkets.Reset();
-        trinkets.current = trinket;
-    }
-    
     private void PlayerOnEnemyDeath(Enemy enemy) {
-        if (trinkets.current is SpeedBoostTrinket speedBoost) {
-            if (++trinkets.trackingCount >= speedBoost.killsPerBoost) {
-                trinkets.trackingCount = 0;
-                trinkets.activeDuration.Add(speedBoost.duration);
+        if (trinkets.equiped is SpeedBoostTrinket speedBoost) {
+            if (++trinkets.data.trackingCount >= speedBoost.killsPerBoost) {
+                trinkets.data.trackingCount = 0;
+                trinkets.data.activeDuration.Add(speedBoost.duration);
             }
         }
         player.soulCurrency += enemy.data.soulWorthPerKill;
@@ -170,10 +156,10 @@ public partial class Game {
             PlayAudioClip(audio.footStepClip, player.position);
             player.curStepDistance = 0f;
             
-            if (trinkets.current is HealingStepsTrinket healingSteps) {
-                if (++trinkets.trackingCount >= healingSteps.stepsPerHeal) {
+            if (trinkets.equiped is HealingStepsTrinket healingSteps) {
+                if (++trinkets.data.trackingCount >= healingSteps.stepsPerHeal) {
                     HealPlayer(healingSteps.healing);
-                    trinkets.trackingCount = 0;
+                    trinkets.data.trackingCount = 0;
                 }
             }
         }
@@ -198,7 +184,7 @@ public partial class Game {
             bool isPrimaryShot = i == 0;
             if (isPrimaryShot) {
                 ShootProjectile(attackTarget);
-                if (trinkets.current is CauterizingWoundsTrinket cauterizingWounds) {
+                if (trinkets.equiped is CauterizingWoundsTrinket cauterizingWounds) {
                     if (player.bleeding && RollProbability(cauterizingWounds.chancePerShotToStopBleeding)) {
                         player.bleeding = false;
                         SpawnTrinketActivationText(cauterizingWounds.activationText);
@@ -441,7 +427,7 @@ public partial class Game {
         SpawnDamageNumber(player.position, damage, DamageColor.Blood);
         CancelPortalSummoning();
         
-        if (trinkets.current is Thorns thorns && trinkets.cooldownDuration.HasPassed()) {
+        if (trinkets.equiped is Thorns thorns && trinkets.data.cooldownDuration.HasPassed()) {
             Entity damageEntity = sourceEntity switch {
                 Enemy enemy => enemy,
                 Projectile proj => proj.sourceEntity, 
@@ -450,7 +436,7 @@ public partial class Game {
             if (damageEntity != null) {
                 DamageEnemy(damageEntity, damage, isCriticalStrike: false);
                 SpawnTrinketActivationText(thorns.activationPopUpText);
-                trinkets.cooldownDuration.Reset(thorns.cooldownTime);
+                trinkets.data.cooldownDuration.Reset(thorns.cooldownTime);
             }
         }
     }
@@ -561,8 +547,8 @@ public partial class Game {
 
         playerSpeed -= speedReductionFromWeight;
         
-        if (trinkets.current is SpeedBoostTrinket speedBoost) {
-            if (trinkets.activeDuration.IsAlive()) {
+        if (trinkets.equiped is SpeedBoostTrinket speedBoost) {
+            if (trinkets.data.activeDuration.IsAlive()) {
                 playerSpeed += playerSpeed * speedBoost.percentSpeedIncrease;
             }
         }

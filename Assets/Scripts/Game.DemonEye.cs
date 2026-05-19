@@ -48,6 +48,14 @@ public partial class Game {
     private void InitDemonEye() {
         demonEye.equiped = demonEye.empty;
     }
+    
+    private void OnEquipDemonEye(DemonEyeInstance newDemonEye) {
+        demonEye.equiped = newDemonEye;
+        curRaid.temp.damagingData.Reset();
+        if (newDemonEye != demonEye.empty) {
+            customQuestEvent?.Invoke("FirstDemonEyeEquiped");
+        }
+    }
 
     private void BuildAndRegisterEye(ItemInstance itemInstance) {
         itemInstance.itemOrInstanceUuid = GenerateNewItemUuid();

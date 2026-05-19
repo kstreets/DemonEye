@@ -42,6 +42,7 @@ public partial class Game : MonoBehaviour {
     [NonSerialized] public readonly GameData.Resources res = new();
     [NonSerialized] public readonly GameData.SavePaths savePaths = new();
     [NonSerialized] public readonly GameData.DemonEye demonEye = new();
+    [NonSerialized] public readonly GameData.Trinkets trinkets = new();
     [NonSerialized] public readonly GameData.CurrentRaid curRaid = new();
     [NonSerialized] public readonly GameData.Inventories inventories = new();
     [NonSerialized] public readonly GameData.HotBar hotBar = new();
@@ -297,13 +298,6 @@ public partial class Game : MonoBehaviour {
     private void OnMapLoaded(MapData map) {
         CreateDropPoolsForMap(map);
         states.gameStateMachine.SetStateIfNotCurrent(states.raid);
-    }
-    
-    private void OnDemonEyeEquipmentChanged() {
-        curRaid.temp.damagingData.Reset();
-        if (demonEye.equiped != demonEye.empty) {
-            customQuestEvent?.Invoke("FirstDemonEyeEquiped");
-        }
     }
     
     // *******************************

@@ -21,7 +21,6 @@ public class GameData {
         public GameplayConfig gameplay;
         public List<MapData> maps;
     }
-    public Config config;
     
     [Serializable]
     public class DropPools {
@@ -33,7 +32,6 @@ public class GameData {
         public DropPool bushes;
         public DropPool chests;
     }
-    public DropPools dropPools;
     
     [Serializable]
     public class Prefabs {
@@ -64,7 +62,6 @@ public class GameData {
         public GameObject questSelectionToggle;
         public GameObject quest;
     }
-    public Prefabs prefabs;
     
     [Serializable]
     public class ItemTypes {
@@ -76,20 +73,17 @@ public class GameData {
         public ItemType eyeUpgrade;
         public ItemType wearableModifier;
     }
-    public ItemTypes itemTypes;
     
     [Serializable]
     public class Quests {
         public QuestGraphRuntime graph;
         public Quest pickPocketQuest;
     }
-    public Quests quests;
     
     [Serializable]
     public class ItemRefs {
         public Item demonEye;
     }
-    public ItemRefs itemRefs;
     
     [Serializable]
     public class SkillUpgradePaths {
@@ -98,7 +92,6 @@ public class GameData {
         public SkillUpgradePath lifeBlood;
         public SkillUpgradePath strength;
     }
-    public SkillUpgradePaths skillUpgradePaths;
     
     [Serializable]
     public class Camera {
@@ -106,7 +99,6 @@ public class GameData {
         public CinemachineCamera cinemachine;
         public PixelPerfectCamera pixelPerfect;
     }
-    public Camera camera;
     
     [Serializable]
     public class Curves {
@@ -116,7 +108,6 @@ public class GameData {
         public AnimationCurve pentagramFill;
         public AnimationCurve pentagramItemShake;
     }
-    public Curves curves;
     
     [Serializable] 
     public class UI {
@@ -142,7 +133,6 @@ public class GameData {
         public RectTransform portalArrow;
         public RectTransform damageNumbersParent;
     }
-    public UI ui;
     
     [Serializable]
     public class PlayerInfo {
@@ -157,7 +147,6 @@ public class GameData {
         public TextMeshProUGUI soulsCurrencyText;
         public TextMeshProUGUI coinCurrencyText;
     }
-    public PlayerInfo playerInfo;
     
     [Serializable]
     public class RaidInfo {
@@ -170,7 +159,6 @@ public class GameData {
         public GameObject finalWaveActiveNotifier;
         public GameObject finalExitPortalNotifier;
     }
-    public RaidInfo raidInfo;
     
     [Serializable]
     public class MainMenu {
@@ -181,7 +169,6 @@ public class GameData {
         public ButtonFeel settingsButton;
         public ButtonFeel exitButton;
     } 
-    public MainMenu mainMenu;
     
     [Serializable]
     public class HideoutTabs {
@@ -199,7 +186,6 @@ public class GameData {
         public TextMeshProUGUI questsText;
         public TextMeshProUGUI skillsText;
     }
-    public HideoutTabs hideoutTabs;
     
     [Serializable]
     public class PlayerPanel {
@@ -214,14 +200,12 @@ public class GameData {
         public Image previewImage;
         public EquipedStatsPanel equipedStatsPanel;
     }
-    public PlayerPanel playerPanel;
     
     [Serializable]
     public class StashPanel {
         public RectTransform panel;
         public RectTransform inventoryParent;
     }
-    public StashPanel stashPanel;
     
     [Serializable]
     public class EyeForgePanel {
@@ -230,7 +214,6 @@ public class GameData {
         public Image pentagramFillImage;
         public ButtonFeel forgeButton;
     }
-    public EyeForgePanel eyeForgePanel;
     
     [Serializable]
     public class EyeForgeDetailsPanel {
@@ -238,7 +221,6 @@ public class GameData {
         public TextMeshProUGUI text;
         public DemonEyeDescList demonEyeDesc;
     }
-    public EyeForgeDetailsPanel eyeForgeDetailsPanel;
     
     [Serializable]
     public class TraderPanel {
@@ -247,7 +229,6 @@ public class GameData {
         public TraderRepBar repBar;
         public TextMeshProUGUI itemRefreshTimeText;
     }
-    public TraderPanel traderPanel;
     
     [Serializable]
     public class TransactionPanel {
@@ -255,14 +236,12 @@ public class GameData {
         public global::TransactionPanel transaction;
         public RectTransform inventoryParent;
     }
-    public TransactionPanel transactionPanel;
 
     [Serializable]
     public class MapSelectionPanel {
         public RectTransform panel;
         public Button[] buttons;
     }
-    public MapSelectionPanel mapSelectionPanel;
     
     [Serializable]
     public class QuestsPanel {
@@ -272,14 +251,12 @@ public class GameData {
         public ToggleButtonGroup toggleButtonGroup;
         public TraderRepBar traderRepBar;
     }
-    public QuestsPanel questsPanel;
     
     [Serializable]
     public class SkillsPanel {
         public global::SkillsPanel panel;
         public PlayerStatsPanel playerStatsPanel;
     }
-    public SkillsPanel skillsPanel;
     
     [Serializable]
     public class Audio {
@@ -301,7 +278,6 @@ public class GameData {
         public Dictionary<int, List<DynamicClipRecord>> records = new(50);
         public Queue<AudioSource> reservedSources;
     }
-    public Audio audio; 
     
     public class Input {
         public InputAction move;
@@ -318,7 +294,6 @@ public class GameData {
         public InputAction quickUse3;
         public InputAction quickUse4;
     }
-    public Input input = new();
     
     public class EntityPools {
         public EntityPool<Entity> itemDrop;
@@ -338,7 +313,6 @@ public class GameData {
         public EntityPool<Entity> forgeExplosion;
         public EntityPool<Entity> blast;
     }
-    public EntityPools entityPools = new();
     
     public class States {
         public State mainMenu;
@@ -350,14 +324,12 @@ public class GameData {
         public State earlyExit;
         public StateMachine gameStateMachine;
     }
-    public States states = new();
     
     public class Entities {
         public List<Entity> all = new();
         public Dictionary<GameObject, Entity> lookup = new();
         public Player player;
     }
-    public Entities entities = new();
     
     public class Resources {
         public Dictionary<int, UuidScriptableObject> lookup = new();
@@ -367,7 +339,6 @@ public class GameData {
         public List<DropPool> globalDropPools = new();
         public List<DropPool> mapSpecificDropPools = new();
     }
-    public Resources res = new();
 
     public class SavePaths {
         public string playerInventory;
@@ -379,14 +350,17 @@ public class GameData {
         public string traderInventory;
         public string mapUnlocks;
     }
-    public SavePaths savePaths = new();
     
     public class DemonEye {
         public DemonEyeInstance equiped;
         public Dictionary<int, DemonEyeInstance> instanceFromItemId = new();
         public readonly DemonEyeInstance empty = new();
     }
-    public DemonEye demonEye = new();
+    
+    public class Trinkets {
+        public Trinket equiped;
+        public ref TrinketData data => ref gameInstance.curRaid.temp.trinketData;
+    }
     
     public class CurrentRaid {
         public RaidState state;
@@ -406,10 +380,10 @@ public class GameData {
         public struct Temp {
             public DamagingData damagingData;
             public InteractionData interactionData;
+            public TrinketData trinketData;
         }
         public Temp temp;
     } 
-    public CurrentRaid curRaid = new();
     
     public class Inventories {
         public Inventory player;
@@ -421,12 +395,10 @@ public class GameData {
         public InventorySlotUI[] lootSlotUis;
         public List<Inventory> all = new();
     }
-    public Inventories inventories = new();
     
     public class HotBar {
         public List<InputAction> quickUseActions;
         public InventorySlotUI[] slotUIs;
     }
-    public HotBar hotBar = new();
     
 }
