@@ -13,12 +13,14 @@ MonoBehaviour:
   m_Name: DistanceDamageAugment
   m_EditorClassIdentifier: Assembly-CSharp::DistanceDamageAugment
   uuid: -247024783
-  eyeUpgradeDerivedFrom: {fileID: 11400000, guid: 39bde04b92cb89449b8a0451d4916433, type: 2}
+  derivedFrom: {fileID: 11400000, guid: 39bde04b92cb89449b8a0451d4916433, type: 2}
   percentChanceOfDerivedToSpawn: 0.374
-  spawnsOnAllMaps: 0
-  firstSpawnMap: {fileID: 11400000, guid: 9353817006d76f54fb1273b8ced36a68, type: 2}
-  spawnsOnMaps: []
-  traderLevelRequired: 1
-  traderStockRange: {x: 1, y: 1}
-  barterRequirements: []
+  mapSpawning:
+    spawnsOnAll: 0
+    firstSpawnMap: {fileID: 11400000, guid: 9353817006d76f54fb1273b8ced36a68, type: 2}
+    spawnsOnMaps: []
+  traderSpawning:
+    levelRequired: 1
+    stockRange: {x: 1, y: 1}
+    barterRequirements: []
   damageMultiIncreasePerUnitTraveled: 0.2

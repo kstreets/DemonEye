@@ -2,7 +2,7 @@ using UnityEngine;
 using static Game;
 
 [CreateAssetMenu(fileName = "PoisonModifier", menuName = "Scriptable Objects/Modifiers/PoisonModifier")]
-public class PoisonEyeUpgradeItem : EyeUpgradeItem {
+public class PoisonEyeUpgrade : EyeUpgrade {
 
     public struct InstanceData {
         public float duration;

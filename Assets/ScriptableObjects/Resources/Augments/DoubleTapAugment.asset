@@ -13,13 +13,15 @@ MonoBehaviour:
   m_Name: DoubleTapAugment
   m_EditorClassIdentifier: Assembly-CSharp::DoubleTapAugment
   uuid: -1505730100
-  eyeUpgradeDerivedFrom: {fileID: 11400000, guid: 5208da11a0273eb40938911e8a5feefc, type: 2}
+  derivedFrom: {fileID: 11400000, guid: 5208da11a0273eb40938911e8a5feefc, type: 2}
   percentChanceOfDerivedToSpawn: 0.68
-  spawnsOnAllMaps: 0
-  firstSpawnMap: {fileID: 11400000, guid: 9353817006d76f54fb1273b8ced36a68, type: 2}
-  spawnsOnMaps: []
-  traderLevelRequired: 1
-  traderStockRange: {x: 1, y: 1}
-  barterRequirements: []
+  mapSpawning:
+    spawnsOnAll: 0
+    firstSpawnMap: {fileID: 11400000, guid: 9353817006d76f54fb1273b8ced36a68, type: 2}
+    spawnsOnMaps: []
+  traderSpawning:
+    levelRequired: 1
+    stockRange: {x: 1, y: 1}
+    barterRequirements: []
   delayBetweenShots: 0.08
   probability: 0.3

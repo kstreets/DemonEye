@@ -106,7 +106,7 @@ public partial class Game {
     public bool UnloadingMapInProgress() {
         return curRaid.mapLoadingState == MapLoadingState.Unloading;
     }
-
+    
     private void SpawnMapResources(Transform resourceSpawnParent) {
         // Clear past resource lookups
         curRaid.deadBodySlotsLookup.Clear();
@@ -202,7 +202,7 @@ public partial class Game {
 
         const float fixedUpdateRate = 1f / 6f;
         const float slowFixedUpdateRate = 1f / 2f; // Spawning enemies relies on updated flow field distances so we can't just not update them
-        float curUpdateRate = enemies.Count > 0 ? fixedUpdateRate : slowFixedUpdateRate;
+        float curUpdateRate = entities.enemies.Count > 0 ? fixedUpdateRate : slowFixedUpdateRate;
         if (!curRaid.flowFieldLimiter.TimeHasPassed(curUpdateRate)) return;
             
         Vector2 curPlayerGridPos = grid.GetCellPosition(player.position);

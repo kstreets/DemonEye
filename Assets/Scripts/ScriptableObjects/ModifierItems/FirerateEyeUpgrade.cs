@@ -2,7 +2,7 @@ using UnityEngine;
 using static Game;
 
 [CreateAssetMenu(fileName = "FirerateModifier", menuName = "Scriptable Objects/Modifiers/FirerateModifier")]
-public class FirerateEyeUpgradeItem : EyeUpgradeItem {
+public class FirerateEyeUpgrade : EyeUpgrade {
 
     public struct InstanceData {
         public float rateIncreasePercentage;

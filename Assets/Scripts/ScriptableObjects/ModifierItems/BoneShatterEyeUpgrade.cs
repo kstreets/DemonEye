@@ -2,7 +2,7 @@ using UnityEngine;
 using static Game;
 
 [CreateAssetMenu(fileName = "BoneShatter", menuName = "Scriptable Objects/Modifiers/BoneShatter")]
-public class BoneShatterEyeUpgradeItem : EyeUpgradeItem {
+public class BoneShatterEyeUpgrade : EyeUpgrade {
     
     public struct InstanceData {
         public int shardsCount;

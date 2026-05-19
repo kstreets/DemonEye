@@ -21,6 +21,10 @@ MonoBehaviour:
   priceCategory: {fileID: 11400000, guid: 29cfe26cd6da0734197e5840e6724f56, type: 2}
   buyPrice: 25000
   sellPrice: 2000
+  mapSpawning:
+    spawnsOnAll: 0
+    firstSpawnMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
+    spawnsOnMaps: []
   spawnsOnAllMaps: 0
   firstSpawnMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
   spawnsOnMaps: []
@@ -37,6 +41,14 @@ MonoBehaviour:
     count: 5
   - item: {fileID: 11400000, guid: 53e0c91e50dc13d42803f30082f5d8e5, type: 2}
     count: 2
+  traderSpawning:
+    levelRequired: 2
+    stockRange: {x: 1, y: 5}
+    barterRequirements:
+    - item: {fileID: 11400000, guid: c300cfd9dba50fc438f83dec791af29b, type: 2}
+      count: 5
+    - item: {fileID: 11400000, guid: 53e0c91e50dc13d42803f30082f5d8e5, type: 2}
+      count: 2
   modifiesStats: 0
   critChance: 0
   critMultiplier: 0

@@ -2,7 +2,7 @@ using UnityEngine;
 using static Game;
 
 [CreateAssetMenu(fileName = "BleedModifier", menuName = "Scriptable Objects/Modifiers/BleedModifier")]
-public class BleedEyeUpgradeItem : EyeUpgradeItem {
+public class BleedEyeUpgrade : EyeUpgrade {
     
     public struct InstanceData {
         public float damageMultiplier;

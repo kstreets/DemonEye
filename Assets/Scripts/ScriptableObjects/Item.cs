@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using VInspector;
+using static ItemComponents;
 using static Game;
 
 [CreateAssetMenu(fileName = "Item", menuName = "Scriptable Objects/Item")]
-public class Item : UuidScriptableObject {
+public class Item : UuidScriptableObject, ItemInterface {
 
     public string displayName;
     public Sprite inventorySprite;
@@ -20,13 +21,9 @@ public class Item : UuidScriptableObject {
     public int sellPrice;
 
     [Space]
-
-    public bool spawnsOnAllMaps;
-    [ShowIf(nameof(spawnsOnAllMaps), false)]
-    public MapData firstSpawnMap;
-    public List<MapData> spawnsOnMaps;
-    [EndIf] 
     
+    public MapSpawning mapSpawning;
+
     [Space]
     
 #if UNITY_EDITOR
@@ -34,10 +31,7 @@ public class Item : UuidScriptableObject {
 #endif
     
     public List<DropOrigin> dropOrigins;
-    
-    [Range(1, 10)] public int traderLevelRequired;
-    [MinMaxSlider(1, 15)] public Vector2Int traderStockRange;
-    public List<ItemWithCount> barterRequirements;
+    public TraderSpawning traderSpawning;
 
     [Space]
     
@@ -135,6 +129,13 @@ public class Item : UuidScriptableObject {
         return string.Empty;
     }
     
+    public bool IsAugment => false;
+    public MapSpawning MapSpawning => mapSpawning;
+    public TraderSpawning TraderSpawning => traderSpawning;
+    public UuidScriptableObject UuidObject => this;
+    public Sprite InventorySprite => inventorySprite;
+    public string DisplayName => displayName;
+    
 #if UNITY_EDITOR
     
     private void OnValidate() {
@@ -152,5 +153,4 @@ public class Item : UuidScriptableObject {
     }
 
 #endif
-
 }

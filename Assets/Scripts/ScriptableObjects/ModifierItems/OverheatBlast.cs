@@ -2,7 +2,7 @@ using UnityEngine;
 using static Game;
 
 [CreateAssetMenu(fileName = "OverheatBlast", menuName = "Scriptable Objects/Modifiers/OverheatBlast")]
-public class OverheatBlast : EyeUpgradeItem {
+public class OverheatBlast : EyeUpgrade {
     
     public struct InstanceData {
         public int numshotsUntilOverheat;

@@ -327,13 +327,15 @@ public class GameData {
     
     public class Entities {
         public List<Entity> all = new();
+        public List<Projectile> projectiles = new();
+        public List<Enemy> enemies = new();
         public Dictionary<GameObject, Entity> lookup = new();
         public Player player;
     }
     
     public class Resources {
         public Dictionary<int, UuidScriptableObject> lookup = new();
-        public Dictionary<EyeUpgradeItem, List<Augment>> eyeUpgradeAugmentsLookup = new();
+        public Dictionary<EyeUpgrade, List<Augment>> eyeUpgradeAugmentsLookup = new();
         public List<Item> items = new();
         public List<DropPool> dropPools = new();
         public List<DropPool> globalDropPools = new();

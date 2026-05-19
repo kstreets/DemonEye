@@ -21,7 +21,7 @@ public partial class Game {
         }
         
         foreach (Item item in res.items) {
-            if (!ItemCanSpawnOnMap(item, map)) continue;
+            if (!ItamCanSpawnOnMap(item, map)) continue;
             RegisterItemToDropPools(item, res.mapSpecificDropPools);
         }
     }
@@ -105,23 +105,23 @@ public partial class Game {
     }
     
     private Item RollForAugmentedVersion(Item item, DropPool dropPool, [CanBeNull] MapData map) {
-        if (item is not EyeUpgradeItem upgradeItem) {
+        if (item is not EyeUpgrade upgradeItem) {
             return item;
         }
         
-        bool hasAugments = res.eyeUpgradeAugmentsLookup.TryGetValue(upgradeItem, out var possibleAugments);
+        bool hasAugments = res.eyeUpgradeAugmentsLookup.TryGetValue(upgradeItem, out var augments);
         if (!hasAugments) {
             return item;
         }
 
-        possibleAugments.Shuffle();
+        augments.Shuffle();
         
-        foreach (Augment possibleAugment in possibleAugments) {
-            if (map != null && !AugmentCanSpawnOnMap(possibleAugment, map)) continue;
+        foreach (Augment augment in augments) {
+            if (map != null && !ItamCanSpawnOnMap(augment.augmentedEyeUpgrade, map)) continue;
             
-            float augmentingChance = GetDropChanceOfItem(possibleAugment.augmentedEyeUpgradeItem, dropPool, map);
+            float augmentingChance = GetDropChanceOfItem(augment.augmentedEyeUpgrade, dropPool, map);
             if (RollProbability(augmentingChance)) {
-                return possibleAugment.augmentedEyeUpgradeItem;
+                return augment.augmentedEyeUpgrade;
             }
         }
 
@@ -171,18 +171,11 @@ public partial class Game {
         return null;
     }
     
-    private bool ItemCanSpawnOnMap(Item item, [NotNull] MapData map) {
+    private bool ItamCanSpawnOnMap(Item item, MapData map) {
         Assert.IsNotNull(map);
-        if (item.spawnsOnAllMaps) return true;
-        if (MapIsEqualOrGreater(map, item.firstSpawnMap)) return true;
-        return item.spawnsOnMaps.Contains(map);
-    }
-    
-    private bool AugmentCanSpawnOnMap(Augment augment, [NotNull] MapData map) {
-        Assert.IsNotNull(map);
-        if (augment.spawnsOnAllMaps) return true;
-        if (MapIsEqualOrGreater(map, augment.firstSpawnMap)) return true;
-        return augment.spawnsOnMaps.Contains(map);
+        if (item.mapSpawning.spawnsOnAll) return true;
+        if (MapIsEqualOrGreater(map, item.mapSpawning.firstSpawnMap)) return true;
+        return item.mapSpawning.spawnsOnMaps.Contains(map);
     }
     
     private bool MapIsEqualOrGreater(MapData left, MapData right) {

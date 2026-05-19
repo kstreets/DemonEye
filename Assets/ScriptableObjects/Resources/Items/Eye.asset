@@ -21,6 +21,10 @@ MonoBehaviour:
   priceCategory: {fileID: 11400000, guid: 1b413ce208f37d445884e80008464342, type: 2}
   buyPrice: 2000
   sellPrice: 9
+  mapSpawning:
+    spawnsOnAll: 1
+    firstSpawnMap: {fileID: 0}
+    spawnsOnMaps: []
   spawnsOnAllMaps: 1
   firstSpawnMap: {fileID: 0}
   spawnsOnMaps: []
@@ -35,6 +39,10 @@ MonoBehaviour:
   traderLevelRequired: 1
   traderStockRange: {x: 4, y: 9}
   barterRequirements: []
+  traderSpawning:
+    levelRequired: 1
+    stockRange: {x: 4, y: 9}
+    barterRequirements: []
   modifiesStats: 0
   critChance: 0
   critMultiplier: 0

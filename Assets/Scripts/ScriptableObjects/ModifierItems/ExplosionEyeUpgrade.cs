@@ -2,7 +2,7 @@ using UnityEngine;
 using static Game;
 
 [CreateAssetMenu(fileName = "ExplosionModifier", menuName = "Scriptable Objects/Modifiers/ExplosionModifier")]
-public class ExplosionEyeUpgradeItem : EyeUpgradeItem {
+public class ExplosionEyeUpgrade : EyeUpgrade {
     
     public struct InstanceData {
         public float probability;

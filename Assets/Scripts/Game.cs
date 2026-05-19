@@ -221,7 +221,7 @@ public partial class Game : MonoBehaviour {
     }
     
     private void OnGameOverExit() {
-        player.health = FullPlayerHealth;
+        player.health = FullPlayerHealth();
         DeinitRaid();
     }
     
@@ -260,7 +260,7 @@ public partial class Game : MonoBehaviour {
         if (spawnManager.timeUntilFinalPhase >= 0f) {
             curRaid.state = RaidState.InitialWaves;
         }
-        else if (!spawnManager.isFinishedSpawning || enemies.Count > 0) {
+        else if (!spawnManager.isFinishedSpawning || entities.enemies.Count > 0) {
             curRaid.state = RaidState.FinalWave;
         }
         else {
@@ -282,8 +282,8 @@ public partial class Game : MonoBehaviour {
     }
     
     private void DeinitRaid() {
-        enemies.Clear();
-        projectiles.Clear();
+        entities.enemies.Clear();
+        entities.projectiles.Clear();
         DeinitMapGrid();
         DestroyEntities(EntityLifetime.Level);
         UnloadCurrentMapAsync();

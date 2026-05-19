@@ -7,7 +7,6 @@ using UnityEngine.Pool;
 
 public partial class Game {
     
-    [NonSerialized] public List<Projectile> projectiles = new();
     [Flags] public enum ProjectileTypeFlags { None, Trishot, BackwardsShot, }
     
     public class Projectile : Entity {
@@ -59,7 +58,7 @@ public partial class Game {
         projectile.typeFlags = typeFlags;
 
         if (!spawnDelay.HasValue) {
-            projectiles.Add(projectile);
+            entities.projectiles.Add(projectile);
             projectile.trans.localScale = Vector3.zero;
             Tween.Scale(projectile.trans, Vector3.one, 0.025f, Ease.InBounce);
             return projectile;
@@ -68,7 +67,7 @@ public partial class Game {
         projectile.gameObject.SetActive(false);
         Delay(projectile, spawnDelay.Value, static (projectile) => {
             projectile.gameObject.SetActive(true);
-            gameInstance.projectiles.Add(projectile);
+            gameInstance.entities.projectiles.Add(projectile);
             projectile.trans.localScale = Vector3.zero;
             Tween.Scale(projectile.trans, Vector3.one, 0.025f, Ease.InBounce);
         });
@@ -78,6 +77,7 @@ public partial class Game {
 
     private void UpdateProjectiles() {
         const float projectileRadius = 0.035f;
+        List<Projectile> projectiles = entities.projectiles;
         
         for (int i = projectiles.Count - 1; i >= 0; i--) {
             Projectile proj = projectiles[i];

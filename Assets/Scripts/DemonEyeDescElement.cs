@@ -15,8 +15,8 @@ public class DemonEyeDescElement : MonoBehaviour  {
         Assert.IsTrue(!modifierSetElm.HasAugments || modifierSetElm.augmentsAndCount.Count == augmentDescriptions.Count,
             "Parent should be supplying the correct number of augment descriptions");
         
-        nameText.text = ColorText($"{modifierSetElm.eyeUpgradeItem.displayName} <size=87%>x{modifierSetElm.upgradeCount}</size>", styles.headerTextColor);
-        descText.text = modifierSetElm.eyeUpgradeItem.GetDescription(modifierSetElm.upgradeCount);
+        nameText.text = ColorText($"{modifierSetElm.EyeUpgrade.displayName} <size=87%>x{modifierSetElm.upgradeCount}</size>", styles.headerTextColor);
+        descText.text = modifierSetElm.EyeUpgrade.GetDescription(modifierSetElm.upgradeCount);
         
         for (int i = 0; i < augmentDescriptions.Count; i++) {
             AugmentDescription augmentDesc = augmentDescriptions[i];

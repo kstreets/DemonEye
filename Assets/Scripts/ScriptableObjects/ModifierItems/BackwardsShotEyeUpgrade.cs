@@ -2,7 +2,7 @@ using UnityEngine;
 using static Game;
 
 [CreateAssetMenu(fileName = "BackwardsShotModifier", menuName = "Scriptable Objects/Modifiers/BackwardsShotModifier")]
-public class BackwardsShotEyeUpgradeItem : EyeUpgradeItem {
+public class BackwardsShotEyeUpgrade : EyeUpgrade {
     
     public struct InstanceData {
         public float probability;

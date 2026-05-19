@@ -2,7 +2,7 @@ using UnityEngine;
 using static Game;
 
 [CreateAssetMenu(fileName = "RangeModifier", menuName = "Scriptable Objects/Modifiers/RangeModifier")]
-public class RangeEyeUpgradeItem : EyeUpgradeItem {
+public class RangeEyeUpgrade : EyeUpgrade {
     
     public struct InstanceData {
         public float timeAliveIncrease;

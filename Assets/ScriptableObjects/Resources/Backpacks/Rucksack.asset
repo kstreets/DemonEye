@@ -18,10 +18,13 @@ MonoBehaviour:
   dropSprite: {fileID: 1395339817, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   pickupRadius: 0.07
   type: {fileID: 11400000, guid: b4838a3d7e08dae4fbca579b80e09e71, type: 2}
-  associatedTrader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
   priceCategory: {fileID: 11400000, guid: 494f743dba8aba74393d971bca57c731, type: 2}
   buyPrice: 15000
   sellPrice: 4200
+  mapSpawning:
+    spawnsOnAll: 0
+    firstSpawnMap: {fileID: 11400000, guid: e77fcebe0e13696458bf0cfbacf93e5d, type: 2}
+    spawnsOnMaps: []
   spawnsOnAllMaps: 0
   firstSpawnMap: {fileID: 11400000, guid: e77fcebe0e13696458bf0cfbacf93e5d, type: 2}
   spawnsOnMaps: []
@@ -42,12 +45,21 @@ MonoBehaviour:
     count: 2
   - item: {fileID: 11400000, guid: 8799857dd3cea574da43da5e99edb7aa, type: 2}
     count: 3
+  traderSpawning:
+    levelRequired: 3
+    stockRange: {x: 3, y: 5}
+    barterRequirements:
+    - item: {fileID: 11400000, guid: aaaec308c8b098340836b9aba4a3d55a, type: 2}
+      count: 12
+    - item: {fileID: 11400000, guid: e4847a2f6fbb0bd42b483d0148199f52, type: 2}
+      count: 2
+    - item: {fileID: 11400000, guid: 8799857dd3cea574da43da5e99edb7aa, type: 2}
+      count: 3
   modifiesStats: 0
   critChance: 0
   critMultiplier: 0
   damageMultiplier: 0
   fireratePercentage: 0
-  movementSpeedPercentage: 0
   projectileCount: 0
   rangePercentage: 0
   itemGroupProps: {fileID: 0}

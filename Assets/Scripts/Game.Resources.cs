@@ -19,11 +19,11 @@ public partial class Game {
             }
             if (resObject is Augment augment) {
                 augment.CreateAugmentItemFromDerived();
-                if (res.eyeUpgradeAugmentsLookup.TryGetValue(augment.eyeUpgradeDerivedFrom, out var augmentList)) {
+                if (res.eyeUpgradeAugmentsLookup.TryGetValue(augment.derivedFrom, out var augmentList)) {
                     augmentList.Add(augment);
                 }
                 else {
-                    res.eyeUpgradeAugmentsLookup.Add(augment.eyeUpgradeDerivedFrom, new() { augment });
+                    res.eyeUpgradeAugmentsLookup.Add(augment.derivedFrom, new() { augment });
                 }
             }
         }

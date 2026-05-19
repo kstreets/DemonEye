@@ -2,7 +2,7 @@ using UnityEngine;
 using static Game;
 
 [CreateAssetMenu(fileName = "SlowModifier", menuName = "Scriptable Objects/Modifiers/SlowModifier")]
-public class SlowEyeUpgradeItem : EyeUpgradeItem {
+public class SlowEyeUpgrade : EyeUpgrade {
     
     public struct InstanceData {
         public float speedReductionPercent;

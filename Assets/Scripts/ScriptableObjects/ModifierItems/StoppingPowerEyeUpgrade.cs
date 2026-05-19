@@ -2,7 +2,7 @@ using UnityEngine;
 using static Game;
 
 [CreateAssetMenu(fileName = "StoppingPowerModifier", menuName = "Scriptable Objects/Modifiers/StoppingPowerModifier")]
-public class StoppingPowerEyeUpgradeItem : EyeUpgradeItem {
+public class StoppingPowerEyeUpgrade : EyeUpgrade {
 
     public struct InstanceData {
         public int extraDamage;

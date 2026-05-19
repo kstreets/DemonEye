@@ -28,7 +28,7 @@ public partial class Game {
                 UuidScriptableObject uuidObject = gameInstance.res.lookup[itemOrInstanceUuid];
                 return uuidObject switch {
                     Item item => item,
-                    Augment augment => augment.augmentedEyeUpgradeItem,
+                    Augment augment => augment.augmentedEyeUpgrade,
                     _ => null, 
                 };
             }
@@ -304,11 +304,11 @@ public partial class Game {
         
         // Add mechanic desctiption if necessary
         if (hoveredSlot.itemInstance.ItemRef.type == itemTypes.eyeUpgrade) {
-            EyeUpgradeItem eyeUpgradeItem = (EyeUpgradeItem)hoveredSlot.itemInstance.ItemRef;
-            if (eyeUpgradeItem.relativeMechanicDesc) {
+            EyeUpgrade eyeUpgrade = (EyeUpgrade)hoveredSlot.itemInstance.ItemRef;
+            if (eyeUpgrade.relativeMechanicDesc) {
                 ui.mechanicDescPopup.gameObject.SetActive(true);
-                ui.mechanicDescPopup.nameText.text = eyeUpgradeItem.relativeMechanicDesc.displayName;
-                ui.mechanicDescPopup.descText.text = eyeUpgradeItem.relativeMechanicDesc.description;
+                ui.mechanicDescPopup.nameText.text = eyeUpgrade.relativeMechanicDesc.displayName;
+                ui.mechanicDescPopup.descText.text = eyeUpgrade.relativeMechanicDesc.description;
                 ui.mechanicDescPopup.transform.position = ui.itemDescPopup.rectTransform.WorldRect().min;
                 
                 ui.mechanicDescPopup.nameFitter.ForceRecalculate();

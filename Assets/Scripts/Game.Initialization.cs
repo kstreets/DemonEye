@@ -23,8 +23,8 @@ public partial class Game {
         InitHideout();
     }
     
-    private void InitEntities() {
-        entities.player = MakePlayer();
+    private void InitEntities() { 
+        MakePlayer();
     }
     
     private void InitInput() {

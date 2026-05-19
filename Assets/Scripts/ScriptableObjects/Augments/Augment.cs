@@ -1,37 +1,29 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using VInspector;
+using static ItemComponents;
 using static Game;
 
-public class Augment : UuidScriptableObject, IEyeUpgrade {
+public class Augment : UuidScriptableObject, ItemInterface {
 
-    [Header("Augment")]
-    public EyeUpgradeItem eyeUpgradeDerivedFrom;
+    public EyeUpgrade derivedFrom;
     [Range(0f, 0.99f)] public float percentChanceOfDerivedToSpawn;
     
-    [Header("Map Spawning")]
-    public bool spawnsOnAllMaps;
-    [ShowIf(nameof(spawnsOnAllMaps), false)]
-    public MapData firstSpawnMap;
-    public List<MapData> spawnsOnMaps;
-    [EndIf] 
+    public MapSpawning mapSpawning;
+    public TraderSpawning traderSpawning;
     
-    [Header("Trader Spawning")]
-    [Range(1, 10)] public int traderLevelRequired;
-    [MinMaxSlider(1, 15)] public Vector2Int traderStockRange;
-    public List<ItemWithCount> barterRequirements;
-    
-    [NonSerialized] public EyeUpgradeItem augmentedEyeUpgradeItem;
+    [NonSerialized] public EyeUpgrade augmentedEyeUpgrade;
     
     public void CreateAugmentItemFromDerived() {
-        augmentedEyeUpgradeItem = Instantiate(eyeUpgradeDerivedFrom);
-        augmentedEyeUpgradeItem.uuid = uuid;
+        augmentedEyeUpgrade = Instantiate(derivedFrom);
+        augmentedEyeUpgrade.uuid = uuid;
+        augmentedEyeUpgrade.mapSpawning = mapSpawning;
+        augmentedEyeUpgrade.traderSpawning = traderSpawning;
         
-        float priceMultiplier = 1f -  percentChanceOfDerivedToSpawn;
-        augmentedEyeUpgradeItem.buyPrice += Mathf.RoundToInt(augmentedEyeUpgradeItem.buyPrice * priceMultiplier);
+        float priceMultiplier = 1f - percentChanceOfDerivedToSpawn;
+        augmentedEyeUpgrade.buyPrice += Mathf.RoundToInt(augmentedEyeUpgrade.buyPrice * priceMultiplier);
         
-        foreach (DropOrigin origin in augmentedEyeUpgradeItem.dropOrigins) {
+        foreach (DropOrigin origin in augmentedEyeUpgrade.dropOrigins) {
             origin.chanceToSpawn *= percentChanceOfDerivedToSpawn;
         }
     }
@@ -44,14 +36,12 @@ public class Augment : UuidScriptableObject, IEyeUpgrade {
         return string.Empty;
     }
     
-    // IEyeUpgradeInterface
     public bool IsAugment => true;
-    public bool SpawnsOnAllMaps => spawnsOnAllMaps;
-    public MapData FirstSpawnMap => firstSpawnMap;
-    public List<MapData> SpawnsOnMaps => spawnsOnMaps;
+    public MapSpawning MapSpawning => mapSpawning;
+    public TraderSpawning TraderSpawning => traderSpawning; 
     public UuidScriptableObject UuidObject => this;
-    public Sprite InventorySprite => eyeUpgradeDerivedFrom.inventorySprite;
-    public string DisplayName => eyeUpgradeDerivedFrom.displayName;
+    public Sprite InventorySprite => derivedFrom.inventorySprite;
+    public string DisplayName => derivedFrom.displayName;
     
 #if UNITY_EDITOR
     

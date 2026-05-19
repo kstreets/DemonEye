@@ -2,7 +2,7 @@ using UnityEngine;
 using static Game;
 
 [CreateAssetMenu(fileName = "TrishotModifier", menuName = "Scriptable Objects/Modifiers/TrishotModifier")]
-public class TrishotEyeUpgradeItem : EyeUpgradeItem {
+public class TrishotEyeUpgrade : EyeUpgrade {
 
     public struct InstanceData {
         public float probability;

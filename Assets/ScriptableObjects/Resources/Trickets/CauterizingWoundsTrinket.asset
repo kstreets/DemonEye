@@ -18,10 +18,13 @@ MonoBehaviour:
   dropSprite: {fileID: 0}
   pickupRadius: 0.07
   type: {fileID: 11400000, guid: 91804a8de7d984648aff2f6ae72e2331, type: 2}
-  associatedTrader: {fileID: 0}
   priceCategory: {fileID: 0}
   buyPrice: 0
   sellPrice: 0
+  mapSpawning:
+    spawnsOnAll: 0
+    firstSpawnMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
+    spawnsOnMaps: []
   spawnsOnAllMaps: 0
   firstSpawnMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
   spawnsOnMaps: []
@@ -32,6 +35,10 @@ MonoBehaviour:
   traderLevelRequired: 2
   traderStockRange: {x: 1, y: 3}
   barterRequirements: []
+  traderSpawning:
+    levelRequired: 2
+    stockRange: {x: 1, y: 3}
+    barterRequirements: []
   modifiesStats: 0
   critChance: 0
   critMultiplier: 0

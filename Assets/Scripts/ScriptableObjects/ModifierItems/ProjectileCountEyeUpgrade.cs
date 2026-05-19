@@ -2,7 +2,7 @@ using UnityEngine;
 using static Game;
 
 [CreateAssetMenu(fileName = "ProjectileCountModifier", menuName = "Scriptable Objects/Modifiers/ProjectileCountModifier")]
-public class ProjectileCountEyeUpgradeItem : EyeUpgradeItem {
+public class ProjectileCountEyeUpgrade : EyeUpgrade {
 
     public struct InstanceData {
         public float probability;

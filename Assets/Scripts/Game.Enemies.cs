@@ -6,7 +6,6 @@ using Random = UnityEngine.Random;
 
 public partial class Game {
     
-    [NonSerialized] public List<Enemy> enemies = new();
     public static Action<Enemy> onEnemyDeath;
     
     private int walkSideAnim = Animator.StringToHash("WalkSide");
@@ -30,18 +29,19 @@ public partial class Game {
         public Collider2D enemySpacerCollider;
         public EnemyData data;
         public Timer applyDamageTimer;
-        public BleedEyeUpgradeItem.InstanceData? bleed;
-        public PoisonEyeUpgradeItem.InstanceData? poison;
-        public SlowEyeUpgradeItem.InstanceData? slow;
+        public BleedEyeUpgrade.InstanceData? bleed;
+        public PoisonEyeUpgrade.InstanceData? poison;
+        public SlowEyeUpgrade.InstanceData? slow;
         public Vector2 moveDir;
         public Vector2 graphicalDir;
         public Limiter changeDirLimiter;
     }
     
     private void UpdateEnemies() {
+        List<Enemy> enemies = entities.enemies;
         RaidSpawnPattern curSpawnPattern = curRaid.map.waves;
-        bool reteleportTimeHasPassed = Time.time - lastReteleportTime >= curSpawnPattern.delayBetweenEnemyRepositions;
         
+        bool reteleportTimeHasPassed = Time.time - lastReteleportTime >= curSpawnPattern.delayBetweenEnemyRepositions;
         if (reteleportTimeHasPassed) {
             int maxTeleportCount = curSpawnPattern.maxEnemyRepositionCount;
             using var _ = ListPool<(Enemy, float)>.Get(out var reteleportCandidates);
@@ -250,6 +250,8 @@ public partial class Game {
     }
     
     private void FixedUpdateEnemies() {
+        List<Enemy> enemies = entities.enemies;
+        
         foreach (Enemy enemy in enemies) {
             float speed = enemy.data.speed;
             
@@ -449,7 +451,7 @@ public partial class Game {
                 enemy.flowFieldAcc = Random.Range(2.5f, 3.5f);
                 enemy.rigidbody.mass = enemyToSpawn.defualtMass;
             }
-            enemies.Add(enemy);
+            entities.enemies.Add(enemy);
             
             TeleportEnemy(enemy, randomSpawnPos, TeleportType.Spawn);
             sm.spawnTimeIndex++;

@@ -2,7 +2,7 @@ using UnityEngine;
 using static Game;
 
 [CreateAssetMenu(fileName = "PenetrationModifier", menuName = "Scriptable Objects/Modifiers/PenetrationModifier")]
-public class PenetrationEyeUpgradeItem : EyeUpgradeItem {
+public class PenetrationEyeUpgrade : EyeUpgrade {
 
     public struct InstanceData {
         public int goThroughCount;

@@ -13,13 +13,15 @@ MonoBehaviour:
   m_Name: DoubleCritAugment
   m_EditorClassIdentifier: Assembly-CSharp::DoubleCritAugment
   uuid: -577300191
-  eyeUpgradeDerivedFrom: {fileID: 11400000, guid: ba0965bc93d7d704f8f3e330886c9c1d, type: 2}
+  derivedFrom: {fileID: 11400000, guid: ba0965bc93d7d704f8f3e330886c9c1d, type: 2}
   percentChanceOfDerivedToSpawn: 0.352
-  spawnsOnAllMaps: 0
-  firstSpawnMap: {fileID: 11400000, guid: 9353817006d76f54fb1273b8ced36a68, type: 2}
-  spawnsOnMaps: []
-  traderLevelRequired: 1
-  traderStockRange: {x: 1, y: 1}
-  barterRequirements: []
+  mapSpawning:
+    spawnsOnAll: 0
+    firstSpawnMap: {fileID: 11400000, guid: 9353817006d76f54fb1273b8ced36a68, type: 2}
+    spawnsOnMaps: []
+  traderSpawning:
+    levelRequired: 1
+    stockRange: {x: 1, y: 1}
+    barterRequirements: []
   damageMulti: 1.5
   multiplierDuration: 4

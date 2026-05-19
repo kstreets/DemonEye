@@ -145,10 +145,10 @@ public partial class Game {
         items = items.OrderBy(x => x.type.name).ThenBy(x => x.GetRarity()).ThenBy(x => x.buyPrice).ToList();
         
         foreach (Item item in items) {
-            if (item.traderLevelRequired > curTraderLevel) continue;
+            if (item.traderSpawning.levelRequired > curTraderLevel) continue;
             
-            int lowerRange = item.traderStockRange.x;
-            int maxUpperRange = item.traderStockRange.y;
+            int lowerRange = item.traderSpawning.stockRange.x;
+            int maxUpperRange = item.traderSpawning.stockRange.y;
             int weightedUpperRange = lowerRange + ((maxUpperRange - lowerRange) / 2);
             while (weightedUpperRange < maxUpperRange && RollProbability(stockCountSkew)) {
                 weightedUpperRange++;
@@ -244,11 +244,11 @@ public partial class Game {
     private void OnBarterPurchaseButtonPressed() {
         if (curTradingItemInstance == null) return;
 
-        foreach (ItemWithCount barterReq in curTradingItemInstance.ItemRef.barterRequirements) {
+        foreach (ItemWithCount barterReq in curTradingItemInstance.ItemRef.traderSpawning.barterRequirements) {
             if (GetOwnedCountOfItem(barterReq.item) < barterReq.count) return;
         }
             
-        foreach (ItemWithCount barterReq in curTradingItemInstance.ItemRef.barterRequirements) {
+        foreach (ItemWithCount barterReq in curTradingItemInstance.ItemRef.traderSpawning.barterRequirements) {
             int removedCount = RemoveNumberOfItemsFromInventory(inventories.stash, barterReq.item, barterReq.count);
             if (removedCount != barterReq.count) {
                 int additionalRemoveCount = barterReq.count - removedCount;
@@ -710,9 +710,9 @@ public partial class Game {
             player.intellectSkillLevel++;
         }
         else if (upgradePath == skillUpgradePaths.lifeBlood) {
-            int prevFullPlayerHealth = FullPlayerHealth;
+            int prevFullPlayerHealth = FullPlayerHealth();
             player.lifeBloodSkillLevel++;
-            int newFullPlayerHealth = FullPlayerHealth;
+            int newFullPlayerHealth = FullPlayerHealth();
             player.health += newFullPlayerHealth - prevFullPlayerHealth;
         }
         else if (upgradePath == skillUpgradePaths.strength) {

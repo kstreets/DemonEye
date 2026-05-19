@@ -43,8 +43,8 @@ public class TransactionPanel : MonoBehaviour {
         
         Item item = itemInstance.ItemRef;
         
-        bool canBarter = item.barterRequirements.Count > 0;
-        foreach (ItemWithCount barterReq in item.barterRequirements) {
+        bool canBarter = item.traderSpawning.barterRequirements.Count > 0;
+        foreach (ItemWithCount barterReq in item.traderSpawning.barterRequirements) {
             Assert.IsNotNull(barterReq.item, $"Null barter item for {item.displayName}. Fix it or remove it.");
             if (gameInstance.GetOwnedCountOfItem(barterReq.item) < barterReq.count) {
                 canBarter = false;
@@ -58,8 +58,8 @@ public class TransactionPanel : MonoBehaviour {
         purchasingItemImage.sprite = item.inventorySprite;
         purchasingItemDesc.Show(itemInstance);
 
-        for (int i = 0; i < item.barterRequirements.Count; i++) {
-            ItemWithCount barterReq = itemInstance.ItemRef.barterRequirements[i];
+        for (int i = 0; i < item.traderSpawning.barterRequirements.Count; i++) {
+            ItemWithCount barterReq = item.traderSpawning.barterRequirements[i];
             ResourceRequirement resReq = resourceRequirements[i];
             resReq.gameObject.SetActive(true);
             resReq.Set(barterReq.item, barterReq.count, gameInstance.GetOwnedCountOfItem(barterReq.item));

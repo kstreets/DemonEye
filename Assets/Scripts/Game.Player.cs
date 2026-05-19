@@ -55,12 +55,11 @@ public partial class Game {
         }
     }
     
-    private Player MakePlayer() {
-        Player newPlayer = SpawnEntity<Player>(prefabs.player, Vector3.zero, Quaternion.identity, null, EntityLifetime.Global);
-        LoadAndAssignPlayerSaveData(newPlayer);
-        newPlayer.hurtCollider = newPlayer.gameObject.GetComponentInChildren<CapsuleCollider2D>();
-        newPlayer.defaultPlayerPreviewSprite = playerPanel.previewImage.sprite;
-        return newPlayer;
+    private void MakePlayer() {
+        gameInstance.entities.player = SpawnEntity<Player>(prefabs.player, Vector3.zero, Quaternion.identity, null, EntityLifetime.Global);
+        LoadAndAssignPlayerSaveData(player);
+        player.hurtCollider = player.gameObject.GetComponentInChildren<CapsuleCollider2D>();
+        player.defaultPlayerPreviewSprite = playerPanel.previewImage.sprite;
     }
     
     private void InitPlayer() {
@@ -312,10 +311,10 @@ public partial class Game {
         bool itemStopsBleeds = item.bandageAmount > 0;
 
         if (itemHeals && itemStopsBleeds) {
-            if (player.health == FullPlayerHealth && !player.bleeding) return;
+            if (player.health == FullPlayerHealth() && !player.bleeding) return;
         }
         else if (itemHeals) {
-            if (player.health == FullPlayerHealth) return;
+            if (player.health == FullPlayerHealth()) return;
         }
         else if (itemStopsBleeds) {
             if (!player.bleeding) return;
@@ -379,7 +378,7 @@ public partial class Game {
 
     private void HealPlayer(int healing, float duration = 0f) {
         if (duration <= 0f) {
-            player.health = Mathf.Clamp(player.health + healing, 0, FullPlayerHealth);
+            player.health = Mathf.Clamp(player.health + healing, 0, FullPlayerHealth());
             return;
         }
         
@@ -392,7 +391,7 @@ public partial class Game {
         
         data.tween = Tween.Delay(duration)
         .OnUpdate(data, static (data, tween) => {
-            int fullPlayerHealth = gameInstance.FullPlayerHealth;
+            int fullPlayerHealth = gameInstance.FullPlayerHealth();
             float healingPerSecond = data.healingPerSecond;
             float elapsedTime = tween.elapsedTime;
             
@@ -443,7 +442,7 @@ public partial class Game {
     
     private bool PlayerHealthIsAtAutoBleedStop() {
         const float percentageOfHealthBleedingStops = 0.10f;
-        return player.health <= FullPlayerHealth * percentageOfHealthBleedingStops;
+        return player.health <= FullPlayerHealth() * percentageOfHealthBleedingStops;
     }
     
     private int GetPlayerStatLevel(Player.Stat stat) {
@@ -509,35 +508,35 @@ public partial class Game {
     private float GetEquipmentStatAdjustment(Player.Stat stat) {
         float statSum = 0f;
         foreach (EquipedUpgradeInstance mod in demonEye.equiped.upgradeInstances) {
-            EyeUpgradeItem eyeUpgradeItem = mod.EyeUpgradeItem;
+            EyeUpgrade eyeUpgrade = mod.EyeUpgrade;
             int stackCount = mod.stackCount;
-            if (!eyeUpgradeItem.modifiesStats) continue;
+            if (!eyeUpgrade.modifiesStats) continue;
 
             switch (stat) {
                 case Player.Stat.CritChance:
-                    statSum += eyeUpgradeItem.GetCritChance(stackCount); 
+                    statSum += eyeUpgrade.GetCritChance(stackCount); 
                     break;
                 case Player.Stat.CritMulti:
-                    statSum += eyeUpgradeItem.GetCritMultiplier(stackCount); 
+                    statSum += eyeUpgrade.GetCritMultiplier(stackCount); 
                     break;
                 case Player.Stat.DamageMulti:
-                    statSum += eyeUpgradeItem.GetDamageMultiplier(stackCount); 
+                    statSum += eyeUpgrade.GetDamageMultiplier(stackCount); 
                     break;
                 case Player.Stat.FireratePercentage:
-                    statSum += eyeUpgradeItem.GetFireratePercentage(stackCount); 
+                    statSum += eyeUpgrade.GetFireratePercentage(stackCount); 
                     break;
                 case Player.Stat.ProjectileCount:
-                    statSum += eyeUpgradeItem.GetProjectileCount(stackCount); 
+                    statSum += eyeUpgrade.GetProjectileCount(stackCount); 
                     break;
                 case Player.Stat.RangePercentage:
-                    statSum += eyeUpgradeItem.GetRangePercentage(stackCount);
+                    statSum += eyeUpgrade.GetRangePercentage(stackCount);
                     break;
             }
         }
         return statSum;
     }
 
-    private int FullPlayerHealth => 100 + (int)GetPlayerStatAdjustment(Player.Stat.Health);
+    private int FullPlayerHealth() => 100 + (int)GetPlayerStatAdjustment(Player.Stat.Health);
 
     private float GetPlayerSpeed() {
         float playerSpeed = config.gameplay.baseSpeed * GetAbsoluteStat(Player.Stat.MovementSpeedPercentage);
@@ -584,49 +583,6 @@ public partial class Game {
         return Mathf.Clamp01(overweightComp);
     }
     
-    private void UpdatePlayerPanelUI() {
-        if (!InventoryIsOpen) return;
-            
-        playerPanel.healthText.text = $"<color=#5CF25B>{player.health}</color><size=22>/{FullPlayerHealth}";
-
-        int inventoryWeight = GetInventoryWeight(inventories.player);
-        GetEncumberingWeightRange(out int startEncumberingWeight, out _);
-        playerPanel.weightText.text = $"<color=#98C5CC>{inventoryWeight}</color><size=22>/{startEncumberingWeight}";
-        
-        Color boostedColor = Styles.instance.increaseDescColor;
-        EquipedStatsPanel equipedStatsPanel = playerPanel.equipedStatsPanel;
-        
-        equipedStatsPanel.bleedResistText.text = Boosted(Player.Stat.BleedResist) ? 
-            DisplayProb(GetAbsoluteStat(Player.Stat.BleedResist), boostedColor) : 
-            DisplayProbNoColor(GetAbsoluteStat(Player.Stat.BleedResist));
-        
-        equipedStatsPanel.critChanceText.text = Boosted(Player.Stat.CritChance) ? 
-            DisplayProb(GetAbsoluteStat(Player.Stat.CritChance), boostedColor) :
-            DisplayProbNoColor(GetAbsoluteStat(Player.Stat.CritChance));
-        
-        equipedStatsPanel.critMultiText.text = Boosted(Player.Stat.CritMulti) ? 
-            DisplayMultiplier(GetAbsoluteStat(Player.Stat.CritMulti), boostedColor) :
-            DisplayMultiplierNoColor(GetAbsoluteStat(Player.Stat.CritMulti));
-        
-        equipedStatsPanel.damageText.text = Boosted(Player.Stat.DamageMulti) ? 
-            DisplayMultiplier(GetAbsoluteStat(Player.Stat.DamageMulti), boostedColor) :
-            DisplayMultiplierNoColor(GetAbsoluteStat(Player.Stat.DamageMulti));
-        
-        equipedStatsPanel.firerateText.text = Boosted(Player.Stat.FireratePercentage) ? 
-            DisplayProb(GetAbsoluteStat(Player.Stat.FireratePercentage), boostedColor) :
-            DisplayProbNoColor(GetAbsoluteStat(Player.Stat.FireratePercentage));
-        
-        equipedStatsPanel.projectileCountText.text = Boosted(Player.Stat.ProjectileCount) ? 
-            DisplayNumber(GetAbsoluteStat(Player.Stat.ProjectileCount), boostedColor) :
-            DisplayNumberNoColor(GetAbsoluteStat(Player.Stat.ProjectileCount));
-        
-        equipedStatsPanel.rangeText.text = Boosted(Player.Stat.RangePercentage) ? 
-            DisplayProb(GetAbsoluteStat(Player.Stat.RangePercentage), boostedColor) :
-            DisplayProbNoColor(GetAbsoluteStat(Player.Stat.RangePercentage));
-        
-        bool Boosted(Player.Stat stat) => GetEquipmentStatAdjustment(stat) > 0f; 
-    }
-    
     [Serializable]
     private class PlayerSaveData {
         public int health;
@@ -665,7 +621,7 @@ public partial class Game {
             instancedPlayer.strengthSkillLevel = data.strengthSkillLevel;
         }
         // We want to make sure that the player health is never <= zero
-        instancedPlayer.health = instancedPlayer.health <= 0f ? FullPlayerHealth : instancedPlayer.health;
+        instancedPlayer.health = instancedPlayer.health <= 0f ? FullPlayerHealth() : instancedPlayer.health;
     }
     
 }

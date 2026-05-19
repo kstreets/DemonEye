@@ -1,12 +1,11 @@
-using System.Collections.Generic;
 using UnityEngine;
+using static ItemComponents;
 
-public interface IEyeUpgrade {
+public interface ItemInterface {
     
     public bool IsAugment { get; }
-    public bool SpawnsOnAllMaps { get; }
-    public MapData FirstSpawnMap { get; }
-    public List<MapData> SpawnsOnMaps { get; }
+    public MapSpawning MapSpawning { get; }
+    public TraderSpawning TraderSpawning { get; }
     public UuidScriptableObject UuidObject { get; }
     public Sprite InventorySprite { get; }
     public string DisplayName { get; }
