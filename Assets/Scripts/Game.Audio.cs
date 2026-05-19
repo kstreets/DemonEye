@@ -10,18 +10,18 @@ public partial class Game {
     
     private void InitAudio() {
         const int numberOfSources = 20;
-        gameData.audio.reservedSources = new(numberOfSources);
+        audio.reservedSources = new(numberOfSources);
         for (int i = 0; i < numberOfSources; i++) {
-            GameObject audioGo = Instantiate(gameData.prefabs.audioSource, transform);
-            gameData.audio.reservedSources.Enqueue(audioGo.GetComponent<AudioSource>());
+            GameObject audioGo = Instantiate(prefabs.audioSource, transform);
+            audio.reservedSources.Enqueue(audioGo.GetComponent<AudioSource>());
         }
     }
     
     private void PlayAudioClip(DynamicClip dynamicClip, Vector2 position, float volumeScaler = 1f) {
         if (ClipIsViolatingLocalArea(dynamicClip, position)) return;
         
-        AudioSource source = gameData.audio.reservedSources.Dequeue();
-        gameData.audio.reservedSources.Enqueue(source);
+        AudioSource source = audio.reservedSources.Dequeue();
+        audio.reservedSources.Enqueue(source);
 
         float distFromPlayer = Vector2.Distance(player.position, position);
         float volumeLerp = distFromPlayer / dynamicClip.maxDistance;
@@ -44,7 +44,7 @@ public partial class Game {
             return false;
         }
         
-        var clipRecords = gameData.audio.records;
+        var clipRecords = audio.records;
         bool recordsExits = clipRecords.TryGetValue(clip.GetInstanceID(), out List<DynamicClipRecord> records);
         
         if (!recordsExits) {
@@ -88,8 +88,8 @@ public partial class Game {
     }
     
     private void PlayAmbience() {
-        gameData.audio.ambienceSource = gameData.audio.reservedSources.Dequeue();
-        var ambience = gameData.audio.ambienceSource;
+        audio.ambienceSource = audio.reservedSources.Dequeue();
+        var ambience = audio.ambienceSource;
         
         ambience.transform.position = Vector3.zero;
         ambience.volume = 1f;
@@ -99,16 +99,16 @@ public partial class Game {
         ambience.maxDistance = 500;
 
         ambience.loop = true;
-        ambience.clip = ambienceClip;
-        ambience.outputAudioMixerGroup = ambienceMixerGroup;
+        ambience.clip = audio.ambienceClip;
+        ambience.outputAudioMixerGroup = audio.ambienceMixerGroup;
         ambience.Play();
     }
 
     private void StopAmbience() {
-        var ambience = gameData.audio.ambienceSource;
+        var ambience = audio.ambienceSource;
         ambience.Stop();
-        gameData.audio.reservedSources.Enqueue(ambience);
-        gameData.audio.ambienceSource = null;
+        audio.reservedSources.Enqueue(ambience);
+        audio.ambienceSource = null;
     }
     
 }

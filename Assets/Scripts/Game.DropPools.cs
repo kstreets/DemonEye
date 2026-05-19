@@ -15,14 +15,14 @@ public partial class Game {
     }
     
     public void CreateDropPoolsForMap(MapData map) { 
-        foreach (DropPool dropPool in gameData.res.mapSpecificDropPools) {
+        foreach (DropPool dropPool in res.mapSpecificDropPools) {
             dropPool.items.Clear();
             dropPool.lastDroppedItem = null;
         }
         
-        foreach (Item item in gameData.res.items) {
+        foreach (Item item in res.items) {
             if (!ItemCanSpawnOnMap(item, map)) continue;
-            RegisterItemToDropPools(item, gameData.res.mapSpecificDropPools);
+            RegisterItemToDropPools(item, res.mapSpecificDropPools);
         }
     }
     
@@ -35,7 +35,7 @@ public partial class Game {
         }
     }
     
-    private Item GetItemFromDropPool(DropPool dropPool) => GetItemFromDropPool(dropPool, gameData.curRaid.map);
+    private Item GetItemFromDropPool(DropPool dropPool) => GetItemFromDropPool(dropPool, curRaid.map);
     
     public Item GetItemFromDropPool(DropPool dropPool, [CanBeNull] MapData map) {
         Assert.IsNotNull(dropPool, "Droppool cannot be null");
@@ -109,7 +109,7 @@ public partial class Game {
             return item;
         }
         
-        bool hasAugments = gameData.res.eyeUpgradeAugmentsLookup.TryGetValue(upgradeItem, out var possibleAugments);
+        bool hasAugments = res.eyeUpgradeAugmentsLookup.TryGetValue(upgradeItem, out var possibleAugments);
         if (!hasAugments) {
             return item;
         }
@@ -187,8 +187,8 @@ public partial class Game {
     
     private bool MapIsEqualOrGreater(MapData left, MapData right) {
         if (left == null || right == null) return false;
-        int leftIndex = gameData.config.maps.IndexOf(left);
-        int rightIndex = gameData.config.maps.IndexOf(right);
+        int leftIndex = config.maps.IndexOf(left);
+        int rightIndex = config.maps.IndexOf(right);
         if (leftIndex == -1 || rightIndex == -1) return false;
         return leftIndex >= rightIndex;
     }

@@ -17,19 +17,19 @@ public partial class Game {
     
     private void SaveMaps() {
         MapSaves mapSaves = new() {
-            unlockStates = new(gameData.config.maps.Count),
+            unlockStates = new(config.maps.Count),
         };
-        foreach (MapData mapData in gameData.config.maps) {
+        foreach (MapData mapData in config.maps) {
             mapSaves.unlockStates.Add(mapData.isUnlocked);    
         }
-        SaveToFile(gameData.savePaths.mapUnlocks, mapSaves);
+        SaveToFile(savePaths.mapUnlocks, mapSaves);
     }
     
     private void InitMapSaves() {
-        MapSaves mapSaves = LoadFromFile<MapSaves>(gameData.savePaths.mapUnlocks);
+        MapSaves mapSaves = LoadFromFile<MapSaves>(savePaths.mapUnlocks);
         if (mapSaves == null) return;
         
-        var maps = gameData.config.maps;
+        var maps = config.maps;
         
         if (maps.Count != mapSaves.unlockStates.Count) {
             Debug.Log("Maps save does not match current maps. Saves are not going to be loaded");
@@ -49,7 +49,7 @@ public partial class Game {
         AsyncOperation loadOperation = SceneManager.LoadSceneAsync(mapData.sceneReference, LoadSceneMode.Additive);
         if (loadOperation == null) return;
 
-        gameData.curRaid.mapLoadingState = MapLoadingState.Loading;
+        curRaid.mapLoadingState = MapLoadingState.Loading;
         StartCoroutine(WaitForSceneToLoad());
 
         IEnumerator WaitForSceneToLoad() {
@@ -57,8 +57,8 @@ public partial class Game {
                 yield return null;
             }
             
-            gameData.curRaid.mapLoadingState = MapLoadingState.Loaded;
-            gameData.curRaid.map = mapData;
+            curRaid.mapLoadingState = MapLoadingState.Loaded;
+            curRaid.map = mapData;
 
             using var _ = ListPool<GameObject>.Get(out var loadedMapRoots);
             
@@ -67,7 +67,7 @@ public partial class Game {
             
             foreach (GameObject root in loadedMapRoots) {
                 if (!root.TryGetComponent(out MapInstance map)) continue;
-                gameData.curRaid.mapInstance = map;
+                curRaid.mapInstance = map;
                 map.gameObject.SetActive(false);
                 break;
             }
@@ -79,15 +79,15 @@ public partial class Game {
     public void UnloadCurrentMapAsync() {
         if (UnloadingMapInProgress()) return;
             
-        gameData.curRaid.mapInstance.gameObject.SetActive(false); 
+        curRaid.mapInstance.gameObject.SetActive(false); 
         
-        Scene loadedMap = SceneManager.GetSceneByName(gameData.curRaid.map.sceneReference);
+        Scene loadedMap = SceneManager.GetSceneByName(curRaid.map.sceneReference);
         AsyncOperation unloadOperation = SceneManager.UnloadSceneAsync(loadedMap);
 
         if (unloadOperation == null) return;
         
-        gameData.curRaid.mapLoadingState = MapLoadingState.Unloading;
-        gameData.curRaid.map = null;
+        curRaid.mapLoadingState = MapLoadingState.Unloading;
+        curRaid.map = null;
         
         StartCoroutine(WaitForSceneToLoad());
 
@@ -95,22 +95,22 @@ public partial class Game {
             while (!unloadOperation.isDone) {
                 yield return null;
             }
-            gameData.curRaid.mapLoadingState = MapLoadingState.Unloaded;
+            curRaid.mapLoadingState = MapLoadingState.Unloaded;
         }
     } 
     
     public bool LoadingMapInProgress() {
-        return gameData.curRaid.mapLoadingState == MapLoadingState.Loading;
+        return curRaid.mapLoadingState == MapLoadingState.Loading;
     }
     
     public bool UnloadingMapInProgress() {
-        return gameData.curRaid.mapLoadingState == MapLoadingState.Unloading;
+        return curRaid.mapLoadingState == MapLoadingState.Unloading;
     }
 
     private void SpawnMapResources(Transform resourceSpawnParent) {
         // Clear past resource lookups
-        gameData.curRaid.deadBodySlotsLookup.Clear();
-        gameData.curRaid.bushSlotsLookup.Clear();
+        curRaid.deadBodySlotsLookup.Clear();
+        curRaid.bushSlotsLookup.Clear();
         
         ResourceSpawn[] resourceSpawns = resourceSpawnParent.GetComponentsInChildren<ResourceSpawn>();
         foreach (ResourceSpawn resourceSpawn in resourceSpawns) { 
@@ -137,12 +137,12 @@ public partial class Game {
             Destroy(resourceSpawn.gameObject);
         }
         
-        if (QuestIsActive(gameData.quests.pickPocketQuest)) {
-            InventorySlot[] chosenDeadbody = gameData.curRaid.deadBodySlotsLookup.RandomValue();
+        if (QuestIsActive(quests.pickPocketQuest)) {
+            InventorySlot[] chosenDeadbody = curRaid.deadBodySlotsLookup.RandomValue();
             for (int i = 0; i < chosenDeadbody.Length; i++) {
                 if (chosenDeadbody[i].itemInstance == null) {
                     chosenDeadbody[i].itemInstance = new() {
-                        itemOrInstanceUuid = gameData.quests.pickPocketQuest.objectives[1].targetItem.uuid,
+                        itemOrInstanceUuid = quests.pickPocketQuest.objectives[1].targetItem.uuid,
                         count = 1,
                         notDiscovered = true,
                     };
@@ -155,7 +155,7 @@ public partial class Game {
     private T SpawnResource<T>(GameObject resourcePrefab, Transform spawnPoint, int obstacleCellRadius = 0) where T : Entity, new() {
         T resource = SpawnEntity<T>(resourcePrefab, spawnPoint.position, spawnPoint.rotation);
         if (obstacleCellRadius > 0) {
-            gameData.curRaid.mapInstance.grid.AddObstacle(resource.position, obstacleCellRadius);
+            curRaid.mapInstance.grid.AddObstacle(resource.position, obstacleCellRadius);
             resource.obstacleCellRadius = obstacleCellRadius;
             resource.obstaclePosition = resource.position;
         }
@@ -166,50 +166,50 @@ public partial class Game {
         using var _ = ListPool<Item>.Get(out var items);
             
         int maxDeadBodyItemCount = Random.Range(2, 6);
-        GetUniqueItemsFromDropPool(gameData.dropPools.body, maxDeadBodyItemCount, ref items);
-        InventorySlot[] lootInventory = CreateLootInventoryFromItems(items, gameData.dropPools.body, stackTaperRate: 0.15f);
+        GetUniqueItemsFromDropPool(dropPools.body, maxDeadBodyItemCount, ref items);
+        InventorySlot[] lootInventory = CreateLootInventoryFromItems(items, dropPools.body, stackTaperRate: 0.15f);
         
-        float eyeUpgradeOnBodyChance = gameData.curRaid.map.eyeUpgradeOnBodyChance;
+        float eyeUpgradeOnBodyChance = curRaid.map.eyeUpgradeOnBodyChance;
         while (RollProbability(eyeUpgradeOnBodyChance)) {
-            eyeUpgradeOnBodyChance -= gameData.curRaid.map.consecutiveEyeUpgradeChanceReductionOnBody;
-            bool success = AppendToLootInventory(lootInventory, GetItemFromDropPool(gameData.dropPools.eyeUpgrades), 1);
+            eyeUpgradeOnBodyChance -= curRaid.map.consecutiveEyeUpgradeChanceReductionOnBody;
+            bool success = AppendToLootInventory(lootInventory, GetItemFromDropPool(dropPools.eyeUpgrades), 1);
             if (!success) break;
         }
         
-        gameData.curRaid.deadBodySlotsLookup.Add(entity.gameObject, lootInventory);
+        curRaid.deadBodySlotsLookup.Add(entity.gameObject, lootInventory);
     }
     
     private void InitBush(Entity entity) {
         using var _ = ListPool<Item>.Get(out var items);
         int maxBushItemCount = Random.Range(1, 3);
-        GetUniqueItemsFromDropPool(gameData.dropPools.bushes, maxBushItemCount, ref items);
-        gameData.curRaid.bushSlotsLookup.Add(entity.gameObject, CreateLootInventoryFromItems(items, gameData.dropPools.bushes, stackTaperRate: 0.15f)); 
+        GetUniqueItemsFromDropPool(dropPools.bushes, maxBushItemCount, ref items);
+        curRaid.bushSlotsLookup.Add(entity.gameObject, CreateLootInventoryFromItems(items, dropPools.bushes, stackTaperRate: 0.15f)); 
     }
     
     private void InitMapGrid() {
-        gameData.curRaid.mapInstance.grid.Init();
-        gameData.curRaid.lastPlayerGridPos = new(float.MaxValue, float.MaxValue);
+        curRaid.mapInstance.grid.Init();
+        curRaid.lastPlayerGridPos = new(float.MaxValue, float.MaxValue);
     }
 
     private void DeinitMapGrid() {
-        gameData.curRaid.mapInstance.grid.Deinit();
+        curRaid.mapInstance.grid.Deinit();
     }
     
     private void UpdateMapGrid() {
-        CoolerGrid grid = gameData.curRaid.mapInstance.grid;
+        CoolerGrid grid = curRaid.mapInstance.grid;
         grid.FeedPlayerVelocity(player.position, player.velocity);
         grid.UpdateFlowFieldFromPreviousJob();
 
         const float fixedUpdateRate = 1f / 6f;
         const float slowFixedUpdateRate = 1f / 2f; // Spawning enemies relies on updated flow field distances so we can't just not update them
         float curUpdateRate = enemies.Count > 0 ? fixedUpdateRate : slowFixedUpdateRate;
-        if (!gameData.curRaid.flowFieldLimiter.TimeHasPassed(curUpdateRate)) return;
+        if (!curRaid.flowFieldLimiter.TimeHasPassed(curUpdateRate)) return;
             
         Vector2 curPlayerGridPos = grid.GetCellPosition(player.position);
-        bool playerMovedCells = curPlayerGridPos != gameData.curRaid.lastPlayerGridPos;
+        bool playerMovedCells = curPlayerGridPos != curRaid.lastPlayerGridPos;
         if (playerMovedCells) {
             grid.ScheduleFlowFieldCalculation(player.position);
-            gameData.curRaid.lastPlayerGridPos = curPlayerGridPos;
+            curRaid.lastPlayerGridPos = curPlayerGridPos;
         }
     }
     
@@ -229,7 +229,7 @@ public partial class Game {
         portal.hasBeenSummoned = true;
         
         portal.summoningPortalSequence = Sequence.Create();
-        portal.summoningPortalSequence.ChainDelay(gameData.config.gameplay.portalPostSummonDelay);
+        portal.summoningPortalSequence.ChainDelay(config.gameplay.portalPostSummonDelay);
         portal.summoningPortalSequence.Chain(Tween.Scale(portal.transform, Vector3.one, 0.25f, Ease.OutBack));
         
         portal.summoningPortalSequence.OnComplete(portal, static (portal) => {
@@ -240,7 +240,7 @@ public partial class Game {
     
     private void StartClosingExitPortal(ExitPortal portal) {
         portal.closingCountdownSequence = Sequence.Create();
-        portal.closingCountdownSequence.ChainDelay(gameData.config.gameplay.portalActiveDuration);
+        portal.closingCountdownSequence.ChainDelay(config.gameplay.portalActiveDuration);
         portal.closingCountdownSequence.ChainCallback(portal, static (portal) => {
             portal.canTake = false;
             gameInstance.activeExitPortals.Remove(portal);
@@ -292,7 +292,7 @@ public partial class Game {
             Vector2 randomPos = (Vector2)player.position + Random.insideUnitCircle * Random.Range(0.5f, 1.5f);
             if (Physics.OverlapCircle(randomPos, 0.2f, Masks.StaticLevelMask).Count > 0) continue;
             
-            Transform exitPortalParent = gameData.curRaid.mapInstance.exitPortalsParent;
+            Transform exitPortalParent = curRaid.mapInstance.exitPortalsParent;
             int randomSpawnIndex = Random.Range(0, exitPortalParent.childCount);
             Transform newExitPortalTrans = exitPortalParent.GetChild(randomSpawnIndex);
             
@@ -306,12 +306,12 @@ public partial class Game {
             });
             
             Tween.Scale(newExitPortalTrans, 0f, 1f, 0.5f, Ease.OutBack);
-            PlayAudioClip(portalSpawnClip, newExitPortalTrans.position);
+            PlayAudioClip(audio.portalSpawnClip, newExitPortalTrans.position);
             return;
         }
         
         // This is a fail safe incase we couldn't spawn the final portal
-        gameData.states.gameStateMachine.SetState(gameData.states.winExit);
+        states.gameStateMachine.SetState(states.winExit);
     }
     
 

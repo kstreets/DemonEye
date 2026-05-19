@@ -25,7 +25,7 @@ public class GameplayTestingWindow : EditorWindow {
     private Button PlayerDamageButton => root.Q<Button>("PlayerDamageBttn");
     private Button PlayerBleedButton => root.Q<Button>("PlayerBleedBttn");
     
-    private List<MapData> Maps => FindFirstObjectByType<Game>().gameData.config.maps;
+    private List<MapData> Maps => FindFirstObjectByType<Game>().config.maps;
 
     [MenuItem("Window/UI Toolkit/Gameplay Testing")]
     public static void ShowExample() {
@@ -111,8 +111,8 @@ public class GameplayTestingWindow : EditorWindow {
         Game game = Game.gameInstance;
         game.CreateDropPoolsForMap(currentMap); 
         for (int i = 0; i < 5; i++) {
-            Item item = game.GetItemFromDropPool(game.gameData.dropPools.eyeUpgrades, currentMap);
-            game.TryAddItemToInventory(game.gameData.inventories.stash, item, 1);
+            Item item = game.GetItemFromDropPool(game.dropPools.eyeUpgrades, currentMap);
+            game.TryAddItemToInventory(game.inventories.stash, item, 1);
         }
     }
     
@@ -245,7 +245,7 @@ public class GameplayTestingWindow : EditorWindow {
     
     private void OnMakePlayerBleed(ClickEvent e) {
         if (!Application.isPlaying) return;
-        Game.gameInstance.player.bleeding = true;
+        Game.player.bleeding = true;
     }
     
 }

@@ -48,16 +48,16 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
         typeTagGroup.gameObject.SetActive(true);
         typeTagGroup.image.color = itemRarityColor;
         
-        if (item.type == gameInstance.gameData.itemTypes.quickUse) {
+        if (item.type == gameInstance.itemTypes.quickUse) {
             typeTagGroup.textMesh.text = "Quick Use";
         } 
-        else if (item.type == gameInstance.gameData.itemTypes.eyeUpgrade) {
+        else if (item.type == gameInstance.itemTypes.eyeUpgrade) {
             typeTagGroup.textMesh.text = "Eye Upgrade";
         }
-        else if (item.type == gameInstance.gameData.itemTypes.wearableModifier) {
+        else if (item.type == gameInstance.itemTypes.wearableModifier) {
             typeTagGroup.textMesh.text = "Wearable Modifier";
         }
-        else if (item.type == gameInstance.gameData.itemTypes.backpack) {
+        else if (item.type == gameInstance.itemTypes.backpack) {
             typeTagGroup.textMesh.text = "Backpack";
         }
         else {
@@ -76,7 +76,7 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
 
     private void SetMetaInfo(ItemInstance itemInstance, Item item) {
         int sellOrBuyPrice = 0;
-        if (item.type == gameInstance.gameData.itemTypes.demonEye) { 
+        if (item.type == gameInstance.itemTypes.demonEye) { 
             sellOrBuyPrice = gameInstance.GetDemonEyeSellPrice(itemInstance);
         }
         else {
@@ -111,7 +111,7 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
             augmentDesc.stackCountTextMesh.gameObject.SetActive(false);
         }
         
-        if (item.type == gameInstance.gameData.itemTypes.quickUse && !itemInstance.traderOwned) {
+        if (item.type == gameInstance.itemTypes.quickUse && !itemInstance.traderOwned) {
             descText.text += $"<line-height=150%>\n<sprite=5 color=#{ColorUtility.ToHtmlStringRGBA(styles.inputIconTint)}> " +
                              $"<size=80%>{ColorText("Right click to consume", styles.inputIconTint)}</size>";
         }

@@ -21,11 +21,11 @@ public partial class Game {
 
         public Item ItemRef {
             get {
-                if (gameInstance.gameData.demonEye.instanceFromItemId.ContainsKey(itemOrInstanceUuid)) {
-                    return gameInstance.gameData.itemRefs.demonEye;
+                if (gameInstance.demonEye.instanceFromItemId.ContainsKey(itemOrInstanceUuid)) {
+                    return gameInstance.itemRefs.demonEye;
                 }
                 
-                UuidScriptableObject uuidObject = gameInstance.gameData.res.lookup[itemOrInstanceUuid];
+                UuidScriptableObject uuidObject = gameInstance.res.lookup[itemOrInstanceUuid];
                 return uuidObject switch {
                     Item item => item,
                     Augment augment => augment.augmentedEyeUpgradeItem,
@@ -64,7 +64,7 @@ public partial class Game {
         
         public bool TryGetUuidObject(out UuidScriptableObject uuidObject) { 
             // Demon Eye instances will not be in the resourceLookup
-            return gameInstance.gameData.res.lookup.TryGetValue(itemOrInstanceUuid, out uuidObject);
+            return gameInstance.res.lookup.TryGetValue(itemOrInstanceUuid, out uuidObject);
         }
         
     }
@@ -86,62 +86,62 @@ public partial class Game {
     public const int traderInventoryRowCount = 5;
     
     private int NakedPlayerInventorySize => playerPocketSize + playerQuickUseSize + playerEquipmentSize;
-    private bool InventoryIsOpen => playerPanel.gameObject.activeInHierarchy;
-    private bool LootInventoryIsOpen => lootInventoryPanel.gameObject.activeInHierarchy;
+    private bool InventoryIsOpen => playerPanel.panel.gameObject.activeInHierarchy;
+    private bool LootInventoryIsOpen => ui.lootInventoryPanel.gameObject.activeInHierarchy;
 
     private void InitInventories() {
         const int maxBackpackSize = 30;
-        SpawnUiSlots(playerPassiveParent, playerQuickUseSize);
-        SpawnUiSlots(playerPocketParent, playerPocketSize + maxBackpackSize);
-        gameData.inventories.player = CreateInventory(playerInventoryParent, NakedPlayerInventorySize);
-        LoadInventory(gameData.inventories.player);
+        SpawnUiSlots(playerPanel.quickUseParent, playerQuickUseSize);
+        SpawnUiSlots(playerPanel.pocketParent, playerPocketSize + maxBackpackSize);
+        inventories.player = CreateInventory(playerPanel.inventoryParent, NakedPlayerInventorySize);
+        LoadInventory(inventories.player);
 
-        InventorySlotUI[] quickUseSlots = playerPassiveParent.GetComponentsInChildren<InventorySlotUI>();
+        InventorySlotUI[] quickUseSlots = playerPanel.quickUseParent.GetComponentsInChildren<InventorySlotUI>();
         foreach (InventorySlotUI slotUI in quickUseSlots) {
-            slotUI.onlyAcceptedItemType = gameData.itemTypes.quickUse;
+            slotUI.onlyAcceptedItemType = itemTypes.quickUse;
         }
         
         const int stashInventorySize = 40;
-        SpawnUiSlots(stashInventoryParent, stashInventorySize);
-        gameData.inventories.stash = CreateInventory(stashInventoryParent, stashInventorySize);
-        LoadInventory(gameData.inventories.stash);
+        SpawnUiSlots(stashPanel.inventoryParent, stashInventorySize);
+        inventories.stash = CreateInventory(stashPanel.inventoryParent, stashInventorySize);
+        LoadInventory(inventories.stash);
        
         const int cachedLootInventorySize = 12;
-        SpawnUiSlots(lootInventoryParent, cachedLootInventorySize); 
-        gameData.inventories.lootPtr = CreateInventory(lootInventoryParent, cachedLootInventorySize);
-        gameData.inventories.lootSlotUis = lootInventoryParent.GetComponentsInChildren<InventorySlotUI>(true);
+        SpawnUiSlots(ui.lootInventoryParent, cachedLootInventorySize); 
+        inventories.lootPtr = CreateInventory(ui.lootInventoryParent, cachedLootInventorySize);
+        inventories.lootSlotUis = ui.lootInventoryParent.GetComponentsInChildren<InventorySlotUI>(true);
 
         const int traderInventorySize = traderInventoryRowCount * traderInventoryColCount;
-        SpawnUiSlots(traderInventoryParent, traderInventorySize);
-        gameData.inventories.trader = CreateInventory(traderInventoryParent, traderInventorySize);
-        LoadInventory(gameData.inventories.trader);
+        SpawnUiSlots(traderPanel.inventoryParent, traderInventorySize);
+        inventories.trader = CreateInventory(traderPanel.inventoryParent, traderInventorySize);
+        LoadInventory(inventories.trader);
         
         const int transactionInventorySize = 25;
-        SpawnUiSlots(traderTransactionInventoryParent, transactionInventorySize);
-        gameData.inventories.transaction = CreateInventory(traderTransactionInventoryParent, transactionInventorySize);
+        SpawnUiSlots(transactionPanel.inventoryParent, transactionInventorySize);
+        inventories.transaction = CreateInventory(transactionPanel.inventoryParent, transactionInventorySize);
 
         const int crucibleInventorySize = 6;
-        SpawnUiSlots(crucibleParent, crucibleInventorySize, gameData.prefabs.eyeForgeSlot);
-        gameData.inventories.eyeForge = CreateInventory(crucibleParent, crucibleInventorySize);
+        SpawnUiSlots(eyeForgePanel.pentagramParent, crucibleInventorySize, prefabs.eyeForgeSlot);
+        inventories.eyeForge = CreateInventory(eyeForgePanel.pentagramParent, crucibleInventorySize);
         SetupEyeForgeInventorySlots();
-        LoadInventory(gameData.inventories.eyeForge);
+        LoadInventory(inventories.eyeForge);
     }
     
     private void SetupEyeForgeInventorySlots() {
-        int inventoryLength = gameData.inventories.eyeForge.slots.Length;
+        int inventoryLength = inventories.eyeForge.slots.Length;
         for (int i = 0; i < inventoryLength; i++) {
-            InventorySlotUI slotUI = gameData.inventories.eyeForge.slots[i].ui;
+            InventorySlotUI slotUI = inventories.eyeForge.slots[i].ui;
             slotUI.disallowItemStacking = true;
-            slotUI.onlyAcceptedItemType = i == 0 ? gameData.itemTypes.eye : gameData.itemTypes.eyeUpgrade;
+            slotUI.onlyAcceptedItemType = i == 0 ? itemTypes.eye : itemTypes.eyeUpgrade;
 
             if (i == 0) {
-                slotUI.gameObject.transform.position = crucibleParent.position;
+                slotUI.gameObject.transform.position = eyeForgePanel.pentagramParent.position;
                 continue;
             }
             
             float deg = 360f / (inventoryLength - 1) * (i - 1);
             Vector3 spawnDir = (Quaternion.AngleAxis(deg, Vector3.forward) * Vector2.up) * 180f;
-            slotUI.gameObject.transform.position = crucibleParent.position + spawnDir;
+            slotUI.gameObject.transform.position = eyeForgePanel.pentagramParent.position + spawnDir;
         }
     }
     
@@ -158,7 +158,7 @@ public partial class Game {
         List<ItemInstance> itemInstances = LoadFromFile<List<ItemInstance>>(GetInventorySavePath(inventory));
         if (itemInstances == null) return;
 
-        if (inventory == gameData.inventories.player && itemInstances.Count != inventory.slots.Length) {
+        if (inventory == inventories.player && itemInstances.Count != inventory.slots.Length) {
             ChangeInventorySize(inventory, itemInstances.Count);
         }
         
@@ -183,16 +183,16 @@ public partial class Game {
     }
     
     private InventorySlot[] CreateLootInventoryInstance(List<ItemInstance> inventoryItems) {
-        var slots = new InventorySlot[gameData.inventories.lootPtr.slots.Length];
+        var slots = new InventorySlot[inventories.lootPtr.slots.Length];
         
-        for (int i = 0; i < gameData.inventories.lootPtr.slots.Length; i++) {
+        for (int i = 0; i < inventories.lootPtr.slots.Length; i++) {
             ItemInstance itemInstance = null;
             if (inventoryItems.IndexInRange(i)) {
                 itemInstance = inventoryItems[i];
             }
             slots[i] = new() {
                 itemInstance = itemInstance,
-                ui = gameData.inventories.lootSlotUis[i],
+                ui = inventories.lootSlotUis[i],
             };
         }
         
@@ -205,7 +205,7 @@ public partial class Game {
         foreach (Item item in items) {
             int stackCount = 1;
             
-            float taperingChance = Mathf.Lerp(GetDropChanceOfItem(item, dropPool, gameData.curRaid.map), 0f, stackTaperRate);
+            float taperingChance = Mathf.Lerp(GetDropChanceOfItem(item, dropPool, curRaid.map), 0f, stackTaperRate);
             while (RollProbability(taperingChance)) {
                 stackCount++;
                 taperingChance = Mathf.Lerp(taperingChance, 0f, stackTaperRate);
@@ -248,7 +248,7 @@ public partial class Game {
     }
     
     private void HandleInventoryVisibility() {
-        if (!InRaid || !gameData.input.inventory.WasPressedThisFrame()) return;
+        if (!InRaid || !input.inventory.WasPressedThisFrame()) return;
         if (InventoryIsOpen) {
             ClosePlayerInventory(); 
         }
@@ -261,7 +261,7 @@ public partial class Game {
     }
     
     private bool NoOpenInventories() {
-        foreach (Inventory inventory in gameData.inventories.all) {
+        foreach (Inventory inventory in inventories.all) {
             if (inventory.parent.gameObject.activeInHierarchy) {
                 return false;
             }
@@ -284,14 +284,14 @@ public partial class Game {
     }
     
     private void ShowInventoryItemPopup(InventoryHoverInfo info) {
-        if (gameData.ui.itemDescPopup.gameObject.activeInHierarchy) return;
+        if (ui.itemDescPopup.gameObject.activeInHierarchy) return;
         
         InventorySlot hoveredSlot = info.inventory.slots[info.slotIndex];
         
         // Set popup position
         Vector2 popupPosition = Vector2.zero;
         Vector2 hoveredSlotCenter = hoveredSlot.ui.rectTransform.WorldRect().center;
-        float halfPopupWidth = gameData.ui.itemDescPopup.rectTransform.rect.width / 2f;
+        float halfPopupWidth = ui.itemDescPopup.rectTransform.rect.width / 2f;
         Vector2 popupOffset = new(45 + halfPopupWidth, 40);
         if (hoveredSlotCenter.x < ScreenCenter.x) {
             popupPosition = hoveredSlotCenter + popupOffset;
@@ -300,38 +300,38 @@ public partial class Game {
             popupPosition = hoveredSlotCenter + new Vector2(-popupOffset.x, popupOffset.y);
         }
             
-        gameData.ui.itemDescPopup.Show(hoveredSlot.itemInstance, popupPosition);
+        ui.itemDescPopup.Show(hoveredSlot.itemInstance, popupPosition);
         
         // Add mechanic desctiption if necessary
-        if (hoveredSlot.itemInstance.ItemRef.type == gameData.itemTypes.eyeUpgrade) {
+        if (hoveredSlot.itemInstance.ItemRef.type == itemTypes.eyeUpgrade) {
             EyeUpgradeItem eyeUpgradeItem = (EyeUpgradeItem)hoveredSlot.itemInstance.ItemRef;
             if (eyeUpgradeItem.relativeMechanicDesc) {
-                gameData.ui.mechanicDescPopup.gameObject.SetActive(true);
-                gameData.ui.mechanicDescPopup.nameText.text = eyeUpgradeItem.relativeMechanicDesc.displayName;
-                gameData.ui.mechanicDescPopup.descText.text = eyeUpgradeItem.relativeMechanicDesc.description;
-                gameData.ui.mechanicDescPopup.transform.position = gameData.ui.itemDescPopup.rectTransform.WorldRect().min;
+                ui.mechanicDescPopup.gameObject.SetActive(true);
+                ui.mechanicDescPopup.nameText.text = eyeUpgradeItem.relativeMechanicDesc.displayName;
+                ui.mechanicDescPopup.descText.text = eyeUpgradeItem.relativeMechanicDesc.description;
+                ui.mechanicDescPopup.transform.position = ui.itemDescPopup.rectTransform.WorldRect().min;
                 
-                gameData.ui.mechanicDescPopup.nameFitter.ForceRecalculate();
-                gameData.ui.mechanicDescPopup.descFitter.ForceRecalculate();
+                ui.mechanicDescPopup.nameFitter.ForceRecalculate();
+                ui.mechanicDescPopup.descFitter.ForceRecalculate();
                 FitPopupSize(
-                    gameData.ui.mechanicDescPopup.rectTransform,
-                    gameData.ui.mechanicDescPopup.nameText.rectTransform.rect, 
-                    gameData.ui.mechanicDescPopup.descText.rectTransform.rect
+                    ui.mechanicDescPopup.rectTransform,
+                    ui.mechanicDescPopup.nameText.rectTransform.rect, 
+                    ui.mechanicDescPopup.descText.rectTransform.rect
                 );
-                TweenPopUp(gameData.ui.mechanicDescPopup.rectTransform);
+                TweenPopUp(ui.mechanicDescPopup.rectTransform);
             } 
         }
     }
 
     private void HideInventoryItemPopup() {
-        gameData.ui.itemDescPopup.Hide();
-        gameData.ui.mechanicDescPopup.nameText.text = string.Empty;
-        gameData.ui.mechanicDescPopup.descText.text = string.Empty;
-        gameData.ui.mechanicDescPopup.gameObject.SetActive(false);
+        ui.itemDescPopup.Hide();
+        ui.mechanicDescPopup.nameText.text = string.Empty;
+        ui.mechanicDescPopup.descText.text = string.Empty;
+        ui.mechanicDescPopup.gameObject.SetActive(false);
     }
     
     private void CheckToMoveItem(InventoryHoverInfo invHoverInfo) {
-        if (!gameData.input.moveStack.WasPressedThisFrame()) return;
+        if (!input.moveStack.WasPressedThisFrame()) return;
 
         Inventory hoveredInventory = invHoverInfo.inventory;
         if (hoveredInventory == null) return;
@@ -344,40 +344,40 @@ public partial class Game {
         Inventory destinationInventory = null;
         
         if (InRaid) {
-            if (hoveredInventory == gameData.inventories.player && LootInventoryIsOpen) {
-                destinationInventory = gameData.inventories.lootPtr;
+            if (hoveredInventory == inventories.player && LootInventoryIsOpen) {
+                destinationInventory = inventories.lootPtr;
             }
-            else if (hoveredInventory == gameData.inventories.lootPtr) {
-                destinationInventory = gameData.inventories.player;
+            else if (hoveredInventory == inventories.lootPtr) {
+                destinationInventory = inventories.player;
             }
         }
         else if (OnCharacterTab) {
-            if (hoveredInventory == gameData.inventories.player) {
-                destinationInventory = gameData.inventories.stash;
+            if (hoveredInventory == inventories.player) {
+                destinationInventory = inventories.stash;
             }
-            else if (hoveredInventory == gameData.inventories.stash) {
-                destinationInventory = gameData.inventories.player;
+            else if (hoveredInventory == inventories.stash) {
+                destinationInventory = inventories.player;
             }
         }
         else if (OnEyeForgeTab) {
-            if (hoveredInventory == gameData.inventories.stash) {
-                bool hoveredItemIsDemonEye = hoveredItem.ItemRef.type == gameData.itemTypes.demonEye;
-                destinationInventory = hoveredItemIsDemonEye ? gameData.inventories.player : gameData.inventories.eyeForge;
+            if (hoveredInventory == inventories.stash) {
+                bool hoveredItemIsDemonEye = hoveredItem.ItemRef.type == itemTypes.demonEye;
+                destinationInventory = hoveredItemIsDemonEye ? inventories.player : inventories.eyeForge;
             }
-            else if (hoveredInventory == gameData.inventories.eyeForge) {
-                destinationInventory = gameData.inventories.stash;
+            else if (hoveredInventory == inventories.eyeForge) {
+                destinationInventory = inventories.stash;
             }
-            else if (hoveredInventory == gameData.inventories.player) {
-                destinationInventory = gameData.inventories.stash;
+            else if (hoveredInventory == inventories.player) {
+                destinationInventory = inventories.stash;
             }
         }
         else if (OnTradingTab) {
             if (transactionState == TransactionState.Selling) {
-                if (hoveredInventory == gameData.inventories.stash) {
-                    destinationInventory = gameData.inventories.transaction;
+                if (hoveredInventory == inventories.stash) {
+                    destinationInventory = inventories.transaction;
                 }
-                else if (hoveredInventory == gameData.inventories.transaction) {
-                    destinationInventory = gameData.inventories.stash;
+                else if (hoveredInventory == inventories.transaction) {
+                    destinationInventory = inventories.stash;
                 }
             }
         }
@@ -387,9 +387,9 @@ public partial class Game {
     }
 
     private void CheckToConsumeItem(InventoryHoverInfo invHoverInfo) {
-        if (!gameData.input.useItem.WasPressedThisFrame()) return;
+        if (!input.useItem.WasPressedThisFrame()) return;
         if (!TryGetItemFromHoverInfo(invHoverInfo, out ItemInstance hoveredItem)) return;
-        if (hoveredItem.ItemRef.type != gameData.itemTypes.quickUse) return;
+        if (hoveredItem.ItemRef.type != itemTypes.quickUse) return;
         HavePlayerConsumeItem(invHoverInfo.inventory, invHoverInfo.slotIndex);
     }
 
@@ -424,10 +424,10 @@ public partial class Game {
         // Because we wait to reduce the consumed inventory item count until the consuming tween has finished,
         // we can't drag it from its slot, why not just use decrement a reference to InventoryItem? Because when moving it 
         // between inventories the item reference may become stale.
-        if (playerConsumingTween.isAlive && info.inventory == consumingInventory && info.slotIndex == consumingSlotIndex) {
+        if (player.consumingTween.isAlive && info.inventory == player.consumingInventory && info.slotIndex == player.consumingSlotIndex) {
             return true;
         }
-        if (info.inventory == gameData.inventories.eyeForge && PlayingForgeAnimation) {
+        if (info.inventory == inventories.eyeForge && PlayingForgeAnimation) {
             return true;
         }
         return false;
@@ -435,7 +435,7 @@ public partial class Game {
     
     private void SpawnUiSlots(RectTransform parent, int numSlots, GameObject slotPrefab = null) {
         for (int i = 0; i < numSlots; i++) {
-            Instantiate(slotPrefab ? slotPrefab : gameData.prefabs.inventorySlot, Vector3.zero, Quaternion.identity, parent);
+            Instantiate(slotPrefab ? slotPrefab : prefabs.inventorySlot, Vector3.zero, Quaternion.identity, parent);
         }
     }
     
@@ -446,7 +446,7 @@ public partial class Game {
         };
         inventory.slots.InitalizeWithDefault();
         LinkInventoryWithUiSlots(inventory);
-        gameData.inventories.all.Add(inventory);
+        inventories.all.Add(inventory);
         return inventory;
     }
 
@@ -477,13 +477,13 @@ public partial class Game {
     }
 
     private bool IsEquipmentSlot(Inventory inventory, int slotIndex) {
-        return inventory == gameData.inventories.player && slotIndex < playerEquipmentSize;
+        return inventory == inventories.player && slotIndex < playerEquipmentSize;
     }
     
     private bool EquipedBackpackHasItems() {
         int startingIndex = NakedPlayerInventorySize;
-        for (int i = startingIndex; i < gameData.inventories.player.slots.Length; i++) {
-            if (gameData.inventories.player.slots[i].itemInstance != null) {
+        for (int i = startingIndex; i < inventories.player.slots.Length; i++) {
+            if (inventories.player.slots[i].itemInstance != null) {
                 return true;
             }
         }
@@ -491,7 +491,7 @@ public partial class Game {
     }
     
     private bool ClickedOnEquipedBackpackWithItems(Inventory inventory, int slotIndex) {
-        if (inventory.slots[slotIndex].itemInstance.ItemRef.type != gameData.itemTypes.backpack) {
+        if (inventory.slots[slotIndex].itemInstance.ItemRef.type != itemTypes.backpack) {
             return false;
         }
         return IsEquipmentSlot(inventory, slotIndex) && EquipedBackpackHasItems();
@@ -502,13 +502,13 @@ public partial class Game {
     private ItemInstance prevEquippedTrinketItemInstance;
     
     private void CheckForEquipmentChange() {
-        ItemInstance curEyeItemInstance = gameData.inventories.player.slots[0].itemInstance;
-        ItemInstance curBackpackItemInstance = gameData.inventories.player.slots[1].itemInstance;
-        ItemInstance curTrinketItemInstance = gameData.inventories.player.slots[2].itemInstance;
+        ItemInstance curEyeItemInstance = inventories.player.slots[0].itemInstance;
+        ItemInstance curBackpackItemInstance = inventories.player.slots[1].itemInstance;
+        ItemInstance curTrinketItemInstance = inventories.player.slots[2].itemInstance;
 
         if (prevEquippedEyeItemInstance != curEyeItemInstance) {
             prevEquippedEyeItemInstance = curEyeItemInstance;
-            gameData.demonEye.equiped = curEyeItemInstance == null ? gameData.demonEye.empty : gameData.demonEye.instanceFromItemId[curEyeItemInstance.itemOrInstanceUuid];
+            demonEye.equiped = curEyeItemInstance == null ? demonEye.empty : demonEye.instanceFromItemId[curEyeItemInstance.itemOrInstanceUuid];
             OnDemonEyeEquipmentChanged();
         }
         
@@ -517,10 +517,10 @@ public partial class Game {
             if (curBackpackItemInstance != null) {
                 Assert.IsTrue(curBackpackItemInstance.ItemRef is BackpackItem);
                 int backpackSize = (curBackpackItemInstance.ItemRef as BackpackItem)!.additionalStorageSlots;
-                ChangeInventorySize(gameData.inventories.player, NakedPlayerInventorySize + backpackSize);
+                ChangeInventorySize(inventories.player, NakedPlayerInventorySize + backpackSize);
             }
             else {
-                ChangeInventorySize(gameData.inventories.player, NakedPlayerInventorySize);
+                ChangeInventorySize(inventories.player, NakedPlayerInventorySize);
             }
         }
         
@@ -546,7 +546,7 @@ public partial class Game {
         InventoryHoverInfo info = new();
         Vector2 mousePos = Mouse.current.position.ReadValue();
         
-        foreach (Inventory inventory in gameData.inventories.all) {
+        foreach (Inventory inventory in inventories.all) {
             if (!inventory.parent.gameObject.activeInHierarchy) continue;
             
             Vector2 localMousePos = inventory.parent.InverseTransformPoint(mousePos);
@@ -589,15 +589,15 @@ public partial class Game {
     private bool IsDraggingItem => dragItemInstance != null;
 
     private bool UpdateInventoryDragAndDrop(InventoryHoverInfo hoverInfo) {
-        bool pickupInputUsed = gameData.input.selectItem.WasPressedThisFrame() || gameData.input.splitStack.WasPressedThisFrame();
-        bool placeInputUsed = gameData.input.selectItem.WasPressedThisFrame() || gameData.input.placeSingleItem.WasPressedThisFrame();
+        bool pickupInputUsed = input.selectItem.WasPressedThisFrame() || input.splitStack.WasPressedThisFrame();
+        bool placeInputUsed = input.selectItem.WasPressedThisFrame() || input.placeSingleItem.WasPressedThisFrame();
         
         if (!pickupInputUsed && !placeInputUsed) {
             return IsDraggingItem;
         }
 
         // We don't allow trader items to be picked up
-        if (hoverInfo.inventory == gameData.inventories.trader && !IsDraggingItem) {
+        if (hoverInfo.inventory == inventories.trader && !IsDraggingItem) {
             if (TryGetItemFromHoverInfo(hoverInfo, out ItemInstance item)) {
                 SetTradingItem(item); 
             }
@@ -605,8 +605,8 @@ public partial class Game {
         }
 
         // If we are putting trader items back, then we also don't want to pick up the items
-        if (!IsDraggingItem && hoverInfo.inventory == gameData.inventories.transaction && transactionState == TransactionState.Buying) {
-            MoveItemBetweenInventories(gameData.inventories.transaction, gameData.inventories.trader, hoverInfo.slotIndex, MoveItemOption.Single);
+        if (!IsDraggingItem && hoverInfo.inventory == inventories.transaction && transactionState == TransactionState.Buying) {
+            MoveItemBetweenInventories(inventories.transaction, inventories.trader, hoverInfo.slotIndex, MoveItemOption.Single);
             return IsDraggingItem;
         }
         
@@ -624,7 +624,7 @@ public partial class Game {
                 return IsDraggingItem;
             }
 
-            bool splittingStack = gameData.input.splitStack.WasPressedThisFrame() && item.count > 1;
+            bool splittingStack = input.splitStack.WasPressedThisFrame() && item.count > 1;
             if (splittingStack) {
                 int firstHalf = item.count / 2;
                 int secondHalf = item.count - firstHalf;
@@ -640,16 +640,16 @@ public partial class Game {
             }
 
             startDragInfo = hoverInfo;
-            gameData.ui.dragAndDropItemUI.gameObject.SetActive(true);
-            gameData.ui.dragAndDropItemUI.SetItem(dragItemInstance.ItemRef, dragItemInstance.count);
-            TweenItemMove(gameData.ui.dragAndDropItemUI);
+            ui.dragAndDropItemUI.gameObject.SetActive(true);
+            ui.dragAndDropItemUI.SetItem(dragItemInstance.ItemRef, dragItemInstance.count);
+            TweenItemMove(ui.dragAndDropItemUI);
         }
 
         bool placingItem = !pickingUpItem;
         if (placingItem && placeInputUsed) {
             bool droppingItemInHideout = hoverInfo.inventory == null && InHideout;
-            bool tryingToPlaceItemToSellWhileBuying = hoverInfo.inventory == gameData.inventories.transaction && transactionState == TransactionState.Buying;
-            bool tryingToPlaceInTraderInventory = hoverInfo.inventory == gameData.inventories.trader;
+            bool tryingToPlaceItemToSellWhileBuying = hoverInfo.inventory == inventories.transaction && transactionState == TransactionState.Buying;
+            bool tryingToPlaceInTraderInventory = hoverInfo.inventory == inventories.trader;
             
             if (droppingItemInHideout || tryingToPlaceItemToSellWhileBuying || tryingToPlaceInTraderInventory) {
                 TryAddItemToInventory(startDragInfo.inventory, dragItemInstance, startDragInfo.slotIndex);
@@ -659,7 +659,7 @@ public partial class Game {
 
             bool droppingItemInRaid = hoverInfo.inventory == null && InRaid;
             if (droppingItemInRaid) {
-                bool droppingEntireStack = gameData.input.selectItem.WasPressedThisFrame();
+                bool droppingEntireStack = input.selectItem.WasPressedThisFrame();
                 if (droppingEntireStack) {
                     DropItemFromInventory(dragItemInstance);
                     dragItemInstance.count = 0;
@@ -667,7 +667,7 @@ public partial class Game {
                 else {
                     DropItemFromInventory(dragItemInstance, 1);
                     dragItemInstance.count--;
-                    gameData.ui.dragAndDropItemUI.UpdateCount(dragItemInstance.count);
+                    ui.dragAndDropItemUI.UpdateCount(dragItemInstance.count);
                 }
 
                 if (dragItemInstance.count <= 0) {
@@ -679,7 +679,7 @@ public partial class Game {
             bool swappingItems = false;
             if (TryGetItemFromHoverInfo(hoverInfo, out ItemInstance swapItem)) {
                 bool itemsCanSwap = swapItem != dragItemInstance || (swapItem.IsFullStack || dragItemInstance.IsFullStack);
-                swappingItems = itemsCanSwap && gameData.input.selectItem.WasPressedThisFrame();
+                swappingItems = itemsCanSwap && input.selectItem.WasPressedThisFrame();
             }
             
             if (swappingItems && IsHoveredItemGrayedOut(hoverInfo)) {
@@ -697,13 +697,13 @@ public partial class Game {
 
                 targetSlot.itemInstance = dragItemInstance;
                 dragItemInstance = swapItem;
-                gameData.ui.dragAndDropItemUI.SetItem(dragItemInstance.ItemRef, dragItemInstance.count);
-                TweenItemMove(gameData.ui.dragAndDropItemUI);
+                ui.dragAndDropItemUI.SetItem(dragItemInstance.ItemRef, dragItemInstance.count);
+                TweenItemMove(ui.dragAndDropItemUI);
 
                 return IsDraggingItem;
             }
 
-            bool placingSingleItemFromStack = gameData.input.placeSingleItem.WasPressedThisFrame();
+            bool placingSingleItemFromStack = input.placeSingleItem.WasPressedThisFrame();
             if (placingSingleItemFromStack) {
                 InventoryAddResult result = TryAddItemToInventory(hoverInfo.inventory, dragItemInstance.ItemRef, 1, hoverInfo.slotIndex);
 
@@ -712,8 +712,8 @@ public partial class Game {
                     EndDragAndDropItem();
                 }
                 else {
-                    gameData.ui.dragAndDropItemUI.SetItem(dragItemInstance.ItemRef, dragItemInstance.count);
-                    TweenItemMove(gameData.ui.dragAndDropItemUI);
+                    ui.dragAndDropItemUI.SetItem(dragItemInstance.ItemRef, dragItemInstance.count);
+                    TweenItemMove(ui.dragAndDropItemUI);
                 }
             }
 
@@ -726,8 +726,8 @@ public partial class Game {
                 }
                 else if (result.type == InventoryAddResult.ResultType.FailureToAddAll) {
                     dragItemInstance.count -= result.addedCount;
-                    gameData.ui.dragAndDropItemUI.SetItem(dragItemInstance.ItemRef, dragItemInstance.count);
-                    TweenItemMove(gameData.ui.dragAndDropItemUI);
+                    ui.dragAndDropItemUI.SetItem(dragItemInstance.ItemRef, dragItemInstance.count);
+                    TweenItemMove(ui.dragAndDropItemUI);
                 }
             }
         }
@@ -736,7 +736,7 @@ public partial class Game {
     }
 
     private void DropItemFromInventory(ItemInstance itemInstance, int count = -1) {
-        Vector2 mouseWorldPos = gameData.camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+        Vector2 mouseWorldPos = camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
         Vector2 dropDir = (mouseWorldPos - (Vector2)player.position).normalized;
         
         int dropCount = count == -1 ? itemInstance.count : count;
@@ -750,14 +750,14 @@ public partial class Game {
     private void UpdateDragAndDropItemToCursor() {
         if (dragItemInstance == null) return;
         Vector2 mousePos = Mouse.current.position.ReadValue();
-        gameData.ui.dragAndDropItemUI.GetComponent<RectTransform>().position = mousePos;
+        ui.dragAndDropItemUI.GetComponent<RectTransform>().position = mousePos;
     }
     
     private void EndDragAndDropItem() {
         if (dragItemInstance == null) return;
         dragItemInstance = null;
-        gameData.ui.dragAndDropItemUI.ClearItem();
-        gameData.ui.dragAndDropItemUI.gameObject.SetActive(false);
+        ui.dragAndDropItemUI.ClearItem();
+        ui.dragAndDropItemUI.gameObject.SetActive(false);
     }
 
     public struct InventoryAddResult {
@@ -774,7 +774,7 @@ public partial class Game {
     public InventoryAddResult TryAddItemToInventory(Inventory inventory, ItemInstance itemInstance, int slotIndex = -1) {
         InventoryAddResult result = new() { type = InventoryAddResult.ResultType.Failure };
         
-        bool allowInfiniteStacking = inventory == gameData.inventories.trader;
+        bool allowInfiniteStacking = inventory == inventories.trader;
         bool droppingItemInSpecificSlot = slotIndex != -1;
 
         using var _ = ListPool<InventorySlot>.Get(out List<InventorySlot> availableSlots);
@@ -860,7 +860,7 @@ public partial class Game {
         if (itemInstance == null || itemInstance.notDiscovered) return;
 
         int specificSlotToMoveTo = -1;
-        if (fromInventory == gameData.inventories.transaction && toInventory == gameData.inventories.trader) {
+        if (fromInventory == inventories.transaction && toInventory == inventories.trader) {
             specificSlotToMoveTo = itemInstance.traderSlotIndex;
         }
         
@@ -897,7 +897,7 @@ public partial class Game {
         for (int i = 0; i < inventory.slots.Length; i++) {
             RemoveItemFromInventory(inventory, i);
         }
-        if (inventory == gameData.inventories.player) {
+        if (inventory == inventories.player) {
             CheckForEquipmentChange();
         }
     }
@@ -930,10 +930,10 @@ public partial class Game {
     }
 
     private void RemoveNumberOfOwnedItems(Item item, int count) {
-        int removedCount = RemoveNumberOfItemsFromInventory(gameData.inventories.stash, item, count);
+        int removedCount = RemoveNumberOfItemsFromInventory(inventories.stash, item, count);
         if (removedCount != count) {
             int additionalRemoveCount = count - removedCount;
-            removedCount += RemoveNumberOfItemsFromInventory(gameData.inventories.player, item, additionalRemoveCount);
+            removedCount += RemoveNumberOfItemsFromInventory(inventories.player, item, additionalRemoveCount);
         }
         Assert.IsTrue(removedCount == count, "Did not remove the specified number of item, this is bad");
     }
@@ -980,17 +980,17 @@ public partial class Game {
     }
 
     private void RefreshAllInventoryDisplays() {
-        foreach (Inventory inventory in gameData.inventories.all) {
+        foreach (Inventory inventory in inventories.all) {
             RefreshInventoryDisplay(inventory);
         }
     }
     
     private void UpdateGraySlots() {
         if (OnEyeForgeTab) {
-            foreach (InventorySlot slot in gameData.inventories.stash.slots) {
+            foreach (InventorySlot slot in inventories.stash.slots) {
                 if (slot.itemInstance == null) continue;
                 Item item = slot.itemInstance.ItemRef;
-                if (item.type != gameData.itemTypes.eye && item.type != gameData.itemTypes.eyeUpgrade) {
+                if (item.type != itemTypes.eye && item.type != itemTypes.eyeUpgrade) {
                     slot.ui.itemUI.ToggleGray();
                 }
             }
@@ -1019,15 +1019,15 @@ public partial class Game {
 
     public int GetOwnedCountOfItem(Item item) {
         int itemCount = 0;
-        itemCount += GetItemCountInInventory(gameData.inventories.stash, item);
-        itemCount += GetItemCountInInventory(gameData.inventories.player, item);
+        itemCount += GetItemCountInInventory(inventories.stash, item);
+        itemCount += GetItemCountInInventory(inventories.player, item);
         return itemCount;
     }
 
     private bool MeetsSingleUpgradeRequirement(UpgradePath.Requirement req) {
         int itemCount = 0;
-        itemCount += GetItemCountInInventory(gameData.inventories.stash, req.item);
-        itemCount += GetItemCountInInventory(gameData.inventories.player, req.item);
+        itemCount += GetItemCountInInventory(inventories.stash, req.item);
+        itemCount += GetItemCountInInventory(inventories.player, req.item);
         return itemCount >= req.count; 
     }
 
@@ -1048,10 +1048,10 @@ public partial class Game {
             if (slot.itemInstance == null) continue;
             switch (valueType) {
                 case InventoryValueType.Buy:
-                    value += slot.itemInstance.ItemRef.type == gameData.itemTypes.demonEye ? GetDemonEyeSellPrice(slot.itemInstance) : slot.itemInstance.ItemRef.buyPrice * slot.itemInstance.count;
+                    value += slot.itemInstance.ItemRef.type == itemTypes.demonEye ? GetDemonEyeSellPrice(slot.itemInstance) : slot.itemInstance.ItemRef.buyPrice * slot.itemInstance.count;
                     break;
                 case InventoryValueType.Sell:
-                    value += slot.itemInstance.ItemRef.type == gameData.itemTypes.demonEye ? GetDemonEyeSellPrice(slot.itemInstance) : slot.itemInstance.ItemRef.GetSellPrice() * slot.itemInstance.count;
+                    value += slot.itemInstance.ItemRef.type == itemTypes.demonEye ? GetDemonEyeSellPrice(slot.itemInstance) : slot.itemInstance.ItemRef.GetSellPrice() * slot.itemInstance.count;
                     break;
             }
         }
@@ -1059,12 +1059,12 @@ public partial class Game {
     }
 
     private void OpenPlayerInventory() {
-        playerPanel.gameObject.SetActive(true);
+        playerPanel.panel.gameObject.SetActive(true);
         Cursor.visible = true;
     }
 
     private void ClosePlayerInventory() {
-        playerPanel.gameObject.SetActive(false);
+        playerPanel.panel.gameObject.SetActive(false);
         Cursor.visible = false;
         EndDragAndDropItem();
     }

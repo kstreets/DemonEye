@@ -22,7 +22,7 @@ public class TestingInventory : ScriptableObject {
         
         Game gameManager = FindAnyObjectByType(typeof(Game)) as Game;
         foreach (TestItemInstance inventoryItem in items) {
-            gameManager?.TryAddItemToInventory(gameManager.gameData.inventories.player, inventoryItem.item, inventoryItem.count);
+            gameManager?.TryAddItemToInventory(gameManager.inventories.player, inventoryItem.item, inventoryItem.count);
         }
     }
     
@@ -35,7 +35,7 @@ public class TestingInventory : ScriptableObject {
         
         Game gameManager = FindAnyObjectByType(typeof(Game)) as Game;
         foreach (TestItemInstance inventoryItem in items) {
-            gameManager?.TryAddItemToInventory(gameManager.gameData.inventories.stash, inventoryItem.item, inventoryItem.count);
+            gameManager?.TryAddItemToInventory(gameManager.inventories.stash, inventoryItem.item, inventoryItem.count);
         }
     }
 

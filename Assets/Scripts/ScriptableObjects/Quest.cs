@@ -144,7 +144,7 @@ public class Quest : ScriptableObject {
             objective.progressValue = objective.targetValue;
             // For fetch quests we need to actually have the items to complete it properly
             if (objective.type == Objective.Type.Fetch) {
-                gameInstance.TryAddItemToInventory(gameInstance.gameData.inventories.stash, objective.targetItem, objective.targetValue);
+                gameInstance.TryAddItemToInventory(gameInstance.inventories.stash, objective.targetItem, objective.targetValue);
             }
         }
         gameInstance.RefreshQuestDisplays();

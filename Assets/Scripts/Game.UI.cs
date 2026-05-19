@@ -12,8 +12,8 @@ public partial class Game {
         CloseHideoutUI();
         CloseRaidUI();
         ShowMainMenuUI();
-        gameData.ui.menuBackButton.gameObject.SetActive(false);
-        gameData.ui.largeRaidTextTypewriter.gameObject.SetActive(false);
+        ui.menuBackButton.gameObject.SetActive(false);
+        ui.largeRaidTextTypewriter.gameObject.SetActive(false);
     }
 
     private Sequence mainMenuSequence;
@@ -22,11 +22,11 @@ public partial class Game {
         if (mainMenuSequence.isAlive) return;
         
         float halfScreenHeight = Screen.height / 2f;
-        var logo = gameData.mainMenu.logo;
-        var playButton = gameData.mainMenu.playButton;
-        var hideoutButton = gameData.mainMenu.hideoutButton;
-        var settingsButton = gameData.mainMenu.settingsButton;
-        var exitButton = gameData.mainMenu.exitButton;
+        var logo = mainMenu.logo;
+        var playButton = mainMenu.playButton;
+        var hideoutButton = mainMenu.hideoutButton;
+        var settingsButton = mainMenu.settingsButton;
+        var exitButton = mainMenu.exitButton;
         
         mainMenuSequence = Sequence.Create();
         mainMenuSequence.Group(Tween.UIAnchoredPositionY(logo, halfScreenHeight, logo.anchoredPosition.y, 0.8f, Ease.OutExpo));
@@ -42,22 +42,22 @@ public partial class Game {
     }
 
     private void ShowMainMenuUI() {
-        gameData.ui.hideoutParent.gameObject.SetActive(true);
-        gameData.ui.animatedBgImage.gameObject.SetActive(true);
-        gameData.mainMenu.parent.gameObject.SetActive(true);
+        ui.hideoutParent.gameObject.SetActive(true);
+        ui.animatedBgImage.gameObject.SetActive(true);
+        mainMenu.parent.gameObject.SetActive(true);
         AnimateInMainMenu();
     }
 
     private void CloseMainMenuUI() {
-        gameData.ui.animatedBgImage.gameObject.SetActive(false);
-        gameData.mainMenu.parent.gameObject.SetActive(false);
+        ui.animatedBgImage.gameObject.SetActive(false);
+        mainMenu.parent.gameObject.SetActive(false);
     }
 
     private void ShowMapSelectionUI() {
         ShowHideoutUI();
-        gameData.hideoutTabs.parent.gameObject.SetActive(false);
-        playerInfoParent.gameObject.SetActive(false);
-        ToggleHideoutPanels(playerPanel, mapSelectionPanel);
+        hideoutTabs.parent.gameObject.SetActive(false);
+        playerInfo.parent.gameObject.SetActive(false);
+        ToggleHideoutPanels(playerPanel.panel, mapSelectionPanel.panel);
     }
 
     private void CloseMapSelectionUI() {
@@ -65,81 +65,81 @@ public partial class Game {
     }
     
     private void ShowHideoutUI() {
-        ToggleHideoutTab(gameData.hideoutTabs.characterButton, gameData.hideoutTabs.characterText);
-        ToggleHideoutPanels(playerPanel, stashPanel);
-        gameData.ui.menuBackButton.gameObject.SetActive(true);
-        coinsCurrencyParent.gameObject.SetActive(true);
-        soulsCurrencyParent.gameObject.SetActive(true);
-        healthBarParent.gameObject.SetActive(false);
-        weightBarParent.gameObject.SetActive(false);
-        playerInfoParent.gameObject.SetActive(true);
-        gameData.ui.animatedBgImage.gameObject.SetActive(true);
-        gameData.hideoutTabs.parent.gameObject.SetActive(true);
+        ToggleHideoutTab(hideoutTabs.characterButton, hideoutTabs.characterText);
+        ToggleHideoutPanels(playerPanel.panel, stashPanel.panel);
+        ui.menuBackButton.gameObject.SetActive(true);
+        playerInfo.coinsCurrencyParent.gameObject.SetActive(true);
+        playerInfo.soulsCurrencyParent.gameObject.SetActive(true);
+        playerInfo.healthBarParent.gameObject.SetActive(false);
+        playerInfo.weightBarParent.gameObject.SetActive(false);
+        playerInfo.parent.gameObject.SetActive(true);
+        ui.animatedBgImage.gameObject.SetActive(true);
+        hideoutTabs.parent.gameObject.SetActive(true);
     }
 
     private void CloseHideoutUI() {
         ToggleHideoutPanels();
         HideInventoryItemPopup(); 
         HideUIElementPopup();
-        gameData.ui.menuBackButton.gameObject.SetActive(false);
-        playerInfoParent.gameObject.SetActive(false);
-        gameData.ui.animatedBgImage.gameObject.SetActive(false);
-        gameData.hideoutTabs.parent.gameObject.SetActive(false);
+        ui.menuBackButton.gameObject.SetActive(false);
+        playerInfo.parent.gameObject.SetActive(false);
+        ui.animatedBgImage.gameObject.SetActive(false);
+        hideoutTabs.parent.gameObject.SetActive(false);
     }
 
     private void ShowRaidUI() {
-        healthBarParent.gameObject.SetActive(true);
-        weightBarParent.gameObject.SetActive(true);
-        coinsCurrencyParent.gameObject.SetActive(false);
-        soulsCurrencyParent.gameObject.SetActive(true);
-        playerInfoParent.gameObject.SetActive(true);
-        raidInfoPanelParent.SetActive(true);
-        gameData.ui.hotBarParent.gameObject.SetActive(true);
+        playerInfo.healthBarParent.gameObject.SetActive(true);
+        playerInfo.weightBarParent.gameObject.SetActive(true);
+        playerInfo.coinsCurrencyParent.gameObject.SetActive(false);
+        playerInfo.soulsCurrencyParent.gameObject.SetActive(true);
+        playerInfo.parent.gameObject.SetActive(true);
+        raidInfo.parent.SetActive(true);
+        ui.hotBarParent.gameObject.SetActive(true);
     }
 
     private void CloseRaidUI() {
         HideInventoryItemPopup(); 
         HideUIElementPopup();
-        interactPrompt.gameObject.SetActive(false);
-        interactionDetails.gameObject.SetActive(false);
-        playerInfoParent.gameObject.SetActive(false);
-        raidInfoPanelParent.SetActive(false);
-        portalArrow.gameObject.SetActive(false);
-        gameData.ui.hotBarParent.gameObject.SetActive(false);
+        ui.interactPrompt.gameObject.SetActive(false);
+        ui.interactionDetails.gameObject.SetActive(false);
+        playerInfo.parent.gameObject.SetActive(false);
+        raidInfo.parent.SetActive(false);
+        ui.portalArrow.gameObject.SetActive(false);
+        ui.hotBarParent.gameObject.SetActive(false);
     }
 
     private void ToggleHideoutTab(Button button, TextMeshProUGUI text) {
-        Sprite tabSelectedSprite = gameData.hideoutTabs.selectedSprite;
-        Sprite tabNonSelectedSprite = gameData.hideoutTabs.nonSelectedSprite;
+        Sprite tabSelectedSprite = hideoutTabs.selectedSprite;
+        Sprite tabNonSelectedSprite = hideoutTabs.nonSelectedSprite;
         
-        gameData.hideoutTabs.characterButton.image.sprite = tabNonSelectedSprite;
-        gameData.hideoutTabs.eyeForgeButton.image.sprite = tabNonSelectedSprite;
-        gameData.hideoutTabs.traderButton.image.sprite = tabNonSelectedSprite;
-        gameData.hideoutTabs.questsButton.image.sprite = tabNonSelectedSprite;
-        gameData.hideoutTabs.skillsButton.image.sprite = tabNonSelectedSprite;
+        hideoutTabs.characterButton.image.sprite = tabNonSelectedSprite;
+        hideoutTabs.eyeForgeButton.image.sprite = tabNonSelectedSprite;
+        hideoutTabs.traderButton.image.sprite = tabNonSelectedSprite;
+        hideoutTabs.questsButton.image.sprite = tabNonSelectedSprite;
+        hideoutTabs.skillsButton.image.sprite = tabNonSelectedSprite;
         
-        gameData.hideoutTabs.characterText.margin = Styles.instance.nonSelectedHideoutTabMargin;
-        gameData.hideoutTabs.eyeForgeText.margin = Styles.instance.nonSelectedHideoutTabMargin;
-        gameData.hideoutTabs.traderText.margin = Styles.instance.nonSelectedHideoutTabMargin;
-        gameData.hideoutTabs.questsText.margin = Styles.instance.nonSelectedHideoutTabMargin;
-        gameData.hideoutTabs.skillsText.margin = Styles.instance.nonSelectedHideoutTabMargin;
+        hideoutTabs.characterText.margin = Styles.instance.nonSelectedHideoutTabMargin;
+        hideoutTabs.eyeForgeText.margin = Styles.instance.nonSelectedHideoutTabMargin;
+        hideoutTabs.traderText.margin = Styles.instance.nonSelectedHideoutTabMargin;
+        hideoutTabs.questsText.margin = Styles.instance.nonSelectedHideoutTabMargin;
+        hideoutTabs.skillsText.margin = Styles.instance.nonSelectedHideoutTabMargin;
         
         button.image.sprite = tabSelectedSprite;
         text.margin = Styles.instance.selectedHideoutTabMargin;
     }
 
     private void ToggleHideoutPanels(params RectTransform[] panels) {
-        playerPanel.gameObject.SetActive(false);
-        stashPanel.gameObject.SetActive(false);
-        eyeForgePanel.gameObject.SetActive(false);
-        forgeDetailsPanel.gameObject.SetActive(false);
-        lootInventoryPanel.gameObject.SetActive(false);
-        traderInventoryPanel.gameObject.SetActive(false);
-        traderTransactionPanel.gameObject.SetActive(false);
-        questsPanel.gameObject.SetActive(false);
-        skillsPanel.gameObject.SetActive(false);
-        playerStatsPanel.gameObject.SetActive(false);
-        mapSelectionPanel.gameObject.SetActive(false);
+        playerPanel.panel.gameObject.SetActive(false);
+        stashPanel.panel.gameObject.SetActive(false);
+        eyeForgePanel.panel.gameObject.SetActive(false);
+        eyeForgeDetailsPanel.panel.gameObject.SetActive(false);
+        ui.lootInventoryPanel.gameObject.SetActive(false);
+        traderPanel.panel.gameObject.SetActive(false);
+        transactionPanel.panel.gameObject.SetActive(false);
+        questsPanel.panel.gameObject.SetActive(false);
+        skillsPanel.panel.gameObject.SetActive(false);
+        skillsPanel.playerStatsPanel.gameObject.SetActive(false);
+        mapSelectionPanel.panel.gameObject.SetActive(false);
         
         foreach (RectTransform rect in panels) {
             rect.gameObject.SetActive(true);
@@ -152,103 +152,103 @@ public partial class Game {
     
     private void UpdateCurrencyNumbers() {
         if (prevSoulCurrency != player.soulCurrency) {
-            soulsCurrencyText.text = player.soulCurrency.ToString("N0");
+            playerInfo.soulsCurrencyText.text = player.soulCurrency.ToString("N0");
         }
         if (prevCoinCurrency != player.coinCurrency) {
-            coinCurrencyText.text = player.coinCurrency.ToString("N0");
+            playerInfo.coinCurrencyText.text = player.coinCurrency.ToString("N0");
         }
         prevSoulCurrency = player.soulCurrency;
         prevCoinCurrency = player.coinCurrency;
     }
     
     private void UpdateInRaidUI() {
-        healthBarFillImage.fillAmount = player.health / (float)FullPlayerHealth;
-        bleedDebuffIcon.gameObject.SetActive(player.bleeding);
+        playerInfo.healthBarFillImage.fillAmount = player.health / (float)FullPlayerHealth;
+        playerInfo.bleedDebuffIcon.gameObject.SetActive(player.bleeding);
         
         GetEncumberingWeightRange(out int startingEncumberingWeight, out _);
-        int inventoryWeight = GetInventoryWeight(gameData.inventories.player);
-        weightBarFillImage.fillAmount = Mathf.Clamp01(inventoryWeight / (float)startingEncumberingWeight);
+        int inventoryWeight = GetInventoryWeight(inventories.player);
+        playerInfo.weightBarFillImage.fillAmount = Mathf.Clamp01(inventoryWeight / (float)startingEncumberingWeight);
         
         float overweightComp = GetOverweightCompletion();
         if (overweightComp > 0f) {
-            weightBarFillImage.color = Color.Lerp(Styles.instance.startingOverWeightColor, Styles.instance.endingOverWeightColor, overweightComp);
+            playerInfo.weightBarFillImage.color = Color.Lerp(Styles.instance.startingOverWeightColor, Styles.instance.endingOverWeightColor, overweightComp);
         }
         else {
-            weightBarFillImage.color = Styles.instance.underWeightColor;
+            playerInfo.weightBarFillImage.color = Styles.instance.underWeightColor;
         }
         
-        if (gameData.curRaid.stateSwitchedThisFrame) {
-            if (gameData.curRaid.state == RaidState.InitialWaves) {
-                finalWaveCountdownParent.SetActive(true); 
-                exitPortalCountdownParent.SetActive(true);
-                finalWaveActiveNotifier.SetActive(false);
-                exitPortalActiveNotifier.SetActive(false);
-                finalExitPortalNotifier.SetActive(false);
+        if (curRaid.stateSwitchedThisFrame) {
+            if (curRaid.state == RaidState.InitialWaves) {
+                raidInfo.finalWaveCountdownParent.SetActive(true); 
+                raidInfo.exitPortalCountdownParent.SetActive(true);
+                raidInfo.finalWaveActiveNotifier.SetActive(false);
+                raidInfo.exitPortalActiveNotifier.SetActive(false);
+                raidInfo.finalExitPortalNotifier.SetActive(false);
             }
-            else if (gameData.curRaid.state == RaidState.FinalWave) {
-                finalWaveCountdownParent.SetActive(false); 
-                exitPortalActiveNotifier.SetActive(false);
-                finalWaveActiveNotifier.SetActive(true);
-                Tween.Scale(finalWaveActiveNotifier.transform, 0f, 1f, 0.5f, Ease.OutBack);
+            else if (curRaid.state == RaidState.FinalWave) {
+                raidInfo.finalWaveCountdownParent.SetActive(false); 
+                raidInfo.exitPortalActiveNotifier.SetActive(false);
+                raidInfo.finalWaveActiveNotifier.SetActive(true);
+                Tween.Scale(raidInfo.finalWaveActiveNotifier.transform, 0f, 1f, 0.5f, Ease.OutBack);
                 AnimateSmallRaidText(ColorText("Final Wave", Styles.instance.decreaseDescColor));
             }
-            else if (gameData.curRaid.state == RaidState.PostFinalWave) {
-                finalWaveActiveNotifier.SetActive(false);
-                finalExitPortalNotifier.SetActive(true);
-                Tween.Scale(finalExitPortalNotifier.transform, 0f, 1f, 0.5f, Ease.OutBack);
+            else if (curRaid.state == RaidState.PostFinalWave) {
+                raidInfo.finalWaveActiveNotifier.SetActive(false);
+                raidInfo.finalExitPortalNotifier.SetActive(true);
+                Tween.Scale(raidInfo.finalExitPortalNotifier.transform, 0f, 1f, 0.5f, Ease.OutBack);
             }
         }
         
-        if (exitPortalCountdownText.gameObject.activeInHierarchy) {
+        if (raidInfo.exitPortalCountdownText.gameObject.activeInHierarchy) {
             // exitPortalCountdownText.text = GetCountdownText(exitPortalTween.duration - exitPortalTween.elapsedTime);
         }
-        if (finalWaveCountdownText.gameObject.activeInHierarchy) {
-            finalWaveCountdownText.text = GetCountdownText(spawnManager.timeUntilFinalPhase);
+        if (raidInfo.finalWaveCountdownText.gameObject.activeInHierarchy) {
+            raidInfo.finalWaveCountdownText.text = GetCountdownText(spawnManager.timeUntilFinalPhase);
         }
     }
     
     private void UpdateHotBarUI() {
-        if (!gameData.ui.hotBarParent.gameObject.activeInHierarchy) return;
+        if (!ui.hotBarParent.gameObject.activeInHierarchy) return;
 
         for (int i = 0; i < playerQuickUseSize; i++) {
             int itemIndex = i + playerEquipmentSize;
-            gameData.hotBar.slotUIs[i].ClearItem();
+            hotBar.slotUIs[i].ClearItem();
 
-            ItemInstance itemInstance = gameData.inventories.player.slots[itemIndex].itemInstance;
+            ItemInstance itemInstance = inventories.player.slots[itemIndex].itemInstance;
             if (itemInstance != null) {
-                gameData.hotBar.slotUIs[i].SetItem(itemInstance.ItemRef, itemInstance.count);
+                hotBar.slotUIs[i].SetItem(itemInstance.ItemRef, itemInstance.count);
             } 
         }
     }
 
     private void AnimateLargeRaidText(string text, float typewriterSpeed) {
-        gameData.ui.largeRaidText.characterSpacing = 0;
-        gameData.ui.largeRaidText.gameObject.SetActive(true);
-        gameData.ui.largeRaidTextTypewriter.ShowText($"{{incr}}{{fade}}{{wave}}{{#fade}}{{#wave}}{text}");
-        gameData.ui.largeRaidTextTypewriter.SetTypewriterSpeed(typewriterSpeed);
+        ui.largeRaidText.characterSpacing = 0;
+        ui.largeRaidText.gameObject.SetActive(true);
+        ui.largeRaidTextTypewriter.ShowText($"{{incr}}{{fade}}{{wave}}{{#fade}}{{#wave}}{text}");
+        ui.largeRaidTextTypewriter.SetTypewriterSpeed(typewriterSpeed);
         
-        gameData.ui.largeRaidTextTypewriter.onTextShowed.AddListener(OnTypewriterFinish);
+        ui.largeRaidTextTypewriter.onTextShowed.AddListener(OnTypewriterFinish);
         
         void OnTypewriterFinish() {
             Sequence sequence = Sequence.Create();
             sequence.Chain(Tween.Custom(0, 30, 0.5f, startDelay: 0.3f, ease: Ease.OutBack, onValueChange: static (val) => {
-                gameInstance.gameData.ui.largeRaidText.characterSpacing = val;
+                gameInstance.ui.largeRaidText.characterSpacing = val;
             }));
             sequence.ChainDelay(0.35f);
-            sequence.ChainCallback(static () => gameInstance.gameData.ui.largeRaidTextTypewriter.StartDisappearingText());
+            sequence.ChainCallback(static () => gameInstance.ui.largeRaidTextTypewriter.StartDisappearingText());
         }
     }
 
     private void AnimateSmallRaidText(string text) {
-        gameData.ui.smallRaidText.gameObject.SetActive(true);
-        gameData.ui.smallRaidTextTypewriter.ShowText($"{{incr}}{{fade}}{{smallwave}}{{#fade}}{{#smallwave}}{text}");
+        ui.smallRaidText.gameObject.SetActive(true);
+        ui.smallRaidTextTypewriter.ShowText($"{{incr}}{{fade}}{{smallwave}}{{#fade}}{{#smallwave}}{text}");
         
-        gameData.ui.smallRaidTextTypewriter.onTextShowed.AddListener(OnTypewriterFinish);
+        ui.smallRaidTextTypewriter.onTextShowed.AddListener(OnTypewriterFinish);
         
         void OnTypewriterFinish() {
             Sequence sequence = Sequence.Create();
             sequence.ChainDelay(0.8f);
-            sequence.ChainCallback(static () => gameInstance.gameData.ui.smallRaidTextTypewriter.StartDisappearingText());
+            sequence.ChainCallback(static () => gameInstance.ui.smallRaidTextTypewriter.StartDisappearingText());
         }
     }
     
@@ -280,7 +280,7 @@ public partial class Game {
             endDamageNumPos = OffsetY(OffsetX(spawnPos, xOffset), yOffset);
         }
         
-        Entity damageNumber = SpawnEntity(gameData.entityPools.damageNumber, spawnPos, Quaternion.identity, damageNumbersParent);
+        Entity damageNumber = SpawnEntity(entityPools.damageNumber, spawnPos, Quaternion.identity, ui.damageNumbersParent);
         damageNumber.textMesh.text = damage.ToString();
         
         const float alpha = 0.68f;
@@ -329,7 +329,7 @@ public partial class Game {
     }
     
     private void SpawnTextPopIn(Vector3 spawnPos, string text, Vector3? endPos = default) {
-        Entity textEntity = SpawnEntity(gameData.entityPools.damageNumber, spawnPos, Quaternion.identity, damageNumbersParent);
+        Entity textEntity = SpawnEntity(entityPools.damageNumber, spawnPos, Quaternion.identity, ui.damageNumbersParent);
         textEntity.textMesh.text = text; 
         textEntity.textMesh.color = Styles.instance.popInTextColor;
         
@@ -402,22 +402,22 @@ public partial class Game {
     }
 
     private void ShowUIElementPopup(UIHoverInfo hoverInfo) {
-        if (gameData.ui.uiElementPopup.gameObject.activeInHierarchy) return;
+        if (ui.uiElementPopup.gameObject.activeInHierarchy) return;
         
-        gameData.ui.uiElementPopup.gameObject.SetActive(true);
-        TweenPopUp(gameData.ui.uiElementPopup.rectTransform);
+        ui.uiElementPopup.gameObject.SetActive(true);
+        TweenPopUp(ui.uiElementPopup.rectTransform);
         
-        gameData.ui.uiElementPopup.descFitter.ForceRecalculate();
-        FitPopupSize(gameData.ui.uiElementPopup.rectTransform, gameData.ui.uiElementPopup.descText.rectTransform.rect);
+        ui.uiElementPopup.descFitter.ForceRecalculate();
+        FitPopupSize(ui.uiElementPopup.rectTransform, ui.uiElementPopup.descText.rectTransform.rect);
         
         // Set popup position
         Vector2 hoveredCenter = hoverInfo.hoveringTransform.WorldRect().center;
         Vector2 popupOffset = new(0f, hoverInfo.hoveringTransform.rect.height);
-        gameData.ui.uiElementPopup.transform.position = hoveredCenter + popupOffset;
+        ui.uiElementPopup.transform.position = hoveredCenter + popupOffset;
     }
 
     private void HideUIElementPopup() {
-        gameData.ui.uiElementPopup.gameObject.SetActive(false);
+        ui.uiElementPopup.gameObject.SetActive(false);
     }
     
     private List<RectTransform> hoverableUIElements = new();
@@ -468,17 +468,17 @@ public partial class Game {
     }
 
     private void EnableInteractionPrompt(Vector3 position, string detailsString) {
-        interactionDetails.gameObject.SetActive(true);
-        interactionDetails.text = detailsString;
+        ui.interactionDetails.gameObject.SetActive(true);
+        ui.interactionDetails.text = detailsString;
         
-        interactPrompt.gameObject.SetActive(true);
-        interactPrompt.text = $"<sprite=5 color=#{ColorUtility.ToHtmlStringRGBA(Styles.instance.inputIconTint)}>";
-        interactPrompt.transform.position = gameData.camera.main.WorldToScreenPoint(position);
+        ui.interactPrompt.gameObject.SetActive(true);
+        ui.interactPrompt.text = $"<sprite=5 color=#{ColorUtility.ToHtmlStringRGBA(Styles.instance.inputIconTint)}>";
+        ui.interactPrompt.transform.position = camera.main.WorldToScreenPoint(position);
     }
     
     private void DisableInteractionPrompt() {
-        interactPrompt.gameObject.SetActive(false);
-        interactionDetails.gameObject.SetActive(false);
+        ui.interactPrompt.gameObject.SetActive(false);
+        ui.interactionDetails.gameObject.SetActive(false);
         
     }
 

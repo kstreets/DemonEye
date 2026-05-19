@@ -42,6 +42,10 @@ public partial class Game {
         public float lastShotTime;
         public int consecutiveShotCount;
         public float curStepDistance;
+        
+        public Tween consumingTween;
+        public Inventory consumingInventory;
+        public int consumingSlotIndex;
 
         public Sprite defaultPlayerPreviewSprite;
 
@@ -50,8 +54,6 @@ public partial class Game {
             HealingAmount, HealingSpeed, LootingSpeed, MovementSpeedPercentage, ProjectileCount, RangePercentage,
         }
     }
-    
-    public Player player;
     
     public struct Trinkets {
         public Trinket current;
@@ -63,11 +65,11 @@ public partial class Game {
     private Trinkets trinkets;
 
     private Player MakePlayer() {
-        player = SpawnEntity<Player>(gameData.prefabs.player, Vector3.zero, Quaternion.identity, null, EntityLifetime.Global);
-        LoadAndAssignPlayerSaveData(player);
-        player.hurtCollider = player.gameObject.GetComponentInChildren<CapsuleCollider2D>();
-        player.defaultPlayerPreviewSprite = playerPreviewImage.sprite;
-        return player;
+        Player newPlayer = SpawnEntity<Player>(prefabs.player, Vector3.zero, Quaternion.identity, null, EntityLifetime.Global);
+        LoadAndAssignPlayerSaveData(newPlayer);
+        newPlayer.hurtCollider = newPlayer.gameObject.GetComponentInChildren<CapsuleCollider2D>();
+        newPlayer.defaultPlayerPreviewSprite = playerPanel.previewImage.sprite;
+        return newPlayer;
     }
     
     private void InitPlayer() {
@@ -77,7 +79,7 @@ public partial class Game {
     
     private void DeinitPlayer() {
         player.bleeding = false;
-        playerPreviewImage.sprite = player.defaultPlayerPreviewSprite;
+        playerPanel.previewImage.sprite = player.defaultPlayerPreviewSprite;
     }
     
     private void PlayerOnEquipTrinket(Trinket trinket) {
@@ -102,20 +104,20 @@ public partial class Game {
             const int bleedDamage = 5;
             player.health -= bleedDamage;
             
-            Entity bloodDrop = SpawnEntity(gameData.entityPools.bloodDrop, OffsetY(player.position, 0.11f), Quaternion.identity);
+            Entity bloodDrop = SpawnEntity(entityPools.bloodDrop, OffsetY(player.position, 0.11f), Quaternion.identity);
             AddParentEffect(bloodDrop, player, 0.4f);
             DestroyEntity(bloodDrop, 0.8f);
             
             SpawnDamageNumber(OffsetY(player.position, 0.05f), bleedDamage, DamageColor.Blood);
             AddFlashHitEffect(player);
-            Tween.PunchScale(bleedDebuffIcon.transform, Vector3.one * 0.8f, 0.25f, 5f);
+            Tween.PunchScale(playerInfo.bleedDebuffIcon.transform, Vector3.one * 0.8f, 0.25f, 5f);
 
             if (PlayerHealthIsAtAutoBleedStop()) {
                 player.bleeding = false;
             }
         }
         
-        bool consumingItem = playerConsumingTween.isAlive;
+        bool consumingItem = player.consumingTween.isAlive;
         if (consumingItem) {
             player.nextIdleAnimHash = player.idleDownAnim;
             return;
@@ -123,7 +125,7 @@ public partial class Game {
 
         if (InventoryIsOpen || InteractingWithPortal()) return;
         
-        Vector2 moveInput = gameData.input.move.ReadValue<Vector2>();
+        Vector2 moveInput = input.move.ReadValue<Vector2>();
         Vector2 prevPos = player.position;
         
         float speed = GetPlayerSpeed();
@@ -163,9 +165,9 @@ public partial class Game {
         
         bool playerStepped = moveInput != Vector2.zero && player.curStepDistance > 0.18f;
         if (playerStepped) {
-            Entity runSmokeEntity = SpawnEntity(gameData.entityPools.runSmoke, OffsetY(player.position, 0.01f), Quaternion.identity);
+            Entity runSmokeEntity = SpawnEntity(entityPools.runSmoke, OffsetY(player.position, 0.01f), Quaternion.identity);
             DestroyEntity(runSmokeEntity, CurrentClipLength(runSmokeEntity.animator));
-            PlayAudioClip(footStepClip, player.position);
+            PlayAudioClip(audio.footStepClip, player.position);
             player.curStepDistance = 0f;
             
             if (trinkets.current is HealingStepsTrinket healingSteps) {
@@ -189,7 +191,7 @@ public partial class Game {
         List<Vector3> attackTargets = GetAttackTargets(targetCount);
         if (attackTargets.Count <= 0) return;
         
-        PlayAudioClip(shootClip, player.position);
+        PlayAudioClip(audio.shootClip, player.position);
         for (int i = 0; i < attackTargets.Count; i++) {
             Vector3 attackTarget = attackTargets[i];
             
@@ -206,7 +208,7 @@ public partial class Game {
             
             bool isAdditionalShot = i > 0;
             if (isAdditionalShot) {
-                if (gameData.demonEye.equiped.multiProjectileCritAugment.TryGetValue(out var multiProjCrit)) {
+                if (demonEye.equiped.multiProjectileCritAugment.TryGetValue(out var multiProjCrit)) {
                     ShootProjectile(attackTarget, flatCritChance: multiProjCrit.probability);
                 }
                 else {
@@ -214,12 +216,12 @@ public partial class Game {
                 }
             }
 
-            if (gameData.demonEye.equiped.doubleTapAugment.TryGetValue(out var doubleTap) && RollProbability(doubleTap.probability)) { 
+            if (demonEye.equiped.doubleTapAugment.TryGetValue(out var doubleTap) && RollProbability(doubleTap.probability)) { 
                 ShootProjectile(attackTarget, spawnDelay: doubleTap.delayBetweenShots);
             }
         }
 
-        float consecutiveShotDelay = gameData.config.gameplay.attackDelay * 1.5f;
+        float consecutiveShotDelay = config.gameplay.attackDelay * 1.5f;
         if (Time.time - player.lastShotTime <= consecutiveShotDelay) {
             player.consecutiveShotCount++;
         }
@@ -227,15 +229,15 @@ public partial class Game {
             player.consecutiveShotCount = 0;
         }
         
-        if (gameData.demonEye.equiped.blast.TryGetValue(out var blast) && player.consecutiveShotCount > 0 && player.consecutiveShotCount % blast.numshotsUntilOverheat == 0) {
+        if (demonEye.equiped.blast.TryGetValue(out var blast) && player.consecutiveShotCount > 0 && player.consecutiveShotCount % blast.numshotsUntilOverheat == 0) {
             Vector2 spawnPos = OffsetY(player.position, 0.1f);
             
-            Entity expEntity = SpawnEntity(gameData.entityPools.blast, spawnPos, Quaternion.identity); 
+            Entity expEntity = SpawnEntity(entityPools.blast, spawnPos, Quaternion.identity); 
             DestroyEntity(expEntity, CurrentClipLength(expEntity.animator));
             
             List<Collider2D> cols = Physics.OverlapCircle(spawnPos, blast.radius, Masks.EnemyMask);
             foreach (Collider2D col in cols) {
-                Enemy enemy = gameData.entities.lookup[col.gameObject] as Enemy;
+                Enemy enemy = entities.lookup[col.gameObject] as Enemy;
                 int damage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(enemy) * blast.damageMulti);
                 DamageEnemyAfterDelay(enemy, damage, false, 0.15f);
             }
@@ -245,7 +247,7 @@ public partial class Game {
     }
     
     internal List<Vector3> GetAttackTargets(int targetCount) {
-        float overlapDist = gameData.config.gameplay.projectileSpeed * GetProjectileRangeInSeconds();
+        float overlapDist = config.gameplay.projectileSpeed * GetProjectileRangeInSeconds();
         List<Collider2D> cols = Physics.OverlapCircle(player.position, overlapDist, Masks.EnemyMask);
         
         if (cols.Count <= 0) {
@@ -261,14 +263,14 @@ public partial class Game {
         int count = Mathf.Min(targetCount, cols.Count);
         List<Vector3> targets = new();
         for (int i = 0; i < count; i++) {
-            targets.Add(gameData.entities.lookup[cols[i].gameObject].Center);
+            targets.Add(entities.lookup[cols[i].gameObject].Center);
         }
         return targets;
     }
 
     private static float GetTargetScore(Collider2D col) {
-        Entity entity = gameInstance.gameData.entities.lookup[col.gameObject];
-        float dist = Vector2.Distance(col.transform.position, gameInstance.player.position);
+        Entity entity = gameInstance.entities.lookup[col.gameObject];
+        float dist = Vector2.Distance(col.transform.position, player.position);
 
         if (entity is Enemy enemy) {
             const float distWeight = 1f;
@@ -284,26 +286,26 @@ public partial class Game {
     
     private void ShootProjectile(Vector2 targetPos, float? spawnDelay = default, float? flatCritChance = default) {
         const float maxInaccuracyAngle = 18f;
-        float maxAccuracyAngle = maxInaccuracyAngle * (1f - gameData.config.gameplay.accuracy);
+        float maxAccuracyAngle = maxInaccuracyAngle * (1f - config.gameplay.accuracy);
         float accuracyAngle = Random.Range(-maxAccuracyAngle, maxAccuracyAngle);
 
-        float projectileSpeed = gameData.config.gameplay.projectileSpeed;
+        float projectileSpeed = config.gameplay.projectileSpeed;
         Vector2 dir = (targetPos - (Vector2)PlayerEyePos).normalized;
         dir = Quaternion.AngleAxis(accuracyAngle, Vector3.forward) * dir;
         Vector2 velocity = dir * projectileSpeed; 
-        _SpawnProjectile(PlayerEyePos, velocity, gameData.entityPools.projectile);
+        _SpawnProjectile(PlayerEyePos, velocity, entityPools.projectile);
         
-        if (gameData.demonEye.equiped.trishot.TryGetValue(out var trishot) && RollProbability(trishot.probability)) {
+        if (demonEye.equiped.trishot.TryGetValue(out var trishot) && RollProbability(trishot.probability)) {
             const float baseTriShotAngle = 8f;
             Vector2 secondShotVelocity = Quaternion.AngleAxis(baseTriShotAngle, Vector3.forward) * velocity;
-            _SpawnProjectile(PlayerEyePos, secondShotVelocity, gameData.entityPools.projectile, flgs: ProjectileTypeFlags.Trishot);
+            _SpawnProjectile(PlayerEyePos, secondShotVelocity, entityPools.projectile, flgs: ProjectileTypeFlags.Trishot);
             Vector2 thirdShotVelocity = Quaternion.AngleAxis(-baseTriShotAngle, Vector3.forward) * velocity;
-            _SpawnProjectile(PlayerEyePos, thirdShotVelocity, gameData.entityPools.projectile, flgs: ProjectileTypeFlags.Trishot);
+            _SpawnProjectile(PlayerEyePos, thirdShotVelocity, entityPools.projectile, flgs: ProjectileTypeFlags.Trishot);
         }
 
-        if (gameData.demonEye.equiped.backwardShot.TryGetValue(out var backShot) && RollProbability(backShot.probability)) {
+        if (demonEye.equiped.backwardShot.TryGetValue(out var backShot) && RollProbability(backShot.probability)) {
             const float backwardsShotSpeedScaler = 1.1f;
-            EntityPool<Projectile> pool = gameData.demonEye.equiped.backwardsPiercingAugment.HasValue ? gameData.entityPools.piercingShotProjectile : gameData.entityPools.projectile; 
+            EntityPool<Projectile> pool = demonEye.equiped.backwardsPiercingAugment.HasValue ? entityPools.piercingShotProjectile : entityPools.projectile; 
             _SpawnProjectile(PlayerEyePos, -velocity * backwardsShotSpeedScaler, pool, flgs: ProjectileTypeFlags.BackwardsShot);
         }
         
@@ -314,12 +316,8 @@ public partial class Game {
         }
     }
 
-    private Tween playerConsumingTween;
-    private Inventory consumingInventory;
-    private int consumingSlotIndex;
-    
     private void HavePlayerConsumeItem(Inventory fromInventory, int slotIndex) {
-        if (playerIsHealingOverTime || playerConsumingTween.isAlive) return;
+        if (playerIsHealingOverTime || player.consumingTween.isAlive) return;
         ConsumableItem item = fromInventory.slots[slotIndex].itemInstance.ItemRef as ConsumableItem;
 
         if (!item) return;
@@ -354,30 +352,30 @@ public partial class Game {
         float postActionDelay = animationLength * (1f - performActionAtAnimationCompletion);
 
         // So we don't allocate any memory for the closure
-        consumingSlotIndex = slotIndex;
-        consumingInventory = fromInventory;
+        player.consumingSlotIndex = slotIndex;
+        player.consumingInventory = fromInventory;
         
-        playerConsumingTween = Tween.Delay(item, actionDelay, static (item) => {
+        player.consumingTween = Tween.Delay(item, actionDelay, static (item) => {
             if (item.healingAmount > 0) {
                 gameInstance.HealPlayer(item.healingAmount, item.healingDuration);
             }
             if (item.bandageAmount > 0) {
-                gameInstance.player.bleeding = false;
+                player.bleeding = false;
             }
-            gameInstance.ReduceItemCountInInventory(gameInstance.consumingInventory, gameInstance.consumingSlotIndex);
+            gameInstance.ReduceItemCountInInventory(player.consumingInventory, player.consumingSlotIndex);
         });
         
-        playerConsumingTween.OnUpdate(this, static (_, _) => {
-            if (gameInstance.playerPreviewImage.sprite != gameInstance.player.spriteRenderer.sprite) {
-                gameInstance.playerPreviewImage.sprite = gameInstance.player.spriteRenderer.sprite;     
+        player.consumingTween.OnUpdate(this, static (_, _) => {
+            if (gameInstance.playerPanel.previewImage.sprite != player.spriteRenderer.sprite) {
+                gameInstance.playerPanel.previewImage.sprite = player.spriteRenderer.sprite;     
             }
         });
         
-        playerConsumingTween.Chain(Tween.Delay(postActionDelay, static () => {
-            gameInstance.player.animator.Play(gameInstance.player.idleDownAnim);
-            gameInstance.player.animator.Update(0f);
-            if (gameInstance.playerPreviewImage.sprite != gameInstance.player.spriteRenderer.sprite) {
-                gameInstance.playerPreviewImage.sprite = gameInstance.player.spriteRenderer.sprite;     
+        player.consumingTween.Chain(Tween.Delay(postActionDelay, static () => {
+            player.animator.Play(player.idleDownAnim);
+            player.animator.Update(0f);
+            if (gameInstance.playerPanel.previewImage.sprite != player.spriteRenderer.sprite) {
+                gameInstance.playerPanel.previewImage.sprite = player.spriteRenderer.sprite;     
             }
         }))
         .Chain(Tween.Delay(additionalConsumeDelay));
@@ -408,7 +406,6 @@ public partial class Game {
         
         data.tween = Tween.Delay(duration)
         .OnUpdate(data, static (data, tween) => {
-            Player player = gameInstance.player;
             int fullPlayerHealth = gameInstance.FullPlayerHealth;
             float healingPerSecond = data.healingPerSecond;
             float elapsedTime = tween.elapsedTime;
@@ -432,11 +429,11 @@ public partial class Game {
 
     public void DamagePlayer(int damage, PlayerDamageType damageType, Entity sourceEntity, float chanceToBleed = 0f) {
         chanceToBleed -= GetAbsoluteStat(Player.Stat.BleedResist); 
-        if (!player.bleeding && !gameData.curRaid.map.playerCantBleed && !PlayerHealthIsAtAutoBleedStop() && RollProbability(chanceToBleed)) {
+        if (!player.bleeding && !curRaid.map.playerCantBleed && !PlayerHealthIsAtAutoBleedStop() && RollProbability(chanceToBleed)) {
             player.bleeding = true;
         }
         
-        bool ignoreCollisionDamage = !player.enemyCollisionDamageLimiter.TimeHasPassed(gameData.config.gameplay.repeatCollisionDamageDelay);
+        bool ignoreCollisionDamage = !player.enemyCollisionDamageLimiter.TimeHasPassed(config.gameplay.repeatCollisionDamageDelay);
         if (damageType == PlayerDamageType.Collision && ignoreCollisionDamage) return;
         
         player.health -= damage;
@@ -491,9 +488,9 @@ public partial class Game {
     
     private float GetPlayerStat(Player.Stat stat) {
         float startingValue = stat switch {
-            Player.Stat.CarryCapacity           => gameData.config.gameplay.defaultStartingEncumberingWeight,
-            Player.Stat.CritChance              => gameData.config.gameplay.defaultCritChance,
-            Player.Stat.CritMulti               => gameData.config.gameplay.defaultCritMulti,
+            Player.Stat.CarryCapacity           => config.gameplay.defaultStartingEncumberingWeight,
+            Player.Stat.CritChance              => config.gameplay.defaultCritChance,
+            Player.Stat.CritMulti               => config.gameplay.defaultCritMulti,
             Player.Stat.DamageMulti             => 1f,
             Player.Stat.FireratePercentage      => 1f,
             Player.Stat.Health                  => 100f,
@@ -508,24 +505,24 @@ public partial class Game {
 
     private float GetPlayerStatAdjustment(Player.Stat stat) {
         return stat switch {
-            Player.Stat.CarryCapacity           => GetPlayerStatLevel(Player.Stat.CarryCapacity) * gameData.config.gameplay.carryCapacityIncPerLevel,
-            Player.Stat.CritChance              => GetPlayerStatLevel(Player.Stat.CritChance) * gameData.config.gameplay.critChanceIncPerLevel,
-            Player.Stat.CritMulti               => GetPlayerStatLevel(Player.Stat.CritMulti) * gameData.config.gameplay.critMultiplierIncPerLevel,
-            Player.Stat.DamageMulti             => GetPlayerStatLevel(Player.Stat.DamageMulti) * gameData.config.gameplay.damageMultiplierIncPerLevel,
-            Player.Stat.FireratePercentage      => GetPlayerStatLevel(Player.Stat.FireratePercentage) * gameData.config.gameplay.firerateIncPerLevel,
-            Player.Stat.Health                  => GetPlayerStatLevel(Player.Stat.Health) * gameData.config.gameplay.healthIncPerLevel,
-            Player.Stat.HealingAmount           => GetPlayerStatLevel(Player.Stat.HealingAmount) * gameData.config.gameplay.healingIncPerLevel,
-            Player.Stat.HealingSpeed            => GetPlayerStatLevel(Player.Stat.HealingSpeed) * gameData.config.gameplay.healingSpeedIncPerLevel,
-            Player.Stat.LootingSpeed            => GetPlayerStatLevel(Player.Stat.LootingSpeed) * gameData.config.gameplay.lootingSpeedIncPerLevel,
-            Player.Stat.MovementSpeedPercentage => GetPlayerStatLevel(Player.Stat.MovementSpeedPercentage) * gameData.config.gameplay.movementSpeedIncPerLevel,
-            Player.Stat.ProjectileCount         => GetPlayerStatLevel(Player.Stat.ProjectileCount) * gameData.config.gameplay.projectileCountIncPerLevel,
+            Player.Stat.CarryCapacity           => GetPlayerStatLevel(Player.Stat.CarryCapacity) * config.gameplay.carryCapacityIncPerLevel,
+            Player.Stat.CritChance              => GetPlayerStatLevel(Player.Stat.CritChance) * config.gameplay.critChanceIncPerLevel,
+            Player.Stat.CritMulti               => GetPlayerStatLevel(Player.Stat.CritMulti) * config.gameplay.critMultiplierIncPerLevel,
+            Player.Stat.DamageMulti             => GetPlayerStatLevel(Player.Stat.DamageMulti) * config.gameplay.damageMultiplierIncPerLevel,
+            Player.Stat.FireratePercentage      => GetPlayerStatLevel(Player.Stat.FireratePercentage) * config.gameplay.firerateIncPerLevel,
+            Player.Stat.Health                  => GetPlayerStatLevel(Player.Stat.Health) * config.gameplay.healthIncPerLevel,
+            Player.Stat.HealingAmount           => GetPlayerStatLevel(Player.Stat.HealingAmount) * config.gameplay.healingIncPerLevel,
+            Player.Stat.HealingSpeed            => GetPlayerStatLevel(Player.Stat.HealingSpeed) * config.gameplay.healingSpeedIncPerLevel,
+            Player.Stat.LootingSpeed            => GetPlayerStatLevel(Player.Stat.LootingSpeed) * config.gameplay.lootingSpeedIncPerLevel,
+            Player.Stat.MovementSpeedPercentage => GetPlayerStatLevel(Player.Stat.MovementSpeedPercentage) * config.gameplay.movementSpeedIncPerLevel,
+            Player.Stat.ProjectileCount         => GetPlayerStatLevel(Player.Stat.ProjectileCount) * config.gameplay.projectileCountIncPerLevel,
             _                                   => 0f,
         };
     }
     
     private float GetEquipmentStatAdjustment(Player.Stat stat) {
         float statSum = 0f;
-        foreach (EquipedUpgradeInstance mod in gameData.demonEye.equiped.upgradeInstances) {
+        foreach (EquipedUpgradeInstance mod in demonEye.equiped.upgradeInstances) {
             EyeUpgradeItem eyeUpgradeItem = mod.EyeUpgradeItem;
             int stackCount = mod.stackCount;
             if (!eyeUpgradeItem.modifiesStats) continue;
@@ -557,10 +554,10 @@ public partial class Game {
     private int FullPlayerHealth => 100 + (int)GetPlayerStatAdjustment(Player.Stat.Health);
 
     private float GetPlayerSpeed() {
-        float playerSpeed = gameData.config.gameplay.baseSpeed * GetAbsoluteStat(Player.Stat.MovementSpeedPercentage);
+        float playerSpeed = config.gameplay.baseSpeed * GetAbsoluteStat(Player.Stat.MovementSpeedPercentage);
         
-        float speedReductionFromWeight = Mathf.Lerp(0f, gameData.config.gameplay.maxEncumberedSpeedReduction, GetOverweightCompletion());
-        speedReductionFromWeight = Mathf.Clamp(speedReductionFromWeight, 0f, gameData.config.gameplay.maxEncumberedSpeedReduction);
+        float speedReductionFromWeight = Mathf.Lerp(0f, config.gameplay.maxEncumberedSpeedReduction, GetOverweightCompletion());
+        speedReductionFromWeight = Mathf.Clamp(speedReductionFromWeight, 0f, config.gameplay.maxEncumberedSpeedReduction);
 
         playerSpeed -= speedReductionFromWeight;
         
@@ -574,27 +571,27 @@ public partial class Game {
     }
 
     private float GetFirerateDelayBasedOnStats() {
-        if (gameData.demonEye.equiped == gameData.demonEye.empty) {
-            return gameData.config.gameplay.attackDelay;
+        if (demonEye.equiped == demonEye.empty) {
+            return config.gameplay.attackDelay;
         }
 
-        float attackDelay = gameData.config.gameplay.attackDelay / GetAbsoluteStat(Player.Stat.FireratePercentage);
-        return Mathf.Clamp(attackDelay, gameData.config.gameplay.cappedMinAttackDelay, gameData.config.gameplay.attackDelay);
+        float attackDelay = config.gameplay.attackDelay / GetAbsoluteStat(Player.Stat.FireratePercentage);
+        return Mathf.Clamp(attackDelay, config.gameplay.cappedMinAttackDelay, config.gameplay.attackDelay);
     }
     
     private float GetProjectileRangeInSeconds() {
-        return gameData.config.gameplay.rangeInSeconds * GetAbsoluteStat(Player.Stat.RangePercentage);
+        return config.gameplay.rangeInSeconds * GetAbsoluteStat(Player.Stat.RangePercentage);
     }
     
     private void GetEncumberingWeightRange(out int startingWeight, out int endingWeight) {
         startingWeight = (int)GetPlayerStat(Player.Stat.CarryCapacity);
         int encumberingIncreaseFromStrength = (int)GetPlayerStatAdjustment(Player.Stat.CarryCapacity);
-        endingWeight = gameData.config.gameplay.maxEncumberedWeight + encumberingIncreaseFromStrength;
+        endingWeight = config.gameplay.maxEncumberedWeight + encumberingIncreaseFromStrength;
     }
 
     private float GetOverweightCompletion() {
         GetEncumberingWeightRange(out int startingEncumberingWeight, out int endingEncumberingWeight);
-        int inventoryWeight = GetInventoryWeight(gameData.inventories.player);
+        int inventoryWeight = GetInventoryWeight(inventories.player);
         int curOverweightAmount = Mathf.Clamp(inventoryWeight - startingEncumberingWeight, 0, int.MaxValue);
         float maxOverweightAmount = (float)endingEncumberingWeight - startingEncumberingWeight;
         float overweightComp = curOverweightAmount / maxOverweightAmount;
@@ -602,15 +599,16 @@ public partial class Game {
     }
     
     private void UpdatePlayerPanelUI() {
-        if (!playerInventoryParent.gameObject.activeInHierarchy) return;
+        if (!InventoryIsOpen) return;
             
-        playerPanelHealthText.text = $"<color=#5CF25B>{player.health}</color><size=22>/{FullPlayerHealth}";
+        playerPanel.healthText.text = $"<color=#5CF25B>{player.health}</color><size=22>/{FullPlayerHealth}";
 
-        int inventoryWeight = GetInventoryWeight(gameData.inventories.player);
+        int inventoryWeight = GetInventoryWeight(inventories.player);
         GetEncumberingWeightRange(out int startEncumberingWeight, out _);
-        playerPanelWeightText.text = $"<color=#98C5CC>{inventoryWeight}</color><size=22>/{startEncumberingWeight}";
+        playerPanel.weightText.text = $"<color=#98C5CC>{inventoryWeight}</color><size=22>/{startEncumberingWeight}";
         
         Color boostedColor = Styles.instance.increaseDescColor;
+        EquipedStatsPanel equipedStatsPanel = playerPanel.equipedStatsPanel;
         
         equipedStatsPanel.bleedResistText.text = Boosted(Player.Stat.BleedResist) ? 
             DisplayProb(GetAbsoluteStat(Player.Stat.BleedResist), boostedColor) : 
@@ -666,11 +664,11 @@ public partial class Game {
             lifeBloodSkillLevel = player.lifeBloodSkillLevel,
             strengthSkillLevel = player.strengthSkillLevel,
         };
-        SaveToFile(gameData.savePaths.player, data);
+        SaveToFile(savePaths.player, data);
     }
 
     private void LoadAndAssignPlayerSaveData(Player instancedPlayer) {
-        PlayerSaveData data = LoadFromFile<PlayerSaveData>(gameData.savePaths.player);
+        PlayerSaveData data = LoadFromFile<PlayerSaveData>(savePaths.player);
         if (data != null) {
             instancedPlayer.health = data.health;
             instancedPlayer.soulCurrency = data.soulCurrency;
@@ -681,7 +679,7 @@ public partial class Game {
             instancedPlayer.strengthSkillLevel = data.strengthSkillLevel;
         }
         // We want to make sure that the player health is never <= zero
-        instancedPlayer.health = player.health <= 0f ? FullPlayerHealth : player.health;
+        instancedPlayer.health = instancedPlayer.health <= 0f ? FullPlayerHealth : instancedPlayer.health;
     }
     
 }

@@ -7,7 +7,7 @@ public partial class Game {
         public int uuid;
         public int stackCount;
         
-        public EyeUpgradeItem EyeUpgradeItem => gameInstance.gameData.res.lookup[uuid] as EyeUpgradeItem;
+        public EyeUpgradeItem EyeUpgradeItem => gameInstance.res.lookup[uuid] as EyeUpgradeItem;
         public void ApplyToEnemy(Enemy enemy) => EyeUpgradeItem.AddInstanceToEnemy(enemy, stackCount);
         public void ApplyToEye(DemonEyeInstance eyeInstance) => EyeUpgradeItem.AddInstanceToEye(eyeInstance, stackCount);
     }
@@ -16,7 +16,7 @@ public partial class Game {
         public int uuid;
         public int stackCount;
         
-        public Augment Augment => gameInstance.gameData.res.lookup[uuid] as Augment;
+        public Augment Augment => gameInstance.res.lookup[uuid] as Augment;
         public void ApplyToEnemy(Enemy enemy) => Augment.AddInstanceToEnemy(enemy, stackCount);
         public void ApplyToEye(DemonEyeInstance eyeInstance) => Augment.AddInstanceToEye(eyeInstance, stackCount);
     }
@@ -46,7 +46,7 @@ public partial class Game {
     }
     
     private void InitDemonEye() {
-        gameData.demonEye.equiped = gameData.demonEye.empty;
+        demonEye.equiped = demonEye.empty;
     }
 
     private void BuildAndRegisterEye(ItemInstance itemInstance) {
@@ -84,7 +84,7 @@ public partial class Game {
             augmentInstance.ApplyToEye(newDemonEye); 
         }
         
-        gameData.demonEye.instanceFromItemId.Add(itemInstance.itemOrInstanceUuid, newDemonEye);
+        demonEye.instanceFromItemId.Add(itemInstance.itemOrInstanceUuid, newDemonEye);
     }
     
     public class EyeUpgradeSet {
@@ -113,7 +113,7 @@ public partial class Game {
         var augmentsPerUpgradeDict = DictionaryPool<EyeUpgradeItem, Dictionary<Augment, int>>.Get();
         
         foreach (int uuid in uuids) {
-            UuidScriptableObject nestedObject = gameData.res.lookup[uuid];
+            UuidScriptableObject nestedObject = res.lookup[uuid];
             ExtractUpgradeAndAugment(nestedObject, out EyeUpgradeItem upgrade, out Augment augment);
             
             if (augment != null) {
@@ -191,10 +191,10 @@ public partial class Game {
     
     public int GetDemonEyeSellPrice(ItemInstance demonEyeItemInstance) {
         // We need to use the InventoryItem's ID because the Item's ID is the demon eye Scriptable Object
-        DemonEyeInstance demonEye = gameData.demonEye.instanceFromItemId[demonEyeItemInstance.itemOrInstanceUuid]; 
+        DemonEyeInstance demonEyeInst = demonEye.instanceFromItemId[demonEyeItemInstance.itemOrInstanceUuid]; 
         
         int sellPrice = 0;
-        foreach (EquipedUpgradeInstance upgradeInstance in demonEye.upgradeInstances) {
+        foreach (EquipedUpgradeInstance upgradeInstance in demonEyeInst.upgradeInstances) {
             sellPrice += upgradeInstance.EyeUpgradeItem.GetSellPrice() * upgradeInstance.stackCount;
         }
         return sellPrice;

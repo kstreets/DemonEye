@@ -148,7 +148,7 @@ public class Item : UuidScriptableObject {
             Debug.Log("Can only add to stash inventory when game is playing");
             return;
         }
-        gameInstance.TryAddItemToInventory(gameInstance.gameData.inventories.stash, this, 1);
+        gameInstance.TryAddItemToInventory(gameInstance.inventories.stash, this, 1);
     }
 
 #endif

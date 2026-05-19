@@ -39,7 +39,7 @@ public partial class Game {
     }
     
     private void UpdateEnemies() {
-        RaidSpawnPattern curSpawnPattern = gameData.curRaid.map.waves;
+        RaidSpawnPattern curSpawnPattern = curRaid.map.waves;
         bool reteleportTimeHasPassed = Time.time - lastReteleportTime >= curSpawnPattern.delayBetweenEnemyRepositions;
         
         if (reteleportTimeHasPassed) {
@@ -63,7 +63,7 @@ public partial class Game {
                 for (int i = 0; i < teleportCount; i++) {
                     (Enemy enemy, float distFromPlayer) = reteleportCandidates[i];
                     Vector2Int repositionCellRange = spawnManager.CurSpawnPhase.repositionCellRange;
-                    Vector2 spawnPos = gameData.curRaid.mapInstance.grid.GetSpawnPosition(player.position, repositionCellRange.x, repositionCellRange.y, predictPlayerPos: true);
+                    Vector2 spawnPos = curRaid.mapInstance.grid.GetSpawnPosition(player.position, repositionCellRange.x, repositionCellRange.y, predictPlayerPos: true);
 
                     if (Vector2.Distance(spawnPos, player.position) < distFromPlayer) {
                         TeleportEnemy(enemy, spawnPos, TeleportType.Reposition);
@@ -146,7 +146,7 @@ public partial class Game {
                             Vector3 position = gameInstance.OffsetY(enemy.position, 0.2f);
                             const float lifetime = 2f;
                             gameInstance.SpawnProjectile(
-                                gameInstance.gameData.entityPools.gooProjectile, position, velocity, lifetime, enemy, 
+                                gameInstance.entityPools.gooProjectile, position, velocity, lifetime, enemy, 
                                 flatDamage: enemy.data.damage, layermask: Masks.PlayerHurtMask
                             );
                         }
@@ -179,7 +179,7 @@ public partial class Game {
                         }
 
                         if (enemy.data.type == EnemyData.EnemyType.Doughmon) {
-                            Entity smokeSlam = gameInstance.SpawnEntity<Entity>(gameInstance.gameData.prefabs.slamSmoke, attackCheckPos, Quaternion.identity);
+                            Entity smokeSlam = gameInstance.SpawnEntity<Entity>(gameInstance.prefabs.slamSmoke, attackCheckPos, Quaternion.identity);
                             gameInstance.DestroyEntity(smokeSlam, gameInstance.CurrentClipLength(smokeSlam.animator));
                         }
 
@@ -196,7 +196,7 @@ public partial class Game {
                     enemy.health -= bleedDamage;
                     bleed.lastBleedTime = Time.time;
                     enemy.bleed = bleed;
-                    Entity bloodDrop = SpawnEntity(gameData.entityPools.bloodDrop, OffsetY(enemy.position, 0.015f), Quaternion.identity);
+                    Entity bloodDrop = SpawnEntity(entityPools.bloodDrop, OffsetY(enemy.position, 0.015f), Quaternion.identity);
                     AddParentEffect(bloodDrop, enemy, 0.4f);
                     DestroyEntity(bloodDrop, 0.8f);
                     SpawnDamageNumber(EnemyDamageNumberSpawnPos(enemy), bleedDamage, DamageColor.Blood);
@@ -217,10 +217,10 @@ public partial class Game {
                     gameInstance.PlayerOnEnemyDeath(deadEnemy);
                     onEnemyDeath?.Invoke(deadEnemy);
                     
-                    Entity bloodSplatterEntity = gameInstance.SpawnEntity(gameInstance.gameData.entityPools.bloodSplatter, deadEnemy.position, Quaternion.identity);
+                    Entity bloodSplatterEntity = gameInstance.SpawnEntity(gameInstance.entityPools.bloodSplatter, deadEnemy.position, Quaternion.identity);
                     gameInstance.DestroyEntity(bloodSplatterEntity, gameInstance.CurrentClipLength(bloodSplatterEntity.animator));
                     
-                    gameInstance.PlayAudioClip(gameInstance.bloodBurstClip, deadEnemy.position);
+                    gameInstance.PlayAudioClip(gameInstance.audio.bloodBurstClip, deadEnemy.position);
                     gameInstance.DestroyEntity(deadEnemy);
                 });
                 enemies.RemoveAt(i);
@@ -244,7 +244,7 @@ public partial class Game {
                 }
             }
             
-            Enemy collidedWithEnemy = gameData.entities.lookup[closestColToPlayer.gameObject] as Enemy;
+            Enemy collidedWithEnemy = entities.lookup[closestColToPlayer.gameObject] as Enemy;
             DamagePlayer(collidedWithEnemy.data.collisionDamage, PlayerDamageType.Collision, collidedWithEnemy);
         }
     }
@@ -271,7 +271,7 @@ public partial class Game {
 
             Vector3 targetDir = Vector3.zero;
             if (enemy.data.usesFlowField) {
-                targetDir = gameData.curRaid.mapInstance.grid.GetFlowFieldDirection(enemy.position);
+                targetDir = curRaid.mapInstance.grid.GetFlowFieldDirection(enemy.position);
             }
             if (targetDir == Vector3.zero) {
                 targetDir = (player.position - enemy.position).normalized;
@@ -315,19 +315,19 @@ public partial class Game {
 
     private void TeleportEnemy(Enemy enemy, Vector3 position, TeleportType teleportType) {
         if (teleportType == TeleportType.Reposition) {
-            Entity outTeleportFxEntity = SpawnEntity(gameData.entityPools.teleportOut, enemy.position, Quaternion.identity);
+            Entity outTeleportFxEntity = SpawnEntity(entityPools.teleportOut, enemy.position, Quaternion.identity);
             DestroyEntity(outTeleportFxEntity, CurrentClipLength(outTeleportFxEntity.animator));
-            PlayAudioClip(teleportOutClip, outTeleportFxEntity.position);
+            PlayAudioClip(audio.teleportOutClip, outTeleportFxEntity.position);
         }
         
         enemy.position = position;
         enemy.gameObject.SetActive(false);
         
-        Entity inTeleportFxEntity = SpawnEntity(gameData.entityPools.teleportIn, enemy.position, Quaternion.identity);
+        Entity inTeleportFxEntity = SpawnEntity(entityPools.teleportIn, enemy.position, Quaternion.identity);
         float spawnAnimDuration = CurrentClipLength(inTeleportFxEntity.animator);
         DestroyEntity(inTeleportFxEntity, spawnAnimDuration);
         
-        PlayAudioClip(teleportInClip, inTeleportFxEntity.position);
+        PlayAudioClip(audio.teleportInClip, inTeleportFxEntity.position);
 
         float spawnDelay = spawnAnimDuration * 0.7f;
         
@@ -436,7 +436,7 @@ public partial class Game {
         
         while (sm.spawnEvents.IndexInRange(sm.spawnTimeIndex) && sm.spawnEvents[sm.spawnTimeIndex].time <= sm.timeInCurPhase) {
             Vector2Int spawnCellRange = spawnManager.CurSpawnPhase.spawnCellRange;
-            Vector2 randomSpawnPos = gameData.curRaid.mapInstance.grid.GetSpawnPosition(player.position, spawnCellRange.x, spawnCellRange.y, predictPlayerPos: false);
+            Vector2 randomSpawnPos = curRaid.mapInstance.grid.GetSpawnPosition(player.position, spawnCellRange.x, spawnCellRange.y, predictPlayerPos: false);
 
             EnemyData enemyToSpawn = sm.spawnEvents[sm.spawnTimeIndex].enemy;
             Enemy enemy = SpawnEntity<Enemy>(enemyToSpawn.enemyPrefab, randomSpawnPos, Quaternion.identity);

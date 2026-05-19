@@ -10,7 +10,6 @@ public partial class Game {
     }
     
     private void LoadAllItems() {
-        GameData.Resources res = gameData.res;
         UuidScriptableObject[] resourceObjects = Resources.LoadAll<UuidScriptableObject>(string.Empty);
         
         foreach (UuidScriptableObject resObject in resourceObjects) {
@@ -31,7 +30,6 @@ public partial class Game {
     }
     
     private void LoadAllDropPools() {
-        GameData.Resources res = gameData.res;
         DropPool[] dropPoolSOs = Resources.LoadAll<DropPool>(string.Empty);
         
         foreach (DropPool dropPool in dropPoolSOs) {
@@ -51,7 +49,7 @@ public partial class Game {
     
     private int GenerateNewItemUuid() {
         int newItemId = UuidScriptableObject.GetIntUuid();
-        while (gameData.res.lookup.ContainsKey(newItemId)) {
+        while (res.lookup.ContainsKey(newItemId)) {
             newItemId = UuidScriptableObject.GetIntUuid();
         }
         return newItemId; 

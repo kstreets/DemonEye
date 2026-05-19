@@ -53,7 +53,7 @@ public class TransactionPanel : MonoBehaviour {
         }
         
         barterPurchaseButton.SetClickableState(canBarter);
-        moneyPurchaseButton.SetClickableState(gameInstance.player.coinCurrency >= item.buyPrice);
+        moneyPurchaseButton.SetClickableState(player.coinCurrency >= item.buyPrice);
         
         purchasingItemImage.sprite = item.inventorySprite;
         purchasingItemDesc.Show(itemInstance);

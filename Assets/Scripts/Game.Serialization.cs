@@ -8,21 +8,21 @@ using UnityEngine.Assertions;
 public partial class Game {
     
     private void BuildSavePaths() {
-        gameData.savePaths.playerInventory = $"{Application.persistentDataPath}/playerInventory";
-        gameData.savePaths.stashInventory = $"{Application.persistentDataPath}/stashInventory";
-        gameData.savePaths.eyeForgeInventory = $"{Application.persistentDataPath}/eyeForgeInventory";
-        gameData.savePaths.player = $"{Application.persistentDataPath}/player";
-        gameData.savePaths.quest = $"{Application.persistentDataPath}/quests";
-        gameData.savePaths.trader = $"{Application.persistentDataPath}/trader";
-        gameData.savePaths.traderInventory = $"{Application.persistentDataPath}/traderInventory";
-        gameData.savePaths.mapUnlocks = $"{Application.persistentDataPath}/maps";
+        savePaths.playerInventory = $"{Application.persistentDataPath}/playerInventory";
+        savePaths.stashInventory = $"{Application.persistentDataPath}/stashInventory";
+        savePaths.eyeForgeInventory = $"{Application.persistentDataPath}/eyeForgeInventory";
+        savePaths.player = $"{Application.persistentDataPath}/player";
+        savePaths.quest = $"{Application.persistentDataPath}/quests";
+        savePaths.trader = $"{Application.persistentDataPath}/trader";
+        savePaths.traderInventory = $"{Application.persistentDataPath}/traderInventory";
+        savePaths.mapUnlocks = $"{Application.persistentDataPath}/maps";
     }
 
     private string GetInventorySavePath(Inventory inventory) {
-        if (inventory == gameData.inventories.player) return gameData.savePaths.playerInventory;
-        if (inventory == gameData.inventories.stash) return gameData.savePaths.stashInventory;
-        if (inventory == gameData.inventories.eyeForge) return gameData.savePaths.eyeForgeInventory;
-        if (inventory == gameData.inventories.trader) return gameData.savePaths.traderInventory;
+        if (inventory == inventories.player) return savePaths.playerInventory;
+        if (inventory == inventories.stash) return savePaths.stashInventory;
+        if (inventory == inventories.eyeForge) return savePaths.eyeForgeInventory;
+        if (inventory == inventories.trader) return savePaths.traderInventory;
         Assert.IsTrue(false, "Inventory does not have associated save path");
         return string.Empty;
     }

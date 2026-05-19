@@ -35,7 +35,7 @@ public partial class Game {
     }
     
     private void HandleDamageEnemy(Projectile projectile, Entity entity) {
-        var entityLookup = gameData.entities.lookup;
+        var entityLookup = entities.lookup;
         if (entityLookup[entity.gameObject] is not Enemy enemy) return;
 
         if (projectile.flatDamage.HasValue) {
@@ -44,7 +44,7 @@ public partial class Game {
         }
         
         bool isCriticalStrike = RollProbability(GetCriticalStrikeProbability(projectile, enemy));
-        ref int consecutiveCriticalHits = ref gameData.curRaid.temp.damagingData.consecutiveCriticalHits;
+        ref int consecutiveCriticalHits = ref curRaid.temp.damagingData.consecutiveCriticalHits;
         if (isCriticalStrike) {
             consecutiveCriticalHits++;
         }
@@ -63,7 +63,7 @@ public partial class Game {
         if (eyeInstance.explosion.TryGetValue(out var explosion) && RollProbability(explosion.probability)) {
             Vector2 expSpawnPos = projectile.position + (enemy.position - projectile.position) / 2f;
             
-            Entity expEntity = SpawnEntity(gameData.entityPools.explosion, expSpawnPos, Quaternion.identity); 
+            Entity expEntity = SpawnEntity(entityPools.explosion, expSpawnPos, Quaternion.identity); 
             DestroyEntity(expEntity, CurrentClipLength(expEntity.animator));
             
             List<Collider2D> cols = Physics.OverlapCircle(expSpawnPos, explosion.radius, Masks.EnemyMask);
@@ -74,14 +74,14 @@ public partial class Game {
             }
         }
         
-        if (gameData.demonEye.equiped.boneShatter.TryGetValue(out var boneShatter) && RollProbability(boneShatter.probability)) {
+        if (demonEye.equiped.boneShatter.TryGetValue(out var boneShatter) && RollProbability(boneShatter.probability)) {
             for (int i = 0; i < boneShatter.shardsCount; i++) {
                 float randomDelay = Random.Range(0f, 0.06f);
                 float randomSpeedScaler = Random.Range(0.4f, 0.6f);
                 Vector2 boneShatterVelocity = RandomizeVectorAngle(projectile.velocity * randomSpeedScaler, 65f);
                 int boneDamage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(enemy) * boneShatter.perShardDamageMulti);
                 Projectile boneShatterProj = SpawnProjectile(
-                    gameData.entityPools.boneShatterProjectile, enemy.position, boneShatterVelocity, boneShatter.lifeTime, player,
+                    entityPools.boneShatterProjectile, enemy.position, boneShatterVelocity, boneShatter.lifeTime, player,
                     rotation: RandomRotation(), spawnDelay: randomDelay, flatDamage: boneDamage
                 );
                 ProjectileMarkEntityToIgnore(boneShatterProj, enemy);
@@ -90,25 +90,25 @@ public partial class Game {
     }
     
     private void HandleDamageRock(Projectile projectile, Entity entity) {
-        entity.health -= gameData.config.gameplay.damage;
+        entity.health -= config.gameplay.damage;
 
-        PlayAudioClip(stoneHitClip, entity.position);
+        PlayAudioClip(audio.stoneHitClip, entity.position);
         
         if (entity.health > 0) {
             AddFlashHitEffect(entity);
-            AddShakeEffect(entity, 8f, 0.038f, 0.35f, gameData.curves.shake);
+            AddShakeEffect(entity, 8f, 0.038f, 0.35f, curves.shake);
             Tween.PunchScale(entity.trans, Vector3.one * 0.12f, 0.1f, 15f);
             return;
         }
                 
         if (entity.obstacleCellRadius > 0) {
-            gameData.curRaid.mapInstance.grid.ClearObstacle(entity.obstaclePosition, entity.obstacleCellRadius);
+            curRaid.mapInstance.grid.ClearObstacle(entity.obstaclePosition, entity.obstacleCellRadius);
         }
             
-        Entity smokeEntity = SpawnEntity<Entity>(gameData.prefabs.rockSmokePrefab, entity.position, Quaternion.identity);
+        Entity smokeEntity = SpawnEntity<Entity>(prefabs.rockSmokePrefab, entity.position, Quaternion.identity);
         DestroyEntity(smokeEntity, 0.417f);
         DestroyEntity(entity);
-        PlayAudioClip(stoneBreakClip, entity.position);
+        PlayAudioClip(audio.stoneBreakClip, entity.position);
             
         int dropCount = 1;
         if (trinkets.current is RockLootTrinket rockLoot) {
@@ -118,7 +118,7 @@ public partial class Game {
         }
             
         for (int i = 0; i < dropCount; i++) {
-            Item dropItem = GetItemFromDropPool(gameData.dropPools.rockStones);
+            Item dropItem = GetItemFromDropPool(dropPools.rockStones);
             Entity rockDropEntity = SpawnItemAsEntity(dropItem, 1, entity.position, Quaternion.identity);
 
             Vector3 endPos = entity.position + RotationVector(Random.Range(0f, 360f), 0.18f, 0.25f);
@@ -136,8 +136,8 @@ public partial class Game {
         }
         
         float criticalStrikeProb = GetAbsoluteStat(Player.Stat.CritChance);
-        if (gameData.demonEye.equiped.bleedCritAugment.HasValue && enemy.bleed.HasValue) {
-            criticalStrikeProb += gameData.demonEye.equiped.bleedCritAugment.Value.probability;
+        if (demonEye.equiped.bleedCritAugment.HasValue && enemy.bleed.HasValue) {
+            criticalStrikeProb += demonEye.equiped.bleedCritAugment.Value.probability;
         }
         return criticalStrikeProb;
     }
@@ -156,10 +156,10 @@ public partial class Game {
                 damageMultiplier *= triShot.damageMultiplier;
             }
             
-            ref int consecutiveCriticalHits = ref gameData.curRaid.temp.damagingData.consecutiveCriticalHits;
-            ref float lastDoubleCritActivationTime = ref gameData.curRaid.temp.damagingData.lastDoubleCritActivationTime;
+            ref int consecutiveCriticalHits = ref curRaid.temp.damagingData.consecutiveCriticalHits;
+            ref float lastDoubleCritActivationTime = ref curRaid.temp.damagingData.lastDoubleCritActivationTime;
             
-            if (gameData.demonEye.equiped.doubleCritAugment.TryGetValue(out var doubleCrit)) {
+            if (demonEye.equiped.doubleCritAugment.TryGetValue(out var doubleCrit)) {
                 if (consecutiveCriticalHits > 0 && consecutiveCriticalHits % 2 == 0) {
                     lastDoubleCritActivationTime = Time.time;
                 }
@@ -171,13 +171,13 @@ public partial class Game {
         
         // Phase 2 - Additions to damage multiplier (Anything with a description of '+1.2x Damage' or '+0.25x Damage')
         {
-            if (gameData.demonEye.equiped.distanceDamage.TryGetValue(out var distDamage)) {
-                float convertedUnits = proj.distTraveled / gameData.config.gameplay.distancePerUnit;
+            if (demonEye.equiped.distanceDamage.TryGetValue(out var distDamage)) {
+                float convertedUnits = proj.distTraveled / config.gameplay.distancePerUnit;
                 int increasedDamageMultiFromDist = Mathf.FloorToInt(convertedUnits * distDamage.damageMultiIncreasePerUnitTraveled);
                 damageMultiplier += increasedDamageMultiFromDist;
             }
             
-            if (gameData.demonEye.equiped.penetrationDamageAugment.TryGetValue(out var penetrationDamage)) {
+            if (demonEye.equiped.penetrationDamageAugment.TryGetValue(out var penetrationDamage)) {
                 int penetrationCountBeforeDamagingThisEnemy = proj.ignoreEntities == null ? 0 : proj.ignoreEntities.Count;
                 if (penetrationCountBeforeDamagingThisEnemy > 0) {
                     damageMultiplier += penetrationCountBeforeDamagingThisEnemy * penetrationDamage.damageMultiplierPerPenetration;
@@ -189,7 +189,7 @@ public partial class Game {
     }
 
     private int GetBaseDamage() {
-        int damage = Mathf.RoundToInt(gameData.config.gameplay.damage * GetAbsoluteStat(Player.Stat.DamageMulti));
+        int damage = Mathf.RoundToInt(config.gameplay.damage * GetAbsoluteStat(Player.Stat.DamageMulti));
         int damageRange = Mathf.RoundToInt(damage * 0.05f);
         damage += Random.Range(-damageRange, damageRange);
         return Mathf.Clamp(damage, 1, int.MaxValue);

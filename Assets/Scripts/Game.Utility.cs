@@ -10,11 +10,11 @@ public partial class Game {
     
     private Vector2 ScreenCenter => new(Screen.width / 2f, Screen.height / 2f);
     
-    private bool InHideout => gameData.states.gameStateMachine.CurState == gameData.states.hideout;
+    private bool InHideout => states.gameStateMachine.CurState == states.hideout;
     
-    private bool InMapSelection => gameData.states.gameStateMachine.CurState == gameData.states.mapSelection;
+    private bool InMapSelection => states.gameStateMachine.CurState == states.mapSelection;
     
-    public bool InRaid => gameData.states.gameStateMachine.CurState == gameData.states.raid;
+    public bool InRaid => states.gameStateMachine.CurState == states.raid;
 
     public bool ControllerPluggedIn => Gamepad.current != null;
 

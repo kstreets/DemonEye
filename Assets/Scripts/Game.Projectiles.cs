@@ -50,7 +50,7 @@ public partial class Game {
         Projectile projectile = SpawnEntity(pool, spawnPos, projectileRotation);
         
         projectile.velocity = velocity;
-        projectile.eyeInstanceSpawnedFrom = gameData.demonEye.equiped;
+        projectile.eyeInstanceSpawnedFrom = demonEye.equiped;
         projectile.sourceEntity = sourceEntity;
         projectile.lifeTimeDuration = lifetime;
         projectile.flatDamage = flatDamage;
@@ -97,16 +97,16 @@ public partial class Game {
                 continue;
             }
             
-            Entity entity = gameData.entities.lookup[col.gameObject];
+            Entity entity = entities.lookup[col.gameObject];
                     
             if (!ProjectileIsIgnoringEntity(proj, entity)) {
                 HandleDamage(proj, entity);
-                PlayAudioClip(projectileImpact, proj.position);
+                PlayAudioClip(audio.projectileImpact, proj.position);
             }
 
             if (entity is Enemy && ProjectileShouldPassThrough(proj, entity)) continue;
             
-            Entity impact = SpawnEntity(gameData.entityPools.projectileImpact, proj.position, RandomRotation());
+            Entity impact = SpawnEntity(entityPools.projectileImpact, proj.position, RandomRotation());
             DestroyEntity(impact, CurrentClipLength(impact.animator));
             
             DestroyEntity(projectiles[i]);

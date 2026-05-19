@@ -15,11 +15,11 @@ public partial class Game {
     }
     
     private void CancelPortalSummoning() {
-        gameData.curRaid.temp.interactionData.timeSpentSummoningPortal = 0f;
+        curRaid.temp.interactionData.timeSpentSummoningPortal = 0f;
     }
     
     private bool InteractingWithPortal() {
-        return gameData.curRaid.temp.interactionData.timeSpentSummoningPortal > Mathf.Epsilon;
+        return curRaid.temp.interactionData.timeSpentSummoningPortal > Mathf.Epsilon;
     }
     
     private void CheckForInteractions() { 
@@ -37,10 +37,10 @@ public partial class Game {
                 string details = ColorText($"{dropItemRef.displayName} x{itemDrop.ItemInstance.count}", itemColor);
                 EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), details);
                 
-                if (gameData.input.interact.WasPressedThisFrame()) {
-                    InventoryAddResult result = TryAddItemToInventory(gameData.inventories.player, itemDrop.ItemInstance);
+                if (input.interact.WasPressedThisFrame()) {
+                    InventoryAddResult result = TryAddItemToInventory(inventories.player, itemDrop.ItemInstance);
                     if (result.type == InventoryAddResult.ResultType.Success) {
-                        Entity droppedEntity = gameData.entities.lookup[itemDrop.gameObject];
+                        Entity droppedEntity = entities.lookup[itemDrop.gameObject];
                         PickupDroppedItem(droppedEntity); 
                         itemDrop.circleCollider.enabled = false;
                     }
@@ -52,8 +52,8 @@ public partial class Game {
 
             if (col.CompareTag(Tags.DeadBody)) {
                 EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), "Search Body");
-                if (gameData.input.interact.WasPressedThisFrame()) {
-                    gameData.inventories.lootPtr.slots = gameData.curRaid.deadBodySlotsLookup[col.gameObject];
+                if (input.interact.WasPressedThisFrame()) {
+                    inventories.lootPtr.slots = curRaid.deadBodySlotsLookup[col.gameObject];
                     OpenPlayerInventory();
                     OpenLootInventory();
                 }
@@ -61,19 +61,19 @@ public partial class Game {
             
             if (col.CompareTag(Tags.Bush)) {
                 EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), "Search Bush");
-                if (gameData.input.interact.WasPressedThisFrame()) {
-                    gameData.inventories.lootPtr.slots = gameData.curRaid.bushSlotsLookup[col.gameObject];
+                if (input.interact.WasPressedThisFrame()) {
+                    inventories.lootPtr.slots = curRaid.bushSlotsLookup[col.gameObject];
                     OpenPlayerInventory();
                     OpenLootInventory();
                 }
             }
 
             if (col.CompareTag(Tags.Altar)) {
-                int soulsPrice = gameData.curRaid.map.altarSoulPrice;
+                int soulsPrice = curRaid.map.altarSoulPrice;
                 EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), $"{soulsPrice} Souls");
-                if (gameData.input.interact.WasPressedThisFrame() && player.soulCurrency >= soulsPrice) {
+                if (input.interact.WasPressedThisFrame() && player.soulCurrency >= soulsPrice) {
                     player.soulCurrency -= soulsPrice;
-                    Item dropItem = GetItemFromDropPool(gameData.dropPools.eyeUpgrades);
+                    Item dropItem = GetItemFromDropPool(dropPools.eyeUpgrades);
                     Entity item = SpawnItemAsEntity(dropItem, 1, OffsetY(col.transform.position, 0.2f), Quaternion.identity);
                     item.spriteRenderer.sortingOrder = 1;
                     col.enabled = false;
@@ -82,8 +82,8 @@ public partial class Game {
             
             if (col.CompareTag(Tags.Chest)) {
                 EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), "Open Chest");
-                if (gameData.input.interact.WasPressedThisFrame()) {
-                    Item dropItem = GetItemFromDropPool(gameData.dropPools.chests);
+                if (input.interact.WasPressedThisFrame()) {
+                    Item dropItem = GetItemFromDropPool(dropPools.chests);
                     Entity item = SpawnItemAsEntity(dropItem, 1, OffsetY(col.transform.position, 0.1f), Quaternion.identity);
                     Vector3 endPos = item.position + RotationVector(Random.Range(0f, 360f), 0.18f, 0.25f);
                     AddBounceEffect(item, endPos, 0.6f);
@@ -93,13 +93,13 @@ public partial class Game {
 
             if (col.CompareTag(Tags.ExitPortal)) {
                 ExitPortal portal = GetExitPortalFromTransform(col.transform);
-                ref float timeSpentSummoningPortal = ref gameData.curRaid.temp.interactionData.timeSpentSummoningPortal;
+                ref float timeSpentSummoningPortal = ref curRaid.temp.interactionData.timeSpentSummoningPortal;
                 
-                if (!portal.hasBeenSummoned && timeSpentSummoningPortal < gameData.config.gameplay.portalSummonTime) {
+                if (!portal.hasBeenSummoned && timeSpentSummoningPortal < config.gameplay.portalSummonTime) {
                     EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Summon Exit Portal");
-                    if (gameData.input.interact.IsPressed()) {
+                    if (input.interact.IsPressed()) {
                         timeSpentSummoningPortal += Time.deltaTime;
-                        if (timeSpentSummoningPortal >= gameData.config.gameplay.portalSummonTime) {
+                        if (timeSpentSummoningPortal >= config.gameplay.portalSummonTime) {
                             StartSummoningExitPortal(col.transform);
                             timeSpentSummoningPortal = 0f;
                         }
@@ -111,12 +111,12 @@ public partial class Game {
                 
                 if (portal.canTake) {
                     EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Take Exit Portal");
-                    if (gameData.input.interact.WasPressedThisFrame()) {
+                    if (input.interact.WasPressedThisFrame()) {
                         exitPortalTakenByPlayer = portal;
                         exitPortalTakenByPlayer.closingCountdownSequence.Stop();
-                        gameData.states.gameStateMachine.SetStateIfNotCurrent(
-                            gameData.curRaid.state == RaidState.PostFinalWave ? 
-                            gameData.states.winExit : gameData.states.earlyExit
+                        states.gameStateMachine.SetStateIfNotCurrent(
+                            curRaid.state == RaidState.PostFinalWave ? 
+                            states.winExit : states.earlyExit
                         );
                         customQuestEvent?.Invoke("FirstExtract");
                     }
@@ -161,34 +161,34 @@ public partial class Game {
         .OnComplete(() => DestroyEntity(droppedEntity));
     }
     
-    private float DiscoverSlotTime => gameData.config.gameplay.discoverSlotTime * GetAbsoluteStat(Player.Stat.LootingSpeed);
-    private float DiscoverItemTime => gameData.config.gameplay.discoverItemTime * GetAbsoluteStat(Player.Stat.LootingSpeed);
+    private float DiscoverSlotTime => config.gameplay.discoverSlotTime * GetAbsoluteStat(Player.Stat.LootingSpeed);
+    private float DiscoverItemTime => config.gameplay.discoverItemTime * GetAbsoluteStat(Player.Stat.LootingSpeed);
     
     private void OpenLootInventory() {
         if (LootInventoryIsOpen) return;
         
-        ref int discoverItemIndex = ref gameData.curRaid.temp.interactionData.discoverItemIndex;
-        ref Sequence discoverSlotsSequence = ref gameData.curRaid.temp.interactionData.discoverSlotsSequence;
-        ref Timer discoverItemTimer = ref gameData.curRaid.temp.interactionData.discoverItemTimer;
+        ref int discoverItemIndex = ref curRaid.temp.interactionData.discoverItemIndex;
+        ref Sequence discoverSlotsSequence = ref curRaid.temp.interactionData.discoverSlotsSequence;
+        ref Timer discoverItemTimer = ref curRaid.temp.interactionData.discoverItemTimer;
         
         discoverItemIndex = -1;
-        lootInventoryPanel.gameObject.SetActive(true);
+        ui.lootInventoryPanel.gameObject.SetActive(true);
         
-        foreach (InventorySlot slot in gameData.inventories.lootPtr.slots) {
+        foreach (InventorySlot slot in inventories.lootPtr.slots) {
             slot.ui.ClearItem();
             slot.ui.MakeSlotActive();
         }
 
-        for (int i = 0; i < gameData.inventories.lootPtr.slots.Length; i++) {
-            if (gameData.inventories.lootPtr.slots[i].itemInstance == null) continue;
+        for (int i = 0; i < inventories.lootPtr.slots.Length; i++) {
+            if (inventories.lootPtr.slots[i].itemInstance == null) continue;
             
-            InventorySlotUI slotUI = gameData.inventories.lootPtr.slots[i].ui;
+            InventorySlotUI slotUI = inventories.lootPtr.slots[i].ui;
             
-            if (gameData.inventories.lootPtr.slots[i].itemInstance.notDiscovered) {
+            if (inventories.lootPtr.slots[i].itemInstance.notDiscovered) {
                 discoverItemIndex = discoverItemIndex == -1 ? i : discoverItemIndex;
             }
             else {
-                ItemInstance itemInstance = gameData.inventories.lootPtr.slots[i].itemInstance;
+                ItemInstance itemInstance = inventories.lootPtr.slots[i].itemInstance;
                 slotUI.SetItem(itemInstance.ItemRef, itemInstance.count);
             }
         }
@@ -196,16 +196,16 @@ public partial class Game {
         bool alreadyDiscoveredAll = discoverItemIndex == -1;
         if (alreadyDiscoveredAll) return;
         
-        lootSearchingText.SetActive(true);
+        ui.lootSearchingText.SetActive(true);
 
         discoverSlotsSequence = Sequence.Create();
         
-        for (int i = 0; i < gameData.inventories.lootPtr.slots.Length; i++) {
-            if (gameData.inventories.lootPtr.slots[i].itemInstance == null) continue;
+        for (int i = 0; i < inventories.lootPtr.slots.Length; i++) {
+            if (inventories.lootPtr.slots[i].itemInstance == null) continue;
             
-            InventorySlotUI slotUI = gameData.inventories.lootPtr.slots[i].ui;
+            InventorySlotUI slotUI = inventories.lootPtr.slots[i].ui;
             
-            if (gameData.inventories.lootPtr.slots[i].itemInstance.notDiscovered) {
+            if (inventories.lootPtr.slots[i].itemInstance.notDiscovered) {
                 discoverSlotsSequence.Chain(Tween.PunchScale(slotUI.rectTransform, Vector3.one * 2f, 0.1f, 2f, startDelay: DiscoverSlotTime * i));
                 discoverSlotsSequence.ChainCallback(slotUI, (target) => target.MakeSlotInactive());
             }
@@ -214,10 +214,10 @@ public partial class Game {
         discoverSlotsSequence.ChainDelay(0.15f);
 
         discoverSlotsSequence.ChainCallback(target: this, static (target) => {
-            ref int discoverItemIndex = ref target.gameData.curRaid.temp.interactionData.discoverItemIndex;
-            ref Timer discoverItemTimer = ref target.gameData.curRaid.temp.interactionData.discoverItemTimer;
+            ref int discoverItemIndex = ref target.curRaid.temp.interactionData.discoverItemIndex;
+            ref Timer discoverItemTimer = ref target.curRaid.temp.interactionData.discoverItemTimer;
             
-            InventorySlot slot = target.gameData.inventories.lootPtr.slots[discoverItemIndex];
+            InventorySlot slot = target.inventories.lootPtr.slots[discoverItemIndex];
             if (slot.itemInstance != null) {
                 target.AnimateSlotSearch(slot.ui);
                 discoverItemTimer.SetTime(target.DiscoverItemTime);
@@ -225,9 +225,9 @@ public partial class Game {
         });
         
         discoverItemTimer.EndAction ??= static () => {
-            Inventory lootInventoryPtr = gameInstance.gameData.inventories.lootPtr;
-            ref Timer discoverItemTimer = ref gameInstance.gameData.curRaid.temp.interactionData.discoverItemTimer;
-            ref int discoverItemIndex = ref gameInstance.gameData.curRaid.temp.interactionData.discoverItemIndex; 
+            Inventory lootInventoryPtr = gameInstance.inventories.lootPtr;
+            ref Timer discoverItemTimer = ref gameInstance.curRaid.temp.interactionData.discoverItemTimer;
+            ref int discoverItemIndex = ref gameInstance.curRaid.temp.interactionData.discoverItemIndex; 
             
             ItemInstance itemInstance = lootInventoryPtr.slots[discoverItemIndex].itemInstance;
             itemInstance.notDiscovered = false;
@@ -247,25 +247,25 @@ public partial class Game {
                 discoverItemTimer.SetTime(gameInstance.DiscoverItemTime);
             }
             else {
-                gameInstance.lootSearchingText.SetActive(false);
+                gameInstance.ui.lootSearchingText.SetActive(false);
             }
         };
     }
 
     private void AnimateSlotSearch(InventorySlotUI slotUI) {
         slotUI.MakeSlotSearching();
-        gameData.curRaid.temp.interactionData.searchCirclePopInTween = Tween.Scale(slotUI.searchingCircle.transform, Vector3.one * 0.2f, Vector3.one * 1f, 0.25f, Ease.OutElastic); 
+        curRaid.temp.interactionData.searchCirclePopInTween = Tween.Scale(slotUI.searchingCircle.transform, Vector3.one * 0.2f, Vector3.one * 1f, 0.25f, Ease.OutElastic); 
     }
 
     private void CloseLootInventory() {
-        lootSearchingText.SetActive(false);
-        lootInventoryPanel.gameObject.SetActive(false);
-        gameData.curRaid.temp.interactionData.discoverItemTimer.Stop();
-        gameData.curRaid.temp.interactionData.discoverSlotsSequence.Stop();
-        gameData.curRaid.temp.interactionData.searchCirclePopInTween.Stop();
+        ui.lootSearchingText.SetActive(false);
+        ui.lootInventoryPanel.gameObject.SetActive(false);
+        curRaid.temp.interactionData.discoverItemTimer.Stop();
+        curRaid.temp.interactionData.discoverSlotsSequence.Stop();
+        curRaid.temp.interactionData.searchCirclePopInTween.Stop();
         
         // Reset all tweening properties because the animations might have stopped while playing 
-        foreach (InventorySlot slot in gameData.inventories.lootPtr.slots) {
+        foreach (InventorySlot slot in inventories.lootPtr.slots) {
             slot.ui.rectTransform.localScale = Vector3.one;
             slot.ui.StopSlotSearching();
         }
@@ -275,16 +275,16 @@ public partial class Game {
         Item itemToConsume = null;
         int playerInventorySlotIndex = playerEquipmentSize;
         
-        foreach (InputAction action in gameData.hotBar.quickUseActions) {
+        foreach (InputAction action in hotBar.quickUseActions) {
             if (action.WasPressedThisFrame()) {
-                itemToConsume = gameData.inventories.player.slots[playerInventorySlotIndex].itemInstance?.ItemRef;
+                itemToConsume = inventories.player.slots[playerInventorySlotIndex].itemInstance?.ItemRef;
                 break;
             }
             playerInventorySlotIndex++;
         }
 
         if (itemToConsume) {
-            HavePlayerConsumeItem(gameData.inventories.player, playerInventorySlotIndex);
+            HavePlayerConsumeItem(inventories.player, playerInventorySlotIndex);
         }
     }
     

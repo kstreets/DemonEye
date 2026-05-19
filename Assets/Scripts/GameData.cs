@@ -207,10 +207,10 @@ public class GameData {
         public RectTransform equipmentParent;
         public RectTransform pocketParent;
         public RectTransform pocketsBackpackParent;
-        public RectTransform passiveParent;
+        public RectTransform quickUseParent;
         public RectTransform inventoryParent;
-        public TextMeshProUGUI panelHealthText;
-        public TextMeshProUGUI panelWeightText;
+        public TextMeshProUGUI healthText;
+        public TextMeshProUGUI weightText;
         public Image previewImage;
         public EquipedStatsPanel equipedStatsPanel;
     }
@@ -228,13 +228,13 @@ public class GameData {
         public RectTransform panel;
         public RectTransform pentagramParent;
         public Image pentagramFillImage;
+        public ButtonFeel forgeButton;
     }
     public EyeForgePanel eyeForgePanel;
     
     [Serializable]
     public class EyeForgeDetailsPanel {
         public RectTransform panel;
-        public ButtonFeel eyeButton;
         public TextMeshProUGUI text;
         public DemonEyeDescList demonEyeDesc;
     }
@@ -247,27 +247,29 @@ public class GameData {
         public TraderRepBar repBar;
         public TextMeshProUGUI itemRefreshTimeText;
     }
+    public TraderPanel traderPanel;
     
     [Serializable]
     public class TransactionPanel {
-        public global::TransactionPanel panel;
+        public RectTransform panel;
+        public global::TransactionPanel transaction;
         public RectTransform inventoryParent;
     }
     public TransactionPanel transactionPanel;
 
     [Serializable]
     public class MapSelectionPanel {
-        public RectTransform mapSelectionPanel;
-        public Button[] mapSelectionButtons;
+        public RectTransform panel;
+        public Button[] buttons;
     }
     public MapSelectionPanel mapSelectionPanel;
     
     [Serializable]
     public class QuestsPanel {
         public RectTransform panel;
-        public RectTransform parent;
+        public RectTransform questsParent;
         public RectTransform questSelectionParent;
-        public ToggleButtonGroup questToggleButtonGroup;
+        public ToggleButtonGroup toggleButtonGroup;
         public TraderRepBar traderRepBar;
     }
     public QuestsPanel questsPanel;

@@ -6,12 +6,12 @@ public partial class Game {
     private void InitMenuNavigation() {
         var menuMove = InputSystem.actions.FindAction("MenuMove");
         menuMove.performed += OnMoveInput;
-        gameData.input.escape.performed += OnEscapePressed;
+        input.escape.performed += OnEscapePressed;
     }
     
     private void OnEscapePressed(InputAction.CallbackContext context) {
         if (InMapSelection || InHideout) {
-            gameData.states.gameStateMachine.SetState(gameData.states.mainMenu);
+            states.gameStateMachine.SetState(states.mainMenu);
         }
         if (InRaid && InventoryIsOpen) {
             ClosePlayerInventory();
@@ -25,15 +25,15 @@ public partial class Game {
         if (!context.performed) return;
         
         GameObject[,] mainMenuGrid = new GameObject[4, 1];
-        mainMenuGrid[0, 0] = gameData.mainMenu.playButton.gameObject;
-        mainMenuGrid[1, 0] = gameData.mainMenu.hideoutButton.gameObject;
-        mainMenuGrid[2, 0] = gameData.mainMenu.settingsButton.gameObject;
-        mainMenuGrid[3, 0] = gameData.mainMenu.exitButton.gameObject;
+        mainMenuGrid[0, 0] = mainMenu.playButton.gameObject;
+        mainMenuGrid[1, 0] = mainMenu.hideoutButton.gameObject;
+        mainMenuGrid[2, 0] = mainMenu.settingsButton.gameObject;
+        mainMenuGrid[3, 0] = mainMenu.exitButton.gameObject;
         
         Vector2 dir = context.ReadValue<Vector2>();
         dir = new(dir.x, -dir.y);
         
-        if (gameData.states.gameStateMachine.CurState == gameData.states.mainMenu) {
+        if (states.gameStateMachine.CurState == states.mainMenu) {
             if (!mainMenuGrid.IndexInRange(controllerPos + dir)) return;
             controllerPos += dir;
             

@@ -61,7 +61,7 @@ public class Augment : UuidScriptableObject, IEyeUpgrade {
             Debug.Log("Can only add to stash inventory when game is playing");
             return;
         }
-        gameInstance.TryAddItemToInventory(gameInstance.gameData.inventories.stash, new(this));
+        gameInstance.TryAddItemToInventory(gameInstance.inventories.stash, new(this));
     }
     
 #endif

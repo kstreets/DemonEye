@@ -83,11 +83,11 @@ public partial class Game {
     }
 
     private bool EntityIsValid(Entity entity) {
-        return entity.trans && gameData.entities.lookup.ContainsKey(entity.gameObject);
+        return entity.trans && entities.lookup.ContainsKey(entity.gameObject);
     }
 
     private Entity SpawnItemAsEntity(Item item, int count, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level) {
-        Entity entity = SpawnEntity(gameData.entityPools.itemDrop, position, rotation, parent, lifetime);
+        Entity entity = SpawnEntity(entityPools.itemDrop, position, rotation, parent, lifetime);
         ItemInstance itemInstance = new(item, count);
         entity.gameObject.GetComponent<ItemDrop>().Init(itemInstance);
         return entity;
@@ -147,15 +147,14 @@ public partial class Game {
     }
 
     private void RegisterEntity<T>(T entity) where T : Entity {
-        gameData.entities.all.Add(entity);
-        gameData.entities.lookup.Add(entity.gameObject, entity);
+        entities.all.Add(entity);
+        entities.lookup.Add(entity.gameObject, entity);
     }
     
     private void DestroyEntities(EntityLifetime lifetime) {
-        var entities = gameData.entities.all;
-        for (int i = entities.Count - 1; i >= 0; i--) {
-            if (entities[i].lifetime == lifetime) {
-                DestroyEntity(entities[i]);
+        for (int i = entities.all.Count - 1; i >= 0; i--) {
+            if (entities.all[i].lifetime == lifetime) {
+                DestroyEntity(entities.all[i]);
             }
         }
     }
@@ -169,16 +168,16 @@ public partial class Game {
                 entity.tweenEffects[i].Complete();
             }
             
-            bool enemyWasInLookup = gameData.entities.lookup.Remove(entity.gameObject, out _);
+            bool enemyWasInLookup = entities.lookup.Remove(entity.gameObject, out _);
             if (enemyWasInLookup) {
-                gameData.entities.all.Remove(entity);
+                entities.all.Remove(entity);
                 DestroyOrReleaseEntitysGameObject(entity);
             }
         }
     }
 
     private void GetEntityHierarchy(Transform root, List<Entity> entityHierarchy) {
-        if (gameData.entities.lookup.TryGetValue(root.gameObject, out Entity associatedEntity)) {
+        if (entities.lookup.TryGetValue(root.gameObject, out Entity associatedEntity)) {
             entityHierarchy.Add(associatedEntity);
         }
         foreach (Transform trans in root) {
@@ -202,13 +201,13 @@ public partial class Game {
     private static int damageFlashTintPropertyId = Shader.PropertyToID("_DamageFlashTint");
     
     private void AddFlashHitEffect(Entity entity) {
-        float duration = gameData.curves.hitFlash.keys[^1].time;
+        float duration = curves.hitFlash.keys[^1].time;
         
         entity.GetEffect(EffectsIndicies.HitFlash).Stop();
         
         Tween tween = Tween.Custom(entity, 0f, 1f, duration, ease: Ease.Linear, onValueChange: static (entity, val) => {
             entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
-            entity.matPropertyBlock.SetFloat(damageFlashTintPropertyId, gameInstance.gameData.curves.hitFlash.Evaluate(val));
+            entity.matPropertyBlock.SetFloat(damageFlashTintPropertyId, gameInstance.curves.hitFlash.Evaluate(val));
             entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
         })
         .OnComplete(entity, static entity => {
@@ -228,7 +227,7 @@ public partial class Game {
     
     public void AddPoisonedEffect(Entity entity, float duration) {
         if (!entity.GetEffect(EffectsIndicies.Poisoned).isAlive) {
-            Entity poisonDebuff = SpawnEntity(gameData.entityPools.poisonDebuff, OffsetY(entity.position, -0.01f), Quaternion.identity, entity.trans);
+            Entity poisonDebuff = SpawnEntity(entityPools.poisonDebuff, OffsetY(entity.position, -0.01f), Quaternion.identity, entity.trans);
             entity.poisonedEffect = new() {
                 poisonDebuffEntity = poisonDebuff,
             };
@@ -262,7 +261,7 @@ public partial class Game {
         };
         
         Tween.Custom(entity, 0f, 1f, duration, ease: Ease.Linear, onValueChange: static (entity, val) => {
-            float yPos = gameInstance.gameData.curves.bounce.Evaluate(val);
+            float yPos = gameInstance.curves.bounce.Evaluate(val);
             Vector2 newPos = Vector2.Lerp(entity.bounceEffect.initialPos, entity.bounceEffect.targetPos, val);
             entity.position = new(newPos.x, newPos.y + yPos, entity.position.z);
         });

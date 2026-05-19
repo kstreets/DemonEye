@@ -24,127 +24,127 @@ public partial class Game {
     }
     
     private void InitEntities() {
-        gameData.entities.player = MakePlayer();
+        entities.player = MakePlayer();
     }
     
     private void InitInput() {
-        gameData.input.move = InputSystem.actions.FindAction("Move");
-        gameData.input.interact = InputSystem.actions.FindAction("Interact");
-        gameData.input.inventory = InputSystem.actions.FindAction("Inventory");
-        gameData.input.selectItem = InputSystem.actions.FindAction("SelectItem");
-        gameData.input.placeSingleItem = InputSystem.actions.FindAction("PlaceSingleItem");
-        gameData.input.splitStack = InputSystem.actions.FindAction("SplitStack");
-        gameData.input.moveStack = InputSystem.actions.FindAction("MoveStack");
-        gameData.input.useItem = InputSystem.actions.FindAction("UseItem");
-        gameData.input.escape = InputSystem.actions.FindAction("Escape");
-        gameData.input.quickUse1 = InputSystem.actions.FindAction("QuickUse1");
-        gameData.input.quickUse2 = InputSystem.actions.FindAction("QuickUse2");
-        gameData.input.quickUse3 = InputSystem.actions.FindAction("QuickUse3");
-        gameData.input.quickUse4 = InputSystem.actions.FindAction("QuickUse4");
+        input.move = InputSystem.actions.FindAction("Move");
+        input.interact = InputSystem.actions.FindAction("Interact");
+        input.inventory = InputSystem.actions.FindAction("Inventory");
+        input.selectItem = InputSystem.actions.FindAction("SelectItem");
+        input.placeSingleItem = InputSystem.actions.FindAction("PlaceSingleItem");
+        input.splitStack = InputSystem.actions.FindAction("SplitStack");
+        input.moveStack = InputSystem.actions.FindAction("MoveStack");
+        input.useItem = InputSystem.actions.FindAction("UseItem");
+        input.escape = InputSystem.actions.FindAction("Escape");
+        input.quickUse1 = InputSystem.actions.FindAction("QuickUse1");
+        input.quickUse2 = InputSystem.actions.FindAction("QuickUse2");
+        input.quickUse3 = InputSystem.actions.FindAction("QuickUse3");
+        input.quickUse4 = InputSystem.actions.FindAction("QuickUse4");
     }
 
     private void InitEntityPools() {
-        gameData.entityPools.itemDrop = CreateEntityPool<Entity>(gameData.prefabs.itemDrop, 20, null);
-        gameData.entityPools.bloodDrop = CreateEntityPool<Entity>(gameData.prefabs.bloodDrop, 10, null);
-        gameData.entityPools.projectile = CreateEntityPool<Projectile>(gameData.prefabs.baseProjectile, 20, OnSpawnProjectile);
-        gameData.entityPools.boneShatterProjectile = CreateEntityPool<Projectile>(gameData.prefabs.boneShatterProjectile, 20, OnSpawnProjectile);
-        gameData.entityPools.gooProjectile = CreateEntityPool<Projectile>(gameData.prefabs.gooProjectile, 20, OnSpawnProjectile);
-        gameData.entityPools.piercingShotProjectile = CreateEntityPool<Projectile>(gameData.prefabs.piercingProjectile, 20, OnSpawnProjectile);
-        gameData.entityPools.poisonDebuff = CreateEntityPool<Entity>(gameData.prefabs.poisonDebuff, 10, null);
-        gameData.entityPools.explosion = CreateEntityPool<Entity>(gameData.prefabs.explosion, 5, null);
-        gameData.entityPools.projectileImpact = CreateEntityPool<Entity>(gameData.prefabs.projectileImpact, 20, null);
-        gameData.entityPools.teleportIn = CreateEntityPool<Entity>(gameData.prefabs.teleportIn, 20, null);
-        gameData.entityPools.teleportOut = CreateEntityPool<Entity>(gameData.prefabs.teleportOut, 20, null);
-        gameData.entityPools.bloodSplatter = CreateEntityPool<Entity>(gameData.prefabs.bloodSplatter, 20, null);
-        gameData.entityPools.runSmoke = CreateEntityPool<Entity>(gameData.prefabs.runSmoke, 5, null);
-        gameData.entityPools.damageNumber = CreateEntityPool<Entity>(gameData.prefabs.damageNumber, 20, null);
-        gameData.entityPools.forgeExplosion = CreateEntityPool<Entity>(gameData.prefabs.forgeExplosion, 10, null);
-        gameData.entityPools.blast = CreateEntityPool<Entity>(gameData.prefabs.blast, 5, null);
+        entityPools.itemDrop = CreateEntityPool<Entity>(prefabs.itemDrop, 20, null);
+        entityPools.bloodDrop = CreateEntityPool<Entity>(prefabs.bloodDrop, 10, null);
+        entityPools.projectile = CreateEntityPool<Projectile>(prefabs.baseProjectile, 20, OnSpawnProjectile);
+        entityPools.boneShatterProjectile = CreateEntityPool<Projectile>(prefabs.boneShatterProjectile, 20, OnSpawnProjectile);
+        entityPools.gooProjectile = CreateEntityPool<Projectile>(prefabs.gooProjectile, 20, OnSpawnProjectile);
+        entityPools.piercingShotProjectile = CreateEntityPool<Projectile>(prefabs.piercingProjectile, 20, OnSpawnProjectile);
+        entityPools.poisonDebuff = CreateEntityPool<Entity>(prefabs.poisonDebuff, 10, null);
+        entityPools.explosion = CreateEntityPool<Entity>(prefabs.explosion, 5, null);
+        entityPools.projectileImpact = CreateEntityPool<Entity>(prefabs.projectileImpact, 20, null);
+        entityPools.teleportIn = CreateEntityPool<Entity>(prefabs.teleportIn, 20, null);
+        entityPools.teleportOut = CreateEntityPool<Entity>(prefabs.teleportOut, 20, null);
+        entityPools.bloodSplatter = CreateEntityPool<Entity>(prefabs.bloodSplatter, 20, null);
+        entityPools.runSmoke = CreateEntityPool<Entity>(prefabs.runSmoke, 5, null);
+        entityPools.damageNumber = CreateEntityPool<Entity>(prefabs.damageNumber, 20, null);
+        entityPools.forgeExplosion = CreateEntityPool<Entity>(prefabs.forgeExplosion, 10, null);
+        entityPools.blast = CreateEntityPool<Entity>(prefabs.blast, 5, null);
     }
 
     private void InitGameStates() {
-        gameData.states.gameStateMachine = new();
-        var gameStateMachine = gameData.states.gameStateMachine;
+        states.gameStateMachine = new();
+        var gameStateMachine = states.gameStateMachine;
         
-        gameData.states.mainMenu = gameStateMachine.CreateState(enter: OnMainMenuStateEnter, exit: OnMainMenuStateExit);
-        gameData.states.hideout = gameStateMachine.CreateState(update: OnHideoutStateUpdate, lateUpdate: OnHideoutStateLateUpdate, enter: OnHideoutStateEnter, exit: OnHideoutStateExit);
-        gameData.states.mapSelection = gameStateMachine.CreateState(update: OnMapSelectionUpdate, lateUpdate: OnMapSelectionLateUpdate, enter: OnMapSelectionEnter, exit: OnMapSelectionExit);
-        gameData.states.raid = gameStateMachine.CreateState(update: OnRaidStateUpdate, fixedUpdate: OnRaidStateFixedUpdate, lateUpdate: OnRaidStateLateUpdate, enter: OnRaidStateEnter, exit: OnRaidStateExit);
-        gameData.states.gameOver = gameStateMachine.CreateState(enter: OnGameOverEnter, exit: OnGameOverExit);
-        gameData.states.earlyExit = gameStateMachine.CreateState(enter: OnEarlyExitEnter, exit: OnEarlyExitExit);
-        gameData.states.winExit = gameStateMachine.CreateState(enter: OnWinExitEnter, exit: OnWinExitExit);
+        states.mainMenu = gameStateMachine.CreateState(enter: OnMainMenuStateEnter, exit: OnMainMenuStateExit);
+        states.hideout = gameStateMachine.CreateState(update: OnHideoutStateUpdate, lateUpdate: OnHideoutStateLateUpdate, enter: OnHideoutStateEnter, exit: OnHideoutStateExit);
+        states.mapSelection = gameStateMachine.CreateState(update: OnMapSelectionUpdate, lateUpdate: OnMapSelectionLateUpdate, enter: OnMapSelectionEnter, exit: OnMapSelectionExit);
+        states.raid = gameStateMachine.CreateState(update: OnRaidStateUpdate, fixedUpdate: OnRaidStateFixedUpdate, lateUpdate: OnRaidStateLateUpdate, enter: OnRaidStateEnter, exit: OnRaidStateExit);
+        states.gameOver = gameStateMachine.CreateState(enter: OnGameOverEnter, exit: OnGameOverExit);
+        states.earlyExit = gameStateMachine.CreateState(enter: OnEarlyExitEnter, exit: OnEarlyExitExit);
+        states.winExit = gameStateMachine.CreateState(enter: OnWinExitEnter, exit: OnWinExitExit);
         
-        gameData.states.raid.To(gameData.states.gameOver).When(() => player.health <= 0);
+        states.raid.To(states.gameOver).When(() => player.health <= 0);
     }
     
     private void InitButtonCallbacks() {
-        gameData.mainMenu.playButton.AddListener(() => {
-            gameData.states.gameStateMachine.SetStateIfNotCurrent(gameData.states.mapSelection);
+        mainMenu.playButton.AddListener(() => {
+            states.gameStateMachine.SetStateIfNotCurrent(states.mapSelection);
         });
         
-        gameData.mainMenu.hideoutButton.AddListener(() => {
-            gameData.states.gameStateMachine.SetStateIfNotCurrent(gameData.states.hideout);
+        mainMenu.hideoutButton.AddListener(() => {
+            states.gameStateMachine.SetStateIfNotCurrent(states.hideout);
         });
         
-        gameData.ui.menuBackButton.AddListener(() => {
+        ui.menuBackButton.AddListener(() => {
             OnEscapePressed(new());
         });
         
-        gameData.hideoutTabs.characterButton.onClick.AddListener(() => {
-            ToggleHideoutTab(gameData.hideoutTabs.characterButton, gameData.hideoutTabs.characterText);
-            ToggleHideoutPanels(playerPanel, stashPanel);
+        hideoutTabs.characterButton.onClick.AddListener(() => {
+            ToggleHideoutTab(hideoutTabs.characterButton, hideoutTabs.characterText);
+            ToggleHideoutPanels(playerPanel.panel, stashPanel.panel);
         });
         
-        gameData.hideoutTabs.eyeForgeButton.onClick.AddListener(() => {
-            ToggleHideoutTab(gameData.hideoutTabs.eyeForgeButton, gameData.hideoutTabs.eyeForgeText);
-            ToggleHideoutPanels(forgeDetailsPanel, eyeForgePanel, stashPanel);
+        hideoutTabs.eyeForgeButton.onClick.AddListener(() => {
+            ToggleHideoutTab(hideoutTabs.eyeForgeButton, hideoutTabs.eyeForgeText);
+            ToggleHideoutPanels(eyeForgeDetailsPanel.panel, eyeForgePanel.panel, stashPanel.panel);
         });
         
-        gameData.hideoutTabs.traderButton.onClick.AddListener(() => {
-            ToggleHideoutTab(gameData.hideoutTabs.traderButton, gameData.hideoutTabs.traderText);
-            ToggleHideoutPanels(traderInventoryPanel, traderTransactionPanel, stashPanel);
+        hideoutTabs.traderButton.onClick.AddListener(() => {
+            ToggleHideoutTab(hideoutTabs.traderButton, hideoutTabs.traderText);
+            ToggleHideoutPanels(traderPanel.panel, transactionPanel.panel, stashPanel.panel);
         });
         
-        gameData.hideoutTabs.questsButton.onClick.AddListener(() => {
-            ToggleHideoutTab(gameData.hideoutTabs.questsButton, gameData.hideoutTabs.questsText);
-            ToggleHideoutPanels(questsPanel);
+        hideoutTabs.questsButton.onClick.AddListener(() => {
+            ToggleHideoutTab(hideoutTabs.questsButton, hideoutTabs.questsText);
+            ToggleHideoutPanels(questsPanel.panel);
             RefreshQuestDisplays();
         });
         
-        gameData.hideoutTabs.skillsButton.onClick.AddListener(() => {
-            ToggleHideoutTab(gameData.hideoutTabs.skillsButton, gameData.hideoutTabs.skillsText);
-            ToggleHideoutPanels(skillsPanel.rectTransform, playerStatsPanel.rectTransform);
+        hideoutTabs.skillsButton.onClick.AddListener(() => {
+            ToggleHideoutTab(hideoutTabs.skillsButton, hideoutTabs.skillsText);
+            ToggleHideoutPanels(skillsPanel.panel.rectTransform, skillsPanel.playerStatsPanel.rectTransform);
         });
 
-        skillsPanel.hasteSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(gameData.skillUpgradePaths.haste, player.hasteSkillLevel));
-        skillsPanel.intellectSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(gameData.skillUpgradePaths.intellect, player.intellectSkillLevel));
-        skillsPanel.lifeBloodSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(gameData.skillUpgradePaths.lifeBlood, player.lifeBloodSkillLevel));
-        skillsPanel.strengthSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(gameData.skillUpgradePaths.strength, player.strengthSkillLevel));
+        skillsPanel.panel.hasteSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(skillUpgradePaths.haste, player.hasteSkillLevel));
+        skillsPanel.panel.intellectSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(skillUpgradePaths.intellect, player.intellectSkillLevel));
+        skillsPanel.panel.lifeBloodSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(skillUpgradePaths.lifeBlood, player.lifeBloodSkillLevel));
+        skillsPanel.panel.strengthSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(skillUpgradePaths.strength, player.strengthSkillLevel));
         
-        forgeEyeButton.AddListener(OnForgeButtonPressed);
+        eyeForgePanel.forgeButton.AddListener(OnForgeButtonPressed);
         
-        transactionPanel.buyToggle.AddListener(OnBuyTogglePressed);
-        transactionPanel.sellToggle.AddListener(OnSellTogglePressed);
-        transactionPanel.sellButton.AddListener(OnSellButtonPressed);
-        transactionPanel.moneyPurchaseButton.AddListener(OnMoneyPurchaseButtonPressed);
-        transactionPanel.barterPurchaseButton.AddListener(OnBarterPurchaseButtonPressed);
+        transactionPanel.transaction.buyToggle.AddListener(OnBuyTogglePressed);
+        transactionPanel.transaction.sellToggle.AddListener(OnSellTogglePressed);
+        transactionPanel.transaction.sellButton.AddListener(OnSellButtonPressed);
+        transactionPanel.transaction.moneyPurchaseButton.AddListener(OnMoneyPurchaseButtonPressed);
+        transactionPanel.transaction.barterPurchaseButton.AddListener(OnBarterPurchaseButtonPressed);
 
-        for (int i = 0; i < mapSelectionButtons.Length; i++) {
-            Button mapSelectionButton = mapSelectionButtons[i];
-            MapData map = gameData.config.maps[i];
+        for (int i = 0; i < mapSelectionPanel.buttons.Length; i++) {
+            Button mapSelectionButton = mapSelectionPanel.buttons[i];
+            MapData map = config.maps[i];
             mapSelectionButton.onClick.AddListener(() => LoadMapAsync(map));
         }
     }
     
     private void InitHotBar() {
-        gameData.hotBar.quickUseActions = new() {
-            gameData.input.quickUse1, 
-            gameData.input.quickUse2, 
-            gameData.input.quickUse3, 
-            gameData.input.quickUse4,
+        hotBar.quickUseActions = new() {
+            input.quickUse1, 
+            input.quickUse2, 
+            input.quickUse3, 
+            input.quickUse4,
         };
-        gameData.hotBar.slotUIs = gameData.ui.hotBarParent.GetComponentsInChildren<InventorySlotUI>();
-        Assert.IsTrue(gameData.hotBar.slotUIs.Length == playerQuickUseSize, "Make sure to match hot bar inventory UIs count with quick use count");
+        hotBar.slotUIs = ui.hotBarParent.GetComponentsInChildren<InventorySlotUI>();
+        Assert.IsTrue(hotBar.slotUIs.Length == playerQuickUseSize, "Make sure to match hot bar inventory UIs count with quick use count");
     }
     
 }
