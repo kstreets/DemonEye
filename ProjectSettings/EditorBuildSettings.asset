@@ -13,7 +13,7 @@ EditorBuildSettings:
     guid: 4efe7e94f18d0ac49b04d8cb35984b5d
   - enabled: 1
     path: Assets/Scenes/Lighthouse.unity
-    guid: e8d5527ccf1c92c469ff528fb1192c5e
+    guid: ae176a417cb123144a7c58e6bc9ee80a
   - enabled: 1
     path: Assets/Scenes/Customs.unity
     guid: 5fd8c1da36d40be4887828c63cb56905
@@ -24,11 +24,11 @@ EditorBuildSettings:
     path: Assets/Scenes/CustomsExpansion.unity
     guid: 1b58ed78e0f7d454c8f26fb20a6e47e8
   - enabled: 1
-    path: Assets/Scenes/Terminal.unity
-    guid: 3b59665c7c75ba7488e1a9f72ee30fc1
-  - enabled: 1
     path: Assets/Scenes/Ice.unity
     guid: 084d3e0c97648504aa5c92b310297d52
+  - enabled: 1
+    path: Assets/Scenes/Terminal.unity
+    guid: 3b59665c7c75ba7488e1a9f72ee30fc1
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: a532c4d929d3a764a805933affb91304, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
