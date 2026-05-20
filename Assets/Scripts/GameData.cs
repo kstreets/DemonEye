@@ -44,7 +44,6 @@ public class GameData {
         public GameObject bloodDrop;
         public GameObject poisonDebuff;
         public GameObject explosion;
-        public GameObject boomonExplosion;
         public GameObject gooProjectile;
         public GameObject piercingProjectile;
         public GameObject projectileImpact;
@@ -58,7 +57,6 @@ public class GameData {
         public GameObject eyeForgeSlot;
         public GameObject damageNumber;
         public GameObject forgeExplosion;
-        public GameObject forgeDustExplosion;
         public GameObject questSelectionToggle;
         public GameObject quest;
     }
@@ -190,9 +188,7 @@ public class GameData {
     [Serializable]
     public class PlayerPanel {
         public RectTransform panel;
-        public RectTransform equipmentParent;
         public RectTransform pocketParent;
-        public RectTransform pocketsBackpackParent;
         public RectTransform quickUseParent;
         public RectTransform inventoryParent;
         public TextMeshProUGUI healthText;

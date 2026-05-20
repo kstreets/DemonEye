@@ -219,35 +219,35 @@ public partial class Game {
         Color boostedColor = Styles.instance.increaseDescColor;
         EquipedStatsPanel equipedStatsPanel = playerPanel.equipedStatsPanel;
         
-        equipedStatsPanel.bleedResistText.text = Boosted(Player.Stat.BleedResist) ? 
-            DisplayProb(GetAbsoluteStat(Player.Stat.BleedResist), boostedColor) : 
-            DisplayProbNoColor(GetAbsoluteStat(Player.Stat.BleedResist));
+        equipedStatsPanel.bleedResistText.text = Boosted(PlayerStat.BleedResist) ? 
+            DisplayProb(GetAbsoluteStat(PlayerStat.BleedResist), boostedColor) : 
+            DisplayProbNoColor(GetAbsoluteStat(PlayerStat.BleedResist));
         
-        equipedStatsPanel.critChanceText.text = Boosted(Player.Stat.CritChance) ? 
-            DisplayProb(GetAbsoluteStat(Player.Stat.CritChance), boostedColor) :
-            DisplayProbNoColor(GetAbsoluteStat(Player.Stat.CritChance));
+        equipedStatsPanel.critChanceText.text = Boosted(PlayerStat.CritChance) ? 
+            DisplayProb(GetAbsoluteStat(PlayerStat.CritChance), boostedColor) :
+            DisplayProbNoColor(GetAbsoluteStat(PlayerStat.CritChance));
         
-        equipedStatsPanel.critMultiText.text = Boosted(Player.Stat.CritMulti) ? 
-            DisplayMultiplier(GetAbsoluteStat(Player.Stat.CritMulti), boostedColor) :
-            DisplayMultiplierNoColor(GetAbsoluteStat(Player.Stat.CritMulti));
+        equipedStatsPanel.critMultiText.text = Boosted(PlayerStat.CritMulti) ? 
+            DisplayMultiplier(GetAbsoluteStat(PlayerStat.CritMulti), boostedColor) :
+            DisplayMultiplierNoColor(GetAbsoluteStat(PlayerStat.CritMulti));
         
-        equipedStatsPanel.damageText.text = Boosted(Player.Stat.DamageMulti) ? 
-            DisplayMultiplier(GetAbsoluteStat(Player.Stat.DamageMulti), boostedColor) :
-            DisplayMultiplierNoColor(GetAbsoluteStat(Player.Stat.DamageMulti));
+        equipedStatsPanel.damageText.text = Boosted(PlayerStat.DamageMulti) ? 
+            DisplayMultiplier(GetAbsoluteStat(PlayerStat.DamageMulti), boostedColor) :
+            DisplayMultiplierNoColor(GetAbsoluteStat(PlayerStat.DamageMulti));
         
-        equipedStatsPanel.firerateText.text = Boosted(Player.Stat.FireratePercentage) ? 
-            DisplayProb(GetAbsoluteStat(Player.Stat.FireratePercentage), boostedColor) :
-            DisplayProbNoColor(GetAbsoluteStat(Player.Stat.FireratePercentage));
+        equipedStatsPanel.firerateText.text = Boosted(PlayerStat.FireratePercentage) ? 
+            DisplayProb(GetAbsoluteStat(PlayerStat.FireratePercentage), boostedColor) :
+            DisplayProbNoColor(GetAbsoluteStat(PlayerStat.FireratePercentage));
         
-        equipedStatsPanel.projectileCountText.text = Boosted(Player.Stat.ProjectileCount) ? 
-            DisplayNumber(GetAbsoluteStat(Player.Stat.ProjectileCount), boostedColor) :
-            DisplayNumberNoColor(GetAbsoluteStat(Player.Stat.ProjectileCount));
+        equipedStatsPanel.projectileCountText.text = Boosted(PlayerStat.ProjectileCount) ? 
+            DisplayNumber(GetAbsoluteStat(PlayerStat.ProjectileCount), boostedColor) :
+            DisplayNumberNoColor(GetAbsoluteStat(PlayerStat.ProjectileCount));
         
-        equipedStatsPanel.rangeText.text = Boosted(Player.Stat.RangePercentage) ? 
-            DisplayProb(GetAbsoluteStat(Player.Stat.RangePercentage), boostedColor) :
-            DisplayProbNoColor(GetAbsoluteStat(Player.Stat.RangePercentage));
+        equipedStatsPanel.rangeText.text = Boosted(PlayerStat.RangePercentage) ? 
+            DisplayProb(GetAbsoluteStat(PlayerStat.RangePercentage), boostedColor) :
+            DisplayProbNoColor(GetAbsoluteStat(PlayerStat.RangePercentage));
         
-        bool Boosted(Player.Stat stat) => GetEquipmentStatAdjustment(stat) > 0f; 
+        bool Boosted(PlayerStat stat) => GetEquipmentStatAdjustment(stat) > 0f; 
     }
     
     private void UpdateHotBarUI() {

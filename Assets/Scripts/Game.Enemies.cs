@@ -6,8 +6,6 @@ using Random = UnityEngine.Random;
 
 public partial class Game {
     
-    public static Action<Enemy> onEnemyDeath;
-    
     private int walkSideAnim = Animator.StringToHash("WalkSide");
     private int walkUpAnim = Animator.StringToHash("WalkUp");
     private int walkDownAnim = Animator.StringToHash("WalkDown");
@@ -35,6 +33,24 @@ public partial class Game {
         public Vector2 moveDir;
         public Vector2 graphicalDir;
         public Limiter changeDirLimiter;
+    }
+    
+    private void OnEnemyDeath(Enemy deadEnemy) {
+        if (RollProbability(deadEnemy.data.chanceToDropItem)) {
+            Item dropItem = GetItemFromDropPool(deadEnemy.data.dropPool);
+            if (dropItem) {
+                SpawnItemAsEntity(dropItem, 1, deadEnemy.position, Quaternion.identity);
+            }
+        }
+                    
+        Entity bloodSplatterEntity = SpawnEntity(entityPools.bloodSplatter, deadEnemy.position, Quaternion.identity);
+        DestroyEntity(bloodSplatterEntity, CurrentClipLength(bloodSplatterEntity.animator));
+                    
+        PlayAudioClip(audio.bloodBurstClip, deadEnemy.position);
+        DestroyEntity(deadEnemy);
+        
+        PlayerOnEnemyDeath(deadEnemy);
+        onEnemyDeath?.Invoke(deadEnemy);
     }
     
     private void UpdateEnemies() {
@@ -206,23 +222,7 @@ public partial class Game {
             if (enemy.health <= 0) {
                 Enemy deadEnemy = enemies[i];
                 const float deathDelay = 0.12f;
-                Delay(deadEnemy, deathDelay, static (deadEnemy) => {
-                    if (RollProbability(deadEnemy.data.chanceToDropItem)) {
-                        Item dropItem = gameInstance.GetItemFromDropPool(deadEnemy.data.dropPool);
-                        if (dropItem) {
-                            gameInstance.SpawnItemAsEntity(dropItem, 1, deadEnemy.position, Quaternion.identity);
-                        }
-                    }
-                    
-                    gameInstance.PlayerOnEnemyDeath(deadEnemy);
-                    onEnemyDeath?.Invoke(deadEnemy);
-                    
-                    Entity bloodSplatterEntity = gameInstance.SpawnEntity(gameInstance.entityPools.bloodSplatter, deadEnemy.position, Quaternion.identity);
-                    gameInstance.DestroyEntity(bloodSplatterEntity, gameInstance.CurrentClipLength(bloodSplatterEntity.animator));
-                    
-                    gameInstance.PlayAudioClip(gameInstance.audio.bloodBurstClip, deadEnemy.position);
-                    gameInstance.DestroyEntity(deadEnemy);
-                });
+                Delay(deadEnemy, deathDelay, static (deadEnemy) => gameInstance.OnEnemyDeath(deadEnemy));
                 enemies.RemoveAt(i);
             }
         }

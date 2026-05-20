@@ -24,7 +24,8 @@ public partial class Game {
     }
     
     private void InitEntities() { 
-        MakePlayer();
+        entities.player = MakePlayer();
+        LoadAndAssignPlayerSaveData(player);
     }
     
     private void InitInput() {

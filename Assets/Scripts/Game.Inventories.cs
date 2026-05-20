@@ -419,7 +419,7 @@ public partial class Game {
         // Because we wait to reduce the consumed inventory item count until the consuming tween has finished,
         // we can't drag it from its slot, why not just use decrement a reference to InventoryItem? Because when moving it 
         // between inventories the item reference may become stale.
-        if (player.consumingTween.isAlive && info.inventory == player.consumingInventory && info.slotIndex == player.consumingSlotIndex) {
+        if (player.isConsumingItem && info.inventory == player.consumption.inventory && info.slotIndex == player.consumption.slotIndex) {
             return true;
         }
         if (info.inventory == inventories.eyeForge && PlayingForgeAnimation) {

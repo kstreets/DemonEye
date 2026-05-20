@@ -47,10 +47,9 @@ public partial class Game : MonoBehaviour {
     [NonSerialized] public readonly GameData.Inventories inventories = new();
     [NonSerialized] public readonly GameData.HotBar hotBar = new();
     
+    public static Action<Enemy> onEnemyDeath;
     public static Action<InventorySlot[]> onSoldItemsToTrader;
     public static Action<string> customQuestEvent;
-    
-    public static Player player => gameInstance.entities.player;
     
     private void Start() {
         gameInstance = this;
@@ -248,6 +247,7 @@ public partial class Game : MonoBehaviour {
         camera.cinemachine.Follow = player.trans;
         
         InitMapGrid();
+        CreateDropPoolsForMap(curRaid.map);
         InitSpawnManager(curRaid.map.waves);
         SpawnMapResources(curRaid.mapInstance.resourceParent);
         SpawnInitialExitPortals(curRaid.mapInstance.exitPortalsParent, curRaid.map.exitPortalsCount);
@@ -293,11 +293,6 @@ public partial class Game : MonoBehaviour {
         SaveInventory(inventories.player);
         SavePlayerData();
         SaveActiveQuestProgresses();
-    }
-    
-    private void OnMapLoaded(MapData map) {
-        CreateDropPoolsForMap(map);
-        states.gameStateMachine.SetStateIfNotCurrent(states.raid);
     }
     
     // *******************************
@@ -365,7 +360,7 @@ public partial class Game : MonoBehaviour {
         sequence.Chain(Tween.UIFillAmount(ui.deathBgImage, 1f, 1f, Ease.InOutQuad));
         sequence.ChainCallback(() => {
             player.animator.enabled = true;
-            player.animator.Play(player.deathAnim);
+            player.animator.Play(PlayerAnimations.death);
         });
         
         sequence.Group(Tween.Custom(1f, 0f, 0.5f, val => {

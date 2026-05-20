@@ -135,7 +135,7 @@ public partial class Game {
             return 1f;
         }
         
-        float criticalStrikeProb = GetAbsoluteStat(Player.Stat.CritChance);
+        float criticalStrikeProb = GetAbsoluteStat(PlayerStat.CritChance);
         if (demonEye.equiped.bleedCritAugment.HasValue && enemy.bleed.HasValue) {
             criticalStrikeProb += demonEye.equiped.bleedCritAugment.Value.probability;
         }
@@ -149,7 +149,7 @@ public partial class Game {
         // Phase 1 - Multiplications to damage multiplier (Anything with a description of '1.5x Damage' or '0.65x Damage')
         {
             if (isCriticalHit) {
-                damageMultiplier *= GetAbsoluteStat(Player.Stat.CritMulti);
+                damageMultiplier *= GetAbsoluteStat(PlayerStat.CritMulti);
             }
             
             if (ProjectileIsType(proj, ProjectileTypeFlags.Trishot) && eyeInstance.trishot.TryGetValue(out var triShot)) {
@@ -189,7 +189,7 @@ public partial class Game {
     }
 
     private int GetBaseDamage() {
-        int damage = Mathf.RoundToInt(config.gameplay.damage * GetAbsoluteStat(Player.Stat.DamageMulti));
+        int damage = Mathf.RoundToInt(config.gameplay.damage * GetAbsoluteStat(PlayerStat.DamageMulti));
         int damageRange = Mathf.RoundToInt(damage * 0.05f);
         damage += Random.Range(-damageRange, damageRange);
         return Mathf.Clamp(damage, 1, int.MaxValue);

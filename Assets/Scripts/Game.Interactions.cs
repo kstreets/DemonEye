@@ -161,8 +161,8 @@ public partial class Game {
         .OnComplete(() => DestroyEntity(droppedEntity));
     }
     
-    private float DiscoverSlotTime => config.gameplay.discoverSlotTime * GetAbsoluteStat(Player.Stat.LootingSpeed);
-    private float DiscoverItemTime => config.gameplay.discoverItemTime * GetAbsoluteStat(Player.Stat.LootingSpeed);
+    private float DiscoverSlotTime => config.gameplay.discoverSlotTime * GetAbsoluteStat(PlayerStat.LootingSpeed);
+    private float DiscoverItemTime => config.gameplay.discoverItemTime * GetAbsoluteStat(PlayerStat.LootingSpeed);
     
     private void OpenLootInventory() {
         if (LootInventoryIsOpen) return;

@@ -42,9 +42,10 @@ public partial class Game {
     }
 
     public enum MapLoadingState { Unloaded, Loaded, Loading, Unloading }
-
+    
     public void LoadMapAsync(MapData mapData) {
-        if (LoadingMapInProgress()) return;
+        bool alreadyLoading = curRaid.mapLoadingState == MapLoadingState.Loading;
+        if (alreadyLoading) return;
 
         AsyncOperation loadOperation = SceneManager.LoadSceneAsync(mapData.sceneReference, LoadSceneMode.Additive);
         if (loadOperation == null) return;
@@ -72,12 +73,13 @@ public partial class Game {
                 break;
             }
             
-            OnMapLoaded(mapData);
+            states.gameStateMachine.SetStateIfNotCurrent(states.raid);
         }
     }
-
+    
     public void UnloadCurrentMapAsync() {
-        if (UnloadingMapInProgress()) return;
+        bool alreadyUnloading = curRaid.mapLoadingState == MapLoadingState.Unloading;
+        if (alreadyUnloading) return;
             
         curRaid.mapInstance.gameObject.SetActive(false); 
         
@@ -98,14 +100,6 @@ public partial class Game {
             curRaid.mapLoadingState = MapLoadingState.Unloaded;
         }
     } 
-    
-    public bool LoadingMapInProgress() {
-        return curRaid.mapLoadingState == MapLoadingState.Loading;
-    }
-    
-    public bool UnloadingMapInProgress() {
-        return curRaid.mapLoadingState == MapLoadingState.Unloading;
-    }
     
     private void SpawnMapResources(Transform resourceSpawnParent) {
         // Clear past resource lookups

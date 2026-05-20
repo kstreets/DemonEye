@@ -37,9 +37,9 @@ TextureImporter:
     filterMode: 0
     aniso: 1
     mipBias: 0
-    wrapU: 1
-    wrapV: 1
-    wrapW: 1
+    wrapU: 2
+    wrapV: 2
+    wrapW: 2
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
@@ -862,182 +862,6 @@ TextureImporter:
       bones: []
       spriteID: d4a964708c888ca4f96ce030397b0926
       internalID: -714245607
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: UISpriteSheet_36
-      rect:
-        serializedVersion: 2
-        x: 3
-        y: 21
-        width: 9
-        height: 6
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 1ca6d13092ea9db4b802577e4b606265
-      internalID: -1322789337
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: UISpriteSheet_37
-      rect:
-        serializedVersion: 2
-        x: 19
-        y: 21
-        width: 9
-        height: 6
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 9c8ba2463c222d74a8d4e82273f4b766
-      internalID: 500691667
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: UISpriteSheet_38
-      rect:
-        serializedVersion: 2
-        x: 52
-        y: 21
-        width: 9
-        height: 6
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 64e57f51c447c0c428973c7e8203fab8
-      internalID: -1140007088
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: UISpriteSheet_39
-      rect:
-        serializedVersion: 2
-        x: 35
-        y: 21
-        width: 9
-        height: 6
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: e0145c9d1676aed41b50e2382296779b
-      internalID: -1735161808
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: UISpriteSheet_40
-      rect:
-        serializedVersion: 2
-        x: 68
-        y: 21
-        width: 9
-        height: 6
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 4250cf05b03467246b61fdbfbda5b165
-      internalID: 738445434
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: UISpriteSheet_41
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 32
-        width: 32
-        height: 32
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: ce65ea0940be54145978aaf77789c8e3
-      internalID: 815896414
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: UISpriteSheet_42
-      rect:
-        serializedVersion: 2
-        x: 32
-        y: 32
-        width: 32
-        height: 32
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: a1d5bf6481670ad40b8fd624e50221f9
-      internalID: 764932500
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: UISpriteSheet_43
-      rect:
-        serializedVersion: 2
-        x: 64
-        y: 32
-        width: 32
-        height: 32
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 1df952fe0b4aa524d9fd63ac1d066317
-      internalID: 1129690133
       vertices: []
       indices: 
       edges: []
@@ -1909,7 +1733,7 @@ TextureImporter:
         width: 3
         height: 32
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 12, z: 0, w: 12}
       customData: 
       outline: []
@@ -1918,6 +1742,50 @@ TextureImporter:
       bones: []
       spriteID: 6af832d420af8c745abc35bef49f6945
       internalID: -1175820342
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UISpriteSheet_76
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 16
+        width: 60
+        height: 58
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f69bf256d8e8e6142938ca34cfd6792b
+      internalID: 907894152
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: UISpriteSheet_77
+      rect:
+        serializedVersion: 2
+        x: 131
+        y: 114
+        width: 43
+        height: 43
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 627aaeae793c31a49afd8ff76db202fd
+      internalID: 716761930
       vertices: []
       indices: 
       edges: []
@@ -2025,6 +1893,8 @@ TextureImporter:
       UISpriteSheet_73: -965966112
       UISpriteSheet_74: -406854303
       UISpriteSheet_75: -1175820342
+      UISpriteSheet_76: 907894152
+      UISpriteSheet_77: 716761930
       UISpriteSheet_8: 2031374853
       UISpriteSheet_9: 1832339534
   mipmapLimitGroupName: 

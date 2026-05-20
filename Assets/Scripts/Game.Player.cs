@@ -28,43 +28,49 @@ public partial class Game {
         public int lifeBloodSkillLevel;
         public int strengthSkillLevel;
         
-        public readonly int runSideAnim = Animator.StringToHash("PlayerRunSide");
-        public readonly int runUpAnim = Animator.StringToHash("PlayerRunUp");
-        public readonly int runDownAnim = Animator.StringToHash("PlayerRunDown");
-        public readonly int idleSideAnim = Animator.StringToHash("PlayerIdleSide");
-        public readonly int idleUpAnim = Animator.StringToHash("PlayerIdleUp");
-        public readonly int idleDownAnim = Animator.StringToHash("PlayerIdleDown");
-        public readonly int deathAnim = Animator.StringToHash("PlayerDeath");
-        public readonly int drinkAnim = Animator.StringToHash("PlayerDrink");
-        public readonly int eatAnim = Animator.StringToHash("PlayerEat");
-        public readonly int bandageAnim = Animator.StringToHash("PlayerBandage");
-
         public float lastShotTime;
         public int consecutiveShotCount;
         public float curStepDistance;
         
-        public Tween consumingTween;
-        public Inventory consumingInventory;
-        public int consumingSlotIndex;
+        public ItemConsumption consumption;
+        public bool isConsumingItem => consumption.tween.isAlive;
+        
+        public HealingOverTime healing;
+        public bool isHealingOverTime => healing.tween.isAlive;
 
         public Sprite defaultPlayerPreviewSprite;
-
-        public enum Stat {
-            BleedResist, CarryCapacity, CritChance, CritMulti, DamageMulti, FireratePercentage, Health, 
-            HealingAmount, HealingSpeed, LootingSpeed, MovementSpeedPercentage, ProjectileCount, RangePercentage,
-        }
     }
     
-    private void MakePlayer() {
-        gameInstance.entities.player = SpawnEntity<Player>(prefabs.player, Vector3.zero, Quaternion.identity, null, EntityLifetime.Global);
-        LoadAndAssignPlayerSaveData(player);
-        player.hurtCollider = player.gameObject.GetComponentInChildren<CapsuleCollider2D>();
-        player.defaultPlayerPreviewSprite = playerPanel.previewImage.sprite;
+    public enum PlayerStat {
+        BleedResist, CarryCapacity, CritChance, CritMulti, DamageMulti, FireratePercentage, Health, 
+        HealingAmount, HealingSpeed, LootingSpeed, MovementSpeedPercentage, ProjectileCount, RangePercentage,
+    }
+    
+    private static class PlayerAnimations {
+        public static int runSide = Animator.StringToHash("PlayerRunSide");
+        public static int runUp = Animator.StringToHash("PlayerRunUp");
+        public static int runDown = Animator.StringToHash("PlayerRunDown");
+        public static int idleSide = Animator.StringToHash("PlayerIdleSide");
+        public static int idleUp = Animator.StringToHash("PlayerIdleUp");
+        public static int idleDown = Animator.StringToHash("PlayerIdleDown");
+        public static int death = Animator.StringToHash("PlayerDeath");
+        public static int drink = Animator.StringToHash("PlayerDrink");
+        public static int eat = Animator.StringToHash("PlayerEat");
+        public static int bandage = Animator.StringToHash("PlayerBandage");
+    }
+    
+    public static Player player => gameInstance.entities.player;
+    
+    private Player MakePlayer() {
+        Player newPlayer = SpawnEntity<Player>(prefabs.player, Vector3.zero, Quaternion.identity, null, EntityLifetime.Global);
+        newPlayer.hurtCollider = newPlayer.gameObject.GetComponentInChildren<CapsuleCollider2D>();
+        newPlayer.defaultPlayerPreviewSprite = playerPanel.previewImage.sprite;
+        return newPlayer;
     }
     
     private void InitPlayer() {
-        player.animator.Play(player.idleDownAnim);
-        player.nextIdleAnimHash = player.idleDownAnim;
+        player.animator.Play(PlayerAnimations.idleDown);
+        player.nextIdleAnimHash = PlayerAnimations.idleDown;
     }
     
     private void DeinitPlayer() {
@@ -102,9 +108,8 @@ public partial class Game {
             }
         }
         
-        bool consumingItem = player.consumingTween.isAlive;
-        if (consumingItem) {
-            player.nextIdleAnimHash = player.idleDownAnim;
+        if (player.isConsumingItem) {
+            player.nextIdleAnimHash = PlayerAnimations.idleDown;
             return;
         }
 
@@ -133,16 +138,16 @@ public partial class Game {
         bool movingProdominatelyVertical = Mathf.Abs(Vector2.Dot(Vector2.up, moveInput)) > 0.9f;
         
         if (moveInput.magnitude > 0.1f && !movingProdominatelyVertical) {
-            player.animator.Play(player.runSideAnim);
-            player.nextIdleAnimHash = player.idleSideAnim;
+            player.animator.Play(PlayerAnimations.runSide);
+            player.nextIdleAnimHash = PlayerAnimations.idleSide;
         }
         else if (moveInput.y > 0) {
-            player.animator.Play(player.runUpAnim);
-            player.nextIdleAnimHash = player.idleUpAnim;
+            player.animator.Play(PlayerAnimations.runUp);
+            player.nextIdleAnimHash = PlayerAnimations.idleUp;
         }
         else if (moveInput.y < 0) {
-            player.animator.Play(player.runDownAnim);
-            player.nextIdleAnimHash = player.idleDownAnim;
+            player.animator.Play(PlayerAnimations.runDown);
+            player.nextIdleAnimHash = PlayerAnimations.idleDown;
         }
         else {
             player.animator.Play(player.nextIdleAnimHash);
@@ -163,10 +168,10 @@ public partial class Game {
             }
         }
         
-        bool canShoot = player.attackLimiter.TimeHasPassed(GetFirerateDelayBasedOnStats());
+        bool canShoot = player.attackLimiter.TimeHasPassed(GetFirerateDelay());
         if (!canShoot) return;
         
-        float projCount = GetAbsoluteStat(Player.Stat.ProjectileCount);
+        float projCount = GetAbsoluteStat(PlayerStat.ProjectileCount);
         int targetCount = Mathf.FloorToInt(projCount);
         float extraProjChance = projCount % 1;
         if (RollProbability(extraProjChance)) {
@@ -300,9 +305,15 @@ public partial class Game {
             SpawnProjectile(pool, pos, vel, lifeTime, player, typeFlags: flgs, spawnDelay: spawnDelay, flatCritChance: flatCritChance);
         }
     }
+    
+    public struct ItemConsumption {
+        public Tween tween;
+        public Inventory inventory;
+        public int slotIndex;
+    }
 
     private void HavePlayerConsumeItem(Inventory fromInventory, int slotIndex) {
-        if (playerIsHealingOverTime || player.consumingTween.isAlive) return;
+        if (player.isHealingOverTime || player.isConsumingItem) return;
         ConsumableItem item = fromInventory.slots[slotIndex].itemInstance.ItemRef as ConsumableItem;
 
         if (!item) return;
@@ -324,9 +335,10 @@ public partial class Game {
         const float performActionAtAnimationCompletion = 0.9f;
         
         int animationHash = item.animationType switch {
-            ConsumableItem.AnimationType.Drink   => player.drinkAnim,
-            ConsumableItem.AnimationType.Eat     => player.eatAnim,
-            ConsumableItem.AnimationType.Bandage => player.bandageAnim,
+            ConsumableItem.AnimationType.Drink   => PlayerAnimations.drink,
+            ConsumableItem.AnimationType.Eat     => PlayerAnimations.eat,
+            ConsumableItem.AnimationType.Bandage => PlayerAnimations.bandage,
+            _                                    => throw new ArgumentOutOfRangeException(),
         };
 
         player.animator.Play(animationHash);
@@ -337,27 +349,27 @@ public partial class Game {
         float postActionDelay = animationLength * (1f - performActionAtAnimationCompletion);
 
         // So we don't allocate any memory for the closure
-        player.consumingSlotIndex = slotIndex;
-        player.consumingInventory = fromInventory;
+        player.consumption.slotIndex = slotIndex;
+        player.consumption.inventory = fromInventory;
         
-        player.consumingTween = Tween.Delay(item, actionDelay, static (item) => {
+        player.consumption.tween = Tween.Delay(item, actionDelay, static (item) => {
             if (item.healingAmount > 0) {
                 gameInstance.HealPlayer(item.healingAmount, item.healingDuration);
             }
             if (item.bandageAmount > 0) {
                 player.bleeding = false;
             }
-            gameInstance.ReduceItemCountInInventory(player.consumingInventory, player.consumingSlotIndex);
+            gameInstance.ReduceItemCountInInventory(player.consumption.inventory, player.consumption.slotIndex);
         });
         
-        player.consumingTween.OnUpdate(this, static (_, _) => {
+        player.consumption.tween.OnUpdate(this, static (_, _) => {
             if (gameInstance.playerPanel.previewImage.sprite != player.spriteRenderer.sprite) {
                 gameInstance.playerPanel.previewImage.sprite = player.spriteRenderer.sprite;     
             }
         });
         
-        player.consumingTween.Chain(Tween.Delay(postActionDelay, static () => {
-            player.animator.Play(player.idleDownAnim);
+        player.consumption.tween.Chain(Tween.Delay(postActionDelay, static () => {
+            player.animator.Play(PlayerAnimations.idleDown);
             player.animator.Update(0f);
             if (gameInstance.playerPanel.previewImage.sprite != player.spriteRenderer.sprite) {
                 gameInstance.playerPanel.previewImage.sprite = player.spriteRenderer.sprite;     
@@ -366,15 +378,12 @@ public partial class Game {
         .Chain(Tween.Delay(additionalConsumeDelay));
     }
     
-    public class HealingOverTimeData {
+    public struct HealingOverTime {
         public Tween tween;
         public int healingGiven;
         public int targetHealing;
         public float healingPerSecond;
     } 
-    
-    private HealingOverTimeData healingOverTimeData = new();
-    private bool playerIsHealingOverTime => healingOverTimeData.tween.isAlive;
 
     private void HealPlayer(int healing, float duration = 0f) {
         if (duration <= 0f) {
@@ -382,30 +391,29 @@ public partial class Game {
             return;
         }
         
-        Assert.IsFalse(playerIsHealingOverTime, "Player is already healing over time, only 1 healing over time can be active");
+        Assert.IsFalse(player.isHealingOverTime, "Player is already healing over time, only 1 healing over time can be active");
         
-        var data = healingOverTimeData;
-        data.healingGiven = 0;
-        data.targetHealing = healing;
-        data.healingPerSecond = healing / duration;
+        player.healing.healingGiven = 0;
+        player.healing.targetHealing = healing;
+        player.healing.healingPerSecond = healing / duration;
         
-        data.tween = Tween.Delay(duration)
-        .OnUpdate(data, static (data, tween) => {
+        player.healing.tween = Tween.Delay(duration)
+        .OnUpdate(this, static (_, tween) => {
             int fullPlayerHealth = gameInstance.FullPlayerHealth();
-            float healingPerSecond = data.healingPerSecond;
+            float healingPerSecond = player.healing.healingPerSecond;
             float elapsedTime = tween.elapsedTime;
             
             int curTotalHealing = Mathf.FloorToInt(healingPerSecond * elapsedTime);
-            int healthToAdd = Mathf.Clamp(curTotalHealing - data.healingGiven, 0, int.MaxValue);
+            int healthToAdd = Mathf.Clamp(curTotalHealing - player.healing.healingGiven, 0, int.MaxValue);
             gameInstance.HealPlayer(healthToAdd);
-            data.healingGiven += healthToAdd;
+            player.healing.healingGiven += healthToAdd;
             
             if (player.health == fullPlayerHealth) {
                 tween.Complete();
             }
         })
-        .OnComplete(data, static (data) => {
-            int remainingHealthToGiveFromFloatingPointError = Mathf.Clamp(data.targetHealing - data.healingGiven, 0, int.MaxValue);
+        .OnComplete(static () => {
+            int remainingHealthToGiveFromFloatingPointError = Mathf.Clamp(player.healing.targetHealing - player.healing.healingGiven, 0, int.MaxValue);
             gameInstance.HealPlayer(remainingHealthToGiveFromFloatingPointError);
         });
     }
@@ -413,7 +421,7 @@ public partial class Game {
     public enum PlayerDamageType { Normal, Collision }
 
     public void DamagePlayer(int damage, PlayerDamageType damageType, Entity sourceEntity, float chanceToBleed = 0f) {
-        chanceToBleed -= GetAbsoluteStat(Player.Stat.BleedResist); 
+        chanceToBleed -= GetAbsoluteStat(PlayerStat.BleedResist); 
         if (!player.bleeding && !curRaid.map.playerCantBleed && !PlayerHealthIsAtAutoBleedStop() && RollProbability(chanceToBleed)) {
             player.bleeding = true;
         }
@@ -445,67 +453,67 @@ public partial class Game {
         return player.health <= FullPlayerHealth() * percentageOfHealthBleedingStops;
     }
     
-    private int GetPlayerStatLevel(Player.Stat stat) {
+    private int GetPlayerStatLevel(PlayerStat stat) {
         return stat switch {
-            Player.Stat.FireratePercentage      => player.hasteSkillLevel,
-            Player.Stat.MovementSpeedPercentage => player.hasteSkillLevel,
-            Player.Stat.LootingSpeed            => player.hasteSkillLevel,
+            PlayerStat.FireratePercentage      => player.hasteSkillLevel,
+            PlayerStat.MovementSpeedPercentage => player.hasteSkillLevel,
+            PlayerStat.LootingSpeed            => player.hasteSkillLevel,
         
-            Player.Stat.CritChance      => player.intellectSkillLevel,
-            Player.Stat.CritMulti       => player.intellectSkillLevel,
-            Player.Stat.ProjectileCount => player.intellectSkillLevel,
+            PlayerStat.CritChance      => player.intellectSkillLevel,
+            PlayerStat.CritMulti       => player.intellectSkillLevel,
+            PlayerStat.ProjectileCount => player.intellectSkillLevel,
             
-            Player.Stat.Health        => player.lifeBloodSkillLevel,
-            Player.Stat.HealingAmount => player.lifeBloodSkillLevel,
-            Player.Stat.HealingSpeed  => player.lifeBloodSkillLevel,
+            PlayerStat.Health        => player.lifeBloodSkillLevel,
+            PlayerStat.HealingAmount => player.lifeBloodSkillLevel,
+            PlayerStat.HealingSpeed  => player.lifeBloodSkillLevel,
             
-            Player.Stat.BleedResist   => player.strengthSkillLevel,
-            Player.Stat.DamageMulti        => player.strengthSkillLevel,
-            Player.Stat.CarryCapacity => player.strengthSkillLevel,
+            PlayerStat.BleedResist   => player.strengthSkillLevel,
+            PlayerStat.DamageMulti        => player.strengthSkillLevel,
+            PlayerStat.CarryCapacity => player.strengthSkillLevel,
             
             _ => 0,
         };
     }
     
-    private float GetAbsoluteStat(Player.Stat stat) {
+    private float GetAbsoluteStat(PlayerStat stat) {
         return GetPlayerStat(stat) + GetEquipmentStatAdjustment(stat);
     }
     
-    private float GetPlayerStat(Player.Stat stat) {
+    private float GetPlayerStat(PlayerStat stat) {
         float startingValue = stat switch {
-            Player.Stat.CarryCapacity           => config.gameplay.defaultStartingEncumberingWeight,
-            Player.Stat.CritChance              => config.gameplay.defaultCritChance,
-            Player.Stat.CritMulti               => config.gameplay.defaultCritMulti,
-            Player.Stat.DamageMulti             => 1f,
-            Player.Stat.FireratePercentage      => 1f,
-            Player.Stat.Health                  => 100f,
-            Player.Stat.LootingSpeed            => 1f,
-            Player.Stat.MovementSpeedPercentage => 1f,
-            Player.Stat.ProjectileCount         => 1f,
-            Player.Stat.RangePercentage         => 1f,
+            PlayerStat.CarryCapacity           => config.gameplay.defaultStartingEncumberingWeight,
+            PlayerStat.CritChance              => config.gameplay.defaultCritChance,
+            PlayerStat.CritMulti               => config.gameplay.defaultCritMulti,
+            PlayerStat.DamageMulti             => 1f,
+            PlayerStat.FireratePercentage      => 1f,
+            PlayerStat.Health                  => 100f,
+            PlayerStat.LootingSpeed            => 1f,
+            PlayerStat.MovementSpeedPercentage => 1f,
+            PlayerStat.ProjectileCount         => 1f,
+            PlayerStat.RangePercentage         => 1f,
             _                                   => 0f, 
         };
         return startingValue + GetPlayerStatAdjustment(stat);
     }
 
-    private float GetPlayerStatAdjustment(Player.Stat stat) {
+    private float GetPlayerStatAdjustment(PlayerStat stat) {
         return stat switch {
-            Player.Stat.CarryCapacity           => GetPlayerStatLevel(Player.Stat.CarryCapacity) * config.gameplay.carryCapacityIncPerLevel,
-            Player.Stat.CritChance              => GetPlayerStatLevel(Player.Stat.CritChance) * config.gameplay.critChanceIncPerLevel,
-            Player.Stat.CritMulti               => GetPlayerStatLevel(Player.Stat.CritMulti) * config.gameplay.critMultiplierIncPerLevel,
-            Player.Stat.DamageMulti             => GetPlayerStatLevel(Player.Stat.DamageMulti) * config.gameplay.damageMultiplierIncPerLevel,
-            Player.Stat.FireratePercentage      => GetPlayerStatLevel(Player.Stat.FireratePercentage) * config.gameplay.firerateIncPerLevel,
-            Player.Stat.Health                  => GetPlayerStatLevel(Player.Stat.Health) * config.gameplay.healthIncPerLevel,
-            Player.Stat.HealingAmount           => GetPlayerStatLevel(Player.Stat.HealingAmount) * config.gameplay.healingIncPerLevel,
-            Player.Stat.HealingSpeed            => GetPlayerStatLevel(Player.Stat.HealingSpeed) * config.gameplay.healingSpeedIncPerLevel,
-            Player.Stat.LootingSpeed            => GetPlayerStatLevel(Player.Stat.LootingSpeed) * config.gameplay.lootingSpeedIncPerLevel,
-            Player.Stat.MovementSpeedPercentage => GetPlayerStatLevel(Player.Stat.MovementSpeedPercentage) * config.gameplay.movementSpeedIncPerLevel,
-            Player.Stat.ProjectileCount         => GetPlayerStatLevel(Player.Stat.ProjectileCount) * config.gameplay.projectileCountIncPerLevel,
+            PlayerStat.CarryCapacity           => GetPlayerStatLevel(PlayerStat.CarryCapacity) * config.gameplay.carryCapacityIncPerLevel,
+            PlayerStat.CritChance              => GetPlayerStatLevel(PlayerStat.CritChance) * config.gameplay.critChanceIncPerLevel,
+            PlayerStat.CritMulti               => GetPlayerStatLevel(PlayerStat.CritMulti) * config.gameplay.critMultiplierIncPerLevel,
+            PlayerStat.DamageMulti             => GetPlayerStatLevel(PlayerStat.DamageMulti) * config.gameplay.damageMultiplierIncPerLevel,
+            PlayerStat.FireratePercentage      => GetPlayerStatLevel(PlayerStat.FireratePercentage) * config.gameplay.firerateIncPerLevel,
+            PlayerStat.Health                  => GetPlayerStatLevel(PlayerStat.Health) * config.gameplay.healthIncPerLevel,
+            PlayerStat.HealingAmount           => GetPlayerStatLevel(PlayerStat.HealingAmount) * config.gameplay.healingIncPerLevel,
+            PlayerStat.HealingSpeed            => GetPlayerStatLevel(PlayerStat.HealingSpeed) * config.gameplay.healingSpeedIncPerLevel,
+            PlayerStat.LootingSpeed            => GetPlayerStatLevel(PlayerStat.LootingSpeed) * config.gameplay.lootingSpeedIncPerLevel,
+            PlayerStat.MovementSpeedPercentage => GetPlayerStatLevel(PlayerStat.MovementSpeedPercentage) * config.gameplay.movementSpeedIncPerLevel,
+            PlayerStat.ProjectileCount         => GetPlayerStatLevel(PlayerStat.ProjectileCount) * config.gameplay.projectileCountIncPerLevel,
             _                                   => 0f,
         };
     }
     
-    private float GetEquipmentStatAdjustment(Player.Stat stat) {
+    private float GetEquipmentStatAdjustment(PlayerStat stat) {
         float statSum = 0f;
         foreach (EquipedUpgradeInstance mod in demonEye.equiped.upgradeInstances) {
             EyeUpgrade eyeUpgrade = mod.EyeUpgrade;
@@ -513,22 +521,22 @@ public partial class Game {
             if (!eyeUpgrade.modifiesStats) continue;
 
             switch (stat) {
-                case Player.Stat.CritChance:
+                case PlayerStat.CritChance:
                     statSum += eyeUpgrade.GetCritChance(stackCount); 
                     break;
-                case Player.Stat.CritMulti:
+                case PlayerStat.CritMulti:
                     statSum += eyeUpgrade.GetCritMultiplier(stackCount); 
                     break;
-                case Player.Stat.DamageMulti:
+                case PlayerStat.DamageMulti:
                     statSum += eyeUpgrade.GetDamageMultiplier(stackCount); 
                     break;
-                case Player.Stat.FireratePercentage:
+                case PlayerStat.FireratePercentage:
                     statSum += eyeUpgrade.GetFireratePercentage(stackCount); 
                     break;
-                case Player.Stat.ProjectileCount:
+                case PlayerStat.ProjectileCount:
                     statSum += eyeUpgrade.GetProjectileCount(stackCount); 
                     break;
-                case Player.Stat.RangePercentage:
+                case PlayerStat.RangePercentage:
                     statSum += eyeUpgrade.GetRangePercentage(stackCount);
                     break;
             }
@@ -536,10 +544,10 @@ public partial class Game {
         return statSum;
     }
 
-    private int FullPlayerHealth() => 100 + (int)GetPlayerStatAdjustment(Player.Stat.Health);
+    private int FullPlayerHealth() => 100 + (int)GetPlayerStatAdjustment(PlayerStat.Health);
 
     private float GetPlayerSpeed() {
-        float playerSpeed = config.gameplay.baseSpeed * GetAbsoluteStat(Player.Stat.MovementSpeedPercentage);
+        float playerSpeed = config.gameplay.baseSpeed * GetAbsoluteStat(PlayerStat.MovementSpeedPercentage);
         
         float speedReductionFromWeight = Mathf.Lerp(0f, config.gameplay.maxEncumberedSpeedReduction, GetOverweightCompletion());
         speedReductionFromWeight = Mathf.Clamp(speedReductionFromWeight, 0f, config.gameplay.maxEncumberedSpeedReduction);
@@ -555,22 +563,22 @@ public partial class Game {
         return playerSpeed;
     }
 
-    private float GetFirerateDelayBasedOnStats() {
+    private float GetFirerateDelay() {
         if (demonEye.equiped == demonEye.empty) {
             return config.gameplay.attackDelay;
         }
 
-        float attackDelay = config.gameplay.attackDelay / GetAbsoluteStat(Player.Stat.FireratePercentage);
+        float attackDelay = config.gameplay.attackDelay / GetAbsoluteStat(PlayerStat.FireratePercentage);
         return Mathf.Clamp(attackDelay, config.gameplay.cappedMinAttackDelay, config.gameplay.attackDelay);
     }
     
     private float GetProjectileRangeInSeconds() {
-        return config.gameplay.rangeInSeconds * GetAbsoluteStat(Player.Stat.RangePercentage);
+        return config.gameplay.rangeInSeconds * GetAbsoluteStat(PlayerStat.RangePercentage);
     }
     
     private void GetEncumberingWeightRange(out int startingWeight, out int endingWeight) {
-        startingWeight = (int)GetPlayerStat(Player.Stat.CarryCapacity);
-        int encumberingIncreaseFromStrength = (int)GetPlayerStatAdjustment(Player.Stat.CarryCapacity);
+        startingWeight = (int)GetPlayerStat(PlayerStat.CarryCapacity);
+        int encumberingIncreaseFromStrength = (int)GetPlayerStatAdjustment(PlayerStat.CarryCapacity);
         endingWeight = config.gameplay.maxEncumberedWeight + encumberingIncreaseFromStrength;
     }
 

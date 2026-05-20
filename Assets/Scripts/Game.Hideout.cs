@@ -727,17 +727,17 @@ public partial class Game {
         PlayerStatsPanel pStats = skillsPanel.playerStatsPanel;
         SkillsPanel skills = skillsPanel.panel;
         
-        pStats.carryCapacityRow.statValueText.text = ((int)GetPlayerStat(Player.Stat.CarryCapacity)).ToString();
-        pStats.critChanceRow.statValueText.text = DisplayProbNoColor(GetPlayerStat(Player.Stat.CritChance));
-        pStats.critMultiRow.statValueText.text = DisplayMultiplierNoColor(GetPlayerStat(Player.Stat.CritMulti));
-        pStats.damageRow.statValueText.text = DisplayMultiplierNoColor(GetPlayerStat(Player.Stat.DamageMulti));
-        pStats.firerateRow.statValueText.text = DisplayProbNoColor(GetPlayerStat(Player.Stat.FireratePercentage));
-        pStats.healthRow.statValueText.text = ((int)(GetPlayerStat(Player.Stat.Health))).ToString();
-        pStats.healingAmountRow.statValueText.text = DisplayIncrease(GetPlayerStatAdjustment(Player.Stat.HealingAmount));
-        pStats.healingSpeedRow.statValueText.text = DisplayProbIncrease(GetPlayerStatAdjustment(Player.Stat.HealingSpeed));
-        pStats.lootingSpeedRow.statValueText.text = DisplayProbNoColor(GetPlayerStat(Player.Stat.LootingSpeed));
-        pStats.movementSpeedRow.statValueText.text = DisplayProbNoColor(GetPlayerStat(Player.Stat.MovementSpeedPercentage));
-        pStats.projectileCountRow.statValueText.text = DisplayNumberNoColor(GetPlayerStat(Player.Stat.ProjectileCount));
+        pStats.carryCapacityRow.statValueText.text = ((int)GetPlayerStat(PlayerStat.CarryCapacity)).ToString();
+        pStats.critChanceRow.statValueText.text = DisplayProbNoColor(GetPlayerStat(PlayerStat.CritChance));
+        pStats.critMultiRow.statValueText.text = DisplayMultiplierNoColor(GetPlayerStat(PlayerStat.CritMulti));
+        pStats.damageRow.statValueText.text = DisplayMultiplierNoColor(GetPlayerStat(PlayerStat.DamageMulti));
+        pStats.firerateRow.statValueText.text = DisplayProbNoColor(GetPlayerStat(PlayerStat.FireratePercentage));
+        pStats.healthRow.statValueText.text = ((int)(GetPlayerStat(PlayerStat.Health))).ToString();
+        pStats.healingAmountRow.statValueText.text = DisplayIncrease(GetPlayerStatAdjustment(PlayerStat.HealingAmount));
+        pStats.healingSpeedRow.statValueText.text = DisplayProbIncrease(GetPlayerStatAdjustment(PlayerStat.HealingSpeed));
+        pStats.lootingSpeedRow.statValueText.text = DisplayProbNoColor(GetPlayerStat(PlayerStat.LootingSpeed));
+        pStats.movementSpeedRow.statValueText.text = DisplayProbNoColor(GetPlayerStat(PlayerStat.MovementSpeedPercentage));
+        pStats.projectileCountRow.statValueText.text = DisplayNumberNoColor(GetPlayerStat(PlayerStat.ProjectileCount));
         
         RefreshSkillRow(skills.hasteSkillRow, skillUpgradePaths.haste, player.hasteSkillLevel);
         RefreshSkillRow(skills.intellectSkillRow, skillUpgradePaths.intellect, player.intellectSkillLevel);
