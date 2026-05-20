@@ -4,7 +4,7 @@ using VInspector;
 using static ItemComponents;
 using static Game;
 
-public class Augment : UuidScriptableObject, ItemInterface {
+public class Augment : UuidScriptableObject, IEyeUpgrade {
 
     public EyeUpgrade derivedFrom;
     [Range(0f, 0.99f)] public float percentChanceOfDerivedToSpawn;
@@ -14,8 +14,17 @@ public class Augment : UuidScriptableObject, ItemInterface {
     
     [NonSerialized] public EyeUpgrade augmentedEyeUpgrade;
     
+    public MapSpawning MapSpawning => mapSpawning;
+    public UuidScriptableObject UuidObject => this;
+    public Sprite InventorySprite => derivedFrom.inventorySprite;
+    public string DisplayName => derivedFrom.displayName;
+    
     public void CreateAugmentItemFromDerived() {
+        derivedFrom.augmentedVariants ??= new();
+        derivedFrom.augmentedVariants.Add(this);
+        
         augmentedEyeUpgrade = Instantiate(derivedFrom);
+        augmentedEyeUpgrade.augmentCreatedFrom = this;
         augmentedEyeUpgrade.uuid = uuid;
         augmentedEyeUpgrade.mapSpawning = mapSpawning;
         augmentedEyeUpgrade.traderSpawning = traderSpawning;
@@ -35,13 +44,6 @@ public class Augment : UuidScriptableObject, ItemInterface {
     public virtual string GetDescription(int stackCount = 1) {
         return string.Empty;
     }
-    
-    public bool IsAugment => true;
-    public MapSpawning MapSpawning => mapSpawning;
-    public TraderSpawning TraderSpawning => traderSpawning; 
-    public UuidScriptableObject UuidObject => this;
-    public Sprite InventorySprite => derivedFrom.inventorySprite;
-    public string DisplayName => derivedFrom.displayName;
     
 #if UNITY_EDITOR
     

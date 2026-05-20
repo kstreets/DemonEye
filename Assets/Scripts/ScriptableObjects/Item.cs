@@ -6,7 +6,7 @@ using static ItemComponents;
 using static Game;
 
 [CreateAssetMenu(fileName = "Item", menuName = "Scriptable Objects/Item")]
-public class Item : UuidScriptableObject, ItemInterface {
+public class Item : UuidScriptableObject  {
 
     public string displayName;
     public Sprite inventorySprite;
@@ -14,26 +14,17 @@ public class Item : UuidScriptableObject, ItemInterface {
     public float pickupRadius = 0.07f;
     public ItemType type;
 
-    [Space]
-
     public PriceCategory priceCategory;
     public int buyPrice;
     public int sellPrice;
 
-    [Space]
-    
     public MapSpawning mapSpawning;
+    public TraderSpawning traderSpawning;
 
-    [Space]
-    
 #if UNITY_EDITOR
     [ReadOnly] [SerializeField] private Rarity rarity;
 #endif
-    
     public List<DropOrigin> dropOrigins;
-    public TraderSpawning traderSpawning;
-
-    [Space]
     
     public bool modifiesStats;
     [ShowIf(nameof(modifiesStats))]
@@ -53,6 +44,12 @@ public class Item : UuidScriptableObject, ItemInterface {
     [SerializeField] [Range(0, 10)] private int weight;
     [SerializeField] [TextArea] private string description;
     [EndIf]
+    
+    [NonSerialized] public Augment augmentCreatedFrom;
+    [NonSerialized] public List<Augment> augmentedVariants;
+    
+    public bool IsAugmented => augmentCreatedFrom != null;
+    public bool HasAugmentedVariants => augmentedVariants != null;
     
     public int Weight => itemGroupProps ? itemGroupProps.weight : weight;
     public int MaxStackCount => itemGroupProps ? itemGroupProps.maxStackCount : maxStackCount;
@@ -128,13 +125,6 @@ public class Item : UuidScriptableObject, ItemInterface {
     protected virtual string GetUpgradeDescription(int stackCount) {
         return string.Empty;
     }
-    
-    public bool IsAugment => false;
-    public MapSpawning MapSpawning => mapSpawning;
-    public TraderSpawning TraderSpawning => traderSpawning;
-    public UuidScriptableObject UuidObject => this;
-    public Sprite InventorySprite => inventorySprite;
-    public string DisplayName => displayName;
     
 #if UNITY_EDITOR
     

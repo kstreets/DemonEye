@@ -29,7 +29,7 @@ public partial class Game {
         MapSaves mapSaves = LoadFromFile<MapSaves>(savePaths.mapUnlocks);
         if (mapSaves == null) return;
         
-        var maps = config.maps;
+        List<MapData> maps = config.maps;
         
         if (maps.Count != mapSaves.unlockStates.Count) {
             Debug.Log("Maps save does not match current maps. Saves are not going to be loaded");

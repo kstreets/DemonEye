@@ -105,15 +105,11 @@ public partial class Game {
     }
     
     private Item RollForAugmentedVersion(Item item, DropPool dropPool, [CanBeNull] MapData map) {
-        if (item is not EyeUpgrade upgradeItem) {
+        if (!item.HasAugmentedVariants) {
             return item;
         }
         
-        bool hasAugments = res.eyeUpgradeAugmentsLookup.TryGetValue(upgradeItem, out var augments);
-        if (!hasAugments) {
-            return item;
-        }
-
+        List<Augment> augments = item.augmentedVariants;
         augments.Shuffle();
         
         foreach (Augment augment in augments) {

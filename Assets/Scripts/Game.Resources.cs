@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public partial class Game {
     
@@ -19,12 +17,6 @@ public partial class Game {
             }
             if (resObject is Augment augment) {
                 augment.CreateAugmentItemFromDerived();
-                if (res.eyeUpgradeAugmentsLookup.TryGetValue(augment.derivedFrom, out var augmentList)) {
-                    augmentList.Add(augment);
-                }
-                else {
-                    res.eyeUpgradeAugmentsLookup.Add(augment.derivedFrom, new() { augment });
-                }
             }
         }
     }

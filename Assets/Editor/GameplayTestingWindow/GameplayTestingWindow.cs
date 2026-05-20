@@ -131,14 +131,14 @@ public class GameplayTestingWindow : EditorWindow {
         ItemPoolContainer.Clear();
         if (currentMap == null) return;
         
-        List<ItemInterface> eyeUpgrades = LoadAllEyeUpgrades();
+        List<IEyeUpgrade> eyeUpgrades = LoadAllEyeUpgrades();
         eyeUpgrades.Sort(CompareItemsSpawnMaps);
         
         if (hideInactive) {
             eyeUpgrades = eyeUpgrades.Where(ItemIsApartOfCurrentDropPool).ToList();
         }
         
-        foreach (ItemInterface eyeUpgrade in eyeUpgrades) {
+        foreach (IEyeUpgrade eyeUpgrade in eyeUpgrades) {
             Image image = new() {
                 sprite = eyeUpgrade.InventorySprite,
                 style = { width = 40, height = 40, backgroundColor = GetBackgroundColor(eyeUpgrade) },
@@ -151,7 +151,7 @@ public class GameplayTestingWindow : EditorWindow {
         } 
     }
     
-    private bool ItemIsApartOfCurrentDropPool(ItemInterface itemInterface) {
+    private bool ItemIsApartOfCurrentDropPool(IEyeUpgrade itemInterface) {
         MapData curSelectedMap = MapField.value as MapData;
         if (itemInterface.MapSpawning.spawnsOnAll) return true;
         if (PassedFirstMapSpawn(itemInterface.MapSpawning.firstSpawnMap)) return true;
@@ -163,24 +163,24 @@ public class GameplayTestingWindow : EditorWindow {
         }
     }
     
-    private int CompareItemsSpawnMaps(ItemInterface x, ItemInterface y) {
+    private int CompareItemsSpawnMaps(IEyeUpgrade x, IEyeUpgrade y) {
         return GetMapIndex(x).CompareTo(GetMapIndex(y));
     }
     
-    private int GetMapIndex(ItemInterface itemInterface) {
-        if (itemInterface.MapSpawning.spawnsOnAll) {
+    private int GetMapIndex(IEyeUpgrade eyeUpgrade) {
+        if (eyeUpgrade.MapSpawning.spawnsOnAll) {
             return -1;
         } 
-        if (itemInterface.MapSpawning.firstSpawnMap != null) {
-            int index = Maps.IndexOf(itemInterface.MapSpawning.firstSpawnMap);
+        if (eyeUpgrade.MapSpawning.firstSpawnMap != null) {
+            int index = Maps.IndexOf(eyeUpgrade.MapSpawning.firstSpawnMap);
             bool mapNotInMapList = index == -1;
             return mapNotInMapList ? int.MaxValue : index;
         }
         return int.MaxValue;
     }
     
-    private List<ItemInterface> LoadAllEyeUpgrades() {
-        List<ItemInterface> eyeUpgrades = new();
+    private List<IEyeUpgrade> LoadAllEyeUpgrades() {
+        List<IEyeUpgrade> eyeUpgrades = new();
         UuidScriptableObject[] resourceObjects = Resources.LoadAll<UuidScriptableObject>(string.Empty);
         foreach (UuidScriptableObject res in resourceObjects) {
             if (res is Augment augment) {
@@ -193,12 +193,12 @@ public class GameplayTestingWindow : EditorWindow {
         return eyeUpgrades;
     }
     
-    private Color GetBackgroundColor(ItemInterface itemInterface) {
+    private Color GetBackgroundColor(IEyeUpgrade eyeUpgrade) {
         int curMapIndex = Maps.IndexOf(currentMap);
-        int firstMapItemIndex = GetMapIndex(itemInterface);
+        int firstMapItemIndex = GetMapIndex(eyeUpgrade);
         
         string colorString;
-        if (Selection.activeObject == itemInterface.UuidObject) {
+        if (Selection.activeObject == eyeUpgrade.UuidObject) {
             colorString = "#2C5D87";
         }
         else if (firstMapItemIndex < curMapIndex) {
@@ -215,16 +215,16 @@ public class GameplayTestingWindow : EditorWindow {
         return color;
     }
     
-    private void OnImageClicked(ItemInterface itemInterface) {
-        if (Selection.activeObject == itemInterface.UuidObject) {
+    private void OnImageClicked(IEyeUpgrade eyeUpgrade) {
+        if (Selection.activeObject == eyeUpgrade.UuidObject) {
             Selection.activeObject = null;
             return;
         }
-        Selection.activeObject = itemInterface.UuidObject;
+        Selection.activeObject = eyeUpgrade.UuidObject;
     }
     
     private void RefreshImageBackgrounds() {
-        ItemPoolContainer.Query<Image>().ForEach(img => img.style.backgroundColor = GetBackgroundColor(img.userData as ItemInterface));
+        ItemPoolContainer.Query<Image>().ForEach(img => img.style.backgroundColor = GetBackgroundColor(img.userData as IEyeUpgrade));
     }
     
     private RaidSpawnPattern InjectRaidSpawnPattern() {

@@ -1,13 +1,14 @@
 using UnityEngine;
 using static ItemComponents;
 
-public interface ItemInterface {
+public interface IEyeUpgrade {
     
-    public bool IsAugment { get; }
     public MapSpawning MapSpawning { get; }
-    public TraderSpawning TraderSpawning { get; }
     public UuidScriptableObject UuidObject { get; }
     public Sprite InventorySprite { get; }
     public string DisplayName { get; }
+    
+    public Augment Augment => UuidObject as Augment;
+    public bool IsAugment => Augment != null;
     
 }

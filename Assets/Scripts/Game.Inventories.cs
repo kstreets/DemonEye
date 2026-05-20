@@ -33,7 +33,7 @@ public partial class Game {
                 };
             }
         }
-
+        
         public bool IsFullStack => count == ItemRef.MaxStackCount;
 
         public ItemInstance(UuidScriptableObject uuidObject = null, int count = 1) {
@@ -60,11 +60,6 @@ public partial class Game {
             }
 
             return clonedItemInstance;
-        }
-        
-        public bool TryGetUuidObject(out UuidScriptableObject uuidObject) { 
-            // Demon Eye instances will not be in the resourceLookup
-            return gameInstance.res.lookup.TryGetValue(itemOrInstanceUuid, out uuidObject);
         }
         
     }

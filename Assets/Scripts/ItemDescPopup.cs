@@ -22,8 +22,9 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
         gameObject.SetActive(true);
         
         Item item = itemInstance.ItemRef;
+        
         nameText.text = item.displayName;
-        SetTags(itemInstance, item);
+        SetTags(item);
         SetMetaInfo(itemInstance, item);
         SetDescription(itemInstance, item);
         
@@ -41,7 +42,7 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
         gameObject.SetActive(false);
     }
 
-    private void SetTags(ItemInstance itemInstance, Item item) {
+    private void SetTags(Item item) {
         Item.Rarity itemRarity = item.GetRarity();
         Color itemRarityColor = styles.GetColorForRarity(itemRarity);
 
@@ -65,11 +66,11 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
         }
         
         augmentedTagGroup.gameObject.SetActive(false);
-        if (itemInstance.TryGetUuidObject(out var uuidObj) && uuidObj is Augment) {
+        if (item.IsAugmented) {
             augmentedTagGroup.gameObject.SetActive(true);
             augmentedTagGroup.image.color = itemRarityColor;
         }
-        
+            
         rarityTagGroup.image.color = itemRarityColor;
         rarityTagGroup.textMesh.text = itemRarity.ToString();
     }
@@ -105,9 +106,9 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
             descText.text = item.GetDescription();
         }
         
-        if (itemInstance.TryGetUuidObject(out var uuidObject) && uuidObject is Augment augment) {
+        if (item.IsAugmented) {
             augmentDesc.gameObject.SetActive(true);
-            augmentDesc.descTextMesh.text = augment.GetDescription();
+            augmentDesc.descTextMesh.text = item.augmentCreatedFrom.GetDescription();
             augmentDesc.stackCountTextMesh.gameObject.SetActive(false);
         }
         
