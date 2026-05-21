@@ -97,23 +97,89 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: AttackRune1_0
+      name: SulfurHoles_0
       rect:
         serializedVersion: 2
-        x: 3
-        y: 16
-        width: 54
-        height: 31
+        x: 7
+        y: 3
+        width: 31
+        height: 21
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 94d6a917db308d800800000000000000
-      internalID: 637263459462573385
+      spriteID: 94049785412e49d4ab64d6c49a2580bb
+      internalID: 445707394
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurHoles_1
+      rect:
+        serializedVersion: 2
+        x: 42
+        y: 15
+        width: 26
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 039575edec41e4440988895755990967
+      internalID: 1256170987
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurHoles_2
+      rect:
+        serializedVersion: 2
+        x: 7
+        y: 44
+        width: 31
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 47bdd151f5be66a45b2c7a704b121a94
+      internalID: -254195850
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurHoles_3
+      rect:
+        serializedVersion: 2
+        x: 44
+        y: 34
+        width: 20
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5952138c562b3d54f992a8a4c843f3bf
+      internalID: -2118093
       vertices: []
       indices: 
       edges: []
@@ -133,6 +199,10 @@ TextureImporter:
       entries: []
     nameFileIdTable:
       AttackRune1_0: 637263459462573385
+      SulfurHoles_0: 445707394
+      SulfurHoles_1: 1256170987
+      SulfurHoles_2: -254195850
+      SulfurHoles_3: -2118093
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

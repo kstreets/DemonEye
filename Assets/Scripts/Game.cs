@@ -2,7 +2,6 @@ using System;
 using PrimeTween;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 using Vector3 = UnityEngine.Vector3;
 using EffectsIndicies = Game.Entity.EffectsIndicies;
