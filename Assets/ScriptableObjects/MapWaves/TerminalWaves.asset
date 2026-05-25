@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6be7b725e872d8544a676cc6767aad0a, type: 3}
   m_Name: TerminalWaves
   m_EditorClassIdentifier: 
-  timeBeforeFirstPhase: 0
+  timeBeforeFirstPhase: 1000
   timeBeforePortalSpawns: 15
   delayBetweenEnemyRepositions: 1
   maxEnemyRepositionCount: 8
@@ -46,7 +46,7 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 0
     enemyBatches:
-    - enemyCount: 20
+    - enemyCount: 10
       enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
   - phaseDuration: 50
     spawnDuration: 8

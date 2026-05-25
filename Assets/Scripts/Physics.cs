@@ -10,8 +10,8 @@ public static class Physics {
         _overlapCircleResults.Clear();
         
         ContactFilter2D contactFilter = new() {
-        layerMask = mask, 
-        useLayerMask = true,
+            layerMask = mask, 
+            useLayerMask = true,
         };
         
         int count = Physics2D.OverlapCircle(center, radius, contactFilter, _overlapCircleResults);
