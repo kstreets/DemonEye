@@ -383,10 +383,7 @@ public partial class Game {
             forgeButton.StopKeepPressed();
             forgeButton.text.text = prevButtonText;
             
-            ItemInstance newDemonEyeItemInstance = new() {
-                nestedUuids = new(),
-                isDemonEye = true,
-            };
+            using var _ = ListPool<ItemInstance>.Get(out var eyeUpgradeItemInstances);
 
             foreach (InventorySlot slot in inventories.eyeForge.slots) {
                 slot.ui.itemUI.rectTransform.anchoredPosition = Vector2.zero;
@@ -395,13 +392,13 @@ public partial class Game {
                 if (slot.itemInstance == null) continue;
                 
                 if (slot.ui.OnlyAcceptsType(itemTypes.eyeUpgrade)) {
-                    newDemonEyeItemInstance.nestedUuids.Add(slot.itemInstance.itemOrInstanceUuid);
+                    eyeUpgradeItemInstances.Add(slot.itemInstance);
                 }
                 slot.itemInstance = null;
             }
             
-            BuildAndRegisterEye(newDemonEyeItemInstance);
-            inventories.eyeForge.slots[eyeSlotIndex].itemInstance = newDemonEyeItemInstance;
+            ItemInstance newDemonEye = CreateNewDemonEyeItemInstance(eyeUpgradeItemInstances);
+            inventories.eyeForge.slots[eyeSlotIndex].itemInstance = newDemonEye;
         });
     }
     

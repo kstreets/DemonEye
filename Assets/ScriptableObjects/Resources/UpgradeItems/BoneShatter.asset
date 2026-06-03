@@ -25,24 +25,6 @@ MonoBehaviour:
     spawnsOnAll: 1
     firstSpawnMap: {fileID: 0}
     spawnsOnMaps: []
-  spawnsOnAllMaps: 1
-  firstSpawnMap: {fileID: 0}
-  spawnsOnMaps: []
-  rarity: 0
-  dropOrigins:
-  - dropPool: {fileID: 11400000, guid: 447693d567ac32848b6d0306b40001c5, type: 2}
-    chanceToSpawn: 0.55
-  - dropPool: {fileID: 11400000, guid: ac65e2b20c03fcb43989ec16398ae8cd, type: 2}
-    chanceToSpawn: 0.213
-  traderLevelRequired: 1
-  traderStockRange: {x: 1, y: 5}
-  barterRequirements:
-  - item: {fileID: 11400000, guid: c300cfd9dba50fc438f83dec791af29b, type: 2}
-    count: 5
-  - item: {fileID: 11400000, guid: 27c971c009f757f4da645a16777716dc, type: 2}
-    count: 2
-  - item: {fileID: 11400000, guid: 3663bc49c2abaee43b142fa80eb566bd, type: 2}
-    count: 4
   traderSpawning:
     levelRequired: 1
     stockRange: {x: 1, y: 5}
@@ -53,6 +35,12 @@ MonoBehaviour:
       count: 2
     - item: {fileID: 11400000, guid: 3663bc49c2abaee43b142fa80eb566bd, type: 2}
       count: 4
+  rarity: 0
+  dropOrigins:
+  - dropPool: {fileID: 11400000, guid: 447693d567ac32848b6d0306b40001c5, type: 2}
+    chanceToSpawn: 0.55
+  - dropPool: {fileID: 11400000, guid: ac65e2b20c03fcb43989ec16398ae8cd, type: 2}
+    chanceToSpawn: 0.213
   modifiesStats: 0
   critChance: 0
   critMultiplier: 0
@@ -65,7 +53,7 @@ MonoBehaviour:
   weight: 0
   description: 
   relativeMechanicDesc: {fileID: 0}
-  probability: 0.3
+  probability: 0.4
   shardsCount: 4
   perShardDamageMulti: 0.35
   projectileLifetime: 0.5

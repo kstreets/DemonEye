@@ -35,6 +35,7 @@ public partial class Game {
         public BoneShatterEyeUpgrade.InstanceData? boneShatter;
         public StoppingPowerEyeUpgrade.InstanceData? stoppingPower;
         public ProjectileCountEyeUpgrade.InstanceData? projectileCount;
+        public PoisonEyeUpgrade.InstanceData? poison;
         
         public BleedCritAugment.InstanceData? bleedCritAugment;
         public DoubleCritAugment.InstanceData? doubleCritAugment;
@@ -55,6 +56,20 @@ public partial class Game {
         if (newDemonEye != demonEye.empty) {
             customQuestEvent?.Invoke("FirstDemonEyeEquiped");
         }
+    }
+    
+    public ItemInstance CreateNewDemonEyeItemInstance(List<ItemInstance> eyeUpgradeItemInstances) {
+        ItemInstance newDemonEyeItemInstance = new() {
+            nestedUuids = new(),
+            isDemonEye = true,
+        };
+        
+        foreach (ItemInstance upgradeInstance in eyeUpgradeItemInstances) {
+            newDemonEyeItemInstance.nestedUuids.Add(upgradeInstance.itemOrInstanceUuid);
+        }
+        
+        BuildAndRegisterEye(newDemonEyeItemInstance);
+        return newDemonEyeItemInstance;
     }
 
     private void BuildAndRegisterEye(ItemInstance itemInstance) {

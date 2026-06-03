@@ -111,12 +111,12 @@ public class CoolerGrid : MonoBehaviour {
         predictedPlayerPos = Vector2.Lerp(predictedPlayerPos, playerPos + playerVelocity * lookAheadTime, Time.deltaTime * lookAheadSpeed);
     }
 
-    public Vector3 GetSpawnPosition(Vector2 playerPosition, int innerCellRadius, int outerCellRadius, bool predictPlayerPos) {
+    public Vector3 GetSpawnPosition(Vector2 playerPosition, int innerCellRadius, int outerCellRadius, bool predictPlayerPos, List<Vector2> reservedPositions) {
         if (!TryGetCellAtPosition(playerPosition, out GridCell playerCell)) {
             return Vector2.zero;
         }
         
-        UpdateDataForSpawnCells(playerCell, innerCellRadius, outerCellRadius, predictPlayerPos);
+        UpdateDataForSpawnCells(playerCell, innerCellRadius, outerCellRadius, predictPlayerPos, reservedPositions);
         spawnCells.Sort(static (x, y) => y.spawnWeight.CompareTo(x.spawnWeight)); // Sort in descending order 
         
         int maxIndex = Mathf.RoundToInt(spawnCells.Count * 0.2f);
@@ -218,7 +218,7 @@ public class CoolerGrid : MonoBehaviour {
         return y * width + x;
     }
 
-    private void UpdateDataForSpawnCells(GridCell playerCell, int innerRadius, int outerRadius, bool predictPlayerPos) {
+    private void UpdateDataForSpawnCells(GridCell playerCell, int innerRadius, int outerRadius, bool predictPlayerPos, List<Vector2> reservedPositions) {
         Assert.IsTrue(innerRadius != outerRadius, $"{nameof(innerRadius)} cannot equal {nameof(outerRadius)}");
         
         spawnCells.Clear();
@@ -268,9 +268,11 @@ public class CoolerGrid : MonoBehaviour {
         for (int i = 0; i < spawnCells.Count; i++) {
             GridCell cell = spawnCells[i];
             const float enemyWeight = 1f;
-            const float dirWeight = 1f;
+            const float dirWeight = 1.1f;
 
             int enemyCount = Physics2D.OverlapCircle(cell.position, expandedSizeForEnemyTesting, filter, colList);
+            enemyCount += GetOverlappingPositionsCount(cell.position, expandedSizeForEnemyTesting, reservedPositions);
+            
             float weight = (1f / (enemyCount + 1f)) * enemyWeight;
 
             if (addDirectionalWeight) {
@@ -289,7 +291,17 @@ public class CoolerGrid : MonoBehaviour {
             spawnCells[i] = cell;
         }
     }
-
+    
+    private int GetOverlappingPositionsCount(Vector2 center, float radius, List<Vector2> positions) {
+        int count = 0;
+        foreach (Vector2 pos in positions) {
+            if (Vector2.SqrMagnitude(pos - center) < radius * radius) {
+                count++;
+            }
+        }
+        return count;
+    }
+    
     private Vector2 CalculateCellPosition(int widthIndex, int heightIndex) {
         Vector3 posOffset = new(cellSize / 2f, cellSize / 2f, 0f);
         Vector2 cellPos = transform.position + posOffset + new Vector3(widthIndex * cellSize, heightIndex * cellSize);

@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DistanceDamageAugment
   uuid: -247024783
   derivedFrom: {fileID: 11400000, guid: 39bde04b92cb89449b8a0451d4916433, type: 2}
-  percentChanceOfDerivedToSpawn: 0.374
+  percentChanceOfDerivedToSpawn: 0.512
   mapSpawning:
     spawnsOnAll: 0
-    firstSpawnMap: {fileID: 11400000, guid: 9353817006d76f54fb1273b8ced36a68, type: 2}
+    firstSpawnMap: {fileID: 11400000, guid: aac23282a2cd7784ab5861d2a0508e69, type: 2}
     spawnsOnMaps: []
   traderSpawning:
     levelRequired: 1

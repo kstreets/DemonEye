@@ -10,18 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0aa690954e129034abb7319a8a860125, type: 3}
-  m_Name: TerminalMap
+  m_Name: SulfurFieldsMap
   m_EditorClassIdentifier: Assembly-CSharp::MapData
   displayName: Terminal
   sceneReference: Terminal
   waves: {fileID: 11400000, guid: fc2949be33c63e14eb9ce0a4eed242b8, type: 2}
   altarSoulPrice: 150
-  exitPortalsCount: 1
+  exitPortalsCount: 2
   playerCantBleed: 0
   eyeUpgradeOnBodyChance: 0.12
   consecutiveEyeUpgradeChanceReductionOnBody: 0.08
   commonLootRarityIncrease: 0
-  uncommonLootRarityIncrease: 0
-  rareLootRarityIncrease: 0
+  uncommonLootRarityIncrease: 0.3
+  rareLootRarityIncrease: 0.2
   epicLootRarityIncrease: 0
   legendaryLootRarityIncrease: 0

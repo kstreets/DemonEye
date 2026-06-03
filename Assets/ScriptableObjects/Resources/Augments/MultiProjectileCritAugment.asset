@@ -17,10 +17,10 @@ MonoBehaviour:
   percentChanceOfDerivedToSpawn: 0.444
   mapSpawning:
     spawnsOnAll: 0
-    firstSpawnMap: {fileID: 11400000, guid: 9353817006d76f54fb1273b8ced36a68, type: 2}
+    firstSpawnMap: {fileID: 11400000, guid: aac23282a2cd7784ab5861d2a0508e69, type: 2}
     spawnsOnMaps: []
   traderSpawning:
     levelRequired: 1
     stockRange: {x: 1, y: 2}
     barterRequirements: []
-  probability: 1
+  probability: 0.5

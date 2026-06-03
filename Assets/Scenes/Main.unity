@@ -16422,8 +16422,8 @@ MonoBehaviour:
     maps:
     - {fileID: 11400000, guid: a084d4e7745af28498dbdbe8ced97dd5, type: 2}
     - {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
-    - {fileID: 11400000, guid: 9353817006d76f54fb1273b8ced36a68, type: 2}
     - {fileID: 11400000, guid: aac23282a2cd7784ab5861d2a0508e69, type: 2}
+    - {fileID: 11400000, guid: 9353817006d76f54fb1273b8ced36a68, type: 2}
   dropPools:
     rockStones: {fileID: 11400000, guid: 033f356ebabda714cb2141a7d950c759, type: 2}
     eyeUpgrades: {fileID: 11400000, guid: 447693d567ac32848b6d0306b40001c5, type: 2}

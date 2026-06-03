@@ -142,6 +142,12 @@ public static class Extensions {
         return animator.GetCurrentAnimatorStateInfo(0).shortNameHash == animHash;
     }
     
+    public static float TimeLeftInCurrentAnimation(this Animator animator) {
+        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+        float normalizedTimeLeft = 1f - Mathf.Clamp01(stateInfo.normalizedTime);
+        return normalizedTimeLeft * stateInfo.length; 
+    }
+    
     public static void CreateObjects<T>(this ObjectPool<T> pool, int count) where T : class {
         if (count <= 0) return;
         var poolObject = pool.Get();

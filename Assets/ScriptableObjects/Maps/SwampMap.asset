@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0aa690954e129034abb7319a8a860125, type: 3}
-  m_Name: CustomsMap
+  m_Name: SwampMap
   m_EditorClassIdentifier: Assembly-CSharp::MapData
   displayName: Customs
   sceneReference: Customs

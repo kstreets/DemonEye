@@ -10,29 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0aa690954e129034abb7319a8a860125, type: 3}
-  m_Name: LighthouseMap3
+  m_Name: LavaForrestMap
   m_EditorClassIdentifier: Assembly-CSharp::MapData
   displayName: Lighthouse
-  sceneReference: LighthouseExpansion
+  sceneReference: Lighthouse
   waves: {fileID: 11400000, guid: c3f7f6d7c8bc62a4993a44c716d126e0, type: 2}
   altarSoulPrice: 100
   exitPortalsCount: 2
-  minRockCount: 8
-  maxRockCount: 11
-  minBodyCount: 3
-  maxBodyCount: 5
-  minForageCount: 4
-  maxForageCount: 8
-  minBushesCount: 2
-  maxBushesCount: 6
-  minAltarCount: 5
-  maxAltarCount: 8
-  eyeUpgradeOnBodyChance: 0.25
-  eyeUpgradeFromRockChance: 0.5
+  playerCantBleed: 0
+  eyeUpgradeOnBodyChance: 0.15
   consecutiveEyeUpgradeChanceReductionOnBody: 0.08
-  maxGemCountPerRock: 2
   commonLootRarityIncrease: 0
   uncommonLootRarityIncrease: 0
-  rareLootRarityIncrease: 0.1
-  epicLootRarityIncrease: 0.06
-  legendaryLootRarityIncrease: 0.01
+  rareLootRarityIncrease: 0
+  epicLootRarityIncrease: 0
+  legendaryLootRarityIncrease: 0

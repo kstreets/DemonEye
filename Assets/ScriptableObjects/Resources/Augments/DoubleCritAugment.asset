@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DoubleCritAugment
   uuid: -577300191
   derivedFrom: {fileID: 11400000, guid: ba0965bc93d7d704f8f3e330886c9c1d, type: 2}
-  percentChanceOfDerivedToSpawn: 0.352
+  percentChanceOfDerivedToSpawn: 0.45
   mapSpawning:
     spawnsOnAll: 0
-    firstSpawnMap: {fileID: 11400000, guid: 9353817006d76f54fb1273b8ced36a68, type: 2}
+    firstSpawnMap: {fileID: 11400000, guid: aac23282a2cd7784ab5861d2a0508e69, type: 2}
     spawnsOnMaps: []
   traderSpawning:
     levelRequired: 1

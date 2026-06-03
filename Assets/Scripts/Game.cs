@@ -229,6 +229,7 @@ public partial class Game : MonoBehaviour {
     private void InitRaid() {
         curRaid.state = RaidState.None;
         curRaid.temp.Reset();
+        curRaid.teleportingInPositions.Clear();
         
         Cursor.visible = false;
         ShowRaidUI();
@@ -276,7 +277,10 @@ public partial class Game : MonoBehaviour {
         if (curRaid.stateSwitchedThisFrame && curRaid.state == RaidState.PostFinalWave) {
             Tween.Delay(0.25f, static () => {
                 gameInstance.AnimateLargeRaidText(ColorText("Map Cleared!", Styles.instance.increaseDescColor), 1.8f);
-                gameInstance.SpawnFinalExitPortal();
+                bool spawnedOk = gameInstance.SpawnFinalExitPortal();
+                if (!spawnedOk) { // This is a fail safe incase we couldn't spawn the final portal
+                    gameInstance.states.gameStateMachine.SetState(gameInstance.states.winExit);
+                }
             });
         }
     }

@@ -28,7 +28,7 @@ TagManager:
   - EnemySpacer
   - PlayerHurtBox
   - EnemyAttack
-  - 
+  - EnemyNonTarget
   - 
   - 
   - 

@@ -370,6 +370,7 @@ public class GameData {
         public Vector2 lastPlayerGridPos;
         public Limiter flowFieldLimiter;
         
+        public List<Vector2> teleportingInPositions = new();
         public Dictionary<GameObject, InventorySlot[]> bushSlotsLookup = new();
         public Dictionary<GameObject, InventorySlot[]> deadBodySlotsLookup = new();
         
@@ -378,6 +379,7 @@ public class GameData {
             public DamagingData damagingData;
             public InteractionData interactionData;
             public TrinketData trinketData;
+            public Limiter reteleportLimitter;
         }
         public Temp temp;
     } 

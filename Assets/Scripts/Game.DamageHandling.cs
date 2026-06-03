@@ -61,16 +61,28 @@ public partial class Game {
         }
         
         if (eyeInstance.explosion.TryGetValue(out var explosion) && RollProbability(explosion.probability)) {
-            Vector2 expSpawnPos = projectile.position + (enemy.position - projectile.position) / 2f;
+            Vector2 expSpawnPos = GetExplosionPosition(projectile, enemy);
             
             Entity expEntity = SpawnEntity(entityPools.explosion, expSpawnPos, Quaternion.identity); 
             DestroyEntity(expEntity, CurrentClipLength(expEntity.animator));
             
             List<Collider2D> cols = Physics.OverlapCircle(expSpawnPos, explosion.radius, Masks.EnemyMask);
             foreach (Collider2D col in cols) {
-                Enemy explosionEnemy = entityLookup[col.gameObject] as Enemy;
-                int explosionDamage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(explosionEnemy) * explosion.damageMulti);
-                DamageEnemyAfterDelay(entityLookup[col.gameObject], explosionDamage, false, 0.1f);
+                if (entityLookup[col.gameObject] is Enemy explosionEnemy) {
+                    int explosionDamage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(explosionEnemy) * explosion.damageMulti);
+                    DamageEnemyAfterDelay(entityLookup[col.gameObject], explosionDamage, false, 0.1f);
+                }
+            }
+        }
+        
+        if (demonEye.equiped.poison.TryGetValue(out var poison) && RollProbability(poison.probability)) {
+            Vector2 poisonGasCloudPos = GetExplosionPosition(projectile, enemy);
+            List<Collider2D> cols = Physics.OverlapCircle(poisonGasCloudPos, poison.radius, Masks.EnemyMask);
+            foreach (Collider2D col in cols) {
+                if (entityLookup[col.gameObject] is Enemy poisonEnemy) {
+                    poisonEnemy.poison = poison;
+                    AddPoisonedEffect(poisonEnemy, poison.duration);
+                }
             }
         }
         
@@ -205,6 +217,10 @@ public partial class Game {
         }
 
         return damageMultiplier;
+    }
+    
+    private Vector2 GetExplosionPosition(Projectile projectile, Enemy enemy) {
+        return projectile.position + (enemy.position - projectile.position) / 2f;
     }
     
 }

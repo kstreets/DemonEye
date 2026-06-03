@@ -133,9 +133,10 @@ public partial class Game {
         
         if (QuestIsActive(quests.pickPocketQuest)) {
             InventorySlot[] chosenDeadbody = curRaid.deadBodySlotsLookup.RandomValue();
-            for (int i = 0; i < chosenDeadbody.Length; i++) {
-                if (chosenDeadbody[i].itemInstance == null) {
-                    chosenDeadbody[i].itemInstance = new() {
+            if (chosenDeadbody != null) {
+                foreach (InventorySlot slot in chosenDeadbody) {
+                    if (slot.itemInstance != null) continue;
+                    slot.itemInstance = new() {
                         itemOrInstanceUuid = quests.pickPocketQuest.objectives[1].targetItem.uuid,
                         count = 1,
                         notDiscovered = true,
@@ -281,7 +282,7 @@ public partial class Game {
         }
     }
     
-    private void SpawnFinalExitPortal() {
+    private bool SpawnFinalExitPortal() {
         for (int i = 0; i < 100; i++) {
             Vector2 randomPos = (Vector2)player.position + Random.insideUnitCircle * Random.Range(0.5f, 1.5f);
             if (Physics.OverlapCircle(randomPos, 0.2f, Masks.StaticLevelMask).Count > 0) continue;
@@ -301,11 +302,9 @@ public partial class Game {
             
             Tween.Scale(newExitPortalTrans, 0f, 1f, 0.5f, Ease.OutBack);
             PlayAudioClip(audio.portalSpawnClip, newExitPortalTrans.position);
-            return;
+            return true;
         }
-        
-        // This is a fail safe incase we couldn't spawn the final portal
-        states.gameStateMachine.SetState(states.winExit);
+        return false;
     }
     
 

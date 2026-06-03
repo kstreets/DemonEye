@@ -10,28 +10,28 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4a5df0d022d54a7488a42b771db86189, type: 3}
-  m_Name: Boomon
+  m_Name: Phantom
   m_EditorClassIdentifier: 
-  displayName: 
-  type: 2
-  enemyPrefab: {fileID: 7814119993517076521, guid: 1858a054640053244b9e501228b481d5, type: 3}
-  animatorOverride: {fileID: 22100000, guid: be54a215789aaea43a7649a1a98c558d, type: 2}
+  displayName: Phantom
+  type: 4
+  enemyPrefab: {fileID: 7814119993517076521, guid: 117ed85a7764e9840ba72c0095847a82, type: 3}
+  animatorOverride: {fileID: 22100000, guid: 07507b180ddfbd344ac55f9b5700d66f, type: 2}
   dropPool: {fileID: 11400000, guid: 4ab42b2953921574eb4a85cf22ab6ff0, type: 2}
   chanceToDropItem: 0.05
-  usesFlowField: 1
+  usesFlowField: 0
   excludeCollisionLayers:
     serializedVersion: 2
     m_Bits: 0
-  attackDistance: 1.12
+  attackDistance: 10000000
   attackDamageDelay: 0.4
   attackRadius: 0.1
   sideAttackOffset: {x: 0, y: 0}
   upAttackOffset: {x: 0, y: 0}
   donwAttackOffset: {x: 0, y: 0}
-  speed: 0.45
+  speed: 0
   health: 18
   damage: 10
-  collisionDamage: 2
-  changeToCauseBleed: 0.15
-  soulWorthPerKill: 4
-  defualtMass: 1
+  collisionDamage: 5
+  changeToCauseBleed: 0
+  soulWorthPerKill: 0
+  defualtMass: 100

@@ -19,7 +19,7 @@ public class GameplayTestingWindow : EditorWindow {
     private Toggle HideInactiveToggle => root.Q<Toggle>("HideInactive");
     private VisualElement ItemPoolContainer => root.Q<VisualElement>("ItemPool");
     private Button RefreshButton => root.Q<Button>("RefreshBttn");
-    private Button PlaceItemsButton => root.Q<Button>("PlaceItemsBttn");
+    private Button CreateEyeButton => root.Q<Button>("CreateEyeBttn");
     private Toggle OverrideWavesToggle => root.Q<Toggle>("OverrideWavesToggle");
     private SliderInt StartWaveSlider => root.Q<SliderInt>("StartWaveSlider");
     private Button PlayerDamageButton => root.Q<Button>("PlayerDamageBttn");
@@ -40,7 +40,7 @@ public class GameplayTestingWindow : EditorWindow {
         MapField.RegisterCallback<ChangeEvent<Object>>(OnMapDataChanged);
         HideInactiveToggle.RegisterCallback<ChangeEvent<bool>>(OnHideInactiveToggled);
         RefreshButton.RegisterCallback<ClickEvent>(OnRefreshClicked);
-        PlaceItemsButton.RegisterCallback<ClickEvent>(OnPlaceItemsClicked);
+        CreateEyeButton.RegisterCallback<ClickEvent>(OnCreateEyeClicked);
         OverrideWavesToggle.RegisterCallback<ChangeEvent<bool>>(OnOverrideWavesToggle);
         StartWaveSlider.RegisterValueChangedCallback(OnStartWaveSliderChanged);
         PlayerDamageButton.RegisterCallback<ClickEvent>(OnDamagePlayer);
@@ -105,15 +105,19 @@ public class GameplayTestingWindow : EditorWindow {
         StartWaveSlider.value = startWaveIndex;
     }
     
-    private void OnPlaceItemsClicked(ClickEvent e) {
+    private void OnCreateEyeClicked(ClickEvent e) {
         if (!Application.isPlaying || currentMap == null) return;
         
         Game game = Game.gameInstance;
         game.CreateDropPoolsForMap(currentMap); 
+        List<Game.ItemInstance> itemInstances = new();
         for (int i = 0; i < 5; i++) {
             Item item = game.GetItemFromDropPool(game.dropPools.eyeUpgrades, currentMap);
-            game.TryAddItemToInventory(game.inventories.stash, item, 1);
+            itemInstances.Add(new(item));
         }
+        
+        Game.ItemInstance demonEye = game.CreateNewDemonEyeItemInstance(itemInstances);
+        game.TryAddItemToInventory(game.inventories.stash, demonEye);
     }
     
     private void OnMapDataChanged(ChangeEvent<Object> changeEvent) {

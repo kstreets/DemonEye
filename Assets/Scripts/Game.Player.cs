@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using PrimeTween;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.Pool;
 using Random = UnityEngine.Random;
 
 public partial class Game {
@@ -178,7 +179,8 @@ public partial class Game {
             targetCount++;
         }
 
-        List<Vector3> attackTargets = GetAttackTargets(targetCount);
+        using var _ = ListPool<Vector3>.Get(out var attackTargets);
+        GetAttackTargets(targetCount, ref attackTargets);
         if (attackTargets.Count <= 0) return;
         
         PlayAudioClip(audio.shootClip, player.position);
@@ -236,9 +238,9 @@ public partial class Game {
         player.lastShotTime = Time.time;
     }
     
-    internal List<Vector3> GetAttackTargets(int targetCount) {
+    private void GetAttackTargets(int targetCount, ref List<Vector3> targets) {
         float overlapDist = config.gameplay.projectileSpeed * GetProjectileRangeInSeconds();
-        List<Collider2D> cols = Physics.OverlapCircle(player.position, overlapDist, Masks.EnemyMask);
+        List<Collider2D> cols = Physics.OverlapCircle(player.position, overlapDist, Masks.TargetableEnemyMask);
         
         if (cols.Count <= 0) {
             cols = Physics.OverlapCircle(player.position, overlapDist, Masks.MineableMask);
@@ -251,11 +253,10 @@ public partial class Game {
         });
 
         int count = Mathf.Min(targetCount, cols.Count);
-        List<Vector3> targets = new();
+        targets.Clear();
         for (int i = 0; i < count; i++) {
             targets.Add(entities.lookup[cols[i].gameObject].Center);
         }
-        return targets;
     }
 
     private static float GetTargetScore(Collider2D col) {
@@ -286,7 +287,7 @@ public partial class Game {
         _SpawnProjectile(PlayerEyePos, velocity, entityPools.projectile);
         
         if (demonEye.equiped.trishot.TryGetValue(out var trishot) && RollProbability(trishot.probability)) {
-            const float baseTriShotAngle = 8f;
+            const float baseTriShotAngle = 10f;
             Vector2 secondShotVelocity = Quaternion.AngleAxis(baseTriShotAngle, Vector3.forward) * velocity;
             _SpawnProjectile(PlayerEyePos, secondShotVelocity, entityPools.projectile, flgs: ProjectileTypeFlags.Trishot);
             Vector2 thirdShotVelocity = Quaternion.AngleAxis(-baseTriShotAngle, Vector3.forward) * velocity;

@@ -15,7 +15,7 @@ MonoBehaviour:
   uuid: 518636350
   displayName: Baleful
   inventorySprite: {fileID: 1645146412, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
-  dropSprite: {fileID: -1638090952, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  dropSprite: {fileID: 0}
   pickupRadius: 0.07
   type: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
   priceCategory: {fileID: 11400000, guid: 29cfe26cd6da0734197e5840e6724f56, type: 2}
@@ -25,22 +25,6 @@ MonoBehaviour:
     spawnsOnAll: 1
     firstSpawnMap: {fileID: 0}
     spawnsOnMaps: []
-  spawnsOnAllMaps: 1
-  firstSpawnMap: {fileID: 0}
-  spawnsOnMaps: []
-  rarity: 0
-  dropOrigins:
-  - dropPool: {fileID: 11400000, guid: 447693d567ac32848b6d0306b40001c5, type: 2}
-    chanceToSpawn: 0.7
-  - dropPool: {fileID: 11400000, guid: ac65e2b20c03fcb43989ec16398ae8cd, type: 2}
-    chanceToSpawn: 0.163
-  traderLevelRequired: 1
-  traderStockRange: {x: 1, y: 5}
-  barterRequirements:
-  - item: {fileID: 11400000, guid: c300cfd9dba50fc438f83dec791af29b, type: 2}
-    count: 5
-  - item: {fileID: 11400000, guid: 27c971c009f757f4da645a16777716dc, type: 2}
-    count: 2
   traderSpawning:
     levelRequired: 1
     stockRange: {x: 1, y: 5}
@@ -49,6 +33,12 @@ MonoBehaviour:
       count: 5
     - item: {fileID: 11400000, guid: 27c971c009f757f4da645a16777716dc, type: 2}
       count: 2
+  rarity: 0
+  dropOrigins:
+  - dropPool: {fileID: 11400000, guid: 447693d567ac32848b6d0306b40001c5, type: 2}
+    chanceToSpawn: 0.7
+  - dropPool: {fileID: 11400000, guid: ac65e2b20c03fcb43989ec16398ae8cd, type: 2}
+    chanceToSpawn: 0.163
   modifiesStats: 1
   critChance: 0
   critMultiplier: 0

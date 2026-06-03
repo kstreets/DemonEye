@@ -21,7 +21,7 @@ public class MultiProjectileCritAugment : Augment {
     }
     
     private float GetProbability(int stackCount) {
-        return TaperFloat(probability, stackCount, 0.3f);
+        return TaperFloat(probability, stackCount, 0.27f);
     }
 
 }

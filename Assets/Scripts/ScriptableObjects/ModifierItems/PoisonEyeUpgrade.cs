@@ -5,26 +5,27 @@ using static Game;
 public class PoisonEyeUpgrade : EyeUpgrade {
 
     public struct InstanceData {
+        public float probability;
         public float duration;
         public float damageMulti;
         public float minHealthPercentForMulti;
+        public float radius;
     }
     
     public float probability;
+    public float radius;
     public float duration;
     public float damageMulti;
     public float minHealthPercentForMulti; 
 
-    public override void AddInstanceToEnemy(Enemy enemy, int stackCount) {
-        float prob = GetProbability(stackCount);
-        if (RollProbability(prob)) {
-            enemy.poison = new() {
-                duration = GetDuration(stackCount),
-                damageMulti = GetDamageMulti(stackCount),
-                minHealthPercentForMulti = minHealthPercentForMulti,
-            };
-            gameInstance.AddPoisonedEffect(enemy, enemy.poison.Value.duration);
-        }
+    public override void AddInstanceToEye(DemonEyeInstance eyeInstance, int stackCount) {
+        eyeInstance.poison = new() {
+            probability = GetProbability(stackCount),
+            duration = GetDuration(stackCount),
+            damageMulti = GetDamageMulti(stackCount),
+            minHealthPercentForMulti = minHealthPercentForMulti,
+            radius = radius,
+        };
     }
 
     protected override string GetUpgradeDescription(int stackCount) {
