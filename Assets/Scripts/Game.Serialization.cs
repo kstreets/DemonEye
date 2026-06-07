@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.Pool;
 using static GameData;
 
 public partial class Game {
@@ -63,6 +65,58 @@ public partial class Game {
     private void LoadPersistentFlags() {
         PersistentFlagsSaveWrapper wrapper = LoadFromFileOrCreateNew<PersistentFlagsSaveWrapper>(savePaths.persistentFlags);
         persistentFlags = (PersistentFlags)wrapper.persistentFlags;
+    }
+    
+    public void SaveCurGameState() {
+        SaveInventory(inventories.player);
+    } 
+    
+    private void SaveInventory(BinaryWriter writer, Inventory inventory) {
+        using var _ = ListPool<ItemInstance>.Get(out var items);
+        foreach (InventorySlot slot in inventory.slots) {
+            items.Add(slot.itemInstance);
+        }
+        SaveList(writer, items, SerializeItemInstance);
+    }
+    
+    private void SaveList<T>(BinaryWriter writer, List<T> list, Action<BinaryWriter, T> serializeCallback) {
+        writer.Write(list.Count);
+        foreach (var elm in list) {
+            serializeCallback(writer, elm);
+        }
+    }
+    
+    private List<T> LoadList<T>(BinaryReader reader, Func<BinaryReader, T> deserializeCallback) {
+        int count = reader.ReadInt32();
+        List<T> list = new(count);
+        for (int i = 0; i < count; i++) {
+            list.Add(deserializeCallback(reader));
+        }
+        return list;
+    }
+    
+    private void SerializeItemInstance(BinaryWriter binWriter, ItemInstance itemInstance) {
+        binWriter.Write(itemInstance.itemOrInstanceUuid);
+        SaveList(binWriter, itemInstance.nestedUuids, SerializeInt);
+        binWriter.Write(itemInstance.count);
+        binWriter.Write(itemInstance.isDemonEye);
+    }
+    
+    private ItemInstance DeserializeItemInstance(BinaryReader binReader, ItemInstance itemInstance) {
+        ItemInstance newInstance = new();
+        newInstance.itemOrInstanceUuid = binReader.ReadInt32();
+        itemInstance.nestedUuids = LoadList(binReader, DeserializeInt);
+        newInstance.count = binReader.ReadInt32();
+        newInstance.isDemonEye = binReader.ReadBoolean();
+        return newInstance;
+    }
+    
+    private void SerializeInt(BinaryWriter binWriter, int value) {
+        binWriter.Write(value);
+    }
+    
+    private int DeserializeInt(BinaryReader reader) {
+        return reader.ReadInt32();
     }
 
 }
