@@ -83,6 +83,13 @@ public class Item : UuidScriptableObject  {
         };
     }
     
+    public bool IsMedical() {
+        if (this is ConsumableItem consumable) {
+            return consumable.healingAmount > 0 || consumable.bandageAmount > 0;
+        }
+        return false;
+    }
+    
     public virtual string GetDescription(int stackCount = 1) {
         string desc = string.Empty;
         

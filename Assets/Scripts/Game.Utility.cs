@@ -17,7 +17,7 @@ public partial class Game {
     public bool InRaid => states.gameStateMachine.CurState == states.raid;
 
     public bool ControllerPluggedIn => Gamepad.current != null;
-
+    
     private Vector3 RotationVector360(float minDist, float maxDist) {
         return Quaternion.AngleAxis(Random.Range(0, 360), Vector3.forward) * Vector3.right * Random.Range(minDist, maxDist);
     }

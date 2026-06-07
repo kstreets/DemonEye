@@ -44,7 +44,7 @@ public partial class Game {
         }
         
         bool isCriticalStrike = RollProbability(GetCriticalStrikeProbability(projectile, enemy));
-        ref int consecutiveCriticalHits = ref curRaid.temp.damagingData.consecutiveCriticalHits;
+        ref int consecutiveCriticalHits = ref curRaid.data.damaging.consecutiveCriticalHits;
         if (isCriticalStrike) {
             consecutiveCriticalHits++;
         }
@@ -168,8 +168,8 @@ public partial class Game {
                 damageMultiplier *= triShot.damageMultiplier;
             }
             
-            ref int consecutiveCriticalHits = ref curRaid.temp.damagingData.consecutiveCriticalHits;
-            ref float lastDoubleCritActivationTime = ref curRaid.temp.damagingData.lastDoubleCritActivationTime;
+            ref int consecutiveCriticalHits = ref curRaid.data.damaging.consecutiveCriticalHits;
+            ref float lastDoubleCritActivationTime = ref curRaid.data.damaging.lastDoubleCritActivationTime;
             
             if (demonEye.equiped.doubleCritAugment.TryGetValue(out var doubleCrit)) {
                 if (consecutiveCriticalHits > 0 && consecutiveCriticalHits % 2 == 0) {

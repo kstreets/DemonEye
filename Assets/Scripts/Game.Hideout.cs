@@ -5,6 +5,7 @@ using PrimeTween;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Pool;
+using static GameData;
 using Random = UnityEngine.Random;
 
 public partial class Game {
@@ -224,7 +225,7 @@ public partial class Game {
         if (transactionState == TransactionState.Selling && GetInventoryItemCount(inventories.transaction) <= 0) return;
         int sellPrice = GetInventoryValue(inventories.transaction, InventoryValueType.Sell);
         // Before selling items we pass the transaction inventory to callbacks that want to know what we sold
-        onSoldItemsToTrader?.Invoke(inventories.transaction.slots); 
+        // onSoldItemsToTrader?.Invoke(inventories.transaction.slots); 
         player.coinCurrency += sellPrice;
         ClearInventory(inventories.transaction);
     }
@@ -486,128 +487,50 @@ public partial class Game {
     // Quests 
     // ************************
     
-    private class QuestPackage {
+    public class QuestPackage {
         public QuestGraphRuntime.Node questNode;
         public QuestUI questUI;
         public ToggleButton questToggleButton;
     }
 
-    private Queue<QuestPackage> reservedQuestPackages = new();
-    private List<QuestPackage> activeQuestPackages = new();
-    private QuestPackage presentingQuestPackage;
-
-    [Serializable]
-    private class QuestSaveData {
-        public Quest.ProgressSave[] progressSaves;
-        public bool[] submissionStates;
-    }
-    
-    private QuestSaveData questSaveData;
-    
-    private void SaveActiveQuestProgresses() {
-        foreach (QuestPackage questPackage in activeQuestPackages) {
-            QuestGraphRuntime.Node node = questPackage.questNode;
-            questSaveData.progressSaves[node.saveIndex] = node.curQuest.GetProgressSave();
-        }
-        SaveToFile(savePaths.quest, questSaveData);
-    }
-
-    private void SaveAndMarkQuestAsSubmitted(QuestGraphRuntime.Node questNode) {
-        questSaveData.submissionStates[questNode.saveIndex] = true;
-        questSaveData.progressSaves[questNode.saveIndex] = questNode.curQuest.GetProgressSave();
-        SaveToFile(savePaths.quest, questSaveData);
-    }
-
-    private void InitQuests() {
-        questSaveData = LoadFromFile<QuestSaveData>(savePaths.quest);
-        
-        if (questSaveData == null) {
-            questSaveData = new() {
-                progressSaves = new Quest.ProgressSave[quests.graph.questCount],
-                submissionStates = new bool[quests.graph.questCount],
-            };
-            questSaveData.progressSaves.InitalizeWithDefault();
-            SaveToFile(savePaths.quest, questSaveData);
-        }
-        
-        HashSet<QuestGraphRuntime.Node> initialQuestNodes = new();
-        foreach (QuestGraphRuntime.Node node in quests.graph.rootNode.nextNodes) {
-            FindStartingQuestNodes(initialQuestNodes, node);
-        }
-        
-        const int questUiPoolSize = 6;
-        for (int i = 0; i < questUiPoolSize; i++) {
-            ReleaseQuestPackage(CreateQuestPackage());
-        }
-        
-        foreach (QuestGraphRuntime.Node questNode in initialQuestNodes) {
-            Quest.ProgressSave progressSave = questSaveData.progressSaves[questNode.saveIndex];
-            questNode.curQuest.LoadProgressSave(progressSave);
-            ActivateQuest(questNode); 
-        }
-        
-        RefreshQuestDisplays();
-    }
-
-    private void UpdateQuests() {
-        foreach (QuestPackage questPackage in activeQuestPackages) {
-            questPackage.questNode.curQuest.Update();
-        }
-    }
-    
-    private void FindStartingQuestNodes(HashSet<QuestGraphRuntime.Node> nodes, QuestGraphRuntime.Node curNode) {
-        bool questHasBeenSubmitted = questSaveData.submissionStates[curNode.saveIndex];
-        
-        if (!questHasBeenSubmitted) {
-            nodes.Add(curNode);
-            return;
-        }
-        
-        foreach (QuestGraphRuntime.Node nextNode in curNode.nextNodes) {
-            FindStartingQuestNodes(nodes, nextNode);
-        }
-    }
-
     public void RefreshQuestDisplays() {
-        if (activeQuestPackages.Count <= 0) return;
+        if (quests.activePkgs.Count <= 0) return;
 
-        if (presentingQuestPackage == null || presentingQuestPackage.questNode == null) {
-            presentingQuestPackage = activeQuestPackages[0];
-            questsPanel.toggleButtonGroup.ManualyToggle(presentingQuestPackage.questToggleButton);
+        if (quests.presentingPkg == null || quests.presentingPkg.questNode == null) {
+            quests.presentingPkg = quests.activePkgs[0];
+            questsPanel.toggleButtonGroup.ManualyToggle(quests.presentingPkg.questToggleButton);
         }
         
-        foreach (QuestPackage questPackage in activeQuestPackages) {
+        foreach (QuestPackage questPackage in quests.activePkgs) {
             questPackage.questUI.gameObject.SetActive(false);
         }
         
-        presentingQuestPackage.questUI.gameObject.SetActive(true);
-        presentingQuestPackage.questUI.Display(presentingQuestPackage.questNode.curQuest);
+        quests.presentingPkg.questUI.gameObject.SetActive(true);
+        quests.presentingPkg.questUI.Display(quests.presentingPkg.questNode.curQuest);
     }
 
     private void ActivateQuest(QuestGraphRuntime.Node questNode) {
-        questNode.curQuest.Init();
         QuestPackage questPackage = GetQuestPackage();
         questPackage.questNode = questNode;
         questPackage.questToggleButton.gameObject.SetActive(true);
         questPackage.questToggleButton.text.text = questNode.curQuest.title;
-        activeQuestPackages.Add(questPackage);
+        quests.activePkgs.Add(questPackage);
     }
 
     private void DeactivateQuest(QuestPackage questPackage) {
-        questPackage.questNode.curQuest.Deinit();
-        activeQuestPackages.Remove(questPackage);
+        quests.activePkgs.Remove(questPackage);
         ReleaseQuestPackage(questPackage);
     }
 
     private QuestPackage GetQuestPackage() {
-        return reservedQuestPackages.TryDequeue(out QuestPackage reserved) ? reserved : CreateQuestPackage();
+        return quests.reservedPkgs.TryDequeue(out QuestPackage reserved) ? reserved : CreateQuestPackage();
     }
     
     private void ReleaseQuestPackage(QuestPackage package) {
         package.questUI.gameObject.SetActive(false);
         package.questToggleButton.gameObject.SetActive(false);
         package.questNode = null;
-        reservedQuestPackages.Enqueue(package);
+        quests.reservedPkgs.Enqueue(package);
     }
     
     private QuestPackage CreateQuestPackage() {
@@ -629,7 +552,7 @@ public partial class Game {
     }
     
     private void OnQuestToggleClicked(QuestPackage questPackage) {
-        presentingQuestPackage = questPackage;
+        quests.presentingPkg = questPackage;
         RefreshQuestDisplays();
     }
 
@@ -638,17 +561,18 @@ public partial class Game {
         IncreaseTraderRep(compQuestNode.curQuest.traderReputationReward);
         SaveAndMarkQuestAsSubmitted(compQuestNode);
         
-        foreach (Quest.Objective objective in questPackage.questNode.curQuest.objectives) {
-            if (objective.type == Quest.Objective.Type.Fetch && !objective.keepFetchedItems) {
-                RemoveNumberOfOwnedItems(objective.targetItem, objective.targetValue);
+        foreach (ObjectiveData obj in questPackage.questNode.curQuest.objectives) {
+            bool isFetch = obj.type is QuestObjectiveTypes.FetchByItem or QuestObjectiveTypes.FetchByType;
+            if (isFetch && !obj.keepFetchedItems) {
+                RemoveNumberOfOwnedItems(obj.targetItem, obj.targetValue);
                 SaveInventory(inventories.player);
                 SaveInventory(inventories.stash);
-            }    
+            }
         }
         
         if (questPackage.questNode.nextNodes != null) {
             foreach (QuestGraphRuntime.Node nextQuestNode in compQuestNode.nextNodes) {
-                bool questHasBeenSubmitted = questSaveData.submissionStates[nextQuestNode.saveIndex];
+                bool questHasBeenSubmitted = quests.saveData.submissionStates[nextQuestNode.saveIndex];
                 if (questHasBeenSubmitted || QuestIsActive(nextQuestNode.curQuest)) continue;
                 ActivateQuest(nextQuestNode);
             }
@@ -659,8 +583,8 @@ public partial class Game {
     }
     
     private bool QuestIsActive(Quest quest) {
-        foreach (QuestPackage activeQuestPackage in activeQuestPackages) {
-            if (quest == activeQuestPackage.questNode.curQuest && !quest.IsComplete()) {
+        foreach (QuestPackage activeQuestPackage in quests.activePkgs) {
+            if (quest == activeQuestPackage.questNode.curQuest && !QuestIsComplete(quest)) {
                 return true;
             }
         } 
@@ -715,6 +639,8 @@ public partial class Game {
         else if (upgradePath == skillUpgradePaths.strength) {
             player.strengthSkillLevel++;
         }
+        
+        thisFrame.flags |= FrameFlags.SkillUpgraded;
         
         SavePlayerData();
         RefreshSkillsPanel();

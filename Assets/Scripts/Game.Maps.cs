@@ -7,20 +7,30 @@ using UnityEngine.Assertions;
 using UnityEngine.Pool;
 using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
+using static GameData;
 
 public partial class Game {
     
     [Serializable]
     private class MapSaves {
-        public List<bool> unlockStates;
+        public List<Element> saves;
+        
+        [Serializable]
+        public class Element {
+            public bool unlocked;
+            // public List<Vector2> bloodMushroomSpawns;
+        }
     }
     
     private void SaveMaps() {
         MapSaves mapSaves = new() {
-            unlockStates = new(config.maps.Count),
+            saves = new(config.maps.Count),
         };
         foreach (MapData mapData in config.maps) {
-            mapSaves.unlockStates.Add(mapData.isUnlocked);    
+            mapSaves.saves.Add(new() {
+                unlocked  = mapData.isUnlocked,
+                // bloodMushroomSpawns = mapData.bloodMushroomSpawns.Clone(),
+            });
         }
         SaveToFile(savePaths.mapUnlocks, mapSaves);
     }
@@ -31,13 +41,13 @@ public partial class Game {
         
         List<MapData> maps = config.maps;
         
-        if (maps.Count != mapSaves.unlockStates.Count) {
+        if (maps.Count != mapSaves.saves.Count) {
             Debug.Log("Maps save does not match current maps. Saves are not going to be loaded");
             return;
         }
         
         for (int i = 0; i < maps.Count; i++) {
-            maps[i].isUnlocked = mapSaves.unlockStates[i];
+            maps[i].isUnlocked = mapSaves.saves[i].unlocked;
         }
     }
 
@@ -131,19 +141,12 @@ public partial class Game {
             Destroy(resourceSpawn.gameObject);
         }
         
-        if (QuestIsActive(quests.pickPocketQuest)) {
-            InventorySlot[] chosenDeadbody = curRaid.deadBodySlotsLookup.RandomValue();
-            if (chosenDeadbody != null) {
-                foreach (InventorySlot slot in chosenDeadbody) {
-                    if (slot.itemInstance != null) continue;
-                    slot.itemInstance = new() {
-                        itemOrInstanceUuid = quests.pickPocketQuest.objectives[1].targetItem.uuid,
-                        count = 1,
-                        notDiscovered = true,
-                    };
-                    break;
-                }
+        // Spawn blood mushrooms from previous raid
+        {
+            foreach (Vector2 bloodMushroomSpawn in curRaid.map.bloodMushroomSpawns) {
+                SpawnItemAsEntity(itemRefs.bloodMushroom, 1, bloodMushroomSpawn, Quaternion.identity);
             }
+            curRaid.map.bloodMushroomSpawns.Clear();
         }
     }
     
@@ -307,5 +310,18 @@ public partial class Game {
         return false;
     }
     
+    private void PlantBloodMushroom(Vector2 pos) {
+        if (!persistentFlags.HasFlag(PersistentFlags.BloodMushroomsUnlocked)) return;
+        
+        const float chanceToPlant = 0.067f;
+        if (!RollProbability(chanceToPlant)) return;
+        
+        const float minSpacing = 0.1f;
+        List<Vector2> spawns = curRaid.map.bloodMushroomSpawns;
+        foreach (Vector2 spawn in spawns) {
+            if (Vector2.SqrMagnitude(spawn - pos) < minSpacing) return;
+        }
+        spawns.Add(pos);
+    }
 
 }

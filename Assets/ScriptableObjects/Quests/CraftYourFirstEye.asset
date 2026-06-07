@@ -13,18 +13,63 @@ MonoBehaviour:
   m_Name: CraftYourFirstEye
   m_EditorClassIdentifier: Assembly-CSharp::Quest
   title: Forging a Demon Eye
-  description: "You won\u2019t get far without stronger attacks.\nYou need to learn
-    how to create Demon Eyes and shove them into your eye socket.\nIt will give your
-    attacks all sorts of upgrades depending on the combination of eye upgrades you
-    forge with.\nBring a handful of eye upgrades back to the hideout along with a
-    regular ole eye and use the forge to create a demon eye."
+  description: 'You need to learn how to create Demon Eyes and shove them into your
+    eye socket.
+
+    It will give your attacks all sorts of upgrades depending on
+    the combination of eye upgrades you forge with.
+
+    Bring a handful of eye upgrades
+    back to the hideout along with a regular ole eye and use the forge to create
+    a demon eye.'
   traderReputationReward: 100
-  objectives:
-  - type: 1
-    taskDescription: Create a Demon Eye and equip it
+  objectiveDatas:
+  - type: 10
+    description: 
+    targetValue: 1
+    targetEnemy: {fileID: 0}
+    targetItem: {fileID: 11400000, guid: 813a59de02795ad40bfd5fccf7ddc415, type: 2}
+    targetItemType: {fileID: 0}
+    teleportMap: {fileID: 0}
+    keepFetchedItems: 1
+  - type: 20
+    description: 
+    targetValue: 3
+    targetEnemy: {fileID: 0}
+    targetItem: {fileID: 0}
+    targetItemType: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
+    teleportMap: {fileID: 0}
+    keepFetchedItems: 1
+  - type: 120
+    description: Equip the Demon Eye
     targetValue: 1
     targetEnemy: {fileID: 0}
     targetItem: {fileID: 0}
+    targetItemType: {fileID: 0}
     teleportMap: {fileID: 0}
-    customCode: FirstDemonEyeEquiped
+    keepFetchedItems: 0
+  objectives:
+  - type: 10
+    description: 
+    targetValue: 1
+    targetEnemy: {fileID: 0}
+    targetItem: {fileID: 11400000, guid: 813a59de02795ad40bfd5fccf7ddc415, type: 2}
+    targetItemType: {fileID: 0}
+    teleportMap: {fileID: 0}
+    keepFetchedItems: 1
+  - type: 20
+    description: 
+    targetValue: 3
+    targetEnemy: {fileID: 0}
+    targetItem: {fileID: 0}
+    targetItemType: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
+    teleportMap: {fileID: 0}
+    keepFetchedItems: 1
+  - type: 120
+    description: Equip the Demon Eye
+    targetValue: 1
+    targetEnemy: {fileID: 0}
+    targetItem: {fileID: 0}
+    targetItemType: {fileID: 0}
+    teleportMap: {fileID: 0}
     keepFetchedItems: 0

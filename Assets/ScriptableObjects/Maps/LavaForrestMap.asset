@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0aa690954e129034abb7319a8a860125, type: 3}
   m_Name: LavaForrestMap
   m_EditorClassIdentifier: Assembly-CSharp::MapData
-  displayName: Lighthouse
-  sceneReference: Lighthouse
+  displayName: Lava Forrest
+  sceneReference: LavaForrest
   waves: {fileID: 11400000, guid: c3f7f6d7c8bc62a4993a44c716d126e0, type: 2}
   altarSoulPrice: 100
   exitPortalsCount: 2

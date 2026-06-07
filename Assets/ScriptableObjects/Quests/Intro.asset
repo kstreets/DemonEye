@@ -17,20 +17,21 @@ MonoBehaviour:
     Killing 80 of them should be good enough for now. Meet me back here when thats
     done. I have more to show you.
   traderReputationReward: 100
-  objectives:
-  - type: 4
-    taskDescription: 
-    targetValue: 1
+  objectiveDatas:
+  - type: 0
+    description: 
+    targetValue: 40
     targetEnemy: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
     targetItem: {fileID: 0}
-    teleportMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
-    customCode: 
+    targetItemType: {fileID: 0}
+    teleportMap: {fileID: 0}
     keepFetchedItems: 0
-  - type: 2
-    taskDescription: 
-    targetValue: 80
+  objectives:
+  - type: 0
+    description: 
+    targetValue: 40
     targetEnemy: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
     targetItem: {fileID: 0}
-    teleportMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
-    customCode: 
+    targetItemType: {fileID: 0}
+    teleportMap: {fileID: 0}
     keepFetchedItems: 0

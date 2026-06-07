@@ -6,6 +6,7 @@ public partial class Game {
     
     private void InitGame() {
         BuildSavePaths();
+        LoadPersistentFlags();
         InitInput();
         InitResources();
         InitEntities();

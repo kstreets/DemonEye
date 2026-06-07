@@ -76,11 +76,18 @@ public class GameData {
     public class Quests {
         public QuestGraphRuntime graph;
         public Quest pickPocketQuest;
+        public Quest overweightExtractQuest;
+        
+        public Queue<QuestPackage> reservedPkgs = new();
+        public List<QuestPackage> activePkgs = new();
+        public QuestPackage presentingPkg;
+        public QuestSaveData saveData;
     }
     
     [Serializable]
     public class ItemRefs {
         public Item demonEye;
+        public Item bloodMushroom;
     }
     
     [Serializable]
@@ -336,6 +343,22 @@ public class GameData {
         public List<DropPool> globalDropPools = new();
         public List<DropPool> mapSpecificDropPools = new();
     }
+    
+    public class Inventories {
+        public Inventory player;
+        public Inventory stash;
+        public Inventory eyeForge;
+        public Inventory transaction;
+        public Inventory trader;
+        public Inventory lootPtr;
+        public InventorySlotUI[] lootSlotUis;
+        public List<Inventory> all = new();
+    }
+    
+    public class HotBar {
+        public List<InputAction> quickUseActions;
+        public InventorySlotUI[] slotUIs;
+    }
 
     public class SavePaths {
         public string playerInventory;
@@ -346,6 +369,7 @@ public class GameData {
         public string trader;
         public string traderInventory;
         public string mapUnlocks;
+        public string persistentFlags;
     }
     
     public class DemonEye {
@@ -356,7 +380,7 @@ public class GameData {
     
     public class Trinkets {
         public Trinket equiped;
-        public ref TrinketData data => ref gameInstance.curRaid.temp.trinketData;
+        public ref TrinketData data => ref gameInstance.curRaid.data.trinkets;
     }
     
     public class CurrentRaid {
@@ -375,29 +399,43 @@ public class GameData {
         public Dictionary<GameObject, InventorySlot[]> deadBodySlotsLookup = new();
         
         // Data that gets reset every time a new raid starts
-        public struct Temp {
-            public DamagingData damagingData;
-            public InteractionData interactionData;
-            public TrinketData trinketData;
+        public struct Data {
+            public DamagingData damaging;
+            public InteractionData interactions;
+            public TrinketData trinkets;
             public Limiter reteleportLimitter;
         }
-        public Temp temp;
+        public Data data;
     } 
     
-    public class Inventories {
-        public Inventory player;
-        public Inventory stash;
-        public Inventory eyeForge;
-        public Inventory transaction;
-        public Inventory trader;
-        public Inventory lootPtr;
-        public InventorySlotUI[] lootSlotUis;
-        public List<Inventory> all = new();
+    [Flags]
+    public enum PersistentFlags {
+        None                   = 0,
+        BloodMushroomsUnlocked = 1 << 0,
     }
     
-    public class HotBar {
-        public List<InputAction> quickUseActions;
-        public InventorySlotUI[] slotUIs;
+    [Flags] 
+    public enum FrameFlags {
+        None            = 0,
+        EarlyExitTaken  = 1 << 0,
+        ExitTaken       = 1 << 1,
+        SkillUpgraded   = 1 << 2,
+        BleedStopped    = 1 << 3,
+        PostRaidInit    = 1 << 4,
+        DemonEyeChanged = 1 << 5,
+    }
+    
+    public class PerFrameData {
+        public FrameFlags flags;
+        public Dictionary<EnemyData, int> enemyKillCount = new();
+        
+        // Data to auto reset every frame
+        public struct Data {
+            public int healing;
+            public int enemyBloodDropped;
+            public ItemInstance foundSearchItem;
+        }
+        public Data data;
     }
     
 }

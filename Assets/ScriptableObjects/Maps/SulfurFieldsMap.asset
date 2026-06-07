@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0aa690954e129034abb7319a8a860125, type: 3}
   m_Name: SulfurFieldsMap
   m_EditorClassIdentifier: Assembly-CSharp::MapData
-  displayName: Terminal
-  sceneReference: Terminal
+  displayName: Sulfur Fields
+  sceneReference: SulfurFields
   waves: {fileID: 11400000, guid: fc2949be33c63e14eb9ce0a4eed242b8, type: 2}
   altarSoulPrice: 150
   exitPortalsCount: 2

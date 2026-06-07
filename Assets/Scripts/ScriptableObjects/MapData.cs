@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -26,6 +27,7 @@ public class MapData : ScriptableObject {
     public float legendaryLootRarityIncrease;
     
     [NonSerialized] public bool isUnlocked;
+    [NonSerialized] public List<Vector2> bloodMushroomSpawns = new();
     
     // -------------------------------------------------------------
     // Interface to inject different raid spawn patterns for testing

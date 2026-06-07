@@ -13,24 +13,25 @@ MonoBehaviour:
   m_Name: PickPocket
   m_EditorClassIdentifier: Assembly-CSharp::Quest
   title: Pick Pocket
-  description: Another demon of mine went to Lighthouse with my necklace and never
-    came back. Must have died while there. Can you search its body and bring me back
-    the necklace? I'd like to sell it again to someone else.
+  description: Another demon of mine left with my necklace and never came back. Must
+    have died. Can you search its body and bring me back the necklace? I'd like to
+    sell it again to someone else.
   traderReputationReward: 100
-  objectives:
-  - type: 4
-    taskDescription: 
-    targetValue: 1
-    targetEnemy: {fileID: 0}
-    targetItem: {fileID: 0}
-    teleportMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
-    customCode: 
-    keepFetchedItems: 0
-  - type: 3
-    taskDescription: 
+  objectiveDatas:
+  - type: 100
+    description: 
     targetValue: 1
     targetEnemy: {fileID: 0}
     targetItem: {fileID: 11400000, guid: 81232561f605c1546b430fbe457c269b, type: 2}
-    teleportMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
-    customCode: 
+    targetItemType: {fileID: 0}
+    teleportMap: {fileID: 0}
+    keepFetchedItems: 0
+  objectives:
+  - type: 100
+    description: 
+    targetValue: 1
+    targetEnemy: {fileID: 0}
+    targetItem: {fileID: 11400000, guid: 81232561f605c1546b430fbe457c269b, type: 2}
+    targetItemType: {fileID: 0}
+    teleportMap: {fileID: 0}
     keepFetchedItems: 0

@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5d4d20277d10e0489f4a0bf8ac49946, type: 3}
+  m_Name: OverweightExtract
+  m_EditorClassIdentifier: Assembly-CSharp::Quest
+  title: Overweight Extract
+  description: 'I think you need to feel what it''s like to be a little greedy demon.
+    Make yourself overweight on purpose by shoving everything you can find into your
+    inventory then extract from the raid. You''ll see how much of a challenge being
+    slowed down is. Hopefully it''ll teach you not to die from your own greed.
+
+'
+  traderReputationReward: 100
+  objectiveDatas:
+  - type: 90
+    description: Make yourself overweight
+    targetValue: 1
+    targetEnemy: {fileID: 0}
+    targetItem: {fileID: 0}
+    targetItemType: {fileID: 0}
+    teleportMap: {fileID: 0}
+    keepFetchedItems: 0
+  - type: 90
+    description: Extract while overweight
+    targetValue: 1
+    targetEnemy: {fileID: 0}
+    targetItem: {fileID: 0}
+    targetItemType: {fileID: 0}
+    teleportMap: {fileID: 0}
+    keepFetchedItems: 0
+  objectives:
+  - type: 90
+    description: Make yourself overweight
+    targetValue: 1
+    targetEnemy: {fileID: 0}
+    targetItem: {fileID: 0}
+    targetItemType: {fileID: 0}
+    teleportMap: {fileID: 0}
+    keepFetchedItems: 0
+  - type: 90
+    description: Extract while overweight
+    targetValue: 1
+    targetEnemy: {fileID: 0}
+    targetItem: {fileID: 0}
+    targetItemType: {fileID: 0}
+    teleportMap: {fileID: 0}
+    keepFetchedItems: 0

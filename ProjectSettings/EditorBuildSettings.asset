@@ -12,7 +12,7 @@ EditorBuildSettings:
     path: Assets/Scenes/Tutorial.unity
     guid: 4efe7e94f18d0ac49b04d8cb35984b5d
   - enabled: 1
-    path: Assets/Scenes/Lighthouse.unity
+    path: Assets/Scenes/LavaForrest.unity
     guid: ae176a417cb123144a7c58e6bc9ee80a
   - enabled: 1
     path: Assets/Scenes/Customs.unity
@@ -27,7 +27,7 @@ EditorBuildSettings:
     path: Assets/Scenes/Ice.unity
     guid: 084d3e0c97648504aa5c92b310297d52
   - enabled: 1
-    path: Assets/Scenes/Terminal.unity
+    path: Assets/Scenes/SulfurFields.unity
     guid: 3b59665c7c75ba7488e1a9f72ee30fc1
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: a532c4d929d3a764a805933affb91304, type: 2}

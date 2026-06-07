@@ -9,6 +9,14 @@ using Random = UnityEngine.Random;
 
 public static class Extensions {
 
+    public static bool StartsWithVowel(this string str) {
+        if (string.IsNullOrEmpty(str)) {
+            return false;
+        }
+        char firstChar = char.ToLower(str[0]); 
+        return firstChar is 'a' or 'e' or 'i' or 'o' or 'u'; // Never Y in this case lol
+    }
+    
     public static Vector2 PositionV2(this Transform transform) {
         return new Vector2(transform.position.x, transform.position.y);
     }
@@ -84,6 +92,21 @@ public static class Extensions {
             (list[i], list[randomIndex]) = (list[randomIndex], list[i]);
         }
     }
+    
+    public static void CopyTo<T>(this List<T> list, List<T> dest) {
+        if (list == null) return;
+        dest = new(list.Count);
+        dest.AddRange(list);
+    }
+    
+    public static List<T> Clone<T>(this List<T> list) {
+        if (list == null) {
+            return null;
+        }
+        List<T> clone = new(list.Count);
+        clone.AddRange(list);
+        return clone;
+    }
 
     public static void InitalizeWithDefault<T>(this T[] array) where T : new() {
         for (int i = 0; i < array.Length; i++) {
@@ -153,6 +176,12 @@ public static class Extensions {
         var poolObject = pool.Get();
         pool.CreateObjects(--count);
         pool.Release(poolObject); 
+    }
+    
+    /// Returns true if 1 or more flags are found in the enum 
+    /// Ex. enumType.HasAnyFlag(flag1 | flag2) is like saying enumType.HasFlag(flag1) || enumType.HasFlag(flag2)
+    public static bool HasAnyFlag<T>(this T enumFlags, T flags) where T : struct, Enum {
+        return (Convert.ToInt64(enumFlags) & Convert.ToInt64(flags)) != 0;
     }
     
 #if UNITY_EDITOR

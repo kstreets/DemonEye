@@ -12,14 +12,15 @@ public partial class Game {
         public Tween searchCirclePopInTween;
         public Timer discoverItemTimer;
         public int discoverItemIndex;
+        public LootInventoryOrigin curLootOrigin;
     }
     
     private void CancelPortalSummoning() {
-        curRaid.temp.interactionData.timeSpentSummoningPortal = 0f;
+        curRaid.data.interactions.timeSpentSummoningPortal = 0f;
     }
     
     private bool InteractingWithPortal() {
-        return curRaid.temp.interactionData.timeSpentSummoningPortal > Mathf.Epsilon;
+        return curRaid.data.interactions.timeSpentSummoningPortal > Mathf.Epsilon;
     }
     
     private void CheckForInteractions() { 
@@ -29,6 +30,7 @@ public partial class Game {
         List<Collider2D> cols = Physics.OverlapCircle(checkCenter, 0.1f, Masks.ItemMask);
         
         foreach (Collider2D col in cols) {
+            
             if (col.CompareTag(Tags.Pickup)) {
                 ItemDrop itemDrop = col.GetComponent<ItemDrop>();
                 Item dropItemRef = itemDrop.ItemInstance.ItemRef;
@@ -55,7 +57,7 @@ public partial class Game {
                 if (input.interact.WasPressedThisFrame()) {
                     inventories.lootPtr.slots = curRaid.deadBodySlotsLookup[col.gameObject];
                     OpenPlayerInventory();
-                    OpenLootInventory();
+                    OpenLootInventory(LootInventoryOrigin.Body);
                 }
             }
             
@@ -64,7 +66,7 @@ public partial class Game {
                 if (input.interact.WasPressedThisFrame()) {
                     inventories.lootPtr.slots = curRaid.bushSlotsLookup[col.gameObject];
                     OpenPlayerInventory();
-                    OpenLootInventory();
+                    OpenLootInventory(LootInventoryOrigin.Bush);
                 }
             }
 
@@ -93,7 +95,7 @@ public partial class Game {
 
             if (col.CompareTag(Tags.ExitPortal)) {
                 ExitPortal portal = GetExitPortalFromTransform(col.transform);
-                ref float timeSpentSummoningPortal = ref curRaid.temp.interactionData.timeSpentSummoningPortal;
+                ref float timeSpentSummoningPortal = ref curRaid.data.interactions.timeSpentSummoningPortal;
                 
                 if (!portal.hasBeenSummoned && timeSpentSummoningPortal < config.gameplay.portalSummonTime) {
                     EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Summon Exit Portal");
@@ -114,13 +116,13 @@ public partial class Game {
                     if (input.interact.WasPressedThisFrame()) {
                         exitPortalTakenByPlayer = portal;
                         exitPortalTakenByPlayer.closingCountdownSequence.Stop();
-                        states.gameStateMachine.SetStateIfNotCurrent(
-                            curRaid.state == RaidState.PostFinalWave ? 
-                            states.winExit : states.earlyExit
-                        );
-                        customQuestEvent?.Invoke("FirstExtract");
+                        
+                        bool winExit = curRaid.state == RaidState.PostFinalWave;
+                        states.gameStateMachine.SetStateIfNotCurrent(winExit ? states.winExit : states.earlyExit);
+                        thisFrame.flags |= winExit ? GameData.FrameFlags.ExitTaken : GameData.FrameFlags.EarlyExitTaken;
                     }
                 }
+                
             }
         }
     }
@@ -164,15 +166,18 @@ public partial class Game {
     private float DiscoverSlotTime => config.gameplay.discoverSlotTime * GetAbsoluteStat(PlayerStat.LootingSpeed);
     private float DiscoverItemTime => config.gameplay.discoverItemTime * GetAbsoluteStat(PlayerStat.LootingSpeed);
     
-    private void OpenLootInventory() {
+    public enum LootInventoryOrigin { Nothing, Body, Bush }
+    
+    private void OpenLootInventory(LootInventoryOrigin origin) {
         if (LootInventoryIsOpen) return;
         
-        ref int discoverItemIndex = ref curRaid.temp.interactionData.discoverItemIndex;
-        ref Sequence discoverSlotsSequence = ref curRaid.temp.interactionData.discoverSlotsSequence;
-        ref Timer discoverItemTimer = ref curRaid.temp.interactionData.discoverItemTimer;
-        
-        discoverItemIndex = -1;
+        curRaid.data.interactions.curLootOrigin = origin;
         ui.lootInventoryPanel.gameObject.SetActive(true);
+        
+        ref int discoverItemIndex = ref curRaid.data.interactions.discoverItemIndex;
+        ref Sequence discoverSlotsSequence = ref curRaid.data.interactions.discoverSlotsSequence;
+        ref Timer discoverItemTimer = ref curRaid.data.interactions.discoverItemTimer;
+        discoverItemIndex = -1;
         
         foreach (InventorySlot slot in inventories.lootPtr.slots) {
             slot.ui.ClearItem();
@@ -214,8 +219,8 @@ public partial class Game {
         discoverSlotsSequence.ChainDelay(0.15f);
 
         discoverSlotsSequence.ChainCallback(target: this, static (target) => {
-            ref int discoverItemIndex = ref target.curRaid.temp.interactionData.discoverItemIndex;
-            ref Timer discoverItemTimer = ref target.curRaid.temp.interactionData.discoverItemTimer;
+            ref int discoverItemIndex = ref target.curRaid.data.interactions.discoverItemIndex;
+            ref Timer discoverItemTimer = ref target.curRaid.data.interactions.discoverItemTimer;
             
             InventorySlot slot = target.inventories.lootPtr.slots[discoverItemIndex];
             if (slot.itemInstance != null) {
@@ -226,17 +231,20 @@ public partial class Game {
         
         discoverItemTimer.EndAction ??= static () => {
             Inventory lootInventoryPtr = gameInstance.inventories.lootPtr;
-            ref Timer discoverItemTimer = ref gameInstance.curRaid.temp.interactionData.discoverItemTimer;
-            ref int discoverItemIndex = ref gameInstance.curRaid.temp.interactionData.discoverItemIndex; 
+            ref Timer discoverItemTimer = ref gameInstance.curRaid.data.interactions.discoverItemTimer;
+            ref int discoverItemIndex = ref gameInstance.curRaid.data.interactions.discoverItemIndex; 
             
             ItemInstance itemInstance = lootInventoryPtr.slots[discoverItemIndex].itemInstance;
+            Item itemRef = itemInstance.ItemRef;
             itemInstance.notDiscovered = false;
+            
+            gameInstance.thisFrame.data.foundSearchItem = itemInstance;
             
             InventorySlotUI slotUI = lootInventoryPtr.slots[discoverItemIndex].ui;
             slotUI.MakeSlotActive();
             slotUI.StopSlotSearching();
-            slotUI.SetItem(itemInstance.ItemRef, itemInstance.count);
-
+            slotUI.SetItem(itemRef, itemInstance.count);
+            
             Tween.PunchScale(slotUI.itemUI.image.rectTransform, Vector3.one * 4f, 0.1f, 2f); 
             
             discoverItemIndex++;
@@ -254,15 +262,15 @@ public partial class Game {
 
     private void AnimateSlotSearch(InventorySlotUI slotUI) {
         slotUI.MakeSlotSearching();
-        curRaid.temp.interactionData.searchCirclePopInTween = Tween.Scale(slotUI.searchingCircle.transform, Vector3.one * 0.2f, Vector3.one * 1f, 0.25f, Ease.OutElastic); 
+        curRaid.data.interactions.searchCirclePopInTween = Tween.Scale(slotUI.searchingCircle.transform, Vector3.one * 0.2f, Vector3.one * 1f, 0.25f, Ease.OutElastic); 
     }
 
     private void CloseLootInventory() {
         ui.lootSearchingText.SetActive(false);
         ui.lootInventoryPanel.gameObject.SetActive(false);
-        curRaid.temp.interactionData.discoverItemTimer.Stop();
-        curRaid.temp.interactionData.discoverSlotsSequence.Stop();
-        curRaid.temp.interactionData.searchCirclePopInTween.Stop();
+        curRaid.data.interactions.discoverItemTimer.Stop();
+        curRaid.data.interactions.discoverSlotsSequence.Stop();
+        curRaid.data.interactions.searchCirclePopInTween.Stop();
         
         // Reset all tweening properties because the animations might have stopped while playing 
         foreach (InventorySlot slot in inventories.lootPtr.slots) {

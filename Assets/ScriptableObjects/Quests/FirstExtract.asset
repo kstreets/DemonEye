@@ -16,12 +16,21 @@ MonoBehaviour:
   description: 'It helps to bring back the loot you find in a raid. You''ll need
     to find and activate the exit portal somewhere on the map to return back safely.  '
   traderReputationReward: 100
-  objectives:
-  - type: 1
-    taskDescription: Extract from Lighthouse
+  objectiveDatas:
+  - type: 50
+    description: Extract from Tutorial
     targetValue: 1
-    targetEnemy: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
+    targetEnemy: {fileID: 0}
     targetItem: {fileID: 0}
-    teleportMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
-    customCode: FirstExtract
+    targetItemType: {fileID: 0}
+    teleportMap: {fileID: 0}
+    keepFetchedItems: 0
+  objectives:
+  - type: 50
+    description: Extract from Tutorial
+    targetValue: 1
+    targetEnemy: {fileID: 0}
+    targetItem: {fileID: 0}
+    targetItemType: {fileID: 0}
+    teleportMap: {fileID: 0}
     keepFetchedItems: 0

@@ -1,9 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 using UnityEngine.Assertions;
+using static GameData;
 
 public partial class Game {
     
@@ -16,6 +16,7 @@ public partial class Game {
         savePaths.trader = $"{Application.persistentDataPath}/trader";
         savePaths.traderInventory = $"{Application.persistentDataPath}/traderInventory";
         savePaths.mapUnlocks = $"{Application.persistentDataPath}/maps";
+        savePaths.persistentFlags = $"{Application.persistentDataPath}/persistentFlags";
     }
 
     private string GetInventorySavePath(Inventory inventory) {
@@ -37,7 +38,7 @@ public partial class Game {
     private T LoadFromFileOrCreateNew<T>(string path) where T : class, new() {
         return LoadFromFile<T>(path) ?? new T();
     }
-
+    
     private T LoadFromFile<T>(string path) where T : class {
         if (File.Exists(path)) {
             BinaryFormatter bf = new();
@@ -45,6 +46,23 @@ public partial class Game {
             return (T)bf.Deserialize(file);
         }
         return null;
+    }
+    
+    [Serializable]
+    private class PersistentFlagsSaveWrapper {
+        public int persistentFlags;
+    }
+
+    private void SavePersistentFlags() {
+        PersistentFlagsSaveWrapper wrapper = new() {
+            persistentFlags = (int)persistentFlags,
+        };
+        SaveToFile(savePaths.persistentFlags, wrapper);
+    }
+    
+    private void LoadPersistentFlags() {
+        PersistentFlagsSaveWrapper wrapper = LoadFromFileOrCreateNew<PersistentFlagsSaveWrapper>(savePaths.persistentFlags);
+        persistentFlags = (PersistentFlags)wrapper.persistentFlags;
     }
 
 }

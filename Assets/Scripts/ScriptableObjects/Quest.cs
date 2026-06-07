@@ -1,46 +1,12 @@
 using System;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.Assertions;
 using VInspector;
 using static Game;
 
 [CreateAssetMenu(fileName = "Quest", menuName = "Scriptable Objects/Quest")]
 public class Quest : ScriptableObject {
 
-    [Serializable]
-    public class Objective {
-        public enum Type { None, Custom, Kill, Fetch, Teleport, Sell }
-        
-        public Type type;
-        public string taskDescription;
-        public int targetValue = 1;
-        public EnemyData targetEnemy;
-        public Item targetItem;
-        public MapData teleportMap;
-        public string customCode;
-        public bool keepFetchedItems;
-        
-        [NonSerialized] public int progressValue;
-        public bool completed => progressValue >= targetValue || type == Type.Teleport;
-
-        public string GetTaskDescription() {
-            return (type) switch {
-                Type.Kill => $"Kill {targetValue} {targetEnemy.displayName}s", 
-                Type.Fetch => targetValue == 1 ? $"Return with a {targetItem.displayName}" : $"Return with {targetValue} {targetItem.displayName}s",
-                Type.Teleport => $"Teleport to {teleportMap?.displayName}", 
-                Type.Sell => $"Sell {targetValue} {targetItem.displayName} to the trader", 
-                _ => taskDescription,
-            };
-        }
-    }
-
-    [Serializable]
-    public class ProgressSave {
-        public List<int> progressValues;
-    }
-    
     [Header("Info")]
     public string title;
     [TextArea(minLines: 6, maxLines: 10)] 
@@ -49,88 +15,7 @@ public class Quest : ScriptableObject {
     [Header("Rewards")]
     public int traderReputationReward;
     
-    [Space]
-    public List<Objective> objectives;
-    
-    public void Init() {
-        onEnemyDeath += OnEnemyDeath;
-        onSoldItemsToTrader += OnSoldItemsToTrader;
-        customQuestEvent += OnCustomEvent;
-    }
-
-    public void Deinit() {
-        onEnemyDeath -= OnEnemyDeath;
-        onSoldItemsToTrader -= OnSoldItemsToTrader;
-        customQuestEvent -= OnCustomEvent;
-    }
-
-    public void Update() {
-        foreach (Objective obj in objectives) {
-            if (obj.type == Objective.Type.Fetch) {
-                int ownedCount = gameInstance.GetOwnedCountOfItem(obj.targetItem);
-                obj.progressValue = Mathf.Clamp(ownedCount, 0, obj.targetValue);
-            }
-        }
-    }
-
-    public void LoadProgressSave(ProgressSave progressSave) {
-        if (progressSave.progressValues == null) return;
-        Assert.IsTrue(objectives.Count == progressSave.progressValues.Count, "Save state does not match objectives");
-        for (int i = 0; i < objectives.Count; i++) {
-            objectives[i].progressValue = progressSave.progressValues[i];
-        }
-    }
-    
-    public ProgressSave GetProgressSave() { 
-        List<int> progressValues = new();
-        
-        foreach (Objective obj in objectives) {
-            progressValues.Add(obj.progressValue);
-        }
-        
-        return new() {
-            progressValues = progressValues,
-        };
-    }
-
-    public bool IsComplete() {
-        foreach (Objective obj in objectives) {
-            if (!obj.completed) {
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    private void OnEnemyDeath(Enemy enemy) {
-        foreach (Objective obj in objectives) {
-            if (obj.type == Objective.Type.Kill && obj.targetEnemy == enemy.data) {
-                obj.progressValue = Mathf.Clamp(++obj.progressValue, 0, obj.targetValue);
-            }
-        }
-    }
-
-    private void OnSoldItemsToTrader(InventorySlot[] transactionInventorySlots) {
-        foreach (Objective obj in objectives) {
-            if  (obj.type != Objective.Type.Sell) continue;
-            
-            foreach (InventorySlot slot in transactionInventorySlots) {
-                if (slot.itemInstance == null) continue;
-                
-                if (obj.targetItem.uuid == slot.itemInstance.ItemRef.uuid) {
-                    obj.progressValue = Mathf.Clamp(obj.progressValue + slot.itemInstance.count, 0, obj.targetValue);
-                }
-            }
-        }
-    }
-
-    private void OnCustomEvent(string code) {
-        foreach (Objective obj in objectives) {
-            if (obj.type != Objective.Type.Custom || obj.customCode != code) continue;
-            obj.progressValue = Mathf.Clamp(++obj.progressValue, 0, obj.targetValue);
-            return;
-        }
-    }
+    public List<ObjectiveData> objectives;
     
 #if UNITY_EDITOR
     
@@ -140,11 +25,11 @@ public class Quest : ScriptableObject {
             Debug.Log("Need to be in playmode to complete quest");
             return;
         }
-        foreach (Objective objective in objectives) {
-            objective.progressValue = objective.targetValue;
+        foreach (ObjectiveData obj in objectives) {
+            obj.progressValue = obj.targetValue;
             // For fetch quests we need to actually have the items to complete it properly
-            if (objective.type == Objective.Type.Fetch) {
-                gameInstance.TryAddItemToInventory(gameInstance.inventories.stash, objective.targetItem, objective.targetValue);
+            if (obj.type == QuestObjectiveTypes.FetchByItem) {
+                gameInstance.TryAddItemToInventory(gameInstance.inventories.stash, obj.targetItem, obj.targetValue);
             }
         }
         gameInstance.RefreshQuestDisplays();
@@ -153,99 +38,3 @@ public class Quest : ScriptableObject {
 #endif
 
 }
-
-#if UNITY_EDITOR
-
-[CustomPropertyDrawer(typeof(Quest.Objective))]
-public class ObjectiveDrawer : PropertyDrawer {
-
-    public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
-        EditorGUI.BeginProperty(position, label, property);
-        
-        position.height = EditorGUIUtility.singleLineHeight;
-        
-        DisplayPropertyField(property, "type", ref position);
-        Quest.Objective.Type actualType = (Quest.Objective.Type)property.FindPropertyRelative("type").enumValueIndex;
-
-        if (actualType != Quest.Objective.Type.None) {
-            DisplayTextArea(property, "taskDescription", ref position);
-        }
-        
-        if (actualType == Quest.Objective.Type.Custom) {
-            DisplayPropertyField(property, "customCode", ref position);
-            DisplayPropertyField(property, "targetValue", ref position);
-        }
-        else if (actualType == Quest.Objective.Type.Kill) {
-            DisplayPropertyField(property, "targetEnemy", ref position);
-            DisplayPropertyField(property, "targetValue", ref position);
-        }
-        else if (actualType == Quest.Objective.Type.Fetch) {
-            DisplayPropertyField(property, "keepFetchedItems", ref position);
-            DisplayPropertyField(property, "targetItem", ref position);
-            DisplayPropertyField(property, "targetValue", ref position);
-        }
-        else if (actualType == Quest.Objective.Type.Teleport) {
-            DisplayPropertyField(property, "teleportMap", ref position);
-        }
-        else if (actualType == Quest.Objective.Type.Sell) {
-            DisplayPropertyField(property, "targetItem", ref position);
-            DisplayPropertyField(property, "targetValue", ref position);
-        }
-
-        EditorGUI.EndProperty();
-    }
-
-    private void DisplayPropertyField(SerializedProperty main, string relative, ref Rect position) {
-        SerializedProperty relativeProp = main.FindPropertyRelative(relative);
-        EditorGUI.PropertyField(position, relativeProp);
-        position.y += EditorGUIUtility.singleLineHeight;
-    }
-    
-    private void DisplayTextArea(SerializedProperty main, string relative, ref Rect position) {
-        SerializedProperty relativeProp = main.FindPropertyRelative(relative);
-
-        float line = EditorGUIUtility.singleLineHeight;
-        Rect labelRect = new(position.x, position.y, position.width, line);
-        Rect textRect  = new(position.x, position.y + line, position.width, line * 3);
-        
-        EditorGUI.PrefixLabel(labelRect, new(relativeProp.displayName));
-        
-        EditorGUI.BeginChangeCheck();
-        string textString = EditorGUI.TextArea(textRect, relativeProp.stringValue);
-        if (EditorGUI.EndChangeCheck()) {
-            relativeProp.stringValue = textString;
-        }
-        
-        position.y += line * 4;
-    }
-
-    public override float GetPropertyHeight(SerializedProperty property, GUIContent label) {
-        int lines = 1; // type is always shown
-
-        SerializedProperty typeProp = property.FindPropertyRelative("type");
-        Quest.Objective.Type type = (Quest.Objective.Type)typeProp.enumValueIndex;
-
-        if (type != Quest.Objective.Type.None) {
-            lines += 4;
-        }
-
-        switch (type) {
-            case Quest.Objective.Type.Custom:
-            case Quest.Objective.Type.Kill:
-            case Quest.Objective.Type.Sell:
-                lines += 2; 
-                break;
-            case Quest.Objective.Type.Teleport:
-                lines += 1; 
-                break;
-            case Quest.Objective.Type.Fetch:
-                lines += 3;
-                break;
-        }
-
-        return lines * EditorGUIUtility.singleLineHeight;
-    }
-    
-}
-
-#endif

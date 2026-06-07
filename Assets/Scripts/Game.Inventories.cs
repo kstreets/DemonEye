@@ -1011,11 +1011,29 @@ public partial class Game {
         }
         return count;
     }
+    
+    public int GetItemCountInInventory(Inventory inventory, ItemType itemType) {
+        int count = 0;
+        foreach (InventorySlot slot in inventory.slots) {
+            if (slot.itemInstance == null) continue;
+            if (slot.itemInstance.ItemRef.type == itemType) {
+                count += slot.itemInstance.count;
+            }
+        }
+        return count;
+    }
 
     public int GetOwnedCountOfItem(Item item) {
         int itemCount = 0;
         itemCount += GetItemCountInInventory(inventories.stash, item);
         itemCount += GetItemCountInInventory(inventories.player, item);
+        return itemCount;
+    }
+    
+    public int GetOwnedCountOfItem(ItemType itemType) {
+        int itemCount = 0;
+        itemCount += GetItemCountInInventory(inventories.stash, itemType);
+        itemCount += GetItemCountInInventory(inventories.player, itemType);
         return itemCount;
     }
 

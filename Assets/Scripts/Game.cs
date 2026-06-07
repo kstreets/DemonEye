@@ -2,6 +2,7 @@ using System;
 using PrimeTween;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using static GameData;
 using Random = UnityEngine.Random;
 using Vector3 = UnityEngine.Vector3;
 using EffectsIndicies = Game.Entity.EffectsIndicies;
@@ -10,46 +11,45 @@ public partial class Game : MonoBehaviour {
 
     public static Game gameInstance;
     
-    public GameData.Config config;
-    public GameData.DropPools dropPools;
-    public GameData.Prefabs prefabs;
-    public GameData.ItemTypes itemTypes;
-    public GameData.Quests quests;
-    public GameData.ItemRefs itemRefs;
-    public GameData.SkillUpgradePaths skillUpgradePaths;
+    public Config config;
+    public DropPools dropPools;
+    public Prefabs prefabs;
+    public ItemTypes itemTypes;
+    public Quests quests;
+    public ItemRefs itemRefs;
+    public SkillUpgradePaths skillUpgradePaths;
     public GameData.Camera camera;
-    public GameData.Curves curves;
-    public GameData.UI ui;
-    public GameData.PlayerInfo playerInfo;
-    public GameData.RaidInfo raidInfo;
-    public GameData.MainMenu mainMenu;
-    public GameData.HideoutTabs hideoutTabs;
-    public GameData.PlayerPanel playerPanel;
-    public GameData.StashPanel stashPanel;
-    public GameData.EyeForgePanel eyeForgePanel;
-    public GameData.EyeForgeDetailsPanel eyeForgeDetailsPanel;
-    public GameData.TraderPanel traderPanel;
+    public Curves curves;
+    public UI ui;
+    public PlayerInfo playerInfo;
+    public RaidInfo raidInfo;
+    public MainMenu mainMenu;
+    public HideoutTabs hideoutTabs;
+    public PlayerPanel playerPanel;
+    public StashPanel stashPanel;
+    public EyeForgePanel eyeForgePanel;
+    public EyeForgeDetailsPanel eyeForgeDetailsPanel;
+    public TraderPanel traderPanel;
     public GameData.TransactionPanel transactionPanel;
-    public GameData.MapSelectionPanel mapSelectionPanel;
-    public GameData.QuestsPanel questsPanel;
+    public MapSelectionPanel mapSelectionPanel;
+    public QuestsPanel questsPanel;
     public GameData.SkillsPanel skillsPanel;
-    public GameData.Audio audio; 
+    public Audio audio; 
     
     [NonSerialized] public readonly GameData.Input input = new();
-    [NonSerialized] public readonly GameData.EntityPools entityPools = new();
-    [NonSerialized] public readonly GameData.States states = new();
-    [NonSerialized] public readonly GameData.Entities entities = new();
+    [NonSerialized] public readonly EntityPools entityPools = new();
+    [NonSerialized] public readonly States states = new();
+    [NonSerialized] public readonly Entities entities = new();
     [NonSerialized] public readonly GameData.Resources res = new();
-    [NonSerialized] public readonly GameData.SavePaths savePaths = new();
-    [NonSerialized] public readonly GameData.DemonEye demonEye = new();
-    [NonSerialized] public readonly GameData.Trinkets trinkets = new();
-    [NonSerialized] public readonly GameData.CurrentRaid curRaid = new();
-    [NonSerialized] public readonly GameData.Inventories inventories = new();
-    [NonSerialized] public readonly GameData.HotBar hotBar = new();
+    [NonSerialized] public readonly SavePaths savePaths = new();
+    [NonSerialized] public readonly DemonEye demonEye = new();
+    [NonSerialized] public readonly Trinkets trinkets = new();
+    [NonSerialized] public readonly CurrentRaid curRaid = new();
+    [NonSerialized] public readonly Inventories inventories = new();
+    [NonSerialized] public readonly HotBar hotBar = new();
+    [NonSerialized] public readonly PerFrameData thisFrame = new();
     
-    public static Action<Enemy> onEnemyDeath;
-    public static Action<InventorySlot[]> onSoldItemsToTrader;
-    public static Action<string> customQuestEvent;
+    [NonSerialized] public PersistentFlags persistentFlags;
     
     private void Start() {
         gameInstance = this;
@@ -61,6 +61,7 @@ public partial class Game : MonoBehaviour {
         DemonEyeTween.Update();
         UpdateTrader();
         UpdateQuests();
+        ClearPerFrameData();
         
 #if UNITY_EDITOR
         if (Mouse.current != null && Mouse.current.middleButton.isPressed) {
@@ -85,7 +86,13 @@ public partial class Game : MonoBehaviour {
     }
 
     private void UpdateTimers() {
-        curRaid.temp.interactionData.discoverItemTimer.Tick();
+        curRaid.data.interactions.discoverItemTimer.Tick();
+    }
+    
+    private void ClearPerFrameData() {
+        thisFrame.flags = FrameFlags.None;
+        thisFrame.enemyKillCount.Clear();
+        thisFrame.data.Reset();
     }
 
     private void OnMainMenuStateEnter() {
@@ -105,6 +112,7 @@ public partial class Game : MonoBehaviour {
     private void OnHideoutStateExit() {
         CloseHideoutUI();
         SavePlayerData();
+        SavePersistentFlags();
         SaveTrader();
         SaveInventory(inventories.player);
         SaveInventory(inventories.stash);
@@ -203,7 +211,6 @@ public partial class Game : MonoBehaviour {
         bool unlockNextMap = maps.IndexInRange(nextMapIndex) && !maps[nextMapIndex].isUnlocked;
         if (unlockNextMap) {
             maps[nextMapIndex].isUnlocked = true;
-            SaveMaps();
         }
         OnSaveWhenRaidIsOver();
         AnimateGameWinSequence(() => states.gameStateMachine.SetStateIfNotCurrent(states.mainMenu));
@@ -228,7 +235,7 @@ public partial class Game : MonoBehaviour {
     
     private void InitRaid() {
         curRaid.state = RaidState.None;
-        curRaid.temp.Reset();
+        curRaid.data.Reset();
         curRaid.teleportingInPositions.Clear();
         
         Cursor.visible = false;
@@ -253,6 +260,8 @@ public partial class Game : MonoBehaviour {
         SpawnMapResources(curRaid.mapInstance.resourceParent);
         SpawnInitialExitPortals(curRaid.mapInstance.exitPortalsParent, curRaid.map.exitPortalsCount);
         AnimateRaidEnterSequence();
+        
+        thisFrame.flags |= FrameFlags.PostRaidInit;
     }
     
     private void UpdateRaidState() {
@@ -296,7 +305,9 @@ public partial class Game : MonoBehaviour {
     private void OnSaveWhenRaidIsOver() {
         SaveInventory(inventories.player);
         SavePlayerData();
+        SavePersistentFlags();
         SaveActiveQuestProgresses();
+        SaveMaps();
     }
     
     // *******************************

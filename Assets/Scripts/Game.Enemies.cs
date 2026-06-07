@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Pool;
+using static GameData;
 using Random = UnityEngine.Random;
 
 public partial class Game {
@@ -58,12 +59,15 @@ public partial class Game {
                     
         Entity bloodSplatterEntity = SpawnEntity(entityPools.bloodSplatter, deadEnemy.position, Quaternion.identity);
         DestroyEntity(bloodSplatterEntity, CurrentClipLength(bloodSplatterEntity.animator));
-                    
         PlayAudioClip(audio.bloodBurstClip, deadEnemy.position);
-        DestroyEntity(deadEnemy);
         
         PlayerOnEnemyDeath(deadEnemy);
-        onEnemyDeath?.Invoke(deadEnemy);
+        
+        if (!thisFrame.enemyKillCount.TryAdd(deadEnemy.data, 1)) {
+            thisFrame.enemyKillCount[deadEnemy.data]++;
+        }
+        
+        DestroyEntity(deadEnemy);
     }
     
     private void UpdateEnemies() {
@@ -71,7 +75,7 @@ public partial class Game {
         if (enemies.Count <= 0) return;
         
         bool reteleportWithThisSpawn = !spawnManager.SpawningDoneInCurPhase && spawnManager.spawnedThisFrame;
-        bool reteleportWithoutSpawn = spawnManager.SpawningDoneInCurPhase && curRaid.temp.reteleportLimitter.TimeHasPassed(1f);
+        bool reteleportWithoutSpawn = spawnManager.SpawningDoneInCurPhase && curRaid.data.reteleportLimitter.TimeHasPassed(1f);
         if (reteleportWithThisSpawn || reteleportWithoutSpawn) {
             // ReteleportEnemies();
         }
@@ -143,13 +147,18 @@ public partial class Game {
             if (enemy.bleed.TryGetValue(out var bleed)) {
                 if (Time.time - bleed.lastBleedTime > bleed.bleedInterval) {
                     int bleedDamage = Mathf.RoundToInt(GetBaseDamage() * bleed.damageMultiplier);
+                    SpawnDamageNumber(EnemyDamageNumberSpawnPos(enemy), bleedDamage, DamageColor.Blood);
+                    
                     enemy.health -= bleedDamage;
                     bleed.lastBleedTime = Time.time;
                     enemy.bleed = bleed;
+                    
                     Entity bloodDrop = SpawnEntity(entityPools.bloodDrop, OffsetY(enemy.position, 0.015f), Quaternion.identity);
                     AddParentEffect(bloodDrop, enemy, 0.4f);
                     DestroyEntity(bloodDrop, 0.8f);
-                    SpawnDamageNumber(EnemyDamageNumberSpawnPos(enemy), bleedDamage, DamageColor.Blood);
+                    
+                    PlantBloodMushroom(enemy.position);
+                    thisFrame.data.enemyBloodDropped++;
                 }
             }
 

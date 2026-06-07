@@ -52,10 +52,8 @@ public partial class Game {
     
     private void OnEquipDemonEye(DemonEyeInstance newDemonEye) {
         demonEye.equiped = newDemonEye;
-        curRaid.temp.damagingData.Reset();
-        if (newDemonEye != demonEye.empty) {
-            customQuestEvent?.Invoke("FirstDemonEyeEquiped");
-        }
+        curRaid.data.damaging.Reset();
+        thisFrame.flags |= GameData.FrameFlags.DemonEyeChanged;
     }
     
     public ItemInstance CreateNewDemonEyeItemInstance(List<ItemInstance> eyeUpgradeItemInstances) {

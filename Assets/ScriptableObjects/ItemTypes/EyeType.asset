@@ -12,3 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 21dd62ff50f53794eaa17276c7a5bdad, type: 3}
   m_Name: EyeType
   m_EditorClassIdentifier: Assembly-CSharp::EyeType
+  displayName: Eye

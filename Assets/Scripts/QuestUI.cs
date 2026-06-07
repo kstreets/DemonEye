@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Assertions;
+using static Game;
 
 public class QuestUI : MonoBehaviour {
 
@@ -16,7 +17,7 @@ public class QuestUI : MonoBehaviour {
         descText.text = quest.description;
         repRewardText.text = $"+{quest.traderReputationReward} Trader Rep";
 
-        if (quest.IsComplete()) {
+        if (QuestIsComplete(quest)) {
             completeButton.Enable();
         }
         else {
@@ -30,7 +31,7 @@ public class QuestUI : MonoBehaviour {
         Assert.IsTrue(quest.objectives.Count <= objectiveUIs.Count, "Not enough objective UIs for quest objectives");
 
         for (int i = 0; i < quest.objectives.Count; i++) {
-            Quest.Objective obj = quest.objectives[i];
+            ObjectiveData obj = quest.objectives[i];
             QuestObjectiveUI objUI = objectiveUIs[i];
             objUI.gameObject.SetActive(true);
             objUI.UpdateDisplay(obj);

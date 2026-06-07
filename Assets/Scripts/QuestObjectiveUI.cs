@@ -1,7 +1,8 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.UI;
-using VInspector;
+using static Game;
 
 public class QuestObjectiveUI : MonoBehaviour {
 
@@ -10,12 +11,15 @@ public class QuestObjectiveUI : MonoBehaviour {
     public Image fillImage;
     public TextMeshProUGUI progressText;
     
-    public void UpdateDisplay(Quest.Objective objective) {
-        if (taskDesc.text != objective.GetTaskDescription()) {
-            taskDesc.text = objective.GetTaskDescription();
+    public void UpdateDisplay(ObjectiveData objective) {
+        string desc = GetObjectiveDescription(objective);
+        Assert.IsFalse(string.IsNullOrEmpty(desc), "Getting an empty objective description");
+        
+        if (taskDesc.text != desc) {
+            taskDesc.text = desc;
         }
 
-        bool showProgressUI = objective.type != Quest.Objective.Type.Teleport;
+        bool showProgressUI = objective.type != QuestObjectiveTypes.Teleport;
         progressBar.gameObject.SetActive(showProgressUI);
         progressText.gameObject.SetActive(showProgressUI);
 

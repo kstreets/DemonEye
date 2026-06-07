@@ -4,6 +4,7 @@ using PrimeTween;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Pool;
+using static GameData;
 using Random = UnityEngine.Random;
 
 public partial class Game {
@@ -359,6 +360,7 @@ public partial class Game {
             }
             if (item.bandageAmount > 0) {
                 player.bleeding = false;
+                gameInstance.thisFrame.flags |= FrameFlags.BleedStopped;
             }
             gameInstance.ReduceItemCountInInventory(player.consumption.inventory, player.consumption.slotIndex);
         });
@@ -388,7 +390,9 @@ public partial class Game {
 
     private void HealPlayer(int healing, float duration = 0f) {
         if (duration <= 0f) {
-            player.health = Mathf.Clamp(player.health + healing, 0, FullPlayerHealth());
+            int clampedHealing = Mathf.Clamp(player.health + healing, 0, FullPlayerHealth());
+            player.health = clampedHealing;
+            thisFrame.data.healing += clampedHealing;
             return;
         }
         
