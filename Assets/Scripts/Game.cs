@@ -111,13 +111,8 @@ public partial class Game : MonoBehaviour {
 
     private void OnHideoutStateExit() {
         CloseHideoutUI();
-        SavePlayerData();
-        SavePersistentFlags();
         SaveTrader();
-        SaveInventory(inventories.player);
-        SaveInventory(inventories.stash);
-        SaveInventory(inventories.eyeForge);
-        SaveActiveQuestProgresses();
+        SaveGameState();
     }
 
     private void OnHideoutStateUpdate() {
@@ -197,7 +192,7 @@ public partial class Game : MonoBehaviour {
     }
 
     private void OnEarlyExitEnter() {
-        OnSaveWhenRaidIsOver();
+        SaveGameState();
         AnimateEarlyExitSequence(() => states.gameStateMachine.SetStateIfNotCurrent(states.mainMenu));
     }
     
@@ -208,11 +203,11 @@ public partial class Game : MonoBehaviour {
     private void OnWinExitEnter() {
         var maps = config.maps;
         int nextMapIndex = maps.IndexOf(curRaid.map) + 1;
-        bool unlockNextMap = maps.IndexInRange(nextMapIndex) && !maps[nextMapIndex].isUnlocked;
+        bool unlockNextMap = maps.IndexInRange(nextMapIndex) && !maps[nextMapIndex].state.isUnlocked;
         if (unlockNextMap) {
-            maps[nextMapIndex].isUnlocked = true;
+            maps[nextMapIndex].state.isUnlocked = true;
         }
-        OnSaveWhenRaidIsOver();
+        SaveGameState();
         AnimateGameWinSequence(() => states.gameStateMachine.SetStateIfNotCurrent(states.mainMenu));
     }
 
@@ -222,7 +217,7 @@ public partial class Game : MonoBehaviour {
 
     private void OnGameOverEnter() {
         ClearInventory(inventories.player);
-        OnSaveWhenRaidIsOver();
+        SaveGameState();
         AnimateGameOverSequence(() => states.gameStateMachine.SetStateIfNotCurrent(states.mainMenu)); 
     }
     
@@ -301,15 +296,7 @@ public partial class Game : MonoBehaviour {
         DestroyEntities(EntityLifetime.Level);
         UnloadCurrentMapAsync();
     }
-    
-    private void OnSaveWhenRaidIsOver() {
-        SaveInventory(inventories.player);
-        SavePlayerData();
-        SavePersistentFlags();
-        SaveActiveQuestProgresses();
-        SaveMaps();
-    }
-    
+
     // *******************************
     // Animation Sequences
     // *******************************

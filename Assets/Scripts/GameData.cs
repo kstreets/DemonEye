@@ -75,13 +75,13 @@ public class GameData {
     [Serializable]
     public class Quests {
         public QuestGraphRuntime graph;
+        public Dictionary<int, Quest.State> stateLookupFromUuid = new();
         public Quest pickPocketQuest;
         public Quest overweightExtractQuest;
         
         public Queue<QuestPackage> reservedPkgs = new();
         public List<QuestPackage> activePkgs = new();
         public QuestPackage presentingPkg;
-        public QuestSaveData saveData;
     }
     
     [Serializable]

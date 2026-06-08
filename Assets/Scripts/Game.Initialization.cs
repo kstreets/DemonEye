@@ -5,16 +5,20 @@ using UnityEngine.UI;
 public partial class Game {
     
     private void InitGame() {
+        GameState gameState = LoadGameState();
+        persistentFlags = gameState?.persistentFlags ?? default;
+        
+        InitEntities(gameState);
+        InitMaps(gameState);
+        InitInventories(gameState);
+        InitQuests(gameState);
+        
         BuildSavePaths();
-        LoadPersistentFlags();
         InitInput();
         InitResources();
-        InitEntities();
         InitAudio();
-        InitMapSaves();
         DemonEyeTween.Init();
         InitDemonEye();
-        InitInventories();
         InitButtonCallbacks();
         InitEntityPools();
         InitGameStates();
@@ -24,9 +28,9 @@ public partial class Game {
         InitHideout();
     }
     
-    private void InitEntities() { 
+    private void InitEntities(GameState gameState) { 
         entities.player = MakePlayer();
-        LoadAndAssignPlayerSaveData(player);
+        InitPlayerState(player, gameState);
     }
     
     private void InitInput() {
@@ -118,10 +122,10 @@ public partial class Game {
             ToggleHideoutPanels(skillsPanel.panel.rectTransform, skillsPanel.playerStatsPanel.rectTransform);
         });
 
-        skillsPanel.panel.hasteSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(skillUpgradePaths.haste, player.hasteSkillLevel));
-        skillsPanel.panel.intellectSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(skillUpgradePaths.intellect, player.intellectSkillLevel));
-        skillsPanel.panel.lifeBloodSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(skillUpgradePaths.lifeBlood, player.lifeBloodSkillLevel));
-        skillsPanel.panel.strengthSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(skillUpgradePaths.strength, player.strengthSkillLevel));
+        skillsPanel.panel.hasteSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(skillUpgradePaths.haste, player.state.hasteSkillLevel));
+        skillsPanel.panel.intellectSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(skillUpgradePaths.intellect, player.state.intellectSkillLevel));
+        skillsPanel.panel.lifeBloodSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(skillUpgradePaths.lifeBlood, player.state.lifeBloodSkillLevel));
+        skillsPanel.panel.strengthSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(skillUpgradePaths.strength, player.state.strengthSkillLevel));
         
         eyeForgePanel.forgeButton.AddListener(OnForgeButtonPressed);
         

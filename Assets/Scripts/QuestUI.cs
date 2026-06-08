@@ -34,7 +34,7 @@ public class QuestUI : MonoBehaviour {
             ObjectiveData obj = quest.objectives[i];
             QuestObjectiveUI objUI = objectiveUIs[i];
             objUI.gameObject.SetActive(true);
-            objUI.UpdateDisplay(obj);
+            objUI.UpdateDisplay(quest, obj);
         }
     }
 

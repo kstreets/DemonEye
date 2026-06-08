@@ -22,14 +22,6 @@ public partial class Game {
         public Limiter attackLimiter;
         public Limiter enemyCollisionDamageLimiter;
         
-        public int soulCurrency;
-        public int coinCurrency;
-        
-        public int hasteSkillLevel;
-        public int intellectSkillLevel;
-        public int lifeBloodSkillLevel;
-        public int strengthSkillLevel;
-        
         public float lastShotTime;
         public int consecutiveShotCount;
         public float curStepDistance;
@@ -41,6 +33,17 @@ public partial class Game {
         public bool isHealingOverTime => healing.tween.isAlive;
 
         public Sprite defaultPlayerPreviewSprite;
+        public PlayerState state;
+    }
+
+    public class PlayerState {
+        public int initHealth;
+        public int soulCurrency;
+        public int coinCurrency;
+        public int hasteSkillLevel;
+        public int intellectSkillLevel;
+        public int lifeBloodSkillLevel;
+        public int strengthSkillLevel;
     }
     
     public enum PlayerStat {
@@ -70,6 +73,13 @@ public partial class Game {
         return newPlayer;
     }
     
+    private void InitPlayerState(Player instancedPlayer, GameState gameState) {
+        instancedPlayer.state = gameState?.playerState ?? new();
+        // We want to make sure that the player health is never <= zero
+        int startingHealth = instancedPlayer.state.initHealth;
+        instancedPlayer.health = startingHealth <= 0f ? FullPlayerHealth() : startingHealth;
+    }
+    
     private void InitPlayer() {
         player.animator.Play(PlayerAnimations.idleDown);
         player.nextIdleAnimHash = PlayerAnimations.idleDown;
@@ -87,7 +97,7 @@ public partial class Game {
                 trinkets.data.activeDuration.Add(speedBoost.duration);
             }
         }
-        player.soulCurrency += enemy.data.soulWorthPerKill;
+        player.state.soulCurrency += enemy.data.soulWorthPerKill;
     }
     
     private void UpdatePlayer() {
@@ -460,21 +470,21 @@ public partial class Game {
     
     private int GetPlayerStatLevel(PlayerStat stat) {
         return stat switch {
-            PlayerStat.FireratePercentage      => player.hasteSkillLevel,
-            PlayerStat.MovementSpeedPercentage => player.hasteSkillLevel,
-            PlayerStat.LootingSpeed            => player.hasteSkillLevel,
+            PlayerStat.FireratePercentage      => player.state.hasteSkillLevel,
+            PlayerStat.MovementSpeedPercentage => player.state.hasteSkillLevel,
+            PlayerStat.LootingSpeed            => player.state.hasteSkillLevel,
         
-            PlayerStat.CritChance      => player.intellectSkillLevel,
-            PlayerStat.CritMulti       => player.intellectSkillLevel,
-            PlayerStat.ProjectileCount => player.intellectSkillLevel,
+            PlayerStat.CritChance      => player.state.intellectSkillLevel,
+            PlayerStat.CritMulti       => player.state.intellectSkillLevel,
+            PlayerStat.ProjectileCount => player.state.intellectSkillLevel,
             
-            PlayerStat.Health        => player.lifeBloodSkillLevel,
-            PlayerStat.HealingAmount => player.lifeBloodSkillLevel,
-            PlayerStat.HealingSpeed  => player.lifeBloodSkillLevel,
+            PlayerStat.Health        => player.state.lifeBloodSkillLevel,
+            PlayerStat.HealingAmount => player.state.lifeBloodSkillLevel,
+            PlayerStat.HealingSpeed  => player.state.lifeBloodSkillLevel,
             
-            PlayerStat.BleedResist   => player.strengthSkillLevel,
-            PlayerStat.DamageMulti        => player.strengthSkillLevel,
-            PlayerStat.CarryCapacity => player.strengthSkillLevel,
+            PlayerStat.BleedResist   => player.state.strengthSkillLevel,
+            PlayerStat.DamageMulti   => player.state.strengthSkillLevel,
+            PlayerStat.CarryCapacity => player.state.strengthSkillLevel,
             
             _ => 0,
         };
@@ -594,47 +604,6 @@ public partial class Game {
         float maxOverweightAmount = (float)endingEncumberingWeight - startingEncumberingWeight;
         float overweightComp = curOverweightAmount / maxOverweightAmount;
         return Mathf.Clamp01(overweightComp);
-    }
-    
-    [Serializable]
-    private class PlayerSaveData {
-        public int health;
-        public int crucibleLevel;
-        public int soulCurrency;
-        public int coinCurrency;
-        
-        public int hasteSkillLevel;
-        public int intellectSkillLevel;
-        public int lifeBloodSkillLevel;
-        public int strengthSkillLevel;
-    }
-
-    private void SavePlayerData() {
-        PlayerSaveData data = new() {
-            health = player.health,
-            soulCurrency = player.soulCurrency,
-            coinCurrency = player.coinCurrency,
-            hasteSkillLevel = player.hasteSkillLevel,
-            intellectSkillLevel = player.intellectSkillLevel,
-            lifeBloodSkillLevel = player.lifeBloodSkillLevel,
-            strengthSkillLevel = player.strengthSkillLevel,
-        };
-        SaveToFile(savePaths.player, data);
-    }
-
-    private void LoadAndAssignPlayerSaveData(Player instancedPlayer) {
-        PlayerSaveData data = LoadFromFile<PlayerSaveData>(savePaths.player);
-        if (data != null) {
-            instancedPlayer.health = data.health;
-            instancedPlayer.soulCurrency = data.soulCurrency;
-            instancedPlayer.coinCurrency = data.coinCurrency;
-            instancedPlayer.hasteSkillLevel = data.hasteSkillLevel;
-            instancedPlayer.intellectSkillLevel = data.intellectSkillLevel;
-            instancedPlayer.lifeBloodSkillLevel = data.lifeBloodSkillLevel;
-            instancedPlayer.strengthSkillLevel = data.strengthSkillLevel;
-        }
-        // We want to make sure that the player health is never <= zero
-        instancedPlayer.health = instancedPlayer.health <= 0f ? FullPlayerHealth() : instancedPlayer.health;
     }
     
 }

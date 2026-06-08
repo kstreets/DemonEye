@@ -11,7 +11,7 @@ public class QuestObjectiveUI : MonoBehaviour {
     public Image fillImage;
     public TextMeshProUGUI progressText;
     
-    public void UpdateDisplay(ObjectiveData objective) {
+    public void UpdateDisplay(Quest quest, ObjectiveData objective) {
         string desc = GetObjectiveDescription(objective);
         Assert.IsFalse(string.IsNullOrEmpty(desc), "Getting an empty objective description");
         
@@ -22,9 +22,10 @@ public class QuestObjectiveUI : MonoBehaviour {
         bool showProgressUI = objective.type != QuestObjectiveTypes.Teleport;
         progressBar.gameObject.SetActive(showProgressUI);
         progressText.gameObject.SetActive(showProgressUI);
-
-        fillImage.fillAmount = Mathf.Clamp01(objective.progressValue / (float)objective.targetValue);
-        progressText.text = $"{objective.progressValue}/{objective.targetValue}";
+        
+        int progress = GetObjectiveProgress(quest, objective);
+        fillImage.fillAmount = Mathf.Clamp01(progress / (float)objective.targetValue);
+        progressText.text = $"{progress}/{objective.targetValue}";
     }
 
 }

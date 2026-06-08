@@ -84,12 +84,11 @@ public partial class Game {
     private bool InventoryIsOpen => playerPanel.panel.gameObject.activeInHierarchy;
     private bool LootInventoryIsOpen => ui.lootInventoryPanel.gameObject.activeInHierarchy;
 
-    private void InitInventories() {
+    private void InitInventories(GameState gameState) {
         const int maxBackpackSize = 30;
         SpawnUiSlots(playerPanel.quickUseParent, playerQuickUseSize);
         SpawnUiSlots(playerPanel.pocketParent, playerPocketSize + maxBackpackSize);
         inventories.player = CreateInventory(playerPanel.inventoryParent, NakedPlayerInventorySize);
-        LoadInventory(inventories.player);
 
         InventorySlotUI[] quickUseSlots = playerPanel.quickUseParent.GetComponentsInChildren<InventorySlotUI>();
         foreach (InventorySlotUI slotUI in quickUseSlots) {
@@ -99,7 +98,6 @@ public partial class Game {
         const int stashInventorySize = 40;
         SpawnUiSlots(stashPanel.inventoryParent, stashInventorySize);
         inventories.stash = CreateInventory(stashPanel.inventoryParent, stashInventorySize);
-        LoadInventory(inventories.stash);
        
         const int cachedLootInventorySize = 12;
         SpawnUiSlots(ui.lootInventoryParent, cachedLootInventorySize); 
@@ -109,7 +107,6 @@ public partial class Game {
         const int traderInventorySize = traderInventoryRowCount * traderInventoryColCount;
         SpawnUiSlots(traderPanel.inventoryParent, traderInventorySize);
         inventories.trader = CreateInventory(traderPanel.inventoryParent, traderInventorySize);
-        LoadInventory(inventories.trader);
         
         const int transactionInventorySize = 25;
         SpawnUiSlots(transactionPanel.inventoryParent, transactionInventorySize);
@@ -119,7 +116,13 @@ public partial class Game {
         SpawnUiSlots(eyeForgePanel.pentagramParent, crucibleInventorySize, prefabs.eyeForgeSlot);
         inventories.eyeForge = CreateInventory(eyeForgePanel.pentagramParent, crucibleInventorySize);
         SetupEyeForgeInventorySlots();
-        LoadInventory(inventories.eyeForge);
+
+        if (gameState != null) {
+            InitInventoryItems(gameState.playerInventoryItems, inventories.player);
+            InitInventoryItems(gameState.stashInventoryItems, inventories.stash);
+            InitInventoryItems(gameState.traderInventoryItems, inventories.trader);
+            InitInventoryItems(gameState.forgeInventoryItems, inventories.eyeForge);
+        }
     }
     
     private void SetupEyeForgeInventorySlots() {
@@ -140,17 +143,7 @@ public partial class Game {
         }
     }
     
-    private void SaveInventory(Inventory inventory) {
-        using var _ = ListPool<ItemInstance>.Get(out var saveList);
-        saveList.Clear();
-        foreach (InventorySlot slot in inventory.slots) {
-            saveList.Add(slot.itemInstance); 
-        }
-        SaveToFile(GetInventorySavePath(inventory), saveList);
-    }
-
-    private void LoadInventory(Inventory inventory) {
-        List<ItemInstance> itemInstances = LoadFromFile<List<ItemInstance>>(GetInventorySavePath(inventory));
+    private void InitInventoryItems(List<ItemInstance> itemInstances, Inventory inventory) {
         if (itemInstances == null) return;
 
         if (inventory == inventories.player && itemInstances.Count != inventory.slots.Length) {

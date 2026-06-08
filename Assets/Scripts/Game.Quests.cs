@@ -1,21 +1,8 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Assertions;
 using static GameData;
 
 public partial class Game {
-    
-    [Serializable]
-    public class QuestSaveData {
-        public Progress[] progressSaves;
-        public bool[] submissionStates;
-        
-        [Serializable]
-        public class Progress {
-            public List<int> values;
-        }
-    }
     
     // Explicitly define each value so we can remove or
     // re-arrange without breaking the serialization
@@ -46,9 +33,6 @@ public partial class Game {
         public ItemType targetItemType;
         public MapData teleportMap;
         public bool keepFetchedItems;
-        
-        [NonSerialized] public int progressValue;
-        public bool completed => progressValue >= targetValue || type == QuestObjectiveTypes.Teleport;
     }
     
     public static string GetObjectiveDescription(ObjectiveData obj) {
@@ -69,83 +53,81 @@ public partial class Game {
             return $"Return with {obj.targetValue} {displayName}s";
         }
     }
+
+    public static int GetObjectiveProgress(Quest quest, ObjectiveData obj) {
+        return quest.state.objectiveProgresses[quest.objectives.IndexOf(obj)];
+    }
     
     public static bool QuestIsComplete(Quest quest) {
         foreach (ObjectiveData obj in quest.objectives) {
-            if (!obj.completed) {
+            if (!ObjectiveIsComplete(quest, obj)) {
                 return false;
             }
         }
         return true;
     }
-    
-    private void InitQuests() {
-        quests.saveData = LoadFromFile<QuestSaveData>(savePaths.quest);
-        
-        if (quests.saveData == null) {
-            quests.saveData = new() {
-                progressSaves = new QuestSaveData.Progress[quests.graph.questCount],
-                submissionStates = new bool[quests.graph.questCount],
-            };
-            quests.saveData.progressSaves.InitalizeWithDefault();
-            SaveToFile(savePaths.quest, quests.saveData);
-        }
-        
-        HashSet<QuestGraphRuntime.Node> initialQuestNodes = new();
-        foreach (QuestGraphRuntime.Node node in quests.graph.rootNode.nextNodes) {
-            FindStartingQuestNodes(initialQuestNodes, node);
-        }
-        
-        const int questUiPoolSize = 6;
-        for (int i = 0; i < questUiPoolSize; i++) {
-            ReleaseQuestPackage(CreateQuestPackage());
-        }
-        
-        foreach (QuestGraphRuntime.Node questNode in initialQuestNodes) {
-            QuestSaveData.Progress save = quests.saveData.progressSaves[questNode.saveIndex];
-            SetQuestProgressSave(questNode.curQuest, save);
-            ActivateQuest(questNode); 
-        }
-        
-        RefreshQuestDisplays();
-    }
 
-    private void FindStartingQuestNodes(HashSet<QuestGraphRuntime.Node> nodes, QuestGraphRuntime.Node curNode) {
-        bool questHasBeenSubmitted = quests.saveData.submissionStates[curNode.saveIndex];
-        
-        if (!questHasBeenSubmitted) {
-            nodes.Add(curNode);
+    public static bool ObjectiveIsComplete(Quest quest, ObjectiveData obj) {
+        int i = quest.objectives.IndexOf(obj);
+        return quest.state.objectiveProgresses[i] >= quest.objectives[i].targetValue;
+    }
+    
+    private void InitQuests(GameState gameState) {
+        if (gameState == null) {
+            foreach (Quest quest in quests.graph.unorderedQuests) {
+                AssignNewEmptyState(quest);
+                quests.stateLookupFromUuid.Add(quest.uuid, quest.state);
+            }
             return;
         }
         
-        foreach (QuestGraphRuntime.Node nextNode in curNode.nextNodes) {
-            FindStartingQuestNodes(nodes, nextNode);
+        foreach (Quest.State state in gameState.questStates) {
+            quests.stateLookupFromUuid.Add(state.associatedQuestUuid, state);
+        }
+
+        foreach (Quest quest in quests.graph.unorderedQuests) {
+            if (quests.stateLookupFromUuid.TryGetValue(quest.uuid, out Quest.State state)) {
+                quest.state = state;
+                continue;
+            }
+            AssignNewEmptyState(quest);
         }
     }
-    
+
+    private void AssignNewEmptyState(Quest quest) {
+        quest.state = new() {
+            associatedQuestUuid = quest.uuid,
+            submitted = false,
+            objectiveProgresses = new(),
+        };
+        for (int i = 0; i < quest.objectives.Count; i++) {
+            quest.state.objectiveProgresses.Add(0);
+        }
+    }
+
     private void UpdateQuests() {
         foreach (QuestPackage questsActivePkg in quests.activePkgs) {
             Quest quest = questsActivePkg.questNode.curQuest;
             foreach (ObjectiveData obj in quest.objectives) {
-                UpdateQuestObjective(obj);
+                UpdateQuestObjective(quest, obj);
             }
         }
     }
     
-    private void UpdateQuestObjective(ObjectiveData obj) {
+    private void UpdateQuestObjective(Quest quest, ObjectiveData obj) {
         switch (obj.type) {
             case QuestObjectiveTypes.Kill: {
                 if (thisFrame.enemyKillCount.TryGetValue(obj.targetEnemy, out int kills)) {
-                    IncreaseObjective(obj, kills);
+                    IncreaseProgressValue(quest, obj, kills);
                 }
                 break;
             }
             case QuestObjectiveTypes.FetchByItem: {
-                UpdateObjectiveFetchItem(obj);
+                UpdateObjectiveFetchItem(quest, obj);
                 break;
             }
             case QuestObjectiveTypes.FetchByType: {
-                UpdateObjectiveFetchType(obj);
+                UpdateObjectiveFetchType(quest, obj);
                 break;
             }
             case QuestObjectiveTypes.Teleport:
@@ -153,33 +135,33 @@ public partial class Game {
             case QuestObjectiveTypes.Sell:
                 break;
             case QuestObjectiveTypes.Extract: {
-                IncreaseObjectiveFromFlags(obj, FrameFlags.ExitTaken | FrameFlags.EarlyExitTaken);
+                IncreaseObjectiveFromFlags(quest, obj, FrameFlags.ExitTaken | FrameFlags.EarlyExitTaken);
                 break;
             }
             case QuestObjectiveTypes.UpgradeSkills: {
-                IncreaseObjectiveFromFlags(obj, FrameFlags.SkillUpgraded);
+                IncreaseObjectiveFromFlags(quest, obj, FrameFlags.SkillUpgraded);
                 break;
             }
             case QuestObjectiveTypes.StoppingBleeds: {
-                IncreaseObjectiveFromFlags(obj, FrameFlags.BleedStopped);
+                IncreaseObjectiveFromFlags(quest, obj, FrameFlags.BleedStopped);
                 break;
             }
             case QuestObjectiveTypes.InRaidHealing: {
                 if (!InRaid) break;
-                IncreaseObjective(obj, thisFrame.data.healing);
+                IncreaseProgressValue(quest, obj, thisFrame.data.healing);
                 break;
             }
             case QuestObjectiveTypes.OverweightExtract: {
                 if (GetOverweightCompletion() >= 1f) {
-                    IncreaseObjectiveFromFlags(obj, FrameFlags.ExitTaken | FrameFlags.EarlyExitTaken);
+                    IncreaseObjectiveFromFlags(quest, obj, FrameFlags.ExitTaken | FrameFlags.EarlyExitTaken);
                 }
                 break;
             }
             case QuestObjectiveTypes.PickPocket: {
                 if (thisFrame.flags.HasFlag(FrameFlags.PostRaidInit)) {
-                    SpawnQuestItemOnDeadBody(obj);
+                    SpawnQuestItemOnDeadBody(quest, obj);
                 }
-                UpdateObjectiveFetchItem(obj);
+                UpdateObjectiveFetchItem(quest, obj);
                 break;
             }
             case QuestObjectiveTypes.MedicalBushes: {
@@ -187,21 +169,21 @@ public partial class Game {
                 if (foundItem == null) break;
                 bool searchingInBush = curRaid.data.interactions.curLootOrigin == LootInventoryOrigin.Bush;
                 if (searchingInBush && foundItem.IsMedical()) {
-                    IncreaseObjective(obj, 1);
+                    IncreaseProgressValue(quest, obj, 1);
                 }
                 break;
             }
             case QuestObjectiveTypes.EquipADemonEye: {
                 if (thisFrame.flags.HasFlag(FrameFlags.DemonEyeChanged)) {
                     if (demonEye.equiped != demonEye.empty) {
-                        IncreaseObjective(obj, 1);
+                        IncreaseProgressValue(quest, obj, 1);
                     }
                 } 
                 break;
             }
             case QuestObjectiveTypes.BloodDropsForMushrooms: {
                 persistentFlags |= PersistentFlags.BloodMushroomsUnlocked;
-                IncreaseObjective(obj, thisFrame.data.enemyBloodDropped);
+                IncreaseProgressValue(quest, obj, thisFrame.data.enemyBloodDropped);
                 break;
             }
             default:
@@ -209,26 +191,35 @@ public partial class Game {
         }
     }
     
-    private void IncreaseObjectiveFromFlags(ObjectiveData obj, FrameFlags flag) {
+    private void IncreaseObjectiveFromFlags(Quest quest, ObjectiveData obj, FrameFlags flag) {
         if (thisFrame.flags.HasAnyFlag(flag)) {
-            obj.progressValue = Mathf.Clamp(++obj.progressValue, 0, obj.targetValue);
+            IncreaseProgressValue(quest, obj, 1);
         }
     }
     
-    private void IncreaseObjective(ObjectiveData obj, int value) {
-        obj.progressValue = Mathf.Clamp(obj.progressValue + value, 0, obj.targetValue);
+    private void UpdateObjectiveFetchItem(Quest quest, ObjectiveData obj) {
+        int count = GetOwnedCountOfItem(obj.targetItem);
+        SetProgressValue(quest, obj, count);
     }
     
-    private void UpdateObjectiveFetchItem(ObjectiveData obj) {
-        obj.progressValue = Mathf.Clamp(GetOwnedCountOfItem(obj.targetItem), 0, obj.targetValue);
+    private void UpdateObjectiveFetchType(Quest quest, ObjectiveData obj) {
+        int count = GetOwnedCountOfItem(obj.targetItemType);
+        SetProgressValue(quest, obj, count);
+    }
+
+    private void SetProgressValue(Quest quest, ObjectiveData obj, int value) {
+        int i = quest.objectives.IndexOf(obj);
+        quest.state.objectiveProgresses[i] = Mathf.Clamp(value, 0, obj.targetValue);
+    }
+
+    private void IncreaseProgressValue(Quest quest, ObjectiveData obj, int value) {
+        int i = quest.objectives.IndexOf(obj);
+        int newValue = quest.state.objectiveProgresses[i] + value;
+        quest.state.objectiveProgresses[i] = Mathf.Clamp(newValue, 0, obj.targetValue);
     }
     
-    private void UpdateObjectiveFetchType(ObjectiveData obj) {
-        obj.progressValue = Mathf.Clamp(GetOwnedCountOfItem(obj.targetItemType), 0, obj.targetValue);
-    }
-    
-    private void SpawnQuestItemOnDeadBody(ObjectiveData obj) {
-        if (obj.completed) return;
+    private void SpawnQuestItemOnDeadBody(Quest quest, ObjectiveData obj) {
+        if (ObjectiveIsComplete(quest, obj)) return;
         
         InventorySlot[] chosenDeadbody = curRaid.deadBodySlotsLookup.RandomValue();
         if (chosenDeadbody == null) return;
@@ -241,36 +232,6 @@ public partial class Game {
                 notDiscovered = true,
             };
             break;
-        }
-    }
-    
-    private void SaveActiveQuestProgresses() {
-        foreach (QuestPackage questPackage in quests.activePkgs) {
-            QuestGraphRuntime.Node node = questPackage.questNode;
-            quests.saveData.progressSaves[node.saveIndex] = GetQuestProgressSave(node.curQuest);
-        }
-        SaveToFile(savePaths.quest, quests.saveData);
-    }
-
-    private void SaveAndMarkQuestAsSubmitted(QuestGraphRuntime.Node questNode) {
-        quests.saveData.submissionStates[questNode.saveIndex] = true;
-        quests.saveData.progressSaves[questNode.saveIndex] = GetQuestProgressSave(questNode.curQuest);
-        SaveToFile(savePaths.quest, quests.saveData);
-    }
-    
-    private QuestSaveData.Progress GetQuestProgressSave(Quest quest) {
-        QuestSaveData.Progress progress = new() { values = new() };
-        foreach (ObjectiveData obj in quest.objectives) {
-            progress.values.Add(obj.progressValue);
-        }
-        return progress;
-    }
-    
-    private void SetQuestProgressSave(Quest quest, QuestSaveData.Progress save) {
-        if (save.values == null) return;
-        Assert.IsTrue(quest.objectives.Count == save.values.Count, "Save state does not match objectives");
-        for (int i = 0; i < quest.objectives.Count; i++) {
-            quest.objectives[i].progressValue = save.values[i];
         }
     }
     

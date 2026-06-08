@@ -17,6 +17,14 @@ public class Quest : ScriptableObject {
     
     public List<ObjectiveData> objectives;
     
+    public class State {
+        public int associatedQuestUuid;
+        public bool submitted;
+        public List<int> objectiveProgresses;
+    }
+    
+    public State state;
+
 #if UNITY_EDITOR
     
     [Button]
@@ -25,16 +33,19 @@ public class Quest : ScriptableObject {
             Debug.Log("Need to be in playmode to complete quest");
             return;
         }
-        foreach (ObjectiveData obj in objectives) {
-            obj.progressValue = obj.targetValue;
+
+        for (int i = 0; i < objectives.Count; i++) {
+            ObjectiveData obj = objectives[i];
+            state.objectiveProgresses[i] = obj.targetValue;
             // For fetch quests we need to actually have the items to complete it properly
             if (obj.type == QuestObjectiveTypes.FetchByItem) {
                 gameInstance.TryAddItemToInventory(gameInstance.inventories.stash, obj.targetItem, obj.targetValue);
             }
         }
+
         gameInstance.RefreshQuestDisplays();
     }
     
 #endif
-
+    
 }

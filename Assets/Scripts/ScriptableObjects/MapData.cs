@@ -25,9 +25,13 @@ public class MapData : ScriptableObject {
     public float rareLootRarityIncrease;
     public float epicLootRarityIncrease;
     public float legendaryLootRarityIncrease;
+
+    public class State {
+        public bool isUnlocked;
+        public List<Vector2> bloodMushroomSpawns;
+    }
     
-    [NonSerialized] public bool isUnlocked;
-    [NonSerialized] public List<Vector2> bloodMushroomSpawns = new();
+    [NonSerialized] public State state;
     
     // -------------------------------------------------------------
     // Interface to inject different raid spawn patterns for testing

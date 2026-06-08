@@ -73,8 +73,8 @@ public partial class Game {
             if (col.CompareTag(Tags.Altar)) {
                 int soulsPrice = curRaid.map.altarSoulPrice;
                 EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), $"{soulsPrice} Souls");
-                if (input.interact.WasPressedThisFrame() && player.soulCurrency >= soulsPrice) {
-                    player.soulCurrency -= soulsPrice;
+                if (input.interact.WasPressedThisFrame() && player.state.soulCurrency >= soulsPrice) {
+                    player.state.soulCurrency -= soulsPrice;
                     Item dropItem = GetItemFromDropPool(dropPools.eyeUpgrades);
                     Entity item = SpawnItemAsEntity(dropItem, 1, OffsetY(col.transform.position, 0.2f), Quaternion.identity);
                     item.spriteRenderer.sortingOrder = 1;

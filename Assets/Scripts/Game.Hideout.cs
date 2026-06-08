@@ -16,8 +16,8 @@ public partial class Game {
     
     private void InitHideout() {
         InitTrader();
-        InitQuests();
         InitSkillsPanel();
+        InitQuestPackages();
         SetPentagramFill(0f);
     }
     
@@ -37,7 +37,6 @@ public partial class Game {
 
     private void SaveTrader() {
         SaveToFile(savePaths.trader, traderSaveData);
-        SaveInventory(inventories.trader);
     }
 
     private void InitTrader() {
@@ -226,15 +225,15 @@ public partial class Game {
         int sellPrice = GetInventoryValue(inventories.transaction, InventoryValueType.Sell);
         // Before selling items we pass the transaction inventory to callbacks that want to know what we sold
         // onSoldItemsToTrader?.Invoke(inventories.transaction.slots); 
-        player.coinCurrency += sellPrice;
+        player.state.coinCurrency += sellPrice;
         ClearInventory(inventories.transaction);
     }
     
     private void OnMoneyPurchaseButtonPressed() {
         if (transactionState == TransactionState.Buying && curTradingItemInstance == null) return;
         int buyPrice = curTradingItemInstance.ItemRef.buyPrice;
-        if (player.coinCurrency >= buyPrice) {
-            player.coinCurrency -= buyPrice;
+        if (player.state.coinCurrency >= buyPrice) {
+            player.state.coinCurrency -= buyPrice;
             TryAddItemToInventory(inventories.stash, curTradingItemInstance.ItemRef, 1);
             ReduceTradingItemStock();
             // After buying items we just make sure all items in stash are no longer trader owned
@@ -493,6 +492,36 @@ public partial class Game {
         public ToggleButton questToggleButton;
     }
 
+    private void InitQuestPackages() {
+        const int questUiPoolSize = 6;
+        for (int i = 0; i < questUiPoolSize; i++) {
+            ReleaseQuestPackage(CreateQuestPackage());
+        }
+        
+        HashSet<QuestGraphRuntime.Node> initialQuestNodes = new();
+        foreach (QuestGraphRuntime.Node node in quests.graph.rootNode.nextNodes) {
+            FindStartingQuestNodes(initialQuestNodes, node);
+        }
+        
+        foreach (QuestGraphRuntime.Node questNode in initialQuestNodes) {
+            DisplayQuest(questNode); 
+        }
+        RefreshQuestDisplays();
+    }
+    
+    private void FindStartingQuestNodes(HashSet<QuestGraphRuntime.Node> nodes, QuestGraphRuntime.Node curNode) {
+        bool questHasBeenSubmitted = quests.stateLookupFromUuid[curNode.curQuest.uuid].submitted;
+        
+        if (!questHasBeenSubmitted) {
+            nodes.Add(curNode);
+            return;
+        }
+        
+        foreach (QuestGraphRuntime.Node nextNode in curNode.nextNodes) {
+            FindStartingQuestNodes(nodes, nextNode);
+        }
+    }
+
     public void RefreshQuestDisplays() {
         if (quests.activePkgs.Count <= 0) return;
 
@@ -509,7 +538,7 @@ public partial class Game {
         quests.presentingPkg.questUI.Display(quests.presentingPkg.questNode.curQuest);
     }
 
-    private void ActivateQuest(QuestGraphRuntime.Node questNode) {
+    private void DisplayQuest(QuestGraphRuntime.Node questNode) {
         QuestPackage questPackage = GetQuestPackage();
         questPackage.questNode = questNode;
         questPackage.questToggleButton.gameObject.SetActive(true);
@@ -517,7 +546,7 @@ public partial class Game {
         quests.activePkgs.Add(questPackage);
     }
 
-    private void DeactivateQuest(QuestPackage questPackage) {
+    private void RemoveQuestFromDisplay(QuestPackage questPackage) {
         quests.activePkgs.Remove(questPackage);
         ReleaseQuestPackage(questPackage);
     }
@@ -559,27 +588,26 @@ public partial class Game {
     private void OnQuestCompleteClicked(QuestPackage questPackage) {
         QuestGraphRuntime.Node compQuestNode = questPackage.questNode;
         IncreaseTraderRep(compQuestNode.curQuest.traderReputationReward);
-        SaveAndMarkQuestAsSubmitted(compQuestNode);
+        compQuestNode.curQuest.state.submitted = true;
         
         foreach (ObjectiveData obj in questPackage.questNode.curQuest.objectives) {
             bool isFetch = obj.type is QuestObjectiveTypes.FetchByItem or QuestObjectiveTypes.FetchByType;
             if (isFetch && !obj.keepFetchedItems) {
                 RemoveNumberOfOwnedItems(obj.targetItem, obj.targetValue);
-                SaveInventory(inventories.player);
-                SaveInventory(inventories.stash);
             }
         }
         
         if (questPackage.questNode.nextNodes != null) {
             foreach (QuestGraphRuntime.Node nextQuestNode in compQuestNode.nextNodes) {
-                bool questHasBeenSubmitted = quests.saveData.submissionStates[nextQuestNode.saveIndex];
-                if (questHasBeenSubmitted || QuestIsActive(nextQuestNode.curQuest)) continue;
-                ActivateQuest(nextQuestNode);
+                Quest nextQuest = nextQuestNode.curQuest;
+                if (nextQuest.state.submitted || QuestIsActive(nextQuest)) continue;
+                DisplayQuest(nextQuestNode);
             }
         }
         
-        DeactivateQuest(questPackage); 
+        RemoveQuestFromDisplay(questPackage); 
         RefreshQuestDisplays();
+        SaveGameState();
     }
     
     private bool QuestIsActive(Quest quest) {
@@ -622,27 +650,27 @@ public partial class Game {
         UpgradeStatResult result = CanUpgradeSkill(upgradePath, playerStatLevel);
         if (result == UpgradeStatResult.CantAfford || result == UpgradeStatResult.AtMaxLevel) return;
         
-        player.soulCurrency -= upgradePath.soulsNeededPerLevel[playerStatLevel];
+        player.state.soulCurrency -= upgradePath.soulsNeededPerLevel[playerStatLevel];
 
         if (upgradePath == skillUpgradePaths.haste) {
-            player.hasteSkillLevel++;
+            player.state.hasteSkillLevel++;
         }
         else if (upgradePath == skillUpgradePaths.intellect) {
-            player.intellectSkillLevel++;
+            player.state.intellectSkillLevel++;
         }
         else if (upgradePath == skillUpgradePaths.lifeBlood) {
             int prevFullPlayerHealth = FullPlayerHealth();
-            player.lifeBloodSkillLevel++;
+            player.state.lifeBloodSkillLevel++;
             int newFullPlayerHealth = FullPlayerHealth();
             player.health += newFullPlayerHealth - prevFullPlayerHealth;
         }
         else if (upgradePath == skillUpgradePaths.strength) {
-            player.strengthSkillLevel++;
+            player.state.strengthSkillLevel++;
         }
         
         thisFrame.flags |= FrameFlags.SkillUpgraded;
         
-        SavePlayerData();
+        SaveGameState();
         RefreshSkillsPanel();
     }
     
@@ -662,10 +690,10 @@ public partial class Game {
         pStats.movementSpeedRow.statValueText.text = DisplayProbNoColor(GetPlayerStat(PlayerStat.MovementSpeedPercentage));
         pStats.projectileCountRow.statValueText.text = DisplayNumberNoColor(GetPlayerStat(PlayerStat.ProjectileCount));
         
-        RefreshSkillRow(skills.hasteSkillRow, skillUpgradePaths.haste, player.hasteSkillLevel);
-        RefreshSkillRow(skills.intellectSkillRow, skillUpgradePaths.intellect, player.intellectSkillLevel);
-        RefreshSkillRow(skills.lifeBloodSkillRow, skillUpgradePaths.lifeBlood, player.lifeBloodSkillLevel);
-        RefreshSkillRow(skills.strengthSkillRow, skillUpgradePaths.strength, player.strengthSkillLevel);
+        RefreshSkillRow(skills.hasteSkillRow, skillUpgradePaths.haste, player.state.hasteSkillLevel);
+        RefreshSkillRow(skills.intellectSkillRow, skillUpgradePaths.intellect, player.state.intellectSkillLevel);
+        RefreshSkillRow(skills.lifeBloodSkillRow, skillUpgradePaths.lifeBlood, player.state.lifeBloodSkillLevel);
+        RefreshSkillRow(skills.strengthSkillRow, skillUpgradePaths.strength, player.state.strengthSkillLevel);
     }
 
     private void RefreshSkillRow(SkillLevelUpRow skillLevelRow, SkillUpgradePath upgradePath, int playerStatLevel) {
@@ -683,7 +711,7 @@ public partial class Game {
         if (!upgradePath.soulsNeededPerLevel.IndexInRange(playerSkillLevel)) {
             return UpgradeStatResult.AtMaxLevel;
         }
-        if (player.soulCurrency >= upgradePath.soulsNeededPerLevel[playerSkillLevel]) {
+        if (player.state.soulCurrency >= upgradePath.soulsNeededPerLevel[playerSkillLevel]) {
             return UpgradeStatResult.Affordable;    
         }
         return UpgradeStatResult.CantAfford;

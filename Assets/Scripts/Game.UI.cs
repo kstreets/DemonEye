@@ -151,14 +151,14 @@ public partial class Game {
     private int prevCoinCurrency = int.MinValue;
     
     private void UpdateCurrencyNumbers() {
-        if (prevSoulCurrency != player.soulCurrency) {
-            playerInfo.soulsCurrencyText.text = player.soulCurrency.ToString("N0");
+        if (prevSoulCurrency != player.state.soulCurrency) {
+            playerInfo.soulsCurrencyText.text = player.state.soulCurrency.ToString("N0");
         }
-        if (prevCoinCurrency != player.coinCurrency) {
-            playerInfo.coinCurrencyText.text = player.coinCurrency.ToString("N0");
+        if (prevCoinCurrency != player.state.coinCurrency) {
+            playerInfo.coinCurrencyText.text = player.state.coinCurrency.ToString("N0");
         }
-        prevSoulCurrency = player.soulCurrency;
-        prevCoinCurrency = player.coinCurrency;
+        prevSoulCurrency = player.state.soulCurrency;
+        prevCoinCurrency = player.state.coinCurrency;
     }
     
     private void UpdateInRaidUI() {

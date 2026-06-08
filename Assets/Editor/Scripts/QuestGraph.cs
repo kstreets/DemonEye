@@ -19,14 +19,14 @@ public class QuestGraph : Graph {
 
     public override void OnGraphChanged(GraphLogger graphLogger) {
         List<QuestStartNode> startNodes = new();
-        Dictionary<Quest, int> questCounter = new();
+        Dictionary<NewQuest, int> questCounter = new();
         
         foreach (INode node in GetNodes()) {
             if (node is QuestStartNode) {
                 startNodes.Add((QuestStartNode)node);
             }
             if (node is QuestGraphNode questNode) {
-                if (!questNode.GetNodeOption(0).TryGetValue(out Quest quest)) continue;
+                if (!questNode.GetNodeOption(0).TryGetValue(out NewQuest quest)) continue;
                 if (!quest) {
                     graphLogger.LogWarning("Missing quest", node);
                     continue;
@@ -43,7 +43,7 @@ public class QuestGraph : Graph {
             graphLogger.LogError("Should not have more than 1 start node");
         }
         
-        foreach ((Quest quest, int count) in questCounter) {
+        foreach ((NewQuest quest, int count) in questCounter) {
             if (count == 1) continue;
             graphLogger.LogError($"Quest '{quest.name}' is referenced by ({count}) different nodes, it should just be 1");
         }

@@ -11,43 +11,26 @@ using static GameData;
 
 public partial class Game {
     
-    [Serializable]
-    private class MapSaves {
-        public List<Element> saves;
-        
-        [Serializable]
-        public class Element {
-            public bool unlocked;
-            // public List<Vector2> bloodMushroomSpawns;
-        }
-    }
-    
-    private void SaveMaps() {
-        MapSaves mapSaves = new() {
-            saves = new(config.maps.Count),
-        };
-        foreach (MapData mapData in config.maps) {
-            mapSaves.saves.Add(new() {
-                unlocked  = mapData.isUnlocked,
-                // bloodMushroomSpawns = mapData.bloodMushroomSpawns.Clone(),
-            });
-        }
-        SaveToFile(savePaths.mapUnlocks, mapSaves);
-    }
-    
-    private void InitMapSaves() {
-        MapSaves mapSaves = LoadFromFile<MapSaves>(savePaths.mapUnlocks);
-        if (mapSaves == null) return;
-        
+    private void InitMaps(GameState gameState) {
         List<MapData> maps = config.maps;
         
-        if (maps.Count != mapSaves.saves.Count) {
+        if (gameState == null) {
+            for (int i = 0; i < maps.Count; i++) {
+                maps[i].state = new() {
+                    isUnlocked = i == 0,
+                    bloodMushroomSpawns = new(),
+                };
+            }
+            return;
+        } 
+        
+        if (maps.Count != gameState.mapStates.Count) {
             Debug.Log("Maps save does not match current maps. Saves are not going to be loaded");
             return;
         }
         
         for (int i = 0; i < maps.Count; i++) {
-            maps[i].isUnlocked = mapSaves.saves[i].unlocked;
+            maps[i].state = gameState.mapStates[i];
         }
     }
 
@@ -143,10 +126,10 @@ public partial class Game {
         
         // Spawn blood mushrooms from previous raid
         {
-            foreach (Vector2 bloodMushroomSpawn in curRaid.map.bloodMushroomSpawns) {
+            foreach (Vector2 bloodMushroomSpawn in curRaid.map.state.bloodMushroomSpawns) {
                 SpawnItemAsEntity(itemRefs.bloodMushroom, 1, bloodMushroomSpawn, Quaternion.identity);
             }
-            curRaid.map.bloodMushroomSpawns.Clear();
+            curRaid.map.state.bloodMushroomSpawns.Clear();
         }
     }
     
@@ -317,7 +300,7 @@ public partial class Game {
         if (!RollProbability(chanceToPlant)) return;
         
         const float minSpacing = 0.1f;
-        List<Vector2> spawns = curRaid.map.bloodMushroomSpawns;
+        List<Vector2> spawns = curRaid.map.state.bloodMushroomSpawns;
         foreach (Vector2 spawn in spawns) {
             if (Vector2.SqrMagnitude(spawn - pos) < minSpacing) return;
         }

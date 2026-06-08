@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "QuestGraphRuntime", menuName = "Scriptable Objects/QuestGraphRuntime")]
@@ -15,6 +16,8 @@ public class QuestGraphRuntime : ScriptableObject {
 
     public Node rootNode;
     public int questCount;
+    
+    public List<Quest> unorderedQuests;
 
     public void Build() {
         if (rootNode == null) return;
@@ -43,6 +46,7 @@ public class QuestGraphRuntime : ScriptableObject {
         }
         
         questCount = visited.Count;
+        unorderedQuests = visited.ToList().Select(x => x.curQuest).ToList();
     }
 
 }
