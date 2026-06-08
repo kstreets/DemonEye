@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5d4d20277d10e0489f4a0bf8ac49946, type: 3}
   m_Name: StoppingBleeds
   m_EditorClassIdentifier: Assembly-CSharp::Quest
+  uuid: 389751253
   title: Stopping Bleeds
   description: 'Sometimes you really get hit hard and start to bleed. Not to worry
     though, you won''t bleed out, but you''ll keep taking damage if you don''t stop
@@ -20,15 +21,6 @@ MonoBehaviour:
     Just whip out a bandage when this happens, you''ll be fine, unless you
     forget to bring them. Then you might die.'
   traderReputationReward: 100
-  objectiveDatas:
-  - type: 70
-    description: Stop 3 bleeds using bandages
-    targetValue: 3
-    targetEnemy: {fileID: 0}
-    targetItem: {fileID: 0}
-    targetItemType: {fileID: 0}
-    teleportMap: {fileID: 0}
-    keepFetchedItems: 0
   objectives:
   - type: 70
     description: Stop 3 bleeds using bandages

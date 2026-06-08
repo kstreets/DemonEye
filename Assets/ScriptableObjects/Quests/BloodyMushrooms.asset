@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5d4d20277d10e0489f4a0bf8ac49946, type: 3}
   m_Name: BloodyMushrooms
   m_EditorClassIdentifier: Assembly-CSharp::Quest
+  uuid: -1434879377
   title: Mushroom Farming
   description: 'If you can''t tell I''m a big fan of mushrooms. I''m in need for
     some blood mushrooms that only grow when the ground is exposed to blood.
@@ -22,23 +23,6 @@ MonoBehaviour:
     If you make demons bleed and go back to the same spot later, you''ll
     find some have grown.'
   traderReputationReward: 100
-  objectiveDatas:
-  - type: 130
-    description: Inflict bleed 50 times
-    targetValue: 50
-    targetEnemy: {fileID: 0}
-    targetItem: {fileID: 0}
-    targetItemType: {fileID: 0}
-    teleportMap: {fileID: 0}
-    keepFetchedItems: 0
-  - type: 10
-    description: 
-    targetValue: 10
-    targetEnemy: {fileID: 0}
-    targetItem: {fileID: 11400000, guid: 997868eef46099c46b2161f48b34d63b, type: 2}
-    targetItemType: {fileID: 0}
-    teleportMap: {fileID: 0}
-    keepFetchedItems: 0
   objectives:
   - type: 130
     description: Inflict bleed 50 times

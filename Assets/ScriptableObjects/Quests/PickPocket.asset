@@ -12,20 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5d4d20277d10e0489f4a0bf8ac49946, type: 3}
   m_Name: PickPocket
   m_EditorClassIdentifier: Assembly-CSharp::Quest
+  uuid: 1701327140
   title: Pick Pocket
   description: Another demon of mine left with my necklace and never came back. Must
     have died. Can you search its body and bring me back the necklace? I'd like to
     sell it again to someone else.
   traderReputationReward: 100
-  objectiveDatas:
-  - type: 100
-    description: 
-    targetValue: 1
-    targetEnemy: {fileID: 0}
-    targetItem: {fileID: 11400000, guid: 81232561f605c1546b430fbe457c269b, type: 2}
-    targetItemType: {fileID: 0}
-    teleportMap: {fileID: 0}
-    keepFetchedItems: 0
   objectives:
   - type: 100
     description: 

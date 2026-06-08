@@ -12,19 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5d4d20277d10e0489f4a0bf8ac49946, type: 3}
   m_Name: LearningSkills
   m_EditorClassIdentifier: Assembly-CSharp::Quest
+  uuid: 722702805
   title: Learning New Skills
   description: Over time you'll start to have an abunduce of souls, which you can
     use to upgrade your base stats and become less pathetic by default.
   traderReputationReward: 250
-  objectiveDatas:
-  - type: 60
-    description: Upgrade 3 skills
-    targetValue: 3
-    targetEnemy: {fileID: 0}
-    targetItem: {fileID: 0}
-    targetItemType: {fileID: 0}
-    teleportMap: {fileID: 0}
-    keepFetchedItems: 0
   objectives:
   - type: 60
     description: Upgrade 3 skills

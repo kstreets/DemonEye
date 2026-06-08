@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using Random = UnityEngine.Random;
-using GameResLookup = System.Collections.Generic.Dictionary<int, UuidScriptableObject>;
 
 [CreateAssetMenu(fileName = "UuidScriptableObject", menuName = "Scriptable Objects/UuidScriptableObject")]
 public class UuidScriptableObject : ScriptableObject {
@@ -12,6 +11,7 @@ public class UuidScriptableObject : ScriptableObject {
     public static int GetIntUuid() {
         return Random.Range(int.MinValue, int.MaxValue);
     }
+
     
 #if UNITY_EDITOR
     
@@ -29,6 +29,11 @@ public class UuidScriptableObject : ScriptableObject {
 
         uuid = newId;
         EditorUtility.SetDirty(this);
+    }
+    
+    [ContextMenu("Regenerate Uuid")]
+    public void RegenerateUuid() {
+        CreateUuid();      
     }
 
 #endif

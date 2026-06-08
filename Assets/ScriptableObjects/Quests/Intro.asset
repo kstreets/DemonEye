@@ -12,20 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5d4d20277d10e0489f4a0bf8ac49946, type: 3}
   m_Name: Intro
   m_EditorClassIdentifier: Assembly-CSharp::Quest
+  uuid: 2055794411
   title: An Introduction
   description: Prove yourself useful and draw out some Lesser Spawns on lighthouse.
     Killing 80 of them should be good enough for now. Meet me back here when thats
     done. I have more to show you.
   traderReputationReward: 100
-  objectiveDatas:
-  - type: 0
-    description: 
-    targetValue: 40
-    targetEnemy: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
-    targetItem: {fileID: 0}
-    targetItemType: {fileID: 0}
-    teleportMap: {fileID: 0}
-    keepFetchedItems: 0
   objectives:
   - type: 0
     description: 

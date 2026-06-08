@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5d4d20277d10e0489f4a0bf8ac49946, type: 3}
   m_Name: Healing
   m_EditorClassIdentifier: Assembly-CSharp::Quest
+  uuid: -995161585
   title: Healing
   description: 'You''ll probably get your shit pushed in more than a few times fighting
     demons.
@@ -22,15 +23,6 @@ MonoBehaviour:
     Next time you take damage, use
     any of these to heal yourself.'
   traderReputationReward: 100
-  objectiveDatas:
-  - type: 80
-    description: Restore 200 health while in a raid
-    targetValue: 200
-    targetEnemy: {fileID: 0}
-    targetItem: {fileID: 0}
-    targetItemType: {fileID: 0}
-    teleportMap: {fileID: 0}
-    keepFetchedItems: 0
   objectives:
   - type: 80
     description: Restore 200 health while in a raid

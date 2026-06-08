@@ -1,11 +1,10 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using VInspector;
 using static Game;
 
 [CreateAssetMenu(fileName = "Quest", menuName = "Scriptable Objects/Quest")]
-public class Quest : ScriptableObject {
+public class Quest : UuidScriptableObject {
 
     [Header("Info")]
     public string title;

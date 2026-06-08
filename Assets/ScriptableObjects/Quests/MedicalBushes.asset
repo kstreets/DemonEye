@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5d4d20277d10e0489f4a0bf8ac49946, type: 3}
   m_Name: MedicalBushes
   m_EditorClassIdentifier: Assembly-CSharp::Quest
+  uuid: -538733016
   title: The Bushes Provide
   description: 'Other demons use the bushes to stash their medical supplies for later.
     Sometimes they forget where they stashed it, or that they stashed it, so it just
@@ -20,15 +21,6 @@ MonoBehaviour:
     I guess
     my point is look in bushes for medical supplies.'
   traderReputationReward: 100
-  objectiveDatas:
-  - type: 110
-    description: Find 5 consumables in bushes
-    targetValue: 5
-    targetEnemy: {fileID: 0}
-    targetItem: {fileID: 0}
-    targetItemType: {fileID: 0}
-    teleportMap: {fileID: 0}
-    keepFetchedItems: 0
   objectives:
   - type: 110
     description: Find 5 consumables in bushes

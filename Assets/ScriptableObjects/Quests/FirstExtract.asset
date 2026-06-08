@@ -12,19 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5d4d20277d10e0489f4a0bf8ac49946, type: 3}
   m_Name: FirstExtract
   m_EditorClassIdentifier: Assembly-CSharp::Quest
+  uuid: -2073902548
   title: First Extract
   description: 'It helps to bring back the loot you find in a raid. You''ll need
     to find and activate the exit portal somewhere on the map to return back safely.  '
   traderReputationReward: 100
-  objectiveDatas:
-  - type: 50
-    description: Extract from Tutorial
-    targetValue: 1
-    targetEnemy: {fileID: 0}
-    targetItem: {fileID: 0}
-    targetItemType: {fileID: 0}
-    teleportMap: {fileID: 0}
-    keepFetchedItems: 0
   objectives:
   - type: 50
     description: Extract from Tutorial

@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5d4d20277d10e0489f4a0bf8ac49946, type: 3}
   m_Name: MushroomHunter
   m_EditorClassIdentifier: Assembly-CSharp::Quest
+  uuid: 737720791
   title: Mushroom Hunter
   description: I've been experimenting with black truffles recently to try and deduce
     their alchemical potential but have ran out. The only thing I've discovered about
@@ -20,11 +21,10 @@ MonoBehaviour:
   traderReputationReward: 100
   objectives:
   - type: 3
-    taskDescription: 
+    description: 
     targetValue: 6
     targetEnemy: {fileID: 0}
     targetItem: {fileID: 11400000, guid: 4963528a44ecb3b4a9185883a5b0f0d4, type: 2}
+    targetItemType: {fileID: 0}
     teleportMap: {fileID: 0}
-    customCode: 
     keepFetchedItems: 0
-  objectiveDatas: []
