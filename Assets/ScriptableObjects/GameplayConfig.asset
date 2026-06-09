@@ -26,6 +26,7 @@ MonoBehaviour:
   portalPostSummonDelay: 6.5
   portalActiveDuration: 25
   distancePerUnit: 0.32
+  raidsPerTraderRestock: 3
   defaultStartingEncumberingWeight: 140
   maxEncumberedWeight: 190
   maxEncumberedSpeedReduction: 0.2

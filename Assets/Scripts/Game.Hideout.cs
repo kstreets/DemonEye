@@ -14,8 +14,8 @@ public partial class Game {
     private bool OnEyeForgeTab => hideoutTabs.eyeForgeButton.image.sprite == hideoutTabs.selectedSprite;
     private bool OnTradingTab => hideoutTabs.traderButton.image.sprite == hideoutTabs.selectedSprite;
     
-    private void InitHideout() {
-        InitTrader();
+    private void InitHideout(GameState gameState) {
+        InitTrader(gameState);
         InitSkillsPanel();
         InitQuestPackages();
         SetPentagramFill(0f);
@@ -24,53 +24,49 @@ public partial class Game {
     // ************************
     // Trader
     // ************************
-    
-    private const float traderItemRefreshTime = 480f;
-    
-    [Serializable]
-    public class TradersSaveData {
-        public int traderRep;
-        public float refreshItemsTime;
-    }
-    
-    private TradersSaveData traderSaveData;
 
-    private void SaveTrader() {
-        SaveToFile(savePaths.trader, traderSaveData);
-    }
-
-    private void InitTrader() {
-        traderSaveData = LoadFromFileOrCreateNew<TradersSaveData>(savePaths.trader);
+    private void InitTrader(GameState gameState) {
+        config.trader.state = gameState?.traderState ?? new();
+        CheckForTraderRestock();
         MarkTraderItemsAsTraderOwned();
         CalculateAndSetTraderRepBars();
     }
 
-    private void UpdateTrader() {
-        traderSaveData.refreshItemsTime -= Time.deltaTime;
-        
-        if (OnTradingTab) {
-            traderPanel.itemRefreshTimeText.text = $"Items Refresh In: {GetCountdownText(traderSaveData.refreshItemsTime)}";
+    private void TraderOnExitRaid() {
+        config.trader.state.raidsUntilRestock--;
+        CheckForTraderRestock();
+    }
+
+    private void CheckForTraderRestock(bool forceRestock = false) {
+        ref int raidsUntilRestock = ref config.trader.state.raidsUntilRestock;
+
+        if (forceRestock) {
+            raidsUntilRestock = 0;
         }
         
-        if (traderSaveData.refreshItemsTime <= 0f) {
+        if (raidsUntilRestock <= 0) {
             SetTradingItem(null);
             FillTraderInventoryWithItems();
-            traderSaveData.refreshItemsTime = traderItemRefreshTime;
-            SaveTrader();
+            raidsUntilRestock = config.gameplay.raidsPerTraderRestock;
         }
+
+        if (raidsUntilRestock == 1) {
+            traderPanel.itemRefreshTimeText.text = "Items Restock After Next Raid";
+            return;
+        }
+        traderPanel.itemRefreshTimeText.text = $"Items Restock In {raidsUntilRestock} More Raids";
     }
-    
+
     private void IncreaseTraderRep(int repGain) {
         if (ReachedTraderMaxRep()) return;
 
         int prevLevel = GetTraderRepLevel();
-        traderSaveData.traderRep += repGain;
-        SaveTrader();
+        config.trader.state.reputation += repGain;
         int repLevel = GetTraderRepLevel();
         bool increasedLevel = prevLevel < repLevel;
         
         if (increasedLevel) {
-            FillTraderInventoryWithItems();
+            CheckForTraderRestock(forceRestock: true);
         }
         CalculateAndSetTraderRepBars();
     }
@@ -88,9 +84,9 @@ public partial class Game {
         int prefixedSumAtPrevLevel = config.traderLevels.prefixedSumRepForLevel[levelIndex - 1];
         int repNeededForThisLevel = prefixedSumAtCurLevel - prefixedSumAtPrevLevel;
 
-        int traderRep = traderSaveData.traderRep;
-        int repCompletedAtCurLevel = traderRep - prefixedSumAtPrevLevel;
-        int repLeftToGo = prefixedSumAtCurLevel - traderRep;
+        int rep = config.trader.state.reputation;
+        int repCompletedAtCurLevel = rep - prefixedSumAtPrevLevel;
+        int repLeftToGo = prefixedSumAtCurLevel - rep;
         float fill = repCompletedAtCurLevel / (float)repNeededForThisLevel;
         
         SetTraderRepBarView(traderPanel.repBar, fill, repLeftToGo, levelIndex);
@@ -110,7 +106,7 @@ public partial class Game {
     }
 
     private int GetTraderRepLevel() {
-        int rep = traderSaveData.traderRep;
+        int rep = config.trader.state.reputation;
         for (int i = 0; i < config.traderLevels.prefixedSumRepForLevel.Length; i++) {
             if (rep < config.traderLevels.prefixedSumRepForLevel[i]) {
                 return i;
@@ -140,7 +136,7 @@ public partial class Game {
             _ => 0.80f,
         };
         
-        using var _ = ListPool<Item>.Get(out List<Item> items);
+        using var _ = ListPool<Item>.Get(out var items);
         GetUniqueItemsFromDropPool(dropPools.trader, traderInventoryColCount * traderInventoryRowCount, ref items);
         items = items.OrderBy(x => x.type.name).ThenBy(x => x.GetRarity()).ThenBy(x => x.buyPrice).ToList();
         
@@ -178,7 +174,7 @@ public partial class Game {
     }
     
     private bool ReachedTraderMaxRep() {
-        int rep = traderSaveData.traderRep;
+        int rep = config.trader.state.reputation;
         return rep >= config.traderLevels.prefixedSumRepForLevel[^1];
     }
     

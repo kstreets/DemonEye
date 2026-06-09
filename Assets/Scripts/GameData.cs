@@ -19,6 +19,7 @@ public class GameData {
         public TraderLevels traderLevels;
         public Styles styles;
         public GameplayConfig gameplay;
+        public Trader trader;
         public List<MapData> maps;
     }
     
@@ -358,18 +359,6 @@ public class GameData {
     public class HotBar {
         public List<InputAction> quickUseActions;
         public InventorySlotUI[] slotUIs;
-    }
-
-    public class SavePaths {
-        public string playerInventory;
-        public string stashInventory;
-        public string eyeForgeInventory;
-        public string player;
-        public string quest;
-        public string trader;
-        public string traderInventory;
-        public string mapUnlocks;
-        public string persistentFlags;
     }
     
     public class DemonEye {

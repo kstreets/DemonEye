@@ -16419,6 +16419,7 @@ MonoBehaviour:
     traderLevels: {fileID: 11400000, guid: 04e0a3aa4465f4a4a9650a4d9f483b7f, type: 2}
     styles: {fileID: 11400000, guid: f4b4ae74a1e122340bf1d9d4fa5ab586, type: 2}
     gameplay: {fileID: 11400000, guid: 047f9f114e4a4a540874b19b32b4a4f9, type: 2}
+    trader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
     maps:
     - {fileID: 11400000, guid: a084d4e7745af28498dbdbe8ced97dd5, type: 2}
     - {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
@@ -16469,9 +16470,6 @@ MonoBehaviour:
     graph: {fileID: 7194093555672020370, guid: 8f5c04b849593bf4baec4efb1e04402c, type: 3}
     pickPocketQuest: {fileID: 11400000, guid: efcb77f3e34a9bb47a120bed21367bc2, type: 2}
     overweightExtractQuest: {fileID: 0}
-    saveData:
-      progressSaves: []
-      submissionStates: 
   itemRefs:
     demonEye: {fileID: 11400000, guid: 69e3a2fe6ea20814e8199b4a7f6979ff, type: 2}
     bloodMushroom: {fileID: 11400000, guid: 997868eef46099c46b2161f48b34d63b, type: 2}

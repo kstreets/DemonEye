@@ -8,12 +8,6 @@ public partial class Game {
         GameState gameState = LoadGameState();
         persistentFlags = gameState?.persistentFlags ?? default;
         
-        InitEntities(gameState);
-        InitMaps(gameState);
-        InitInventories(gameState);
-        InitQuests(gameState);
-        
-        BuildSavePaths();
         InitInput();
         InitResources();
         InitAudio();
@@ -25,7 +19,17 @@ public partial class Game {
         InitMenuNavigation();
         InitHotBar();
         InitUI();
-        InitHideout();
+        
+        InitEntities(gameState);
+        InitMaps(gameState);
+        InitInventories(gameState);
+        InitQuests(gameState);
+        InitHideout(gameState);
+
+        bool createInitialSaveFile = gameState == null;
+        if (createInitialSaveFile) {
+            SaveGameState();
+        }
     }
     
     private void InitEntities(GameState gameState) { 

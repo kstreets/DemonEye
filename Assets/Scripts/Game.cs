@@ -41,7 +41,6 @@ public partial class Game : MonoBehaviour {
     [NonSerialized] public readonly States states = new();
     [NonSerialized] public readonly Entities entities = new();
     [NonSerialized] public readonly GameData.Resources res = new();
-    [NonSerialized] public readonly SavePaths savePaths = new();
     [NonSerialized] public readonly DemonEye demonEye = new();
     [NonSerialized] public readonly Trinkets trinkets = new();
     [NonSerialized] public readonly CurrentRaid curRaid = new();
@@ -59,7 +58,6 @@ public partial class Game : MonoBehaviour {
     private void Update() {
         states.gameStateMachine.Tick();
         DemonEyeTween.Update();
-        UpdateTrader();
         UpdateQuests();
         ClearPerFrameData();
         
@@ -79,10 +77,6 @@ public partial class Game : MonoBehaviour {
 
     private void LateUpdate() {
         states.gameStateMachine.Tick(StateMachine.UpdateMode.LateUpdate);
-    }
-
-    private void OnApplicationQuit() {
-        SaveTrader();
     }
 
     private void UpdateTimers() {
@@ -111,7 +105,6 @@ public partial class Game : MonoBehaviour {
 
     private void OnHideoutStateExit() {
         CloseHideoutUI();
-        SaveTrader();
         SaveGameState();
     }
 
@@ -163,6 +156,7 @@ public partial class Game : MonoBehaviour {
         HideUIElementPopup();
         CloseRaidUI();
         StopAmbience();
+        TraderOnExitRaid();
     }
 
     private void OnRaidStateUpdate() {
