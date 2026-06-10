@@ -693,15 +693,42 @@ namespace WingmanInspector {
                 List<SerializedProperty> fields = GetComponentFields(serializedComponent);
                 
                 if (fields == null) continue;
+
+                string[] substrings = null;
+                char nestedSplitCharacter = '/';
+                if (searchText.Contains(nestedSplitCharacter)) {
+                    substrings = searchText.Split(nestedSplitCharacter);
+                }
                 
                 foreach (SerializedProperty field in fields) {
-                    if (FuzzyMatch(field.displayName, searchText)) {
-                        searchResults ??= new List<ComponentSearchResults>();
-                        results ??= new() {
-                            Comp = comp, 
-                            SerializedComponent = serializedComponent 
-                        };
-                        results.Fields.Add(field);
+                    if (substrings != null && substrings.Length > 1) {
+                        
+                        string pathSearch = string.Empty;
+                        for (int i = 0; i < substrings.Length; i++) {
+                            pathSearch += substrings[i];
+                            if (i < substrings.Length - 1) {
+                                pathSearch += '.';
+                            }
+                        }
+                        
+                        if (FuzzyMatch(field.propertyPath, pathSearch)) {
+                            searchResults ??= new List<ComponentSearchResults>();
+                            results ??= new ComponentSearchResults {
+                                Comp = comp, 
+                                SerializedComponent = serializedComponent 
+                            };
+                            results.Fields.Add(field);
+                        }
+                    }
+                    else {
+                        if (FuzzyMatch(field.displayName, searchText)) {
+                            searchResults ??= new List<ComponentSearchResults>();
+                            results ??= new ComponentSearchResults {
+                                Comp = comp, 
+                                SerializedComponent = serializedComponent 
+                            };
+                            results.Fields.Add(field);
+                        }
                     }
                 }
 
@@ -921,6 +948,10 @@ namespace WingmanInspector {
                 
                 EditorGUI.indentLevel++;
                 foreach (SerializedProperty property in result.Fields) {
+                    if (property.hasVisibleChildren && !property.isExpanded) {
+                        property.isExpanded = true;
+                    }
+                    
                     EditorGUI.BeginChangeCheck();
                     EditorGUILayout.PropertyField(property, true);
                     if (EditorGUI.EndChangeCheck()) {
@@ -1050,9 +1081,21 @@ namespace WingmanInspector {
             List<SerializedProperty> fields = new List<SerializedProperty>();
             
             do {
-                fields.Add(iter.Copy());
+                if (iter.isArray) {
+                    fields.Add(iter.Copy());
+                    SerializedProperty array = iter.Copy(); 
+                    iter.NextVisible(true);
+                    for (int i = 0; i < array.arraySize; i++) {
+                        if (!array.GetArrayElementAtIndex(i).hasVisibleChildren) {
+                            iter.NextVisible(true);
+                        }
+                    }
+                }
+                else {
+                    fields.Add(iter.Copy());
+                }
             }
-            while (iter.NextVisible(false));
+            while (iter.NextVisible(true));
             
             return fields;
         }
