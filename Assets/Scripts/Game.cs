@@ -11,6 +11,7 @@ public partial class Game : MonoBehaviour {
 
     public static Game gameInstance;
     
+    public WingmanTest wingmanTest;
     public Config config;
     public DropPools dropPools;
     public Prefabs prefabs;

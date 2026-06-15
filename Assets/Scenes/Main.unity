@@ -16414,6 +16414,36 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe0d147fa5ac6ad488d161e946b96d11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  wingmanTest:
+    rotation: {x: 0, y: 0, z: 0, w: 0}
+    wingmanList:
+    - title: Bloody Mushrooms
+      description: 'If you can''t tell I''m a big fan of mushrooms. I''m in need
+        for some blood mushrooms that only grow when the ground is exposed to blood.
+
+        Hence
+        the name.
+
+        If you make demons bleed and go back to the same spot
+        later, you''ll find some have grown.'
+      traderReputationReward: 100
+      objectives:
+      - type: 130
+        description: Inflict bleed 50 times
+        targetValue: 50
+        targetEnemy: {fileID: 0}
+        targetItem: {fileID: 0}
+        targetItemType: {fileID: 0}
+        teleportMap: {fileID: 0}
+        keepFetchedItems: 0
+      - type: 10
+        description: why not
+        targetValue: 10
+        targetEnemy: {fileID: 0}
+        targetItem: {fileID: 11400000, guid: 997868eef46099c46b2161f48b34d63b, type: 2}
+        targetItemType: {fileID: 0}
+        teleportMap: {fileID: 0}
+        keepFetchedItems: 0
   config:
     startingItems: {fileID: 11400000, guid: 289cab2c4c800154ebe376a64e8eb57a, type: 2}
     traderLevels: {fileID: 11400000, guid: 04e0a3aa4465f4a4a9650a4d9f483b7f, type: 2}

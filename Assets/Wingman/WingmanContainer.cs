@@ -672,7 +672,13 @@ namespace WingmanInspector {
         private class ComponentSearchResults {
             public Component Comp;
             public SerializedObject SerializedComponent;
-            public List<SerializedProperty> Fields = new List<SerializedProperty>();
+            public List<List<SearchDisplayResult>> searchResultBranches = new List<List<SearchDisplayResult>>();
+        }
+        
+        private class SearchDisplayResult { 
+            public PropertyTransform propTrans;
+            public bool showChildren;
+            public int indentLevel;
         }
         
         private void PerformSearch() {
@@ -687,49 +693,29 @@ namespace WingmanInspector {
             
             searchResults.Clear();
             
+            if (searchText.Contains('.')) {
+                searchText = searchText.Replace(" ", "");
+            }
+            
             foreach (Component comp in comps) {
                 ComponentSearchResults results = null;
                 SerializedObject serializedComponent = new SerializedObject(comp);
-                List<SerializedProperty> fields = GetComponentFields(serializedComponent);
+                List<PropertyTransform> props = GetComponentProperties(serializedComponent);
                 
-                if (fields == null) continue;
-
-                string[] substrings = null;
-                char nestedSplitCharacter = '/';
-                if (searchText.Contains(nestedSplitCharacter)) {
-                    substrings = searchText.Split(nestedSplitCharacter);
-                }
+                if (props == null) continue;
                 
-                foreach (SerializedProperty field in fields) {
-                    if (substrings != null && substrings.Length > 1) {
+                foreach (PropertyTransform prop in props) {
+                    List<SearchDisplayResult> branch = new List<SearchDisplayResult>();
+                    bool built = BuildSearchBranch(prop, searchText, branch);
+                    if (!built) continue;
+                    
+                    searchResults ??= new List<ComponentSearchResults>();
+                        results ??= new ComponentSearchResults {
+                        Comp = comp, 
+                        SerializedComponent = serializedComponent,
+                    };
                         
-                        string pathSearch = string.Empty;
-                        for (int i = 0; i < substrings.Length; i++) {
-                            pathSearch += substrings[i];
-                            if (i < substrings.Length - 1) {
-                                pathSearch += '.';
-                            }
-                        }
-                        
-                        if (FuzzyMatch(field.propertyPath, pathSearch)) {
-                            searchResults ??= new List<ComponentSearchResults>();
-                            results ??= new ComponentSearchResults {
-                                Comp = comp, 
-                                SerializedComponent = serializedComponent 
-                            };
-                            results.Fields.Add(field);
-                        }
-                    }
-                    else {
-                        if (FuzzyMatch(field.displayName, searchText)) {
-                            searchResults ??= new List<ComponentSearchResults>();
-                            results ??= new ComponentSearchResults {
-                                Comp = comp, 
-                                SerializedComponent = serializedComponent 
-                            };
-                            results.Fields.Add(field);
-                        }
-                    }
+                    results.searchResultBranches.Add(branch);
                 }
 
                 if (results != null) {
@@ -738,12 +724,40 @@ namespace WingmanInspector {
             }
         }
         
+        private bool BuildSearchBranch(PropertyTransform propTrans, string searchString, List<SearchDisplayResult> branch, int indentLevel = 0) {
+            string searchOn = searchString.Contains('.') ? propTrans.property.propertyPath : propTrans.property.displayName;
+            
+            if (FuzzyMatch(searchOn, searchString)) {
+                branch.Add(new() {
+                    propTrans = propTrans,
+                    showChildren = propTrans.property.hasVisibleChildren,
+                    indentLevel = indentLevel,
+                });
+                return true;
+            }
+            
+            int insertIndex = branch.Count;
+            bool addedSelf = false;
+            
+            foreach (PropertyTransform child in propTrans.children) {
+                bool matchedOnChild = BuildSearchBranch(child, searchString, branch, indentLevel + 1);
+                if (!matchedOnChild || addedSelf) continue;
+                
+                branch.Insert(insertIndex, new() {
+                    propTrans = propTrans,
+                    showChildren = false,
+                    indentLevel = indentLevel,
+                });
+                addedSelf = true;
+            } 
+            
+            return addedSelf;
+        }
+        
         private bool FuzzyMatch(string stringToSearch, string pattern) {
             const int adjacencyBonus = 5;      
-            const int separatorBonus = 10;      
-            const int camelBonus = 10;           
 
-            const int leadingLetterPenalty = -5;  
+            const int leadingLetterPenalty = -5;
             const int maxLeadingLetterPenalty = -9;
             const int unmatchedLetterPenalty = -1;
 
@@ -753,8 +767,6 @@ namespace WingmanInspector {
             int strIdx = 0;
             int strLength = stringToSearch.Length;
             bool prevMatched = false;
-            bool prevLower = false;
-            bool prevSeparator = true;                   
 
             char? bestLetter = null;
             char? bestLower = null;
@@ -766,7 +778,6 @@ namespace WingmanInspector {
 
                 char? patternLower = patternChar != null ? char.ToLower((char)patternChar) as char? : null;
                 char strLower = char.ToLower(strChar);
-                char strUpper = char.ToUpper(strChar);
 
                 bool nextMatch = patternChar != null && patternLower == strLower;
                 bool rematch = bestLetter != null && bestLower == strLower;
@@ -792,14 +803,6 @@ namespace WingmanInspector {
                         newScore += adjacencyBonus;
                     }
 
-                    if (prevSeparator) {
-                        newScore += separatorBonus;
-                    }
-
-                    if (prevLower && strChar == strUpper && strLower != strUpper) {
-                        newScore += camelBonus;
-                    }
-
                     if (nextMatch) {
                         ++patternIdx;
                     }
@@ -820,9 +823,6 @@ namespace WingmanInspector {
                     score += unmatchedLetterPenalty;
                     prevMatched = false;
                 }
-
-                prevLower = strChar == strLower && strLower != strUpper;
-                prevSeparator = strChar == '_' || strChar == ' ';
 
                 ++strIdx;
             }
@@ -943,25 +943,63 @@ namespace WingmanInspector {
             
             ToggleAllComponentVisibility(false);
             
-            foreach (ComponentSearchResults result in searchResults) {
-                EditorGUILayout.InspectorTitlebar(true, result.Comp, false);
-                
+            foreach (ComponentSearchResults componentSearchResult in searchResults) {
+                EditorGUILayout.InspectorTitlebar(true, componentSearchResult.Comp, false);
                 EditorGUI.indentLevel++;
-                foreach (SerializedProperty property in result.Fields) {
-                    if (property.hasVisibleChildren && !property.isExpanded) {
-                        property.isExpanded = true;
-                    }
-                    
-                    EditorGUI.BeginChangeCheck();
-                    EditorGUILayout.PropertyField(property, true);
-                    if (EditorGUI.EndChangeCheck()) {
-                        result.SerializedComponent.ApplyModifiedProperties();
-                    }
-                }
-                EditorGUI.indentLevel--;
                 
+                EditorGUI.BeginChangeCheck();
+                foreach (List<SearchDisplayResult> branch in componentSearchResult.searchResultBranches) { 
+                    DrawComponentSearchBranch(branch);
+                }
+                if (EditorGUI.EndChangeCheck()) {
+                    componentSearchResult.SerializedComponent.ApplyModifiedProperties();
+                }
+                
+                EditorGUI.indentLevel--;
                 EditorGUILayout.Space();
             }
+        }
+        
+        private void DrawComponentSearchBranch(List<SearchDisplayResult> searchBranch) {
+            int baseIndentLevel = EditorGUI.indentLevel;
+            
+            foreach (SearchDisplayResult searchResult in searchBranch) {
+                EditorGUI.indentLevel = baseIndentLevel + searchResult.indentLevel;
+                
+                SerializedProperty prop = searchResult.propTrans.property;
+                if (prop.hasVisibleChildren && !prop.isExpanded) {
+                    prop.isExpanded = true;
+                }
+                
+                bool onlyDrawArrayHeader = prop.isArray && !searchResult.showChildren;
+                if (onlyDrawArrayHeader) {
+                    const float arraySizeFieldWidth = 50f;
+                    Rect rect = EditorGUILayout.GetControlRect();
+                    Rect arrFoldoutRect = new Rect(rect.x, rect.y, rect.width - arraySizeFieldWidth, rect.height);
+                    Rect arrSizeRect    = new Rect(rect.x + rect.width - arraySizeFieldWidth, rect.y, arraySizeFieldWidth, rect.height);
+                    
+                    EditorGUI.Foldout(arrFoldoutRect, true, prop.displayName);
+                    
+                    int postSizeIndent = EditorGUI.indentLevel;
+                    EditorGUI.indentLevel = 0;
+                    // TODO: Resizing array while in search mode throws exceptions, need to update search branch when modified
+                    prop.arraySize = EditorGUI.IntField(arrSizeRect, prop.arraySize, EditorStyles.numberField);
+                    EditorGUI.indentLevel = postSizeIndent;
+                    
+                    continue;
+                }
+                
+                // TODO: Not sure if all this is needed or if .Generic works for all?
+                bool isComplexType = prop.propertyType is SerializedPropertyType.Generic 
+                                    or SerializedPropertyType.ManagedReference 
+                                    or SerializedPropertyType.ObjectReference
+                                    or SerializedPropertyType.ExposedReference;
+                
+                bool showChildren = isComplexType ? searchResult.showChildren : false;  
+                EditorGUILayout.PropertyField(prop, showChildren);
+            }
+            
+            EditorGUI.indentLevel = baseIndentLevel;
         }
         
         private void UpdateComponentVisibility() {
@@ -1071,33 +1109,69 @@ namespace WingmanInspector {
             return iconSize.x + guiSize.x + totalPadding;
         }
         
-        private List<SerializedProperty> GetComponentFields(SerializedObject serializedComponent) {
+        public class PropertyTransform {
+            public SerializedProperty property;
+            public PropertyTransform parent;
+            public List<PropertyTransform> children; 
+        }
+        
+        private List<PropertyTransform> GetComponentProperties(SerializedObject serializedComponent) {
             SerializedProperty iter = serializedComponent.GetIterator();
 
             if (iter == null || !iter.NextVisible(true)) {
                 return null;
             }
 
-            List<SerializedProperty> fields = new List<SerializedProperty>();
+            List<PropertyTransform> rootProperties = new List<PropertyTransform>();
             
             do {
-                if (iter.isArray) {
-                    fields.Add(iter.Copy());
-                    SerializedProperty array = iter.Copy(); 
-                    iter.NextVisible(true);
-                    for (int i = 0; i < array.arraySize; i++) {
-                        if (!array.GetArrayElementAtIndex(i).hasVisibleChildren) {
-                            iter.NextVisible(true);
-                        }
+                rootProperties.Add(TraverseProperty(iter, null));
+            }
+            while (iter.NextVisible(enterChildren: false));
+            
+            return rootProperties;
+        }
+        
+        private PropertyTransform TraverseProperty(SerializedProperty curProperty, PropertyTransform parent) {
+            PropertyTransform curPropertyTransform = new PropertyTransform() {
+                property = curProperty.Copy(),
+                parent = parent,
+                children = new List<PropertyTransform>(),
+            };
+            
+            if (curProperty.isArray) {
+                for (int i = 0; i < curProperty.arraySize; i++) {
+                    SerializedProperty elm = curProperty.GetArrayElementAtIndex(i);
+                    if (elm.hasVisibleChildren) {
+                        PropertyTransform child = TraverseProperty(elm, curPropertyTransform);
+                        curPropertyTransform.children.Add(child);
                     }
                 }
-                else {
-                    fields.Add(iter.Copy());
-                }
+                return curPropertyTransform;
             }
-            while (iter.NextVisible(true));
+
+            if (!curProperty.hasVisibleChildren) {
+                return curPropertyTransform; 
+            }
+
+            // Enter children
+            SerializedProperty childIter = curProperty.Copy();
+            bool hasChild = childIter.NextVisible(enterChildren: true);
+
+            while (hasChild) {
+                // Stop when we've left this property's subtree
+                if (childIter.depth <= curProperty.depth) break;
+
+                // Only process direct children — skip deeper descendants
+                if (childIter.depth == curProperty.depth + 1) {
+                    PropertyTransform child = TraverseProperty(childIter, curPropertyTransform);
+                    curPropertyTransform.children.Add(child);
+                }
+
+                hasChild = childIter.NextVisible(enterChildren: false);
+            }
             
-            return fields;
+            return curPropertyTransform;
         }
         
         private Rect CenterRectVertically(Rect parent, Rect child) {
