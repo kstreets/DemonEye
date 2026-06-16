@@ -97,28 +97,6 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ItemSpriteSheet_0
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 496
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: e8f680f289e1da74f9c38a6891e8b171
-      internalID: 1645146412
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
       name: ItemSpriteSheet_1
       rect:
         serializedVersion: 2
@@ -2437,7 +2415,7 @@ TextureImporter:
         width: 22
         height: 18
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2446,6 +2424,138 @@ TextureImporter:
       bones: []
       spriteID: 70f72acfad0d42246a411bba721ed2ae
       internalID: -1299485719
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portal_Structure
+      rect:
+        serializedVersion: 2
+        x: 9
+        y: 5
+        width: 53
+        height: 40
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 69a40cad5f5dc19479f42e41fd6600b6
+      internalID: -104645000
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portal_Crystal
+      rect:
+        serializedVersion: 2
+        x: 68
+        y: 22
+        width: 9
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6600ca71408e1e2429ecd8f0d19d7f31
+      internalID: 1421350125
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portal_Rock_Left
+      rect:
+        serializedVersion: 2
+        x: 21
+        y: 46
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 53141a1b794755d4592bc070183c6c94
+      internalID: -1332339522
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portal_Rock_Middle
+      rect:
+        serializedVersion: 2
+        x: 28
+        y: 49
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 982065ae44fd06947aae37ac3eb3dd4d
+      internalID: 1430322801
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Portal_Rock_Right
+      rect:
+        serializedVersion: 2
+        x: 34
+        y: 48
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dda29b1d86e9b7849aa4ba851a61c852
+      internalID: 2015132037
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemSpriteSheet_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 496
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d2fccb38c0420e345a20f2ca6acbad19
+      internalID: 1645146412
       vertices: []
       indices: 
       edges: []
@@ -2547,7 +2657,6 @@ TextureImporter:
       ItemSpriteSheet_72: -1748982039
       ItemSpriteSheet_73: -1463576745
       ItemSpriteSheet_74: 872930110
-      ItemSpriteSheet_75: -104645000
       ItemSpriteSheet_76: 656383022
       ItemSpriteSheet_77: -568917175
       ItemSpriteSheet_78: 1951717284
@@ -2574,6 +2683,11 @@ TextureImporter:
       ItemSpriteSheet_97: -1199818641
       ItemSpriteSheet_98: -1144475554
       ItemSpriteSheet_99: -1127904995
+      Portal_Crystal: 1421350125
+      Portal_Rock_Left: -1332339522
+      Portal_Rock_Middle: 1430322801
+      Portal_Rock_Right: 2015132037
+      Portal_Structure: -104645000
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

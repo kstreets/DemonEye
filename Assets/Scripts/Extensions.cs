@@ -17,8 +17,12 @@ public static class Extensions {
         return firstChar is 'a' or 'e' or 'i' or 'o' or 'u'; // Never Y in this case lol
     }
     
-    public static Vector2 PositionV2(this Transform transform) {
-        return new Vector2(transform.position.x, transform.position.y);
+    public static Vector2 Offset(this Vector2 vec, float x = 0f, float y = 0f) {
+        return vec + new Vector2(x, y);
+    }
+    
+    public static Vector3 Offset(this Vector3 vec, float x = 0f, float y = 0f, float z = 0f) {
+        return vec + new Vector3(x, y, z);
     }
     
     public static void ForceRecalculate(this ContentSizeFitter fitter) {
