@@ -1,0 +1,19 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+Texture2D<float4> _ReflectionFill;
+Texture2D<float4> _Color;
+RWTexture2D<float4> _Output;
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID){
+    int reflectionY = (int)(_ReflectionFill[id.xy].r * 1080.0);
+    if (reflectionY <= 0) {
+        _Output[id.xy] = float4(0, 0, 0, 0);
+        return;
+    }
+    
+    int distY = reflectionY - id.y;
+    int reflectY = clamp(reflectionY + distY, 0, 1080 - 1);
+    _Output[id.xy] = _Color[int2(id.x, reflectY)];
+}

@@ -18,20 +18,8 @@ MonoBehaviour:
   altarSoulPrice: 25
   exitPortalsCount: 2
   playerCantBleed: 1
-  minRockCount: 8
-  maxRockCount: 11
-  minBodyCount: 3
-  maxBodyCount: 5
-  minForageCount: 4
-  maxForageCount: 8
-  minBushesCount: 2
-  maxBushesCount: 6
-  minAltarCount: 5
-  maxAltarCount: 8
   eyeUpgradeOnBodyChance: 0.1
-  eyeUpgradeFromRockChance: 0.15
   consecutiveEyeUpgradeChanceReductionOnBody: 0.08
-  maxGemCountPerRock: 2
   commonLootRarityIncrease: 0
   uncommonLootRarityIncrease: 0
   rareLootRarityIncrease: 0

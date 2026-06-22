@@ -1,0 +1,45 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+Texture2D<float4> _InputTexture;
+RWTexture2D<float4> _OutputTexture;
+
+int _Width;
+int _Height;
+
+[numthreads(8, 8, 1)]
+void CSMain (uint3 id : SV_DispatchThreadID) {
+    if (id.x >= (uint)_Width || id.y >= (uint)_Height) return;
+
+    const int maxDist = 25;
+
+    // Walk upward from this pixel to find the nearest edge within range
+    for (int i = 0; i < maxDist; i++) {
+        int searchY = id.y + i;
+        if (searchY >= _Height - 1) break;
+
+        float alpha = _InputTexture[int2(id.x, searchY)].a;
+        float aboveAlpha = _InputTexture[int2(id.x, searchY + 1)].a;
+        bool isEdge = alpha < 0.25 && aboveAlpha > 0.95;
+        
+        if (isEdge) {
+            int reflectY = clamp(searchY + (i + 1), 0, _Height - 1);
+            float4 reflectColor = _InputTexture[int2(id.x, reflectY)];
+            
+            // Its possible that the reflection pixel overshoots the land and samples the "void"
+            if (reflectColor.a > 0.25) {
+                _OutputTexture[id.xy] = reflectColor;
+                return;
+            }
+            break;
+        }
+    }
+    
+    // If not reflecting but this pixel is water or lava
+    if (_InputTexture[id.xy].a < 0.25) {
+        _OutputTexture[id.xy] = float4(1, 1, 1, 1);
+        return;
+    }
+    
+    _OutputTexture[id.xy] = float4(0, 0, 0, 0);
+}
