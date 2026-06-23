@@ -54,10 +54,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa0956e85a22a604797be93ef528c66a, type: 3}
   m_Name: Reflection Pass
   m_EditorClassIdentifier: Assembly-CSharp::RenderTargetFeature
-  m_Active: 0
+  m_Active: 1
   renderPassEvent: 450
   destination: {fileID: 8400000, guid: 25b0d7b3d25e1564eb32aef8d4a4c7d9, type: 2}
-  offsetRenderTexture: {fileID: 0}
   computeShader: {fileID: 7200000, guid: fb08f5c8d06f34f48a826b906e96d226, type: 3}
 --- !u!114 &11400000
 MonoBehaviour:
@@ -130,7 +129,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b3d386ba5cd94485973aee1479b272e, type: 3}
   m_Name: Lava Pass
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.RenderObjects
-  m_Active: 0
+  m_Active: 1
   settings:
     passTag: Lava Pass
     Event: 450

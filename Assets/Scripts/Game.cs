@@ -2,8 +2,6 @@ using System;
 using PrimeTween;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Rendering;
-using UnityEngine.Rendering.Universal;
 using static GameData;
 using Random = UnityEngine.Random;
 using Vector3 = UnityEngine.Vector3;
@@ -13,7 +11,6 @@ public partial class Game : MonoBehaviour {
 
     public static Game gameInstance;
     
-    public RenderTexture oversizedRT;
     public WingmanTest wingmanTest;
     public Config config;
     public DropPools dropPools;
@@ -57,41 +54,8 @@ public partial class Game : MonoBehaviour {
     private void Start() {
         gameInstance = this;
         InitGame();
-        
-        SetupRendering();
-        RenderPipelineManager.beginCameraRendering += OnBeginCameraRendering;
-        RenderPipelineManager.endCameraRendering += OnEndCameraRendering;
     }
     
-    private UniversalRenderPipelineAsset urpAsset;
-    private float baseRenderScale;
-    private int baseRefResolutionY;
-    private float scale;
-    private const int extraPixels = 25;
-    
-    private void SetupRendering() {
-        urpAsset = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
-        baseRenderScale = urpAsset.renderScale;
-        baseRefResolutionY = camera.pixelPerfect.refResolutionY;
-        scale = (float)(baseRefResolutionY + extraPixels) / baseRefResolutionY;
-        int rtHeight = Mathf.RoundToInt(1080 * scale);
-    }
-    
-    private void OnBeginCameraRendering(ScriptableRenderContext context, UnityEngine.Camera cam) {
-        if (cam != camera.main) return;
-        camera.pixelPerfect.gridSnapping = PixelPerfectCamera.GridSnapping.UpscaleRenderTexture;
-        camera.pixelPerfect.refResolutionY = baseRefResolutionY + extraPixels;
-        urpAsset.renderScale = baseRenderScale * scale;
-        // cam.targetTexture = oversizedRT;
-    }
-    
-    private void OnEndCameraRendering(ScriptableRenderContext context, UnityEngine.Camera cam) {
-        if (cam != camera.main) return;
-        // camera.pixelPerfect.refResolutionY = baseRefResolutionY;
-        // urpAsset.renderScale = baseRenderScale;
-        cam.targetTexture = null;
-    }
-
     private void Update() {
         states.gameStateMachine.Tick();
         DemonEyeTween.Update();

@@ -7,7 +7,6 @@ public class RenderTargetFeature : ScriptableRendererFeature {
     
     public RenderPassEvent renderPassEvent;
     public RenderTexture destination;
-    public RenderTexture offsetRenderTexture;
     public ComputeShader computeShader;
     private CapturePass capturePass;
 
@@ -19,14 +18,13 @@ public class RenderTargetFeature : ScriptableRendererFeature {
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData) {
         if (destination == null) return;
-        capturePass.Setup(destination, offsetRenderTexture, computeShader);
+        capturePass.Setup(destination, computeShader);
         renderer.EnqueuePass(capturePass);
     }
 
     public class CapturePass : ScriptableRenderPass {
         
         private RenderTexture target;
-        private RenderTexture offsetTarget;
         private ComputeShader computeShader;
         private int mainKernal;
         
@@ -37,9 +35,8 @@ public class RenderTargetFeature : ScriptableRendererFeature {
             public int kernal;
         }
         
-        public void Setup(RenderTexture dest, RenderTexture offset, ComputeShader edge) {
+        public void Setup(RenderTexture dest, ComputeShader edge) {
             target = dest;
-            offsetTarget = offset;
             computeShader = edge;
             requiresIntermediateTexture = true;  // Required for RenderGraph passes that do texture reads
             mainKernal = computeShader.FindKernel("CSMain");

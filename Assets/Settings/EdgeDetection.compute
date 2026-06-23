@@ -28,7 +28,8 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
             
             // Its possible that the reflection pixel overshoots the land and samples the "void"
             if (reflectColor.a > 0.25) {
-                _OutputTexture[id.xy] = reflectColor;
+                float fade = smoothstep(0.96, 0.99, id.y / (float)_Height);
+                _OutputTexture[id.xy] = lerp(reflectColor, float4(1, 1, 1, 1), fade);
                 return;
             }
             break;
