@@ -16414,9 +16414,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe0d147fa5ac6ad488d161e946b96d11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  oversizedRT: {fileID: 8400000, guid: 2402414b0f398d74899077a8b0044292, type: 2}
   wingmanTest:
-    rotation: {x: 0, y: 0, z: 0, w: 0}
+    rotation: {x: 0.01480689, y: 0.0613031, z: -0.00090951874, w: 0.9980089}
     wingmanList:
     - title: Bloody Mushrooms
       description: 'If you can''t tell I''m a big fan of mushrooms. I''m in need
@@ -16431,17 +16430,17 @@ MonoBehaviour:
       objectives:
       - type: 130
         description: Inflict bleed 50 times
-        targetValue: 50
+        targetValue: -49
         targetEnemy: {fileID: 0}
         targetItem: {fileID: 0}
         targetItemType: {fileID: 0}
         teleportMap: {fileID: 0}
         keepFetchedItems: 0
-      - type: 10
-        description: why not
-        targetValue: 10
+      - type: 130
+        description: Inflict bleed 50 times
+        targetValue: -49
         targetEnemy: {fileID: 0}
-        targetItem: {fileID: 11400000, guid: 997868eef46099c46b2161f48b34d63b, type: 2}
+        targetItem: {fileID: 0}
         targetItemType: {fileID: 0}
         teleportMap: {fileID: 0}
         keepFetchedItems: 0

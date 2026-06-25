@@ -8,6 +8,7 @@ using System.Reflection;
 using UnityEditor;
 using UnityEditor.ShortcutManagement;
 using UnityEngine;
+using static WingmanInspector.WingmanUtility;
 
 namespace WingmanInspector {
 
@@ -68,20 +69,20 @@ namespace WingmanInspector {
                 SubscribeToCallbacks();
                 
                 float searchFieldHeight = EditorStyles.toolbarSearchField.fixedHeight;
-                WingmanContainer.BoldLabelStyle = boldLabelStyle;
-                WingmanContainer.SearchBarHeight = searchFieldHeight;
+                WingmanContainer.boldLabelStyle = boldLabelStyle;
+                WingmanContainer.searchBarHeight = searchFieldHeight;
                 
-                WingmanContainer.RightToolBarGuiStyle ??= new GUIStyle(EditorStyles.miniButtonRight) { fixedHeight = searchFieldHeight };
-                WingmanContainer.LeftToolBarGuiStyle  ??= new GUIStyle(EditorStyles.miniButtonLeft)  { fixedHeight = searchFieldHeight };
+                WingmanContainer.rightToolBarGuiStyle ??= new GUIStyle(EditorStyles.miniButtonRight) { fixedHeight = searchFieldHeight };
+                WingmanContainer.leftToolBarGuiStyle  ??= new GUIStyle(EditorStyles.miniButtonLeft)  { fixedHeight = searchFieldHeight };
                 
-                WingmanContainer.CopyToolBarGuiContent  ??= new GUIContent(string.Empty, "Copy selected components to clipboard");
-                WingmanContainer.PasteToolBarGuiContent ??= new GUIContent(string.Empty, "Paste clipboard components");
+                WingmanContainer.copyToolBarGuiContent  ??= new GUIContent(string.Empty, "Copy selected components to clipboard");
+                WingmanContainer.pasteToolBarGuiContent ??= new GUIContent(string.Empty, "Paste clipboard components");
 
-                WingmanContainer.TextureAtlas ??= AssetDatabase.LoadAssetAtPath<Texture>($"{GetAssetLocation()}/WingmanIcons.png");
-                WingmanContainer.XIcon        ??= EditorGUIUtility.IconContent("CrossIcon").image;
+                WingmanContainer.textureAtlas ??= AssetDatabase.LoadAssetAtPath<Texture>($"{GetAssetLocation()}/WingmanIcons.png");
+                WingmanContainer.xIcon        ??= EditorGUIUtility.IconContent("CrossIcon").image;
                 
                 // Don't optionally assign if null because we need to switch icon when editor theme changes
-                WingmanContainer.AllIcon = EditorGUIUtility.IconContent(EditorGUIUtility.isProSkin ? "d_GridLayoutGroup Icon" : "GridLayoutGroup Icon").image;
+                WingmanContainer.allIcon = EditorGUIUtility.IconContent(EditorGUIUtility.isProSkin ? "d_GridLayoutGroup Icon" : "GridLayoutGroup Icon").image;
                 Settings.Load();
             }
             catch {
@@ -153,7 +154,7 @@ namespace WingmanInspector {
             
             // Remove any containers whose windows were closed
             for (int i = containers.Count - 1; i >= 0; i--) {
-                if (!containers[i].InspectorWindow) {
+                if (!containers[i].inspectorWindow) {
                     containers.RemoveAt(i);
                 }
             }
@@ -161,7 +162,7 @@ namespace WingmanInspector {
 
         private static bool InspectorHasContainer(EditorWindow inspector) {
             foreach (WingmanContainer container in containers) {
-                if (container.InspectorWindow.GetId() == inspector.GetId()) {
+                if (GetWingmanId(container.inspectorWindow) == GetWingmanId(inspector)) {
                     return true;
                 }
             }
@@ -201,7 +202,7 @@ namespace WingmanInspector {
         [Shortcut("Wingman/Toggle Component", KeyCode.A)]
         private static void ToggleComponentShortcut() {
             foreach (WingmanContainer container in containers) {
-                if (container.IsFocused) {
+                if (container.isFocused) {
                     container.PerformShortcutOperation(WingmanContainer.ShortcutOperation.ToggleComponent); 
                 }
             }
@@ -222,7 +223,7 @@ namespace WingmanInspector {
                 AssetDatabase.SaveAssets();
             }
             
-            WingmanContainer.PersistentData = persistentData;
+            WingmanContainer.persistentData = persistentData;
         }
         
         private static string GetAssetLocation() {
@@ -245,7 +246,7 @@ namespace WingmanInspector {
             foreach (WingmanContainer container in containers) {
                 container.RemoveGui();
                 container.Update();
-                container.InspectorWindow.Repaint();
+                container.inspectorWindow.Repaint();
             }
         }
 
