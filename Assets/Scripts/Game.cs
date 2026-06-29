@@ -2,6 +2,7 @@ using System;
 using PrimeTween;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
 using static GameData;
 using Random = UnityEngine.Random;
 using Vector3 = UnityEngine.Vector3;
@@ -11,7 +12,6 @@ public partial class Game : MonoBehaviour {
 
     public static Game gameInstance;
     
-    public WingmanTest wingmanTest;
     public Config config;
     public DropPools dropPools;
     public Prefabs prefabs;
@@ -50,8 +50,9 @@ public partial class Game : MonoBehaviour {
     [NonSerialized] public readonly PerFrameData thisFrame = new();
     
     [NonSerialized] public PersistentFlags persistentFlags;
-    
+
     private void Start() {
+        RenderPipelineManager.beginCameraRendering += OnBeginCameraRendering;
         gameInstance = this;
         InitGame();
     }
@@ -78,6 +79,11 @@ public partial class Game : MonoBehaviour {
 
     private void LateUpdate() {
         states.gameStateMachine.Tick(StateMachine.UpdateMode.LateUpdate);
+    }
+    
+    private void OnBeginCameraRendering(ScriptableRenderContext context, UnityEngine.Camera cam) {
+        if (!InRaid) return;
+        WaterFeature.SetWaterSettings(curRaid.map.waterSettings);
     }
 
     private void UpdateTimers() {

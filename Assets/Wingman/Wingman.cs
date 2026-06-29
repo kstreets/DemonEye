@@ -105,14 +105,6 @@ namespace WingmanInspector {
             EditorApplication.update -= Update;
             EditorApplication.update += Update;
             
-#if UNITY_6000_4_OR_NEWER
-            EditorApplication.hierarchyWindowItemByEntityIdOnGUI -= OnHierarchyGUI;
-            EditorApplication.hierarchyWindowItemByEntityIdOnGUI += OnHierarchyGUI;
-#else
-            EditorApplication.hierarchyWindowItemOnGUI -= OnHierarchyGUI;
-            EditorApplication.hierarchyWindowItemOnGUI += OnHierarchyGUI;
-#endif
-            
             Selection.selectionChanged -= OnSelectionChanged;
             Selection.selectionChanged += OnSelectionChanged;
             
@@ -120,21 +112,28 @@ namespace WingmanInspector {
             EditorApplication.quitting += OnQuit;
             
             Settings.OnSettingsChanged += OnSettingsChanged;
+            
+#if UNITY_6000_4_OR_NEWER
+            EditorApplication.hierarchyWindowItemByEntityIdOnGUI -= OnHierarchyGUI;
+            EditorApplication.hierarchyWindowItemByEntityIdOnGUI += OnHierarchyGUI;
+#else
+            EditorApplication.hierarchyWindowItemOnGUI -= OnHierarchyGUI;
+            EditorApplication.hierarchyWindowItemOnGUI += OnHierarchyGUI;
+#endif
         }
 
         private static void UnSubscribeToCallbacks() {
             EditorApplication.update -= RefreshInspectorWindows;
             EditorApplication.update -= Update;
+            Selection.selectionChanged -= OnSelectionChanged;
+            EditorApplication.quitting -= OnQuit;
+            Settings.OnSettingsChanged -= OnSettingsChanged;
             
 #if UNITY_6000_4_OR_NEWER
             EditorApplication.hierarchyWindowItemByEntityIdOnGUI -= OnHierarchyGUI;
 #else
             EditorApplication.hierarchyWindowItemOnGUI -= OnHierarchyGUI;
 #endif
-            
-            Selection.selectionChanged -= OnSelectionChanged;
-            EditorApplication.quitting -= OnQuit;
-            Settings.OnSettingsChanged -= OnSettingsChanged;
         }
 
         private static void RefreshInspectorWindows() {

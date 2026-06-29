@@ -1000,6 +1000,10 @@ namespace WingmanInspector {
             ToggleAllComponentVisibility(false);
             
             foreach (ComponentSearchResults componentSearchResult in searchResults) {
+                // Refresh the components representation, which refreshes each serialized property
+                // we aggregated during the search. This is also needed for undo/redo and prefab reverts
+                componentSearchResult.serializedComponent.Update();
+                
                 EditorGUILayout.InspectorTitlebar(true, componentSearchResult.comp, false);
                 EditorGUI.indentLevel++;
                 

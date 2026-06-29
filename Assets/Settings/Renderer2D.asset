@@ -1,5 +1,44 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-8688184042810852600
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 312d735f16edfc44fbfb5b2edfdaa7e3, type: 3}
+  m_Name: OrthoRenderFeature
+  m_EditorClassIdentifier: Assembly-CSharp::OrthoRenderFeature
+  m_Active: 1
+  renderPassEvent: 450
+  shaderTags: []
+  renderQueueType: 1
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 262144
+  clearRenderTarget: 0
+  cameraViewOffset: {x: 0, y: 0, z: 0}
+  targetTexture: {fileID: 8400000, guid: 4922008ac5c71a84f9797fcb6e137711, type: 2}
+--- !u!114 &-4075944505059195486
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16318f8648897884fb31bda402dbf395, type: 3}
+  m_Name: Final Blit
+  m_EditorClassIdentifier: Assembly-CSharp::FinalBlitFeature
+  m_Active: 1
+  renderPassEvent: 550
+  inputTexture: {fileID: 8400000, guid: 4922008ac5c71a84f9797fcb6e137711, type: 2}
+  outputTexture: {fileID: 8400000, guid: d008494ee0398b8419e3499d351bfac0, type: 2}
+  pixelPerfectBlitShader: {fileID: 7200000, guid: 064c00d15f73dff40af0a1c30d840906, type: 3}
 --- !u!114 &-3596725430426863576
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12,7 +51,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b3d386ba5cd94485973aee1479b272e, type: 3}
   m_Name: Tilemap Pass
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.RenderObjects
-  m_Active: 1
+  m_Active: 0
   settings:
     passTag: Tilemap Pass
     Event: 450
@@ -56,8 +95,32 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RenderTargetFeature
   m_Active: 1
   renderPassEvent: 450
-  destination: {fileID: 8400000, guid: 25b0d7b3d25e1564eb32aef8d4a4c7d9, type: 2}
+  tilemapTexture: {fileID: 8400000, guid: 1be7ab58061ade64bb21699639c5c233, type: 2}
+  sceneTexture: {fileID: 8400000, guid: 4922008ac5c71a84f9797fcb6e137711, type: 2}
+  outputTexture: {fileID: 8400000, guid: 25b0d7b3d25e1564eb32aef8d4a4c7d9, type: 2}
   computeShader: {fileID: 7200000, guid: fb08f5c8d06f34f48a826b906e96d226, type: 3}
+--- !u!114 &-959360202130928840
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 312d735f16edfc44fbfb5b2edfdaa7e3, type: 3}
+  m_Name: OrthoRenderFeature
+  m_EditorClassIdentifier: Assembly-CSharp::OrthoRenderFeature
+  m_Active: 1
+  renderPassEvent: 0
+  shaderTags: []
+  renderQueueType: 1
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 524288
+  clearRenderTarget: 1
+  cameraViewOffset: {x: 0, y: 0, z: 0}
+  targetTexture: {fileID: 8400000, guid: 1be7ab58061ade64bb21699639c5c233, type: 2}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -84,13 +147,16 @@ MonoBehaviour:
     probeVolumeBlendStatesCS: {fileID: 0}
   m_RendererFeatures:
   - {fileID: -3596725430426863576}
+  - {fileID: -959360202130928840}
+  - {fileID: 7261136505038537400}
   - {fileID: -1077250143126679424}
-  - {fileID: 8589548113430738085}
-  m_RendererFeatureMap: 28f8cafc46dd15ce8010b2ccb3d60cf1a5742af27f343477
+  - {fileID: -8688184042810852600}
+  - {fileID: -4075944505059195486}
+  m_RendererFeatureMap: 28f8cafc46dd15ce38cb56a4faaaaff2b88271202ebdc4648010b2ccb3d60cf108bb0a21a55e6d87a2c5bd6311566fc7
   m_UseNativeRenderPass: 0
   m_LayerMask:
     serializedVersion: 2
-    m_Bits: 262135
+    m_Bits: 0
   m_TransparencySortMode: 3
   m_TransparencySortAxis: {x: 0, y: 1, z: 0}
   m_HDREmulationScale: 1
@@ -117,7 +183,7 @@ MonoBehaviour:
   m_PostProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   m_DefaultMaterialType: 1
   m_DefaultCustomMaterial: {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
---- !u!114 &8589548113430738085
+--- !u!114 &7261136505038537400
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -126,36 +192,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6b3d386ba5cd94485973aee1479b272e, type: 3}
-  m_Name: Lava Pass
-  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.RenderObjects
+  m_Script: {fileID: 11500000, guid: 312d735f16edfc44fbfb5b2edfdaa7e3, type: 3}
+  m_Name: OrthoRenderFeature
+  m_EditorClassIdentifier: Assembly-CSharp::OrthoRenderFeature
   m_Active: 1
-  settings:
-    passTag: Lava Pass
-    Event: 450
-    filterSettings:
-      RenderQueueType: 1
-      LayerMask:
-        serializedVersion: 2
-        m_Bits: 262144
-      PassNames: []
-    overrideMaterial: {fileID: 0}
-    overrideMaterialPassIndex: 0
-    overrideShader: {fileID: 0}
-    overrideShaderPassIndex: 0
-    overrideMode: 0
-    overrideDepthState: 0
-    depthCompareFunction: 4
-    enableWrite: 1
-    stencilSettings:
-      overrideStencilState: 0
-      stencilReference: 0
-      stencilCompareFunction: 8
-      passOperation: 0
-      failOperation: 0
-      zFailOperation: 0
-    cameraSettings:
-      overrideCamera: 0
-      restoreCamera: 1
-      offset: {x: 0, y: 0, z: 0, w: 0}
-      cameraFieldOfView: 60
+  renderPassEvent: 450
+  shaderTags: []
+  renderQueueType: 1
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 557047
+  clearRenderTarget: 1
+  cameraViewOffset: {x: 0, y: 0, z: 0}
+  targetTexture: {fileID: 8400000, guid: 4922008ac5c71a84f9797fcb6e137711, type: 2}

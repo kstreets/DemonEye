@@ -14,36 +14,6 @@ using static Game;
 public class GameData {
     
     [Serializable]
-    public class WingmanTest {
-
-        public Quaternion rotation;
-        
-        public List<Element> wingmanList;
-        
-        [Serializable]
-        public class Element {
-            [Header("Info")]
-            public string title;
-            [TextArea(minLines: 6, maxLines: 10)] 
-            public string description;
-    
-            [Header("Rewards")]
-            public int traderReputationReward;
-    
-            public List<ObjectiveData> objectives;
-    
-            public class State {
-                public int       associatedQuestUuid;
-                public bool      submitted;
-                public List<int> objectiveProgresses;
-            }
-    
-            public State state;
-        }
-        
-    }
-    
-    [Serializable]
     public class Config {
         public StartingItemsConfig startingItems;
         public TraderLevels traderLevels;

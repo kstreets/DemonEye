@@ -60,7 +60,9 @@ Material:
     m_Floats: []
     m_Colors:
     - White: {r: 1, g: 1, b: 1, a: 1}
-    - _LavaColor: {r: 0.6037736, g: 0.20125785, b: 0, a: 1}
-    - _Tint: {r: 0.46540874, g: 0.17813896, b: 0.09220356, a: 1}
+    - _LavaColor: {r: 0.72955966, g: 0.26432124, b: 0.05276683, a: 1}
+    - _ScreenOffset: {r: 1, g: 0.79, b: 1, a: 1}
+    - _ScreenScaler: {r: 1, g: 0.79, b: 1, a: 1}
+    - _Tint: {r: 0.8742138, g: 0.39924517, b: 0, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
