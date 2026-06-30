@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEditor;
-using UnityEditor.EditorTools;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using Yohash.PriorityQueue;
@@ -12,6 +11,7 @@ public class AutoTilePlacementWindow : EditorWindow {
     public Tilemap baseTilemap;
     public Tilemap backgroundTilemap;
     public TileBase failedTile;
+    public TileBase collisionTile;
     public bool placeFailedTile;
     public bool ignoreProblematicTiles;
     
@@ -56,6 +56,8 @@ public class AutoTilePlacementWindow : EditorWindow {
         placeFailedTile = EditorGUILayout.Toggle("Place Failed Tile", placeFailedTile);
         failedTile = EditorGUILayout.ObjectField("Failed Tile", failedTile, typeof(TileBase), true) as TileBase;
         
+        collisionTile = EditorGUILayout.ObjectField("Collision Tile", collisionTile, typeof(TileBase), true) as TileBase;
+        
         EditorGUILayout.Space();
         
         ignoreProblematicTiles = EditorGUILayout.Toggle("Ignore Problematic Tiles", ignoreProblematicTiles);
@@ -65,8 +67,8 @@ public class AutoTilePlacementWindow : EditorWindow {
         if (GUILayout.Button("Generate Base Tiles", GUILayout.Height(30f))) {
             GenerateBaseTiles();
         }
-        if (GUILayout.Button("Generate Final", GUILayout.Height(30f))) {
-            GenerateFinal();
+        if (GUILayout.Button("Generate Collision Tiles", GUILayout.Height(30f))) {
+            GenerateCollision();
         }
         
         GUILayout.EndArea();
@@ -102,6 +104,28 @@ public class AutoTilePlacementWindow : EditorWindow {
         EditorUtility.SetDirty(baseTilemap); 
     }
     
+    private void GenerateCollision() {
+        if (collisionTile == null) {
+            Debug.Log("Must assign a collision tile");
+            return;
+        }
+        
+        Undo.RecordObject(backgroundTilemap, "BackgroundTilemap Collision Placement");
+        
+        const int tilemapExpansion = 5;
+        BoundsInt dims = GetTilemapDimensions();
+        
+        for (int x = dims.xMin - tilemapExpansion; x < dims.xMax + tilemapExpansion; x++) {
+            for (int y = dims.yMin - tilemapExpansion; y < dims.yMax + tilemapExpansion; y++) {
+                if (baseTilemap.GetTile(new(x, y))) continue;
+                backgroundTilemap.SetTile(new(x, y), collisionTile);
+            }
+        }
+        
+        EditorUtility.SetDirty(backgroundTilemap); 
+    }
+    
+    // This was used when we were placing water tiles
     private void GenerateFinal() {
         Undo.RecordObject(baseTilemap, "BaseTilemap Final Auto Placement");
         Undo.RecordObject(backgroundTilemap, "BackgroundTilemap Final Auto Placement");
@@ -152,8 +176,7 @@ public class AutoTilePlacementWindow : EditorWindow {
         neighborPositions = new Vector3Int[4];
         wfcPriorityQueue = new(100000); // Chosen arbitrarily
 
-        baseTilemap.CompressBounds();
-        tilemapDimensions = baseTilemap.cellBounds;
+        tilemapDimensions = GetTilemapDimensions();
         initialBitArraySize = ruleset.rules.Length;
 
         int offset = tilemapExpansion + 1;
@@ -165,6 +188,11 @@ public class AutoTilePlacementWindow : EditorWindow {
                 waveTileLookup.Add(pos, wTile);
             }
         }
+    }
+    
+    private BoundsInt GetTilemapDimensions() {
+        baseTilemap.CompressBounds();
+        return baseTilemap.cellBounds;
     }
 
     private void PlaceTile(Tilemap destinationTilemap, int x, int y) {

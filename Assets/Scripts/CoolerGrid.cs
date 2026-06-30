@@ -22,7 +22,7 @@ public class CoolerGrid : MonoBehaviour {
 
     public int width = 100;
     public int height = 100;
-    public float cellSize = 0.32f;
+    public float cellSize = 0.1f;
 
     // Approximate ratio between and straight diagonal 
     private const int dijkstraOrthogonalDist = 7;

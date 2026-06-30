@@ -53,9 +53,8 @@ public class WaterFeature : ScriptableRendererFeature {
             passData.computeShader = computeShader;
             passData.kernal = mainKernal;
             
-            float actualPixelsPerUnit = Screen.height / (RenderManager.referenceResolution / (float)RenderManager.pixelsPerUnit);
-            passData.pixelsPerUnit = actualPixelsPerUnit;
-            passData.camWorldXInPixels = RenderManager.cameraPosition.x * actualPixelsPerUnit;
+            passData.pixelsPerUnit = RenderManager.screenPixelsPerUnit;
+            passData.camWorldXInPixels = RenderManager.cameraPosition.x * RenderManager.screenPixelsPerUnit;
             
             builder.AllowPassCulling(false);
             
@@ -68,16 +67,23 @@ public class WaterFeature : ScriptableRendererFeature {
                 int threadGroupsX = Mathf.CeilToInt(width / 8f);
                 int threadGroupsY = Mathf.CeilToInt(height / 8f);
                 
-                cmdBuffer.SetComputeIntParam(data.computeShader, "_Width", width);
-                cmdBuffer.SetComputeIntParam(data.computeShader, "_Height", height);
+                cmdBuffer.SetComputeIntParam(data.computeShader, "_width", width);
+                cmdBuffer.SetComputeIntParam(data.computeShader, "_height", height);
                 
                 int waterLineLengthInPixels = waterSettings.waterLineLength * RenderManager.pixelsPerTexel;
                 cmdBuffer.SetComputeIntParam(data.computeShader, "_waterLineLengthInPixels", waterLineLengthInPixels);
                 
+                int reflectionLengthInPixels = waterSettings.reflectionLength * RenderManager.pixelsPerTexel;
+                cmdBuffer.SetComputeIntParam(data.computeShader, "_reflectionLengthInPixels", reflectionLengthInPixels);
+                
+                float waveHeightInPixels = waterSettings.waveHeight * RenderManager.pixelsPerTexel;
+                cmdBuffer.SetComputeFloatParam(data.computeShader, "_waveHeightInPixels", waveHeightInPixels);
+                
                 float sinOffsetInRadians = Time.time * waterSettings.waveSpeed * Mathf.Deg2Rad;
                 cmdBuffer.SetComputeFloatParam(data.computeShader, "_sinOffsetInRadians", sinOffsetInRadians);
                 cmdBuffer.SetComputeFloatParam(data.computeShader, "_waveStride", waterSettings.waveStride);
-                cmdBuffer.SetComputeFloatParam(data.computeShader, "_waveHeight", waterSettings.waveHeight);
+                cmdBuffer.SetComputeFloatParam(data.computeShader, "_startReflectionFade", waterSettings.startReflectionFade);
+                cmdBuffer.SetComputeFloatParam(data.computeShader, "_endReflectionFade", waterSettings.endReflectionFade);
                 cmdBuffer.SetComputeFloatParam(data.computeShader, "_camWorldXInPixels", data.camWorldXInPixels);
                 cmdBuffer.SetComputeFloatParam(data.computeShader, "_pixelsPerUnit", data.pixelsPerUnit);
                 

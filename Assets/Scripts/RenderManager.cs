@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.Tilemaps;
 
 #if UNITY_EDITOR
 [InitializeOnLoad]
@@ -22,12 +23,15 @@ public static class RenderManager {
     public static int pixelsPerTexel;
     public static int fixedPixelsPerUnit;
     public static int referenceResolution;
+    public static int verticalSamplingOffset;
+    public static int screenPixelsPerUnit;
     public static Vector3 cameraPosition;
     
     // This will sometimes be null so we don't want render features accessing the pixel perfect camera.
     // Instead we expose value type members that reflect the pixel perfect camera's data or just the sensible defaults.
     private static PixelPerfectCamera pixelPerfectCamera;
     private static readonly int waterMapShaderProp = Shader.PropertyToID("_WaterMap");
+    private static readonly int waterUVScalerShaderProp = Shader.PropertyToID("_WaterUVScaler");
     
 #if UNITY_EDITOR
     static RenderManager() {
@@ -48,7 +52,7 @@ public static class RenderManager {
         };
     }
     
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void Initialize() {
         offScreenRenderingSize = Vector2Int.zero;
         pixelsPerUnit = 48;
@@ -56,7 +60,7 @@ public static class RenderManager {
         referenceResolution = 180;
         RenderPipelineManager.beginCameraRendering -= OnBeginRendering;
         RenderPipelineManager.beginCameraRendering += OnBeginRendering;
-    }    
+    }
     
     private static void OnBeginRendering(ScriptableRenderContext context, Camera camera) {
         if (camera.cameraType != CameraType.SceneView && camera.cameraType != CameraType.Game) return;
@@ -73,10 +77,26 @@ public static class RenderManager {
         }
         
         curScreenSize = camera.cameraType == CameraType.SceneView ? GetGameViewSize() : new(Screen.width, Screen.height);
-        
         // This is how the PixelPerfectCamera calculates its 'zoom'
         pixelsPerTexel = Mathf.Max(1, curScreenSize.y / referenceResolution);
+        screenPixelsPerUnit = curScreenSize.y / (referenceResolution / pixelsPerUnit);
+        
         int offScreenHeight = curScreenSize.y + (fixedPixelsPerUnit * pixelsPerTexel);
+        verticalSamplingOffset = (offScreenHeight - curScreenSize.y) / 2;
+        
+        // We need to manually define the tilemap chunk culling to match the size of the offscreen render textures
+        if (Game.gameInstance != null && Game.gameInstance.InRaid) {
+            TilemapRenderer tileMapRenderer = Game.gameInstance.curRaid.mapInstance.mainTilemapRenderer;
+            if (tileMapRenderer.detectChunkCullingBounds != TilemapRenderer.DetectChunkCullingBounds.Manual) {
+                tileMapRenderer.detectChunkCullingBounds = TilemapRenderer.DetectChunkCullingBounds.Manual;
+            }
+            float offscreenWidthInWorldSpace = Mathf.CeilToInt(curScreenSize.x / (float)screenPixelsPerUnit);
+            float offscreenHeightInWorldSpace = Mathf.CeilToInt(offScreenHeight / (float)screenPixelsPerUnit);
+            Vector3 cullingBounds = new(offscreenWidthInWorldSpace, offscreenHeightInWorldSpace, 100f);
+            if (tileMapRenderer.chunkCullingBounds != cullingBounds) {
+                tileMapRenderer.chunkCullingBounds = cullingBounds;
+            }
+        }
         
         bool resizeRenderTextures = offScreenRenderingSize.x != curScreenSize.x || offScreenRenderingSize.y != offScreenHeight;
         if (resizeRenderTextures) {
@@ -87,6 +107,10 @@ public static class RenderManager {
             WaterFeature.BindRenderTextures();
             FinalBlitFeature.BindRenderTextures();
             Shader.SetGlobalTexture(waterMapShaderProp, waterRT);
+            
+            Vector4 uvShaderScaler = Vector4.one;
+            uvShaderScaler.y = 1f - ((offScreenHeight - curScreenSize.y) / (float)offScreenHeight);
+            Shader.SetGlobalVector(waterUVScalerShaderProp, uvShaderScaler);
         }
         offScreenRenderingSize = new(curScreenSize.x, offScreenHeight);
     }

@@ -33,7 +33,6 @@ public class FinalBlitFeature : ScriptableRendererFeature  {
         private class PassData {
             public ComputeShader computeShader;
             public int kernal;
-            public int verticalSampleOffset;
         }
         
         public BlitPass(ComputeShader pixelPerfectBlitShader) {
@@ -52,16 +51,18 @@ public class FinalBlitFeature : ScriptableRendererFeature  {
             UniversalResourceData resourceData = frameData.Get<UniversalResourceData>();
             UniversalCameraData cameraData = frameData.Get<UniversalCameraData>();
             
-            if (cameraData.isSceneViewCamera) {
-                TextureHandle inputTexture = renderGraph.ImportTexture(inputTextureHandle);
-                renderGraph.AddBlitPass(inputTexture, resourceData.activeColorTexture, Vector2.one, Vector2.zero);
+            if (cameraData.isSceneViewCamera || cameraData.isPreviewCamera) {
+                // For a single frame when coming out of playmode this can be null
+                if (inputTextureHandle != null && inputTextureHandle.rt != null) {
+                    TextureHandle inputTexture = renderGraph.ImportTexture(inputTextureHandle);
+                    renderGraph.AddBlitPass(inputTexture, resourceData.activeColorTexture, Vector2.one, Vector2.zero);
+                }
                 return;
             }
             
             using (var builder = renderGraph.AddUnsafePass<PassData>("Capture Camera Output", out var passData)) {
                 passData.computeShader = pixelPerfectBlitShader;
                 passData.kernal = kernal;
-                passData.verticalSampleOffset = (inputTextureHandle.rt.height - Screen.height) / 2;
             
                 builder.AllowPassCulling(false);
             
@@ -72,7 +73,7 @@ public class FinalBlitFeature : ScriptableRendererFeature  {
                 
                     cmdBuffer.SetComputeIntParam(data.computeShader, "_Width", Screen.width);
                     cmdBuffer.SetComputeIntParam(data.computeShader, "_Height", Screen.height);
-                    cmdBuffer.SetComputeIntParam(data.computeShader, "_VerticalSampleOffset", data.verticalSampleOffset);
+                    cmdBuffer.SetComputeIntParam(data.computeShader, "_VerticalSampleOffset", RenderManager.verticalSamplingOffset);
                     cmdBuffer.DispatchCompute(data.computeShader, data.kernal, threadGroupsX, threadGroupsY, 1);
                 });
             }
