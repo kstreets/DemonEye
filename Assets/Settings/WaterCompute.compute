@@ -7,11 +7,12 @@ RWTexture2D<float4> _OutputTexture;
 
 int _Width;
 int _Height;
+int _waterLineLengthInPixels;
 
-float _sinInputInRadians;
+float _sinOffsetInRadians;
 float _waveStride;
 float _waveHeight;
-float _textureWorldX;
+float _camWorldXInPixels;
 float _pixelsPerUnit;
 
 [numthreads(8, 8, 1)]
@@ -26,11 +27,10 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
     //     return;
     // }
     
-    float worldX = (_textureWorldX + id.x) / _pixelsPerUnit;
-    uint offset = abs(sin((worldX + _sinInputInRadians) * _waveStride) * _waveHeight);
+    float fragWorldSpace = (_camWorldXInPixels + id.x) / _pixelsPerUnit;
+    uint offset = abs(sin((fragWorldSpace + _sinOffsetInRadians) * _waveStride) * _waveHeight);
     
-    int intersectionLen = 6;
-    for (int i = 0; i <= offset + intersectionLen; i++) {
+    for (int i = 0; i <= offset + _waterLineLengthInPixels; i++) {
         int searchY = id.y - i;
         if (searchY <= 0) break;
         
@@ -39,7 +39,7 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
         bool isEdge = alpha > 0.25 && belowAlpha < 0.95;
         
         int lowerRange = offset;
-        int upperRange = offset + intersectionLen;
+        int upperRange = offset + _waterLineLengthInPixels;
         int dist = id.y - searchY;
         bool isInRange = dist >= lowerRange && dist <= upperRange;
         

@@ -7,18 +7,20 @@ using UnityEngine.Rendering.Universal;
 public class FinalBlitFeature : ScriptableRendererFeature  {
     
     public RenderPassEvent renderPassEvent;
-    public RenderTexture inputTexture;
-    public RenderTexture outputTexture;
     public ComputeShader pixelPerfectBlitShader;
-    private BlitPass blitPass;
+    
+    private static BlitPass blitPass;
     
     public override void Create() {
-        blitPass = new() { renderPassEvent = renderPassEvent };
+        blitPass = new(pixelPerfectBlitShader) { renderPassEvent = renderPassEvent };
     }
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData) {
-        blitPass.Setup(inputTexture, outputTexture, pixelPerfectBlitShader);
         renderer.EnqueuePass(blitPass);
+    }
+    
+    public static void BindRenderTextures() {
+        blitPass.BindRenderTextures();
     }
     
     private class BlitPass : ScriptableRenderPass {
@@ -31,18 +33,19 @@ public class FinalBlitFeature : ScriptableRendererFeature  {
         private class PassData {
             public ComputeShader computeShader;
             public int kernal;
-            public int width;
-            public int height;
             public int verticalSampleOffset;
         }
         
-        public void Setup(RenderTexture inputTexture, RenderTexture outputTexture, ComputeShader pixelPerfectBlitShader) {
+        public BlitPass(ComputeShader pixelPerfectBlitShader) {
             this.pixelPerfectBlitShader = pixelPerfectBlitShader;
             kernal = pixelPerfectBlitShader.FindKernel("CSMain");
-            inputTextureHandle = RTHandles.Alloc(inputTexture);
-            outputTextureHandle = RTHandles.Alloc(outputTexture);
-            pixelPerfectBlitShader.SetTexture(kernal, Shader.PropertyToID("_Input"), inputTexture);
-            pixelPerfectBlitShader.SetTexture(kernal, Shader.PropertyToID("_Result"), outputTexture);
+        }
+        
+        public void BindRenderTextures() {
+            pixelPerfectBlitShader.SetTexture(kernal, Shader.PropertyToID("_Input"), RenderManager.sceneRT);
+            pixelPerfectBlitShader.SetTexture(kernal, Shader.PropertyToID("_Result"), RenderManager.finalOutputRT);
+            inputTextureHandle = RenderManager.sceneRT;
+            outputTextureHandle = RenderManager.finalOutputRT;
         }
         
         public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData) {
@@ -58,20 +61,17 @@ public class FinalBlitFeature : ScriptableRendererFeature  {
             using (var builder = renderGraph.AddUnsafePass<PassData>("Capture Camera Output", out var passData)) {
                 passData.computeShader = pixelPerfectBlitShader;
                 passData.kernal = kernal;
-                
-                passData.width = 1920;
-                passData.height = 1080;
-                passData.verticalSampleOffset = (inputTextureHandle.rt.height - passData.height) / 2;
+                passData.verticalSampleOffset = (inputTextureHandle.rt.height - Screen.height) / 2;
             
                 builder.AllowPassCulling(false);
             
                 builder.SetRenderFunc(static (PassData data, UnsafeGraphContext ctx) => {
                     CommandBuffer cmdBuffer = CommandBufferHelpers.GetNativeCommandBuffer(ctx.cmd);
-                    int threadGroupsX = Mathf.CeilToInt(data.width / 8f);
-                    int threadGroupsY = Mathf.CeilToInt(data.height / 8f);
+                    int threadGroupsX = Mathf.CeilToInt(Screen.width / 8f);
+                    int threadGroupsY = Mathf.CeilToInt(Screen.height / 8f);
                 
-                    cmdBuffer.SetComputeIntParam(data.computeShader, "_Width", data.width);
-                    cmdBuffer.SetComputeIntParam(data.computeShader, "_Height", data.height);
+                    cmdBuffer.SetComputeIntParam(data.computeShader, "_Width", Screen.width);
+                    cmdBuffer.SetComputeIntParam(data.computeShader, "_Height", Screen.height);
                     cmdBuffer.SetComputeIntParam(data.computeShader, "_VerticalSampleOffset", data.verticalSampleOffset);
                     cmdBuffer.DispatchCompute(data.computeShader, data.kernal, threadGroupsX, threadGroupsY, 1);
                 });

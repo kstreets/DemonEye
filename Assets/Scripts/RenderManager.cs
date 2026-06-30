@@ -1,0 +1,110 @@
+using System;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.Experimental.Rendering;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
+
+#if UNITY_EDITOR
+[InitializeOnLoad]
+#endif
+public static class RenderManager {
+    
+    public static RTHandle tilemapRT;
+    public static RTHandle sceneRT;
+    public static RTHandle waterRT;
+    public static RTHandle finalOutputRT;
+    
+    public static Vector2Int curScreenSize;
+    public static Vector2Int offScreenRenderingSize;
+    
+    public static int pixelsPerUnit;
+    public static int pixelsPerTexel;
+    public static int fixedPixelsPerUnit;
+    public static int referenceResolution;
+    public static Vector3 cameraPosition;
+    
+    // This will sometimes be null so we don't want render features accessing the pixel perfect camera.
+    // Instead we expose value type members that reflect the pixel perfect camera's data or just the sensible defaults.
+    private static PixelPerfectCamera pixelPerfectCamera;
+    private static readonly int waterMapShaderProp = Shader.PropertyToID("_WaterMap");
+    
+#if UNITY_EDITOR
+    static RenderManager() {
+        Initialize();
+        EditorApplication.playModeStateChanged += _ => Initialize();
+    }
+#endif
+    
+    public enum Texture { Tilemap, Scene, Water, Final }
+    
+    public static RTHandle GetRenderTexture(Texture type) {
+        return type switch {
+            Texture.Tilemap => tilemapRT,
+            Texture.Scene   => sceneRT,
+            Texture.Water   => waterRT,
+            Texture.Final   => finalOutputRT,
+            _               => throw new ArgumentOutOfRangeException(nameof(type), type, null),
+        };
+    }
+    
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void Initialize() {
+        offScreenRenderingSize = Vector2Int.zero;
+        pixelsPerUnit = 48;
+        fixedPixelsPerUnit = 48;
+        referenceResolution = 180;
+        RenderPipelineManager.beginCameraRendering -= OnBeginRendering;
+        RenderPipelineManager.beginCameraRendering += OnBeginRendering;
+    }    
+    
+    private static void OnBeginRendering(ScriptableRenderContext context, Camera camera) {
+        if (camera.cameraType != CameraType.SceneView && camera.cameraType != CameraType.Game) return;
+        
+        if (pixelPerfectCamera == null) {
+            if (camera.TryGetComponent(out pixelPerfectCamera)) {
+                fixedPixelsPerUnit = pixelPerfectCamera.assetsPPU;
+            }
+        }
+        if (pixelPerfectCamera != null) {
+            pixelsPerUnit = pixelPerfectCamera.assetsPPU;
+            referenceResolution = pixelPerfectCamera.refResolutionX;
+            cameraPosition = pixelPerfectCamera.RoundToPixel(camera.transform.position);
+        }
+        
+        curScreenSize = camera.cameraType == CameraType.SceneView ? GetGameViewSize() : new(Screen.width, Screen.height);
+        
+        // This is how the PixelPerfectCamera calculates its 'zoom'
+        pixelsPerTexel = Mathf.Max(1, curScreenSize.y / referenceResolution);
+        int offScreenHeight = curScreenSize.y + (fixedPixelsPerUnit * pixelsPerTexel);
+        
+        bool resizeRenderTextures = offScreenRenderingSize.x != curScreenSize.x || offScreenRenderingSize.y != offScreenHeight;
+        if (resizeRenderTextures) {
+            AllocRenderTexture(ref tilemapRT, curScreenSize.x, offScreenHeight);
+            AllocRenderTexture(ref sceneRT, curScreenSize.x, offScreenHeight);
+            AllocRenderTexture(ref waterRT, curScreenSize.x, offScreenHeight);
+            AllocRenderTexture(ref finalOutputRT, curScreenSize.x, curScreenSize.y);
+            WaterFeature.BindRenderTextures();
+            FinalBlitFeature.BindRenderTextures();
+            Shader.SetGlobalTexture(waterMapShaderProp, waterRT);
+        }
+        offScreenRenderingSize = new(curScreenSize.x, offScreenHeight);
+    }
+    
+    private static void AllocRenderTexture(ref RTHandle rtHandle, int width, int height) {
+        rtHandle?.Release();
+        rtHandle = RTHandles.Alloc(width, height, GraphicsFormat.R32G32B32A32_SFloat, enableRandomWrite: true, autoGenerateMips: false, filterMode: FilterMode.Point);
+    }
+    
+    private static Vector2Int GetGameViewSize() {
+        #if UNITY_EDITOR
+            Vector2 size = Handles.GetMainGameViewSize();
+            int w = (int)size.x;
+            int h = (int)size.y;
+            return new(w, h);
+        #else
+            return new(Screen.width, Screen.height);
+        #endif
+    }
+    
+}

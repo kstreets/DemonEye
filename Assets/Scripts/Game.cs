@@ -2,7 +2,6 @@ using System;
 using PrimeTween;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Rendering;
 using static GameData;
 using Random = UnityEngine.Random;
 using Vector3 = UnityEngine.Vector3;
@@ -52,7 +51,6 @@ public partial class Game : MonoBehaviour {
     [NonSerialized] public PersistentFlags persistentFlags;
 
     private void Start() {
-        RenderPipelineManager.beginCameraRendering += OnBeginCameraRendering;
         gameInstance = this;
         InitGame();
     }
@@ -81,11 +79,6 @@ public partial class Game : MonoBehaviour {
         states.gameStateMachine.Tick(StateMachine.UpdateMode.LateUpdate);
     }
     
-    private void OnBeginCameraRendering(ScriptableRenderContext context, UnityEngine.Camera cam) {
-        if (!InRaid) return;
-        WaterFeature.SetWaterSettings(curRaid.map.waterSettings);
-    }
-
     private void UpdateTimers() {
         curRaid.data.interactions.discoverItemTimer.Tick();
     }
@@ -257,6 +250,7 @@ public partial class Game : MonoBehaviour {
         SpawnInitialExitPortals(curRaid.mapInstance.exitPortalsParent, curRaid.map.exitPortalsCount);
         AnimateRaidEnterSequence();
         
+        WaterFeature.waterSettings = curRaid.map.waterSettings;
         thisFrame.flags |= FrameFlags.PostRaidInit;
     }
     

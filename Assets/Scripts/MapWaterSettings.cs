@@ -6,5 +6,6 @@ public class MapWaterSettings : ScriptableObject {
     public float waveSpeed;
     public float waveStride;
     public float waveHeight;
+    public int waterLineLength;
     
 }

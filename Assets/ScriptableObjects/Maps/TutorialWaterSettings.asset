@@ -15,3 +15,4 @@ MonoBehaviour:
   waveSpeed: 15
   waveStride: 2
   waveHeight: 12
+  waterLineLength: 1
