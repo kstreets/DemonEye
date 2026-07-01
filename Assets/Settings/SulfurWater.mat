@@ -63,9 +63,9 @@ Material:
     - _NoiseSpeed: 0.00004
     m_Colors:
     - White: {r: 1, g: 1, b: 1, a: 1}
-    - _LavaColor: {r: 0.53333336, g: 0.7607844, b: 0.54901963, a: 1}
+    - _LavaColor: {r: 0.7327044, g: 1, b: 0.81195515, a: 1}
     - _ScreenOffset: {r: 1, g: 0.79, b: 1, a: 1}
     - _ScreenScaler: {r: 1, g: 0.79, b: 1, a: 1}
-    - _Tint: {r: 0.55660367, g: 1, b: 0.7654614, a: 1}
+    - _Tint: {r: 0.31790662, g: 0.59119487, b: 0.35763055, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

@@ -9,6 +9,7 @@ int _width;
 int _height;
 int _waterLineLengthInPixels;
 int _reflectionLengthInPixels;
+int _reflectionOffsetInPixels;
 
 float _sinOffsetInRadians;
 float _waveStride;
@@ -17,6 +18,8 @@ float _camWorldXInPixels;
 float _pixelsPerUnit;
 float _startReflectionFade;
 float _endReflectionFade;
+
+float4 _waterFillColor;
 
 [numthreads(8, 8, 1)]
 void CSMain (uint3 id : SV_DispatchThreadID) {
@@ -50,16 +53,16 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
             // Make the water go to the intersection line
             if (isEdge) {
                 if (_reflectionLengthInPixels <= 0) {
-                    _OutputTexture[id.xy] = float4(1, 1, 1, 1);
+                    _OutputTexture[id.xy] = _waterFillColor;
                     return;
                 }
                 
-                int reflectY = clamp(id.y + (i + 1), 0, maxY);
+                int reflectY = clamp(id.y + (i + 1) + _reflectionOffsetInPixels, 0, maxY);
                 float4 reflectColor = _SceneTexture[int2(id.x, reflectY)];
                 if (reflectColor.a > 0.25) {
                     float distComp = (i + 1) / (float)_reflectionLengthInPixels; 
                     float fadeComp = lerp(_startReflectionFade, _endReflectionFade, distComp);
-                    _OutputTexture[id.xy] = lerp(reflectColor, float4(1, 1, 1, 1), fadeComp);
+                    _OutputTexture[id.xy] = lerp(reflectColor, _waterFillColor, fadeComp);
                     return;
                 }
                 
@@ -85,14 +88,14 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
         
             if (!isEdge) continue;
         
-            int reflectY = clamp(searchY + (i + 1), 0, maxY);
+            int reflectY = clamp(searchY + (i + 1) + _reflectionOffsetInPixels, 0, maxY);
             float4 reflectColor = _SceneTexture[int2(id.x, reflectY)];
         
             // Its possible that the reflection pixel overshoots the land and samples the "void"
             if (reflectColor.a > 0.25) {
                 float distComp = (i + 1) / (float)_reflectionLengthInPixels; 
                 float fadeComp = lerp(_startReflectionFade, _endReflectionFade, distComp);
-                _OutputTexture[id.xy] = lerp(reflectColor, float4(1, 1, 1, 1), fadeComp);
+                _OutputTexture[id.xy] = lerp(reflectColor, _waterFillColor, fadeComp);
                 return;
             }
             
@@ -102,7 +105,7 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
     
     // If didn't write to pixel but it is water
     if (isWater) {
-        _OutputTexture[id.xy] = float4(1, 1, 1, 1);
+        _OutputTexture[id.xy] = _waterFillColor;
         return;
     }
     

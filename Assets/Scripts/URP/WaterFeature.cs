@@ -76,14 +76,19 @@ public class WaterFeature : ScriptableRendererFeature {
                 int reflectionLengthInPixels = waterSettings.reflectionLength * RenderManager.pixelsPerTexel;
                 cmdBuffer.SetComputeIntParam(data.computeShader, "_reflectionLengthInPixels", reflectionLengthInPixels);
                 
+                int reflectionOffsetInPixels = waterSettings.reflectionOffset * RenderManager.pixelsPerTexel;
+                cmdBuffer.SetComputeFloatParam(data.computeShader, "_reflectionOffsetInPixels", reflectionOffsetInPixels);
+                
                 float waveHeightInPixels = waterSettings.waveHeight * RenderManager.pixelsPerTexel;
                 cmdBuffer.SetComputeFloatParam(data.computeShader, "_waveHeightInPixels", waveHeightInPixels);
+                
                 
                 float sinOffsetInRadians = Time.time * waterSettings.waveSpeed * Mathf.Deg2Rad;
                 cmdBuffer.SetComputeFloatParam(data.computeShader, "_sinOffsetInRadians", sinOffsetInRadians);
                 cmdBuffer.SetComputeFloatParam(data.computeShader, "_waveStride", waterSettings.waveStride);
                 cmdBuffer.SetComputeFloatParam(data.computeShader, "_startReflectionFade", waterSettings.startReflectionFade);
                 cmdBuffer.SetComputeFloatParam(data.computeShader, "_endReflectionFade", waterSettings.endReflectionFade);
+                cmdBuffer.SetComputeVectorParam(data.computeShader, "_waterFillColor", waterSettings.waterFillColor.linear);
                 cmdBuffer.SetComputeFloatParam(data.computeShader, "_camWorldXInPixels", data.camWorldXInPixels);
                 cmdBuffer.SetComputeFloatParam(data.computeShader, "_pixelsPerUnit", data.pixelsPerUnit);
                 
