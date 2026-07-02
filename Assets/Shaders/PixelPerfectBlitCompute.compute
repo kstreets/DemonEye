@@ -4,12 +4,12 @@
 Texture2D<float4> _Input;
 RWTexture2D<float4> _Result;
 
-int _Width;
-int _Height;
-int _VerticalSampleOffset;
+int _width;
+int _height;
+int _verticalSampleOffset;
 
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID) {
-    if (id.x >= _Width || id.y >= _Height) return;
-    _Result[id.xy] = _Input[int2(id.x, id.y + _VerticalSampleOffset)]; 
+    if (id.x >= _width || id.y >= _height) return;
+    _Result[id.xy] = _Input[int2(id.x, id.y + _verticalSampleOffset)]; 
 }

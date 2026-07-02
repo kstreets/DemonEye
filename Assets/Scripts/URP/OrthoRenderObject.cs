@@ -104,7 +104,7 @@ public class OrthoRenderFeature : ScriptableRendererFeature {
             
             RTHandle renderTextureHandle = RenderManager.GetRenderTexture(texture);
             TextureHandle targetColorTexture = renderGraph.ImportTexture(renderTextureHandle);
-            builder.SetRenderAttachment(targetColorTexture, 0);
+            builder.SetRenderAttachment(targetColorTexture, 0, AccessFlags.Write);
 
             passData.color = targetColorTexture;
             passData.viewportHeight = renderTextureHandle.referenceSize.y;

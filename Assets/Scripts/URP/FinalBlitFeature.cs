@@ -10,7 +10,12 @@ public class FinalBlitFeature : ScriptableRendererFeature  {
     public ComputeShader pixelPerfectBlitShader;
     
     private static BlitPass blitPass;
-    
+    private static readonly int inputId = Shader.PropertyToID("_Input");
+    private static readonly int resultId = Shader.PropertyToID("_Result");
+    private static readonly int widthId = Shader.PropertyToID("_width");
+    private static readonly int heightId = Shader.PropertyToID("_height");
+    private static readonly int verticalSampleOffsetId = Shader.PropertyToID("_verticalSampleOffset");
+
     public override void Create() {
         blitPass = new(pixelPerfectBlitShader) { renderPassEvent = renderPassEvent };
     }
@@ -19,67 +24,61 @@ public class FinalBlitFeature : ScriptableRendererFeature  {
         renderer.EnqueuePass(blitPass);
     }
     
-    public static void BindRenderTextures() {
-        blitPass.BindRenderTextures();
-    }
-    
     private class BlitPass : ScriptableRenderPass {
         
-        private ComputeShader pixelPerfectBlitShader;
+        private ComputeShader blitShader;
         private int kernal;
-        private RTHandle inputTextureHandle;
-        private RTHandle outputTextureHandle;
 
         private class PassData {
             public ComputeShader computeShader;
             public int kernal;
+            public TextureHandle inputTextureHandle;
+            public TextureHandle outputTextureHandle;
         }
         
-        public BlitPass(ComputeShader pixelPerfectBlitShader) {
-            this.pixelPerfectBlitShader = pixelPerfectBlitShader;
-            kernal = pixelPerfectBlitShader.FindKernel("CSMain");
-        }
-        
-        public void BindRenderTextures() {
-            pixelPerfectBlitShader.SetTexture(kernal, Shader.PropertyToID("_Input"), RenderManager.sceneRT);
-            pixelPerfectBlitShader.SetTexture(kernal, Shader.PropertyToID("_Result"), RenderManager.finalOutputRT);
-            inputTextureHandle = RenderManager.sceneRT;
-            outputTextureHandle = RenderManager.finalOutputRT;
+        public BlitPass(ComputeShader blitShader) {
+            this.blitShader = blitShader;
+            kernal = blitShader.FindKernel("CSMain");
         }
         
         public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData) {
             UniversalResourceData resourceData = frameData.Get<UniversalResourceData>();
             UniversalCameraData cameraData = frameData.Get<UniversalCameraData>();
             
+            TextureHandle inputTexture = renderGraph.ImportTexture(RenderManager.GetRenderTexture(RenderManager.Texture.Scene));
+            TextureHandle outputTexture = renderGraph.ImportTexture(RenderManager.GetRenderTexture(RenderManager.Texture.Final));
+            
             if (cameraData.isSceneViewCamera || cameraData.isPreviewCamera) {
-                // For a single frame when coming out of playmode this can be null
-                if (inputTextureHandle != null && inputTextureHandle.rt != null) {
-                    TextureHandle inputTexture = renderGraph.ImportTexture(inputTextureHandle);
-                    renderGraph.AddBlitPass(inputTexture, resourceData.activeColorTexture, Vector2.one, Vector2.zero);
-                }
+                renderGraph.AddBlitPass(inputTexture, resourceData.activeColorTexture, Vector2.one, Vector2.zero);
                 return;
             }
             
             using (var builder = renderGraph.AddUnsafePass<PassData>("Capture Camera Output", out var passData)) {
-                passData.computeShader = pixelPerfectBlitShader;
+                passData.computeShader = blitShader;
                 passData.kernal = kernal;
+                passData.inputTextureHandle = inputTexture;
+                passData.outputTextureHandle = outputTexture;
             
+                builder.UseTexture(inputTexture, AccessFlags.Read);
+                builder.UseTexture(outputTexture, AccessFlags.Write);
                 builder.AllowPassCulling(false);
             
                 builder.SetRenderFunc(static (PassData data, UnsafeGraphContext ctx) => {
                     CommandBuffer cmdBuffer = CommandBufferHelpers.GetNativeCommandBuffer(ctx.cmd);
                     int threadGroupsX = Mathf.CeilToInt(Screen.width / 8f);
                     int threadGroupsY = Mathf.CeilToInt(Screen.height / 8f);
+                    
+                    cmdBuffer.SetComputeTextureParam(data.computeShader, data.kernal, inputId, data.inputTextureHandle);
+                    cmdBuffer.SetComputeTextureParam(data.computeShader, data.kernal, resultId, data.outputTextureHandle);
                 
-                    cmdBuffer.SetComputeIntParam(data.computeShader, "_Width", Screen.width);
-                    cmdBuffer.SetComputeIntParam(data.computeShader, "_Height", Screen.height);
-                    cmdBuffer.SetComputeIntParam(data.computeShader, "_VerticalSampleOffset", RenderManager.verticalSamplingOffset);
+                    cmdBuffer.SetComputeIntParam(data.computeShader, widthId, Screen.width);
+                    cmdBuffer.SetComputeIntParam(data.computeShader, heightId, Screen.height);
+                    cmdBuffer.SetComputeIntParam(data.computeShader, verticalSampleOffsetId, RenderManager.verticalSamplingOffset);
                     cmdBuffer.DispatchCompute(data.computeShader, data.kernal, threadGroupsX, threadGroupsY, 1);
                 });
             }
             
-            TextureHandle outputHandle = renderGraph.ImportTexture(outputTextureHandle); 
-            renderGraph.AddBlitPass(outputHandle, resourceData.activeColorTexture, Vector2.one, Vector2.zero);
+            renderGraph.AddBlitPass(outputTexture, resourceData.activeColorTexture, Vector2.one, Vector2.zero);
         }
         
     }

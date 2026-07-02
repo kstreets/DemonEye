@@ -588,7 +588,7 @@ TilemapRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: fedae72b5b265c04abc3c07e41271449, type: 2}
+  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -13418,6 +13418,7 @@ MonoBehaviour:
   spawnPositionsParent: {fileID: 756944900}
   resourceParent: {fileID: 2105361305}
   exitPortalsParent: {fileID: 1419843100}
+  mainTilemapRenderer: {fileID: 0}
   grid: {fileID: 1126001096}
 --- !u!4 &722872205
 Transform:

@@ -16,8 +16,8 @@ MonoBehaviour:
   waveStride: 2
   waveHeight: 2
   waterLineLength: 1
-  waterFillColor: {r: 0.3254902, g: 0.2784314, b: 0.21176472, a: 1}
+  waterFillColor: {r: 1, g: 1, b: 1, a: 1}
   reflectionLength: 15
   reflectionOffset: 7
-  startReflectionFade: 0.746
+  startReflectionFade: 0.614
   endReflectionFade: 1

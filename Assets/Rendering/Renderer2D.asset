@@ -18,7 +18,7 @@ MonoBehaviour:
   renderQueueType: 1
   layerMask:
     serializedVersion: 2
-    m_Bits: 262144
+    m_Bits: 262160
   clearRenderTarget: 0
   texture: 1
 --- !u!114 &-4075944505059195486

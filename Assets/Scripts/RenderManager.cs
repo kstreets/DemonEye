@@ -11,11 +11,6 @@ using UnityEngine.Tilemaps;
 #endif
 public static class RenderManager {
     
-    public static RTHandle tilemapRT;
-    public static RTHandle sceneRT;
-    public static RTHandle waterRT;
-    public static RTHandle finalOutputRT;
-    
     public static Vector2Int curScreenSize;
     public static Vector2Int offScreenRenderingSize;
     
@@ -33,6 +28,11 @@ public static class RenderManager {
     private static readonly int waterMapShaderProp = Shader.PropertyToID("_WaterMap");
     private static readonly int waterUVScalerShaderProp = Shader.PropertyToID("_WaterUVScaler");
     
+    private static RTHandle tilemapRT;
+    private static RTHandle sceneRT;
+    private static RTHandle waterRT;
+    private static RTHandle finalOutputRT;
+    
 #if UNITY_EDITOR
     static RenderManager() {
         Initialize();
@@ -44,10 +44,10 @@ public static class RenderManager {
     
     public static RTHandle GetRenderTexture(Texture type) {
         return type switch {
-            Texture.Tilemap => tilemapRT,
-            Texture.Scene   => sceneRT,
-            Texture.Water   => waterRT,
-            Texture.Final   => finalOutputRT,
+            Texture.Tilemap => EnsureRenderTexture(ref tilemapRT),
+            Texture.Scene   => EnsureRenderTexture(ref sceneRT),
+            Texture.Water   => EnsureRenderTexture(ref waterRT),
+            Texture.Final   => EnsureRenderTexture(ref finalOutputRT),
             _               => throw new ArgumentOutOfRangeException(nameof(type), type, null),
         };
     }
@@ -104,15 +104,27 @@ public static class RenderManager {
             AllocRenderTexture(ref sceneRT, curScreenSize.x, offScreenHeight);
             AllocRenderTexture(ref waterRT, curScreenSize.x, offScreenHeight);
             AllocRenderTexture(ref finalOutputRT, curScreenSize.x, curScreenSize.y);
-            WaterFeature.BindRenderTextures();
-            FinalBlitFeature.BindRenderTextures();
+            
             Shader.SetGlobalTexture(waterMapShaderProp, waterRT);
             
             Vector4 uvShaderScaler = Vector4.one;
             uvShaderScaler.y = 1f - ((offScreenHeight - curScreenSize.y) / (float)offScreenHeight);
             Shader.SetGlobalVector(waterUVScalerShaderProp, uvShaderScaler);
         }
+        
         offScreenRenderingSize = new(curScreenSize.x, offScreenHeight);
+    }
+    
+    private static RTHandle EnsureRenderTexture(ref RTHandle rtHandle) {
+        if (RenderTextureExists(ref rtHandle)) {
+            return rtHandle;
+        }
+        AllocRenderTexture(ref rtHandle, Screen.width, Screen.height);
+        return rtHandle;
+    }
+    
+    private static bool RenderTextureExists(ref RTHandle rtHandle) {
+        return rtHandle != null && rtHandle.rt != null && rtHandle.rt.IsCreated();
     }
     
     private static void AllocRenderTexture(ref RTHandle rtHandle, int width, int height) {

@@ -21,6 +21,7 @@ float _endReflectionFade;
 
 float4 _waterFillColor;
 
+// TODO: Make a reflect function because we have 2 similar reflect samples, one for waves and one for reflections
 [numthreads(8, 8, 1)]
 void CSMain (uint3 id : SV_DispatchThreadID) {
     uint maxX = _width - 1;
