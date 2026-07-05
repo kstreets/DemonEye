@@ -384,6 +384,7 @@ public partial class Game {
             foreach (InventorySlot slot in inventories.eyeForge.slots) {
                 slot.ui.itemUI.rectTransform.anchoredPosition = Vector2.zero;
                 slot.ui.itemUI.rectTransform.localScale = Vector3.one;
+                slot.ui.itemUI.pixelFillManager.SetMaterialFill(1f);
                 
                 if (slot.itemInstance == null) continue;
                 
@@ -402,13 +403,19 @@ public partial class Game {
     private bool PlayingForgeAnimation => eyeForgeSequence.isAlive;
     
     private void DoEyeForgeAnimation(Action onAnimationEndCallback) {
-        const float fillDuration = 4.5f;
-        const float perUpgradeExplosionDelay = 0.15f;
-        const float popOutDuration = 0.15f;
+        const float fillDuration = 5.5f;
+        const float perUpgradeExplosionDelay = 0.2f;
+        const float perUpgradeDissolveDelay = 0.6f;
+        const float popOutDuration = 0.1f;
 
         float upgradeExplosionsDuration = perUpgradeExplosionDelay * (GetInventoryItemCount(inventories.eyeForge) - 1);
         float totalAnimationDuration = fillDuration + upgradeExplosionsDuration + popOutDuration;
-
+        
+        InventorySlot[] slots = inventories.eyeForge.slots;
+        
+        inventories.eyeForge.slots[0].ui.itemUI.pixelFillManager.SetIntoSprite(eyeForgePanel.demonEyeSprite);
+        inventories.eyeForge.slots[0].ui.itemUI.pixelFillManager.UseSmoothing(false);
+        
         Tween.Custom(this, 0f, 1f, fillDuration, ease: Ease.Linear, onValueChange: (target, val) => {
             target.SetPentagramFill(target.curves.pentagramFill.Evaluate(val));
         });
@@ -417,6 +424,33 @@ public partial class Game {
             target.SetPentagramFill(target.curves.pentagramFill.Evaluate(val));
         });
 
+        {
+            Ease ease = Ease.Linear;
+            float duration = 2.5f;
+            
+            Tween.Custom(inventories.eyeForge.slots[0], 1f, 0f, fillDuration * 0.85f, ease: Ease.OutCubic, startDelay: perUpgradeDissolveDelay, onValueChange: (targetSlot, val) => {
+                targetSlot.ui.itemUI.pixelFillManager.SetMaterialFill(val);
+            });
+            
+            Tween.Custom(inventories.eyeForge.slots[1], 1f, 0f, duration, ease: ease, onValueChange: (targetSlot, val) => {
+                targetSlot.ui.itemUI.pixelFillManager.SetMaterialFill(val);
+            });
+            
+            Tween.Custom(inventories.eyeForge.slots[2], 1f, 0f, duration, ease: ease, startDelay: perUpgradeDissolveDelay * 2, onValueChange: (targetSlot, val) => {
+                targetSlot.ui.itemUI.pixelFillManager.SetMaterialFill(val);
+            });
+            Tween.Custom(inventories.eyeForge.slots[5], 1f, 0f, duration, ease: ease, startDelay: perUpgradeDissolveDelay * 2, onValueChange: (targetSlot, val) => {
+                targetSlot.ui.itemUI.pixelFillManager.SetMaterialFill(val);
+            });
+            
+            Tween.Custom(inventories.eyeForge.slots[3], 1f, 0f, duration, ease: ease, startDelay: perUpgradeDissolveDelay * 4, onValueChange: (targetSlot, val) => {
+                targetSlot.ui.itemUI.pixelFillManager.SetMaterialFill(val);
+            });
+            Tween.Custom(inventories.eyeForge.slots[4], 1f, 0f, duration, ease: ease, startDelay: perUpgradeDissolveDelay * 4, onValueChange: (targetSlot, val) => {
+                targetSlot.ui.itemUI.pixelFillManager.SetMaterialFill(val);
+            });
+        }
+        
         for (int i = 0; i < inventories.eyeForge.slots.Length; i++) {
             InventorySlot slot = inventories.eyeForge.slots[i];
             if (slot.itemInstance == null) continue;
@@ -429,22 +463,22 @@ public partial class Game {
             Sequence sequence = Sequence.Create();
 
             if (slot.itemInstance.ItemRef.type == itemTypes.eye) {
-                sequence.Chain(Tween.Scale(rectTransform, Vector3.one, Vector3.one * 1.25f, new() {
+                sequence.Chain(Tween.Scale(rectTransform, Vector3.one, Vector3.one * 1.42f, new() {
                     duration = fillDuration,
                     ease = Ease.InCubic,
                 }));
                 
-                sequence.ChainDelay(upgradeExplosionsDuration + perUpgradeExplosionDelay);
+                sequence.ChainDelay(perUpgradeExplosionDelay);
                 
                 sequence.Chain(Tween.Scale(rectTransform, Vector3.one * 1.35f, Vector3.one, new() {
                     duration = popOutDuration,
                     ease = Ease.InOutBounce,
                 }));
                 
-                sequence.Group(Tween.Delay(0f, () => {
+                sequence.Group(Tween.Delay(popOutDuration, () => {
                     Entity forgeExplosion = SpawnEntity(entityPools.forgeExplosion, slot.ui.rectTransform.position, Quaternion.identity, eyeForgePanel.panel);
                     DestroyEntity(forgeExplosion, CurrentClipLength(forgeExplosion.animator));
-                    Tween.PunchScale(eyeForgePanel.panel, Vector3.one * 0.05f, 1f, 15f);
+                    Tween.PunchScale(eyeForgePanel.panel, Vector3.one * 0.035f, 1f, 12f);
                 }));
                 
                 eyeForgeSequence = sequence;
@@ -456,18 +490,22 @@ public partial class Game {
                     ease = Ease.InCubic,
                 }));
                 
-                sequence.ChainDelay(perUpgradeExplosionDelay * i);
+                sequence.ChainDelay(perUpgradeExplosionDelay + popOutDuration + 0.025f);
                 
-                sequence.Chain(Tween.Scale(rectTransform, Vector3.one * 0.87f, Vector3.zero, new() {
-                    duration = popOutDuration,
-                    ease = Ease.InBounce,
-                }));
+                sequence.ChainCallback(() => {
+                    Entity dust = SpawnEntity(entityPools.forgeDust, slot.ui.rectTransform.position, Quaternion.identity, eyeForgePanel.panel);
+                    DestroyEntity(dust, CurrentClipLength(dust.animator));
+                    Entity fractureParticles = SpawnEntity(entityPools.upgradeFractureParticles, slot.ui.rectTransform.position, Quaternion.identity, ui.mainCanvasRectTransform);
+                    DestroyEntity(fractureParticles, 1.1f);
+                });
                 
-                sequence.Group(Tween.Delay(popOutDuration / 2f, () => {
-                    Entity forgeExplosion = SpawnEntity(entityPools.forgeExplosion, slot.ui.rectTransform.position, Quaternion.identity, eyeForgePanel.panel);
-                    DestroyEntity(forgeExplosion, CurrentClipLength(forgeExplosion.animator));
-                    Tween.PunchScale(eyeForgePanel.panel, Vector3.one * 0.04f, 0.15f, 15f);
-                }));
+                // sequence.Chain(Tween.Scale(rectTransform, Vector3.one * 0.87f, Vector3.zero, new() {
+                //     duration = popOutDuration,
+                //     ease = Ease.InBounce,
+                // }));
+                //
+                // sequence.Group(Tween.Delay(popOutDuration * 1.05f, () => {
+                // }));
             }
         }
     }

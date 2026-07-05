@@ -24,6 +24,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: InventorySlotEyeForge
       objectReference: {fileID: 0}
+    - target: {fileID: 6153983853364303732, guid: 0412bcb04847baa4d920e89c3e52615d, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: -1943364333, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+    - target: {fileID: 6890701791358644999, guid: 0412bcb04847baa4d920e89c3e52615d, type: 3}
+      propertyPath: pixelFillManager
+      value: 
+      objectReference: {fileID: 858785456182314403}
     - target: {fileID: 8712680000265659784, guid: 0412bcb04847baa4d920e89c3e52615d, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -107,5 +115,40 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 440412702743401132, guid: 0412bcb04847baa4d920e89c3e52615d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 858785456182314403}
   m_SourcePrefab: {fileID: 100100000, guid: 0412bcb04847baa4d920e89c3e52615d, type: 3}
+--- !u!1 &4051437705672602557 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 440412702743401132, guid: 0412bcb04847baa4d920e89c3e52615d, type: 3}
+  m_PrefabInstance: {fileID: 4478038342942466321}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &858785456182314403
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4051437705672602557}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78735c71e3582784fb5e55eaff6df858, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PixelFillManager
+  image: {fileID: 7728853779448002149}
+  pixelFillMaterial: {fileID: 2100000, guid: 2d4ffa7511eab974aaa1c7716ad01c7a, type: 2}
+  fillMask: {fileID: 2800000, guid: f666000e944d1a842b1881b85236089e, type: 3}
+  upwardsFillMask: {fileID: 2800000, guid: aaf9d77b403c7b84c9514c8d7c0c75be, type: 3}
+--- !u!114 &7728853779448002149 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6153983853364303732, guid: 0412bcb04847baa4d920e89c3e52615d, type: 3}
+  m_PrefabInstance: {fileID: 4478038342942466321}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4051437705672602557}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

@@ -1799,7 +1799,7 @@ TextureImporter:
         width: 32
         height: 32
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1808,6 +1808,28 @@ TextureImporter:
       bones: []
       spriteID: d20e59a6ffd9bdf4dad93605b6def5cb
       internalID: -1322789337
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JumbleFade
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 416
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c34874aa6389c3247a6d7e1658ceae7e
+      internalID: 1223841620
       vertices: []
       indices: 
       edges: []
@@ -1830,6 +1852,7 @@ TextureImporter:
       Coin: 1564196794
       GrayedOutButton: 1226795369
       HighlightedGrayedOutButton: -870479080
+      JumbleFade: 500691667
       LoadingCircle: -218724546
       LoadingCircle1: 1626873751
       LoadingCircle2: -1922868406
@@ -1872,7 +1895,6 @@ TextureImporter:
       UISpriteSheet_34: -1351091896
       UISpriteSheet_35: -714245607
       UISpriteSheet_36: -1322789337
-      UISpriteSheet_37: 500691667
       UISpriteSheet_38: -1140007088
       UISpriteSheet_39: -1735161808
       UISpriteSheet_4: 2144612291

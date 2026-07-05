@@ -58,6 +58,8 @@ public class GameData {
         public GameObject eyeForgeSlot;
         public GameObject damageNumber;
         public GameObject forgeExplosion;
+        public GameObject forgeDust;
+        public GameObject upgradeFractureParticles;
         public GameObject questSelectionToggle;
         public GameObject quest;
     }
@@ -216,6 +218,7 @@ public class GameData {
         public RectTransform panel;
         public RectTransform pentagramParent;
         public Image pentagramFillImage;
+        public Sprite demonEyeSprite;
         public ButtonFeel forgeButton;
     }
     
@@ -315,6 +318,8 @@ public class GameData {
         public EntityPool<Entity> runSmoke;
         public EntityPool<Entity> damageNumber;
         public EntityPool<Entity> forgeExplosion;
+        public EntityPool<Entity> forgeDust;
+        public EntityPool<Entity> upgradeFractureParticles;
         public EntityPool<Entity> blast;
     }
     

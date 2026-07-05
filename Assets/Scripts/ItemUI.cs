@@ -9,6 +9,7 @@ public class ItemUI : MonoBehaviour {
     public Image image;
     public TextMeshProUGUI countText;
     public GameObject grayOverlay;
+    public PixelFillManager pixelFillManager; // Only pentagram inventory slots will have this
     
     public bool IsGrayedOut => grayOverlay.activeInHierarchy;
 

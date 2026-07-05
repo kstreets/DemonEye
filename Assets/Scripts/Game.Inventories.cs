@@ -128,11 +128,13 @@ public partial class Game {
     private void SetupEyeForgeInventorySlots() {
         int inventoryLength = inventories.eyeForge.slots.Length;
         for (int i = 0; i < inventoryLength; i++) {
+            bool isCenterSlot = i == 0;
             InventorySlotUI slotUI = inventories.eyeForge.slots[i].ui;
             slotUI.disallowItemStacking = true;
-            slotUI.onlyAcceptedItemType = i == 0 ? itemTypes.eye : itemTypes.eyeUpgrade;
+            slotUI.onlyAcceptedItemType = isCenterSlot ? itemTypes.eye : itemTypes.eyeUpgrade;
+            slotUI.itemUI.pixelFillManager.Init(isCenterSlot ? PixelFillManager.FillDirection.None : PixelFillManager.FillDirection.Up);
 
-            if (i == 0) {
+            if (isCenterSlot) {
                 slotUI.gameObject.transform.position = eyeForgePanel.pentagramParent.position;
                 continue;
             }

@@ -68,7 +68,9 @@ public partial class Game {
         entityPools.bloodSplatter = CreateEntityPool<Entity>(prefabs.bloodSplatter, 20, null);
         entityPools.runSmoke = CreateEntityPool<Entity>(prefabs.runSmoke, 5, null);
         entityPools.damageNumber = CreateEntityPool<Entity>(prefabs.damageNumber, 20, null);
-        entityPools.forgeExplosion = CreateEntityPool<Entity>(prefabs.forgeExplosion, 10, null);
+        entityPools.forgeExplosion = CreateEntityPool<Entity>(prefabs.forgeExplosion, 1, null);
+        entityPools.forgeDust = CreateEntityPool<Entity>(prefabs.forgeDust, 5, null);
+        entityPools.upgradeFractureParticles = CreateEntityPool<Entity>(prefabs.upgradeFractureParticles, 5, null);
         entityPools.blast = CreateEntityPool<Entity>(prefabs.blast, 5, null);
     }
 
