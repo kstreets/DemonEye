@@ -156,6 +156,7 @@ public partial class Game {
         SerializeList(binWriter, itemInstance.nestedUuids, SerializeInt);
         binWriter.Write(itemInstance.count);
         binWriter.Write(itemInstance.isDemonEye);
+        SerializeString(binWriter, itemInstance.demonEyeName);
     }
     
     private ItemInstance DeserializeItemInstance(BinaryReader binReader) {
@@ -164,6 +165,7 @@ public partial class Game {
             nestedUuids = DeserializeList(binReader, DeserializeInt),
             count = binReader.ReadInt32(),
             isDemonEye = binReader.ReadBoolean(),
+            demonEyeName = DeserializeString(binReader),
         };
     }
     
@@ -193,6 +195,20 @@ public partial class Game {
             list.Add(deserializeCallback(reader));
         }
         return list;
+    }
+    
+    private void SerializeString(BinaryWriter writer, string str) {
+        if (string.IsNullOrEmpty(str)) {
+            writer.Write(0);
+            return;
+        }
+        writer.Write(str.Length);
+        writer.Write(str);
+    }
+    
+    private string DeserializeString(BinaryReader reader) {
+        int strLen = reader.ReadInt32();
+        return strLen > 0 ? reader.ReadString() : string.Empty;
     }
 
     private void SerializeVector2(BinaryWriter binWriter, Vector2 value) {

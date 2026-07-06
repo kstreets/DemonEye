@@ -24,6 +24,7 @@ public class GameplayTestingWindow : EditorWindow {
     private SliderInt StartWaveSlider => root.Q<SliderInt>("StartWaveSlider");
     private Button PlayerDamageButton => root.Q<Button>("PlayerDamageBttn");
     private Button PlayerBleedButton => root.Q<Button>("PlayerBleedBttn");
+    private SliderInt TraderLevelSlider => root.Q<SliderInt>("TraderLevelSlider");
     
     private List<MapData> Maps => FindFirstObjectByType<Game>().config.maps;
 
@@ -45,6 +46,7 @@ public class GameplayTestingWindow : EditorWindow {
         StartWaveSlider.RegisterValueChangedCallback(OnStartWaveSliderChanged);
         PlayerDamageButton.RegisterCallback<ClickEvent>(OnDamagePlayer);
         PlayerBleedButton.RegisterCallback<ClickEvent>(OnMakePlayerBleed);
+        TraderLevelSlider.RegisterValueChangedCallback(OnTraderLevelChanged);
         
         // Restore settings after domain reload
         MapField.value = currentMap;
@@ -116,7 +118,7 @@ public class GameplayTestingWindow : EditorWindow {
             itemInstances.Add(new(item));
         }
         
-        Game.ItemInstance demonEye = game.CreateNewDemonEyeItemInstance(itemInstances);
+        Game.ItemInstance demonEye = game.CreateNewDemonEyeItemInstance(Game.randomDemonEyeNames.GetRandom(), itemInstances);
         game.TryAddItemToInventory(game.inventories.stash, demonEye);
     }
     
@@ -250,6 +252,14 @@ public class GameplayTestingWindow : EditorWindow {
     private void OnMakePlayerBleed(ClickEvent e) {
         if (!Application.isPlaying) return;
         Game.player.bleeding = true;
+    }
+    
+    private void OnTraderLevelChanged(ChangeEvent<int> changeEvent) {
+        int traderLevelIndex = changeEvent.newValue - 1; 
+        GameData.Config config = Game.gameInstance.config;
+        int repNeeded = config.traderLevels.prefixedSumRepForLevel[traderLevelIndex];
+        Game.gameInstance.config.trader.state.reputation = repNeeded;
+        Game.gameInstance.FillTraderInventoryWithItems();
     }
     
 }

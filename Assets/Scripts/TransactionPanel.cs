@@ -22,7 +22,6 @@ public class TransactionPanel : MonoBehaviour {
     [Header("Purchasing")]
     public Transform purchasingParent;
     public ItemDescPopup purchasingItemDesc;
-    public Image purchasingItemImage;
     public List<ResourceRequirement> resourceRequirements;
     public ButtonFeel barterPurchaseButton;
     public ButtonFeel moneyPurchaseButton;
@@ -55,7 +54,6 @@ public class TransactionPanel : MonoBehaviour {
         barterPurchaseButton.SetClickableState(canBarter);
         moneyPurchaseButton.SetClickableState(player.state.coinCurrency >= item.buyPrice);
         
-        purchasingItemImage.sprite = item.inventorySprite;
         purchasingItemDesc.Show(itemInstance);
 
         for (int i = 0; i < item.traderSpawning.barterRequirements.Count; i++) {

@@ -56,10 +56,11 @@ public partial class Game {
         thisFrame.flags |= GameData.FrameFlags.DemonEyeChanged;
     }
     
-    public ItemInstance CreateNewDemonEyeItemInstance(List<ItemInstance> eyeUpgradeItemInstances) {
+    public ItemInstance CreateNewDemonEyeItemInstance(string demonEyeName, List<ItemInstance> eyeUpgradeItemInstances) {
         ItemInstance newDemonEyeItemInstance = new() {
             nestedUuids = new(),
             isDemonEye = true,
+            demonEyeName = demonEyeName,
         };
         
         foreach (ItemInstance upgradeInstance in eyeUpgradeItemInstances) {
@@ -220,5 +221,39 @@ public partial class Game {
         }
         return sellPrice;
     } 
+    
+    public static string[] randomDemonEyeNames = {
+        "The Weeping Iris",
+        "The Unblinking",
+        "The Watchful One",
+        "Dead Stare",
+        "Doom Sight",
+        "Hollow Sight",
+        "Silk Stare",
+        "Low Apature",
+        "Mindful Watch",
+        "The Third Lid",
+        "Socket Filler",
+        "Hell's Ruin",
+        "Forsaken Stare",
+        "Second Sleep",
+        "The Money Maker",
+        "Sleepless Gaze",
+        "The Miner",
+        "Straight Shooter",
+        "Demon Smacker",
+        "Hardly Know Her",
+        "Cronically Dry",
+        "Photon Toucher",
+        "Maidenless Voyager",
+        "Graphics Processing Unit",
+        "Feller of Demons",
+        "Focused Fighter",
+        "Gaze of Hell",
+        "Eternal Doom",
+        "The Eco Round",
+        "Festering Gaze",
+        "Corrupted Watcher",
+    };
 
 }

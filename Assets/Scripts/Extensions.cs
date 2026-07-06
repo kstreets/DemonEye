@@ -130,6 +130,10 @@ public static class Extensions {
         }
         return false;
     }
+    
+    public static T GetRandom<T>(this T[] array) {
+        return array[Random.Range(0, array.Length)];
+    }
 
     public static bool IndexInRange<T>(this T[,] array, Vector2 index) {
         int x = (int)index.x;

@@ -14,6 +14,7 @@ public partial class Game {
         public List<int> nestedUuids;
         public int count = 1;
         public bool isDemonEye;
+        public string demonEyeName;
 
         [NonSerialized] public bool notDiscovered;
         [NonSerialized] public bool traderOwned;
@@ -47,6 +48,7 @@ public partial class Game {
                 itemOrInstanceUuid = itemOrInstanceUuid,
                 count = count,
                 isDemonEye = isDemonEye,
+                demonEyeName = demonEyeName,
                 notDiscovered = notDiscovered,
                 traderOwned = traderOwned,
                 traderSlotIndex = traderSlotIndex,

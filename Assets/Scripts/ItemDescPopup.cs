@@ -22,8 +22,7 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
         gameObject.SetActive(true);
         
         Item item = itemInstance.ItemRef;
-        
-        nameText.text = item.displayName;
+        SetName(itemInstance, item);
         SetTags(item);
         SetMetaInfo(itemInstance, item);
         SetDescription(itemInstance, item);
@@ -40,6 +39,14 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
         nameText.text = string.Empty;
         descText.text = string.Empty;
         gameObject.SetActive(false);
+    }
+    
+    private void SetName(ItemInstance itemInstance, Item item) {
+        if (itemInstance.isDemonEye) {
+            nameText.text = itemInstance.demonEyeName;
+            return;
+        }
+        nameText.text = item.displayName;
     }
 
     private void SetTags(Item item) {
@@ -119,7 +126,7 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
     }
 
     public void SetLayoutVertical() {
-        FitPopupSize(rectTransform, nameText, tagsLayoutGroup, bodyLayoutGroup);
+        FitPopupSize(rectTransform, tagsLayoutGroup, nameText, bodyLayoutGroup);
         
         // Keep popup from going offscreen
         {

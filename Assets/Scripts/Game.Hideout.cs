@@ -117,7 +117,7 @@ public partial class Game {
         return config.traderLevels.prefixedSumRepForLevel.Length;
     }
 
-    private void FillTraderInventoryWithItems() {
+    public void FillTraderInventoryWithItems() {
         ClearInventory(inventories.trader);
         int curTraderLevel = GetTraderRepLevel();
         
@@ -377,7 +377,9 @@ public partial class Game {
         string prevButtonText = forgeButton.text.text;
         forgeButton.text.text = "Forging...";
         
-        DoEyeForgeAnimation(onAnimationEndCallback: () => {
+        string demonEyeName = randomDemonEyeNames.GetRandom();
+        
+        DoEyeForgeAnimation(demonEyeName, onAnimationEndCallback: () => {
             forgeButton.StopKeepPressed();
             forgeButton.text.text = prevButtonText;
             
@@ -396,7 +398,7 @@ public partial class Game {
                 slot.itemInstance = null;
             }
             
-            ItemInstance newDemonEye = CreateNewDemonEyeItemInstance(eyeUpgradeItemInstances);
+            ItemInstance newDemonEye = CreateNewDemonEyeItemInstance(demonEyeName, eyeUpgradeItemInstances);
             inventories.eyeForge.slots[eyeSlotIndex].itemInstance = newDemonEye;
         });
     }
@@ -404,7 +406,7 @@ public partial class Game {
     private Sequence eyeForgeSequence;
     private bool PlayingForgeAnimation => eyeForgeSequence.isAlive;
     
-    private void DoEyeForgeAnimation(Action onAnimationEndCallback) {
+    private void DoEyeForgeAnimation(string demonEyeName, Action onAnimationEndCallback) {
         const float fillDuration = 5.5f;
         const float perUpgradeExplosionDelay = 0.2f;
         const float perUpgradeDissolveDelay = 0.6f;
@@ -413,7 +415,7 @@ public partial class Game {
         float upgradeExplosionsDuration = perUpgradeExplosionDelay * (GetInventoryItemCount(inventories.eyeForge) - 1);
         float totalAnimationDuration = fillDuration + upgradeExplosionsDuration + popOutDuration;
         
-        FlipEyeForgeNameText("The Teary Eye");
+        FlipEyeForgeNameText(demonEyeName);
         
         InventorySlot[] slots = inventories.eyeForge.slots;
         
@@ -520,7 +522,7 @@ public partial class Game {
     
     private void FlipEyeForgeNameText(string nameText) {
         _textFlipAnimData.visibleCharCount = nameText.Length;
-        _textFlipAnimData.name = $"<mspace=0.45em>{nameText.ToUpper()}"; 
+        _textFlipAnimData.name = $"<mspace=0.5em>{nameText.ToUpper()}"; 
         _textFlipAnimData.curSettleCount = 0;
         _textFlipAnimData.curCycleCount = 0;
         
