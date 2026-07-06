@@ -406,7 +406,7 @@ public partial class Game {
         
         int hoveredSlot = invHoverInfo.slotIndex;
         Inventory hoveredInventory = invHoverInfo.inventory;
-        return hoveredInventory.slots[hoveredSlot].ui.itemUI.IsGrayedOut;
+        return hoveredInventory.slots[hoveredSlot].ui.IsGrayedOut;
     }
     
     private bool NotAllowedToMoveOrPickupItem(InventoryHoverInfo info) {
@@ -590,8 +590,8 @@ public partial class Game {
 
         // We don't allow trader items to be picked up
         if (hoverInfo.inventory == inventories.trader && !IsDraggingItem) {
-            if (TryGetItemFromHoverInfo(hoverInfo, out ItemInstance item)) {
-                SetTradingItem(item); 
+            if (TryGetItemFromHoverInfo(hoverInfo, out _)) {
+                SetTradingSlot(hoverInfo.inventory.slots[hoverInfo.slotIndex], tweenSize: true); 
             }
             return IsDraggingItem;
         }
@@ -938,10 +938,10 @@ public partial class Game {
     }
 
     // Returns true if we reduced the item to nothing
-    private bool ReduceItemCountInInventory(Inventory inventory, int slotIndex, int reduction = 1) {
+    private bool ReduceItemCountInInventory(Inventory inventory, int slotIndex, int reduction = 1, bool keepOnEmpty = false) {
         var item = GetInventoryItem(inventory, slotIndex);
         item.count -= reduction;
-        if (item.count <= 0) {
+        if (item.count <= 0 && !keepOnEmpty) {
             RemoveItemFromInventory(inventory, slotIndex);
             return true;
         }
@@ -983,7 +983,15 @@ public partial class Game {
                 if (slot.itemInstance == null) continue;
                 Item item = slot.itemInstance.ItemRef;
                 if (item.type != itemTypes.eye && item.type != itemTypes.eyeUpgrade) {
-                    slot.ui.itemUI.ToggleGray();
+                    slot.ui.ToggleGray();
+                }
+            }
+        }
+        if (OnTradingTab) {
+            foreach (InventorySlot slot in inventories.trader.slots) {
+                if (slot.itemInstance == null) continue;
+                if (slot.itemInstance.count <= 0) {
+                    slot.ui.ToggleOutOfStock();
                 }
             }
         }

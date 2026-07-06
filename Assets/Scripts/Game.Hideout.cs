@@ -47,7 +47,7 @@ public partial class Game {
         }
         
         if (raidsUntilRestock <= 0) {
-            SetTradingItem(null);
+            SetTradingSlot(null, tweenSize: false);
             FillTraderInventoryWithItems();
             raidsUntilRestock = config.gameplay.raidsPerTraderRestock;
         }
@@ -180,21 +180,30 @@ public partial class Game {
         return rep >= config.traderLevels.prefixedSumRepForLevel[^1];
     }
     
-    private ItemInstance curTradingItemInstance;
+    private InventorySlot curTradingInventorySlot;
     
-    private void SetTradingItem(ItemInstance itemInstance) {
-        curTradingItemInstance = itemInstance;
-        transactionPanel.transaction.UpdateBuyItem(itemInstance);
-        if (curTradingItemInstance != null && transactionState == TransactionState.Selling) {
+    private void SetTradingSlot(InventorySlot traderInventorySlot, bool tweenSize) {
+        traderInventorySlot ??= inventories.trader.slots[0];
+        
+        curTradingInventorySlot?.ui.ClearSelectionUnderlay();
+        curTradingInventorySlot = traderInventorySlot;
+        curTradingInventorySlot?.ui.SetSelectionUnderlay();
+        
+        if (tweenSize && curTradingInventorySlot != null) {
+            ItemUI itemUI = curTradingInventorySlot.ui.itemUI;
+            Tween.PunchScale(itemUI.rectTransform, Vector3.one * 0.3f, 0.12f, 5f);
+        }
+        
+        ItemInstance tradingItemInstance = curTradingInventorySlot?.itemInstance;
+        transactionPanel.transaction.UpdateBuyItem(tradingItemInstance);
+        if (tradingItemInstance != null && transactionState == TransactionState.Selling) {
             transactionPanel.transaction.toggleGroup.ManualyToggle(transactionPanel.transaction.buyToggle);
         }
     }
-
+    
     private void ReduceTradingItemStock() {
-        bool reducedToNothing = ReduceItemCountInInventory(inventories.trader, curTradingItemInstance.traderSlotIndex);
-        if (reducedToNothing) {
-            SetTradingItem(null);
-        }
+        int slotIndex = curTradingInventorySlot.itemInstance.traderSlotIndex;
+        ReduceItemCountInInventory(inventories.trader, slotIndex, keepOnEmpty: true);
     }
 
     private enum TransactionState { Selling, Buying }
@@ -203,7 +212,9 @@ public partial class Game {
     private void OnBuyTogglePressed() {
         transactionState = TransactionState.Buying;
         transactionPanel.inventoryParent.gameObject.SetActive(false);
-        
+
+        SetTradingSlot(curTradingInventorySlot, tweenSize: false);
+
         // Move any selling items back to stash
         foreach (InventorySlot slot in inventories.transaction.slots) {
             if (slot.itemInstance == null) continue;
@@ -215,7 +226,7 @@ public partial class Game {
     private void OnSellTogglePressed() {
         transactionState = TransactionState.Selling;
         transactionPanel.inventoryParent.gameObject.SetActive(true);
-        SetTradingItem(null);
+        curTradingInventorySlot?.ui.ClearSelectionUnderlay();
     }
     
     private void OnSellButtonPressed() {
@@ -228,11 +239,12 @@ public partial class Game {
     }
     
     private void OnMoneyPurchaseButtonPressed() {
-        if (transactionState == TransactionState.Buying && curTradingItemInstance == null) return;
-        int buyPrice = curTradingItemInstance.ItemRef.buyPrice;
+        if (transactionState == TransactionState.Buying && curTradingInventorySlot == null) return;
+        Item curTradingItem = curTradingInventorySlot.itemInstance.ItemRef;
+        int buyPrice = curTradingItem.buyPrice;
         if (player.state.coinCurrency >= buyPrice) {
             player.state.coinCurrency -= buyPrice;
-            TryAddItemToInventory(inventories.stash, curTradingItemInstance.ItemRef, 1);
+            TryAddItemToInventory(inventories.stash, curTradingItem, 1);
             ReduceTradingItemStock();
             // After buying items we just make sure all items in stash are no longer trader owned
             ClearItemsAsTraderOwned(inventories.stash);
@@ -240,13 +252,14 @@ public partial class Game {
     }
     
     private void OnBarterPurchaseButtonPressed() {
-        if (curTradingItemInstance == null) return;
+        if (curTradingInventorySlot == null) return;
 
-        foreach (ItemWithCount barterReq in curTradingItemInstance.ItemRef.traderSpawning.barterRequirements) {
+        Item curTradingItem = curTradingInventorySlot.itemInstance.ItemRef;
+        foreach (ItemWithCount barterReq in curTradingItem.traderSpawning.barterRequirements) {
             if (GetOwnedCountOfItem(barterReq.item) < barterReq.count) return;
         }
             
-        foreach (ItemWithCount barterReq in curTradingItemInstance.ItemRef.traderSpawning.barterRequirements) {
+        foreach (ItemWithCount barterReq in curTradingItem.traderSpawning.barterRequirements) {
             int removedCount = RemoveNumberOfItemsFromInventory(inventories.stash, barterReq.item, barterReq.count);
             if (removedCount != barterReq.count) {
                 int additionalRemoveCount = barterReq.count - removedCount;
@@ -254,15 +267,15 @@ public partial class Game {
             }
         }
 
-        TryAddItemToInventory(inventories.stash, curTradingItemInstance.ItemRef, 1);
+        TryAddItemToInventory(inventories.stash, curTradingItem, 1);
         ReduceTradingItemStock();
     }
     
-    private void RefreshTransactionUI() {
+    private void UpdateTransactionUI() {
         if (!OnTradingTab) return;
         
         if (transactionState == TransactionState.Buying) {
-            transactionPanel.transaction.UpdateBuyItem(curTradingItemInstance);
+            transactionPanel.transaction.UpdateBuyItem(curTradingInventorySlot?.itemInstance);
             transactionPanel.transaction.toggleGroup.ManualyToggleCosmetically(transactionPanel.transaction.buyToggle);
         }
         else if (transactionState == TransactionState.Selling) {

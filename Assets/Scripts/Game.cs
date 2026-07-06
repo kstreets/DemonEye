@@ -110,7 +110,7 @@ public partial class Game : MonoBehaviour {
 
     private void OnHideoutStateUpdate() {
         UpdateInventory();
-        RefreshTransactionUI();
+        UpdateTransactionUI();
         UpdateForgeState();
         UpdateForgePanel();
         UpdateForgeInfoPanel();

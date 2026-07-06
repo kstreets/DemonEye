@@ -15,6 +15,7 @@
         <ui:VisualElement name="Divider" style="flex-grow: 0; background-color: rgb(42, 42, 42); height: 1px; margin-top: 5px; margin-bottom: 5px;"/>
         <ui:Button text="Damage Player" name="PlayerDamageBttn"/>
         <ui:Button text="Apply Bleed To Player" name="PlayerBleedBttn"/>
+        <ui:Button text="Give Some Money" name="MoneyBttn"/>
         <ui:VisualElement name="Divider" style="flex-grow: 0; background-color: rgb(42, 42, 42); height: 1px; margin-top: 5px; margin-bottom: 5px;"/>
         <ui:SliderInt label="Trader Level" value="1" high-value="4" name="TraderLevelSlider" show-input-field="true" enabled="true" low-value="1"/>
     </ui:VisualElement>

@@ -6,6 +6,8 @@ public class InventorySlotUI : MonoBehaviour {
     public bool disallowItemStacking;
     public ItemType onlyAcceptedItemType;
     public Image slotImage;
+    public Image overlayImage;
+    public Image underlayImage;
     public Sprite activeSlotSprite;
     public Sprite inactiveSlotSprite;
     public ItemUI itemUI;
@@ -13,6 +15,8 @@ public class InventorySlotUI : MonoBehaviour {
     
     public bool SlotIsInactive => slotImage.sprite == inactiveSlotSprite;
     public bool AcceptsAllTypes => onlyAcceptedItemType == null;
+    public bool IsGrayedOut => overlayImage.gameObject.activeInHierarchy;
+    public bool IsUnderlayed => underlayImage.gameObject.activeInHierarchy;
 
     private RectTransform _rectTransform;
     
@@ -24,7 +28,7 @@ public class InventorySlotUI : MonoBehaviour {
             return _rectTransform;
         }
     }
-
+    
     public bool AcceptsItem(Item item) {
         if (AcceptsAllTypes) {
             return true;
@@ -61,7 +65,29 @@ public class InventorySlotUI : MonoBehaviour {
         itemUI.SetItem(data, count);
     }
     
+    public void ToggleOutOfStock() {
+        itemUI.ToggleOutOfStock();
+        overlayImage.gameObject.SetActive(true);
+        overlayImage.color = Styles.instance.grayedOutOverlay;
+    }
+    
+    public void ToggleGray() {
+        itemUI.ToggleGray();
+        overlayImage.gameObject.SetActive(true);
+        overlayImage.color = Styles.instance.grayedOutOverlay;
+    }
+    
+    public void SetSelectionUnderlay() {
+        underlayImage.gameObject.SetActive(true);
+        underlayImage.color = Styles.instance.selectedUnderlay;
+    }
+    
+    public void ClearSelectionUnderlay() {
+        underlayImage.gameObject.SetActive(false);
+    }
+    
     public void ClearItem() {
+        overlayImage.gameObject.SetActive(false);
         itemUI.ClearItem();
     }
     

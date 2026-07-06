@@ -24,6 +24,7 @@ public class GameplayTestingWindow : EditorWindow {
     private SliderInt StartWaveSlider => root.Q<SliderInt>("StartWaveSlider");
     private Button PlayerDamageButton => root.Q<Button>("PlayerDamageBttn");
     private Button PlayerBleedButton => root.Q<Button>("PlayerBleedBttn");
+    private Button MoneyButton => root.Q<Button>("MoneyBttn");
     private SliderInt TraderLevelSlider => root.Q<SliderInt>("TraderLevelSlider");
     
     private List<MapData> Maps => FindFirstObjectByType<Game>().config.maps;
@@ -46,6 +47,7 @@ public class GameplayTestingWindow : EditorWindow {
         StartWaveSlider.RegisterValueChangedCallback(OnStartWaveSliderChanged);
         PlayerDamageButton.RegisterCallback<ClickEvent>(OnDamagePlayer);
         PlayerBleedButton.RegisterCallback<ClickEvent>(OnMakePlayerBleed);
+        MoneyButton.RegisterCallback<ClickEvent>(OnGiveMoney);
         TraderLevelSlider.RegisterValueChangedCallback(OnTraderLevelChanged);
         
         // Restore settings after domain reload
@@ -254,7 +256,14 @@ public class GameplayTestingWindow : EditorWindow {
         Game.player.bleeding = true;
     }
     
+    private void OnGiveMoney(ClickEvent e) {
+        if (!Application.isPlaying) return;
+        Game.player.state.coinCurrency += 5000;
+    }
+    
     private void OnTraderLevelChanged(ChangeEvent<int> changeEvent) {
+        if (!Application.isPlaying) return;
+        
         int traderLevelIndex = changeEvent.newValue - 1; 
         GameData.Config config = Game.gameInstance.config;
         int repNeeded = config.traderLevels.prefixedSumRepForLevel[traderLevelIndex];

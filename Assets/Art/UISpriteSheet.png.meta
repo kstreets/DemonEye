@@ -163,7 +163,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: UISpriteSheet_3
+      name: SlotMask
       rect:
         serializedVersion: 2
         x: 96
@@ -1821,7 +1821,7 @@ TextureImporter:
         width: 32
         height: 32
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1861,6 +1861,7 @@ TextureImporter:
       LoadingCircle5: -780372264
       LoadingCircle6: 1877465644
       LoadingCircle7: 1705974065
+      SlotMask: 1439875600
       Soul: -927471816
       Square: 896199210
       Tag: 1554644581
@@ -1887,7 +1888,6 @@ TextureImporter:
       UISpriteSheet_27: -543200239
       UISpriteSheet_28: -909882854
       UISpriteSheet_29: 100822687
-      UISpriteSheet_3: 1439875600
       UISpriteSheet_30: -1996136508
       UISpriteSheet_31: 1684691031
       UISpriteSheet_32: 96645083

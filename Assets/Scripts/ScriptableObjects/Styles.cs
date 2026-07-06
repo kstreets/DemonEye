@@ -31,6 +31,9 @@ public class Styles : ScriptableSingleton<Styles> {
     public Color nonSelectedTraderHeadshotTint;
 
     public Color grayedOutItemTint;
+    public Color grayedOutOverlay;
+    public Color selectedUnderlay;
+    public Color outOfStockCountColor;
 
     public Color normalDamageColor;
     public Color critDamageColor;

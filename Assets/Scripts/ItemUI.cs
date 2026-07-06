@@ -4,16 +4,15 @@ using UnityEngine.UI;
 
 public class ItemUI : MonoBehaviour {
     
-    public Styles styles;
     public RectTransform rectTransform;
     public Image image;
     public TextMeshProUGUI countText;
-    public GameObject grayOverlay;
     public PixelFillManager pixelFillManager; // Only pentagram inventory slots will have this
     
-    public bool IsGrayedOut => grayOverlay.activeInHierarchy;
-
+    private Color originalTextColor;
+    
     private void Awake() {
+        originalTextColor = countText.color;
         ClearItem();
     }
     
@@ -31,13 +30,17 @@ public class ItemUI : MonoBehaviour {
         image.sprite = null;
         image.enabled = false;
         countText.text = "";
-        grayOverlay.SetActive(false);
+        countText.color = originalTextColor; 
         image.color = Color.white;
     }
 
     public void ToggleGray() {
-        grayOverlay.SetActive(true);
-        image.color = styles.grayedOutItemTint;
+        image.color = Styles.instance.grayedOutItemTint;
+    }
+    
+    public void ToggleOutOfStock() {
+        ToggleGray();
+        countText.color = Styles.instance.outOfStockCountColor;
     }
     
 }

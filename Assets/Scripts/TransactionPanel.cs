@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.UI;
 using static Game;
 
 public class TransactionPanel : MonoBehaviour {
@@ -25,10 +24,12 @@ public class TransactionPanel : MonoBehaviour {
     public List<ResourceRequirement> resourceRequirements;
     public ButtonFeel barterPurchaseButton;
     public ButtonFeel moneyPurchaseButton;
+    public GameObject outOfStockNotifier;
     
     public void UpdateBuyItem(ItemInstance itemInstance) {
         sellParent.gameObject.SetActive(false);
         purchasingParent.gameObject.SetActive(true);
+        outOfStockNotifier.gameObject.SetActive(false);
 
         foreach (ResourceRequirement resReq in resourceRequirements) {
             resReq.gameObject.SetActive(false);
@@ -51,8 +52,17 @@ public class TransactionPanel : MonoBehaviour {
             }
         }
         
+        bool canPurchase = player.state.coinCurrency >= item.buyPrice;
+        
+        bool itemIsOutOfStock = itemInstance.count <= 0;
+        if (itemIsOutOfStock) {
+            canBarter = false;
+            canPurchase = false;
+            outOfStockNotifier.gameObject.SetActive(true);
+        }
+        
         barterPurchaseButton.SetClickableState(canBarter);
-        moneyPurchaseButton.SetClickableState(player.state.coinCurrency >= item.buyPrice);
+        moneyPurchaseButton.SetClickableState(canPurchase);
         
         purchasingItemDesc.Show(itemInstance);
 

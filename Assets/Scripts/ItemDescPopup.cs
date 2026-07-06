@@ -5,6 +5,7 @@ using static Game;
 
 public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
 
+    public bool dontFitToSize;
     public Styles styles;
     public RectTransform rectTransform;
     public TextMeshProUGUI nameText;
@@ -126,6 +127,8 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
     }
 
     public void SetLayoutVertical() {
+        if (dontFitToSize) return;
+        
         FitPopupSize(rectTransform, tagsLayoutGroup, nameText, bodyLayoutGroup);
         
         // Keep popup from going offscreen

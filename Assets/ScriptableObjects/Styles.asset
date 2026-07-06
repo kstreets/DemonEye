@@ -32,6 +32,9 @@ MonoBehaviour:
   selectedTraderBackground: {r: 0.18431373, g: 0.14901961, b: 0.14509805, a: 1}
   nonSelectedTraderHeadshotTint: {r: 0.57861626, g: 0.57861626, b: 0.57861626, a: 1}
   grayedOutItemTint: {r: 1, g: 1, b: 1, a: 0.23529412}
+  grayedOutOverlay: {r: 0, g: 0, b: 0, a: 0.5019608}
+  selectedUnderlay: {r: 0.7490196, g: 0.5667975, b: 0.5019608, a: 0.3882353}
+  outOfStockCountColor: {r: 0.8352942, g: 0.27058825, b: 0.27450982, a: 1}
   normalDamageColor: {r: 1, g: 1, b: 1, a: 1}
   critDamageColor: {r: 1, g: 0.8286626, b: 0.22327036, a: 1}
   bleedDamageColor: {r: 0.9308176, g: 0.24628536, b: 0.20196973, a: 1}
