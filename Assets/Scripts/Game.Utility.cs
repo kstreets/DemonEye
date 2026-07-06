@@ -1,10 +1,17 @@
+using System.Text;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.InputSystem;
-using UnityEngine.Rendering.Universal;
 
 public partial class Game {
 
+    private static StringBuilder _stringBuilder = new();
+    
+    public static StringBuilder GetStringBuilder() {
+        _stringBuilder.Clear();
+        return _stringBuilder;
+    }
+    
     public static bool RollProbability(float probability) {
         return Random.value <= probability;
     }

@@ -220,6 +220,7 @@ public class GameData {
         public Image pentagramFillImage;
         public Sprite demonEyeSprite;
         public ButtonFeel forgeButton;
+        public TextMeshProUGUI flappingNameText;
     }
     
     [Serializable]

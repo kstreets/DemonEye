@@ -1,6 +1,8 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using PrimeTween;
 using TMPro;
 using UnityEngine;
@@ -411,10 +413,12 @@ public partial class Game {
         float upgradeExplosionsDuration = perUpgradeExplosionDelay * (GetInventoryItemCount(inventories.eyeForge) - 1);
         float totalAnimationDuration = fillDuration + upgradeExplosionsDuration + popOutDuration;
         
+        FlipEyeForgeNameText("The Teary Eye");
+        
         InventorySlot[] slots = inventories.eyeForge.slots;
         
-        inventories.eyeForge.slots[0].ui.itemUI.pixelFillManager.SetIntoSprite(eyeForgePanel.demonEyeSprite);
-        inventories.eyeForge.slots[0].ui.itemUI.pixelFillManager.UseSmoothing(false);
+        slots[0].ui.itemUI.pixelFillManager.SetIntoSprite(eyeForgePanel.demonEyeSprite);
+        slots[0].ui.itemUI.pixelFillManager.UseSmoothing(false);
         
         Tween.Custom(this, 0f, 1f, fillDuration, ease: Ease.Linear, onValueChange: (target, val) => {
             target.SetPentagramFill(target.curves.pentagramFill.Evaluate(val));
@@ -428,31 +432,31 @@ public partial class Game {
             Ease ease = Ease.Linear;
             float duration = 2.5f;
             
-            Tween.Custom(inventories.eyeForge.slots[0], 1f, 0f, fillDuration * 0.85f, ease: Ease.OutCubic, startDelay: perUpgradeDissolveDelay, onValueChange: (targetSlot, val) => {
+            Tween.Custom(slots[0], 1f, 0f, fillDuration * 0.85f, ease: Ease.OutCubic, startDelay: perUpgradeDissolveDelay, onValueChange: (targetSlot, val) => {
                 targetSlot.ui.itemUI.pixelFillManager.SetMaterialFill(val);
             });
             
-            Tween.Custom(inventories.eyeForge.slots[1], 1f, 0f, duration, ease: ease, onValueChange: (targetSlot, val) => {
+            Tween.Custom(slots[1], 1f, 0f, duration, ease: ease, onValueChange: (targetSlot, val) => {
                 targetSlot.ui.itemUI.pixelFillManager.SetMaterialFill(val);
             });
             
-            Tween.Custom(inventories.eyeForge.slots[2], 1f, 0f, duration, ease: ease, startDelay: perUpgradeDissolveDelay * 2, onValueChange: (targetSlot, val) => {
+            Tween.Custom(slots[2], 1f, 0f, duration, ease: ease, startDelay: perUpgradeDissolveDelay * 2, onValueChange: (targetSlot, val) => {
                 targetSlot.ui.itemUI.pixelFillManager.SetMaterialFill(val);
             });
-            Tween.Custom(inventories.eyeForge.slots[5], 1f, 0f, duration, ease: ease, startDelay: perUpgradeDissolveDelay * 2, onValueChange: (targetSlot, val) => {
+            Tween.Custom(slots[5], 1f, 0f, duration, ease: ease, startDelay: perUpgradeDissolveDelay * 2, onValueChange: (targetSlot, val) => {
                 targetSlot.ui.itemUI.pixelFillManager.SetMaterialFill(val);
             });
             
-            Tween.Custom(inventories.eyeForge.slots[3], 1f, 0f, duration, ease: ease, startDelay: perUpgradeDissolveDelay * 4, onValueChange: (targetSlot, val) => {
+            Tween.Custom(slots[3], 1f, 0f, duration, ease: ease, startDelay: perUpgradeDissolveDelay * 4, onValueChange: (targetSlot, val) => {
                 targetSlot.ui.itemUI.pixelFillManager.SetMaterialFill(val);
             });
-            Tween.Custom(inventories.eyeForge.slots[4], 1f, 0f, duration, ease: ease, startDelay: perUpgradeDissolveDelay * 4, onValueChange: (targetSlot, val) => {
+            Tween.Custom(slots[4], 1f, 0f, duration, ease: ease, startDelay: perUpgradeDissolveDelay * 4, onValueChange: (targetSlot, val) => {
                 targetSlot.ui.itemUI.pixelFillManager.SetMaterialFill(val);
             });
         }
         
-        for (int i = 0; i < inventories.eyeForge.slots.Length; i++) {
-            InventorySlot slot = inventories.eyeForge.slots[i];
+        for (int i = 0; i < slots.Length; i++) {
+            InventorySlot slot = slots[i];
             if (slot.itemInstance == null) continue;
 
             RectTransform rectTransform = slot.ui.itemUI.rectTransform;
@@ -498,18 +502,82 @@ public partial class Game {
                     Entity fractureParticles = SpawnEntity(entityPools.upgradeFractureParticles, slot.ui.rectTransform.position, Quaternion.identity, ui.mainCanvasRectTransform);
                     DestroyEntity(fractureParticles, 1.1f);
                 });
-                
-                // sequence.Chain(Tween.Scale(rectTransform, Vector3.one * 0.87f, Vector3.zero, new() {
-                //     duration = popOutDuration,
-                //     ease = Ease.InBounce,
-                // }));
-                //
-                // sequence.Group(Tween.Delay(popOutDuration * 1.05f, () => {
-                // }));
             }
         }
     }
     
+    private class TextFlipAnimData {
+        public string name;
+        public int visibleCharCount;
+        public int curSettleCount;
+        public int curCycleCount;
+        public const int cyclesPerSettle = 5;
+        public const float cycleInterval = 0.1f;
+        public const string charPool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    }
+    
+    private static TextFlipAnimData _textFlipAnimData = new();
+    
+    private void FlipEyeForgeNameText(string nameText) {
+        _textFlipAnimData.visibleCharCount = nameText.Length;
+        _textFlipAnimData.name = $"<mspace=0.45em>{nameText.ToUpper()}"; 
+        _textFlipAnimData.curSettleCount = 0;
+        _textFlipAnimData.curCycleCount = 0;
+        
+        PerformFlip();
+        
+        static void PerformFlip() {
+            Tween.Delay(TextFlipAnimData.cycleInterval, static () => {
+                var data = _textFlipAnimData;
+                if (++data.curCycleCount % TextFlipAnimData.cyclesPerSettle == 0) {
+                    data.curSettleCount++;
+                }
+                gameInstance.eyeForgePanel.flappingNameText.text = GetFlipText(data.name, data.curSettleCount);
+                if (data.curSettleCount < data.visibleCharCount) {
+                    PerformFlip();
+                }
+            });
+        }
+        
+        static string GetFlipText(string text, int settledCount) {
+            StringBuilder strBuilder = GetStringBuilder();
+        
+            int visibleIndex = 0;
+            bool inTag = false;
+
+            foreach (char c in text) {
+                // If char is inside a Rich Text Tag, just appeand it without flipping letters
+                if (c == '<' && !inTag) {
+                    inTag = true;
+                    strBuilder.Append(c);
+                    continue;
+                }
+                if (c == '>' && inTag) {
+                    inTag = false;
+                    strBuilder.Append(c);
+                    continue;
+                }
+                if (inTag) {
+                    strBuilder.Append(c);
+                    continue;
+                }
+
+                if (visibleIndex < settledCount || char.IsWhiteSpace(c)) {
+                    strBuilder.Append(c);
+                }
+                else {
+                    const string charPool = TextFlipAnimData.charPool;
+                    strBuilder.Append(charPool[Random.Range(0, charPool.Length)]);
+                }
+                
+                if (!char.IsWhiteSpace(c)) {
+                    visibleIndex++;
+                }
+            }
+            return strBuilder.ToString();
+        }
+    }
+
     private int fillParamProperty = Shader.PropertyToID("_Fill");
     
     private void SetPentagramFill(float value) {
