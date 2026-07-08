@@ -20,7 +20,7 @@ MonoBehaviour:
     make from it.
   traderReputationReward: 100
   objectives:
-  - type: 3
+  - type: 10
     description: 
     targetValue: 6
     targetEnemy: {fileID: 0}

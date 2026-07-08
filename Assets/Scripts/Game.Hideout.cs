@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,6 +6,7 @@ using PrimeTween;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Pool;
+using UnityEngine.UI;
 using static GameData;
 using Random = UnityEngine.Random;
 
@@ -621,7 +621,7 @@ public partial class Game {
         }
         
         foreach (QuestGraphRuntime.Node questNode in initialQuestNodes) {
-            DisplayQuest(questNode); 
+            AddQuestToDisplay(questNode); 
         }
         RefreshQuestDisplays();
     }
@@ -653,9 +653,10 @@ public partial class Game {
         
         quests.presentingPkg.questUI.gameObject.SetActive(true);
         quests.presentingPkg.questUI.Display(quests.presentingPkg.questNode.curQuest);
+        questsPanel.toggleButtonGroup.ManualyToggle(quests.presentingPkg.questToggleButton);
     }
 
-    private void DisplayQuest(QuestGraphRuntime.Node questNode) {
+    private void AddQuestToDisplay(QuestGraphRuntime.Node questNode) {
         QuestPackage questPackage = GetQuestPackage();
         questPackage.questNode = questNode;
         questPackage.questToggleButton.gameObject.SetActive(true);
@@ -675,24 +676,26 @@ public partial class Game {
     private void ReleaseQuestPackage(QuestPackage package) {
         package.questUI.gameObject.SetActive(false);
         package.questToggleButton.gameObject.SetActive(false);
+        package.questUI.completeButton.StopKeepPressed();
         package.questNode = null;
         quests.reservedPkgs.Enqueue(package);
     }
     
     private QuestPackage CreateQuestPackage() {
-        QuestUI ui = Instantiate(prefabs.quest, questsPanel.questsParent).GetComponent<QuestUI>();
+        QuestUI questUI = Instantiate(prefabs.quest, questsPanel.questsParent).GetComponent<QuestUI>();
+        questUI.Init();
         
         ToggleButton toggle = Instantiate(prefabs.questSelectionToggle, questsPanel.questSelectionParent).GetComponent<ToggleButton>();
         questsPanel.toggleButtonGroup.Add(toggle);
         
         QuestPackage questPackage = new() {
             questNode = null,
-            questUI = ui,
+            questUI = questUI,
             questToggleButton = toggle,
         };
             
         toggle.button.onClick.AddListener(() => OnQuestToggleClicked(questPackage));
-        ui.completeButton.AddListener(() => OnQuestCompleteClicked(questPackage));
+        questUI.completeButton.AddListener(() => OnQuestCompleteClicked(questPackage));
         
         return questPackage;
     }
@@ -714,17 +717,31 @@ public partial class Game {
             }
         }
         
+        quests.presentingPkg = null;
+        
         if (questPackage.questNode.nextNodes != null) {
             foreach (QuestGraphRuntime.Node nextQuestNode in compQuestNode.nextNodes) {
                 Quest nextQuest = nextQuestNode.curQuest;
                 if (nextQuest.state.submitted || QuestIsActive(nextQuest)) continue;
-                DisplayQuest(nextQuestNode);
+                AddQuestToDisplay(nextQuestNode);
+                quests.presentingPkg ??= quests.activePkgs[^1];
             }
         }
         
-        RemoveQuestFromDisplay(questPackage); 
+        quests.activePkgs.Remove(questPackage); // Remove from active list so RefreshQuestDisplays() doesn't choose this one
         RefreshQuestDisplays();
         SaveGameState();
+        
+        QuestUI questUI = questPackage.questUI;
+        questUI.completeButton.KeepPressed();
+        questUI.transform.SetAsLastSibling(); // Make sure the burning quest appears ontop
+        questUI.Burn(2f, curves.questBurn);
+        
+        questPackage.questToggleButton.gameObject.SetActive(false);
+        
+        Tween.Delay(questPackage, 2f, static (burningQuestPkg) => {
+            gameInstance.RemoveQuestFromDisplay(burningQuestPkg); 
+        });
     }
     
     private bool QuestIsActive(Quest quest) {

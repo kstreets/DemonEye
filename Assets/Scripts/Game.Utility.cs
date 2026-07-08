@@ -2,6 +2,7 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public partial class Game {
 
@@ -14,6 +15,12 @@ public partial class Game {
     
     public static bool RollProbability(float probability) {
         return Random.value <= probability;
+    }
+    
+    public static Vector4 GetOffsetAndSizeIntoTexture(Image image) {
+        Rect spriteRect = image.sprite.rect;
+        Vector2 textureSize = new(image.mainTexture.width, image.mainTexture.height);
+        return new(spriteRect.x / textureSize.x, spriteRect.y / textureSize.y, spriteRect.width / textureSize.x,  spriteRect.height / textureSize.y);
     }
     
     private Vector2 ScreenCenter => new(Screen.width / 2f, Screen.height / 2f);

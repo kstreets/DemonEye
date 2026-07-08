@@ -1,18 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-4970172948041234357
-MonoBehaviour:
-  m_ObjectHideFlags: 11
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Editor::UnityEditor.Rendering.Universal.AssetVersion
-  version: 10
 --- !u!21 &2100000
 Material:
   serializedVersion: 8
@@ -20,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: PixelFill
-  m_Shader: {fileID: -6465566751694194690, guid: faa7a2d51a35bea41a0bba81a1437d40, type: 3}
+  m_Name: CanvasDissolveBurn
+  m_Shader: {fileID: -6465566751694194690, guid: 8e8e44609b9073c439ccb233e64c65d8, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -36,16 +23,8 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
-    - _AlphaMask:
-        m_Texture: {fileID: 2800000, guid: aaf9d77b403c7b84c9514c8d7c0c75be, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
     - _AlphaTex:
         m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _FillMask:
-        m_Texture: {fileID: 2800000, guid: f666000e944d1a842b1881b85236089e, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
@@ -75,11 +54,15 @@ Material:
     m_Ints: []
     m_Floats:
     - _AlphaClip: 0.5
+    - _AspectRatio: 2.609756
     - _ColorMask: 15
-    - _Completion: 1
+    - _DissolveAmount: 0
+    - _EdgeSize: 0.02
     - _EnableExternalAlpha: 0
-    - _Fill: 0
-    - _Scale: 0
+    - _NoiseScale: 180
+    - _PixelDensity: 2000
+    - _Pixels: 2000
+    - _Ratio: 1.01
     - _Stencil: 0
     - _StencilComp: 8
     - _StencilOp: 0
@@ -87,14 +70,15 @@ Material:
     - _StencilWriteMask: 255
     - _UIMaskSoftnessX: 1
     - _UIMaskSoftnessY: 1
-    - _UseSmoothing: 1
     - _ZWrite: 0
     m_Colors:
     - White: {r: 1, g: 1, b: 1, a: 1}
     - _ClipRect: {r: 0, g: 0, b: 0, a: 0}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _IntoOffset_Size: {r: 0, g: 0, b: 0, a: 0}
-    - _Offset_Size: {r: 0, g: 0.96875, b: 0.03125, a: 0.03125}
+    - _Color: {r: 0.16352195, g: 0.014905279, b: 0, a: 1}
+    - _Color_1: {r: 22.627417, g: 2.2397156, b: 0, a: 1}
+    - _Color_2: {r: 0, g: 7.8554907, b: 10.403305, a: 1}
+    - _Offset_Size: {r: 0.3125, g: 0.9375, b: 0.0625, a: 0.0625}
+    - _Ratio: {r: 2.5, g: 1, b: 1, a: 1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

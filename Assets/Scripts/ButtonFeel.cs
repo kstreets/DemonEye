@@ -120,7 +120,7 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
     }
 
     private void OnButtonClicked() {
-        if (isDisabled) return;
+        if (isDisabled || beingKeptPressed) return;
         buttonListenerCallback?.Invoke();
     }
 

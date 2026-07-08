@@ -20,7 +20,7 @@ MonoBehaviour:
   traderReputationReward: 100
   objectives:
   - type: 100
-    description: 
+    description: Bring back the trader's necklace
     targetValue: 1
     targetEnemy: {fileID: 0}
     targetItem: {fileID: 11400000, guid: 81232561f605c1546b430fbe457c269b, type: 2}

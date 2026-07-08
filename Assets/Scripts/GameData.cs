@@ -115,6 +115,7 @@ public class GameData {
         public AnimationCurve shake;
         public AnimationCurve pentagramFill;
         public AnimationCurve pentagramItemShake;
+        public AnimationCurve questBurn;
     }
     
     [Serializable] 
