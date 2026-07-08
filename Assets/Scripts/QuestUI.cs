@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
 using PrimeTween;
-using VInspector;
 using static Game;
 
 public class QuestUI : MonoBehaviour {
@@ -17,10 +16,6 @@ public class QuestUI : MonoBehaviour {
     public List<QuestObjectiveUI> objectiveUIs;
     public Mask burnMask;
     public Image burnEffectImage;
-    public ParticleSystem burnParticles;
-    
-    [Range(0f, 1f)]
-    public float editorBurnComp;
     
     private static readonly int dissolveAmountId = Shader.PropertyToID("_DissolveAmount");
     private static readonly int aspectRatioId = Shader.PropertyToID("_AspectRatio");
@@ -67,20 +62,18 @@ public class QuestUI : MonoBehaviour {
     private BurnData burnData = new();
     
     public void Burn(float duration, AnimationCurve curve) {
-        float aspectRation = rectTransform.rect.width / rectTransform.rect.height;
-        burnMask.graphic.materialForRendering.SetFloat(aspectRatioId, aspectRation);
-        burnEffectImage.material.SetFloat(aspectRatioId, aspectRation);
+        float aspectRatio = rectTransform.AspectRatio();
+        burnMask.graphic.materialForRendering.SetFloat(aspectRatioId, aspectRatio);
+        burnEffectImage.material.SetFloat(aspectRatioId, aspectRatio);
         
         burnData.burnMask = burnMask;
         burnData.burnEffectImage = burnEffectImage;
         burnData.curve = curve;
         
-        burnParticles.Play();
-        
         Tween.Custom(burnData, 0f, 1f, duration, onValueChange: static (data, comp) => {
             Material maskMat = data.burnMask.graphic.materialForRendering;
             Material burnMat = data.burnEffectImage.material;
-            Vector4 offsetAndSize = GetOffsetAndSizeIntoTexture(data.burnEffectImage);
+            Vector4 offsetAndSize = data.burnEffectImage.OffsetAndSizeInTexture();
             comp = data.curve.Evaluate(comp);
             
             maskMat.SetFloat(dissolveAmountId, comp);
@@ -94,11 +87,4 @@ public class QuestUI : MonoBehaviour {
         });
     }
     
-    [OnValueChanged(nameof(editorBurnComp))]
-    private void UpdateBurnForEdtitor() {
-        burnMask.graphic.materialForRendering.SetFloat(dissolveAmountId, editorBurnComp);
-        burnEffectImage.material.SetFloat(dissolveAmountId, editorBurnComp);
-        burnEffectImage.material.SetVector(offsetSizeId, GetOffsetAndSizeIntoTexture(burnEffectImage));
-    }
-
 }

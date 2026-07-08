@@ -42,6 +42,10 @@ public static class Extensions {
         return new (ltw.MultiplyPoint(new(rect.x, 1f, 1f)).x, ltw.MultiplyPoint(new(1f, rect.y, 1f)).y, rect.width, rect.height);
     }
     
+    public static float AspectRatio(this RectTransform rectTransform) {
+        return  rectTransform.rect.width / rectTransform.rect.height;
+    }
+    
     public static void ResizeWidth(this RectTransform rectTransform, float width) {
         rectTransform.sizeDelta = new(width, rectTransform.sizeDelta.y);
     }
@@ -190,6 +194,12 @@ public static class Extensions {
     /// Ex. enumType.HasAnyFlag(flag1 | flag2) is like saying enumType.HasFlag(flag1) || enumType.HasFlag(flag2)
     public static bool HasAnyFlag<T>(this T enumFlags, T flags) where T : struct, Enum {
         return (Convert.ToInt64(enumFlags) & Convert.ToInt64(flags)) != 0;
+    }
+    
+    public static Vector4 OffsetAndSizeInTexture(this Image image) {
+        Rect spriteRect = image.sprite.rect;
+        Vector2 textureSize = new(image.mainTexture.width, image.mainTexture.height);
+        return new(spriteRect.x / textureSize.x, spriteRect.y / textureSize.y, spriteRect.width / textureSize.x,  spriteRect.height / textureSize.y);
     }
     
 #if UNITY_EDITOR

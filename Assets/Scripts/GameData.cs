@@ -259,6 +259,8 @@ public class GameData {
         public RectTransform questSelectionParent;
         public ToggleButtonGroup toggleButtonGroup;
         public TraderRepBar traderRepBar;
+        public Image scortchedOverlayImage;
+        public ParticleSystem emberParticles;
     }
     
     [Serializable]

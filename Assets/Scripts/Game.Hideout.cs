@@ -19,7 +19,7 @@ public partial class Game {
     private void InitHideout(GameState gameState) {
         InitTrader(gameState);
         InitSkillsPanel();
-        InitQuestPackages();
+        InitQuestPanel();
         SetPentagramFill(0f);
     }
     
@@ -603,13 +603,18 @@ public partial class Game {
     // Quests 
     // ************************
     
+    private static int scortchedOpacityId = Shader.PropertyToID("_Opacity");
+    private static int scortchedAspectId = Shader.PropertyToID("_AspectRatio");
+    
     public class QuestPackage {
         public QuestGraphRuntime.Node questNode;
         public QuestUI questUI;
         public ToggleButton questToggleButton;
     }
-
-    private void InitQuestPackages() {
+    
+    private void InitQuestPanel() {
+        questsPanel.scortchedOverlayImage.material.SetFloat(scortchedOpacityId, 0f);
+        
         const int questUiPoolSize = 6;
         for (int i = 0; i < questUiPoolSize; i++) {
             ReleaseQuestPackage(CreateQuestPackage());
@@ -717,6 +722,8 @@ public partial class Game {
             }
         }
         
+        // Set to null so that we can show the newly unlocked quest, or keep it null
+        // if there is none because RefreshQuestDisplays() will handle the null for us
         quests.presentingPkg = null;
         
         if (questPackage.questNode.nextNodes != null) {
@@ -728,18 +735,38 @@ public partial class Game {
             }
         }
         
-        quests.activePkgs.Remove(questPackage); // Remove from active list so RefreshQuestDisplays() doesn't choose this one
+        // Remove from active list so RefreshQuestDisplays() doesn't choose this one.
+        quests.activePkgs.Remove(questPackage);
+        
         RefreshQuestDisplays();
         SaveGameState();
         
-        QuestUI questUI = questPackage.questUI;
-        questUI.completeButton.KeepPressed();
-        questUI.transform.SetAsLastSibling(); // Make sure the burning quest appears ontop
-        questUI.Burn(2f, curves.questBurn);
-        
         questPackage.questToggleButton.gameObject.SetActive(false);
+        questPackage.questUI.completeButton.KeepPressed();
         
-        Tween.Delay(questPackage, 2f, static (burningQuestPkg) => {
+        const float burnTime = 2f;
+        const float scortchFadeTime = 1.8f;
+        const float fadeScortchDelay = 0.3f;
+
+        // Animate the black scortched overlay
+        float aspect = questsPanel.scortchedOverlayImage.rectTransform.AspectRatio();
+        questsPanel.scortchedOverlayImage.material.SetFloat(scortchedAspectId, aspect);
+        questsPanel.scortchedOverlayImage.material.SetFloat(scortchedOpacityId, 1f);
+        questsPanel.scortchedOverlayImage.rectTransform.SetAsLastSibling();
+        Tween.Custom(1f, 0f, scortchFadeTime, startDelay: fadeScortchDelay, onValueChange: static (comp) => {
+            gameInstance.questsPanel.scortchedOverlayImage.material.SetFloat(scortchedOpacityId, comp);
+        });
+            
+        // Burn the quest body
+        questPackage.questUI.transform.SetAsLastSibling();
+        questPackage.questUI.Burn(burnTime, curves.questBurn);
+        
+        // Play the ember particles
+        questsPanel.emberParticles.Play();
+        questsPanel.emberParticles.transform.parent.SetAsLastSibling();
+        
+        // When done burning, release the quest package. The shader finishes a little early so we modify the duration.
+        Tween.Delay(questPackage, burnTime * 0.85f, static (burningQuestPkg) => {
             gameInstance.RemoveQuestFromDisplay(burningQuestPkg); 
         });
     }
