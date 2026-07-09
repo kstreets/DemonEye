@@ -8,7 +8,7 @@ public class MapData : ScriptableObject {
 
     public string displayName;
     public string sceneReference;
-    public RaidSpawnPattern waves;
+    public RaidSpawnPattern spawning;
     public MapWaterSettings waterSettings;
 
     [Header("Variables")]
@@ -59,11 +59,11 @@ public class MapData : ScriptableObject {
     private void OnPlayModeStateChanged(PlayModeStateChange stateChange) {
         switch (stateChange) {
             case PlayModeStateChange.EnteredPlayMode:
-                originalRaidSpawnPattern = waves;
-                waves = GetInjectedRaidSpawnPattern != null ? GetInjectedRaidSpawnPattern() : waves;
+                originalRaidSpawnPattern = spawning;
+                spawning = GetInjectedRaidSpawnPattern != null ? GetInjectedRaidSpawnPattern() : spawning;
                 break;
             case PlayModeStateChange.ExitingPlayMode:
-                waves = originalRaidSpawnPattern;
+                spawning = originalRaidSpawnPattern;
                 break;
         }     
     }

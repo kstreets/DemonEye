@@ -6,8 +6,6 @@ using VInspector;
 [Serializable]
 [CreateAssetMenu(fileName = "RaidSpawnPattern", menuName = "Scriptable Objects/Raid Spawn Pattern")]
 public class RaidSpawnPattern : ScriptableObject {
-    
-    public enum WaveType { Normal, PhantomSwarm, }
 
     [Serializable]
     public class EnemyBatch {
@@ -16,8 +14,9 @@ public class RaidSpawnPattern : ScriptableObject {
     }
 
     [Serializable]
-    public class SpawnPhase {
-        public WaveType waveTypeType;
+    public class Variant {
+        [HideInInspector] 
+        public string name;
         public float phaseDuration;
         public float spawnDuration;
         [MinMaxSlider(0, 40)]
@@ -30,21 +29,33 @@ public class RaidSpawnPattern : ScriptableObject {
     
     [Serializable]
     public class PhasePool {
-        public List<SpawnPhase> spawnPhases;
+        [HideInInspector] 
+        public string name;
+        public List<Variant> variants = new();
     }
     
     public float timeBeforeFirstPhase;
     public float timeBeforePortalSpawns;
     public float delayBetweenEnemyRepositions;
     public int maxEnemyRepositionCount;
-    public List<SpawnPhase> spawnPhases;
     public List<PhasePool> phasePools;
     
 #if UNITY_EDITOR
 
     private void OnValidate() {
-        if (spawnPhases == null || spawnPhases.Count <= 0) return;
-        spawnPhases[^1].phaseDuration = spawnPhases[^1].spawnDuration;
+        if (phasePools == null || phasePools.Count <= 0) return;
+        
+        for (int i = 0; i < phasePools.Count; i++) {
+            PhasePool pool = phasePools[i];
+            pool.name = $"Wave {i}";
+            for (int j = 0; j < pool.variants.Count; j++) {
+                pool.variants[j].name = $"Variant {j}";
+            }
+        }
+        
+        foreach (Variant variant in phasePools[^1].variants) {
+            variant.phaseDuration = variant.spawnDuration;
+        }
     }
 
 #endif

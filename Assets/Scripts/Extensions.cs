@@ -149,6 +149,13 @@ public static class Extensions {
         return index >= 0 && index < list.Count;
     }
     
+    public static T SafeIndex<T>(this List<T> list, int index) where T : class {
+        if (list.IndexInRange(index)) {
+            return list[index];
+        }
+        return null;
+    }
+    
     public static V RandomValue<K, V>(this Dictionary<K, V> dictionary) where V : class {
         int target = Random.Range(0, dictionary.Count);
 

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MapData
   displayName: Sulfur Fields
   sceneReference: SulfurFields
-  waves: {fileID: 11400000, guid: fc2949be33c63e14eb9ce0a4eed242b8, type: 2}
+  spawning: {fileID: 11400000, guid: fc2949be33c63e14eb9ce0a4eed242b8, type: 2}
   waterSettings: {fileID: 11400000, guid: 1866c6a4b026e3443ab0d054026b2d00, type: 2}
   altarSoulPrice: 150
   exitPortalsCount: 2

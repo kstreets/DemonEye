@@ -245,7 +245,7 @@ public partial class Game : MonoBehaviour {
         
         InitMapGrid();
         CreateDropPoolsForMap(curRaid.map);
-        InitSpawnManager(curRaid.map.waves);
+        InitSpawnManager(curRaid.map.spawning);
         SpawnMapResources(curRaid.mapInstance.resourceParent);
         SpawnInitialExitPortals(curRaid.mapInstance.exitPortalsParent, curRaid.map.exitPortalsCount);
         AnimateRaidEnterSequence();

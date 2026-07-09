@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MapData
   displayName: Ice
   sceneReference: Ice
-  waves: {fileID: 11400000, guid: c3f7f6d7c8bc62a4993a44c716d126e0, type: 2}
+  spawning: {fileID: 11400000, guid: d178d276342dd7a4b88f61a1e82034c7, type: 2}
+  waterSettings: {fileID: 0}
   altarSoulPrice: 150
   exitPortalsCount: 1
   playerCantBleed: 0

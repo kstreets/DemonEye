@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MapData
   displayName: Tutorial
   sceneReference: Tutorial
-  waves: {fileID: 11400000, guid: a6539f0178f4a554a84cbbaa445e68eb, type: 2}
+  spawning: {fileID: 11400000, guid: a6539f0178f4a554a84cbbaa445e68eb, type: 2}
   waterSettings: {fileID: 11400000, guid: 4ed6bcca488508542895549cf9b79f11, type: 2}
   altarSoulPrice: 25
   exitPortalsCount: 2

@@ -105,7 +105,7 @@ public class GameplayTestingWindow : EditorWindow {
         }
         
         StartWaveSlider.lowValue = 0;
-        StartWaveSlider.highValue = currentMap.waves.spawnPhases.Count - 1;
+        StartWaveSlider.highValue = currentMap.spawning.phasePools.Count - 1;
         StartWaveSlider.value = startWaveIndex;
     }
     
@@ -237,12 +237,12 @@ public class GameplayTestingWindow : EditorWindow {
     
     private RaidSpawnPattern InjectRaidSpawnPattern() {
         if (startWaveIndex <= 0) {
-            return currentMap.waves;
+            return currentMap.spawning;
         }
         
-        RaidSpawnPattern clonedWaves = Instantiate(currentMap.waves);
+        RaidSpawnPattern clonedWaves = Instantiate(currentMap.spawning);
         clonedWaves.timeBeforeFirstPhase = 5f;
-        clonedWaves.spawnPhases.RemoveRange(0, startWaveIndex);
+        clonedWaves.phasePools.RemoveRange(0, startWaveIndex);
         return clonedWaves;
     }
     
