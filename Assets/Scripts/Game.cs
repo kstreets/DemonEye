@@ -331,6 +331,7 @@ public partial class Game : MonoBehaviour {
 
     private void AnimateGameOverSequence(Action onCompleteCallback) {
         Tween.StopAll();
+        DemonEyeTween.StopAll();
         
         foreach (Entity entity in entities.all) {
             if (entity.rigidbody) {

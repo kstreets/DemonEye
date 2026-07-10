@@ -40,7 +40,7 @@ public class MapData : ScriptableObject {
 
 #if UNITY_EDITOR
     
-    private Func<RaidSpawnPattern> GetInjectedRaidSpawnPattern;
+    private static Func<RaidSpawnPattern> GetInjectedRaidSpawnPattern;
     
     public void SetRaidSpawnPatternInjection(Func<RaidSpawnPattern> injectedFunc) {
         GetInjectedRaidSpawnPattern = injectedFunc;
@@ -59,11 +59,15 @@ public class MapData : ScriptableObject {
     private void OnPlayModeStateChanged(PlayModeStateChange stateChange) {
         switch (stateChange) {
             case PlayModeStateChange.EnteredPlayMode:
-                originalRaidSpawnPattern = spawning;
-                spawning = GetInjectedRaidSpawnPattern != null ? GetInjectedRaidSpawnPattern() : spawning;
+                if (GetInjectedRaidSpawnPattern != null) {
+                    originalRaidSpawnPattern = spawning;
+                    spawning = GetInjectedRaidSpawnPattern != null ? GetInjectedRaidSpawnPattern() : spawning;
+                }
                 break;
             case PlayModeStateChange.ExitingPlayMode:
-                spawning = originalRaidSpawnPattern;
+                if (GetInjectedRaidSpawnPattern != null) {
+                    spawning = originalRaidSpawnPattern;
+                }
                 break;
         }     
     }

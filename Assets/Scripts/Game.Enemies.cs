@@ -263,7 +263,7 @@ public partial class Game {
 
                 for (int i = 0; i <  projectileCount; i++) {
                     float randomAngle = (angleDeltaPerDrop * i) + Random.Range(-randomRangePerDrop, randomRangePerDrop);
-                    Vector3 velocity = gameInstance.RotationVector(randomAngle) * 0.62f;
+                    Vector3 velocity = RotationVector(randomAngle) * 0.62f;
                     Vector3 position = gameInstance.OffsetY(enemy.position, 0.2f);
                     const float lifetime = 2f;
                     gameInstance.SpawnProjectile(

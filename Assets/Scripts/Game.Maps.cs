@@ -33,7 +33,7 @@ public partial class Game {
             maps[i].state = gameState.mapStates[i];
         }
     }
-
+    
     public enum MapLoadingState { Unloaded, Loaded, Loading, Unloading }
     
     public void LoadMapAsync(MapData mapData) {
@@ -194,43 +194,11 @@ public partial class Game {
         }
     }
     
-    private List<ExitPortal> activeExitPortals = new();
-    private ExitPortal exitPortalTakenByPlayer;
+    private List<Portal> activeExitPortals = new();
+    private Portal exitPortalTakenByPlayer;
     
-    private class ExitPortal {
-        public Transform transform;
-        public Sequence summoningPortalSequence;
-        public Sequence closingCountdownSequence;
-        public bool hasBeenSummoned;
-        public bool canTake;
-    }
-    
-    private void StartSummoningExitPortal(Transform exitPortalTrans) {
-        ExitPortal portal = GetExitPortalFromTransform(exitPortalTrans);
-        portal.hasBeenSummoned = true;
-        
-        portal.summoningPortalSequence = Sequence.Create();
-        portal.summoningPortalSequence.ChainDelay(config.gameplay.portalPostSummonDelay);
-        portal.summoningPortalSequence.Chain(Tween.Scale(portal.transform, Vector3.one, 0.25f, Ease.OutBack));
-        
-        portal.summoningPortalSequence.OnComplete(portal, static (portal) => {
-            portal.canTake = true;
-            gameInstance.StartClosingExitPortal(portal);
-        });
-    }
-    
-    private void StartClosingExitPortal(ExitPortal portal) {
-        portal.closingCountdownSequence = Sequence.Create();
-        portal.closingCountdownSequence.ChainDelay(config.gameplay.portalActiveDuration);
-        portal.closingCountdownSequence.ChainCallback(portal, static (portal) => {
-            portal.canTake = false;
-            gameInstance.activeExitPortals.Remove(portal);
-            Tween.Scale(portal.transform, Vector3.zero, 0.25f, Ease.OutCubic);
-        });
-    }
-    
-    private ExitPortal GetExitPortalFromTransform(Transform trans) {
-        foreach (ExitPortal portal in activeExitPortals) {
+    private Portal GetExitPortalFromTransform(Transform trans) {
+        foreach (Portal portal in activeExitPortals) {
             if (portal.transform == trans) {
                 return portal;
             }
@@ -245,12 +213,12 @@ public partial class Game {
         activeExitPortals.Clear();
         exitPortalTakenByPlayer = null;
         
-        using var _ = ListPool<Transform>.Get(out List<Transform> possibleExitPortals);
+        using var _ = ListPool<Portal>.Get(out List<Portal> possibleExitPortals);
         
-        foreach (Transform portal in exitPortalParent) {
-            portal.gameObject.SetActive(false);
-            if (Vector2.Distance(player.position, portal.position) > 5) {
-                possibleExitPortals.Add(portal);
+        foreach (Transform portalTrans in exitPortalParent) {
+            portalTrans.gameObject.SetActive(false);
+            if (Vector2.Distance(player.position, portalTrans.position) > 5) {
+                possibleExitPortals.Add(portalTrans.GetComponent<Portal>());
             }
         }
         
@@ -260,11 +228,10 @@ public partial class Game {
         possibleExitPortals.Shuffle();
         
         for (int i = 0; i < exitPortalsCount; i++) {
-            activeExitPortals.Add(new() {
-                transform = possibleExitPortals[i],
-            });
-            possibleExitPortals[i].gameObject.SetActive(true);
-            possibleExitPortals[i].transform.localScale = Vector3.one * 0.25f;
+            Portal portal = possibleExitPortals[i];
+            portal.Init();
+            portal.gameObject.SetActive(true);
+            activeExitPortals.Add(portal);
         }
     }
     
@@ -280,11 +247,7 @@ public partial class Game {
             newExitPortalTrans.gameObject.SetActive(true);
             newExitPortalTrans.position = randomPos;
             
-            activeExitPortals.Add(new() {
-                transform = newExitPortalTrans,
-                hasBeenSummoned = true,
-                canTake = true,
-            });
+            activeExitPortals.Add(newExitPortalTrans.GetComponent<Portal>());
             
             Tween.Scale(newExitPortalTrans, 0f, 1f, 0.5f, Ease.OutBack);
             PlayAudioClip(audio.portalSpawnClip, newExitPortalTrans.position);

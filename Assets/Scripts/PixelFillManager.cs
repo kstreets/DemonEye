@@ -17,6 +17,7 @@ public class PixelFillManager : MonoBehaviour {
     private static readonly int intoOffsetSizeId = Shader.PropertyToID("_IntoOffset_Size");
     private static readonly int fillMaskId = Shader.PropertyToID("_FillMask");
     private static readonly int useSmoothingId = Shader.PropertyToID("_UseSmoothing");
+    
 #if UNITY_EDITOR
     private void Update() {
         if (Application.isPlaying) return;

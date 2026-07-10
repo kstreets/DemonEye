@@ -15,9 +15,11 @@ public static class DemonEyeTween {
         public RectTransform rectTransform;
         public Curve curve;
         public AnimationCurve animationCurve;
+        public AnimationCurve altAnimationCurve;
         public Action callback;
         public Action<float> completionCallback;
         public Vector2 randomSeed;
+        public Vector2 appliedOffset;
         public float float1;
         public float float2;
         public float float3;
@@ -35,8 +37,8 @@ public static class DemonEyeTween {
     public static ObjectPool<TweenObject> tweenObjectPool;
     
     public static void Init() {
-        singleTweens = new(30);
-        sequences = new(30);
+        singleTweens = new(5);
+        sequences = new(5);
         tweenObjectPool = new(() => new());
     }
 
@@ -60,6 +62,17 @@ public static class DemonEyeTween {
                 continue;
             }
             UpdateIndividualTween(sequences[i][curTweenIndex]);
+        } 
+    }
+    
+    public static void StopAll() {
+        for (int i = singleTweens.Count - 1; i >= 0; i--) {
+            Release(singleTweens[i]);
+            singleTweens.RemoveAt(i);
+        }
+        for (int i = sequences.Count - 1; i >= 0; i--) {
+            Release(sequences[i]);
+            sequences.RemoveAt(i);
         } 
     }
     
@@ -196,12 +209,15 @@ public static class DemonEyeTween {
     }
 
 
-    public static TweenObject TweenShake(RectTransform rectTransform, float jitter, float magnitude, float time, AnimationCurve animCurve) {
+    public static TweenObject TweenShake(Transform transform, float jitter, float magnitude, float time, AnimationCurve animCurve, AnimationCurve altAnimCurve) {
         TweenObject tween = tweenObjectPool.Get();
         tween.type = Type.Shake;
-        tween.rectTransform = rectTransform;
+        tween.transform = transform;
+        tween.rectTransform = transform as RectTransform;
+        tween.appliedOffset = Vector3.zero;
         tween.randomSeed = new(Random.Range(int.MinValue, int.MaxValue), Random.Range(int.MinValue, int.MaxValue));
         tween.animationCurve = animCurve;
+        tween.altAnimationCurve = altAnimCurve;
         tween.float1 = jitter;
         tween.float2 = magnitude;
         tween.time = time;
@@ -210,20 +226,30 @@ public static class DemonEyeTween {
         return tween;
     }
     
-    public static TweenHandle DoTweenShake(this RectTransform rectTransform, float jitter, float magnitude, float time, AnimationCurve animCurve) {
-        singleTweens.Add(TweenShake(rectTransform, jitter, magnitude, time, animCurve));
+    public static TweenHandle DoTweenShake(this Transform transform, float jitter, float magnitude, float time, AnimationCurve animCurve, AnimationCurve jitterCurve = null) {
+        singleTweens.Add(TweenShake(transform, jitter, magnitude, time, animCurve, jitterCurve));
         return new() { singleTween = singleTweens[^1] };
     }
 
     public static void UpdateShake(TweenObject tween) {
         float comp = UpdateAndGetCompletion(tween);
         float magnitude = tween.animationCurve.Evaluate(comp) * tween.float2;
+        float jitter = tween.altAnimationCurve?.Evaluate(comp) * tween.float1 ?? tween.float1;
         
-        tween.float3 = (tween.float3 + tween.float1 * Time.deltaTime) % 1f;
+        tween.float3 = (tween.float3 + jitter * Time.deltaTime) % 1f;
         float x = (Mathf.PerlinNoise(tween.randomSeed.x, tween.float3) - 0.5f) * 2f;
         float y = (Mathf.PerlinNoise(tween.randomSeed.y, tween.float3 + 100f) - 0.5f) * 2f;
-        Vector3 targetVector = new Vector3(x, y, tween.rectTransform.position.z) * magnitude;
-        tween.rectTransform.anchoredPosition = targetVector; 
+        
+        if (tween.rectTransform != null) {
+            Vector3 targetVector = new Vector3(x, y, tween.rectTransform.position.z) * magnitude;
+            tween.rectTransform.anchoredPosition = targetVector; 
+        }
+        else {
+            Vector2 targetVector = new Vector2(x, y) * magnitude;
+            Vector2 origin = new Vector2(tween.transform.position.x, tween.transform.position.y) - tween.appliedOffset;
+            tween.transform.position = origin + targetVector;
+            tween.appliedOffset = targetVector;
+        }
     }
 
 

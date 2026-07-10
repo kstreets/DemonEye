@@ -94,15 +94,15 @@ public partial class Game {
             }
 
             if (col.CompareTag(Tags.ExitPortal)) {
-                ExitPortal portal = GetExitPortalFromTransform(col.transform);
+                Portal portal = GetExitPortalFromTransform(col.transform);
                 ref float timeSpentSummoningPortal = ref curRaid.data.interactions.timeSpentSummoningPortal;
                 
-                if (!portal.hasBeenSummoned && timeSpentSummoningPortal < config.gameplay.portalSummonTime) {
+                if (portal.state == Portal.State.Inactive && timeSpentSummoningPortal < config.gameplay.portalSummonTime) {
                     EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Summon Exit Portal");
                     if (input.interact.IsPressed()) {
                         timeSpentSummoningPortal += Time.deltaTime;
                         if (timeSpentSummoningPortal >= config.gameplay.portalSummonTime) {
-                            StartSummoningExitPortal(col.transform);
+                            portal.StartOpenCloseSequence(config.gameplay.portalPostSummonDelay, config.gameplay.portalActiveDuration);
                             timeSpentSummoningPortal = 0f;
                         }
                     }
@@ -111,11 +111,11 @@ public partial class Game {
                     }
                 }
                 
-                if (portal.canTake) {
+                if (portal.state == Portal.State.Open) {
                     EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Take Exit Portal");
                     if (input.interact.WasPressedThisFrame()) {
                         exitPortalTakenByPlayer = portal;
-                        exitPortalTakenByPlayer.closingCountdownSequence.Stop();
+                        exitPortalTakenByPlayer.StopClosingSequence();
                         
                         bool winExit = curRaid.state == RaidState.PostFinalWave;
                         states.gameStateMachine.SetStateIfNotCurrent(winExit ? states.winExit : states.earlyExit);

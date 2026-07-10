@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using PrimeTween;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Pool;
@@ -201,6 +202,16 @@ public static class Extensions {
     /// Ex. enumType.HasAnyFlag(flag1 | flag2) is like saying enumType.HasFlag(flag1) || enumType.HasFlag(flag2)
     public static bool HasAnyFlag<T>(this T enumFlags, T flags) where T : struct, Enum {
         return (Convert.ToInt64(enumFlags) & Convert.ToInt64(flags)) != 0;
+    }
+    
+    public static float AspectRatio(this Sprite sprite) {
+        return  sprite.rect.width / sprite.rect.height;
+    }
+    
+    public static Vector4 OffsetAndSizeInTexture(this Sprite sprite) {
+        Rect spriteRect = sprite.rect;
+        Vector2 textureSize = new(sprite.texture.width, sprite.texture.height);
+        return new(spriteRect.x / textureSize.x, spriteRect.y / textureSize.y, spriteRect.width / textureSize.x,  spriteRect.height / textureSize.y);
     }
     
     public static Vector4 OffsetAndSizeInTexture(this Image image) {

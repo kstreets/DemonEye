@@ -31,11 +31,11 @@ public partial class Game {
         return Quaternion.AngleAxis(Random.Range(0, 360), Vector3.forward) * Vector3.right * Random.Range(minDist, maxDist);
     }
     
-    private Vector3 RotationVector(float degrees) {
+    public static Vector3 RotationVector(float degrees) {
         return Quaternion.AngleAxis(degrees, Vector3.forward) * Vector3.right;
     }
     
-    private Vector3 RotationVector(float degrees, float minDist, float maxDist) {
+    public static Vector3 RotationVector(float degrees, float minDist, float maxDist) {
         return Quaternion.AngleAxis(degrees, Vector3.forward) * Vector3.right * Random.Range(minDist, maxDist);
     }
 
