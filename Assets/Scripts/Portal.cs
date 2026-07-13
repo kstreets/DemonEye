@@ -52,7 +52,7 @@ public class Portal : MonoBehaviour {
             portal.crystalTrans.GetComponent<SpriteRenderer>().enabled = false;
             foreach (Transform fragTrans in portal.crystalFragments) {
                 fragTrans.gameObject.SetActive(true);
-                Vector3 endPos = fragTrans.position + Game.RotationVector(Random.Range(0f, 360f), 0.25f, 0.65f);
+                Vector3 endPos = fragTrans.position + Game.RotationVector(Random.Range(0f, 360f), 0.15f, 0.25f);
                 AddBounceEffect(fragTrans, endPos, 0.9f);
             }
             

@@ -112,6 +112,9 @@ public class AutoTilePlacementWindow : EditorWindow {
         
         Undo.RecordObject(backgroundTilemap, "BackgroundTilemap Collision Placement");
         
+        backgroundTilemap.ClearAllTiles();
+        backgroundTilemap.CompressBounds();
+        
         const int tilemapExpansion = 5;
         BoundsInt dims = GetTilemapDimensions();
         

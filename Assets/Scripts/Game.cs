@@ -51,6 +51,7 @@ public partial class Game : MonoBehaviour {
     [NonSerialized] public PersistentFlags persistentFlags;
 
     private void Start() {
+        Application.targetFrameRate = 60;
         gameInstance = this;
         InitGame();
     }
