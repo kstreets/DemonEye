@@ -6,7 +6,6 @@ using PrimeTween;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Pool;
-using UnityEngine.UI;
 using static GameData;
 using Random = UnityEngine.Random;
 
@@ -349,7 +348,7 @@ public partial class Game {
             else {
                 int eyeUpgradeCount = GetInventoryItemCount(inventories.eyeForge) - 1;
                 int totalUpgradeCount = inventories.eyeForge.slots.Length - 1;
-                detailsText.text = $"Previewing Upgrades {ColorText(eyeUpgradeCount.ToString(), Styles.instance.timeDescColor)}/{totalUpgradeCount}";
+                detailsText.text = $"Previewing Upgrades {ColorText(eyeUpgradeCount.ToString(), config.styles.timeDescColor)}/{totalUpgradeCount}";
             }
             
             using var _ = ListPool<int>.Get(out var uuids);

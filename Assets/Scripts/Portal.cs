@@ -20,6 +20,7 @@ public class Portal : MonoBehaviour {
     public SpriteRenderer openPortalSpriteRenderer;
     public float presentDelay;
     public float rotationSpeed;
+    public AnimationCurve openPortalAnimationCurve; 
     
     private float rotation;
     private Limiter presentLimiter;
@@ -53,14 +54,15 @@ public class Portal : MonoBehaviour {
             foreach (Transform fragTrans in portal.crystalFragments) {
                 fragTrans.gameObject.SetActive(true);
                 Vector3 endPos = fragTrans.position + Game.RotationVector(Random.Range(0f, 360f), 0.15f, 0.25f);
-                AddBounceEffect(fragTrans, endPos, 0.9f);
+                AddBounceEffect(fragTrans, endPos, 0.8f);
             }
             
             portal.openPortalSpriteRenderer.gameObject.SetActive(true);
             portal.StartAnimating();
             portal.state = State.Open;
         });
-        openCloseSequence.Chain(Tween.Custom(this, 0f, 1f, 2f, ease: Ease.InOutCubic, onValueChange: static (portal, comp) => {
+        openCloseSequence.Chain(Tween.Custom(this, 0f, 1f, 2f, onValueChange: static (portal, comp) => {
+            comp = portal.openPortalAnimationCurve.Evaluate(comp);
             portal.openPortalSpriteRenderer.material.SetFloat(fillId, comp);
         }));
         

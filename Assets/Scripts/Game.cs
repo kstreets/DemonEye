@@ -51,7 +51,6 @@ public partial class Game : MonoBehaviour {
     [NonSerialized] public PersistentFlags persistentFlags;
 
     private void Start() {
-        Application.targetFrameRate = 60;
         gameInstance = this;
         InitGame();
     }
@@ -276,7 +275,7 @@ public partial class Game : MonoBehaviour {
 
         if (curRaid.stateSwitchedThisFrame && curRaid.state == RaidState.PostFinalWave) {
             Tween.Delay(0.25f, static () => {
-                gameInstance.AnimateLargeRaidText(ColorText("Map Cleared!", Styles.instance.increaseDescColor), 1.8f);
+                gameInstance.AnimateLargeRaidText(ColorText("Map Cleared!", gameInstance.config.styles.increaseDescColor), 1.8f);
                 bool spawnedOk = gameInstance.SpawnFinalExitPortal();
                 if (!spawnedOk) { // This is a fail safe incase we couldn't spawn the final portal
                     gameInstance.states.gameStateMachine.SetState(gameInstance.states.winExit);
@@ -374,7 +373,7 @@ public partial class Game : MonoBehaviour {
             camera.pixelPerfect.assetsPPU = (int)val;
         }, Ease.InOutQuad));
 
-        sequence.Group(Tween.Delay(0.25f, () => AnimateLargeRaidText(ColorText("YOU DIED", Styles.instance.decreaseDescColor), 1f)));
+        sequence.Group(Tween.Delay(0.25f, () => AnimateLargeRaidText(ColorText("YOU DIED", gameInstance.config.styles.decreaseDescColor), 1f)));
         
         sequence.ChainDelay(1f);
         
@@ -445,7 +444,7 @@ public partial class Game : MonoBehaviour {
         ui.deathBgImage.fillAmount = 1f;
         sequence.Chain(Tween.Alpha(ui.deathBgImage, 0f, 1f, 0.75f, Ease.InOutQuad));
         
-        sequence.Group(Tween.Delay(0.35f, () => AnimateLargeRaidText(ColorText("EARLY EXIT TAKEN", Styles.instance.increaseDescColor), 3.8f)));
+        sequence.Group(Tween.Delay(0.35f, () => AnimateLargeRaidText(ColorText("EARLY EXIT TAKEN", gameInstance.config.styles.increaseDescColor), 3.8f)));
         
         ui.animatedBgImage.gameObject.SetActive(true);
         ui.animatedBgImage.color = new(1f, 1f, 1f, 0f);

@@ -3,6 +3,7 @@ using UnityEngine.UI;
 
 public class InventorySlotUI : MonoBehaviour {
 
+    public Styles styles;
     public bool disallowItemStacking;
     public ItemType onlyAcceptedItemType;
     public Image slotImage;
@@ -68,18 +69,18 @@ public class InventorySlotUI : MonoBehaviour {
     public void ToggleOutOfStock() {
         itemUI.ToggleOutOfStock();
         overlayImage.gameObject.SetActive(true);
-        overlayImage.color = Styles.instance.grayedOutOverlay;
+        overlayImage.color = styles.grayedOutOverlay;
     }
     
     public void ToggleGray() {
         itemUI.ToggleGray();
         overlayImage.gameObject.SetActive(true);
-        overlayImage.color = Styles.instance.grayedOutOverlay;
+        overlayImage.color = styles.grayedOutOverlay;
     }
     
     public void SetSelectionUnderlay() {
         underlayImage.gameObject.SetActive(true);
-        underlayImage.color = Styles.instance.selectedUnderlay;
+        underlayImage.color = styles.selectedUnderlay;
     }
     
     public void ClearSelectionUnderlay() {

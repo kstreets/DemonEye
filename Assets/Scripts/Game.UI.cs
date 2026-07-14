@@ -118,14 +118,14 @@ public partial class Game {
         hideoutTabs.questsButton.image.sprite = tabNonSelectedSprite;
         hideoutTabs.skillsButton.image.sprite = tabNonSelectedSprite;
         
-        hideoutTabs.characterText.margin = Styles.instance.nonSelectedHideoutTabMargin;
-        hideoutTabs.eyeForgeText.margin = Styles.instance.nonSelectedHideoutTabMargin;
-        hideoutTabs.traderText.margin = Styles.instance.nonSelectedHideoutTabMargin;
-        hideoutTabs.questsText.margin = Styles.instance.nonSelectedHideoutTabMargin;
-        hideoutTabs.skillsText.margin = Styles.instance.nonSelectedHideoutTabMargin;
+        hideoutTabs.characterText.margin = config.styles.nonSelectedHideoutTabMargin;
+        hideoutTabs.eyeForgeText.margin = config.styles.nonSelectedHideoutTabMargin;
+        hideoutTabs.traderText.margin = config.styles.nonSelectedHideoutTabMargin;
+        hideoutTabs.questsText.margin = config.styles.nonSelectedHideoutTabMargin;
+        hideoutTabs.skillsText.margin = config.styles.nonSelectedHideoutTabMargin;
         
         button.image.sprite = tabSelectedSprite;
-        text.margin = Styles.instance.selectedHideoutTabMargin;
+        text.margin = config.styles.selectedHideoutTabMargin;
     }
 
     private void ToggleHideoutPanels(params RectTransform[] panels) {
@@ -171,10 +171,10 @@ public partial class Game {
         
         float overweightComp = GetOverweightCompletion();
         if (overweightComp > 0f) {
-            playerInfo.weightBarFillImage.color = Color.Lerp(Styles.instance.startingOverWeightColor, Styles.instance.endingOverWeightColor, overweightComp);
+            playerInfo.weightBarFillImage.color = Color.Lerp(config.styles.startingOverWeightColor, config.styles.endingOverWeightColor, overweightComp);
         }
         else {
-            playerInfo.weightBarFillImage.color = Styles.instance.underWeightColor;
+            playerInfo.weightBarFillImage.color = config.styles.underWeightColor;
         }
         
         if (curRaid.stateSwitchedThisFrame) {
@@ -190,7 +190,7 @@ public partial class Game {
                 raidInfo.exitPortalActiveNotifier.SetActive(false);
                 raidInfo.finalWaveActiveNotifier.SetActive(true);
                 Tween.Scale(raidInfo.finalWaveActiveNotifier.transform, 0f, 1f, 0.5f, Ease.OutBack);
-                AnimateSmallRaidText(ColorText("Final Wave", Styles.instance.decreaseDescColor));
+                AnimateSmallRaidText(ColorText("Final Wave", config.styles.decreaseDescColor));
             }
             else if (curRaid.state == RaidState.PostFinalWave) {
                 raidInfo.finalWaveActiveNotifier.SetActive(false);
@@ -216,7 +216,7 @@ public partial class Game {
         GetEncumberingWeightRange(out int startEncumberingWeight, out _);
         playerPanel.weightText.text = $"<color=#98C5CC>{inventoryWeight}</color><size=22>/{startEncumberingWeight}";
         
-        Color boostedColor = Styles.instance.increaseDescColor;
+        Color boostedColor = config.styles.increaseDescColor;
         EquipedStatsPanel equipedStatsPanel = playerPanel.equipedStatsPanel;
         
         equipedStatsPanel.bleedResistText.text = Boosted(PlayerStat.BleedResist) ? 
@@ -329,16 +329,16 @@ public partial class Game {
         const float alpha = 0.68f;
         switch (damageColor) {
             case DamageColor.Normal:
-                damageNumber.textMesh.color = Styles.instance.normalDamageColor.Alpha(alpha);
+                damageNumber.textMesh.color = config.styles.normalDamageColor.Alpha(alpha);
                 break;
             case DamageColor.Crit:
-                damageNumber.textMesh.color = Styles.instance.critDamageColor.Alpha(alpha);
+                damageNumber.textMesh.color = config.styles.critDamageColor.Alpha(alpha);
                 break;
             case DamageColor.Blood:
-                damageNumber.textMesh.color = Styles.instance.bleedDamageColor.Alpha(alpha);
+                damageNumber.textMesh.color = config.styles.bleedDamageColor.Alpha(alpha);
                 break;
             case DamageColor.Poison:
-                damageNumber.textMesh.color = Styles.instance.poisonDamageColor.Alpha(alpha);
+                damageNumber.textMesh.color = config.styles.poisonDamageColor.Alpha(alpha);
                 break;
         }
 
@@ -374,7 +374,7 @@ public partial class Game {
     private void SpawnTextPopIn(Vector3 spawnPos, string text, Vector3? endPos = default) {
         Entity textEntity = SpawnEntity(entityPools.damageNumber, spawnPos, Quaternion.identity, ui.damageNumbersParent);
         textEntity.textMesh.text = text; 
-        textEntity.textMesh.color = Styles.instance.popInTextColor;
+        textEntity.textMesh.color = config.styles.popInTextColor;
         
         float moveDuration = Random.Range(0.37f, 0.4f);
         const float scaleUpDuration = 0.25f;
@@ -515,7 +515,7 @@ public partial class Game {
         ui.interactionDetails.text = detailsString;
         
         ui.interactPrompt.gameObject.SetActive(true);
-        ui.interactPrompt.text = $"<sprite=5 color=#{ColorUtility.ToHtmlStringRGBA(Styles.instance.inputIconTint)}>";
+        ui.interactPrompt.text = $"<sprite=5 color=#{ColorUtility.ToHtmlStringRGBA(config.styles.inputIconTint)}>";
         ui.interactPrompt.transform.position = camera.main.WorldToScreenPoint(position);
     }
     

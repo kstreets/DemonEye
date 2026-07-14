@@ -24,15 +24,15 @@ MonoBehaviour:
   mapSpawning:
     spawnsOnAll: 0
     firstSpawnMap: {fileID: 0}
-    spawnsOnMaps:
-    - {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
-    - {fileID: 11400000, guid: e77fcebe0e13696458bf0cfbacf93e5d, type: 2}
+    spawnsOnMaps: []
   traderSpawning:
     levelRequired: 0
     stockRange: {x: 1, y: 1}
     barterRequirements: []
-  rarity: 4
-  dropOrigins: []
+  rarity: 0
+  dropOrigins:
+  - dropPool: {fileID: 11400000, guid: b58674038c45b004cb3685c82e51b6d7, type: 2}
+    chanceToSpawn: 1
   modifiesStats: 0
   critChance: 0
   critMultiplier: 0

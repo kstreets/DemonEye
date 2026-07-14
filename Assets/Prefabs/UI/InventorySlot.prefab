@@ -92,6 +92,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f4fd733fb943b1499e1aac57646d6f8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  styles: {fileID: 11400000, guid: f4b4ae74a1e122340bf1d9d4fa5ab586, type: 2}
   disallowItemStacking: 0
   onlyAcceptedItemType: {fileID: 0}
   slotImage: {fileID: 2399182519088167438}

@@ -4,6 +4,7 @@ using UnityEngine.UI;
 
 public class ItemUI : MonoBehaviour {
     
+    public Styles styles;
     public RectTransform rectTransform;
     public Image image;
     public TextMeshProUGUI countText;
@@ -35,12 +36,12 @@ public class ItemUI : MonoBehaviour {
     }
 
     public void ToggleGray() {
-        image.color = Styles.instance.grayedOutItemTint;
+        image.color = styles.grayedOutItemTint;
     }
     
     public void ToggleOutOfStock() {
         ToggleGray();
-        countText.color = Styles.instance.outOfStockCountColor;
+        countText.color = styles.outOfStockCountColor;
     }
     
 }
