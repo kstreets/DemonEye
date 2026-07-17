@@ -1702,7 +1702,7 @@ GameObject:
   - component: {fileID: 220461201}
   - component: {fileID: 220461200}
   m_Layer: 5
-  m_Name: InteractDetailsText
+  m_Name: InteractionDetailsText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1724,8 +1724,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: 0, y: 153.44998}
-  m_SizeDelta: {x: 0, y: 50}
+  m_AnchoredPosition: {x: 0, y: 155}
+  m_SizeDelta: {x: 0, y: 24.01001}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!114 &220461200
 MonoBehaviour:
@@ -1774,8 +1774,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 28
-  m_fontSizeBase: 28
+  m_fontSize: 25
+  m_fontSizeBase: 25
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -16105,15 +16105,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1928052447148552071, guid: 75ca691462fd6af468ac75e3d86cc0a2, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.75
+      value: 0.7200001
       objectReference: {fileID: 0}
     - target: {fileID: 1928052447148552071, guid: 75ca691462fd6af468ac75e3d86cc0a2, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.75
+      value: 0.7200001
       objectReference: {fileID: 0}
     - target: {fileID: 1928052447148552071, guid: 75ca691462fd6af468ac75e3d86cc0a2, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.75
+      value: 0.7200001
       objectReference: {fileID: 0}
     - target: {fileID: 1928052447148552071, guid: 75ca691462fd6af468ac75e3d86cc0a2, type: 3}
       propertyPath: m_LocalPosition.x
@@ -16269,27 +16269,35 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5966108048115802849, guid: 75ca691462fd6af468ac75e3d86cc0a2, type: 3}
       propertyPath: m_Type
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5966108048115802849, guid: 75ca691462fd6af468ac75e3d86cc0a2, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 896199210, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
+      objectReference: {fileID: -569167892, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
     - target: {fileID: 5966108048115802849, guid: 75ca691462fd6af468ac75e3d86cc0a2, type: 3}
       propertyPath: m_Color.a
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5966108048115802849, guid: 75ca691462fd6af468ac75e3d86cc0a2, type: 3}
       propertyPath: m_Color.b
-      value: 0.1137255
+      value: 0.14509805
       objectReference: {fileID: 0}
     - target: {fileID: 5966108048115802849, guid: 75ca691462fd6af468ac75e3d86cc0a2, type: 3}
       propertyPath: m_Color.g
-      value: 0.121568635
+      value: 0.14901961
       objectReference: {fileID: 0}
     - target: {fileID: 5966108048115802849, guid: 75ca691462fd6af468ac75e3d86cc0a2, type: 3}
       propertyPath: m_Color.r
-      value: 0.13725491
+      value: 0.18431373
+      objectReference: {fileID: 0}
+    - target: {fileID: 5966108048115802849, guid: 75ca691462fd6af468ac75e3d86cc0a2, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5966108048115802849, guid: 75ca691462fd6af468ac75e3d86cc0a2, type: 3}
+      propertyPath: m_PixelsPerUnitMultiplier
+      value: 0.72
       objectReference: {fileID: 0}
     - target: {fileID: 7581876355067969287, guid: 75ca691462fd6af468ac75e3d86cc0a2, type: 3}
       propertyPath: m_AnchorMax.y
@@ -22406,7 +22414,7 @@ MonoBehaviour:
     lootInventoryParent: {fileID: 1563041425724041498}
     lootSearchingText: {fileID: 1145156491}
     interactPrompt: {fileID: 1296663433}
-    interactionDetails: {fileID: 220461200}
+    interactDetails: {fileID: 220461200}
     portalArrow: {fileID: 492797813}
     damageNumbersParent: {fileID: 764777864}
   playerInfo:

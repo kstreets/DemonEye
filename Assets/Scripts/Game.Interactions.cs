@@ -35,9 +35,10 @@ public partial class Game {
                 ItemDrop itemDrop = col.GetComponent<ItemDrop>();
                 ui.itemDescPopupPickup.Show(itemDrop.ItemInstance);
                 
-                // Color itemColor = config.styles.GetColorForRarity(dropItemRef.GetRarity());
-                // string details = ColorText($"{dropItemRef.displayName} x{itemDrop.ItemInstance.count}", itemColor);
-                // EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), details);
+                Item dropItemRef = itemDrop.ItemInstance.ItemRef;
+                Color itemColor = config.styles.GetColorForRarity(dropItemRef.GetRarity());
+                string details = ColorText($"{dropItemRef.displayName} x{itemDrop.ItemInstance.count}", itemColor);
+                EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), details);
                 
                 if (input.interact.WasPressedThisFrame()) {
                     InventoryAddResult result = TryAddItemToInventory(inventories.player, itemDrop.ItemInstance);

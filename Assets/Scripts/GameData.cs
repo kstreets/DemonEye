@@ -140,7 +140,7 @@ public class GameData {
         public RectTransform lootInventoryParent;
         public GameObject lootSearchingText;
         public TextMeshProUGUI interactPrompt;
-        public TextMeshProUGUI interactionDetails;
+        public TextMeshProUGUI interactDetails;
         public RectTransform portalArrow;
         public RectTransform damageNumbersParent;
     }

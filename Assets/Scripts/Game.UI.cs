@@ -101,7 +101,7 @@ public partial class Game {
         HideInventoryItemPopup(); 
         HideUIElementPopup();
         ui.interactPrompt.gameObject.SetActive(false);
-        ui.interactionDetails.gameObject.SetActive(false);
+        ui.interactDetails.gameObject.SetActive(false);
         playerInfo.parent.gameObject.SetActive(false);
         raidInfo.parent.SetActive(false);
         ui.portalArrow.gameObject.SetActive(false);
@@ -511,8 +511,8 @@ public partial class Game {
     }
 
     private void EnableInteractionPrompt(Vector3 position, string detailsString) {
-        ui.interactionDetails.gameObject.SetActive(true);
-        ui.interactionDetails.text = detailsString;
+        ui.interactDetails.gameObject.SetActive(true);
+        ui.interactDetails.text = detailsString;
         
         ui.interactPrompt.gameObject.SetActive(true);
         ui.interactPrompt.text = $"<sprite=5 color=#{ColorUtility.ToHtmlStringRGBA(config.styles.inputIconTint)}>";
@@ -521,7 +521,7 @@ public partial class Game {
     
     private void DisableInteractionPrompt() {
         ui.interactPrompt.gameObject.SetActive(false);
-        ui.interactionDetails.gameObject.SetActive(false);
+        ui.interactDetails.gameObject.SetActive(false);
         
     }
 
