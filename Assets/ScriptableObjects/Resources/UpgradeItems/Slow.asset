@@ -51,5 +51,5 @@ MonoBehaviour:
   weight: 0
   description: 
   relativeMechanicDesc: {fileID: 0}
-  speedReductionPercent: 0.3
+  speedReductionPercent: 0.6
   slowDuration: 3

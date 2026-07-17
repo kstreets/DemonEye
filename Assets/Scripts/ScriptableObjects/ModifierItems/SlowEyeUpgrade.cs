@@ -6,8 +6,8 @@ public class SlowEyeUpgrade : EyeUpgrade {
     
     public struct InstanceData {
         public float speedReductionPercent;
-        public float activationTime;
         public float duration;
+        public float timeSpentSlowed;
     }
     
     public float speedReductionPercent;
@@ -17,7 +17,6 @@ public class SlowEyeUpgrade : EyeUpgrade {
         InstanceData slow = new() {
             speedReductionPercent = GetSpeedReduction(stackCount),
             duration = slowDuration,
-            activationTime = Time.time,
         };
         enemy.slow = slow;
     }

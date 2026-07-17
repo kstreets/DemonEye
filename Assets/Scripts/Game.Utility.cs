@@ -202,6 +202,12 @@ public partial class Game {
         return ColorText($"{time:0.0#}<space=0.12em>s", gameInstance.config.styles.timeDescColor);
     }
     
+    public static string DisplayDistance(float dist) {
+        float distPerUnit = gameInstance.config.gameplay.distancePerUnit;
+        float unitDist =  dist / distPerUnit;
+        return ColorText($"{unitDist:0.0}<space=0.12em>m", gameInstance.config.styles.timeDescColor);
+    }
+    
     public static int TaperInteger(int value, int stackCount, float taper) {
         Assert.IsFalse(taper >= 1f && taper <= 0f, "Taper needs to be between 0 and 1");
         return Mathf.RoundToInt(value * Mathf.Pow(stackCount, taper));

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using PrimeTween;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Pool;
@@ -32,6 +33,7 @@ public partial class Game {
         public BleedEyeUpgrade.InstanceData? bleed;
         public PoisonEyeUpgrade.InstanceData? poison;
         public SlowEyeUpgrade.InstanceData? slow;
+        public KnockBackAugment.InstanceData? knockBack;
         public Vector2 moveDir;
         public Vector2 graphicalDir;
         public Limiter changeDirLimiter;
@@ -203,12 +205,32 @@ public partial class Game {
     
     private void MoveEnemy(Enemy enemy, bool isAttacking) {
         float speed = enemy.data.speed;
+        
+        if (enemy.knockBack.TryGetValue(out var knockBack)) {
+            knockBack.timeSpentInKnockBack += Time.fixedDeltaTime;
+            enemy.knockBack = knockBack; // Apply changes
+            
+            float duration = knockBack.knockBackDist / knockBack.knockBackSpeed;
+            float comp = Mathf.Clamp01(knockBack.timeSpentInKnockBack / duration);
+            
+            // Take the derivative of ease-out function (distance over time) which gives us the velocity at that point 
+            float velocity = 2f * (1f - comp);
+            enemy.rigidbody.linearVelocity = knockBack.dir * velocity;
+            
+            if (comp >= 1f) {
+                enemy.knockBack = null;
+            }
+            return;
+        }
             
         float totalSlowPercentage = 0f;
         if (enemy.slow.TryGetValue(out var slow)) {
+            slow.timeSpentSlowed += Time.fixedDeltaTime;
+            enemy.slow = slow; // Apply changes
+            
             totalSlowPercentage += slow.speedReductionPercent;
             enemy.rigidbody.mass = enemySlowedMass;
-            if (Time.time > slow.activationTime + slow.duration) {
+            if (slow.timeSpentSlowed >= slow.duration) {
                 enemy.rigidbody.mass = enemy.data.defualtMass;
                 enemy.slow = null;
             }
