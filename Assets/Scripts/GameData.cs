@@ -349,7 +349,6 @@ public class GameData {
     
     public class Resources {
         public Dictionary<int, UuidScriptableObject> lookup = new();
-        public Dictionary<EyeUpgrade, List<Synergy>> syergiesForEyeUpgrade = new();
         public List<Item> items = new();
         public List<DropPool> dropPools = new();
         public List<DropPool> globalDropPools = new();

@@ -12,7 +12,6 @@ public partial class Game {
         None                        = 1 << 0, 
         Trishot                     = 1 << 1, 
         BackwardsShot               = 1 << 2, 
-        BoneFragmentThatCausesBleed = 1 << 3,
     }
     
     public class Projectile : Entity {

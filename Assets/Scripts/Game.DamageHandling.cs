@@ -45,10 +45,6 @@ public partial class Game {
         and will return out of the method before anything a default projectile can trigger
         */
         
-        if (projectile.typeFlags.HasFlag(ProjectileTypeFlags.BoneFragmentThatCausesBleed)) {
-            projectile.eyeInstanceSpawnedFrom.GetUpgradeInstance<BleedEyeUpgrade>().ApplyToEnemy(enemy);
-        }
-        
         if (projectile.flatDamage.HasValue) {
             DamageEnemy(enemy, projectile.flatDamage.Value, false);
             return;
@@ -76,9 +72,6 @@ public partial class Game {
         }
         foreach (EquipedAugmentInstance augmentInstance in eyeInstance.augmentInstances) {
             augmentInstance.ApplyToEnemy(enemy);
-        }
-        foreach (EquipedSynergyInstance synergyInstance in eyeInstance.synergyInstances) {
-            synergyInstance.ApplyToEnemy(enemy);
         }
         
         if (eyeInstance.explosion.TryGetValue(out var explosion) && RollProbability(explosion.probability)) {
@@ -113,11 +106,9 @@ public partial class Game {
                 float randomSpeedScaler = Random.Range(0.4f, 0.6f);
                 Vector2 boneShatterVelocity = RandomizeVectorAngle(projectile.velocity * randomSpeedScaler, 65f);
                 int boneDamage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(enemy) * boneShatter.perShardDamageMulti);
-                ProjectileTypeFlags flags = demonEye.equiped.bloodyBonesSynergy.HasValue ? 
-                                            ProjectileTypeFlags.BoneFragmentThatCausesBleed : ProjectileTypeFlags.None;
                 Projectile boneShatterProj = SpawnProjectile(
                     entityPools.boneShatterProjectile, enemy.position, boneShatterVelocity, boneShatter.lifeTime, player,
-                    rotation: RandomRotation(), spawnDelay: randomDelay, flatDamage: boneDamage, typeFlags: flags
+                    rotation: RandomRotation(), spawnDelay: randomDelay, flatDamage: boneDamage
                 );
                 ProjectileMarkEntityToIgnore(boneShatterProj, enemy);
             }

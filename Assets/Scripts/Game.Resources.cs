@@ -20,11 +20,6 @@ public partial class Game {
             if (resObject is Augment augment) {
                 augment.CreateAugmentItemFromDerived();
             }
-            if (resObject is Synergy synergy) {
-                foreach (EyeUpgrade eyeUpgrade in synergy.amongUpgrades) {
-                    res.syergiesForEyeUpgrade.AddToKeyList(eyeUpgrade, synergy);
-                }
-            }
         }
     }
     

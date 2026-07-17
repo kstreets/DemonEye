@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using NUnit.Framework;
-using UnityEngine;
 using UnityEngine.Pool;
 
 public partial class Game {
@@ -23,17 +22,9 @@ public partial class Game {
         public void ApplyToEye(DemonEyeInstance eyeInstance) => Augment.AddInstanceToEye(eyeInstance, stackCount);
     }
     
-    public struct EquipedSynergyInstance {
-        public int uuid;
-        public Synergy Synergy => gameInstance.res.lookup[uuid] as Synergy;
-        public void ApplyToEnemy(Enemy enemy) => Synergy.AddInstanceToEnemy(enemy);
-        public void ApplyToEye(DemonEyeInstance eyeInstance) => Synergy.AddInstanceToEye(eyeInstance);
-    }
-    
     public class DemonEyeInstance {
         public List<EquipedUpgradeInstance> upgradeInstances = new();
         public List<EquipedAugmentInstance> augmentInstances = new();
-        public List<EquipedSynergyInstance> synergyInstances = new();
         
         public FirerateEyeUpgrade.InstanceData? firerate;
         public TrishotEyeUpgrade.InstanceData? trishot;
@@ -54,8 +45,6 @@ public partial class Game {
         public DoubleTapAugment.InstanceData? doubleTapAugment;
         public BackwardsPiercingAugment.InstanceData? backwardsPiercingAugment;
         public MultiProjectileCritAugment.InstanceData? multiProjectileCritAugment;
-        
-        public BloodyBonesSynergy.InstanceData? bloodyBonesSynergy;
         
         public EquipedUpgradeInstance GetUpgradeInstance<T>() where T : EyeUpgrade {
             foreach (EquipedUpgradeInstance upgradeInstance in upgradeInstances) {
@@ -99,40 +88,7 @@ public partial class Game {
         foreach (ItemInstance upgradeInstance in eyeUpgradeItemInstances) {
             demonEyeItem.nestedUuids.Add(upgradeInstance.itemOrInstanceUuid);
         }
-        
-        using var _ = ListPool<(Synergy, float)>.Get(out var weightedSynergyList);
-        
-        using (HashSetPool<Synergy>.Get(out var possibleSynergies)) {
-            // Get all possible synergies given the eye upgrades 
-            foreach (int nestedUuid in demonEyeItem.nestedUuids) {
-                // We want the eye upgrade itself or the augment's derived from eye upgrade 
-                if (!ExtractUpgradeAndAugment(res.lookup[nestedUuid], out var eyeUpgrade, out var _)) continue;
-                if (!res.syergiesForEyeUpgrade.TryGetValue(eyeUpgrade, out var synergies)) continue;
-                foreach (Synergy synergy in synergies) {
-                    possibleSynergies.Add(synergy);
-                }
-            }
-        
-            // Remove any existing synergies from the possible synergies pool
-            DemonEyeInstance curInstance = demonEye.instanceFromItemId[demonEyeItem.itemOrInstanceUuid];
-            foreach (EquipedSynergyInstance synergyInstance in curInstance.synergyInstances) {
-                possibleSynergies.Remove(synergyInstance.Synergy);
-            }
-        
-            foreach (Synergy possibleSynergy in possibleSynergies) {
-                weightedSynergyList.Add((possibleSynergy, possibleSynergy.probability));
-            }
-        }
-        
-        Synergy chosenSynergy = PerformWieghtedPick(weightedSynergyList);
-        if (chosenSynergy != null) {
-            demonEyeItem.nestedUuids.Add(chosenSynergy.uuid);
-        }
-        else {
-            // I'm assuming atm every time we upgrade the eye, it should at least get something
-            Debug.Log("DemonEye upgrade did not provide any special power");
-        }
-        
+
         DemonEyeInstance demonEyeInstance = CreateDemonEyeInstance(demonEyeItem);
         RegisterDemonEyeInstance(demonEyeItem, demonEyeInstance);
     }
@@ -146,7 +102,6 @@ public partial class Game {
     private DemonEyeInstance CreateDemonEyeInstance(ItemInstance demonEyeItem) {
         List<EquipedUpgradeInstance> equipedUpgrades = new();
         List<EquipedAugmentInstance> equipedAugments = new();
-        List<EquipedSynergyInstance> equipedSynergies = new();
         EyeUpgradeSet eyeUpgradeSet = EyeUpgradeSetFromIds(demonEyeItem.nestedUuids);
         
         foreach (EyeUpgradeSet.Element upgradeSetElm in eyeUpgradeSet.elements) {
@@ -165,14 +120,9 @@ public partial class Game {
             }
         }
         
-        foreach (Synergy synergy in eyeUpgradeSet.synergies) {
-            equipedSynergies.Add(new() { uuid = synergy.uuid });
-        }
-        
         DemonEyeInstance newDemonEye = new() {
             upgradeInstances = equipedUpgrades,
             augmentInstances = equipedAugments,
-            synergyInstances = equipedSynergies,
         };
         
         foreach (EquipedUpgradeInstance upgradeInstance in equipedUpgrades) { 
@@ -180,9 +130,6 @@ public partial class Game {
         }
         foreach (EquipedAugmentInstance augmentInstance in equipedAugments) { 
             augmentInstance.ApplyToEye(newDemonEye); 
-        }
-        foreach (EquipedSynergyInstance synergyInstance in equipedSynergies) { 
-            synergyInstance.ApplyToEye(newDemonEye); 
         }
         
         return newDemonEye;
@@ -206,7 +153,6 @@ public partial class Game {
         }
         
         public List<Element> elements = new();
-        public List<Synergy> synergies = new();
     }
     
     private EyeUpgradeSet _eyeUpgradeSet = new();
@@ -217,7 +163,6 @@ public partial class Game {
             GenericPool<EyeUpgradeSet.Element>.Release(element);
         }
         _eyeUpgradeSet.elements.Clear();
-        _eyeUpgradeSet.synergies.Clear();
         
         using var autoRelease1 = DictionaryPool<EyeUpgrade, int>.Get(out var upgradeCountFromItem);
         // Need to release manually because we need to release its value dictionaries first
@@ -225,11 +170,6 @@ public partial class Game {
         
         foreach (int uuid in uuids) {
             UuidScriptableObject nestedObject = res.lookup[uuid];
-            
-            if (nestedObject is Synergy synergy) {
-                _eyeUpgradeSet.synergies.Add(synergy); 
-                continue;
-            }
             
             ExtractUpgradeAndAugment(nestedObject, out EyeUpgrade upgrade, out Augment augment);
             
@@ -252,8 +192,6 @@ public partial class Game {
                 }
             }
         }
-        
-        _eyeUpgradeSet.synergies.Sort(static (x, y) => x.probability.CompareTo(y.probability));
         
         using var autoRelease2 = ListPool<(EyeUpgrade, int)>.Get(out var sortedUpgradeList);
         SortUpgradesFromDictionaryIntoList(upgradeCountFromItem, sortedUpgradeList);
