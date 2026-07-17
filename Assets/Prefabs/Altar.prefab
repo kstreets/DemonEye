@@ -142,7 +142,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb8969b1a9aa2164f843081a15d57842, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridObstacle
+  mode: 0
+  carvingCollider: {fileID: 5064871899784422863}
   cellRadius: 1
+  localOffset: {x: 0, y: 0}
 --- !u!1 &6958207693322117433
 GameObject:
   m_ObjectHideFlags: 0
@@ -237,5 +240,5 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: -0.051540077}
-  m_Radius: 0.14073485
+  m_Offset: {x: 0, y: -0.0499171}
+  m_Radius: 0.13006282

@@ -141,4 +141,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb8969b1a9aa2164f843081a15d57842, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridObstacle
+  mode: 0
+  carvingCollider: {fileID: 1758194713277359251}
   cellRadius: 1
+  localOffset: {x: 0, y: 0}

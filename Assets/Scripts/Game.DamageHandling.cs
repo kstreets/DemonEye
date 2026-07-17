@@ -127,8 +127,8 @@ public partial class Game {
             return;
         }
                 
-        if (entity.obstacleCellRadius > 0) {
-            curRaid.mapInstance.grid.ClearObstacle(entity.obstaclePosition, entity.obstacleCellRadius);
+        if (entity.gridObstacleRadius > 0) {
+            curRaid.mapInstance.grid.ClearObstacle(entity.gridObstaclePos, entity.gridObstacleRadius);
         }
             
         Entity smokeEntity = SpawnEntity<Entity>(prefabs.rockSmokePrefab, entity.position, Quaternion.identity);

@@ -57,8 +57,9 @@ public partial class Game {
         public readonly MaterialPropertyBlock matPropertyBlock = new();
         public IEntityPooler entityPool;
         public int health;
-        public int obstacleCellRadius;
-        public Vector2 obstaclePosition;
+        
+        public Vector2 gridObstaclePos;
+        public int gridObstacleRadius;
 
         public int delayedDamage;
         public bool delayedDamageIsCrit;

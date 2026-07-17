@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using PrimeTween;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -104,8 +105,8 @@ public partial class Game {
             GameObject prefab = resourceSpawn.GetPrefabToSpawn();
             if (!prefab) continue;
             
-            int obstacleCellRadius = prefab.TryGetComponent(out GridObstacle gridObstacle) ? gridObstacle.cellRadius : 0;
-            Entity resourceEntity = SpawnResource<Entity>(prefab, resourceSpawn.transform, obstacleCellRadius);
+            prefab.TryGetComponent(out GridObstacle gridObstacle);
+            Entity resourceEntity = SpawnResource<Entity>(prefab, resourceSpawn.transform, gridObstacle);
 
             switch (resourceEntity.gameObject.tag) {
                 case Tags.Mineable:
@@ -133,12 +134,14 @@ public partial class Game {
         }
     }
     
-    private T SpawnResource<T>(GameObject resourcePrefab, Transform spawnPoint, int obstacleCellRadius = 0) where T : Entity, new() {
+    private T SpawnResource<T>(GameObject resourcePrefab, Transform spawnPoint, [CanBeNull] GridObstacle obstacle) where T : Entity, new() {
         T resource = SpawnEntity<T>(resourcePrefab, spawnPoint.position, spawnPoint.rotation);
-        if (obstacleCellRadius > 0) {
-            curRaid.mapInstance.grid.AddObstacle(resource.position, obstacleCellRadius);
-            resource.obstacleCellRadius = obstacleCellRadius;
-            resource.obstaclePosition = resource.position;
+        if (obstacle != null) {
+            Vector2 obstaclePos = obstacle.Center(spawnPoint.position);
+            int obstacleRadius = obstacle.Radius(curRaid.mapInstance.grid.cellSize);
+            curRaid.mapInstance.grid.AddObstacle(obstaclePos, obstacleRadius);
+            resource.gridObstaclePos = obstaclePos;
+            resource.gridObstacleRadius = obstacleRadius;
         }
         return resource;
     }
