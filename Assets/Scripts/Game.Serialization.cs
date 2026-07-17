@@ -157,6 +157,7 @@ public partial class Game {
         binWriter.Write(itemInstance.count);
         binWriter.Write(itemInstance.isDemonEye);
         SerializeString(binWriter, itemInstance.demonEyeName);
+        binWriter.Write(itemInstance.demonEyeLevel);
     }
     
     private ItemInstance DeserializeItemInstance(BinaryReader binReader) {
@@ -166,6 +167,7 @@ public partial class Game {
             count = binReader.ReadInt32(),
             isDemonEye = binReader.ReadBoolean(),
             demonEyeName = DeserializeString(binReader),
+            demonEyeLevel = binReader.ReadInt32(),
         };
     }
     

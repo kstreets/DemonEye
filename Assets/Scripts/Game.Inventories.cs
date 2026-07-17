@@ -15,6 +15,7 @@ public partial class Game {
         public int count = 1;
         public bool isDemonEye;
         public string demonEyeName;
+        public int demonEyeLevel;
 
         [NonSerialized] public bool notDiscovered;
         [NonSerialized] public bool traderOwned;
@@ -49,6 +50,7 @@ public partial class Game {
                 count = count,
                 isDemonEye = isDemonEye,
                 demonEyeName = demonEyeName,
+                demonEyeLevel = demonEyeLevel,
                 notDiscovered = notDiscovered,
                 traderOwned = traderOwned,
                 traderSlotIndex = traderSlotIndex,
@@ -158,7 +160,7 @@ public partial class Game {
         foreach (ItemInstance itemInstance in itemInstances) {
             if (itemInstance == null) continue;
             if (itemInstance.isDemonEye) {
-                BuildAndRegisterEye(itemInstance);
+                BuildAndRegisterDemonEye(itemInstance);
             }
         }
         
@@ -276,15 +278,16 @@ public partial class Game {
     }
     
     private void ShowInventoryItemPopup(InventoryHoverInfo info) {
-        if (ui.itemDescPopup.gameObject.activeInHierarchy) return;
+        if (ui.itemDescPopupInv.gameObject.activeInHierarchy) return;
         
         InventorySlot hoveredSlot = info.inventory.slots[info.slotIndex];
         
         // Set popup position
         Vector2 popupPosition = Vector2.zero;
         Vector2 hoveredSlotCenter = hoveredSlot.ui.rectTransform.WorldRect().center;
-        float halfPopupWidth = ui.itemDescPopup.rectTransform.rect.width / 2f;
+        float halfPopupWidth = ui.itemDescPopupInv.rectTransform.rect.width / 2f;
         Vector2 popupOffset = new(45 + halfPopupWidth, 40);
+        
         if (hoveredSlotCenter.x < ScreenCenter.x) {
             popupPosition = hoveredSlotCenter + popupOffset;
         }
@@ -292,7 +295,7 @@ public partial class Game {
             popupPosition = hoveredSlotCenter + new Vector2(-popupOffset.x, popupOffset.y);
         }
             
-        ui.itemDescPopup.Show(hoveredSlot.itemInstance, popupPosition);
+        ui.itemDescPopupInv.Show(hoveredSlot.itemInstance, popupPosition);
         
         // Add mechanic desctiption if necessary
         if (hoveredSlot.itemInstance.ItemRef.type == itemTypes.eyeUpgrade) {
@@ -301,7 +304,7 @@ public partial class Game {
                 ui.mechanicDescPopup.gameObject.SetActive(true);
                 ui.mechanicDescPopup.nameText.text = eyeUpgrade.relativeMechanicDesc.displayName;
                 ui.mechanicDescPopup.descText.text = eyeUpgrade.relativeMechanicDesc.description;
-                ui.mechanicDescPopup.transform.position = ui.itemDescPopup.rectTransform.WorldRect().min;
+                ui.mechanicDescPopup.transform.position = ui.itemDescPopupInv.rectTransform.WorldRect().min;
                 
                 ui.mechanicDescPopup.nameFitter.ForceRecalculate();
                 ui.mechanicDescPopup.descFitter.ForceRecalculate();
@@ -316,7 +319,7 @@ public partial class Game {
     }
 
     private void HideInventoryItemPopup() {
-        ui.itemDescPopup.Hide();
+        ui.itemDescPopupInv.Hide();
         ui.mechanicDescPopup.nameText.text = string.Empty;
         ui.mechanicDescPopup.descText.text = string.Empty;
         ui.mechanicDescPopup.gameObject.SetActive(false);
@@ -353,13 +356,9 @@ public partial class Game {
         }
         else if (OnEyeForgeTab) {
             if (hoveredInventory == inventories.stash) {
-                bool hoveredItemIsDemonEye = hoveredItem.ItemRef.type == itemTypes.demonEye;
-                destinationInventory = hoveredItemIsDemonEye ? inventories.player : inventories.eyeForge;
+                destinationInventory = inventories.eyeForge;
             }
             else if (hoveredInventory == inventories.eyeForge) {
-                destinationInventory = inventories.stash;
-            }
-            else if (hoveredInventory == inventories.player) {
                 destinationInventory = inventories.stash;
             }
         }
@@ -982,7 +981,7 @@ public partial class Game {
             foreach (InventorySlot slot in inventories.stash.slots) {
                 if (slot.itemInstance == null) continue;
                 Item item = slot.itemInstance.ItemRef;
-                if (item.type != itemTypes.eye && item.type != itemTypes.eyeUpgrade) {
+                if (item.type != itemTypes.eye && item.type != itemTypes.demonEye && item.type != itemTypes.eyeUpgrade) {
                     slot.ui.ToggleGray();
                 }
             }

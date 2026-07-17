@@ -29,6 +29,10 @@ public class BleedEyeUpgrade : EyeUpgrade {
         enemy.bleed = instance;
     }
 
+    public override void AddInstanceToEye(DemonEyeInstance eyeInstance, int stackCount) {
+        
+    }
+
     protected override string GetUpgradeDescription(int stackCount) {
         return $"{DisplayProb(1f)} chance to inflict bleed, causing {DisplayMultiplier(GetBleedDamageMultiplier(stackCount))} damage initially and per bleed tick ({DisplaySeconds(bleedInterval)})";
     }

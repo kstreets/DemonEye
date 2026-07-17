@@ -20,6 +20,7 @@ public class GameData {
         public Styles styles;
         public GameplayConfig gameplay;
         public Trader trader;
+        public DemonEyeLevels demonEyeLevels;
         public List<MapData> maps;
     }
     
@@ -121,7 +122,8 @@ public class GameData {
     [Serializable] 
     public class UI {
         public RectTransform mainCanvasRectTransform;
-        public ItemDescPopup itemDescPopup;
+        public ItemDescPopup itemDescPopupInv;
+        public ItemDescPopup itemDescPopupPickup;
         public MechanicDescPopup mechanicDescPopup;
         public UIElementPopup uiElementPopup;
         public RectTransform hideoutParent;
@@ -219,7 +221,6 @@ public class GameData {
         public RectTransform panel;
         public RectTransform pentagramParent;
         public Image pentagramFillImage;
-        public Sprite demonEyeSprite;
         public ButtonFeel forgeButton;
         public TextMeshProUGUI flappingNameText;
     }
@@ -348,10 +349,12 @@ public class GameData {
     
     public class Resources {
         public Dictionary<int, UuidScriptableObject> lookup = new();
+        public Dictionary<EyeUpgrade, List<Synergy>> syergiesForEyeUpgrade = new();
         public List<Item> items = new();
         public List<DropPool> dropPools = new();
         public List<DropPool> globalDropPools = new();
         public List<DropPool> mapSpecificDropPools = new();
+        public HashSet<int> takenUuids = new();
     }
     
     public class Inventories {

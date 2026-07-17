@@ -153,6 +153,7 @@ public partial class Game : MonoBehaviour {
         ClosePlayerInventory();
         CloseLootInventory();
         HideInventoryItemPopup();
+        HideInteractionPopup();
         HideUIElementPopup();
         CloseRaidUI();
         StopAmbience();

@@ -82,7 +82,7 @@ public partial class Game {
         
         return dropPool.items[^1];
     }
-
+    
     private void GetUniqueItemsFromDropPool(DropPool dropPool, int maxCount, ref List<Item> items) {
         Assert.IsFalse(dropPool.items.Count == 0, $"No items in drop pool, use {nameof(DropPool.HasItems)} before calling");
 

@@ -300,9 +300,9 @@ public partial class Game {
         if (crucibleItemCount <= 0) {
             crucibleMode = CrucibleMode.Empty;
         }
-        else if (eyeSlotItemInstance != null && eyeSlotItemInstance.ItemRef.type == itemTypes.demonEye) {
-            crucibleMode = CrucibleMode.NeedToRemoveDemonEye;
-        }
+        // else if (eyeSlotItemInstance != null && eyeSlotItemInstance.ItemRef.type == itemTypes.demonEye) {
+        //     crucibleMode = CrucibleMode.NeedToRemoveDemonEye;
+        // }
         else if (eyeSlotItemInstance != null && crucibleItemCount == 1) {
             crucibleMode = CrucibleMode.ForgingButJustEye;
         }
@@ -332,12 +332,13 @@ public partial class Game {
         
         TextMeshProUGUI detailsText = eyeForgeDetailsPanel.text;
         DemonEyeDescList demonEyeDesc = eyeForgeDetailsPanel.demonEyeDesc;
+        ItemInstance eyeSlotItemInstance = inventories.eyeForge.slots[0].itemInstance;
         
         if (crucibleMode == CrucibleMode.Empty) {
             detailsText.text = "Place an eyeball in the center to start the Demon Eye forging process";
             demonEyeDesc.HideAllElements();
         }
-        else if (crucibleMode == CrucibleMode.ForgingButJustEye) {
+        else if (crucibleMode == CrucibleMode.ForgingButJustEye && !eyeSlotItemInstance.isDemonEye) {
             detailsText.text = $"Requires at least {DisplayNumber(1)} eye upgrade to forge a Demon Eye";
             demonEyeDesc.HideAllElements();
         }
@@ -352,6 +353,11 @@ public partial class Game {
             }
             
             using var _ = ListPool<int>.Get(out var uuids);
+            
+            if (eyeSlotItemInstance.isDemonEye) {
+                uuids.AddRange(eyeSlotItemInstance.nestedUuids);
+            }
+            
             foreach (InventorySlot slot in inventories.eyeForge.slots) {
                 if (slot.itemInstance == null || slot.itemInstance.ItemRef.type != itemTypes.eyeUpgrade) continue;
                 uuids.Add(slot.itemInstance.itemOrInstanceUuid);
@@ -368,7 +374,7 @@ public partial class Game {
 
         for (int i = 0; i < inventories.eyeForge.slots.Length; i++) {
             InventorySlot slot = inventories.eyeForge.slots[i];
-            if (slot.ui.OnlyAcceptsType(itemTypes.eye)) {
+            if (slot.ui.AcceptsItemType(itemTypes.eye)) {
                 eyeItemInstance = slot.itemInstance;
                 eyeSlotIndex = i;
             }
@@ -395,6 +401,7 @@ public partial class Game {
             forgeButton.StopKeepPressed();
             forgeButton.text.text = prevButtonText;
             
+            ItemInstance eyeSlotItemInstance = inventories.eyeForge.slots[eyeSlotIndex].itemInstance;
             using var _ = ListPool<ItemInstance>.Get(out var eyeUpgradeItemInstances);
 
             foreach (InventorySlot slot in inventories.eyeForge.slots) {
@@ -404,14 +411,20 @@ public partial class Game {
                 
                 if (slot.itemInstance == null) continue;
                 
-                if (slot.ui.OnlyAcceptsType(itemTypes.eyeUpgrade)) {
+                if (slot.ui.AcceptsItemType(itemTypes.eyeUpgrade)) {
                     eyeUpgradeItemInstances.Add(slot.itemInstance);
                 }
                 slot.itemInstance = null;
             }
             
-            ItemInstance newDemonEye = CreateNewDemonEyeItemInstance(demonEyeName, eyeUpgradeItemInstances);
-            inventories.eyeForge.slots[eyeSlotIndex].itemInstance = newDemonEye;
+            if (eyeSlotItemInstance.isDemonEye) {
+                UpgradeDemonEye(eyeSlotItemInstance, eyeUpgradeItemInstances);
+                inventories.eyeForge.slots[eyeSlotIndex].itemInstance = eyeSlotItemInstance;
+            }
+            else {
+                ItemInstance newDemonEye = CreateNewDemonEyeItemInstance(demonEyeName, eyeUpgradeItemInstances);
+                inventories.eyeForge.slots[eyeSlotIndex].itemInstance = newDemonEye;
+            }
         });
     }
     
@@ -431,7 +444,12 @@ public partial class Game {
         
         InventorySlot[] slots = inventories.eyeForge.slots;
         
-        slots[0].ui.itemUI.pixelFillManager.SetIntoSprite(eyeForgePanel.demonEyeSprite);
+        bool upgradingDemonEye = slots[0].itemInstance.isDemonEye;
+        if (upgradingDemonEye) {
+            slots[0].ui.itemUI.pixelFillManager.SetIntoSprite(config.demonEyeLevels.levelSprites[1]);
+        } else {
+            slots[0].ui.itemUI.pixelFillManager.SetIntoSprite(config.demonEyeLevels.levelSprites[0]);
+        }
         slots[0].ui.itemUI.pixelFillManager.UseSmoothing(false);
         
         Tween.Custom(this, 0f, 1f, fillDuration, ease: Ease.Linear, onValueChange: (target, val) => {
@@ -480,7 +498,8 @@ public partial class Game {
 
             Sequence sequence = Sequence.Create();
 
-            if (slot.itemInstance.ItemRef.type == itemTypes.eye) {
+            bool isEyeSlot = i == 0;
+            if (isEyeSlot) {
                 sequence.Chain(Tween.Scale(rectTransform, Vector3.one, Vector3.one * 1.42f, new() {
                     duration = fillDuration,
                     ease = Ease.InCubic,

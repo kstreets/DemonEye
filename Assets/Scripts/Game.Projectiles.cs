@@ -7,7 +7,13 @@ using UnityEngine.Pool;
 
 public partial class Game {
     
-    [Flags] public enum ProjectileTypeFlags { None, Trishot, BackwardsShot, }
+    [Flags] 
+    public enum ProjectileTypeFlags {
+        None                        = 1 << 0, 
+        Trishot                     = 1 << 1, 
+        BackwardsShot               = 1 << 2, 
+        BoneFragmentThatCausesBleed = 1 << 3,
+    }
     
     public class Projectile : Entity {
         public ProjectileTypeFlags typeFlags;
@@ -128,7 +134,7 @@ public partial class Game {
             return true;
         }
 
-        if (ProjectileIsType(proj, ProjectileTypeFlags.BackwardsShot) && proj.eyeInstanceSpawnedFrom.backwardsPiercingAugment.HasValue) {
+        if (proj.typeFlags.HasFlag(ProjectileTypeFlags.BackwardsShot) && proj.eyeInstanceSpawnedFrom.backwardsPiercingAugment.HasValue) {
             ProjectileMarkEntityToIgnore(proj, entity);
             return true;
         }
@@ -152,10 +158,6 @@ public partial class Game {
 
     private bool ProjectileIsIgnoringEntity(Projectile proj, Entity entity) {
         return proj.ignoreEntities?.Contains(entity) ?? false;
-    }
-    
-    private bool ProjectileIsType(Projectile proj, ProjectileTypeFlags flags) {
-        return (proj.typeFlags & flags) != 0;
     }
 
 }

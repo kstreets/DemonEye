@@ -19,6 +19,8 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
     public AugmentDescription augmentDesc;
     public DemonEyeDescList demonEyeDesc;
     
+    public const float screenPadding = 25f;
+    
     public void Show(ItemInstance itemInstance, Vector2? position = default) {
         gameObject.SetActive(true);
         
@@ -44,7 +46,7 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
     
     private void SetName(ItemInstance itemInstance, Item item) {
         if (itemInstance.isDemonEye) {
-            nameText.text = itemInstance.demonEyeName;
+            nameText.text = $"{itemInstance.demonEyeName} (Lvl {itemInstance.demonEyeLevel + 1})";
             return;
         }
         nameText.text = item.displayName;
@@ -133,21 +135,34 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
         
         // Keep popup from going offscreen
         {
-            float minY = rectTransform.WorldRectIgnoreScale().yMin;
-            float maxY = rectTransform.WorldRectIgnoreScale().yMax;
+            Rect worldRect = rectTransform.WorldRectIgnoreScale();
+            float minY = worldRect.yMin;
+            float maxY = worldRect.yMax;
+            float minX = worldRect.xMin;
+            float maxX = worldRect.xMax;
         
-            const float screenPadding = 25f;
-        
-            bool offBottomOfScreen = minY < 0f;
+            bool offBottomOfScreen = minY < screenPadding;
             if (offBottomOfScreen) {
-                float verticalCorrection = Mathf.Abs(minY) + screenPadding;
+                float verticalCorrection = screenPadding - minY;
                 rectTransform.position += new Vector3(0f, verticalCorrection, 0f);
             }
         
-            bool offTopOfScreen = maxY > Screen.height;
+            bool offTopOfScreen = maxY > Screen.height - screenPadding;
             if (offTopOfScreen) {
-                float verticalCorrection = (maxY - Screen.height) + screenPadding;
+                float verticalCorrection = (maxY - (Screen.height - screenPadding));
                 rectTransform.position -= new Vector3(0f, verticalCorrection, 0f);
+            }
+            
+            bool offLeftOfScreen = minX < screenPadding;
+            if (offLeftOfScreen) {
+                float horizontalCorrection = screenPadding - minX;
+                rectTransform.position += new Vector3(horizontalCorrection, 0f, 0f);
+            }
+            
+            bool offRightOfScreen = maxX > Screen.width - screenPadding;
+            if (offRightOfScreen) {
+                float horizontalCorrection = (maxX - (Screen.width - screenPadding));
+                rectTransform.position -= new Vector3(horizontalCorrection, 0f, 0f);
             }
         }
     }

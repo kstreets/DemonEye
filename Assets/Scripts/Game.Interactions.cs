@@ -24,7 +24,7 @@ public partial class Game {
     }
     
     private void CheckForInteractions() { 
-        DisableInteractionPrompt();
+        HideInteractionPopup();
         
         Vector2 checkCenter = player.position + new Vector3(0f, 0.05f, 0f);
         List<Collider2D> cols = Physics.OverlapCircle(checkCenter, 0.1f, Masks.ItemMask);
@@ -33,11 +33,11 @@ public partial class Game {
             
             if (col.CompareTag(Tags.Pickup)) {
                 ItemDrop itemDrop = col.GetComponent<ItemDrop>();
-                Item dropItemRef = itemDrop.ItemInstance.ItemRef;
+                ui.itemDescPopupPickup.Show(itemDrop.ItemInstance);
                 
-                Color itemColor = config.styles.GetColorForRarity(dropItemRef.GetRarity());
-                string details = ColorText($"{dropItemRef.displayName} x{itemDrop.ItemInstance.count}", itemColor);
-                EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), details);
+                // Color itemColor = config.styles.GetColorForRarity(dropItemRef.GetRarity());
+                // string details = ColorText($"{dropItemRef.displayName} x{itemDrop.ItemInstance.count}", itemColor);
+                // EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), details);
                 
                 if (input.interact.WasPressedThisFrame()) {
                     InventoryAddResult result = TryAddItemToInventory(inventories.player, itemDrop.ItemInstance);
@@ -125,6 +125,11 @@ public partial class Game {
                 
             }
         }
+    }
+    
+    private void HideInteractionPopup() {
+        ui.itemDescPopupPickup.Hide();
+        DisableInteractionPrompt();
     }
 
     private void PickupDroppedItem(Entity droppedEntity) {

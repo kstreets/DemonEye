@@ -13,3 +13,5 @@ MonoBehaviour:
   m_Name: EyeType
   m_EditorClassIdentifier: Assembly-CSharp::EyeType
   displayName: Eye
+  derivativeItemTypes:
+  - {fileID: 11400000, guid: fd77ee936723b1448b554eb40ddbf4f4, type: 2}

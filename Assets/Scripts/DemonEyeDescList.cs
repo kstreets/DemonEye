@@ -8,6 +8,7 @@ public class DemonEyeDescList : MonoBehaviour {
     public GameObject augmentDescPrefab;
     public DemonEyeDescElement[] elements;
     
+    private List<AugmentDescription> synergyDescTrackingList = new();
     private List<List<AugmentDescription>> childAugmentDescTrackingList;
     private ObjectPool<AugmentDescription> augmentDescObjectPool;
     
@@ -44,6 +45,16 @@ public class DemonEyeDescList : MonoBehaviour {
             
             demonEyeDescElm.gameObject.SetActive(true);
             demonEyeDescElm.UpdateDisplay(upgradeElm, curAugmentDescList);
+        }
+        
+        if (eyeUpgradeSet.synergies.Count != synergyDescTrackingList.Count) {
+            ReleaseElementsAugmentDescriptions(synergyDescTrackingList);
+            FillElmentsAugmentDescriptions(synergyDescTrackingList, eyeUpgradeSet.synergies.Count); 
+        }
+        for (int i = 0; i < eyeUpgradeSet.synergies.Count; i++) {
+            synergyDescTrackingList[i].transform.SetSiblingIndex(i);
+            synergyDescTrackingList[i].descTextMesh.text = eyeUpgradeSet.synergies[i].GetDescription();
+            synergyDescTrackingList[i].stackCountTextMesh.gameObject.SetActive(false);
         }
     }
     

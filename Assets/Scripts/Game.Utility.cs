@@ -1,8 +1,8 @@
+using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
 
 public partial class Game {
 
@@ -15,6 +15,29 @@ public partial class Game {
     
     public static bool RollProbability(float probability) {
         return Random.value <= probability;
+    }
+    
+    private T PerformWieghtedPick<T>(List<(T, float)> elementWithWeights) where T : class {
+        if (elementWithWeights == null || elementWithWeights.Count == 0) {
+            return null;
+        }
+        
+        float totalDropChance = 0f;
+        foreach ((T elm, float weight) in elementWithWeights) {
+            totalDropChance += weight;
+        }
+        
+        float roll = Random.value * totalDropChance;
+        float dropThreshold = 0f;
+        
+        foreach ((T elm, float weight) in elementWithWeights) {
+            dropThreshold += weight;
+            if (roll < dropThreshold) {
+                return elm;    
+            }
+        }
+        
+        return elementWithWeights[^1].Item1;
     }
     
     private Vector2 ScreenCenter => new(Screen.width / 2f, Screen.height / 2f);

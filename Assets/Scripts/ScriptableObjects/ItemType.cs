@@ -4,5 +4,6 @@ using UnityEngine;
 public class ItemType : ScriptableObject {
     
     public string displayName;
+    public ItemType[] derivativeItemTypes;
     
 }

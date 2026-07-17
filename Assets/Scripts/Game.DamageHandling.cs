@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using PrimeTween;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 public partial class Game {
     
@@ -37,11 +38,25 @@ public partial class Game {
     private void HandleDamageEnemy(Projectile projectile, Entity entity) {
         var entityLookup = entities.lookup;
         if (entityLookup[entity.gameObject] is not Enemy enemy) return;
-
+        
+        /*
+        ============== Simple projectile land ===================
+        Any projectile with flat damage is deemed to be a simple projectile
+        and will return out of the method before anything a default projectile can trigger
+        */
+        
+        if (projectile.typeFlags.HasFlag(ProjectileTypeFlags.BoneFragmentThatCausesBleed)) {
+            projectile.eyeInstanceSpawnedFrom.GetUpgradeInstance<BleedEyeUpgrade>().ApplyToEnemy(enemy);
+        }
+        
         if (projectile.flatDamage.HasValue) {
             DamageEnemy(enemy, projectile.flatDamage.Value, false);
             return;
         }
+        
+        /*
+        ============== Default projectile land ===================
+        */
         
         bool isCriticalStrike = RollProbability(GetCriticalStrikeProbability(projectile, enemy));
         ref int consecutiveCriticalHits = ref curRaid.data.damaging.consecutiveCriticalHits;
@@ -58,6 +73,12 @@ public partial class Game {
         DemonEyeInstance eyeInstance = projectile.eyeInstanceSpawnedFrom;
         foreach (EquipedUpgradeInstance modInstance in eyeInstance.upgradeInstances) {
             modInstance.ApplyToEnemy(enemy);
+        }
+        foreach (EquipedAugmentInstance augmentInstance in eyeInstance.augmentInstances) {
+            augmentInstance.ApplyToEnemy(enemy);
+        }
+        foreach (EquipedSynergyInstance synergyInstance in eyeInstance.synergyInstances) {
+            synergyInstance.ApplyToEnemy(enemy);
         }
         
         if (eyeInstance.explosion.TryGetValue(out var explosion) && RollProbability(explosion.probability)) {
@@ -92,9 +113,11 @@ public partial class Game {
                 float randomSpeedScaler = Random.Range(0.4f, 0.6f);
                 Vector2 boneShatterVelocity = RandomizeVectorAngle(projectile.velocity * randomSpeedScaler, 65f);
                 int boneDamage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(enemy) * boneShatter.perShardDamageMulti);
+                ProjectileTypeFlags flags = demonEye.equiped.bloodyBonesSynergy.HasValue ? 
+                                            ProjectileTypeFlags.BoneFragmentThatCausesBleed : ProjectileTypeFlags.None;
                 Projectile boneShatterProj = SpawnProjectile(
                     entityPools.boneShatterProjectile, enemy.position, boneShatterVelocity, boneShatter.lifeTime, player,
-                    rotation: RandomRotation(), spawnDelay: randomDelay, flatDamage: boneDamage
+                    rotation: RandomRotation(), spawnDelay: randomDelay, flatDamage: boneDamage, typeFlags: flags
                 );
                 ProjectileMarkEntityToIgnore(boneShatterProj, enemy);
             }
@@ -143,7 +166,7 @@ public partial class Game {
             return flatCrit;
         }
         
-        if (ProjectileIsType(proj, ProjectileTypeFlags.BackwardsShot)) {
+        if (proj.typeFlags.HasFlag(ProjectileTypeFlags.BackwardsShot)) {
             return 1f;
         }
         
@@ -164,7 +187,7 @@ public partial class Game {
                 damageMultiplier *= GetAbsoluteStat(PlayerStat.CritMulti);
             }
             
-            if (ProjectileIsType(proj, ProjectileTypeFlags.Trishot) && eyeInstance.trishot.TryGetValue(out var triShot)) {
+            if (proj.typeFlags.HasFlag(ProjectileTypeFlags.Trishot) && eyeInstance.trishot.TryGetValue(out var triShot)) {
                 damageMultiplier *= triShot.damageMultiplier;
             }
             

@@ -169,6 +169,14 @@ public static class Extensions {
 
         return null;
     }
+    
+    public static void AddToKeyList<K, V>(this Dictionary<K, List<V>> dictionary, K key, V element) where V : class {
+        if (dictionary.TryGetValue(key, out List<V> list)) {
+            list.Add(element);
+            return;
+        }
+        dictionary.Add(key, list = new() { element });
+    }
 
     public static bool TryGetValue<T>(this T? nullableStruct, out T value) where T : struct {
         value = nullableStruct.GetValueOrDefault();

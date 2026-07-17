@@ -12,11 +12,18 @@ public partial class Game {
         
         foreach (UuidScriptableObject resObject in resourceObjects) {
             res.lookup.Add(resObject.uuid, resObject);
+            res.takenUuids.Add(resObject.uuid);
+            
             if (resObject is Item item) {
                 res.items.Add(item);
             }
             if (resObject is Augment augment) {
                 augment.CreateAugmentItemFromDerived();
+            }
+            if (resObject is Synergy synergy) {
+                foreach (EyeUpgrade eyeUpgrade in synergy.amongUpgrades) {
+                    res.syergiesForEyeUpgrade.AddToKeyList(eyeUpgrade, synergy);
+                }
             }
         }
     }
@@ -41,9 +48,10 @@ public partial class Game {
     
     private int GenerateNewItemUuid() {
         int newItemId = UuidScriptableObject.GetIntUuid();
-        while (res.lookup.ContainsKey(newItemId)) {
+        while (res.takenUuids.Contains(newItemId)) {
             newItemId = UuidScriptableObject.GetIntUuid();
         }
+        res.takenUuids.Add(newItemId);
         return newItemId; 
     }
     

@@ -61,6 +61,10 @@ public class Item : UuidScriptableObject  {
         foreach (DropOrigin origin in dropOrigins) {
             maxRarity = Mathf.Max(maxRarity, origin.chanceToSpawn);
         }
+        return GetRarity(maxRarity);
+    }
+    
+    public static Rarity GetRarity(float maxRarity) {
         if (maxRarity <= 0.08f) return Rarity.Legendary;
         if (maxRarity <= 0.20f) return Rarity.Epic;
         if (maxRarity <= 0.35f) return Rarity.Rare;

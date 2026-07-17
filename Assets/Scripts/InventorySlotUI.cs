@@ -6,6 +6,7 @@ public class InventorySlotUI : MonoBehaviour {
     public Styles styles;
     public bool disallowItemStacking;
     public ItemType onlyAcceptedItemType;
+    public bool acceptDerivativeTypes = true;
     public Image slotImage;
     public Image overlayImage;
     public Image underlayImage;
@@ -31,17 +32,24 @@ public class InventorySlotUI : MonoBehaviour {
     }
     
     public bool AcceptsItem(Item item) {
+        return AcceptsItemType(item.type);
+    }
+    
+    public bool AcceptsItemType(ItemType type) {
         if (AcceptsAllTypes) {
             return true;
         }
-        return item.type == onlyAcceptedItemType;
-    }
-
-    public bool OnlyAcceptsType(ItemType itemType) {
-        if (AcceptsAllTypes) {
-            return false;
+        if (type == onlyAcceptedItemType) {
+            return true;
         }
-        return onlyAcceptedItemType == itemType;
+        if (acceptDerivativeTypes) {
+            foreach (ItemType derivative in onlyAcceptedItemType.derivativeItemTypes) {
+                if (derivative == type) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public void MakeSlotActive() {
