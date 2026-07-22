@@ -153,7 +153,7 @@ public partial class Game {
                     
                     enemy.health -= bleedDamage;
                     bleed.lastBleedTime = Time.time;
-                    enemy.bleed = bleed;
+                    enemy.bleed = bleed; // Apply changes
                     
                     Entity bloodDrop = SpawnEntity(entityPools.bloodDrop, OffsetY(enemy.position, 0.015f), Quaternion.identity);
                     AddParentEffect(bloodDrop, enemy, 0.4f);
