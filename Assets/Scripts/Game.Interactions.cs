@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using PrimeTween;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Random = UnityEngine.Random;
 
 public partial class Game {
     
@@ -36,7 +38,7 @@ public partial class Game {
                 ui.itemDescPopupPickup.Show(itemDrop.ItemInstance);
                 
                 Item dropItemRef = itemDrop.ItemInstance.ItemRef;
-                Color itemColor = config.styles.GetColorForRarity(dropItemRef.GetRarity());
+                Color itemColor = config.styles.GetTextColorForRarity(dropItemRef.GetRarity());
                 string details = ColorText($"{dropItemRef.displayName} x{itemDrop.ItemInstance.count}", itemColor);
                 EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), details);
                 
@@ -210,19 +212,25 @@ public partial class Game {
         ui.lootSearchingText.SetActive(true);
 
         discoverSlotsSequence = Sequence.Create();
+        // Add a small delay before revealing slots 
+        discoverSlotsSequence.ChainDelay(0.05f);
         
+        int lootCount = GetInventoryItemCount(inventories.lootPtr);
         for (int i = 0; i < inventories.lootPtr.slots.Length; i++) {
             if (inventories.lootPtr.slots[i].itemInstance == null) continue;
             
             InventorySlotUI slotUI = inventories.lootPtr.slots[i].ui;
             
             if (inventories.lootPtr.slots[i].itemInstance.notDiscovered) {
-                discoverSlotsSequence.Chain(Tween.PunchScale(slotUI.rectTransform, Vector3.one * 2f, 0.1f, 2f, startDelay: DiscoverSlotTime * i));
+                float curveComp = (i + 1) / (float)lootCount;
+                float delay = gameInstance.curves.discoverSlotTimingCurve.Evaluate(curveComp) * DiscoverSlotTime;
+                discoverSlotsSequence.Chain(Tween.PunchScale(slotUI.rectTransform, Vector3.one * 2f, 0.1f, 2f, startDelay: delay));
                 discoverSlotsSequence.ChainCallback(slotUI, (target) => target.MakeSlotInactive());
             }
         }
 
-        discoverSlotsSequence.ChainDelay(0.15f);
+        // Add a small delay before revealing items
+        discoverSlotsSequence.ChainDelay(0.05f);
 
         discoverSlotsSequence.ChainCallback(target: this, static (target) => {
             ref int discoverItemIndex = ref target.curRaid.data.interactions.discoverItemIndex;
@@ -251,7 +259,15 @@ public partial class Game {
             slotUI.StopSlotSearching();
             slotUI.SetItem(itemRef, itemInstance.count);
             
-            Tween.PunchScale(slotUI.itemUI.image.rectTransform, Vector3.one * 4f, 0.1f, 2f); 
+            Tween.PunchScale(slotUI.itemUI.image.rectTransform, Vector3.one * 4f, 0.1f, 2f);
+            
+            Entity reveal = gameInstance.SpawnEntityOneShot(gameInstance.entityPools.lootReveal, Vector3.zero, Quaternion.identity, slotUI.rectTransform);
+            reveal.trans.localPosition = Vector3.zero;
+            reveal.image.color = gameInstance.config.styles.GetColorForRarity(itemRef.GetRarity());
+            
+            GetRarityVolumeAndPitch(itemRef.GetRarity(), out float rarityVolume, out float rarityPitch);
+            gameInstance.PlayAudioClip(gameInstance.audio.rarityRevealClip, player.position, rarityVolume, rarityPitch);
+            gameInstance.PlayAudioClip(gameInstance.audio.lootRevealClip, player.position);
             
             discoverItemIndex++;
             

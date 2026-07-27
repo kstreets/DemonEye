@@ -54,7 +54,7 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
 
     private void SetTags(Item item) {
         Item.Rarity itemRarity = item.GetRarity();
-        Color itemRarityColor = styles.GetColorForRarity(itemRarity);
+        Color itemRarityColor = styles.GetTextColorForRarity(itemRarity);
 
         typeTagGroup.gameObject.SetActive(true);
         typeTagGroup.image.color = itemRarityColor;

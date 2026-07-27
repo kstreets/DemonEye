@@ -42,5 +42,5 @@ MonoBehaviour:
   lootingSpeedIncPerLevel: 0.05
   movementSpeedIncPerLevel: 0.01
   projectileCountIncPerLevel: 0.25
-  discoverSlotTime: 0.03
+  discoverSlotTime: 0.1
   discoverItemTime: 1.2

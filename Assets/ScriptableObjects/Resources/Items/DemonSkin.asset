@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Item
   uuid: -332757648
   displayName: Demon Skin
-  inventorySprite: {fileID: -101968223, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
-  dropSprite: {fileID: 569614849, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  inventorySprite: {fileID: 790097291, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  dropSprite: {fileID: -2034378603, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   pickupRadius: 0.07
   type: {fileID: 0}
   priceCategory: {fileID: 11400000, guid: 1b413ce208f37d445884e80008464342, type: 2}
@@ -25,9 +25,10 @@ MonoBehaviour:
     spawnsOnAll: 1
     firstSpawnMap: {fileID: 0}
     spawnsOnMaps: []
-  spawnsOnAllMaps: 1
-  firstSpawnMap: {fileID: 0}
-  spawnsOnMaps: []
+  traderSpawning:
+    levelRequired: 1
+    stockRange: {x: 1, y: 1}
+    barterRequirements: []
   rarity: 2
   dropOrigins:
   - dropPool: {fileID: 11400000, guid: 3c4ecb30986cb144bb8b92852af68d07, type: 2}
@@ -36,13 +37,6 @@ MonoBehaviour:
     chanceToSpawn: 0.35
   - dropPool: {fileID: 11400000, guid: a3f73304b268c4a4f84184336a236942, type: 2}
     chanceToSpawn: 0.35
-  traderLevelRequired: 1
-  traderStockRange: {x: 1, y: 1}
-  barterRequirements: []
-  traderSpawning:
-    levelRequired: 1
-    stockRange: {x: 1, y: 1}
-    barterRequirements: []
   modifiesStats: 0
   critChance: 0
   critMultiplier: 0

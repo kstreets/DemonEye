@@ -5,6 +5,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Pool;
+using UnityEngine.UI;
 using EffectsIndicies = Game.Entity.EffectsIndicies;
 using Random = UnityEngine.Random;
 
@@ -50,6 +51,7 @@ public partial class Game {
         public Collider2D collider;
         public Rigidbody2D rigidbody;
         public SpriteRenderer spriteRenderer;
+        public Image image;
         public Animator animator;
         public TextMeshProUGUI textMesh;
         public EntityLifetime lifetime;
@@ -94,6 +96,13 @@ public partial class Game {
         return entity;
     }
     
+    private T SpawnEntityOneShot<T>(EntityPool<T> pool, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level) where T : Entity, new() {
+        T entity = SpawnEntity(pool, position, rotation, parent, lifetime);
+        Assert.IsNotNull(entity.animator, "Cannot spawn entity with one shot because there is no animator");
+        DestroyEntity(entity, CurrentClipLength(entity.animator));
+        return entity;
+    }
+    
     private T SpawnEntity<T>(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level) where T : Entity, new() {
         GameObject obj = Instantiate(prefab, position, rotation, parent);
         T entity = InitializeEntity<T>(obj, lifetime);
@@ -128,6 +137,7 @@ public partial class Game {
             collider = objInstance.TryGetComponent(out Collider2D col) ? col : null,
             rigidbody = objInstance.TryGetComponent(out Rigidbody2D rbody) ? rbody : null,
             spriteRenderer = objInstance.TryGetComponent(out SpriteRenderer spriteRenderer) ? spriteRenderer : null,
+            image = objInstance.TryGetComponent(out Image image) ? image : null,
             animator = objInstance.TryGetComponent(out Animator anim) ? anim : null,
             textMesh = objInstance.TryGetComponent(out TextMeshProUGUI text) ? text : null,
             lifetime = lifetime,

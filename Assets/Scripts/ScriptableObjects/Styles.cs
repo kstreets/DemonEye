@@ -8,6 +8,12 @@ public class Styles : ScriptableObject {
     public Color rareTextColor;
     public Color epicTextColor;
     public Color legendaryTextColor;
+    
+    public Color commonColor;
+    public Color uncommonColor;
+    public Color rareColor;
+    public Color epicColor;
+    public Color legendaryColor;
 
     public Color headerTextColor;
     public Color popInTextColor;
@@ -43,7 +49,7 @@ public class Styles : ScriptableObject {
     public Color decreaseDescColor;
     public Color timeDescColor;
 
-    public Color GetColorForRarity(Item.Rarity rarity) {
+    public Color GetTextColorForRarity(Item.Rarity rarity) {
         return rarity switch {
             Item.Rarity.Common    => commonTextColor,
             Item.Rarity.Uncommon  => uncommonTextColor,
@@ -51,6 +57,17 @@ public class Styles : ScriptableObject {
             Item.Rarity.Epic      => epicTextColor,
             Item.Rarity.Legendary => legendaryTextColor,
             _                     => commonTextColor,
+        };
+    }
+    
+    public Color GetColorForRarity(Item.Rarity rarity) {
+        return rarity switch {
+            Item.Rarity.Common    => commonColor,
+            Item.Rarity.Uncommon  => uncommonColor,
+            Item.Rarity.Rare      => rareColor,
+            Item.Rarity.Epic      => epicColor,
+            Item.Rarity.Legendary => legendaryColor,
+            _                     => commonColor,
         };
     }
 

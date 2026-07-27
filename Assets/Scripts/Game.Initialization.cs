@@ -72,6 +72,7 @@ public partial class Game {
         entityPools.forgeDust = CreateEntityPool<Entity>(prefabs.forgeDust, 5, null);
         entityPools.upgradeFractureParticles = CreateEntityPool<Entity>(prefabs.upgradeFractureParticles, 5, null);
         entityPools.blast = CreateEntityPool<Entity>(prefabs.blast, 5, null);
+        entityPools.lootReveal = CreateEntityPool<Entity>(prefabs.lootReveal, 1, null);
     }
 
     private void InitGameStates() {

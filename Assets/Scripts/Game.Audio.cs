@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public partial class Game {
     
@@ -17,7 +19,7 @@ public partial class Game {
         }
     }
     
-    private void PlayAudioClip(DynamicClip dynamicClip, Vector2 position, float volumeScaler = 1f) {
+    private void PlayAudioClip(DynamicClip dynamicClip, Vector2 position, float volumeScaler = 1f, float pitch = 0f) {
         if (ClipIsViolatingLocalArea(dynamicClip, position)) return;
         
         AudioSource source = audio.reservedSources.Dequeue();
@@ -32,7 +34,7 @@ public partial class Game {
         source.clip = dynamicClip.clips[Random.Range(0, dynamicClip.clips.Length)];
         source.outputAudioMixerGroup = dynamicClip.mixerGroup;
         source.volume = volume;
-        source.pitch = Random.Range(dynamicClip.minPitch, dynamicClip.maxPitch);
+        source.pitch = pitch == 0f ? Random.Range(dynamicClip.minPitch, dynamicClip.maxPitch) : pitch;
         source.minDistance = dynamicClip.minDistance;
         source.maxDistance = dynamicClip.maxDistance;
         source.loop = false;
@@ -110,5 +112,28 @@ public partial class Game {
         audio.reservedSources.Enqueue(ambience);
         audio.ambienceSource = null;
     }
+    
+    private static void GetRarityVolumeAndPitch(Item.Rarity rarity, out float volume, out float pitch) {
+        switch (rarity) {
+            case Item.Rarity.Common:
+                volume = 0.25f; pitch = 1.5f;
+                break;
+            case Item.Rarity.Uncommon:
+                volume = 0.5f; pitch = 1.25f;
+                break;
+            case Item.Rarity.Rare:
+                volume = 0.75f; pitch = 1.1f;
+                break;
+            case Item.Rarity.Epic:
+                volume = 1f; pitch = 0.9f;
+                break;
+            case Item.Rarity.Legendary:
+                volume = 1f; pitch = 0.75f;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
+
     
 }

@@ -361,50 +361,6 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: UISpriteSheet_13
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 416
-        width: 80
-        height: 64
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 23, y: 23, z: 23, w: 23}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 4610499bed0cb2644a94d4ec34af8231
-      internalID: -707987731
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: UISpriteSheet_14
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 352
-        width: 80
-        height: 64
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 787f16851985cd64294735ee984e8e1e
-      internalID: -1603509479
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
       name: UISpriteSheet_15
       rect:
         serializedVersion: 2
@@ -466,28 +422,6 @@ TextureImporter:
       bones: []
       spriteID: a44e4e047bafb974e9575d47a0c20987
       internalID: -403899735
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: UISpriteSheet_18
-      rect:
-        serializedVersion: 2
-        x: 198
-        y: 329
-        width: 149
-        height: 9
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 60, y: 1, z: 60, w: 1}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: c1f0f100cc83b4a4cb662f7a04e84efc
-      internalID: -348328020
       vertices: []
       indices: 
       edges: []
@@ -672,8 +606,8 @@ TextureImporter:
       name: UISpriteSheet_27
       rect:
         serializedVersion: 2
-        x: 107
-        y: 363
+        x: 3
+        y: 468
         width: 10
         height: 10
       alignment: 0
@@ -694,8 +628,8 @@ TextureImporter:
       name: UISpriteSheet_28
       rect:
         serializedVersion: 2
-        x: 107
-        y: 331
+        x: 3
+        y: 436
         width: 10
         height: 10
       alignment: 0
@@ -972,28 +906,6 @@ TextureImporter:
       bones: []
       spriteID: 8f3d6a3f07682a54a94ce950560403c9
       internalID: 1808523087
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: UISpriteSheet_44
-      rect:
-        serializedVersion: 2
-        x: 129
-        y: 361
-        width: 14
-        height: 13
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: a60b480a6fe801b4fb7df258be6a3650
-      internalID: 458169748
       vertices: []
       indices: 
       edges: []
@@ -1354,8 +1266,8 @@ TextureImporter:
       name: UISpriteSheet_59
       rect:
         serializedVersion: 2
-        x: 106
-        y: 346
+        x: 2
+        y: 451
         width: 11
         height: 11
       alignment: 0
@@ -1398,8 +1310,8 @@ TextureImporter:
       name: UISpriteSheet_61
       rect:
         serializedVersion: 2
-        x: 131
-        y: 338
+        x: 3
+        y: 402
         width: 9
         height: 11
       alignment: 0
@@ -1486,8 +1398,8 @@ TextureImporter:
       name: UISpriteSheet_65
       rect:
         serializedVersion: 2
-        x: 108
-        y: 314
+        x: 4
+        y: 419
         width: 8
         height: 10
       alignment: 0
@@ -1684,8 +1596,8 @@ TextureImporter:
       name: UISpriteSheet_74
       rect:
         serializedVersion: 2
-        x: 301
-        y: 204
+        x: 412
+        y: 176
         width: 7
         height: 7
       alignment: 0
@@ -1742,28 +1654,6 @@ TextureImporter:
       bones: []
       spriteID: f69bf256d8e8e6142938ca34cfd6792b
       internalID: 907894152
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: UISpriteSheet_77
-      rect:
-        serializedVersion: 2
-        x: 131
-        y: 114
-        width: 43
-        height: 43
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 627aaeae793c31a49afd8ff76db202fd
-      internalID: 716761930
       vertices: []
       indices: 
       edges: []
@@ -1856,6 +1746,248 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: Reveal0
+      rect:
+        serializedVersion: 2
+        x: 99
+        y: 358
+        width: 20
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cb9301db561a5a2428f0835a87ef8b72
+      internalID: -13372397
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Reveal1
+      rect:
+        serializedVersion: 2
+        x: 119
+        y: 358
+        width: 20
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 94f190ac1be12ae499fda5fb01f65321
+      internalID: 1174437337
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Reveal2
+      rect:
+        serializedVersion: 2
+        x: 139
+        y: 358
+        width: 20
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c2ba96e5a7735e94a9d99caddc139346
+      internalID: 81250761
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Reveal3
+      rect:
+        serializedVersion: 2
+        x: 159
+        y: 358
+        width: 20
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d2e3067dcdadb754f826edcf455ca11b
+      internalID: -1743493934
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Reveal4
+      rect:
+        serializedVersion: 2
+        x: 179
+        y: 358
+        width: 20
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 79fbc0df4d657ac4a80da737fad8a50c
+      internalID: -1342666358
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Reveal5
+      rect:
+        serializedVersion: 2
+        x: 199
+        y: 358
+        width: 20
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3966299d8f08e6f4da2373b7acd27b41
+      internalID: -12102948
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Reveal6
+      rect:
+        serializedVersion: 2
+        x: 219
+        y: 358
+        width: 21
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: faf1d34cd3106594f9022340fe19c4bd
+      internalID: -1340230678
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Reveal7
+      rect:
+        serializedVersion: 2
+        x: 240
+        y: 358
+        width: 20
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 25e4732029777294f8a558fb0c3dda07
+      internalID: -380795477
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Reveal8
+      rect:
+        serializedVersion: 2
+        x: 260
+        y: 358
+        width: 20
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d0f7f0ac24e24e948a7b35f62c313e0d
+      internalID: 2115831001
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Reveal9
+      rect:
+        serializedVersion: 2
+        x: 280
+        y: 358
+        width: 20
+        height: 20
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 80516026e14d64847a4025aeee8d3120
+      internalID: -47057429
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Reveal10
+      rect:
+        serializedVersion: 2
+        x: 300
+        y: 358
+        width: 20
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6170f63f17e87104a9dbf63980320cd2
+      internalID: 1235871725
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -1883,6 +2015,17 @@ TextureImporter:
       LoadingCircle5: -780372264
       LoadingCircle6: 1877465644
       LoadingCircle7: 1705974065
+      Reveal0: -13372397
+      Reveal1: 1174437337
+      Reveal10: 1235871725
+      Reveal2: 81250761
+      Reveal3: -1743493934
+      Reveal4: -1342666358
+      Reveal5: -12102948
+      Reveal6: -1340230678
+      Reveal7: -380795477
+      Reveal8: 2115831001
+      Reveal9: -47057429
       RoundedSquare: -569167892
       RoundedSquareColored: -142055965
       SlotMask: 1439875600
@@ -1894,12 +2037,9 @@ TextureImporter:
       UISpriteSheet_10: -1931529749
       UISpriteSheet_11: -1176051197
       UISpriteSheet_12: 1949233253
-      UISpriteSheet_13: -707987731
-      UISpriteSheet_14: -1603509479
       UISpriteSheet_15: 419429285
       UISpriteSheet_16: -1896232688
       UISpriteSheet_17: -403899735
-      UISpriteSheet_18: -348328020
       UISpriteSheet_19: 738375812
       UISpriteSheet_2: 823751994
       UISpriteSheet_20: 957642039
@@ -1919,11 +2059,7 @@ TextureImporter:
       UISpriteSheet_34: -1351091896
       UISpriteSheet_35: -714245607
       UISpriteSheet_36: -1322789337
-      UISpriteSheet_38: -1140007088
-      UISpriteSheet_39: -1735161808
       UISpriteSheet_4: 2144612291
-      UISpriteSheet_40: 738445434
-      UISpriteSheet_41: 815896414
       UISpriteSheet_42: 764932500
       UISpriteSheet_43: 1129690133
       UISpriteSheet_44: 458169748
@@ -1954,7 +2090,6 @@ TextureImporter:
       UISpriteSheet_67: 117845336
       UISpriteSheet_68: 2140999340
       UISpriteSheet_69: -993121058
-      UISpriteSheet_7: 1135578465
       UISpriteSheet_70: -1005594991
       UISpriteSheet_71: 413163263
       UISpriteSheet_72: 2011816994

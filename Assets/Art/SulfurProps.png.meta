@@ -101,9 +101,9 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 14
-        y: 104
-        width: 101
-        height: 117
+        y: 101
+        width: 116
+        height: 120
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -122,10 +122,10 @@ TextureImporter:
       name: SulfurProps_1
       rect:
         serializedVersion: 2
-        x: 154
-        y: 134
-        width: 61
-        height: 33
+        x: 124
+        y: 169
+        width: 74
+        height: 37
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -144,10 +144,10 @@ TextureImporter:
       name: SulfurProps_3
       rect:
         serializedVersion: 2
-        x: 407
+        x: 386
         y: 160
-        width: 96
-        height: 52
+        width: 30
+        height: 23
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -166,10 +166,10 @@ TextureImporter:
       name: SulfurProps_5
       rect:
         serializedVersion: 2
-        x: 230
-        y: 51
-        width: 189
-        height: 90
+        x: 237
+        y: 52
+        width: 188
+        height: 89
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -254,10 +254,10 @@ TextureImporter:
       name: SulfurProps_10
       rect:
         serializedVersion: 2
-        x: 431
-        y: 15
-        width: 67
-        height: 77
+        x: 430
+        y: 11
+        width: 76
+        height: 81
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -343,9 +343,9 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 297
-        y: 3
+        y: 1
         width: 48
-        height: 40
+        height: 42
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -356,6 +356,182 @@ TextureImporter:
       bones: []
       spriteID: 9fec6c20b03796e42984d63d6bbc74f8
       internalID: -135332286
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurProps_2
+      rect:
+        serializedVersion: 2
+        x: 313
+        y: 187
+        width: 64
+        height: 33
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8ab462342981a0e4280fb48b6a4e330f
+      internalID: -806078341
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurProps_4
+      rect:
+        serializedVersion: 2
+        x: 337
+        y: 149
+        width: 34
+        height: 31
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0b1d6ea920afec5489c2865e480720b1
+      internalID: -362853292
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurProps_9
+      rect:
+        serializedVersion: 2
+        x: 216
+        y: 191
+        width: 30
+        height: 19
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 26c005cae74d09b4d8798e3025f578bf
+      internalID: -1574377283
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurProps_11
+      rect:
+        serializedVersion: 2
+        x: 215
+        y: 150
+        width: 31
+        height: 21
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8d1e458e1a61b0b43a94c1d6ace2264c
+      internalID: 1857321234
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurProps_16
+      rect:
+        serializedVersion: 2
+        x: 252
+        y: 181
+        width: 20
+        height: 14
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6069054294e31c64ea64599e1c86bd7e
+      internalID: -579681616
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurProps_17
+      rect:
+        serializedVersion: 2
+        x: 251
+        y: 162
+        width: 25
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b67b1aa21f434b34184fe3972c5a49bd
+      internalID: -414855911
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurProps_18
+      rect:
+        serializedVersion: 2
+        x: 281
+        y: 196
+        width: 13
+        height: 8
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3bccf5d64c98c4f43905b5bd0d50ec81
+      internalID: 69458436
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurProps_19
+      rect:
+        serializedVersion: 2
+        x: 295
+        y: 152
+        width: 14
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 78098ea698c8bba498f56b4977344ff7
+      internalID: -1355149264
       vertices: []
       indices: 
       edges: []
@@ -384,6 +560,10 @@ TextureImporter:
       SulfurProps_13: -1733034415
       SulfurProps_14: -621250396
       SulfurProps_15: -135332286
+      SulfurProps_16: -579681616
+      SulfurProps_17: -414855911
+      SulfurProps_18: 69458436
+      SulfurProps_19: -1355149264
       SulfurProps_2: -806078341
       SulfurProps_3: 1191566764
       SulfurProps_4: -362853292

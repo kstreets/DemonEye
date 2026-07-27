@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DamageReflectTrinket
   uuid: 175539554
   displayName: Thorns
-  inventorySprite: {fileID: 2078103190, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  inventorySprite: {fileID: -2086829656, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   dropSprite: {fileID: 0}
   pickupRadius: 0.07
   type: {fileID: 11400000, guid: 91804a8de7d984648aff2f6ae72e2331, type: 2}

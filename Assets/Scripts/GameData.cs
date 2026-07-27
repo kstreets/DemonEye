@@ -56,6 +56,7 @@ public class GameData {
         public GameObject slamSmoke;
         public GameObject blast;
         public GameObject inventorySlot;
+        public GameObject lootReveal;
         public GameObject eyeForgeSlot;
         public GameObject damageNumber;
         public GameObject forgeExplosion;
@@ -117,6 +118,7 @@ public class GameData {
         public AnimationCurve pentagramFill;
         public AnimationCurve pentagramItemShake;
         public AnimationCurve questBurn;
+        public AnimationCurve discoverSlotTimingCurve;
     }
     
     [Serializable] 
@@ -283,6 +285,8 @@ public class GameData {
         public DynamicClip portalSpawnClip;
         public DynamicClip portalDespawnClip;
         public DynamicClip finalWaveStingerClip;
+        public DynamicClip lootRevealClip;
+        public DynamicClip rarityRevealClip;
         public AudioClip ambienceClip;
         public AudioMixerGroup ambienceMixerGroup;
         
@@ -326,6 +330,7 @@ public class GameData {
         public EntityPool<Entity> forgeDust;
         public EntityPool<Entity> upgradeFractureParticles;
         public EntityPool<Entity> blast;
+        public EntityPool<Entity> lootReveal;
     }
     
     public class States {
