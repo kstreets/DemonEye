@@ -6,6 +6,7 @@ using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.InputSystem;
+using UnityEngine.Pool;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 using static Game;
@@ -286,12 +287,18 @@ public class GameData {
         public DynamicClip portalDespawnClip;
         public DynamicClip finalWaveStingerClip;
         public DynamicClip lootRevealClip;
+        public DynamicClip slotRevealClip;
+        public DynamicClip lootingBodyClip;
+        public DynamicClip lootingBushClip;
+        public DynamicClip lootingBodyLoop;
+        public DynamicClip lootingBushLoop;
         public DynamicClip rarityRevealClip;
         public AudioClip ambienceClip;
         public AudioMixerGroup ambienceMixerGroup;
         
         [NonSerialized] public AudioSource ambienceSource;
         public Dictionary<int, List<DynamicClipRecord>> records = new(50);
+        public Dictionary<DynamicClip, AudioSource> loopingSources = new(5);
         public Queue<AudioSource> reservedSources;
     }
     

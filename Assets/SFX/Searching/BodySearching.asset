@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5e56437f219ae4841ab3b84d57a9f86e, type: 3}
-  m_Name: TeleportIn
+  m_Name: BodySearching
   m_EditorClassIdentifier: 
   clips:
-  - {fileID: 8300000, guid: ba0e121e96aead742a25f4566f8d8a16, type: 3}
-  mixerGroup: {fileID: -2303880761268983241, guid: 5d1188e598dcb514aa82b03e86c0c627, type: 2}
-  rolloffMode: 1
-  minDistance: 0
-  maxDistance: 3.2
+  - {fileID: 8300000, guid: 8f9fc505cdea41a4c8f04c208310ce39, type: 3}
+  mixerGroup: {fileID: 6946716587457135913, guid: 5d1188e598dcb514aa82b03e86c0c627, type: 2}
+  rolloffMode: 0
+  minDistance: 1
+  maxDistance: 500
   minPitch: 0.9
   maxPitch: 1.1
-  localAreaCooldownTime: 0.1
-  localAreaDistance: 1
+  localAreaCooldownTime: 0
+  localAreaDistance: 0

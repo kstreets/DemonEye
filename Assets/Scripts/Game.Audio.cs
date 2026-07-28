@@ -19,11 +19,18 @@ public partial class Game {
         }
     }
     
-    private void PlayAudioClip(DynamicClip dynamicClip, Vector2 position, float volumeScaler = 1f, float pitch = 0f) {
+    private void PlayAudioClip(DynamicClip dynamicClip, Vector2 position, float volumeScaler = 1f, float pitch = 0f, bool loop = false) {
         if (ClipIsViolatingLocalArea(dynamicClip, position)) return;
         
         AudioSource source = audio.reservedSources.Dequeue();
-        audio.reservedSources.Enqueue(source);
+        
+        if (loop) {
+            StopLoopingClip(dynamicClip);
+            audio.loopingSources.Add(dynamicClip, source);
+        }
+        else {
+            audio.reservedSources.Enqueue(source);
+        }
 
         float distFromPlayer = Vector2.Distance(player.position, position);
         float volumeLerp = distFromPlayer / dynamicClip.maxDistance;
@@ -37,10 +44,18 @@ public partial class Game {
         source.pitch = pitch == 0f ? Random.Range(dynamicClip.minPitch, dynamicClip.maxPitch) : pitch;
         source.minDistance = dynamicClip.minDistance;
         source.maxDistance = dynamicClip.maxDistance;
-        source.loop = false;
+        source.loop = loop;
         source.Play();
     }
-
+    
+    private void StopLoopingClip(DynamicClip dynamicClip) {
+        if (audio.loopingSources.TryGetValue(dynamicClip, out AudioSource alreadyPlayingSource)) {
+            alreadyPlayingSource.Stop();
+            audio.reservedSources.Enqueue(alreadyPlayingSource);
+            audio.loopingSources.Remove(dynamicClip);
+        }
+    }
+    
     private bool ClipIsViolatingLocalArea(DynamicClip clip, Vector2 clipPos) {
         if (clip.localAreaCooldownTime <= 0f || clip.localAreaDistance <= 0f) {
             return false;

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: RockHit
   m_EditorClassIdentifier: 
   clips:
-  - {fileID: 8300000, guid: ac697928363dda24d8fdd9fc18988c43, type: 3}
+  - {fileID: 8300000, guid: f0363ba5e515cb44a986d29467044578, type: 3}
   mixerGroup: {fileID: -1411708023047180068, guid: 5d1188e598dcb514aa82b03e86c0c627, type: 2}
   rolloffMode: 0
   minDistance: 1

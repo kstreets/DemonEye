@@ -178,8 +178,15 @@ public partial class Game {
     
     private void OpenLootInventory(LootInventoryOrigin origin) {
         if (LootInventoryIsOpen) return;
-        
         curRaid.data.interactions.curLootOrigin = origin;
+        
+        if (origin == LootInventoryOrigin.Body) {
+            PlayAudioClip(audio.lootingBodyClip, player.position);
+        }
+        else if (origin == LootInventoryOrigin.Bush) {
+            PlayAudioClip(audio.lootingBushClip, player.position);
+        }
+        
         ui.lootInventoryPanel.gameObject.SetActive(true);
         
         ref int discoverItemIndex = ref curRaid.data.interactions.discoverItemIndex;
@@ -209,6 +216,7 @@ public partial class Game {
         bool alreadyDiscoveredAll = discoverItemIndex == -1;
         if (alreadyDiscoveredAll) return;
         
+        StartSearchingSoundLoop();
         ui.lootSearchingText.SetActive(true);
 
         discoverSlotsSequence = Sequence.Create();
@@ -225,7 +233,10 @@ public partial class Game {
                 float curveComp = (i + 1) / (float)lootCount;
                 float delay = gameInstance.curves.discoverSlotTimingCurve.Evaluate(curveComp) * DiscoverSlotTime;
                 discoverSlotsSequence.Chain(Tween.PunchScale(slotUI.rectTransform, Vector3.one * 2f, 0.1f, 2f, startDelay: delay));
-                discoverSlotsSequence.ChainCallback(slotUI, (target) => target.MakeSlotInactive());
+                discoverSlotsSequence.ChainCallback(slotUI, static (target) => {
+                    target.MakeSlotInactive();
+                    gameInstance.PlayAudioClip(gameInstance.audio.slotRevealClip, player.position);
+                });
             }
         }
 
@@ -278,6 +289,7 @@ public partial class Game {
             }
             else {
                 gameInstance.ui.lootSearchingText.SetActive(false);
+                gameInstance.StopSearchingSoundLoop();
             }
         };
     }
@@ -298,6 +310,28 @@ public partial class Game {
         foreach (InventorySlot slot in inventories.lootPtr.slots) {
             slot.ui.rectTransform.localScale = Vector3.one;
             slot.ui.StopSlotSearching();
+        }
+        
+        StopSearchingSoundLoop();
+    }
+    
+    private void StartSearchingSoundLoop() {
+        var origin = curRaid.data.interactions.curLootOrigin;
+        if (origin == LootInventoryOrigin.Body) {
+            PlayAudioClip(audio.lootingBodyLoop, player.position, loop: true);
+        }
+        else if (origin == LootInventoryOrigin.Bush) {
+            PlayAudioClip(audio.lootingBushLoop, player.position, loop: true);
+        }
+    }
+    
+    private void StopSearchingSoundLoop() {
+        var origin = curRaid.data.interactions.curLootOrigin;
+        if (origin == LootInventoryOrigin.Body) {
+            StopLoopingClip(audio.lootingBodyLoop);
+        }
+        else if (origin == LootInventoryOrigin.Bush) {
+            StopLoopingClip(audio.lootingBushLoop);
         }
     }
     

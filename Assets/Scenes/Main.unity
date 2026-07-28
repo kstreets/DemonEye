@@ -22401,17 +22401,17 @@ MonoBehaviour:
       - serializedVersion: 3
         time: 0
         value: 1
-        inSlope: -0.8
-        outSlope: -0.8
-        tangentMode: 34
+        inSlope: 0.026240297
+        outSlope: 0.026240297
+        tangentMode: 0
         weightedMode: 0
         inWeight: 0
-        outWeight: 0.33333334
+        outWeight: 0.09888717
       - serializedVersion: 3
-        time: 1
+        time: 0.7770996
         value: 0.2
-        inSlope: -0.8
-        outSlope: -0.8
+        inSlope: -1.029469
+        outSlope: -1.029469
         tangentMode: 34
         weightedMode: 0
         inWeight: 0.33333334
@@ -22545,6 +22545,11 @@ MonoBehaviour:
     portalDespawnClip: {fileID: 11400000, guid: c5c1981acd5a8764faae17de16a098bc, type: 2}
     finalWaveStingerClip: {fileID: 11400000, guid: 49d8e84ba4e551a44ad67a6050663888, type: 2}
     lootRevealClip: {fileID: 11400000, guid: 5d180e1f784a2b649ac1ad820b6e476c, type: 2}
+    slotRevealClip: {fileID: 11400000, guid: 104e93c0ef4fdbf49bbda2a0d1f58c49, type: 2}
+    lootingBodyClip: {fileID: 11400000, guid: f4136a26efc6f0a4eaf7b2147ea80b43, type: 2}
+    lootingBushClip: {fileID: 11400000, guid: a8ee012d2dcad5b40b869c356f35b12f, type: 2}
+    lootingBodyLoop: {fileID: 11400000, guid: 63ea8f0c3afdc3f44b52c1d386e699ad, type: 2}
+    lootingBushLoop: {fileID: 11400000, guid: 1b7228467a7559c4e85c537322e1d7a8, type: 2}
     rarityRevealClip: {fileID: 11400000, guid: 166c33f53db0eed469de35e3c26c3e63, type: 2}
     ambienceClip: {fileID: 8300000, guid: 48ebfe4e6e022c34b90a2a7f3dde732f, type: 3}
     ambienceMixerGroup: {fileID: -6469774076249759476, guid: 5d1188e598dcb514aa82b03e86c0c627, type: 2}
