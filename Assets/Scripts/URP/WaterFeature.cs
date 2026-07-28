@@ -82,8 +82,8 @@ public class WaterFeature : ScriptableRendererFeature {
                 int width = RenderManager.offScreenRenderingSize.x;
                 int height = RenderManager.offScreenRenderingSize.y;
                 
-                int threadGroupsX = Mathf.CeilToInt(width / 8f);
-                int threadGroupsY = Mathf.CeilToInt(height / 8f);
+                int threadGroupsX = Mathf.Max(1, Mathf.CeilToInt(width / 8f));
+                int threadGroupsY = Mathf.Max(1, Mathf.CeilToInt(height / 8f));
                 
                 cmdBuffer.SetComputeIntParam(data.computeShader, widthId, width);
                 cmdBuffer.SetComputeIntParam(data.computeShader, heightId, height);

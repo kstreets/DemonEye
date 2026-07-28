@@ -145,7 +145,6 @@ public partial class Game : MonoBehaviour {
 
     private void OnRaidStateEnter() {
         InitRaid();
-        PlayAmbience();
     }
 
     private void OnRaidStateExit() {
@@ -156,7 +155,7 @@ public partial class Game : MonoBehaviour {
         HideInteractionPopup();
         HideUIElementPopup();
         CloseRaidUI();
-        StopAmbience();
+        StopAllAudioClips();
         TraderOnExitRaid();
     }
 
@@ -250,6 +249,7 @@ public partial class Game : MonoBehaviour {
         SpawnMapResources(curRaid.mapInstance.resourceParent);
         SpawnInitialExitPortals(curRaid.mapInstance.exitPortalsParent, curRaid.map.exitPortalsCount);
         AnimateRaidEnterSequence();
+        PlayAudioClip(audio.ambientClip, Vector2.zero, loop: true);
         
         WaterFeature.waterSettings = curRaid.map.waterSettings;
         thisFrame.flags |= FrameFlags.PostRaidInit;

@@ -15,7 +15,7 @@ MonoBehaviour:
   displayName: Customs
   sceneReference: Customs
   spawning: {fileID: 11400000, guid: 2c90f18555a522640ae7b505570226b0, type: 2}
-  waterSettings: {fileID: 0}
+  waterSettings: {fileID: 11400000, guid: 2277fb49e4270b04c9ae6d592a1c0a13, type: 2}
   altarSoulPrice: 125
   exitPortalsCount: 2
   playerCantBleed: 0

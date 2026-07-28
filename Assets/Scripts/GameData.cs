@@ -275,6 +275,7 @@ public class GameData {
     
     [Serializable]
     public class Audio {
+        public DynamicClip ambientClip;
         public DynamicClip shootClip;
         public DynamicClip stoneBreakClip;
         public DynamicClip stoneHitClip;
@@ -293,12 +294,10 @@ public class GameData {
         public DynamicClip lootingBodyLoop;
         public DynamicClip lootingBushLoop;
         public DynamicClip rarityRevealClip;
-        public AudioClip ambienceClip;
-        public AudioMixerGroup ambienceMixerGroup;
         
-        [NonSerialized] public AudioSource ambienceSource;
         public Dictionary<int, List<DynamicClipRecord>> records = new(50);
-        public Dictionary<DynamicClip, AudioSource> loopingSources = new(5);
+        public Dictionary<AudioSource, int> generationLookup = new();
+        public List<AudioClipHandle> loopingSources = new();
         public Queue<AudioSource> reservedSources;
     }
     

@@ -15,6 +15,7 @@ public partial class Game {
         public Timer discoverItemTimer;
         public int discoverItemIndex;
         public LootInventoryOrigin curLootOrigin;
+        public AudioClipHandle activeSearchingLoopClip;
     }
     
     private void CancelPortalSummoning() {
@@ -316,23 +317,20 @@ public partial class Game {
     }
     
     private void StartSearchingSoundLoop() {
-        var origin = curRaid.data.interactions.curLootOrigin;
-        if (origin == LootInventoryOrigin.Body) {
-            PlayAudioClip(audio.lootingBodyLoop, player.position, loop: true);
-        }
-        else if (origin == LootInventoryOrigin.Bush) {
-            PlayAudioClip(audio.lootingBushLoop, player.position, loop: true);
+        LootInventoryOrigin origin = curRaid.data.interactions.curLootOrigin;
+        DynamicClip searchingLoop = origin switch {
+            LootInventoryOrigin.Nothing => null,
+            LootInventoryOrigin.Body => audio.lootingBodyLoop,
+            LootInventoryOrigin.Bush => audio.lootingBushLoop,
+            _ => throw new ArgumentOutOfRangeException(),
+        };
+        if (searchingLoop != null) {
+            curRaid.data.interactions.activeSearchingLoopClip = PlayAudioClip(searchingLoop, player.position, loop: true);
         }
     }
     
     private void StopSearchingSoundLoop() {
-        var origin = curRaid.data.interactions.curLootOrigin;
-        if (origin == LootInventoryOrigin.Body) {
-            StopLoopingClip(audio.lootingBodyLoop);
-        }
-        else if (origin == LootInventoryOrigin.Bush) {
-            StopLoopingClip(audio.lootingBushLoop);
-        }
+        StopAudioClip(curRaid.data.interactions.activeSearchingLoopClip);
     }
     
     private void CheckForHotBarInteractions() {

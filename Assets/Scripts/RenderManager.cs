@@ -128,6 +128,8 @@ public static class RenderManager {
     }
     
     private static void AllocRenderTexture(ref RTHandle rtHandle, int width, int height) {
+        width = Mathf.Max(1, width);
+        height = Mathf.Max(1, height);
         rtHandle?.Release();
         rtHandle = RTHandles.Alloc(width, height, GraphicsFormat.R32G32B32A32_SFloat, enableRandomWrite: true, autoGenerateMips: false, filterMode: FilterMode.Point);
     }

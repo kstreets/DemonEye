@@ -10,23 +10,42 @@ public partial class Game {
         public Vector2 positionPlayed;
     }
     
+    public struct AudioClipHandle : IEquatable<AudioClipHandle> {
+        public AudioSource audioSource;
+        public int generation;
+        
+        public bool Equals(AudioClipHandle other) => audioSource == other.audioSource && generation == other.generation;
+        public override bool Equals(object obj) => obj is AudioClipHandle other && Equals(other);
+        public override int GetHashCode() => HashCode.Combine(audioSource, generation);
+    }
+    
     private void InitAudio() {
-        const int numberOfSources = 20;
+        const int numberOfSources = 25;
         audio.reservedSources = new(numberOfSources);
         for (int i = 0; i < numberOfSources; i++) {
             GameObject audioGo = Instantiate(prefabs.audioSource, transform);
-            audio.reservedSources.Enqueue(audioGo.GetComponent<AudioSource>());
+            AudioSource source = audioGo.GetComponent<AudioSource>();
+            audio.reservedSources.Enqueue(source);
+            audio.generationLookup.Add(source, 0);
         }
     }
     
-    private void PlayAudioClip(DynamicClip dynamicClip, Vector2 position, float volumeScaler = 1f, float pitch = 0f, bool loop = false) {
-        if (ClipIsViolatingLocalArea(dynamicClip, position)) return;
+    private AudioClipHandle PlayAudioClip(DynamicClip dynamicClip, Vector2 position, float volumeScaler = 1f, float pitch = 0f, bool loop = false) {
+        if (ClipIsViolatingLocalArea(dynamicClip, position)) {
+            return new();
+        }
         
         AudioSource source = audio.reservedSources.Dequeue();
+        int nextGeneration = audio.generationLookup[source] + 1;
+        audio.generationLookup[source] = nextGeneration;
         
-        if (loop) {
-            StopLoopingClip(dynamicClip);
-            audio.loopingSources.Add(dynamicClip, source);
+        AudioClipHandle handle = new() {
+            audioSource = source,
+            generation = nextGeneration,
+        };
+        
+        if (loop) { 
+            audio.loopingSources.Add(handle);    
         }
         else {
             audio.reservedSources.Enqueue(source);
@@ -46,13 +65,32 @@ public partial class Game {
         source.maxDistance = dynamicClip.maxDistance;
         source.loop = loop;
         source.Play();
+        
+        return handle;
     }
     
-    private void StopLoopingClip(DynamicClip dynamicClip) {
-        if (audio.loopingSources.TryGetValue(dynamicClip, out AudioSource alreadyPlayingSource)) {
-            alreadyPlayingSource.Stop();
-            audio.reservedSources.Enqueue(alreadyPlayingSource);
-            audio.loopingSources.Remove(dynamicClip);
+    private void StopAudioClip(AudioClipHandle handle) {
+        int curAudioSourceGen = audio.generationLookup[handle.audioSource];
+        bool handleIsValid = handle.generation == curAudioSourceGen;
+        if (!handleIsValid) return;
+        
+        handle.audioSource.Stop();
+        audio.generationLookup[handle.audioSource] = curAudioSourceGen + 1;
+        
+        // If the clip is non-looping then its already be in the reserved queue
+        if (!audio.reservedSources.Contains(handle.audioSource)) {
+            audio.reservedSources.Enqueue(handle.audioSource);
+        }
+        
+        audio.loopingSources.Remove(handle);
+    }
+    
+    private void StopAllAudioClips() {
+        foreach (AudioSource reservedSource in audio.reservedSources) {
+            reservedSource.Stop();
+        }
+        for (int i = audio.loopingSources.Count - 1; i >= 0; i--) {
+            StopAudioClip(audio.loopingSources[i]);
         }
     }
     
@@ -102,30 +140,6 @@ public partial class Game {
         });
 
         return false;
-    }
-    
-    private void PlayAmbience() {
-        audio.ambienceSource = audio.reservedSources.Dequeue();
-        var ambience = audio.ambienceSource;
-        
-        ambience.transform.position = Vector3.zero;
-        ambience.volume = 1f;
-        ambience.pitch = 1f;
-        ambience.rolloffMode = AudioRolloffMode.Linear;
-        ambience.minDistance = 500;
-        ambience.maxDistance = 500;
-
-        ambience.loop = true;
-        ambience.clip = audio.ambienceClip;
-        ambience.outputAudioMixerGroup = audio.ambienceMixerGroup;
-        ambience.Play();
-    }
-
-    private void StopAmbience() {
-        var ambience = audio.ambienceSource;
-        ambience.Stop();
-        audio.reservedSources.Enqueue(ambience);
-        audio.ambienceSource = null;
     }
     
     private static void GetRarityVolumeAndPitch(Item.Rarity rarity, out float volume, out float pitch) {
