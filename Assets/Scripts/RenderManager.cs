@@ -26,9 +26,11 @@ public static class RenderManager {
     // Instead we expose value type members that reflect the pixel perfect camera's data or just the sensible defaults.
     private static PixelPerfectCamera pixelPerfectCamera;
     private static readonly int waterMapShaderProp = Shader.PropertyToID("_WaterMap");
+    private static readonly int waterOcclusionMapShaderProp = Shader.PropertyToID("_WaterOcclusionMap");
     private static readonly int waterUVScalerShaderProp = Shader.PropertyToID("_WaterUVScaler");
     
     private static RTHandle tilemapRT;
+    private static RTHandle waterOcclusionRT;
     private static RTHandle sceneRT;
     private static RTHandle waterRT;
     private static RTHandle finalOutputRT;
@@ -40,15 +42,16 @@ public static class RenderManager {
     }
 #endif
     
-    public enum Texture { Tilemap, Scene, Water, Final }
+    public enum Texture { Tilemap, WaterOcclusion, Scene, Water, Final }
     
     public static RTHandle GetRenderTexture(Texture type) {
         return type switch {
-            Texture.Tilemap => EnsureRenderTexture(ref tilemapRT),
-            Texture.Scene   => EnsureRenderTexture(ref sceneRT),
-            Texture.Water   => EnsureRenderTexture(ref waterRT),
-            Texture.Final   => EnsureRenderTexture(ref finalOutputRT),
-            _               => throw new ArgumentOutOfRangeException(nameof(type), type, null),
+            Texture.Tilemap        => EnsureRenderTexture(ref tilemapRT),
+            Texture.WaterOcclusion => EnsureRenderTexture(ref waterOcclusionRT),
+            Texture.Scene          => EnsureRenderTexture(ref sceneRT),
+            Texture.Water          => EnsureRenderTexture(ref waterRT),
+            Texture.Final          => EnsureRenderTexture(ref finalOutputRT),
+            _                      => throw new ArgumentOutOfRangeException(nameof(type), type, null),
         };
     }
     
@@ -103,9 +106,11 @@ public static class RenderManager {
             AllocRenderTexture(ref tilemapRT, curScreenSize.x, offScreenHeight);
             AllocRenderTexture(ref sceneRT, curScreenSize.x, offScreenHeight);
             AllocRenderTexture(ref waterRT, curScreenSize.x, offScreenHeight);
+            AllocRenderTexture(ref waterOcclusionRT, curScreenSize.x, offScreenHeight);
             AllocRenderTexture(ref finalOutputRT, curScreenSize.x, curScreenSize.y);
             
             Shader.SetGlobalTexture(waterMapShaderProp, waterRT);
+            Shader.SetGlobalTexture(waterOcclusionMapShaderProp, waterOcclusionRT);
             
             Vector4 uvShaderScaler = Vector4.one;
             uvShaderScaler.y = 1f - ((offScreenHeight - curScreenSize.y) / (float)offScreenHeight);
