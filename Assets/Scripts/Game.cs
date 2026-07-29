@@ -343,6 +343,8 @@ public partial class Game : MonoBehaviour {
             }
         }
         
+        // We want the player to be infront of the UI, so we move it to the UI layer temporarily
+        player.gameObject.layer = LayerMask.NameToLayer("UI");
         player.spriteRenderer.sortingLayerName = "DeathWipe";
         
         player.GetEffect(EffectsIndicies.HitFlash).Complete();
@@ -386,6 +388,7 @@ public partial class Game : MonoBehaviour {
         
         sequence.OnComplete(() => {
             player.spriteRenderer.sortingLayerName = "Entity";
+            player.gameObject.layer = LayerMask.NameToLayer("Player");
             player.trans.localScale = Vector3.one;
             camera.pixelPerfect.assetsPPU = initialPPU;
             onCompleteCallback?.Invoke();

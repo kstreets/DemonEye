@@ -193,7 +193,7 @@ TextureImporter:
         width: 96
         height: 37
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -202,6 +202,94 @@ TextureImporter:
       bones: []
       spriteID: da941e8e5da247a40b0a108bba195895
       internalID: -536722650
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SwampProps_5
+      rect:
+        serializedVersion: 2
+        x: 86
+        y: 395
+        width: 33
+        height: 30
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fe9485fdd0b1917458d64684d82eeb3f
+      internalID: -1296890310
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SwampProps_6
+      rect:
+        serializedVersion: 2
+        x: 86
+        y: 363
+        width: 33
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c24a9514f9956734bb109d12883c363b
+      internalID: 1049078724
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SwampProps_8
+      rect:
+        serializedVersion: 2
+        x: 86
+        y: 298
+        width: 33
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7999c4c1cbadbc54b8b18dce12fbef61
+      internalID: 968427265
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SwampProps_7
+      rect:
+        serializedVersion: 2
+        x: 86
+        y: 330
+        width: 33
+        height: 65
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 79be5c8d479e09c42ac745e19b8caef1
+      internalID: 741941252
       vertices: []
       indices: 
       edges: []
@@ -226,6 +314,11 @@ TextureImporter:
       SwampProps_2: 924599791
       SwampProps_3: -1240487907
       SwampProps_4: -536722650
+      SwampProps_5: -1296890310
+      SwampProps_6: 1049078724
+      SwampProps_7: 741941252
+      SwampProps_8: 968427265
+      SwampProps_9: 491847417
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

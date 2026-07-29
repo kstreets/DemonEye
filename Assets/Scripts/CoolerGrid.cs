@@ -467,7 +467,7 @@ public class CoolerGrid : MonoBehaviour {
             edgeCol.edgeRadius = 0.02f;
         }
         
-        const float traversableRatioPerTile = 0.8f;
+        const float traversableRatioPerTile = 0.72f;
         Vector2 traversableTestBoxSize = new Vector2(cellSize, cellSize) * traversableRatioPerTile;
 
         precomputedCells = new();

@@ -70,6 +70,8 @@ public partial class Game {
     }
     
     private void StopAudioClip(AudioClipHandle handle) {
+        if (handle.audioSource == null) return;
+        
         int curAudioSourceGen = audio.generationLookup[handle.audioSource];
         bool handleIsValid = handle.generation == curAudioSourceGen;
         if (!handleIsValid) return;

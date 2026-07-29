@@ -18,7 +18,7 @@ MonoBehaviour:
   renderQueueType: 1
   layerMask:
     serializedVersion: 2
-    m_Bits: 1048576
+    m_Bits: 1048768
   clearRenderTarget: 1
   texture: 1
 --- !u!114 &-8688184042810852600
@@ -40,6 +40,27 @@ MonoBehaviour:
   layerMask:
     serializedVersion: 2
     m_Bits: 262160
+  clearRenderTarget: 0
+  texture: 2
+--- !u!114 &-4507422184291056610
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 312d735f16edfc44fbfb5b2edfdaa7e3, type: 3}
+  m_Name: UI Pass
+  m_EditorClassIdentifier: Assembly-CSharp::OrthoRenderFeature
+  m_Active: 1
+  renderPassEvent: 450
+  shaderTags: []
+  renderQueueType: 1
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 32
   clearRenderTarget: 0
   texture: 2
 --- !u!114 &-4075944505059195486
@@ -123,8 +144,9 @@ MonoBehaviour:
   - {fileID: 7261136505038537400}
   - {fileID: -1077250143126679424}
   - {fileID: -8688184042810852600}
+  - {fileID: -4507422184291056610}
   - {fileID: -4075944505059195486}
-  m_RendererFeatureMap: 38cb56a4faaaaff2bb989c044ea23882b88271202ebdc4648010b2ccb3d60cf108bb0a21a55e6d87a2c5bd6311566fc7
+  m_RendererFeatureMap: 38cb56a4faaaaff2bb989c044ea23882b88271202ebdc4648010b2ccb3d60cf108bb0a21a55e6d871ec49d9c676b72c1a2c5bd6311566fc7
   m_UseNativeRenderPass: 0
   m_LayerMask:
     serializedVersion: 2
@@ -173,6 +195,6 @@ MonoBehaviour:
   renderQueueType: 1
   layerMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 1605591
   clearRenderTarget: 1
   texture: 2

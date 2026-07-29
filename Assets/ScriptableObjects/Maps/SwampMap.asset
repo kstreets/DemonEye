@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0aa690954e129034abb7319a8a860125, type: 3}
   m_Name: SwampMap
   m_EditorClassIdentifier: Assembly-CSharp::MapData
-  displayName: Customs
-  sceneReference: Customs
+  displayName: Swamp
+  sceneReference: Swamp
   spawning: {fileID: 11400000, guid: 2c90f18555a522640ae7b505570226b0, type: 2}
   waterSettings: {fileID: 11400000, guid: 2277fb49e4270b04c9ae6d592a1c0a13, type: 2}
   altarSoulPrice: 125

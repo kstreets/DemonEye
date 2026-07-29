@@ -15,7 +15,7 @@ EditorBuildSettings:
     path: Assets/Scenes/LavaForrest.unity
     guid: ae176a417cb123144a7c58e6bc9ee80a
   - enabled: 1
-    path: Assets/Scenes/Customs.unity
+    path: Assets/Scenes/Swamp.unity
     guid: 5fd8c1da36d40be4887828c63cb56905
   - enabled: 1
     path: Assets/Scenes/LighthouseExpansion.unity
