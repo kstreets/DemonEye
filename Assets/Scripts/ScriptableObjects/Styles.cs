@@ -43,6 +43,7 @@ public class Styles : ScriptableObject {
     public Color normalDamageColor;
     public Color critDamageColor;
     public Color bleedDamageColor;
+    public Color hemorrhageDamageColor;
     public Color poisonDamageColor;
 
     public Color increaseDescColor;

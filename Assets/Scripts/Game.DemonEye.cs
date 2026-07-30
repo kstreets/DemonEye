@@ -45,7 +45,6 @@ public partial class Game {
         public DoubleTapAugment.InstanceData? doubleTapAugment;
         public BackwardsPiercingAugment.InstanceData? backwardsPiercingAugment;
         public MultiProjectileCritAugment.InstanceData? multiProjectileCritAugment;
-        public HemorrhageAugment.InstanceData? hemorrhageAugment;
         
         public EquipedUpgradeInstance GetUpgradeInstance<T>() where T : EyeUpgrade {
             foreach (EquipedUpgradeInstance upgradeInstance in upgradeInstances) {

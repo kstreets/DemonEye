@@ -8,6 +8,7 @@ public class BleedEyeUpgrade : EyeUpgrade {
         public float damageMultiplier;
         public float bleedInterval;
         public float lastBleedTime;
+        public float timeAddedToEnemy;
     }
 
     public float damageMulti;
@@ -25,6 +26,7 @@ public class BleedEyeUpgrade : EyeUpgrade {
             damageMultiplier = GetBleedDamageMultiplier(stackCount),
             bleedInterval = bleedInterval,
             lastBleedTime = 0f,
+            timeAddedToEnemy = Time.time,
         };
         enemy.bleed = instance;
     }

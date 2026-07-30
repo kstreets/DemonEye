@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using PrimeTween;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 public partial class Game {
     

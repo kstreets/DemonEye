@@ -42,7 +42,8 @@ MonoBehaviour:
   outOfStockCountColor: {r: 0.8352942, g: 0.27058825, b: 0.27450982, a: 1}
   normalDamageColor: {r: 1, g: 1, b: 1, a: 1}
   critDamageColor: {r: 1, g: 0.8286626, b: 0.22327036, a: 1}
-  bleedDamageColor: {r: 0.9308176, g: 0.24628536, b: 0.20196973, a: 1}
+  bleedDamageColor: {r: 0.8679245, g: 0.25953633, b: 0.22107501, a: 1}
+  hemorrhageDamageColor: {r: 0.9559748, g: 0.087179996, b: 0.15755764, a: 1}
   poisonDamageColor: {r: 0.3576005, g: 0.7735849, b: 0.3576005, a: 1}
   increaseDescColor: {r: 0.35686275, g: 0.7725491, b: 0.35686275, a: 1}
   decreaseDescColor: {r: 0.8352942, g: 0.27058825, b: 0.27450982, a: 1}

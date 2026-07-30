@@ -299,23 +299,24 @@ public partial class Game {
     // Gameplay Text Pop Ups
     // *******************************
     
-    private enum DamageColor { Normal, Crit, Blood, Poison }
+    private enum DamageColor { Normal, Crit, Blood, Hemorrhage, Poison }
 
     private void SpawnDamageNumber(Vector3 spawnPos, int damage, DamageColor damageColor) {
         Vector3 startSize = Vector3.one * 0.8f;
         Vector3 endSize = Vector3.one * damageColor switch {
-            DamageColor.Normal => 1.0f,
-            DamageColor.Crit   => 1.25f,
-            DamageColor.Blood  => 0.8f,
-            DamageColor.Poison => 0.8f,
-            _                  => 1f,
+            DamageColor.Normal     => 1.0f,
+            DamageColor.Crit       => 1.25f,
+            DamageColor.Blood      => 0.8f,
+            DamageColor.Hemorrhage => 1.25f,
+            DamageColor.Poison     => 0.8f,
+            _                      => 1f,
         };
         
         float xOffset = Random.Range(-0.08f, 0.08f);
         float yOffset = Random.Range(0.05f, 0.1f);
         Vector2 endDamageNumPos;
         
-        if (damageColor == DamageColor.Blood) {
+        if (damageColor == DamageColor.Blood || damageColor == DamageColor.Hemorrhage) {
             spawnPos = OffsetY(spawnPos, 0.05f);
             endDamageNumPos = OffsetY(spawnPos, yOffset * 2.3f);
         }
@@ -336,6 +337,9 @@ public partial class Game {
                 break;
             case DamageColor.Blood:
                 damageNumber.textMesh.color = config.styles.bleedDamageColor.Alpha(alpha);
+                break;
+            case DamageColor.Hemorrhage:
+                damageNumber.textMesh.color = config.styles.hemorrhageDamageColor.Alpha(alpha);
                 break;
             case DamageColor.Poison:
                 damageNumber.textMesh.color = config.styles.poisonDamageColor.Alpha(alpha);

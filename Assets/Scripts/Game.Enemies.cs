@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using PrimeTween;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Pool;
-using static GameData;
 using Random = UnityEngine.Random;
 
 public partial class Game {
@@ -31,6 +29,7 @@ public partial class Game {
         public EnemyData data;
         public Timer applyDamageTimer;
         public BleedEyeUpgrade.InstanceData? bleed;
+        public HemorrhageAugment.InstanceData? hemorrhage;
         public PoisonEyeUpgrade.InstanceData? poison;
         public SlowEyeUpgrade.InstanceData? slow;
         public KnockBackAugment.InstanceData? knockBack;
@@ -148,8 +147,18 @@ public partial class Game {
             
             if (enemy.bleed.TryGetValue(out var bleed)) {
                 if (Time.time - bleed.lastBleedTime > bleed.bleedInterval) {
-                    int bleedDamage = Mathf.RoundToInt(GetBaseDamage() * bleed.damageMultiplier);
-                    SpawnDamageNumber(EnemyDamageNumberSpawnPos(enemy), bleedDamage, DamageColor.Blood);
+                    
+                    float bleedDamageMultiplier = bleed.damageMultiplier;
+                    DamageColor bleedDamageColor = DamageColor.Blood;
+                    
+                    if (enemy.hemorrhage.TryGetValue(out var hemorrhage)) {
+                        bleedDamageMultiplier *= hemorrhage.bleedDamageMulti;
+                        enemy.hemorrhage = null; // One time use
+                        bleedDamageColor = DamageColor.Hemorrhage;
+                    }
+                    
+                    int bleedDamage = Mathf.RoundToInt(GetBaseDamage() * bleedDamageMultiplier);
+                    SpawnDamageNumber(EnemyDamageNumberSpawnPos(enemy), bleedDamage, bleedDamageColor);
                     
                     enemy.health -= bleedDamage;
                     bleed.lastBleedTime = Time.time;
