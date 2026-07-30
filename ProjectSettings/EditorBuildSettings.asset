@@ -21,7 +21,7 @@ EditorBuildSettings:
     path: Assets/Scenes/LighthouseExpansion.unity
     guid: 3f6d3a4d8d8f7a44d899285babe12f86
   - enabled: 1
-    path: Assets/Scenes/CustomsExpansion.unity
+    path: Assets/Scenes/Isles.unity
     guid: 1b58ed78e0f7d454c8f26fb20a6e47e8
   - enabled: 1
     path: Assets/Scenes/Ice.unity

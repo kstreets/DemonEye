@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0aa690954e129034abb7319a8a860125, type: 3}
+  m_Name: Isles
+  m_EditorClassIdentifier: Assembly-CSharp::MapData
+  displayName: The Isles
+  sceneReference: Isles
+  spawning: {fileID: 11400000, guid: d178d276342dd7a4b88f61a1e82034c7, type: 2}
+  waterSettings: {fileID: 11400000, guid: e1d3ebaf5415688429f2f226cabdf282, type: 2}
+  altarSoulPrice: 150
+  exitPortalsCount: 1
+  playerCantBleed: 0
+  eyeUpgradeOnBodyChance: 0.12
+  consecutiveEyeUpgradeChanceReductionOnBody: 0.08
+  commonLootRarityIncrease: 0
+  uncommonLootRarityIncrease: 0
+  rareLootRarityIncrease: 0
+  epicLootRarityIncrease: 0
+  legendaryLootRarityIncrease: 0

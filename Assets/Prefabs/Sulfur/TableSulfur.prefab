@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 6979004387813541071}
   - component: {fileID: 6690827560430062967}
   - component: {fileID: 7959783964558221026}
-  m_Layer: 19
+  m_Layer: 0
   m_Name: TableSulfur
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -130,7 +130,7 @@ PolygonCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1.89, y: 0.89}
+    oldSize: {x: 1.88, y: 0.89}
     newSize: {x: 1.13, y: 0.55}
     adaptiveTilingThreshold: 0.5
     drawMode: 0

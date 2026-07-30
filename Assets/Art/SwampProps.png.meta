@@ -294,6 +294,358 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: SwampProps_9
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 392
+        width: 87
+        height: 90
+      alignment: 9
+      pivot: {x: 0.5, y: 0.14}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6e8de73f9ace72b4db744892b5b69263
+      internalID: 491847417
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SwampProps_10
+      rect:
+        serializedVersion: 2
+        x: 315
+        y: 464
+        width: 40
+        height: 34
+      alignment: 9
+      pivot: {x: 0.5, y: 0.1}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1036d10fa7ae20e4c8d72b2408e5c998
+      internalID: 414866395
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SwampProps_11
+      rect:
+        serializedVersion: 2
+        x: 363
+        y: 466
+        width: 21
+        height: 34
+      alignment: 9
+      pivot: {x: 0.5, y: 0.11}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2e4f9268e428b354fb4795e05922c45c
+      internalID: 1107074890
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SwampProps_12
+      rect:
+        serializedVersion: 2
+        x: 307
+        y: 402
+        width: 84
+        height: 44
+      alignment: 9
+      pivot: {x: 0.5, y: 0.27}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d2b530506c4753e4cab2883019720543
+      internalID: 492235058
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SwampProps_13
+      rect:
+        serializedVersion: 2
+        x: 408
+        y: 400
+        width: 77
+        height: 94
+      alignment: 9
+      pivot: {x: 0.5, y: 0.092679285}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4eff805a110e61746a25e140a9b7ecd6
+      internalID: -1203077727
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SwampProps_14
+      rect:
+        serializedVersion: 2
+        x: 209
+        y: 275
+        width: 69
+        height: 71
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 371cd3c4b55fe0644a55d8efcd94f06b
+      internalID: -463934972
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SwampProps_15
+      rect:
+        serializedVersion: 2
+        x: 295
+        y: 280
+        width: 72
+        height: 38
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9abc51be1a003bd4a83769a985f6cb53
+      internalID: 269386638
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SwampProps_16
+      rect:
+        serializedVersion: 2
+        x: 402
+        y: 263
+        width: 56
+        height: 69
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b464d2a26fef00b4fbf247fc1f875af6
+      internalID: 1804235875
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SwampProps_17
+      rect:
+        serializedVersion: 2
+        x: 210
+        y: 230
+        width: 40
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3e639940dcdf2e24ca8c3150a5233bca
+      internalID: 1820683084
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SwampProps_18
+      rect:
+        serializedVersion: 2
+        x: 258
+        y: 232
+        width: 21
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d1c5d44e5c677b440b629b3a413f3f6a
+      internalID: 1440696216
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SwampProps_19
+      rect:
+        serializedVersion: 2
+        x: 318
+        y: 231
+        width: 57
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1e2c458c2e4ed804898a23a7239f1de0
+      internalID: -310914643
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SwampProps_20
+      rect:
+        serializedVersion: 2
+        x: 410
+        y: 224
+        width: 41
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9a72de4a99916fa448bf80ec46a76840
+      internalID: 1013921756
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SwampProps_21
+      rect:
+        serializedVersion: 2
+        x: 217
+        y: 160
+        width: 57
+        height: 53
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7b8f524f232be5e4fb6fa08a273c9a56
+      internalID: -881995616
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SwampProps_22
+      rect:
+        serializedVersion: 2
+        x: 322
+        y: 192
+        width: 19
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0eda0f4f7f584fe42b82aa9fc21449d3
+      internalID: -86122135
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SwampProps_23
+      rect:
+        serializedVersion: 2
+        x: 300
+        y: 168
+        width: 50
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 37041086a0524ce42affe107c31cb6cc
+      internalID: -759044765
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SwampProps_24
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 131
+        width: 38
+        height: 79
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 09ebc66247b35614b82e08e801584517
+      internalID: 97698627
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -311,7 +663,22 @@ TextureImporter:
       AttackRune1_0: 637263459462573385
       SwampProps_0: 1794571466
       SwampProps_1: 155908565
+      SwampProps_10: 414866395
+      SwampProps_11: 1107074890
+      SwampProps_12: 492235058
+      SwampProps_13: -1203077727
+      SwampProps_14: -463934972
+      SwampProps_15: 269386638
+      SwampProps_16: 1804235875
+      SwampProps_17: 1820683084
+      SwampProps_18: 1440696216
+      SwampProps_19: -310914643
       SwampProps_2: 924599791
+      SwampProps_20: 1013921756
+      SwampProps_21: -881995616
+      SwampProps_22: -86122135
+      SwampProps_23: -759044765
+      SwampProps_24: 97698627
       SwampProps_3: -1240487907
       SwampProps_4: -536722650
       SwampProps_5: -1296890310

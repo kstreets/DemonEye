@@ -23,7 +23,7 @@ public partial class Game {
                 };
             }
             return;
-        } 
+        }
         
         if (maps.Count != gameState.mapStates.Count) {
             Debug.Log("Maps save does not match current maps. Saves are not going to be loaded");
