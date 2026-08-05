@@ -297,7 +297,7 @@ public partial class Game {
             }
             if (dialogueType == TraderShopDialogueType.Purchase) {
                 typeWritier.ShowText("{ffade}{shake}Pleasure doing business. Keep it real.");
-                typeWritier.ShowText("{ffade}{shake}Hooray! That one was a 34% mark up.");
+                typeWritier.ShowText("{ffade}{shake}That one was a 34% mark up.");
             }
             typeWritier.gameObject.SetActive(true);
         });

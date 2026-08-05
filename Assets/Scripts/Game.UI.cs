@@ -9,6 +9,8 @@ public partial class Game {
     
     private void InitUI() {
         Cursor.visible = true;
+        Cursor.SetCursor(config.styles.cursorTexture, Vector2.zero, CursorMode.Auto);
+        
         CloseHideoutUI();
         CloseRaidUI();
         ShowMainMenuUI();

@@ -3,6 +3,8 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Styles", menuName = "Scriptable Objects/Styles")]
 public class Styles : ScriptableObject {
     
+    public Texture2D cursorTexture;
+    
     public Color commonTextColor;
     public Color uncommonTextColor;
     public Color rareTextColor;

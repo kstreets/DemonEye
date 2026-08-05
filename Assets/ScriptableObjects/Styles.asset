@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61064aeeb056f5b42910a87710c3d42e, type: 3}
   m_Name: Styles
   m_EditorClassIdentifier: Assembly-CSharp::Styles
+  cursorTexture: {fileID: 2800000, guid: e964ea07ccccc4347b7db62376d0a8a8, type: 3}
   commonTextColor: {r: 0.28627452, g: 0.48235294, b: 0.3196935, a: 1}
   uncommonTextColor: {r: 0.24949563, g: 0.4887094, b: 0.5471698, a: 1}
   rareTextColor: {r: 0.5882353, g: 0.27058825, b: 0.8352941, a: 1}
