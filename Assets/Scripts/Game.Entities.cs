@@ -71,12 +71,17 @@ public partial class Game {
         public ParentToEntity parentEffect;
         public ShakeEffect shakeEffect;
 
-        public enum EffectsIndicies { HitFlash, Poisoned, Bounce, Parent, Shake, Count }
+        public enum EffectsIndicies { HitFlash, Poisoned, Petrify, Bounce, Parent, Shake, Dissolve, Count }
         public readonly Tween[] tweenEffects = new Tween[(int)EffectsIndicies.Count];
         
         public Vector3 position {
             get => trans.position;
             set => trans.position = value;
+        }
+        
+        public Quaternion rotation {
+            get => trans.rotation;
+            set => trans.rotation = value;
         }
 
         public Vector3 Center => collider.bounds.center;
@@ -206,6 +211,10 @@ public partial class Game {
     }
 
     private void DestroyEntity(Entity entity, float delay) {
+        if (delay == 0f) {
+            DestroyEntity(entity);
+            return;
+        }
         Delay(entity, delay, static entity => gameInstance.DestroyEntity(entity));
     }
     
@@ -258,6 +267,20 @@ public partial class Game {
         });
         
         entity.SetEffect(EffectsIndicies.Poisoned, tween);
+    }
+    
+    public void AddPetrifyEffect(Entity entity, float duration) {
+        entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
+        entity.matPropertyBlock.SetFloat(poisonedPropertyId, 1);
+        entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
+
+        Tween tween = Delay(entity, duration, static entity => {
+            entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
+            entity.matPropertyBlock.SetFloat(poisonedPropertyId, 0);
+            entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
+        });
+        
+        entity.SetEffect(EffectsIndicies.Petrify, tween);
     }
     
     public struct BounceEffect {
@@ -333,6 +356,31 @@ public partial class Game {
         });
         
         entity.SetEffect(EffectsIndicies.Shake, tween);
+    }
+    
+    
+    private static int dissolvePropertyId = Shader.PropertyToID("_Dissolve");
+    private static int dissolveAspectRatioPropertyId = Shader.PropertyToID("_AspectRatio");
+    
+    private void DissolveAndDestroy(Entity entity, float duration) {
+        if (entity.GetEffect(EffectsIndicies.Dissolve).isAlive) return;
+        
+        entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
+        entity.matPropertyBlock.SetFloat(dissolveAspectRatioPropertyId, entity.spriteRenderer.sprite.AspectRatio());
+        entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
+        
+        Tween tween = Tween.Custom(entity, 0f, 1f, duration, static (entity, val) => {
+            entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
+            entity.matPropertyBlock.SetFloat(dissolvePropertyId, val);
+            entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
+        })
+        .OnComplete(entity, static entity => {
+            entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
+            entity.matPropertyBlock.SetFloat(dissolvePropertyId, 0);
+            entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
+            gameInstance.DestroyEntity(entity);
+        });
+        entity.SetEffect(EffectsIndicies.Dissolve, tween);
     }
     
     private Tween Delay<T>(T entity, float delay, Action<T> callback) where T: Entity {

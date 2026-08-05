@@ -288,6 +288,7 @@ public partial class Game : MonoBehaviour {
     private void DeinitRaid() {
         entities.enemies.Clear();
         entities.projectiles.Clear();
+        entities.soulTrackingProjectiles.Clear();
         DeinitMapGrid();
         DestroyEntities(EntityLifetime.Level);
         UnloadCurrentMapAsync();

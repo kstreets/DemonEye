@@ -19,7 +19,7 @@ public class KnockBackAugment : Augment {
         if (!RollProbability(Probability(stackCount))) return;
         
         Player player = gameInstance.entities.player;
-        enemy.knockBack = new() {
+        enemy.knockBack = new InstanceData {
             knockBackDist = knockBackDist,
             knockBackSpeed = knockBackSpeed,
             dir = (enemy.position - player.position).normalized,

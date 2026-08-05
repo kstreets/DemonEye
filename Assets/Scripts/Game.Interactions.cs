@@ -271,7 +271,7 @@ public partial class Game {
             slotUI.StopSlotSearching();
             slotUI.SetItem(itemRef, itemInstance.count);
             
-            Tween.PunchScale(slotUI.itemUI.image.rectTransform, Vector3.one * 4f, 0.1f, 2f);
+            Tween.Scale(slotUI.itemUI.image.rectTransform, Vector3.one * 3.5f, Vector3.one, new TweenSettings(0.2f, Ease.OutBack));
             
             Entity reveal = gameInstance.SpawnEntityOneShot(gameInstance.entityPools.lootReveal, Vector3.zero, Quaternion.identity, slotUI.rectTransform);
             reveal.trans.localPosition = Vector3.zero;

@@ -1160,6 +1160,12 @@
             "m_Id": "7abd41902488405399b5f5b8ec944b05"
         },
         {
+            "m_Id": "aa9f8c4f0c06478ba40f0bcd6bb796cb"
+        },
+        {
+            "m_Id": "e5b595c0d84c4007becceee3d7bd5ee9"
+        },
+        {
             "m_Id": "43b44346ce8b44f3916549e4fea78cf0"
         }
     ],
@@ -1174,11 +1180,15 @@
     "m_SerializedSubGraph": "{\n    \"subGraph\": {\n        \"fileID\": -5475051401550479605,\n        \"guid\": \"efbcb46bc10d26545b8216140c72921e\",\n        \"type\": 3\n    }\n}",
     "m_PropertyGuids": [
         "85223e66-69f1-4f38-8ebe-25532cae7bd1",
-        "17fbdc9f-a62a-4ad9-ac82-4a20e4fdcc58"
+        "17fbdc9f-a62a-4ad9-ac82-4a20e4fdcc58",
+        "c1965ca8-fd5e-4aa8-92f8-7596a2f090fd",
+        "37c2c3d9-59bc-41fe-b9a6-4fe3cf5ab9f4"
     ],
     "m_PropertyIds": [
         1212434229,
-        631506429
+        631506429,
+        -522475066,
+        1640654355
     ],
     "m_Dropdowns": [],
     "m_DropdownSelectedEntries": []
@@ -4263,6 +4273,27 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Vector2MaterialSlot",
+    "m_ObjectId": "aa9f8c4f0c06478ba40f0bcd6bb796cb",
+    "m_Id": -522475066,
+    "m_DisplayName": "CustomUV",
+    "m_SlotType": 0,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "_CustomUV",
+    "m_StageCapability": 3,
+    "m_Value": {
+        "x": 0.0,
+        "y": 0.0
+    },
+    "m_DefaultValue": {
+        "x": 0.0,
+        "y": 0.0
+    },
+    "m_Labels": []
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
     "m_ObjectId": "adbcf82f979b42c0a9db239b041501d7",
     "m_Id": 0,
@@ -5438,6 +5469,20 @@
         "w": 0.0
     },
     "m_LiteralMode": false
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.BooleanMaterialSlot",
+    "m_ObjectId": "e5b595c0d84c4007becceee3d7bd5ee9",
+    "m_Id": 1640654355,
+    "m_DisplayName": "UseCustomUV",
+    "m_SlotType": 0,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "_UseCustomUV",
+    "m_StageCapability": 3,
+    "m_Value": false,
+    "m_DefaultValue": false
 }
 
 {

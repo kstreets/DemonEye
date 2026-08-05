@@ -25,6 +25,8 @@ public partial class Game {
         public LayerMask layerMask;
         public DemonEyeInstance eyeInstanceSpawnedFrom;
         public Entity sourceEntity;
+        public Entity targetEntity;
+        public float targetingAcceleration;
         public List<Entity> ignoreEntities;
     }
     
@@ -39,6 +41,7 @@ public partial class Game {
         projectile.layerMask = default;
         projectile.eyeInstanceSpawnedFrom = default;
         projectile.sourceEntity = default;
+        projectile.targetEntity = default;
         if (projectile.ignoreEntities != null) {
             ListPool<Entity>.Release(projectile.ignoreEntities);
         }
@@ -81,6 +84,11 @@ public partial class Game {
     }
 
     private void UpdateProjectiles() {
+        UpdateDefaultProjectiles();
+        UpdateSoulTrackingProjectiles();
+    }
+    
+    private void UpdateDefaultProjectiles() {
         const float projectileRadius = 0.035f;
         List<Projectile> projectiles = entities.projectiles;
         
@@ -157,6 +165,43 @@ public partial class Game {
 
     private bool ProjectileIsIgnoringEntity(Projectile proj, Entity entity) {
         return proj.ignoreEntities?.Contains(entity) ?? false;
+    }
+    
+    private void SpawnSoulTrackingProjectile(Vector2 spawnPos, Entity targetEntity) {
+        Vector2 initDir = Vector2.up;
+        Quaternion projectileRotation = Quaternion.AngleAxis(Vector2.SignedAngle(Vector2.right, initDir), Vector3.forward);
+        Projectile projectile = SpawnEntity(entityPools.soulProjectile, spawnPos, projectileRotation);
+        projectile.targetEntity = targetEntity;
+        projectile.targetingAcceleration = Mathf.Lerp(60f, 40f, Vector2.Distance(spawnPos, targetEntity.position));
+        entities.soulTrackingProjectiles.Add(projectile);
+    }
+    
+    private void UpdateSoulTrackingProjectiles() {
+        for (int i = entities.soulTrackingProjectiles.Count - 1; i >= 0; i--) {
+            Projectile proj = entities.soulTrackingProjectiles[i]; 
+            
+            if (!EntityIsValid( proj.targetEntity)) {
+                DestroyEntity(proj); 
+                entities.soulTrackingProjectiles.RemoveAt(i);
+                continue;
+            }
+            
+            if (Vector2.Distance(proj.position, proj.targetEntity.position) < 0.035f) {
+                DestroyEntity(proj); 
+                entities.soulTrackingProjectiles.RemoveAt(i);
+                DamageEnemy(proj.targetEntity, 20, isCriticalStrike: false);
+                continue;
+            }
+            
+            proj.curTimeAlive += Time.deltaTime;
+            const float arcRampDuration = 0.4f;
+            float arcT = Mathf.Clamp01(proj.curTimeAlive / arcRampDuration);
+            
+            Vector2 dirToTarget = (proj.targetEntity.position - proj.position).normalized;
+            Vector2 aimDir = Vector2.Lerp(Vector2.up, dirToTarget, arcT).normalized;
+            Vector2 velocity = aimDir * (config.gameplay.projectileSpeed * Time.deltaTime);
+            proj.position = proj.position.Offset(x: velocity.x, y: velocity.y);
+        }
     }
 
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using PrimeTween;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Pool;
@@ -27,15 +28,23 @@ public partial class Game {
         public bool notProgressingTowardsPlayer;
         public Collider2D enemySpacerCollider;
         public EnemyData data;
-        public Timer applyDamageTimer;
-        public BleedEyeUpgrade.InstanceData? bleed;
-        public HemorrhageAugment.InstanceData? hemorrhage;
-        public PoisonEyeUpgrade.InstanceData? poison;
-        public SlowEyeUpgrade.InstanceData? slow;
-        public KnockBackAugment.InstanceData? knockBack;
         public Vector2 moveDir;
         public Vector2 graphicalDir;
         public Limiter changeDirLimiter;
+        public OptionalRef<BleedEyeUpgrade.InstanceData> bleed;
+        public OptionalRef<HemorrhageAugment.InstanceData> hemorrhage;
+        public OptionalRef<PoisonEyeUpgrade.InstanceData> poison;
+        public OptionalRef<SlowEyeUpgrade.InstanceData> slow;
+        public OptionalRef<PetrifyEyeUpgrade.InstanceData> petrify;
+        public OptionalRef<KnockBackAugment.InstanceData> knockBack;
+    }
+    
+    public static void ClearEnemyDebuffs(Enemy enemy) {
+        enemy.bleed.ClearValue();
+        enemy.poison.ClearValue();
+        enemy.slow.ClearValue();
+        enemy.knockBack.ClearValue();
+        enemy.GetEffect(Entity.EffectsIndicies.Poisoned).Stop();
     }
     
     private void OnEnemySpawned(Enemy enemy, EnemyData data) {
@@ -46,6 +55,7 @@ public partial class Game {
         enemy.enemySpacerCollider.excludeLayers = data.excludeCollisionLayers;
         enemy.flowFieldAcc = Random.Range(2.5f, 3.5f);
         enemy.rigidbody.mass = data.defualtMass;
+        enemy.collider.enabled = true;
     }
     
     private void OnEnemyDeath(Enemy deadEnemy) {
@@ -67,8 +77,6 @@ public partial class Game {
         if (!thisFrame.enemyKillCount.TryAdd(deadEnemy.data, 1)) {
             thisFrame.enemyKillCount[deadEnemy.data]++;
         }
-        
-        DestroyEntity(deadEnemy);
     }
     
     private void UpdateEnemies() {
@@ -84,13 +92,14 @@ public partial class Game {
         for (int i = enemies.Count - 1; i >= 0; i--) {
             Enemy enemy = enemies[i];
             
-            if (enemy.data.type == EnemyData.EnemyType.Phantom) continue;
             if (!enemy.gameObject.activeInHierarchy) continue;
             
-            enemy.applyDamageTimer.Tick();
+            if (enemy.petrify.HasValue) {
+                enemy.animator.enabled = false;
+                continue;
+            }
             
             float distFromPlayer = Vector2.Distance(player.Center, enemy.Center);
-
             enemy.curRunningSumFrameCount++;
             enemy.curRunningSumDistFromPlayer += distFromPlayer;
             
@@ -145,15 +154,16 @@ public partial class Game {
                 BeginEnemyAttackDelay(enemy); 
             }
             
-            if (enemy.bleed.TryGetValue(out var bleed)) {
+            if (enemy.bleed.HasValue) {
+                ref var bleed = ref enemy.bleed.GetValue();
                 if (Time.time - bleed.lastBleedTime > bleed.bleedInterval) {
                     
                     float bleedDamageMultiplier = bleed.damageMultiplier;
                     DamageColor bleedDamageColor = DamageColor.Blood;
                     
-                    if (enemy.hemorrhage.TryGetValue(out var hemorrhage)) {
-                        bleedDamageMultiplier *= hemorrhage.bleedDamageMulti;
-                        enemy.hemorrhage = null; // One time use
+                    if (enemy.hemorrhage.HasValue) {
+                        bleedDamageMultiplier *= enemy.hemorrhage.GetValue().bleedDamageMulti;
+                        enemy.hemorrhage.ClearValue(); // One time use
                         bleedDamageColor = DamageColor.Hemorrhage;
                     }
                     
@@ -162,7 +172,6 @@ public partial class Game {
                     
                     enemy.health -= bleedDamage;
                     bleed.lastBleedTime = Time.time;
-                    enemy.bleed = bleed; // Apply changes
                     
                     Entity bloodDrop = SpawnEntity(entityPools.bloodDrop, OffsetY(enemy.position, 0.015f), Quaternion.identity);
                     AddParentEffect(bloodDrop, enemy, 0.4f);
@@ -175,8 +184,15 @@ public partial class Game {
 
             if (enemy.health <= 0) {
                 Enemy deadEnemy = enemies[i];
-                const float deathDelay = 0.12f;
+                
+                // It looks better if the enemies keep some momentum when dying
+                deadEnemy.rigidbody.linearVelocity *= 0.3f;
+                deadEnemy.collider.enabled = false;
+                
+                const float deathDelay = 0.03f;
                 Delay(deadEnemy, deathDelay, static (deadEnemy) => gameInstance.OnEnemyDeath(deadEnemy));
+                DissolveAndDestroy(deadEnemy, 0.6f);
+                
                 enemies.RemoveAt(i);
             }
         }
@@ -199,7 +215,33 @@ public partial class Game {
             }
             
             Enemy collidedWithEnemy = entities.lookup[closestColToPlayer.gameObject] as Enemy;
-            DamagePlayer(collidedWithEnemy.data.collisionDamage, PlayerDamageType.Collision, collidedWithEnemy);
+            
+            if (collidedWithEnemy.petrify.HasValue) {
+                const float deathDelay = 0.12f;
+                Delay(collidedWithEnemy, deathDelay, static (deadEnemy) => gameInstance.OnEnemyDeath(deadEnemy));
+                enemies.Remove(collidedWithEnemy);
+                collidedWithEnemy.collider.enabled = false;
+                
+                List<Collider2D> targetEnemies = Physics.OverlapCircle(player.position, 12f, Masks.EnemyMask);
+
+                targetEnemies.Sort((a, b) => {
+                    float distA = (a.transform.position - player.position).sqrMagnitude;
+                    float distB = (b.transform.position - player.position).sqrMagnitude;
+                    return distA.CompareTo(distB);
+                });
+
+                if (targetEnemies.Count > 0) {
+                    int projCount = collidedWithEnemy.petrify.GetValue().volleyCount;
+                    for (int i = 0; i < projCount; i++) {
+                        Enemy enemy = entities.lookup[targetEnemies[i % targetEnemies.Count].gameObject] as Enemy;
+                        // DamageEnemyAfterDelay(enemy, 25, false, 0.4f);
+                        SpawnSoulTrackingProjectile(playerPos, enemy);
+                    }
+                }
+            }
+            else {
+                DamagePlayer(collidedWithEnemy.data.collisionDamage, PlayerDamageType.Collision, collidedWithEnemy);
+            }
         }
     }
     
@@ -213,11 +255,16 @@ public partial class Game {
     }
     
     private void MoveEnemy(Enemy enemy, bool isAttacking) {
+        if (enemy.petrify.HasValue) {
+            enemy.rigidbody.linearVelocity = Vector3.zero;
+            return;
+        }
+        
         float speed = enemy.data.speed;
         
-        if (enemy.knockBack.TryGetValue(out var knockBack)) {
+        if (enemy.knockBack.HasValue) {
+            ref var knockBack = ref enemy.knockBack.GetValue();
             knockBack.timeSpentInKnockBack += Time.fixedDeltaTime;
-            enemy.knockBack = knockBack; // Apply changes
             
             float duration = knockBack.knockBackDist / knockBack.knockBackSpeed;
             float comp = Mathf.Clamp01(knockBack.timeSpentInKnockBack / duration);
@@ -227,21 +274,22 @@ public partial class Game {
             enemy.rigidbody.linearVelocity = knockBack.dir * velocity;
             
             if (comp >= 1f) {
-                enemy.knockBack = null;
+                enemy.knockBack.ClearValue();
             }
             return;
         }
             
         float totalSlowPercentage = 0f;
-        if (enemy.slow.TryGetValue(out var slow)) {
+        if (enemy.slow.HasValue) {
+            ref var slow = ref enemy.slow.GetValue();
             slow.timeSpentSlowed += Time.fixedDeltaTime;
-            enemy.slow = slow; // Apply changes
             
             totalSlowPercentage += slow.speedReductionPercent;
             enemy.rigidbody.mass = enemySlowedMass;
+            
             if (slow.timeSpentSlowed >= slow.duration) {
                 enemy.rigidbody.mass = enemy.data.defualtMass;
-                enemy.slow = null;
+                enemy.slow.ClearValue();
             }
         }
         speed = Mathf.Clamp(speed * Mathf.Clamp01(1f - totalSlowPercentage), 0.05f, enemy.data.speed);
@@ -306,15 +354,6 @@ public partial class Game {
                 enemy.health = 0;
             });
             return;
-        }
-        
-        if (enemy.data.type == EnemyData.EnemyType.Phantom) {
-            float time = enemy.animator.TimeLeftInCurrentAnimation();
-            Delay(enemy, time, static (enemy) => {
-                gameInstance.SpawnTeleportOut(enemy.position);
-                gameInstance.entities.enemies.Remove(enemy);
-                gameInstance.DestroyEntity(enemy);
-            });
         }
         
         Delay(enemy, enemy.data.attackDamageDelay, static (enemy) => {
@@ -427,37 +466,7 @@ public partial class Game {
         Delay(enemy, spawnDelay, static (enemy) => {
             enemy.gameObject.SetActive(true);
             gameInstance.curRaid.teleportingInPositions.Remove(enemy.position);
-            gameInstance.OnEnemyTeleportEnd(enemy);
         });
-    }
-    
-    private void OnEnemyTeleportEnd(Enemy enemy) {
-        if (enemy.data.type == EnemyData.EnemyType.Phantom) {
-            Vector2 dirToPlayer = (player.position - enemy.position).normalized;
-            switch (CardinalDirFromVector(dirToPlayer)) {
-                case CardinalDir.Right:
-                    enemy.spriteRenderer.flipX = false;
-                    enemy.animator.Play(attackSideAnim);
-                    enemy.graphicalDir = Vector2.right;
-                    break;
-                case CardinalDir.Left:
-                    enemy.spriteRenderer.flipX = true;
-                    enemy.animator.Play(attackSideAnim);
-                    enemy.graphicalDir = Vector2.left;
-                    break;
-                case CardinalDir.Up:
-                    enemy.animator.Play(attackUpAnim);
-                    enemy.graphicalDir = Vector2.up;
-                    break;
-                case CardinalDir.Down:
-                    enemy.animator.Play(attackDownAnim);
-                    enemy.graphicalDir = Vector2.down;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-            BeginEnemyAttackDelay(enemy);
-        }
     }
     
     private void SpawnTeleportOut(Vector3 position) {

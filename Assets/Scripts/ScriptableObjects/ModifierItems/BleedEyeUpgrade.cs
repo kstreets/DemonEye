@@ -15,10 +15,10 @@ public class BleedEyeUpgrade : EyeUpgrade {
     public float bleedInterval;
     
     public override void AddInstanceToEnemy(Enemy enemy, int stackCount) {
-        if (enemy.bleed.TryGetValue(out InstanceData bleed)) {
+        if (enemy.bleed.HasValue) {
+            ref InstanceData bleed = ref enemy.bleed.GetValue();
             bleed.damageMultiplier = GetBleedDamageMultiplier(stackCount);
             bleed.bleedInterval = bleedInterval;
-            enemy.bleed = bleed;
             return;
         }
         
@@ -28,11 +28,7 @@ public class BleedEyeUpgrade : EyeUpgrade {
             lastBleedTime = 0f,
             timeAddedToEnemy = Time.time,
         };
-        enemy.bleed = instance;
-    }
-
-    public override void AddInstanceToEye(DemonEyeInstance eyeInstance, int stackCount) {
-        
+        enemy.bleed = new(instance);
     }
 
     protected override string GetUpgradeDescription(int stackCount) {

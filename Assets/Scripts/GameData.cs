@@ -44,6 +44,7 @@ public class GameData {
         public GameObject rockSmokePrefab;
         public GameObject baseProjectile;
         public GameObject boneShatterProjectile;
+        public GameObject soulProjectile;
         public GameObject bloodDrop;
         public GameObject poisonDebuff;
         public GameObject explosion;
@@ -324,6 +325,7 @@ public class GameData {
         public EntityPool<Projectile> boneShatterProjectile;
         public EntityPool<Projectile> gooProjectile;
         public EntityPool<Projectile> piercingShotProjectile;
+        public EntityPool<Projectile> soulProjectile;
         public EntityPool<Entity> poisonDebuff;
         public EntityPool<Entity> explosion;
         public EntityPool<Entity> projectileImpact;
@@ -353,6 +355,7 @@ public class GameData {
     public class Entities {
         public List<Entity> all = new();
         public List<Projectile> projectiles = new();
+        public List<Projectile> soulTrackingProjectiles = new();
         public List<Enemy> enemies = new();
         public Dictionary<GameObject, Entity> lookup = new();
         public Player player;

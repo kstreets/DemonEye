@@ -12,9 +12,9 @@ public class HemorrhageAugment : Augment {
     }
     
     public override void AddInstanceToEnemy(Enemy enemy, int stackCount) {
-        if (!enemy.bleed.TryGetValue(out var bleed)) return;
-        if (enemy.hemorrhage.HasValue) return;
+        if (!enemy.bleed.HasValue || enemy.hemorrhage.HasValue) return;
         
+        var bleed = enemy.bleed.GetValue();
         // Ignore the first shot where bleed is applied
         if (bleed.timeAddedToEnemy == Time.time) return;
         
@@ -22,7 +22,7 @@ public class HemorrhageAugment : Augment {
         float timeDistToNextBleed = nextBleedTime - Time.time;
         if (timeDistToNextBleed > maxGraceTime) return;
         
-        enemy.hemorrhage = new() {
+        enemy.hemorrhage = new InstanceData {
             bleedDamageMulti = GetBleedDamageMulti(stackCount),
         };
     }

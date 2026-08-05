@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29fbcd3214194ec4ab46073d5d754df6, type: 3}
+  m_Name: Petrify
+  m_EditorClassIdentifier: Assembly-CSharp::PetrifyEyeUpgrade
+  uuid: -11790133
+  displayName: Petrify
+  inventorySprite: {fileID: -1678527319, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  dropSprite: {fileID: 0}
+  pickupRadius: 0.07
+  type: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
+  priceCategory: {fileID: 11400000, guid: 29cfe26cd6da0734197e5840e6724f56, type: 2}
+  buyPrice: 0
+  sellPrice: 0
+  mapSpawning:
+    spawnsOnAll: 0
+    firstSpawnMap: {fileID: 0}
+    spawnsOnMaps: []
+  traderSpawning:
+    levelRequired: 0
+    stockRange: {x: 0, y: 0}
+    barterRequirements: []
+  rarity: 4
+  dropOrigins: []
+  modifiesStats: 0
+  critChance: 0
+  critMultiplier: 0
+  damageMultiplier: 0
+  fireratePercentage: 0
+  projectileCount: 0
+  rangePercentage: 0
+  itemGroupProps: {fileID: 11400000, guid: 78826f3a685555a4896655f4c68ef737, type: 2}
+  maxStackCount: 0
+  weight: 0
+  description: 
+  relativeMechanicDesc: {fileID: 0}
+  probability: 0.06
+  duration: 10000
+  volleyCount: 10

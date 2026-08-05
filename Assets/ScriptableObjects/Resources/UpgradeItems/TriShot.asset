@@ -25,22 +25,6 @@ MonoBehaviour:
     spawnsOnAll: 0
     firstSpawnMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
     spawnsOnMaps: []
-  spawnsOnAllMaps: 0
-  firstSpawnMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
-  spawnsOnMaps: []
-  rarity: 0
-  dropOrigins:
-  - dropPool: {fileID: 11400000, guid: 447693d567ac32848b6d0306b40001c5, type: 2}
-    chanceToSpawn: 0.65
-  - dropPool: {fileID: 11400000, guid: ac65e2b20c03fcb43989ec16398ae8cd, type: 2}
-    chanceToSpawn: 0.3
-  traderLevelRequired: 2
-  traderStockRange: {x: 1, y: 5}
-  barterRequirements:
-  - item: {fileID: 11400000, guid: c300cfd9dba50fc438f83dec791af29b, type: 2}
-    count: 5
-  - item: {fileID: 11400000, guid: 27c971c009f757f4da645a16777716dc, type: 2}
-    count: 4
   traderSpawning:
     levelRequired: 2
     stockRange: {x: 1, y: 5}
@@ -49,6 +33,12 @@ MonoBehaviour:
       count: 5
     - item: {fileID: 11400000, guid: 27c971c009f757f4da645a16777716dc, type: 2}
       count: 4
+  rarity: 0
+  dropOrigins:
+  - dropPool: {fileID: 11400000, guid: 447693d567ac32848b6d0306b40001c5, type: 2}
+    chanceToSpawn: 0.65
+  - dropPool: {fileID: 11400000, guid: ac65e2b20c03fcb43989ec16398ae8cd, type: 2}
+    chanceToSpawn: 0.3
   modifiesStats: 0
   critChance: 0
   critMultiplier: 0

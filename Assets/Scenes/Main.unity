@@ -22240,6 +22240,7 @@ MonoBehaviour:
     rockSmokePrefab: {fileID: 5935938718941175970, guid: d08dafda554f85a4db705e94aa604f77, type: 3}
     baseProjectile: {fileID: 2758590605051147821, guid: 490c322ccae8e8149a6dddb96650a50e, type: 3}
     boneShatterProjectile: {fileID: 2758590605051147821, guid: f7b19a83567c00a4da11c9ce9c266d1f, type: 3}
+    soulProjectile: {fileID: 744236230806242927, guid: 65e5ee4fa406fff44bdf203d055f749a, type: 3}
     bloodDrop: {fileID: 2835100544158664230, guid: a3700393b2b39cc44a28e9dee1a285c8, type: 3}
     poisonDebuff: {fileID: 9042913863694245120, guid: b52083b254543e949b6579beea5aef46, type: 3}
     explosion: {fileID: 1132575347036418292, guid: 97edbac11773f6b4d8f88d6785f366e1, type: 3}

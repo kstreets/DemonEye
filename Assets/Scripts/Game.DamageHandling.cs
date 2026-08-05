@@ -38,6 +38,9 @@ public partial class Game {
         var entityLookup = entities.lookup;
         if (entityLookup[entity.gameObject] is not Enemy enemy) return;
         
+        // We don't do anything if the enemy is petrified
+        if (enemy.petrify.HasValue) return;
+        
         /*
         ============== Simple projectile land ===================
         Any projectile with flat damage is deemed to be a simple projectile
@@ -72,6 +75,9 @@ public partial class Game {
         foreach (EquipedAugmentInstance augmentInstance in eyeInstance.augmentInstances) {
             augmentInstance.ApplyToEnemy(enemy);
         }
+        
+        // If it has petrify its because it just got added and nothing special should happen
+        if (enemy.petrify.HasValue) return;
         
         if (eyeInstance.explosion.TryGetValue(out var explosion) && RollProbability(explosion.probability)) {
             Vector2 expSpawnPos = GetExplosionPosition(projectile, enemy);
@@ -223,7 +229,8 @@ public partial class Game {
     private float GetDamageMultiplierOnEnemy(Enemy enemy) {
         float damageMultiplier = 1f;
         
-        if (enemy.poison.TryGetValue(out var poison)) {
+        if (enemy.poison.HasValue) {
+            var poison = enemy.poison.GetValue();
             if (enemy.health >= enemy.data.health * poison.minHealthPercentForMulti) {
                 damageMultiplier *= poison.damageMulti;
             }
