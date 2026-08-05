@@ -117,6 +117,7 @@ public partial class Game {
         hideoutTabs.traderButton.onClick.AddListener(() => {
             ToggleHideoutTab(hideoutTabs.traderButton, hideoutTabs.traderText);
             ToggleHideoutPanels(traderPanel.panel, transactionPanel.panel, stashPanel.panel);
+            TriggerTraderShopDialogue(TraderShopDialogueType.Greeting); 
         });
         
         hideoutTabs.questsButton.onClick.AddListener(() => {

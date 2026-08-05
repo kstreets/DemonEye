@@ -231,8 +231,6 @@ public partial class Game {
     private void OnSellButtonPressed() {
         if (transactionState == TransactionState.Selling && GetInventoryItemCount(inventories.transaction) <= 0) return;
         int sellPrice = GetInventoryValue(inventories.transaction, InventoryValueType.Sell);
-        // Before selling items we pass the transaction inventory to callbacks that want to know what we sold
-        // onSoldItemsToTrader?.Invoke(inventories.transaction.slots); 
         player.state.coinCurrency += sellPrice;
         ClearInventory(inventories.transaction);
     }
@@ -247,6 +245,7 @@ public partial class Game {
             ReduceTradingItemStock();
             // After buying items we just make sure all items in stash are no longer trader owned
             ClearItemsAsTraderOwned(inventories.stash);
+            TriggerTraderShopDialogue(TraderShopDialogueType.Purchase);
         }
     }
     
@@ -268,6 +267,7 @@ public partial class Game {
 
         TryAddItemToInventory(inventories.stash, curTradingItem, 1);
         ReduceTradingItemStock();
+        TriggerTraderShopDialogue(TraderShopDialogueType.Purchase);
     }
     
     private void UpdateTransactionUI() {
@@ -282,6 +282,25 @@ public partial class Game {
             transactionPanel.transaction.UpdateSellPrice(sellPrice);
             transactionPanel.transaction.toggleGroup.ManualyToggleCosmetically(transactionPanel.transaction.sellToggle);
         }
+    }
+    
+    private enum TraderShopDialogueType { Greeting, Purchase }
+    
+    private void TriggerTraderShopDialogue(TraderShopDialogueType dialogueType) {
+        traderPanel.shopTextTypewriter.gameObject.SetActive(false);
+        
+        // The delay is nice, but its also necessary to make sure theres a 1 frame delay so it animates correctly every time
+        Tween.Delay(0.1f, () => {
+            var typeWritier = gameInstance.traderPanel.shopTextTypewriter;
+            if (dialogueType == TraderShopDialogueType.Greeting) {
+                typeWritier.ShowText("{ffade}{shake}Can you actually buy something this time?");
+            }
+            if (dialogueType == TraderShopDialogueType.Purchase) {
+                typeWritier.ShowText("{ffade}{shake}Pleasure doing business. Keep it real.");
+                typeWritier.ShowText("{ffade}{shake}Hooray! That one was a 34% mark up.");
+            }
+            typeWritier.gameObject.SetActive(true);
+        });
     }
     
     // ************************

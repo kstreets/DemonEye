@@ -242,6 +242,7 @@ public class GameData {
         public RectTransform inventoryParent;
         public TraderRepBar repBar;
         public TextMeshProUGUI itemRefreshTimeText;
+        public TypewriterComponent shopTextTypewriter;
     }
     
     [Serializable]
