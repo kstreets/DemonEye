@@ -64,14 +64,16 @@ public partial class Game {
         if (deadEnemy.data.dropPool.HasItems && RollProbability(deadEnemy.data.chanceToDropItem)) {
             Item dropItem = GetItemFromDropPool(deadEnemy.data.dropPool);
             if (dropItem) {
-                SpawnItemAsEntity(dropItem, 1, deadEnemy.position, Quaternion.identity);
+                Entity itemDropEntity = SpawnItemAsEntity(dropItem, 1, deadEnemy.Center, Quaternion.identity);
+                Vector3 endPos = deadEnemy.Center + RotationVector360(0.15f, 0.22f);
+                AddBounceEffect(itemDropEntity, endPos, 0.8f);
             }
         }
                     
         Entity bloodSplatterEntity = SpawnEntity(entityPools.bloodSplatter, deadEnemy.position, Quaternion.identity);
         DestroyEntity(bloodSplatterEntity, CurrentClipLength(bloodSplatterEntity.animator));
-        PlayAudioClip(audio.bloodBurstClip, deadEnemy.position);
         
+        PlayAudioClip(audio.bloodBurstClip, deadEnemy.position);
         PlayerOnEnemyDeath(deadEnemy);
         
         if (!thisFrame.enemyKillCount.TryAdd(deadEnemy.data, 1)) {
@@ -151,7 +153,11 @@ public partial class Game {
                         enemy.animator.Play(attackDownAnim);
                         break;
                 }
-                BeginEnemyAttackDelay(enemy); 
+                Delay(enemy, enemy.data.attackDamageDelay, static (enemy) => {
+                    // Its possible the enemy died while waiting to apply the damage 
+                    if (enemy.health <= 0) return;
+                    PerformEnemyAttack(enemy); 
+                });
             }
             
             if (enemy.bleed.HasValue) {
@@ -234,7 +240,6 @@ public partial class Game {
                     int projCount = collidedWithEnemy.petrify.GetValue().volleyCount;
                     for (int i = 0; i < projCount; i++) {
                         Enemy enemy = entities.lookup[targetEnemies[i % targetEnemies.Count].gameObject] as Enemy;
-                        // DamageEnemyAfterDelay(enemy, 25, false, 0.4f);
                         SpawnSoulTrackingProjectile(playerPos, enemy);
                     }
                 }
@@ -333,61 +338,57 @@ public partial class Game {
         }
     }
     
-    private void BeginEnemyAttackDelay(Enemy enemy) {
+    private static void PerformEnemyAttack(Enemy enemy) {
         if (enemy.data.type == EnemyData.EnemyType.Boomon) {
-            Delay(enemy, enemy.data.attackDamageDelay, static (enemy) => {
-                const int projectileCount = 3;
-                const float angleDeltaPerDrop = 360f /  projectileCount;
-                const float randomRangePerDrop = angleDeltaPerDrop * 0.25f;
+            const int projectileCount = 3;
+            const float angleDeltaPerDrop = 360f /  projectileCount;
+            const float randomRangePerDrop = angleDeltaPerDrop * 0.25f;
 
-                for (int i = 0; i <  projectileCount; i++) {
-                    float randomAngle = (angleDeltaPerDrop * i) + Random.Range(-randomRangePerDrop, randomRangePerDrop);
-                    Vector3 velocity = RotationVector(randomAngle) * 0.62f;
-                    Vector3 position = gameInstance.OffsetY(enemy.position, 0.2f);
-                    const float lifetime = 2f;
-                    gameInstance.SpawnProjectile(
-                        gameInstance.entityPools.gooProjectile, position, velocity, lifetime, enemy, 
-                        flatDamage: enemy.data.damage, layermask: Masks.PlayerHurtMask
-                    );
-                }
-                
-                enemy.health = 0;
-            });
+            for (int i = 0; i <  projectileCount; i++) {
+                float randomAngle = (angleDeltaPerDrop * i) + Random.Range(-randomRangePerDrop, randomRangePerDrop);
+                Vector3 velocity = RotationVector(randomAngle) * 0.62f;
+                Vector3 position = gameInstance.OffsetY(enemy.position, 0.2f);
+                const float lifetime = 2f;
+                gameInstance.SpawnProjectile(
+                    gameInstance.entityPools.gooProjectile, position, velocity, lifetime, enemy, 
+                    flatDamage: enemy.data.damage, layermask: Masks.PlayerHurtMask
+                );
+            }
+            
+            enemy.health = 0;
             return;
         }
         
-        Delay(enemy, enemy.data.attackDamageDelay, static (enemy) => {
-            Vector2 attackCheckPos = enemy.position;
-            switch (gameInstance.CardinalDirFromVector(enemy.graphicalDir)) {
-                case CardinalDir.Right:
-                    attackCheckPos += enemy.data.sideAttackOffset;
-                    break;
-                case CardinalDir.Left:
-                    attackCheckPos += new Vector2(-enemy.data.sideAttackOffset.x, enemy.data.sideAttackOffset.y);
-                    break;
-                case CardinalDir.Up:
-                    attackCheckPos += enemy.data.upAttackOffset;
-                    break;
-                case CardinalDir.Down:
-                    attackCheckPos += enemy.data.donwAttackOffset;
-                    break;
-            }
+        Vector2 attackCheckPos = enemy.position;
+        switch (gameInstance.CardinalDirFromVector(enemy.graphicalDir)) {
+            case CardinalDir.Right:
+                attackCheckPos += enemy.data.sideAttackOffset;
+                break;
+            case CardinalDir.Left:
+                attackCheckPos += new Vector2(-enemy.data.sideAttackOffset.x, enemy.data.sideAttackOffset.y);
+                break;
+            case CardinalDir.Up:
+                attackCheckPos += enemy.data.upAttackOffset;
+                break;
+            case CardinalDir.Down:
+                attackCheckPos += enemy.data.donwAttackOffset;
+                break;
+        }
 
-            Collider2D col = Physics2D.OverlapCircle(attackCheckPos, enemy.data.attackRadius, Masks.PlayerHurtMask);
-            
-            if (!col) { 
-                col = Physics2D.OverlapCircle(enemy.Center, enemy.data.attackRadius, Masks.PlayerHurtMask);
-            }
+        Collider2D col = Physics2D.OverlapCircle(attackCheckPos, enemy.data.attackRadius, Masks.PlayerHurtMask);
+        
+        if (!col) { 
+            col = Physics2D.OverlapCircle(enemy.Center, enemy.data.attackRadius, Masks.PlayerHurtMask);
+        }
 
-            if (enemy.data.type == EnemyData.EnemyType.Doughmon) {
-                Entity smokeSlam = gameInstance.SpawnEntity<Entity>(gameInstance.prefabs.slamSmoke, attackCheckPos, Quaternion.identity);
-                gameInstance.DestroyEntity(smokeSlam, gameInstance.CurrentClipLength(smokeSlam.animator));
-            }
+        if (enemy.data.type == EnemyData.EnemyType.Doughmon) {
+            Entity smokeSlam = gameInstance.SpawnEntity<Entity>(gameInstance.prefabs.slamSmoke, attackCheckPos, Quaternion.identity);
+            gameInstance.DestroyEntity(smokeSlam, gameInstance.CurrentClipLength(smokeSlam.animator));
+        }
 
-            if (col) {
-                gameInstance.DamagePlayer(enemy.data.damage, PlayerDamageType.Normal, enemy, enemy.data.changeToCauseBleed);
-            }
-        });
+        if (col) {
+            gameInstance.DamagePlayer(enemy.data.damage, PlayerDamageType.Normal, enemy, enemy.data.changeToCauseBleed);
+        }
     }
     
     private void ReteleportEnemies() {

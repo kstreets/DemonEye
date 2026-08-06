@@ -26,8 +26,9 @@ public static class Physics {
         overlapCapsuleResults.Clear();
         
         ContactFilter2D contactFilter = new() {
-        layerMask = mask, 
-        useLayerMask = true,
+            layerMask = mask, 
+            useLayerMask = true,
+            
         };
         
         int count = Physics2D.OverlapCapsule(center, capsule.size, capsule.direction, 0f, contactFilter, overlapCapsuleResults);

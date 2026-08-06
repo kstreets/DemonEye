@@ -93,7 +93,7 @@ public partial class Game {
     private bool EntityIsValid(Entity entity) {
         return entity.trans && entities.lookup.ContainsKey(entity.gameObject);
     }
-
+    
     private Entity SpawnItemAsEntity(Item item, int count, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level) {
         Entity entity = SpawnEntity(entityPools.itemDrop, position, rotation, parent, lifetime);
         ItemInstance itemInstance = new(item, count);
