@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.Pool;
 using Random = UnityEngine.Random;
@@ -142,8 +143,8 @@ public static class DemonEyeTween {
 
     public static float ConvertCompletion(float comp, Curve curve) {
         return curve switch {
-            Curve.EaseOut   => 1 - Mathf.Pow(1 - comp, 3),
-            Curve.EaseIn    => Mathf.Pow(comp, 3),
+            Curve.EaseOut   => 1f - Mathf.Pow(1f - comp, 3f),
+            Curve.EaseIn    => Mathf.Pow(comp, 3f),
             Curve.EaseInOut => Mathf.SmoothStep(0f, 1f, comp),
             _               => comp,
         };
@@ -209,7 +210,9 @@ public static class DemonEyeTween {
     }
 
 
-    public static TweenObject TweenShake(Transform transform, float jitter, float magnitude, float time, AnimationCurve animCurve, AnimationCurve altAnimCurve) {
+    public static TweenObject TweenShake(Transform transform, float jitter, float magnitude, float time, 
+        AnimationCurve animCurve, AnimationCurve altAnimCurve, Curve curve) 
+    {
         TweenObject tween = tweenObjectPool.Get();
         tween.type = Type.Shake;
         tween.transform = transform;
@@ -222,18 +225,18 @@ public static class DemonEyeTween {
         tween.float2 = magnitude;
         tween.time = time;
         tween.countdown = time;
-        tween.curve = Curve.Linear;
+        tween.curve = curve;
         return tween;
     }
     
     public static TweenHandle DoTweenShake(this Transform transform, float jitter, float magnitude, float time, AnimationCurve animCurve, AnimationCurve jitterCurve = null) {
-        singleTweens.Add(TweenShake(transform, jitter, magnitude, time, animCurve, jitterCurve));
+        singleTweens.Add(TweenShake(transform, jitter, magnitude, time, animCurve, jitterCurve, Curve.Linear));
         return new() { singleTween = singleTweens[^1] };
     }
-
+    
     public static void UpdateShake(TweenObject tween) {
         float comp = UpdateAndGetCompletion(tween);
-        float magnitude = tween.animationCurve.Evaluate(comp) * tween.float2;
+        float magnitude = tween.animationCurve.Evaluate(comp);
         float jitter = tween.altAnimationCurve?.Evaluate(comp) * tween.float1 ?? tween.float1;
         
         tween.float3 = (tween.float3 + jitter * Time.deltaTime) % 1f;

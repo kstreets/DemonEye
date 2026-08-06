@@ -23,6 +23,7 @@ MonoBehaviour:
   rareColor: {r: 0.87205184, g: 0.70754707, b: 1, a: 1}
   epicColor: {r: 1, g: 0.6949685, b: 0.8336192, a: 1}
   legendaryColor: {r: 1, g: 0.5251572, b: 0.5251572, a: 1}
+  itemCountColor: {r: 0.8930817, g: 0.84533834, b: 0.84533834, a: 1}
   headerTextColor: {r: 0.7490196, g: 0.6627451, b: 0.57254905, a: 1}
   popInTextColor: {r: 1, g: 0.8562826, b: 0.43710685, a: 1}
   coinCurrencyColor: {r: 0.95686275, g: 0.6, b: 0.25882354, a: 1}

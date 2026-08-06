@@ -301,7 +301,6 @@ public partial class Game : MonoBehaviour {
     private Sequence raidEnterSequence;
     
     private void AnimateRaidEnterSequence() {
-        int initialPPU = camera.pixelPerfect.assetsPPU;
         camera.pixelPerfect.assetsPPU = 80;
             
         raidEnterSequence = Sequence.Create();
@@ -326,7 +325,7 @@ public partial class Game : MonoBehaviour {
         raidEnterSequence.Chain(Tween.Scale(player.trans, 0f, 1f, 0.2f, Ease.InOutBack));
             
         raidEnterSequence.ChainDelay(0.6f);
-        raidEnterSequence.Chain(Tween.Custom(camera.pixelPerfect.assetsPPU, initialPPU, 0.25f, ease: Ease.OutQuad, onValueChange: val => {
+        raidEnterSequence.Chain(Tween.Custom(camera.pixelPerfect.assetsPPU, camera.defaultPPU, 0.25f, ease: Ease.OutQuad, onValueChange: val => {
             camera.pixelPerfect.assetsPPU = (int)val;
         }));
     }

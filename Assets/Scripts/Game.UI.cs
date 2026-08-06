@@ -267,11 +267,11 @@ public partial class Game {
     }
 
     private void AnimateLargeRaidText(string text, float typewriterSpeed) {
-        ui.largeRaidText.characterSpacing = 0;
         ui.largeRaidText.gameObject.SetActive(true);
+        ui.largeRaidText.characterSpacing = 0;
+        
         ui.largeRaidTextTypewriter.ShowText($"{{incr}}{{fade}}{{wave}}{{#fade}}{{#wave}}{text}");
         ui.largeRaidTextTypewriter.SetTypewriterSpeed(typewriterSpeed);
-        
         ui.largeRaidTextTypewriter.onTextShowed.AddListener(OnTypewriterFinish);
         
         void OnTypewriterFinish() {
@@ -287,7 +287,6 @@ public partial class Game {
     private void AnimateSmallRaidText(string text) {
         ui.smallRaidText.gameObject.SetActive(true);
         ui.smallRaidTextTypewriter.ShowText($"{{incr}}{{fade}}{{smallwave}}{{#fade}}{{#smallwave}}{text}");
-        
         ui.smallRaidTextTypewriter.onTextShowed.AddListener(OnTypewriterFinish);
         
         void OnTypewriterFinish() {

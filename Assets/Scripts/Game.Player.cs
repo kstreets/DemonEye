@@ -449,6 +449,11 @@ public partial class Game {
         SpawnDamageNumber(player.position, damage, DamageColor.Blood);
         CancelPortalSummoning();
         
+        float damageImpactScale = Mathf.Clamp01(damage / 65f);
+        float damageShakeFreq = Mathf.Lerp(6f, 10f, damageImpactScale);
+        float damageShakeMag = Mathf.Lerp(0.02f, 0.1f, damageImpactScale);
+        camera.cameraShake.Shake(damageShakeFreq, damageShakeMag, 0.6f);
+        
         if (trinkets.equiped is Thorns thorns && trinkets.data.cooldownDuration.HasPassed()) {
             Entity damageEntity = sourceEntity switch {
                 Enemy enemy => enemy,

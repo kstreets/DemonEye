@@ -17,6 +17,7 @@ public class Styles : ScriptableObject {
     public Color epicColor;
     public Color legendaryColor;
 
+    public Color itemCountColor;
     public Color headerTextColor;
     public Color popInTextColor;
     

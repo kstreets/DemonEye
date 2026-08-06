@@ -10,10 +10,7 @@ public class ItemUI : MonoBehaviour {
     public TextMeshProUGUI countText;
     public PixelFillManager pixelFillManager; // Only pentagram inventory slots will have this
     
-    private Color originalTextColor;
-    
     private void Awake() {
-        originalTextColor = countText.color;
         ClearItem();
     }
     
@@ -31,7 +28,7 @@ public class ItemUI : MonoBehaviour {
         image.sprite = null;
         image.enabled = false;
         countText.text = "";
-        countText.color = originalTextColor; 
+        countText.color = styles.itemCountColor; 
         image.color = Color.white;
     }
 

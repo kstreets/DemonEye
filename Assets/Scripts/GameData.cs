@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
 using Febucci.TextAnimatorForUnity;
+using PrimeTween;
 using TMPro;
 using Unity.Cinemachine;
 using UnityEngine;
-using UnityEngine.Audio;
 using UnityEngine.InputSystem;
-using UnityEngine.Pool;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 using static Game;
@@ -108,8 +107,10 @@ public class GameData {
     [Serializable]
     public class Camera {
         public UnityEngine.Camera main;
+        public CameraShake cameraShake;
         public CinemachineCamera cinemachine;
         public PixelPerfectCamera pixelPerfect;
+        [NonSerialized] public int defaultPPU;
     }
     
     [Serializable]

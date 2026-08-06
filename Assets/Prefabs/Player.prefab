@@ -156,6 +156,7 @@ Rigidbody2D:
   m_Constraints: 4
 --- !u!212 &4957375774148464031
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -201,6 +202,7 @@ SpriteRenderer:
   m_SortingLayerID: 1394232625
   m_SortingLayer: 3
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_Sprite: {fileID: 1373737252, guid: 759afd453adeac64e8c1f9011858b8e0, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -210,7 +212,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 1
 --- !u!70 &2071423755257355188
 CapsuleCollider2D:

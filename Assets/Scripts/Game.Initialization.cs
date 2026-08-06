@@ -7,6 +7,7 @@ public partial class Game {
     private void InitGame() {
         GameState gameState = LoadGameState();
         persistentFlags = gameState?.persistentFlags ?? default;
+        camera.defaultPPU = camera.pixelPerfect.assetsPPU;
         
         InitInput();
         InitResources();
