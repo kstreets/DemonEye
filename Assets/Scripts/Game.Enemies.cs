@@ -85,8 +85,8 @@ public partial class Game {
         List<Enemy> enemies = entities.enemies;
         if (enemies.Count <= 0) return;
         
-        bool reteleportWithThisSpawn = !spawnManager.SpawningDoneInCurPhase && spawnManager.spawnedThisFrame;
-        bool reteleportWithoutSpawn = spawnManager.SpawningDoneInCurPhase && curRaid.data.reteleportLimitter.TimeHasPassed(1f);
+        bool reteleportWithThisSpawn = !spawnManager.FinishedSpawningThisWave && spawnManager.spawnedThisFrame;
+        bool reteleportWithoutSpawn = spawnManager.FinishedSpawningThisWave && curRaid.data.reteleportLimitter.TimeHasPassed(1f);
         if (reteleportWithThisSpawn || reteleportWithoutSpawn) {
             // ReteleportEnemies();
         }
@@ -480,6 +480,7 @@ public partial class Game {
         public float timeInCurPhase;
         public float totalTimeLeft;
         public float timeUntilFinalPhase;
+        public float timeSpentInInventoryThisWave;
         public int curPhaseIndex;
         public RaidSpawnPattern spawnPattern;
         public bool isFinishedSpawning;
@@ -493,11 +494,15 @@ public partial class Game {
         public readonly List<(float time, EnemyData enemy)> spawnEvents = new();
         public int spawnTimeIndex;
        
+        public bool FinishedSpawningThisWave => !spawnEvents.IndexInRange(spawnTimeIndex);
+        
+        public int CurWaveNumber => Mathf.Clamp(curPhaseIndex + 1, 0, chosenVarientIndices.Count);
+        public int WavesRemaining => chosenVarientIndices.Count - CurWaveNumber;
+        
         public int CurVarientIndex => chosenVarientIndices.IndexInRange(curPhaseIndex) ? chosenVarientIndices[curPhaseIndex] : -1;
         public List<RaidSpawnPattern.PhasePool> PhasePools => spawnPattern.phasePools; 
         public RaidSpawnPattern.PhasePool CurPhasePool => PhasePools.SafeIndex(curPhaseIndex); 
         public RaidSpawnPattern.Variant CurPhase => CurPhasePool?.variants.SafeIndex(CurVarientIndex);
-        public bool SpawningDoneInCurPhase => !spawnEvents.IndexInRange(spawnTimeIndex);
     }
 
     [NonSerialized] private EnemySpawnManager spawnManager = new();
@@ -509,6 +514,7 @@ public partial class Game {
         spawnManager.spawnPattern = pattern;
         spawnManager.curPhaseIndex = -1;
         spawnManager.timeInCurPhase = 0f;
+        spawnManager.timeSpentInInventoryThisWave = 0f;
         spawnManager.totalTimeLeft = pattern.timeBeforeFirstPhase;
         
         spawnManager.chosenVarientIndices.Clear();
@@ -530,12 +536,24 @@ public partial class Game {
         
         if (sm.isFinishedSpawning) return;
         
+        // If the player is looking at their inventory or reading an item popup we give them some extra time before spawning more enemies
+        if ((PlayerInventoryIsOpen && !LootInventoryIsOpen) || ui.itemDescPopupPickup.IsShowing) {
+            sm.timeSpentInInventoryThisWave += Time.deltaTime;
+        }
+        
+        float extraTimeGivenByDillyDallying = 0f;
+        const float minInventoryTimeToGrantDillyDallying = 5f;
+        const float maxDillyDallyingTime = 12f;
+        if (sm.timeSpentInInventoryThisWave > minInventoryTimeToGrantDillyDallying) {
+            extraTimeGivenByDillyDallying = Mathf.Clamp(sm.timeSpentInInventoryThisWave - minInventoryTimeToGrantDillyDallying, 0f, maxDillyDallyingTime);
+        }
+        
         sm.timeInCurPhase += Time.deltaTime;
         sm.totalTimeLeft -= Time.deltaTime;
         sm.timeUntilFinalPhase -= Time.deltaTime;
         
         float waveDuration = sm.curPhaseIndex == -1 ? sm.spawnPattern.timeBeforeFirstPhase : sm.CurPhase.phaseDuration;
-        bool startNextWave = sm.timeInCurPhase >= waveDuration;
+        bool startNextWave = sm.timeInCurPhase >= waveDuration + extraTimeGivenByDillyDallying;
         bool onLastPhase = sm.curPhaseIndex == sm.spawnPattern.phasePools.Count - 1;
         
         if (startNextWave && !onLastPhase) {
@@ -551,6 +569,7 @@ public partial class Game {
             
             sm.timeInCurPhase = 0f;
             sm.spawnTimeIndex = 0;
+            sm.timeSpentInInventoryThisWave = 0f;
 
             float totalWeight = 0f;
             for (int i = 0; i < EnemySpawnManager.prefixedSumResolution; i++) {
@@ -609,7 +628,7 @@ public partial class Game {
             sm.spawnedThisFrame = true;
         }
         
-        if (sm.SpawningDoneInCurPhase && onLastPhase) {
+        if (sm.FinishedSpawningThisWave && onLastPhase) {
             sm.isFinishedSpawning = true;
         }
         

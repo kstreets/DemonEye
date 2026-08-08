@@ -21,6 +21,8 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
     
     public const float screenPadding = 25f;
     
+    public bool IsShowing => gameObject.activeInHierarchy;
+    
     public void Show(ItemInstance itemInstance, Vector2? position = default) {
         gameObject.SetActive(true);
         

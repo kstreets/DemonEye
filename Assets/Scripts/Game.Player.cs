@@ -125,7 +125,7 @@ public partial class Game {
             return;
         }
 
-        if (InventoryIsOpen || InteractingWithPortal()) return;
+        if (PlayerInventoryIsOpen || InteractingWithPortal()) return;
         
         Vector2 moveInput = input.move.ReadValue<Vector2>();
         Vector2 prevPos = player.position;

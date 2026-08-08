@@ -13,7 +13,7 @@ public partial class Game {
         if (InMapSelection || InHideout) {
             states.gameStateMachine.SetState(states.mainMenu);
         }
-        if (InRaid && InventoryIsOpen) {
+        if (InRaid && PlayerInventoryIsOpen) {
             ClosePlayerInventory();
             CloseLootInventory(); 
         }

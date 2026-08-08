@@ -205,12 +205,13 @@ public partial class Game {
             // exitPortalCountdownText.text = GetCountdownText(exitPortalTween.duration - exitPortalTween.elapsedTime);
         }
         if (raidInfo.finalWaveCountdownText.gameObject.activeInHierarchy) {
-            raidInfo.finalWaveCountdownText.text = GetCountdownText(spawnManager.timeUntilFinalPhase);
+            // raidInfo.finalWaveCountdownText.text = GetCountdownText(spawnManager.timeUntilFinalPhase);
+            raidInfo.finalWaveCountdownText.text = spawnManager.WavesRemaining.ToString();
         }
     }
     
     private void UpdatePlayerPanelUI() {
-        if (!InventoryIsOpen) return;
+        if (!PlayerInventoryIsOpen) return;
             
         playerPanel.healthText.text = $"<color=#5CF25B>{player.health}</color><size=22>/{FullPlayerHealth()}";
 

@@ -85,7 +85,7 @@ public partial class Game {
     public const int traderInventoryRowCount = 5;
     
     private int NakedPlayerInventorySize => playerPocketSize + playerQuickUseSize + playerEquipmentSize;
-    private bool InventoryIsOpen => playerPanel.panel.gameObject.activeInHierarchy;
+    private bool PlayerInventoryIsOpen => playerPanel.panel.gameObject.activeInHierarchy;
     private bool LootInventoryIsOpen => ui.lootInventoryPanel.gameObject.activeInHierarchy;
 
     private void InitInventories(GameState gameState) {
@@ -243,7 +243,7 @@ public partial class Game {
     
     private void HandleInventoryVisibility() {
         if (!InRaid || !input.inventory.WasPressedThisFrame()) return;
-        if (InventoryIsOpen) {
+        if (PlayerInventoryIsOpen) {
             ClosePlayerInventory(); 
         }
         else {
