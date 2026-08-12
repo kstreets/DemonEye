@@ -10,6 +10,7 @@ public class MapData : ScriptableObject {
     public string sceneReference;
     public RaidSpawnPattern spawning;
     public MapWaterSettings waterSettings;
+    public Texture2D minimapTexture;
 
     [Header("Variables")]
     public int altarSoulPrice;

@@ -41,7 +41,7 @@ public static class RenderManager {
         EditorApplication.playModeStateChanged += _ => Initialize();
     }
 #endif
-    
+
     public enum Texture { Tilemap, WaterOcclusion, Scene, Water, Final }
     
     public static RTHandle GetRenderTexture(Texture type) {

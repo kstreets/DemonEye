@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Pool;
 using UnityEngine.SceneManagement;
+using UnityEngine.Tilemaps;
 using Random = UnityEngine.Random;
 using static GameData;
 
@@ -93,8 +94,8 @@ public partial class Game {
             }
             curRaid.mapLoadingState = MapLoadingState.Unloaded;
         }
-    } 
-    
+    }
+
     private void SpawnMapResources(Transform resourceSpawnParent) {
         // Clear past resource lookups
         curRaid.deadBodySlotsLookup.Clear();

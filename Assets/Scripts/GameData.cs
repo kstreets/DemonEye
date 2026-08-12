@@ -127,6 +127,7 @@ public class GameData {
     [Serializable] 
     public class UI {
         public RectTransform mainCanvasRectTransform;
+        public Minimap minimap;
         public ItemDescPopup itemDescPopupInv;
         public ItemDescPopup itemDescPopupPickup;
         public MechanicDescPopup mechanicDescPopup;
@@ -167,13 +168,7 @@ public class GameData {
     [Serializable]
     public class RaidInfo {
         public GameObject parent;
-        public GameObject finalWaveCountdownParent;
-        public TextMeshProUGUI finalWaveCountdownText;
-        public GameObject exitPortalCountdownParent;
-        public TextMeshProUGUI exitPortalCountdownText;
-        public GameObject exitPortalActiveNotifier;
-        public GameObject finalWaveActiveNotifier;
-        public GameObject finalExitPortalNotifier;
+        public TextMeshProUGUI waveText;
     }
     
     [Serializable]

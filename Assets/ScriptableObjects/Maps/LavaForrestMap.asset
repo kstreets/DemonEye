@@ -16,6 +16,7 @@ MonoBehaviour:
   sceneReference: LavaForrest
   spawning: {fileID: 11400000, guid: c3f7f6d7c8bc62a4993a44c716d126e0, type: 2}
   waterSettings: {fileID: 11400000, guid: 4ed6bcca488508542895549cf9b79f11, type: 2}
+  minimapTexture: {fileID: 2800000, guid: 4ce5e6fe4d7a3bf47a9b40584a27cedb, type: 3}
   altarSoulPrice: 100
   exitPortalsCount: 2
   playerCantBleed: 0

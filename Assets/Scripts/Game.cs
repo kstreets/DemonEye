@@ -2,6 +2,7 @@ using System;
 using PrimeTween;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Tilemaps;
 using static GameData;
 using Random = UnityEngine.Random;
 using Vector3 = UnityEngine.Vector3;
@@ -228,7 +229,6 @@ public partial class Game : MonoBehaviour {
         curRaid.teleportingInPositions.Clear();
         
         Cursor.visible = false;
-        ShowRaidUI();
 
         ui.deathBgImage.enabled = false;
         curRaid.mapInstance.gameObject.SetActive(true);
@@ -243,6 +243,7 @@ public partial class Game : MonoBehaviour {
         camera.cinemachine.ForceCameraPosition(cameraWarpTarget, Quaternion.identity);
         camera.cinemachine.Follow = player.trans;
         
+        ShowRaidUI();
         InitMapGrid();
         CreateDropPoolsForMap(curRaid.map);
         InitSpawnManager(curRaid.map.spawning);

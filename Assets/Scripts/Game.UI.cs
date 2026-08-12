@@ -3,6 +3,7 @@ using PrimeTween;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 
 public partial class Game {
@@ -97,6 +98,18 @@ public partial class Game {
         playerInfo.parent.gameObject.SetActive(true);
         raidInfo.parent.SetActive(true);
         ui.hotBarParent.gameObject.SetActive(true);
+
+        // Initialize minimap for this raid (Tilemap GameObject must be active)
+        {
+            Tilemap tilemap = curRaid.mapInstance.mainTilemapRenderer.GetComponent<Tilemap>();
+            tilemap.CompressBounds();
+    
+            Vector3 worldCenter = tilemap.LocalToWorld(tilemap.localBounds.center); 
+            Vector3 worldSize = (Vector3)tilemap.cellBounds.size * tilemap.cellSize.x; 
+    
+            ui.minimap.Init(curRaid.map.minimapTexture, worldCenter, worldSize);
+            ui.minimap.gameObject.SetActive(true);
+        }
     }
 
     private void CloseRaidUI() {
@@ -108,6 +121,7 @@ public partial class Game {
         raidInfo.parent.SetActive(false);
         ui.portalArrow.gameObject.SetActive(false);
         ui.hotBarParent.gameObject.SetActive(false);
+        ui.minimap.gameObject.SetActive(false);
     }
 
     private void ToggleHideoutTab(Button button, TextMeshProUGUI text) {
@@ -147,7 +161,7 @@ public partial class Game {
             rect.gameObject.SetActive(true);
         }
     }
-
+    
     // Here just so that we don't allocate strings every frame
     private int prevSoulCurrency = int.MinValue;
     private int prevCoinCurrency = int.MinValue;
@@ -164,6 +178,8 @@ public partial class Game {
     }
     
     private void UpdateInRaidUI() {
+        ui.minimap.UpdateMinimap(player.position);
+        
         playerInfo.healthBarFillImage.fillAmount = player.health / (float)FullPlayerHealth();
         playerInfo.bleedDebuffIcon.gameObject.SetActive(player.bleeding);
         
@@ -181,32 +197,20 @@ public partial class Game {
         
         if (curRaid.stateSwitchedThisFrame) {
             if (curRaid.state == RaidState.InitialWaves) {
-                raidInfo.finalWaveCountdownParent.SetActive(true); 
-                raidInfo.exitPortalCountdownParent.SetActive(true);
-                raidInfo.finalWaveActiveNotifier.SetActive(false);
-                raidInfo.exitPortalActiveNotifier.SetActive(false);
-                raidInfo.finalExitPortalNotifier.SetActive(false);
+                raidInfo.waveText.gameObject.SetActive(true); 
             }
             else if (curRaid.state == RaidState.FinalWave) {
-                raidInfo.finalWaveCountdownParent.SetActive(false); 
-                raidInfo.exitPortalActiveNotifier.SetActive(false);
-                raidInfo.finalWaveActiveNotifier.SetActive(true);
-                Tween.Scale(raidInfo.finalWaveActiveNotifier.transform, 0f, 1f, 0.5f, Ease.OutBack);
+                raidInfo.waveText.text = "Final Wave";
+                Tween.Scale(raidInfo.waveText.transform, 0f, 1f, 0.5f, Ease.OutBack);
                 AnimateSmallRaidText(ColorText("Final Wave", config.styles.decreaseDescColor));
             }
             else if (curRaid.state == RaidState.PostFinalWave) {
-                raidInfo.finalWaveActiveNotifier.SetActive(false);
-                raidInfo.finalExitPortalNotifier.SetActive(true);
-                Tween.Scale(raidInfo.finalExitPortalNotifier.transform, 0f, 1f, 0.5f, Ease.OutBack);
+                raidInfo.waveText.gameObject.SetActive(false);
             }
         }
         
-        if (raidInfo.exitPortalCountdownText.gameObject.activeInHierarchy) {
-            // exitPortalCountdownText.text = GetCountdownText(exitPortalTween.duration - exitPortalTween.elapsedTime);
-        }
-        if (raidInfo.finalWaveCountdownText.gameObject.activeInHierarchy) {
-            // raidInfo.finalWaveCountdownText.text = GetCountdownText(spawnManager.timeUntilFinalPhase);
-            raidInfo.finalWaveCountdownText.text = spawnManager.WavesRemaining.ToString();
+        if (raidInfo.waveText.gameObject.activeInHierarchy) {
+            raidInfo.waveText.text = $"{spawnManager.WavesRemaining.ToString()} Waves Left";
         }
     }
     
