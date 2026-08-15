@@ -163,6 +163,7 @@ public class GameData {
         public Image weightBarFillImage;
         public TextMeshProUGUI soulsCurrencyText;
         public TextMeshProUGUI coinCurrencyText;
+        public RectTransform damageNumberSpawnPos;
     }
     
     [Serializable]

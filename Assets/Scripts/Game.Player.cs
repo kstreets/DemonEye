@@ -446,7 +446,7 @@ public partial class Game {
         
         player.health -= damage;
         AddFlashHitEffect(player);
-        SpawnDamageNumber(player.position, damage, DamageColor.Blood);
+        SpawnPlayerDamageNumber(damage, DamageColor.Blood);
         CancelPortalSummoning();
         
         float damageImpactScale = Mathf.Clamp01(damage / 65f);

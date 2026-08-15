@@ -307,6 +307,47 @@ public partial class Game {
     
     private enum DamageColor { Normal, Crit, Blood, Hemorrhage, Poison }
 
+    private void SpawnPlayerDamageNumber(int damage, DamageColor damageColor) {
+        var healthBar = playerInfo.healthBarFillImage;
+        var healthBarRect = healthBar.rectTransform;
+        Vector3 spawnPos = healthBarRect.position.Offset(x: healthBarRect.rect.width * healthBar.fillAmount);
+        
+        Vector3 startSize = Vector3.one * 0.8f;
+        Vector3 endSize = Vector3.one * damageColor switch {
+            DamageColor.Normal     => 1.0f,
+            DamageColor.Crit       => 1.25f,
+            DamageColor.Blood      => 0.8f,
+            DamageColor.Hemorrhage => 1.25f,
+            DamageColor.Poison     => 0.8f,
+            _                      => 1f,
+        };
+        
+        float yOffset = Random.Range(-60f, -30f);
+        
+        Vector2 endDamageNumPos;
+        if (damageColor == DamageColor.Blood || damageColor == DamageColor.Hemorrhage) {
+            endDamageNumPos = OffsetY(spawnPos, yOffset * 1.3f);
+        }
+        else {
+            endDamageNumPos = spawnPos.Offset(y: yOffset);
+        }
+
+        Entity damageNumber = SpawnEntity(entityPools.damageNumber, spawnPos, Quaternion.identity, playerInfo.damageNumberSpawnPos);
+        damageNumber.textMesh.text = damage.ToString();
+        
+        const float playerDamageFontSize = 60;
+        damageNumber.textMesh.fontSize = playerDamageFontSize;
+        
+        float moveDuration = damageColor == DamageColor.Crit ? Random.Range(0.37f, 0.4f) : Random.Range(0.3f, 0.35f);
+        const float scaleUpDuration = 0.25f;
+        const float popOutDuration = 0.3f;
+
+        Tween.Position(damageNumber.trans, endDamageNumPos, moveDuration, Ease.OutBack)
+            .Group(Tween.Scale(damageNumber.trans, startSize, endSize, scaleUpDuration, Ease.InOutBack))
+            .Chain(Tween.Scale(damageNumber.trans, 0f, popOutDuration, Ease.InBack));
+        DestroyEntity(damageNumber, moveDuration + popOutDuration);
+    }
+
     private void SpawnDamageNumber(Vector3 spawnPos, int damage, DamageColor damageColor) {
         Vector3 startSize = Vector3.one * 0.8f;
         Vector3 endSize = Vector3.one * damageColor switch {
@@ -332,6 +373,9 @@ public partial class Game {
         
         Entity damageNumber = SpawnEntity(entityPools.damageNumber, spawnPos, Quaternion.identity, ui.damageNumbersParent);
         damageNumber.textMesh.text = damage.ToString();
+        
+        const float worldDamageNumberFontSize = 0.11f;
+        damageNumber.textMesh.fontSize = worldDamageNumberFontSize;
         
         const float alpha = 0.68f;
         switch (damageColor) {
