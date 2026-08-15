@@ -7,9 +7,9 @@ using UnityEngine.Tilemaps;
 public static class MinimapCapture {
 
     // Pixels-per-world-unit for the captured texture. Higher = sharper minimap, larger file.
-    private const int PixelsPerUnit = 20;
+    private const int PixelsPerUnit = 5;
 
-    [MenuItem("Tools/Minimap/Capture Tileset Layer")]
+    [MenuItem("Tools/Minimap Capture")]
     private static void CaptureTilesetLayer() {
         MapInstance mapInstance = Object.FindObjectOfType<MapInstance>();
         if (mapInstance == null) {
