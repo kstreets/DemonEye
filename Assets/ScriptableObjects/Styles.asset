@@ -47,6 +47,7 @@ MonoBehaviour:
   bleedDamageColor: {r: 0.8679245, g: 0.25953633, b: 0.22107501, a: 1}
   hemorrhageDamageColor: {r: 0.9559748, g: 0.087179996, b: 0.15755764, a: 1}
   poisonDamageColor: {r: 0.3576005, g: 0.7735849, b: 0.3576005, a: 1}
+  playerDamageColor: {r: 0.7798742, g: 0.14388993, b: 0.12016913, a: 1}
   increaseDescColor: {r: 0.35686275, g: 0.7725491, b: 0.35686275, a: 1}
   decreaseDescColor: {r: 0.8352942, g: 0.27058825, b: 0.27450982, a: 1}
   timeDescColor: {r: 0.7610062, g: 0.45321578, b: 0.380503, a: 1}

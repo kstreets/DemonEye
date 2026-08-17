@@ -106,12 +106,12 @@ public partial class Game {
         if (player.bleeding && player.bleedLimiter.TimeHasPassed(3.5f)) {
             const int bleedDamage = 5;
             player.health -= bleedDamage;
+            SpawnPlayerDamageNumber(bleedDamage);
             
             Entity bloodDrop = SpawnEntity(entityPools.bloodDrop, OffsetY(player.position, 0.11f), Quaternion.identity);
             AddParentEffect(bloodDrop, player, 0.4f);
             DestroyEntity(bloodDrop, 0.8f);
             
-            SpawnDamageNumber(OffsetY(player.position, 0.05f), bleedDamage, DamageColor.Blood);
             AddFlashHitEffect(player);
             Tween.PunchScale(playerInfo.bleedDebuffIcon.transform, Vector3.one * 0.8f, 0.25f, 5f);
 
@@ -446,7 +446,7 @@ public partial class Game {
         
         player.health -= damage;
         AddFlashHitEffect(player);
-        SpawnPlayerDamageNumber(damage, DamageColor.Blood);
+        SpawnPlayerDamageNumber(damage);
         CancelPortalSummoning();
         
         float damageImpactScale = Mathf.Clamp01(damage / 65f);

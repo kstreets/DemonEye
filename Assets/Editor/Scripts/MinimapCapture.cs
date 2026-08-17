@@ -17,7 +17,6 @@ public static class MinimapCapture {
             return;
         }
 
-        // CoolerGrid grid = mapInstance.grid;
         Tilemap tilemap = mapInstance.mainTilemapRenderer.GetComponent<Tilemap>();
         if (tilemap == null) {
             Debug.LogError("MapInstance has no tilemap assigned.");

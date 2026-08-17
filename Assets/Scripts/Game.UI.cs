@@ -307,40 +307,30 @@ public partial class Game {
     
     private enum DamageColor { Normal, Crit, Blood, Hemorrhage, Poison }
 
-    private void SpawnPlayerDamageNumber(int damage, DamageColor damageColor) {
+    private void SpawnPlayerDamageNumber(int damage) {
         var healthBar = playerInfo.healthBarFillImage;
         var healthBarRect = healthBar.rectTransform;
-        Vector3 spawnPos = healthBarRect.position.Offset(x: healthBarRect.rect.width * healthBar.fillAmount);
+        Vector3 spawnPosAlongHealthBar = healthBarRect.position.Offset(x: healthBarRect.rect.width * healthBar.fillAmount);
         
         Vector3 startSize = Vector3.one * 0.8f;
-        Vector3 endSize = Vector3.one * damageColor switch {
-            DamageColor.Normal     => 1.0f,
-            DamageColor.Crit       => 1.25f,
-            DamageColor.Blood      => 0.8f,
-            DamageColor.Hemorrhage => 1.25f,
-            DamageColor.Poison     => 0.8f,
-            _                      => 1f,
-        };
+        Vector3 endSize = Vector3.one;
         
-        float yOffset = Random.Range(-60f, -30f);
+        float normalizedScaleFromDamage = Mathf.Clamp01(damage / 30f);
         
-        Vector2 endDamageNumPos;
-        if (damageColor == DamageColor.Blood || damageColor == DamageColor.Hemorrhage) {
-            endDamageNumPos = OffsetY(spawnPos, yOffset * 1.3f);
-        }
-        else {
-            endDamageNumPos = spawnPos.Offset(y: yOffset);
-        }
+        float xOffset = healthBarRect.rect.width * 0.35f;
+        float yOffset = Mathf.Lerp(-50f, -200f, normalizedScaleFromDamage);
+        Vector2 endDamageNumPos = spawnPosAlongHealthBar.Offset(x: xOffset, y: yOffset);
 
-        Entity damageNumber = SpawnEntity(entityPools.damageNumber, spawnPos, Quaternion.identity, playerInfo.damageNumberSpawnPos);
-        damageNumber.textMesh.text = damage.ToString();
+        Entity damageNumber = SpawnEntity(entityPools.damageNumber, spawnPosAlongHealthBar, Quaternion.identity, playerInfo.damageNumberSpawnPos);
+        damageNumber.textMesh.text = $"-{damage}";
+        damageNumber.textMesh.color = config.styles.playerDamageColor;
         
-        const float playerDamageFontSize = 60;
+        float playerDamageFontSize = Mathf.Lerp(40f, 55f, normalizedScaleFromDamage);
         damageNumber.textMesh.fontSize = playerDamageFontSize;
         
-        float moveDuration = damageColor == DamageColor.Crit ? Random.Range(0.37f, 0.4f) : Random.Range(0.3f, 0.35f);
-        const float scaleUpDuration = 0.25f;
-        const float popOutDuration = 0.3f;
+        const float moveDuration = 0.6f;
+        const float scaleUpDuration = 0.35f;
+        const float popOutDuration = 0.4f;
 
         Tween.Position(damageNumber.trans, endDamageNumPos, moveDuration, Ease.OutBack)
             .Group(Tween.Scale(damageNumber.trans, startSize, endSize, scaleUpDuration, Ease.InOutBack))
