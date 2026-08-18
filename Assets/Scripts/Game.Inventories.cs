@@ -16,6 +16,7 @@ public partial class Game {
         public bool isDemonEye;
         public string demonEyeName;
         public int demonEyeLevel;
+        public int demonEyeXp;
 
         [NonSerialized] public bool notDiscovered;
         [NonSerialized] public bool traderOwned;
@@ -37,7 +38,7 @@ public partial class Game {
         }
         
         public bool IsFullStack => count == ItemRef.MaxStackCount;
-
+        
         public ItemInstance(UuidScriptableObject uuidObject = null, int count = 1) {
             if (uuidObject == null) return;
             this.itemOrInstanceUuid = uuidObject.uuid;
