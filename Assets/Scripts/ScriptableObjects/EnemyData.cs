@@ -35,9 +35,10 @@ public class EnemyData : ScriptableObject {
     public int collisionDamage;
     public float changeToCauseBleed;
     public int soulWorthPerKill;
+    public int xpWorthPerKill;
     
     [Header("Info")]
-    [ReadOnly] public float defualtMass;
+    [ReadOnly] public float defaultMass;
     
 #if UNITY_EDITOR
     
@@ -57,7 +58,7 @@ public class EnemyData : ScriptableObject {
         const float minMass = 1;
         const float maxMass = 100f;
         float t = Mathf.Clamp01((speed - slowestEnemySpeed) / (fastestEnemySpeed - slowestEnemySpeed));
-        defualtMass = Mathf.Lerp(maxMass, minMass, 1f - (1f - t) * (1f - t));
+        defaultMass = Mathf.Lerp(maxMass, minMass, 1f - (1f - t) * (1f - t));
     }
     
 #endif

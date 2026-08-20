@@ -16,7 +16,6 @@ public class GameData {
     [Serializable]
     public class Config {
         public StartingItemsConfig startingItems;
-        public TraderLevels traderLevels;
         public Styles styles;
         public GameplayConfig gameplay;
         public Trader trader;
@@ -223,7 +222,6 @@ public class GameData {
         public RectTransform pentagramParent;
         public Image pentagramFillImage;
         public ButtonFeel forgeButton;
-        public TextMeshProUGUI flappingNameText;
     }
     
     [Serializable]
@@ -386,6 +384,7 @@ public class GameData {
     
     public class DemonEye {
         public DemonEyeInstance equiped;
+        public ItemInstance equipedItem;
         public Dictionary<int, DemonEyeInstance> instanceFromItemId = new();
         public readonly DemonEyeInstance empty = new();
     }

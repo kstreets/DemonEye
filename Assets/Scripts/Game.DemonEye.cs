@@ -59,12 +59,28 @@ public partial class Game {
     
     private void InitDemonEye() {
         demonEye.equiped = demonEye.empty;
+        demonEye.equipedItem = null;
     }
     
-    private void OnEquipDemonEye(DemonEyeInstance newDemonEye) {
+    private void OnEquipDemonEye(DemonEyeInstance newDemonEye, ItemInstance newEyeItemInstance) {
         demonEye.equiped = newDemonEye;
+        demonEye.equipedItem = newEyeItemInstance;
         curRaid.data.damaging.Reset();
         thisFrame.flags |= GameData.FrameFlags.DemonEyeChanged;
+    }
+
+    private void DemonEyeOnEnemyDeath(Enemy enemy) {
+        if (demonEye.equipedItem == null) return;
+
+        int enemyXp = enemy.data.xpWorthPerKill;
+        PrefixedLevels levels = config.demonEyeLevels.levels;
+
+        int levelsIncreased = levels.LevelsGainedFromXp(demonEye.equipedItem.demonEyeXp, enemyXp);
+        if (levelsIncreased > 0) {
+            demonEye.equipedItem.demonEyeUpgradesAvailable += levelsIncreased;
+        }
+
+        demonEye.equipedItem.demonEyeXp += enemyXp;
     }
     
     public ItemInstance CreateNewDemonEyeItemInstance(string demonEyeName, List<ItemInstance> eyeUpgradeItemInstances) {
@@ -72,7 +88,7 @@ public partial class Game {
             nestedUuids = new(),
             isDemonEye = true,
             demonEyeName = demonEyeName,
-            demonEyeLevel = 0,
+            demonEyeXp = 0,
         };
         
         foreach (ItemInstance upgradeInstance in eyeUpgradeItemInstances) {
@@ -84,11 +100,9 @@ public partial class Game {
     }
     
     private void UpgradeDemonEye(ItemInstance demonEyeItem, List<ItemInstance> eyeUpgradeItemInstances) {
-        demonEyeItem.demonEyeLevel++;
         foreach (ItemInstance upgradeInstance in eyeUpgradeItemInstances) {
             demonEyeItem.nestedUuids.Add(upgradeInstance.itemOrInstanceUuid);
         }
-
         DemonEyeInstance demonEyeInstance = CreateDemonEyeInstance(demonEyeItem);
         RegisterDemonEyeInstance(demonEyeItem, demonEyeInstance);
     }

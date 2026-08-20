@@ -266,7 +266,7 @@ public class GameplayTestingWindow : EditorWindow {
         
         int traderLevelIndex = changeEvent.newValue - 1; 
         GameData.Config config = Game.gameInstance.config;
-        int repNeeded = config.traderLevels.prefixedSumRepForLevel[traderLevelIndex];
+        int repNeeded = config.trader.levels.prefixedLevels[traderLevelIndex];
         Game.gameInstance.config.trader.state.reputation = repNeeded;
         Game.gameInstance.FillTraderInventoryWithItems();
     }

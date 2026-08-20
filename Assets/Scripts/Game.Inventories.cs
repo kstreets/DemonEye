@@ -13,10 +13,11 @@ public partial class Game {
         public int itemOrInstanceUuid;
         public List<int> nestedUuids;
         public int count = 1;
+        
         public bool isDemonEye;
         public string demonEyeName;
-        public int demonEyeLevel;
         public int demonEyeXp;
+        public int demonEyeUpgradesAvailable;
 
         [NonSerialized] public bool notDiscovered;
         [NonSerialized] public bool traderOwned;
@@ -38,6 +39,7 @@ public partial class Game {
         }
         
         public bool IsFullStack => count == ItemRef.MaxStackCount;
+        public int DemonEyeLevel => gameInstance.config.demonEyeLevels.levels.GetLevelFromXp(demonEyeXp);
         
         public ItemInstance(UuidScriptableObject uuidObject = null, int count = 1) {
             if (uuidObject == null) return;
@@ -51,7 +53,8 @@ public partial class Game {
                 count = count,
                 isDemonEye = isDemonEye,
                 demonEyeName = demonEyeName,
-                demonEyeLevel = demonEyeLevel,
+                demonEyeXp = demonEyeXp,
+                demonEyeUpgradesAvailable = demonEyeUpgradesAvailable,
                 notDiscovered = notDiscovered,
                 traderOwned = traderOwned,
                 traderSlotIndex = traderSlotIndex,
@@ -199,9 +202,17 @@ public partial class Game {
             
         foreach (Item item in items) {
             int stackCount = 1;
+            int maxStackCount = 1;
+            
+            foreach (DropOrigin dropOrigin in item.dropOrigins) {
+                if (dropPool == dropOrigin.dropPool) {
+                    maxStackCount = dropOrigin.maxStackCount;         
+                    break;
+                }
+            }
             
             float taperingChance = Mathf.Lerp(GetDropChanceOfItem(item, dropPool, curRaid.map), 0f, stackTaperRate);
-            while (RollProbability(taperingChance)) {
+            while (stackCount < maxStackCount && RollProbability(taperingChance)) {
                 stackCount++;
                 taperingChance = Mathf.Lerp(taperingChance, 0f, stackTaperRate);
             }
@@ -501,7 +512,7 @@ public partial class Game {
         if (prevEquippedEyeItemInstance != curEyeItemInstance) {
             prevEquippedEyeItemInstance = curEyeItemInstance;
             DemonEyeInstance newDemonEye = curEyeItemInstance == null ? demonEye.empty : demonEye.instanceFromItemId[curEyeItemInstance.itemOrInstanceUuid];
-            OnEquipDemonEye(newDemonEye);
+            OnEquipDemonEye(newDemonEye, curEyeItemInstance);
         }
         
         if (prevEquippedBackpackItemInstance != curBackpackItemInstance) {

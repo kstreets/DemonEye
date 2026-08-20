@@ -19,24 +19,28 @@ public class PrefixedLevels {
         if (ReachedMaxLevel(xp)) {
             return 1f;
         }
-        return XpUntilNextLevel(xp) / (float)TotalXpAtCurrentLevel(xp);
+        return XpAlongCurrentLevel(xp) / (float)TotalXpAtCurrentLevel(xp);
     }
     
-    public float AnimateXpBarFill(ref int curXp, ref int gainedXp) {
+    public bool AnimateXpBarFill(ref int curXp, ref int gainedXp, out float xpBarFill) {
+        if (gainedXp == 0) {
+            xpBarFill = CurrentLevelCompletion(curXp);
+            return false;
+        } 
+        
         int toGo = XpUntilNextLevel(curXp);
-        int totalForLevel = TotalXpAtCurrentLevel(curXp);
-        
-        gainedXp -= toGo;
-        if (gainedXp < 0) {
-            gainedXp = 0;
-        }
-        
-        
+
         if (gainedXp < toGo) {
+            curXp += gainedXp;
             gainedXp = 0;
-            return 0f;
+            xpBarFill = CurrentLevelCompletion(curXp);
+            return true;
         }
-        return 0f;
+
+        gainedXp -= toGo;
+        curXp += toGo;
+        xpBarFill = 1f;
+        return true;
     }
     
     public int LevelsGainedFromXp(int curXp, int xpToGain) {
@@ -50,11 +54,15 @@ public class PrefixedLevels {
         int sumAtPrevLevel = prefixedLevels[curLevel - 1];
         return sumAtCurLevel - sumAtPrevLevel;
     }
+
+    public int XpAlongCurrentLevel(int curXp) {
+        int prevLevel = GetLevelFromXp(curXp) - 1;
+        return curXp - prefixedLevels[prevLevel];
+    }
     
     public int XpUntilNextLevel(int curXp) {
         int curLevel = GetLevelFromXp(curXp);
-        int sumAtPrevLevel = prefixedLevels[curLevel - 1];
-        int xpLeftToGo = sumAtPrevLevel - curXp; 
+        int xpLeftToGo = prefixedLevels[curLevel] - curXp; 
         return xpLeftToGo;
     }
     

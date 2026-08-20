@@ -54,7 +54,7 @@ public partial class Game {
         enemy.enemySpacerCollider = enemy.trans.GetChild(0).GetComponent<Collider2D>();
         enemy.enemySpacerCollider.excludeLayers = data.excludeCollisionLayers;
         enemy.flowFieldAcc = Random.Range(2.5f, 3.5f);
-        enemy.rigidbody.mass = data.defualtMass;
+        enemy.rigidbody.mass = data.defaultMass;
         enemy.collider.enabled = true;
     }
     
@@ -75,6 +75,7 @@ public partial class Game {
         
         PlayAudioClip(audio.bloodBurstClip, deadEnemy.position);
         PlayerOnEnemyDeath(deadEnemy);
+        DemonEyeOnEnemyDeath(deadEnemy);
         
         if (!thisFrame.enemyKillCount.TryAdd(deadEnemy.data, 1)) {
             thisFrame.enemyKillCount[deadEnemy.data]++;
@@ -293,7 +294,7 @@ public partial class Game {
             enemy.rigidbody.mass = enemySlowedMass;
             
             if (slow.timeSpentSlowed >= slow.duration) {
-                enemy.rigidbody.mass = enemy.data.defualtMass;
+                enemy.rigidbody.mass = enemy.data.defaultMass;
                 enemy.slow.ClearValue();
             }
         }

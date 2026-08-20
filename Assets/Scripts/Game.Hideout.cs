@@ -59,13 +59,12 @@ public partial class Game {
     }
 
     private void IncreaseTraderRep(int repGain) {
-        if (ReachedTraderMaxRep()) return;
+        if (config.trader.ReachedMaxLevel()) return;
 
-        int prevLevel = GetTraderRepLevel();
+        int wouldGainLevels = config.trader.LevelsGainedFromXp(repGain);
         config.trader.state.reputation += repGain;
-        int repLevel = GetTraderRepLevel();
-        bool increasedLevel = prevLevel < repLevel;
         
+        bool increasedLevel = wouldGainLevels > 0;
         if (increasedLevel) {
             CheckForTraderRestock(forceRestock: true);
         }
@@ -73,23 +72,16 @@ public partial class Game {
     }
 
     private void CalculateAndSetTraderRepBars() {
-        int levelIndex = GetTraderRepLevel();
+        int levelIndex = config.trader.GetLevel();
         
-        if (ReachedTraderMaxRep()) {
+        if (config.trader.ReachedMaxLevel()) {
             SetTraderRepBarViewAsMaxLevel(traderPanel.repBar, levelIndex);
             SetTraderRepBarViewAsMaxLevel(questsPanel.traderRepBar, levelIndex);
             return;
         }
-        
-        int prefixedSumAtCurLevel = config.traderLevels.prefixedSumRepForLevel[levelIndex];
-        int prefixedSumAtPrevLevel = config.traderLevels.prefixedSumRepForLevel[levelIndex - 1];
-        int repNeededForThisLevel = prefixedSumAtCurLevel - prefixedSumAtPrevLevel;
 
-        int rep = config.trader.state.reputation;
-        int repCompletedAtCurLevel = rep - prefixedSumAtPrevLevel;
-        int repLeftToGo = prefixedSumAtCurLevel - rep;
-        float fill = repCompletedAtCurLevel / (float)repNeededForThisLevel;
-        
+        float fill = config.trader.CurrentLevelCompletion();
+        int repLeftToGo = config.trader.XpUntilNextLevel();
         SetTraderRepBarView(traderPanel.repBar, fill, repLeftToGo, levelIndex);
         SetTraderRepBarView(questsPanel.traderRepBar, fill, repLeftToGo, levelIndex);
     }
@@ -106,19 +98,9 @@ public partial class Game {
         bar.levelText.text = $"Level {level} (Max)";
     }
 
-    private int GetTraderRepLevel() {
-        int rep = config.trader.state.reputation;
-        for (int i = 0; i < config.traderLevels.prefixedSumRepForLevel.Length; i++) {
-            if (rep < config.traderLevels.prefixedSumRepForLevel[i]) {
-                return i;
-            }
-        }
-        return config.traderLevels.prefixedSumRepForLevel.Length;
-    }
-
     public void FillTraderInventoryWithItems() {
         ClearInventory(inventories.trader);
-        int curTraderLevel = GetTraderRepLevel();
+        int curTraderLevel = config.trader.GetLevel();
         
         float raritySkew = curTraderLevel switch { 
             0 => 0.13f, 
@@ -172,11 +154,6 @@ public partial class Game {
             slot.itemInstance.traderOwned = false;
             slot.itemInstance.traderSlotIndex = -1;
         }
-    }
-    
-    private bool ReachedTraderMaxRep() {
-        int rep = config.trader.state.reputation;
-        return rep >= config.traderLevels.prefixedSumRepForLevel[^1];
     }
     
     private InventorySlot curTradingInventorySlot;
@@ -285,21 +262,23 @@ public partial class Game {
     }
     
     private enum TraderShopDialogueType { Greeting, Purchase }
-    
+
+    private Tween traderDialogueTween;
+
     private void TriggerTraderShopDialogue(TraderShopDialogueType dialogueType) {
+        traderDialogueTween.Stop();
         traderPanel.shopTextTypewriter.gameObject.SetActive(false);
-        
-        // The delay is nice, but its also necessary to make sure theres a 1 frame delay so it animates correctly every time
-        Tween.Delay(0.1f, () => {
-            var typeWritier = gameInstance.traderPanel.shopTextTypewriter;
+
+        // The delay just looks nice 
+        traderDialogueTween = Tween.Delay(0.1f, () => {
+            var typewriter = gameInstance.traderPanel.shopTextTypewriter;
             if (dialogueType == TraderShopDialogueType.Greeting) {
-                typeWritier.ShowText("{ffade}{shake}Can you actually buy something this time?");
+                typewriter.ShowText("{ffade}{shake}Can you actually buy something this time?");
             }
             if (dialogueType == TraderShopDialogueType.Purchase) {
-                typeWritier.ShowText("{ffade}{shake}Pleasure doing business. Keep it real.");
-                typeWritier.ShowText("{ffade}{shake}That one was a 34% mark up.");
+                typewriter.ShowText("{ffade}{shake}Pleasure doing business. Keep it real.\n{ffade}{shake}That one was a 34% mark up.");
             }
-            typeWritier.gameObject.SetActive(true);
+            typewriter.gameObject.SetActive(true);
         });
     }
     
@@ -307,7 +286,7 @@ public partial class Game {
     // Eye Forge 
     // ************************
     
-    private enum CrucibleMode { Empty, Forging, ForgingButJustEye, ForgingButWithoutEye, NeedToRemoveDemonEye }
+    private enum CrucibleMode { Empty, Forging, ForgingButJustEye, ForgingButWithoutEye, DemonEyeTooLowToUpgrade, }
     private CrucibleMode crucibleMode;
 
     private void UpdateForgeState() {
@@ -319,9 +298,9 @@ public partial class Game {
         if (crucibleItemCount <= 0) {
             crucibleMode = CrucibleMode.Empty;
         }
-        // else if (eyeSlotItemInstance != null && eyeSlotItemInstance.ItemRef.type == itemTypes.demonEye) {
-        //     crucibleMode = CrucibleMode.NeedToRemoveDemonEye;
-        // }
+        else if (eyeSlotItemInstance != null && eyeSlotItemInstance.isDemonEye && eyeSlotItemInstance.demonEyeUpgradesAvailable <= 0) {
+            crucibleMode = CrucibleMode.DemonEyeTooLowToUpgrade;
+        }
         else if (eyeSlotItemInstance != null && crucibleItemCount == 1) {
             crucibleMode = CrucibleMode.ForgingButJustEye;
         }
@@ -459,8 +438,6 @@ public partial class Game {
         float upgradeExplosionsDuration = perUpgradeExplosionDelay * (GetInventoryItemCount(inventories.eyeForge) - 1);
         float totalAnimationDuration = fillDuration + upgradeExplosionsDuration + popOutDuration;
         
-        FlipEyeForgeNameText(demonEyeName);
-        
         InventorySlot[] slots = inventories.eyeForge.slots;
         
         bool upgradingDemonEye = slots[0].itemInstance.isDemonEye;
@@ -512,7 +489,7 @@ public partial class Game {
 
             RectTransform rectTransform = slot.ui.itemUI.rectTransform;
 
-            // Use our own shake because prime tween shake's curve does not work
+            // Use our own shake because primetween shake's curve does not work
             rectTransform.DoTweenShake(10f, 3.3f, totalAnimationDuration, curves.pentagramItemShake);
 
             Sequence sequence = Sequence.Create();
@@ -558,78 +535,6 @@ public partial class Game {
         }
     }
     
-    private class TextFlipAnimData {
-        public string name;
-        public int visibleCharCount;
-        public int curSettleCount;
-        public int curCycleCount;
-        public const int cyclesPerSettle = 5;
-        public const float cycleInterval = 0.1f;
-        public const string charPool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    }
-    
-    private static TextFlipAnimData _textFlipAnimData = new();
-    
-    private void FlipEyeForgeNameText(string nameText) {
-        _textFlipAnimData.visibleCharCount = nameText.Length;
-        _textFlipAnimData.name = $"<mspace=0.5em>{nameText.ToUpper()}"; 
-        _textFlipAnimData.curSettleCount = 0;
-        _textFlipAnimData.curCycleCount = 0;
-        
-        PerformFlip();
-        
-        static void PerformFlip() {
-            Tween.Delay(TextFlipAnimData.cycleInterval, static () => {
-                var data = _textFlipAnimData;
-                if (++data.curCycleCount % TextFlipAnimData.cyclesPerSettle == 0) {
-                    data.curSettleCount++;
-                }
-                gameInstance.eyeForgePanel.flappingNameText.text = GetFlipText(data.name, data.curSettleCount);
-                if (data.curSettleCount < data.visibleCharCount) {
-                    PerformFlip();
-                }
-            });
-        }
-        
-        static string GetFlipText(string text, int settledCount) {
-            StringBuilder strBuilder = GetStringBuilder();
-        
-            int visibleIndex = 0;
-            bool inTag = false;
-
-            foreach (char c in text) {
-                // If char is inside a Rich Text Tag, just appeand it without flipping letters
-                if (c == '<' && !inTag) {
-                    inTag = true;
-                    strBuilder.Append(c);
-                    continue;
-                }
-                if (c == '>' && inTag) {
-                    inTag = false;
-                    strBuilder.Append(c);
-                    continue;
-                }
-                if (inTag) {
-                    strBuilder.Append(c);
-                    continue;
-                }
-
-                if (visibleIndex < settledCount || char.IsWhiteSpace(c)) {
-                    strBuilder.Append(c);
-                }
-                else {
-                    const string charPool = TextFlipAnimData.charPool;
-                    strBuilder.Append(charPool[Random.Range(0, charPool.Length)]);
-                }
-                
-                if (!char.IsWhiteSpace(c)) {
-                    visibleIndex++;
-                }
-            }
-            return strBuilder.ToString();
-        }
-    }
-
     private int fillParamProperty = Shader.PropertyToID("_Fill");
     
     private void SetPentagramFill(float value) {

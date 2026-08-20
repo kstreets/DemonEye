@@ -10,6 +10,12 @@
       },
       "hash": "5a305705f84549e50223d897bb95495edd78bf1a"
     },
+    "com.febucci.text-animator-unity": {
+      "version": "file:com.febucci.text-animator-unity",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.kyrylokuzyk.primetween": {
       "version": "file:com.kyrylokuzyk.primtetween",
       "depth": 0,

@@ -33,10 +33,13 @@ MonoBehaviour:
   dropOrigins:
   - dropPool: {fileID: 11400000, guid: 9eeed80dc208fd04986551102c8859ff, type: 2}
     chanceToSpawn: 1
+    maxStackCount: 1
   - dropPool: {fileID: 11400000, guid: 2f1280ced8a9a0b4eaa9045d5741fb8b, type: 2}
     chanceToSpawn: 0.8
+    maxStackCount: 1
   - dropPool: {fileID: 11400000, guid: a3f73304b268c4a4f84184336a236942, type: 2}
     chanceToSpawn: 0.8
+    maxStackCount: 1
   modifiesStats: 0
   critChance: 0
   critMultiplier: 0

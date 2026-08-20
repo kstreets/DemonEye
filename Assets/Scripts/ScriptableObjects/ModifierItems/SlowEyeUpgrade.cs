@@ -26,7 +26,7 @@ public class SlowEyeUpgrade : EyeUpgrade {
     }
 
     private float GetSpeedReduction(int stackCount) {
-        return TaperFloat(speedReductionPercent, stackCount, 0.4f);
+        return TaperFloat(speedReductionPercent, stackCount, 0.3f);
     }
     
 }

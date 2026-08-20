@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using VInspector;
 using static ItemComponents;
@@ -142,6 +143,13 @@ public class Item : UuidScriptableObject  {
     private void OnValidate() {
         rarity = GetRarity();
         dropOrigins.Sort((a, b) => string.Compare(a.dropPool?.name, b.dropPool?.name, StringComparison.Ordinal));
+        foreach (var dropOrigin in dropOrigins) {
+            int prior = dropOrigin.maxStackCount;
+            dropOrigin.maxStackCount = Mathf.Clamp(dropOrigin.maxStackCount, 1, maxStackCount);
+            if (prior != dropOrigin.maxStackCount) {
+                EditorUtility.SetDirty(this);
+            }
+        }
     }
     
     [Button]

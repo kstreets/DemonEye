@@ -48,7 +48,7 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
     
     private void SetName(ItemInstance itemInstance, Item item) {
         if (itemInstance.isDemonEye) {
-            nameText.text = $"{itemInstance.demonEyeName} (Lvl {itemInstance.demonEyeLevel + 1})";
+            nameText.text = $"{itemInstance.demonEyeName} (Lvl {itemInstance.DemonEyeLevel})";
             return;
         }
         nameText.text = item.displayName;

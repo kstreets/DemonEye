@@ -12,6 +12,7 @@ public partial class Game {
     public class DropOrigin {
         public DropPool dropPool;
         public float chanceToSpawn;
+        public int maxStackCount;
     }
     
     public void CreateDropPoolsForMap(MapData map) { 
@@ -45,9 +46,8 @@ public partial class Game {
         bool useShufflePickMethod = dropPool.items.Count <= smallPoolThreshold;
         Item rolledItem = useShufflePickMethod ? PerformShufflePick(dropPool, map) : PerformWeightedPick(dropPool, map);
         
-        rolledItem = RollForAugmentedVersion(rolledItem, dropPool, map);
         dropPool.lastDroppedItem = rolledItem;
-        
+        rolledItem = RollForAugmentedVersion(rolledItem, dropPool, map);
         return rolledItem;
     }
     
@@ -131,7 +131,7 @@ public partial class Game {
 
             bool itemIsRepeat = dropPool.lastDroppedItem == item; 
             if (dropPool.reduceDuplicates && itemIsRepeat) {
-                const float defaultPercentReduction = 0.5f;
+                const float defaultPercentReduction = 0.25f;
                 dropChance *= defaultPercentReduction;
             }
             
