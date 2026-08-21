@@ -31,6 +31,9 @@ MonoBehaviour:
     barterRequirements: []
   rarity: 0
   dropOrigins:
+  - dropPool: {fileID: 11400000, guid: 3c4ecb30986cb144bb8b92852af68d07, type: 2}
+    chanceToSpawn: 0.622
+    maxStackCount: 2
   - dropPool: {fileID: 11400000, guid: 9eeed80dc208fd04986551102c8859ff, type: 2}
     chanceToSpawn: 1
     maxStackCount: 1

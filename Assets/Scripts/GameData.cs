@@ -29,7 +29,6 @@ public class GameData {
         public DropPool eyeUpgrades;
         public DropPool body;
         public DropPool trader;
-        public DropPool foraging;
         public DropPool bushes;
         public DropPool chests;
     }

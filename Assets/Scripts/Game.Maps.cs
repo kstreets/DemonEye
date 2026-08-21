@@ -152,7 +152,7 @@ public partial class Game {
             
         int maxDeadBodyItemCount = Random.Range(2, 6);
         GetUniqueItemsFromDropPool(dropPools.body, maxDeadBodyItemCount, ref items);
-        InventorySlot[] lootInventory = CreateLootInventoryFromItems(items, dropPools.body, stackTaperRate: 0.15f);
+        InventorySlot[] lootInventory = CreateLootInventoryFromItems(items, dropPools.body);
         
         float eyeUpgradeOnBodyChance = curRaid.map.eyeUpgradeOnBodyChance;
         while (RollProbability(eyeUpgradeOnBodyChance)) {
@@ -168,7 +168,7 @@ public partial class Game {
         using var _ = ListPool<Item>.Get(out var items);
         int maxBushItemCount = Random.Range(1, 3);
         GetUniqueItemsFromDropPool(dropPools.bushes, maxBushItemCount, ref items);
-        curRaid.bushSlotsLookup.Add(entity.gameObject, CreateLootInventoryFromItems(items, dropPools.bushes, stackTaperRate: 0.15f)); 
+        curRaid.bushSlotsLookup.Add(entity.gameObject, CreateLootInventoryFromItems(items, dropPools.bushes)); 
     }
     
     private void InitMapGrid() {

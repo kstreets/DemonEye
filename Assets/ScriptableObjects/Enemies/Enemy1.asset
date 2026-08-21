@@ -34,5 +34,5 @@ MonoBehaviour:
   collisionDamage: 2
   changeToCauseBleed: 0.1
   soulWorthPerKill: 1
-  xpWorthPerKill: 20
+  xpWorthPerKill: 5
   defaultMass: 2.546875

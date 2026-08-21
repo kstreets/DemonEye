@@ -33,7 +33,7 @@ MonoBehaviour:
   dropOrigins:
   - dropPool: {fileID: 11400000, guid: 3c4ecb30986cb144bb8b92852af68d07, type: 2}
     chanceToSpawn: 0.1
-    maxStackCount: 1
+    maxStackCount: 2
   - dropPool: {fileID: 11400000, guid: 2f1280ced8a9a0b4eaa9045d5741fb8b, type: 2}
     chanceToSpawn: 0.35
     maxStackCount: 1

@@ -17,6 +17,7 @@ MonoBehaviour:
   enemyPrefab: {fileID: 7814119993517076521, guid: 2cf698d61875ef147b2f262d4b2b73ca, type: 3}
   animatorOverride: {fileID: 22100000, guid: c9959f5d8ae2e8a4b969b6516e0f67e2, type: 2}
   dropPool: {fileID: 11400000, guid: a3f73304b268c4a4f84184336a236942, type: 2}
+  chanceToDropItem: 0.05
   usesFlowField: 0
   excludeCollisionLayers:
     serializedVersion: 2
@@ -32,6 +33,6 @@ MonoBehaviour:
   damage: 28
   collisionDamage: 8
   changeToCauseBleed: 0.15
-  chanceToDropItem: 0.05
   soulWorthPerKill: 3
-  defualtMass: 21.047487
+  xpWorthPerKill: 15
+  defaultMass: 21.047487

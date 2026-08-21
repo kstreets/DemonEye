@@ -197,19 +197,18 @@ public partial class Game {
         return slots;
     }
     
-    private InventorySlot[] CreateLootInventoryFromItems(List<Item> items, DropPool dropPool, float stackTaperRate) {
+    private InventorySlot[] CreateLootInventoryFromItems(List<Item> items, DropPool dropPool) {
         using var _ = ListPool<ItemInstance>.Get(out var itemInstances);
             
         foreach (Item item in items) {
             int stackCount = 1;
-            int maxStackCount = 1;
-            
-            foreach (DropOrigin dropOrigin in item.dropOrigins) {
-                if (dropPool == dropOrigin.dropPool) {
-                    maxStackCount = dropOrigin.maxStackCount;         
-                    break;
-                }
-            }
+            int maxStackCount = item.GetDropOrigin(dropPool)?.maxStackCount ?? 1;
+
+            const float minStackTaperRate = 0.05f;
+            const float maxStackTaperRate = 0.95f;
+            float x = Mathf.Clamp01(maxStackCount / 8f);
+            float stackTaperRate = Mathf.Pow(1 - x, 3.5f); // Curve where higher possible stacks means higher value on [0, 1]
+            stackTaperRate = Mathf.Clamp(stackTaperRate, minStackTaperRate, maxStackTaperRate);
             
             float taperingChance = Mathf.Lerp(GetDropChanceOfItem(item, dropPool, curRaid.map), 0f, stackTaperRate);
             while (stackCount < maxStackCount && RollProbability(taperingChance)) {

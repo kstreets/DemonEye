@@ -72,6 +72,20 @@ public class Item : UuidScriptableObject  {
         if (maxRarity <= 0.50f) return Rarity.Uncommon;
         return Rarity.Common;
     }
+
+    public float GetSpawnChanceForDropPool(DropPool dropPool) {
+        DropOrigin origin = GetDropOrigin(dropPool);
+        return origin?.chanceToSpawn ?? 0f;
+    }
+
+    public DropOrigin GetDropOrigin(DropPool dropPool) {
+        foreach (DropOrigin dropOrigin in dropOrigins) {
+            if (dropPool == dropOrigin.dropPool) {
+                return dropOrigin;
+            }
+        }
+        return null;
+    }
     
     public int GetSellPrice() {
         if (priceCategory == null) {
@@ -143,12 +157,18 @@ public class Item : UuidScriptableObject  {
     private void OnValidate() {
         rarity = GetRarity();
         dropOrigins.Sort((a, b) => string.Compare(a.dropPool?.name, b.dropPool?.name, StringComparison.Ordinal));
+        
+        bool updatedMaxStackCount = false;
         foreach (var dropOrigin in dropOrigins) {
             int prior = dropOrigin.maxStackCount;
-            dropOrigin.maxStackCount = Mathf.Clamp(dropOrigin.maxStackCount, 1, maxStackCount);
+            dropOrigin.maxStackCount = Mathf.Clamp(dropOrigin.maxStackCount, 1, MaxStackCount);
             if (prior != dropOrigin.maxStackCount) {
-                EditorUtility.SetDirty(this);
+                updatedMaxStackCount = true;
             }
+        }
+        
+        if (updatedMaxStackCount) {
+            EditorUtility.SetDirty(this);
         }
     }
     
