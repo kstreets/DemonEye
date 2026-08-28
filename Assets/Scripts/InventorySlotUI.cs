@@ -70,8 +70,12 @@ public class InventorySlotUI : MonoBehaviour {
         searchingCircle.SetActive(false);
     }
 
-    public void SetItem(Item data, int count) {
-        itemUI.SetItem(data, count);
+    public void SetItem(Item item, int count) {
+        itemUI.SetItem(item, count);
+    }
+    
+    public void SetPlaceHolderItemImage(Item item) {
+        itemUI.SetPlaceholderItem(item);
     }
     
     public void ToggleOutOfStock() {

@@ -112,10 +112,10 @@ public partial class Game : MonoBehaviour {
         UpdateInventory();
         UpdateTransactionUI();
         UpdateForgeState();
-        UpdateForgePanel();
         UpdateForgeInfoPanel();
         RefreshAllInventoryDisplays();
         UpdateGraySlots();
+        UpdateForgePanel();
     }
 
     private void OnHideoutStateLateUpdate() {

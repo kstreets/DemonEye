@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using PrimeTween;
 using TMPro;
 using UnityEngine;
@@ -286,8 +285,8 @@ public partial class Game {
     // Eye Forge 
     // ************************
     
-    private enum CrucibleMode { Empty, Forging, ForgingButJustEye, ForgingButWithoutEye, DemonEyeTooLowToUpgrade, }
-    private CrucibleMode crucibleMode;
+    private enum ForgeMode { Empty, Forging, ForgingButJustEye, ForgingButWithoutEye, UpgradingButJustDemonEye, UpgradingDemonEye, }
+    private ForgeMode forgeMode;
 
     private void UpdateForgeState() {
         if (!OnEyeForgeTab) return;
@@ -296,19 +295,19 @@ public partial class Game {
         ItemInstance eyeSlotItemInstance = inventories.eyeForge.slots[0].itemInstance;
 
         if (crucibleItemCount <= 0) {
-            crucibleMode = CrucibleMode.Empty;
+            forgeMode = ForgeMode.Empty;
         }
-        else if (eyeSlotItemInstance != null && eyeSlotItemInstance.isDemonEye && eyeSlotItemInstance.demonEyeUpgradesAvailable <= 0) {
-            crucibleMode = CrucibleMode.DemonEyeTooLowToUpgrade;
+        else if (eyeSlotItemInstance != null && eyeSlotItemInstance.isDemonEye) {
+            forgeMode = GetInventoryItemCount(inventories.eyeForge) > 1 ? ForgeMode.UpgradingDemonEye : ForgeMode.UpgradingButJustDemonEye;
         }
         else if (eyeSlotItemInstance != null && crucibleItemCount == 1) {
-            crucibleMode = CrucibleMode.ForgingButJustEye;
+            forgeMode = ForgeMode.ForgingButJustEye;
         }
         else if (eyeSlotItemInstance == null) {
-            crucibleMode = CrucibleMode.ForgingButWithoutEye;
+            forgeMode = ForgeMode.ForgingButWithoutEye;
         }
         else {
-            crucibleMode = CrucibleMode.Forging;
+            forgeMode = ForgeMode.Forging;
         }
     }
     
@@ -316,12 +315,24 @@ public partial class Game {
         if (!OnEyeForgeTab) return;
         
         ButtonFeel forgeButton = eyeForgePanel.forgeButton;
-        bool forging = crucibleMode is CrucibleMode.Forging;
+        bool forging = forgeMode is ForgeMode.Forging or ForgeMode.UpgradingDemonEye;
         if (forging && forgeButton.isDisabled) {
             forgeButton.Enable();
         }
         else if (!forging && !forgeButton.isDisabled) {
             forgeButton.Disable();
+        }
+        
+        if (forgeMode is ForgeMode.UpgradingDemonEye or ForgeMode.UpgradingButJustDemonEye) {
+            ItemInstance eyeItemInstance = inventories.eyeForge.slots[0].itemInstance;
+            using var _ = ListPool<EyeUpgrade>.Get(out var upgrades);
+            GetDemonEyeCoreUpgrades(eyeItemInstance, ref upgrades);
+
+            for (int i = 0; i < upgrades.Count; i++) {
+                if (inventories.eyeForge.slots[i + 1].itemInstance == null) {
+                    inventories.eyeForge.slots[i + 1].ui.SetPlaceHolderItemImage(upgrades[i]);
+                }
+            }
         }
     }
 
@@ -332,16 +343,16 @@ public partial class Game {
         DemonEyeDescList demonEyeDesc = eyeForgeDetailsPanel.demonEyeDesc;
         ItemInstance eyeSlotItemInstance = inventories.eyeForge.slots[0].itemInstance;
         
-        if (crucibleMode == CrucibleMode.Empty) {
+        if (forgeMode == ForgeMode.Empty) {
             detailsText.text = "Place an eyeball in the center to start the Demon Eye forging process";
             demonEyeDesc.HideAllElements();
         }
-        else if (crucibleMode == CrucibleMode.ForgingButJustEye && !eyeSlotItemInstance.isDemonEye) {
+        else if (forgeMode == ForgeMode.ForgingButJustEye && !eyeSlotItemInstance.isDemonEye) {
             detailsText.text = $"Requires at least {DisplayNumber(1)} eye upgrade to forge a Demon Eye";
             demonEyeDesc.HideAllElements();
         }
         else {
-            if (crucibleMode == CrucibleMode.ForgingButWithoutEye) {
+            if (forgeMode == ForgeMode.ForgingButWithoutEye) {
                 detailsText.text = "Missing eyeball in the center";
             }
             else {

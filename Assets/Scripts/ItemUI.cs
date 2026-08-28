@@ -17,7 +17,15 @@ public class ItemUI : MonoBehaviour {
     public void SetItem(Item data, int count) {
         image.sprite = data.inventorySprite;
         image.enabled = true;
+        countText.gameObject.SetActive(true);
         countText.text = count.ToString();
+    }
+    
+    public void SetPlaceholderItem(Item data) {
+        image.sprite = data.inventorySprite;
+        image.enabled = true;
+        countText.gameObject.SetActive(false);
+        image.color = Color.gray2;
     }
 
     public void UpdateCount(int count) {

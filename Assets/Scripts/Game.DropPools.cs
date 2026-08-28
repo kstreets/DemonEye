@@ -44,7 +44,8 @@ public partial class Game {
         
         const int smallPoolThreshold = 4;
         bool useShufflePickMethod = dropPool.items.Count <= smallPoolThreshold;
-        Item rolledItem = useShufflePickMethod ? PerformShufflePick(dropPool, map) : PerformWeightedPick(dropPool, map);
+        // Item rolledItem = useShufflePickMethod ? PerformShufflePick(dropPool, map) : PerformWeightedPick(dropPool, map);
+        Item rolledItem = PerformWeightedPick(dropPool, map);
         
         dropPool.lastDroppedItem = rolledItem;
         rolledItem = RollForAugmentedVersion(rolledItem, dropPool, map);

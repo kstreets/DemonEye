@@ -99,19 +99,11 @@ public partial class Game {
 
             if (col.CompareTag(Tags.ExitPortal)) {
                 Portal portal = GetExitPortalFromTransform(col.transform);
-                ref float timeSpentSummoningPortal = ref curRaid.data.interactions.timeSpentSummoningPortal;
                 
-                if (portal.state == Portal.State.Inactive && timeSpentSummoningPortal < config.gameplay.portalSummonTime) {
+                if (portal.state == Portal.State.Inactive) {
                     EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Summon Exit Portal");
                     if (input.interact.IsPressed()) {
-                        timeSpentSummoningPortal += Time.deltaTime;
-                        if (timeSpentSummoningPortal >= config.gameplay.portalSummonTime) {
-                            portal.StartOpenCloseSequence(config.gameplay.portalPostSummonDelay, config.gameplay.portalActiveDuration);
-                            timeSpentSummoningPortal = 0f;
-                        }
-                    }
-                    else {
-                        timeSpentSummoningPortal = 0f;
+                        portal.StartOpenCloseSequence(config.gameplay.portalPostSummonDelay, config.gameplay.portalActiveDuration);
                     }
                 }
                 

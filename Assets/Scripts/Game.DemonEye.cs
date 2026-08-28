@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine.Assertions;
 using UnityEngine.Pool;
+using Mathf = UnityEngine.Mathf;
 
 public partial class Game {
     
@@ -259,6 +260,37 @@ public partial class Game {
         aug = null;
         upgrade = null;
         return false;
+    }
+    
+    private void GetDemonEyeCoreUpgrades(ItemInstance demonEyeItemInstance, ref List<EyeUpgrade> upgrades) {
+        int coreDemonEyeUpgradeCount = inventories.eyeForge.slots.Length - 1;
+        int count = Mathf.Min(coreDemonEyeUpgradeCount, demonEyeItemInstance.nestedUuids.Count);
+        
+        for (int i = 0; i < count; i++) {
+            UuidScriptableObject uuidObject = res.lookup[demonEyeItemInstance.nestedUuids[i]];
+            
+            if (uuidObject is Augment augment) {
+                upgrades.Add(augment.derivedFrom);
+                continue;
+            }
+            if (uuidObject is EyeUpgrade upgradeItem) {
+                upgrades.Add(upgradeItem);
+                continue;
+            }
+            
+            Assert.IsTrue(false, "Cannot get eyeupgrade because nested id is not any type of upgrade");
+        }
+    }
+    
+    private EyeUpgrade GetEyeUpgradeFromItemInstance(ItemInstance itemInstance) {
+        UuidScriptableObject uuidObject = res.lookup[itemInstance.itemOrInstanceUuid];
+        if (uuidObject is Augment augment) {
+            return augment.derivedFrom;
+        }
+        if (uuidObject is EyeUpgrade upgradeItem) {
+            return upgradeItem;
+        }
+        return null;
     }
     
     public int GetDemonEyeSellPrice(ItemInstance demonEyeItemInstance) {

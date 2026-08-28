@@ -175,14 +175,14 @@ public class GameplayTestingWindow : EditorWindow {
         return GetMapIndex(x).CompareTo(GetMapIndex(y));
     }
     
+    // Returns -1 if spawns on all maps and int.MaxValue if not assigned to any map 
     private int GetMapIndex(IEyeUpgrade eyeUpgrade) {
         if (eyeUpgrade.MapSpawning.spawnsOnAll) {
             return -1;
         } 
         if (eyeUpgrade.MapSpawning.firstSpawnMap != null) {
             int index = Maps.IndexOf(eyeUpgrade.MapSpawning.firstSpawnMap);
-            bool mapNotInMapList = index == -1;
-            return mapNotInMapList ? int.MaxValue : index;
+            return index == -1 ? int.MaxValue : index;
         }
         return int.MaxValue;
     }
@@ -208,6 +208,12 @@ public class GameplayTestingWindow : EditorWindow {
         string colorString;
         if (Selection.activeObject == eyeUpgrade.UuidObject) {
             colorString = "#2C5D87";
+        }
+        else if (curMapIndex == 0 && firstMapItemIndex == -1) {
+            colorString = "#4D4D4D";
+        }
+        else if (firstMapItemIndex == int.MaxValue) {
+            colorString = "#BD6351";
         }
         else if (firstMapItemIndex < curMapIndex) {
             colorString = "#383838";

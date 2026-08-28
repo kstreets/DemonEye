@@ -866,6 +866,26 @@ public partial class Game {
             specificSlotToMoveTo = itemInstance.traderSlotIndex;
         }
         
+        if (fromInventory == inventories.stash && toInventory == inventories.eyeForge && 
+            (forgeMode is ForgeMode.UpgradingDemonEye or ForgeMode.UpgradingButJustDemonEye)) 
+        {
+            ItemInstance eyeItemInstance = inventories.eyeForge.slots[0].itemInstance;
+            using var _ = ListPool<EyeUpgrade>.Get(out var upgrades);
+            GetDemonEyeCoreUpgrades(eyeItemInstance, ref upgrades);
+            
+            for (int i = 0; i < upgrades.Count; i++) {
+                EyeUpgrade baseEyeUpgrade = GetEyeUpgradeFromItemInstance(itemInstance);
+                int forgeIndex = i + 1;
+                if (inventories.eyeForge.slots[forgeIndex].itemInstance == null && upgrades[i] == baseEyeUpgrade) {
+                    specificSlotToMoveTo = forgeIndex;
+                    break;
+                }
+            }
+            
+            bool noMatchingCoreUpgradeFound = specificSlotToMoveTo == -1;
+            if (noMatchingCoreUpgradeFound) return;
+        }
+        
         if (moveOption == MoveItemOption.Single) {
             ItemInstance newItemInstance = itemInstance.Clone();
             newItemInstance.count = 1;
