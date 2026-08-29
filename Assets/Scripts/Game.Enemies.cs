@@ -498,7 +498,7 @@ public partial class Game {
         public bool FinishedSpawningThisWave => !spawnEvents.IndexInRange(spawnTimeIndex);
         
         public int CurWaveNumber => Mathf.Clamp(curPhaseIndex + 1, 0, chosenVarientIndices.Count);
-        public int WavesRemaining => chosenVarientIndices.Count - CurWaveNumber;
+        public int TotalWaveCount => chosenVarientIndices.Count;
         
         public int CurVarientIndex => chosenVarientIndices.IndexInRange(curPhaseIndex) ? chosenVarientIndices[curPhaseIndex] : -1;
         public List<RaidSpawnPattern.PhasePool> PhasePools => spawnPattern.phasePools; 

@@ -210,7 +210,7 @@ public partial class Game {
         }
         
         if (raidInfo.waveText.gameObject.activeInHierarchy) {
-            raidInfo.waveText.text = $"{spawnManager.WavesRemaining.ToString()} Waves Left";
+            raidInfo.waveText.text = $"Wave {spawnManager.CurWaveNumber}/{spawnManager.TotalWaveCount}";
         }
     }
     
