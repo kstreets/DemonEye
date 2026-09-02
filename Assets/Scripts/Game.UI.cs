@@ -437,6 +437,36 @@ public partial class Game {
     // Pop Ups 
     // *******************************
     
+    public void PushNotification(string text) {
+        Entity notification = SpawnEntity(entityPools.notification, Vector3.zero, Quaternion.identity, ui.notificationParent, EntityLifetime.Global);
+        
+        const float startWidth = 0f;
+        float endWidth = ui.notificationParent.rect.width;
+        
+        TweenSettings inSettings = new() {
+            duration = 0.4f,
+            ease = Ease.OutBack,
+        };
+        TweenSettings outSettings = new() {
+            duration = 0.25f,
+            ease = Ease.Linear,
+        };
+        
+        Sequence seq = Sequence.Create();
+        seq.Chain(
+            Tween.Custom(notification, startWidth, endWidth, inSettings, static (notification, width) => {
+                notification.gameObject.GetComponent<NotificationUI>().backgroundParent.ResizeWidth(width);
+            })
+        )
+        .ChainDelay(4f)
+        .Chain(
+            Tween.Custom(notification, endWidth, startWidth, outSettings, static (notification, width) => {
+                notification.gameObject.GetComponent<NotificationUI>().backgroundParent.ResizeWidth(width);
+            })
+        )
+        .ChainCallback(notification, static (notification) => gameInstance.DestroyEntity(notification));
+    }
+    
     public static void FitPopupSize(RectTransform popupRect, params Rect[] rects) {
         float height = 0f;
         foreach (Rect rect in rects) {

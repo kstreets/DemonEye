@@ -83,6 +83,8 @@ public partial class Game {
             get => trans.rotation;
             set => trans.rotation = value;
         }
+        
+        public RectTransform rectTransform => trans as RectTransform;
 
         public Vector3 Center => collider.bounds.center;
         public GameObject gameObject => trans.gameObject;

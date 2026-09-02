@@ -63,6 +63,7 @@ public class GameData {
         public GameObject upgradeFractureParticles;
         public GameObject questSelectionToggle;
         public GameObject quest;
+        public GameObject notification;
     }
     
     [Serializable]
@@ -80,9 +81,6 @@ public class GameData {
     public class Quests {
         public QuestGraphRuntime graph;
         public Dictionary<int, Quest.State> stateLookupFromUuid = new();
-        public Quest pickPocketQuest;
-        public Quest overweightExtractQuest;
-        
         public Queue<QuestPackage> reservedPkgs = new();
         public List<QuestPackage> activePkgs = new();
         public QuestPackage presentingPkg;
@@ -132,6 +130,7 @@ public class GameData {
         public UIElementPopup uiElementPopup;
         public RectTransform hideoutParent;
         public RectTransform hotBarParent;
+        public RectTransform notificationParent;
         public ItemUI dragAndDropItemUI;
         public Image animatedBgImage;
         public Image deathBgImage;
@@ -195,6 +194,7 @@ public class GameData {
         public TextMeshProUGUI traderText;
         public TextMeshProUGUI questsText;
         public TextMeshProUGUI skillsText;
+        public GameObject questNotifier;
     }
     
     [Serializable]
@@ -334,6 +334,7 @@ public class GameData {
         public EntityPool<Entity> upgradeFractureParticles;
         public EntityPool<Entity> blast;
         public EntityPool<Entity> lootReveal;
+        public EntityPool<Entity> notification;
     }
     
     public class States {

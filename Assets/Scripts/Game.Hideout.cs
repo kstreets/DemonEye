@@ -13,12 +13,25 @@ public partial class Game {
     private bool OnCharacterTab => hideoutTabs.characterButton.image.sprite == hideoutTabs.selectedSprite;
     private bool OnEyeForgeTab => hideoutTabs.eyeForgeButton.image.sprite == hideoutTabs.selectedSprite;
     private bool OnTradingTab => hideoutTabs.traderButton.image.sprite == hideoutTabs.selectedSprite;
+    private bool OnQuestsTab => hideoutTabs.questsButton.image.sprite == hideoutTabs.selectedSprite;
     
     private void InitHideout(GameState gameState) {
         InitTrader(gameState);
         InitSkillsPanel();
         InitQuestPanel();
         SetPentagramFill(0f);
+    }
+    
+    private void UpdateHideoutNotifiers() {
+        bool oneOrMoreQuestsReadyToSubmit = false;
+        foreach (QuestPackage questPkg in quests.activePkgs) {
+            Quest quest = questPkg.questNode.curQuest;
+            bool questIsComplete = QuestIsComplete(quest);
+            oneOrMoreQuestsReadyToSubmit = questIsComplete || oneOrMoreQuestsReadyToSubmit;
+            bool showingQuest = quests.presentingPkg == questPkg;
+            questPkg.questToggleButton.notifier.SetActive(questIsComplete && !showingQuest);
+        }
+        hideoutTabs.questNotifier.SetActive(oneOrMoreQuestsReadyToSubmit && !OnQuestsTab);
     }
     
     // ************************

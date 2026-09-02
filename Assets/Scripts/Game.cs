@@ -101,6 +101,7 @@ public partial class Game : MonoBehaviour {
     private void OnHideoutStateEnter() {
         ShowHideoutUI();
         RefreshSkillsPanel();
+        UpdateHideoutNotifiers();
     }
 
     private void OnHideoutStateExit() {
@@ -109,6 +110,7 @@ public partial class Game : MonoBehaviour {
     }
 
     private void OnHideoutStateUpdate() {
+        UpdateHideoutNotifiers();
         UpdateInventory();
         UpdateTransactionUI();
         UpdateForgeState();

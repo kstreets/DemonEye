@@ -108,8 +108,15 @@ public partial class Game {
     private void UpdateQuests() {
         foreach (QuestPackage questsActivePkg in quests.activePkgs) {
             Quest quest = questsActivePkg.questNode.curQuest;
+            bool wasComplete = QuestIsComplete(quest);
+            
             foreach (ObjectiveData obj in quest.objectives) {
                 UpdateQuestObjective(quest, obj);
+            }
+            
+            bool justCompletedQuest = !wasComplete && QuestIsComplete(quest);
+            if (justCompletedQuest) {
+                PushNotification($"Quest Completed\n {quest.title}");
             }
         }
     }
@@ -165,11 +172,12 @@ public partial class Game {
                 break;
             }
             case QuestObjectiveTypes.MedicalBushes: {
-                Item foundItem = thisFrame.data.foundSearchItem?.ItemRef;
+                ItemInstance foundInstance = thisFrame.data.foundSearchItem;
+                Item foundItem = foundInstance?.ItemRef;
                 if (foundItem == null) break;
                 bool searchingInBush = curRaid.data.interactions.curLootOrigin == LootInventoryOrigin.Bush;
                 if (searchingInBush && foundItem.IsMedical()) {
-                    IncreaseProgressValue(quest, obj, 1);
+                    IncreaseProgressValue(quest, obj, foundInstance.count);
                 }
                 break;
             }

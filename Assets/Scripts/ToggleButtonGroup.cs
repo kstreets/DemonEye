@@ -29,7 +29,7 @@ public class ToggleButtonGroup : MonoBehaviour {
     public void ManualyToggleCosmetically(ToggleButton toggle) {
         OnButtonClicked(toggle, false);
     }
-
+    
     public void Add(ToggleButton toggle) {
         InitializeToggle(toggle);
         toggles.Add(toggle);
