@@ -109,11 +109,13 @@ public partial class Game {
         hideoutTabs.characterButton.onClick.AddListener(() => {
             ToggleHideoutTab(hideoutTabs.characterButton, hideoutTabs.characterText);
             ToggleHideoutPanels(playerPanel.panel, stashPanel.panel);
+            ToggleSlimPlayerPanel(false);
         });
         
         hideoutTabs.eyeForgeButton.onClick.AddListener(() => {
             ToggleHideoutTab(hideoutTabs.eyeForgeButton, hideoutTabs.eyeForgeText);
-            ToggleHideoutPanels(eyeForgeDetailsPanel.panel, eyeForgePanel.panel, stashPanel.panel);
+            ToggleHideoutPanels(playerPanel.panel, eyeForgePanel.panel, stashPanel.panel);
+            ToggleSlimPlayerPanel(true);
         });
         
         hideoutTabs.traderButton.onClick.AddListener(() => {
@@ -138,6 +140,8 @@ public partial class Game {
         skillsPanel.panel.lifeBloodSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(skillUpgradePaths.lifeBlood, player.state.lifeBloodSkillLevel));
         skillsPanel.panel.strengthSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(skillUpgradePaths.strength, player.state.strengthSkillLevel));
         
+        eyeForgePanel.forgeToggle.AddListener(OnPentagramForgeTogglePressed);
+        eyeForgePanel.levelUpToggle.AddListener(OnPentagramLevelUpTogglePressed);
         eyeForgePanel.forgeButton.AddListener(OnForgeButtonPressed);
         
         transactionPanel.transaction.buyToggle.AddListener(OnBuyTogglePressed);

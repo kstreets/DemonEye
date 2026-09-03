@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Febucci.TextAnimatorForUnity;
-using PrimeTween;
 using TMPro;
 using Unity.Cinemachine;
 using UnityEngine;
@@ -20,6 +19,7 @@ public class GameData {
         public GameplayConfig gameplay;
         public Trader trader;
         public DemonEyeLevels demonEyeLevels;
+        public UpgradePath eyeForgeUpgradePath;
         public List<MapData> maps;
     }
     
@@ -200,6 +200,8 @@ public class GameData {
     [Serializable]
     public class PlayerPanel {
         public RectTransform panel;
+        public LayoutElement panelLayoutElement;
+        public RectTransform playerHalfParent;
         public RectTransform pocketParent;
         public RectTransform quickUseParent;
         public RectTransform inventoryParent;
@@ -218,15 +220,25 @@ public class GameData {
     [Serializable]
     public class EyeForgePanel {
         public RectTransform panel;
+        public ToggleButtonGroup toggleButtonGroup;
+        public ToggleButton forgeToggle;
+        public ToggleButton levelUpToggle;
+        
+        public GameObject forgingParent;
         public RectTransform pentagramParent;
         public Image pentagramFillImage;
         public ButtonFeel forgeButton;
+        
+        public GameObject levelUpParent;
+        public ResourceRequirementList levelUpRequirementList;
+        public ButtonFeel levelUpButton;
     }
     
     [Serializable]
     public class EyeForgeDetailsPanel {
         public RectTransform panel;
-        public TextMeshProUGUI text;
+        public RectTransform demonEyeDetailsParent;
+        public TextMeshProUGUI forgingHintText;
         public DemonEyeDescList demonEyeDesc;
     }
     

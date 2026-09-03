@@ -21,7 +21,8 @@ public class TransactionPanel : MonoBehaviour {
     [Header("Purchasing")]
     public Transform purchasingParent;
     public ItemDescPopup purchasingItemDesc;
-    public List<ResourceRequirement> resourceRequirements;
+    public ResourceRequirementList resourceRequirementList;
+    // public List<ResourceRequirement> resourceRequirements;
     public ButtonFeel barterPurchaseButton;
     public ButtonFeel moneyPurchaseButton;
     public GameObject outOfStockNotifier;
@@ -31,9 +32,7 @@ public class TransactionPanel : MonoBehaviour {
         purchasingParent.gameObject.SetActive(true);
         outOfStockNotifier.gameObject.SetActive(false);
 
-        foreach (ResourceRequirement resReq in resourceRequirements) {
-            resReq.gameObject.SetActive(false);
-        }
+        resourceRequirementList.HideAll();
         
         if (itemInstance == null) {
             barterPurchaseButton.Disable();
@@ -65,13 +64,7 @@ public class TransactionPanel : MonoBehaviour {
         moneyPurchaseButton.SetClickableState(canPurchase);
         
         purchasingItemDesc.Show(itemInstance);
-
-        for (int i = 0; i < item.traderSpawning.barterRequirements.Count; i++) {
-            ItemWithCount barterReq = item.traderSpawning.barterRequirements[i];
-            ResourceRequirement resReq = resourceRequirements[i];
-            resReq.gameObject.SetActive(true);
-            resReq.Set(barterReq.item, barterReq.count, gameInstance.GetOwnedCountOfItem(barterReq.item));
-        }
+        resourceRequirementList.Show(item.traderSpawning.barterRequirements);
 
         string buyPriceString = ColorText(item.buyPrice.ToString("N0"), styles.coinCurrencyColor);
         moneyPurchaseButton.text.text = $"Purchase for <sprite=0>{buyPriceString}";

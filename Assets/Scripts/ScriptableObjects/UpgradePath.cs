@@ -6,15 +6,10 @@ using UnityEngine;
 public class UpgradePath : ScriptableObject {
 
     [Serializable]
-    public class Requirement {
-        public Item item;
-        public int count;
-    }
-    
-    [Serializable]
     public class UpgradeRequirements {
-        public List<Requirement> requirements;
+        public List<ItemWithCount> requirements;
     }
 
     public List<UpgradeRequirements> pathUpgrades;
+    
 }

@@ -102,6 +102,8 @@ public partial class Game : MonoBehaviour {
         ShowHideoutUI();
         RefreshSkillsPanel();
         UpdateHideoutNotifiers();
+        // Make the pentagram default to crafting mode
+        eyeForgePanel.toggleButtonGroup.ManualyToggle(eyeForgePanel.forgeToggle);
     }
 
     private void OnHideoutStateExit() {

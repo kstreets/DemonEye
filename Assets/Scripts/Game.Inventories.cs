@@ -96,7 +96,7 @@ public partial class Game {
         const int maxBackpackSize = 30;
         SpawnUiSlots(playerPanel.quickUseParent, playerQuickUseSize);
         SpawnUiSlots(playerPanel.pocketParent, playerPocketSize + maxBackpackSize);
-        inventories.player = CreateInventory(playerPanel.inventoryParent, NakedPlayerInventorySize);
+        inventories.player = CreateInventory(playerPanel.panel, NakedPlayerInventorySize);
 
         InventorySlotUI[] quickUseSlots = playerPanel.quickUseParent.GetComponentsInChildren<InventorySlotUI>();
         foreach (InventorySlotUI slotUI in quickUseSlots) {
@@ -1057,6 +1057,15 @@ public partial class Game {
         }
         return count;
     }
+    
+    public bool EverySlotHasAnItem(Inventory inventory) {
+        foreach (InventorySlot slot in inventory.slots) {
+            if (slot.itemInstance == null) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     public int GetOwnedCountOfItem(Item item) {
         int itemCount = 0;
@@ -1071,12 +1080,21 @@ public partial class Game {
         itemCount += GetItemCountInInventory(inventories.player, itemType);
         return itemCount;
     }
+    
+    private bool HasAllItemRequirements(List<ItemWithCount> itemsWithCounts) {
+        foreach (ItemWithCount itemsWithCount in itemsWithCounts) {
+            if (!HasSingleItemRequirement(itemsWithCount)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
-    private bool MeetsSingleUpgradeRequirement(UpgradePath.Requirement req) {
+    private bool HasSingleItemRequirement(ItemWithCount itemWithCount) {
         int itemCount = 0;
-        itemCount += GetItemCountInInventory(inventories.stash, req.item);
-        itemCount += GetItemCountInInventory(inventories.player, req.item);
-        return itemCount >= req.count; 
+        itemCount += GetItemCountInInventory(inventories.stash, itemWithCount.item);
+        itemCount += GetItemCountInInventory(inventories.player, itemWithCount.item);
+        return itemCount >= itemWithCount.count; 
     }
 
     private int GetInventoryWeight(Inventory inventory) {

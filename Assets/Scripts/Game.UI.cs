@@ -8,6 +8,14 @@ using UnityEngine.UI;
 
 public partial class Game {
     
+    private bool OnCharacterTab => hideoutTabs.characterButton.image.sprite == hideoutTabs.selectedSprite;
+    private bool OnEyeForgeTab => hideoutTabs.eyeForgeButton.image.sprite == hideoutTabs.selectedSprite;
+    private bool OnTradingTab => hideoutTabs.traderButton.image.sprite == hideoutTabs.selectedSprite;
+    private bool OnQuestsTab => hideoutTabs.questsButton.image.sprite == hideoutTabs.selectedSprite;
+    
+    private bool ShowingPlayerPanel => playerPanel.panel.gameObject.activeInHierarchy;
+    private bool ShowingForgeDetailsPanel => eyeForgeDetailsPanel.panel.gameObject.activeInHierarchy;
+    
     private void InitUI() {
         Cursor.visible = true;
         Cursor.SetCursor(config.styles.cursorTexture, Vector2.zero, CursorMode.Auto);
@@ -84,6 +92,7 @@ public partial class Game {
         ToggleHideoutPanels();
         HideInventoryItemPopup(); 
         HideUIElementPopup();
+        ToggleSlimPlayerPanel(false);
         ui.menuBackButton.gameObject.SetActive(false);
         playerInfo.parent.gameObject.SetActive(false);
         ui.animatedBgImage.gameObject.SetActive(false);
@@ -160,6 +169,24 @@ public partial class Game {
         foreach (RectTransform rect in panels) {
             rect.gameObject.SetActive(true);
         }
+    }
+    
+    // Its better just to have these as constants because the canvas layout recalculates in LateUpdate
+    private const float playerPanelWidth = 600f;
+    private const float slimPlayerPanelWidth = 440f;
+
+    private void ToggleSlimPlayerPanel(bool toggle) {
+        Vector2 defaultPlayerHalfAnchorPos = new(0f, playerPanel.playerHalfParent.anchoredPosition.y);
+        if (toggle) {
+            playerPanel.inventoryParent.gameObject.SetActive(false);
+            playerPanel.panelLayoutElement.preferredWidth = slimPlayerPanelWidth;
+            float centeringOffset = (slimPlayerPanelWidth - playerPanel.playerHalfParent.rect.width) / 2f;
+            playerPanel.playerHalfParent.anchoredPosition = defaultPlayerHalfAnchorPos.Offset(x: centeringOffset);
+            return;
+        }
+        playerPanel.inventoryParent.gameObject.SetActive(true);
+        playerPanel.panelLayoutElement.preferredWidth = playerPanelWidth;
+        playerPanel.playerHalfParent.anchoredPosition = defaultPlayerHalfAnchorPos;
     }
     
     // Here just so that we don't allocate strings every frame
@@ -439,6 +466,7 @@ public partial class Game {
     
     public void PushNotification(string text) {
         Entity notification = SpawnEntity(entityPools.notification, Vector3.zero, Quaternion.identity, ui.notificationParent, EntityLifetime.Global);
+        notification.gameObject.GetComponent<NotificationUI>().text.text = text;
         
         const float startWidth = 0f;
         float endWidth = ui.notificationParent.rect.width;
