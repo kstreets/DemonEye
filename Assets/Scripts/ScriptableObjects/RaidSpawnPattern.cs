@@ -17,8 +17,9 @@ public class RaidSpawnPattern : ScriptableObject {
     public class Variant {
         [HideInInspector] 
         public string name;
-        public float phaseDuration;
+        public float maxDuration;
         public float spawnDuration;
+        public float startNextPhaseEarlyDelay;
         [MinMaxSlider(0, 40)]
         public Vector2Int spawnCellRange; 
         [MinMaxSlider(0, 40)]
@@ -54,7 +55,7 @@ public class RaidSpawnPattern : ScriptableObject {
         }
         
         foreach (Variant variant in phasePools[^1].variants) {
-            variant.phaseDuration = variant.spawnDuration;
+            variant.maxDuration = variant.spawnDuration;
         }
     }
 

@@ -11,6 +11,7 @@ using Random = UnityEngine.Random;
 public partial class Game {
     
     private void InitHideout(GameState gameState) {
+        hideoutState = gameState?.hideoutState ?? new();
         InitTrader(gameState);
         InitSkillsPanel();
         InitQuestPanel();
@@ -293,7 +294,7 @@ public partial class Game {
     // Eye Forge 
     // ************************
     
-    private enum ForgeMode { Empty, Forging, ForgingButJustEye, ForgingButWithoutEye, UpgradingButJustDemonEye, UpgradingDemonEye, }
+    private enum ForgeMode { Empty, Forging, ForgingButJustEye, ForgingButWithoutEye, UpgradeNotAvailableForDemonEye, UpgradingButJustDemonEye, UpgradingDemonEye, }
     private ForgeMode forgeMode;
     
     private bool ForgeIsOnCrafting => eyeForgePanel.forgingParent.activeInHierarchy;
@@ -309,7 +310,12 @@ public partial class Game {
             forgeMode = ForgeMode.Empty;
         }
         else if (eyeSlotItemInstance != null && eyeSlotItemInstance.isDemonEye) {
-            forgeMode = GetInventoryItemCount(inventories.eyeForge) > 1 ? ForgeMode.UpgradingDemonEye : ForgeMode.UpgradingButJustDemonEye;
+            if (eyeSlotItemInstance.DemonEyeLevel > hideoutState.pentagramLevelIndex) {
+                forgeMode = ForgeMode.UpgradeNotAvailableForDemonEye;
+            }
+            else {
+                forgeMode = GetInventoryItemCount(inventories.eyeForge) > 1 ? ForgeMode.UpgradingDemonEye : ForgeMode.UpgradingButJustDemonEye;
+            }
         }
         else if (eyeSlotItemInstance != null && crucibleItemCount == 1) {
             forgeMode = ForgeMode.ForgingButJustEye;
@@ -357,9 +363,17 @@ public partial class Game {
             }
         }
         else if (ForgeIsOnLevelUp) {
-            List<ItemWithCount> itemRequirements = config.eyeForgeUpgradePath.pathUpgrades[0].requirements;
-            eyeForgePanel.levelUpRequirementList.Show(itemRequirements);        
-            eyeForgePanel.levelUpButton.SetClickableState(HasAllItemRequirements(itemRequirements));
+            int upgradeIndex = hideoutState.pentagramLevelIndex;
+            bool levelUpExists = config.eyeForgeUpgradePath.pathUpgrades.IndexInRange(upgradeIndex);
+            
+            if (levelUpExists) {
+                List<ItemWithCount> itemRequirements = config.eyeForgeUpgradePath.pathUpgrades[upgradeIndex].requirements;
+                eyeForgePanel.levelUpRequirementList.Show(itemRequirements);
+                eyeForgePanel.levelUpButton.SetClickableState(HasAllItemRequirements(itemRequirements));
+            }
+            else {
+                //Todo: Need to tell the player that the pentagram is at max level
+            }
         }
     }
 
@@ -373,36 +387,40 @@ public partial class Game {
         if (forgeMode == ForgeMode.Empty) {
             hintText.text = "Place an eyeball in the center to start the Demon Eye forging process.";
             demonEyeDesc.HideAllElements();
+            return;
         }
-        else if (forgeMode == ForgeMode.ForgingButJustEye && !eyeSlotItemInstance.isDemonEye) {
+        if (forgeMode == ForgeMode.ForgingButJustEye && !eyeSlotItemInstance.isDemonEye) {
             hintText.text = $"Requires {DisplayNumber(5)} eye upgrades to forge a Demon Eye.";
             demonEyeDesc.HideAllElements();
+            return;
+        }
+        if (forgeMode == ForgeMode.UpgradeNotAvailableForDemonEye) {
+            hintText.text = $"Requires pentagram level {DisplayNumber(eyeSlotItemInstance.DemonEyeLevel + 1)} to upgrade the Demon Eye.";
+            demonEyeDesc.HideAllElements();
+            return;
+        }
+        
+        if (forgeMode == ForgeMode.ForgingButWithoutEye) {
+            hintText.text = "Missing eyeball in the center.";
         }
         else {
-            if (forgeMode == ForgeMode.ForgingButWithoutEye) {
-                hintText.text = "Missing eyeball in the center.";
-            }
-            else {
-                int eyeUpgradeCount = GetInventoryItemCount(inventories.eyeForge) - 1;
-                int totalUpgradeCount = inventories.eyeForge.slots.Length - 1;
-                
-                Color textColor = EverySlotHasAnItem(inventories.eyeForge) ? config.styles.increaseDescColor : config.styles.decreaseDescColor;
-                hintText.text = $"Previewing Upgrades {ColorText(eyeUpgradeCount.ToString(), textColor)}/{totalUpgradeCount}";
-            }
-            
-            using var _ = ListPool<int>.Get(out var uuids);
-            
-            bool includeExistingDemonEyeUpgrades = eyeSlotItemInstance != null && eyeSlotItemInstance.isDemonEye;
-            if (includeExistingDemonEyeUpgrades) {
-                uuids.AddRange(eyeSlotItemInstance.nestedUuids);
-            }
-            
-            foreach (InventorySlot slot in inventories.eyeForge.slots) {
-                if (slot.itemInstance == null || slot.itemInstance.ItemRef.type != itemTypes.eyeUpgrade) continue;
-                uuids.Add(slot.itemInstance.itemOrInstanceUuid);
-            }
-            demonEyeDesc.UpdateDisplay(EyeUpgradeSetFromIds(uuids));
+            int eyeUpgradeCount = GetInventoryItemCount(inventories.eyeForge) - 1;
+            Color textColor = EverySlotHasAnItem(inventories.eyeForge) ? config.styles.increaseDescColor : config.styles.decreaseDescColor;
+            hintText.text = $"Previewing Upgrades {ColorText(eyeUpgradeCount.ToString(), textColor)}/{Config.demonEyeCoreUpgradeCount}";
         }
+        
+        using var _ = ListPool<int>.Get(out var uuids);
+        
+        bool includeExistingDemonEyeUpgrades = eyeSlotItemInstance != null && eyeSlotItemInstance.isDemonEye;
+        if (includeExistingDemonEyeUpgrades) {
+            uuids.AddRange(eyeSlotItemInstance.nestedUuids);
+        }
+        
+        foreach (InventorySlot slot in inventories.eyeForge.slots) {
+            if (slot.itemInstance == null || slot.itemInstance.ItemRef.type != itemTypes.eyeUpgrade) continue;
+            uuids.Add(slot.itemInstance.itemOrInstanceUuid);
+        }
+        demonEyeDesc.UpdateDisplay(EyeUpgradeSetFromIds(uuids));
     }
     
     private void OnForgeButtonPressed() {
@@ -436,7 +454,7 @@ public partial class Game {
         
         string demonEyeName = randomDemonEyeNames.GetRandom();
         
-        DoEyeForgeAnimation(demonEyeName, onAnimationEndCallback: () => {
+        DoEyeForgeAnimation(onAnimationEndCallback: () => {
             forgeButton.StopKeepPressed();
             forgeButton.text.text = prevButtonText;
             
@@ -470,7 +488,7 @@ public partial class Game {
     private Sequence eyeForgeSequence;
     private bool PlayingForgeAnimation => eyeForgeSequence.isAlive;
     
-    private void DoEyeForgeAnimation(string demonEyeName, Action onAnimationEndCallback) {
+    private void DoEyeForgeAnimation(Action onAnimationEndCallback) {
         const float fillDuration = 5.5f;
         const float perUpgradeExplosionDelay = 0.2f;
         const float perUpgradeDissolveDelay = 0.6f;
@@ -574,6 +592,11 @@ public partial class Game {
                 });
             }
         }
+    }
+    
+    private void OnLevelUpPentagramPressed() {
+        hideoutState.pentagramLevelIndex++;
+        SaveGameState();
     }
     
     private void OnPentagramForgeTogglePressed() {
@@ -766,7 +789,7 @@ public partial class Game {
     
     private bool QuestIsActive(Quest quest) {
         foreach (QuestPackage activeQuestPackage in quests.activePkgs) {
-            if (quest == activeQuestPackage.questNode.curQuest && !QuestIsComplete(quest)) {
+            if (quest == activeQuestPackage.questNode.curQuest) {
                 return true;
             }
         } 
@@ -800,7 +823,7 @@ public partial class Game {
         );
     }
 
-    private void OnLevelupButtonPressed(SkillUpgradePath upgradePath, int playerStatLevel) {
+    private void OnSkillLevelUpButtonPressed(SkillUpgradePath upgradePath, int playerStatLevel) {
         UpgradeStatResult result = CanUpgradeSkill(upgradePath, playerStatLevel);
         if (result == UpgradeStatResult.CantAfford || result == UpgradeStatResult.AtMaxLevel) return;
         

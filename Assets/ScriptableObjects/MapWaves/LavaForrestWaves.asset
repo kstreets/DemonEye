@@ -21,7 +21,9 @@ MonoBehaviour:
     variants:
     - name: Variant 0
       phaseDuration: 45
+      maxDuration: 40
       spawnDuration: 22
+      startNextPhaseEarlyDelay: 10
       spawnCellRange: {x: 10, y: 12}
       repositionCellRange: {x: 9, y: 11}
       spawnRateCurve:
@@ -57,7 +59,9 @@ MonoBehaviour:
     variants:
     - name: Variant 0
       phaseDuration: 60
+      maxDuration: 45
       spawnDuration: 30
+      startNextPhaseEarlyDelay: 10
       spawnCellRange: {x: 10, y: 12}
       repositionCellRange: {x: 9, y: 11}
       spawnRateCurve:
@@ -93,7 +97,9 @@ MonoBehaviour:
     variants:
     - name: Variant 0
       phaseDuration: 60
+      maxDuration: 45
       spawnDuration: 30
+      startNextPhaseEarlyDelay: 10
       spawnCellRange: {x: 10, y: 12}
       repositionCellRange: {x: 9, y: 11}
       spawnRateCurve:
@@ -127,7 +133,9 @@ MonoBehaviour:
     variants:
     - name: Variant 0
       phaseDuration: 70
+      maxDuration: 45
       spawnDuration: 30
+      startNextPhaseEarlyDelay: 8
       spawnCellRange: {x: 10, y: 12}
       repositionCellRange: {x: 9, y: 11}
       spawnRateCurve:
@@ -165,7 +173,9 @@ MonoBehaviour:
     variants:
     - name: Variant 0
       phaseDuration: 70
+      maxDuration: 45
       spawnDuration: 30
+      startNextPhaseEarlyDelay: 8
       spawnCellRange: {x: 10, y: 12}
       repositionCellRange: {x: 9, y: 11}
       spawnRateCurve:
@@ -201,7 +211,9 @@ MonoBehaviour:
     variants:
     - name: Variant 0
       phaseDuration: 70
+      maxDuration: 55
       spawnDuration: 40
+      startNextPhaseEarlyDelay: 8
       spawnCellRange: {x: 10, y: 12}
       repositionCellRange: {x: 10, y: 12}
       spawnRateCurve:
@@ -237,7 +249,9 @@ MonoBehaviour:
     variants:
     - name: Variant 0
       phaseDuration: 60
+      maxDuration: 50
       spawnDuration: 35
+      startNextPhaseEarlyDelay: 8
       spawnCellRange: {x: 10, y: 12}
       repositionCellRange: {x: 8, y: 12}
       spawnRateCurve:
@@ -275,7 +289,9 @@ MonoBehaviour:
     variants:
     - name: Variant 0
       phaseDuration: 45
+      maxDuration: 45
       spawnDuration: 45
+      startNextPhaseEarlyDelay: 0
       spawnCellRange: {x: 11, y: 13}
       repositionCellRange: {x: 10, y: 12}
       spawnRateCurve:

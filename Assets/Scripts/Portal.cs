@@ -42,7 +42,7 @@ public class Portal : MonoBehaviour {
         state = State.BeingSummoned;
         
         crystalOscillator.enabled = false;
-        crystalTrans.DoTweenShake(12f, 0.01f, openDelay, crystalShakeMagnitudeCurve, crystalShakeJitterCurve);
+        crystalTrans.DoTweenShake(6f, 0.0025f, openDelay, crystalShakeMagnitudeCurve, crystalShakeJitterCurve);
         
         openCloseSequence = Sequence.Create();
         // Summoning

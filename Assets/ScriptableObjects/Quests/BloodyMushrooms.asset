@@ -18,9 +18,7 @@ MonoBehaviour:
     some blood mushrooms that only grow when the ground is exposed to blood.
 
     Hence
-    the name.
-
-    If you make demons bleed and go back to the same spot later, you''ll
+    the name. If you make demons bleed and go back to the same spot later, you''ll
     find some have grown.'
   traderReputationReward: 100
   objectives:

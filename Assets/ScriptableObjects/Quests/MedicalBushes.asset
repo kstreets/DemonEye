@@ -14,12 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Quest
   uuid: -538733016
   title: The Bushes Provide
-  description: 'Other demons use the bushes to stash their medical supplies for later.
+  description: Other demons use the bushes to stash their medical supplies for later.
     Sometimes they forget where they stashed it, or that they stashed it, so it just
-    gets left there. They also sometimes die before retrieving it...
-
-    I guess
-    my point is look in bushes for medical supplies.'
+    gets left there. They also sometimes die before retrieving it... I guess my point
+    is look in bushes for medical supplies.
   traderReputationReward: 100
   objectives:
   - type: 110

@@ -45,6 +45,10 @@ public partial class Game {
                 
                 if (input.interact.WasPressedThisFrame()) {
                     InventoryAddResult result = TryAddItemToInventory(inventories.player, itemDrop.ItemInstance);
+                    if (result.type != InventoryAddResult.ResultType.Failure) {
+                        thisFrame.flags |= GameData.FrameFlags.PickedUpLoot;
+                    }
+                    
                     if (result.type == InventoryAddResult.ResultType.Success) {
                         Entity droppedEntity = entities.lookup[itemDrop.gameObject];
                         PickupDroppedItem(droppedEntity); 
@@ -59,6 +63,7 @@ public partial class Game {
             if (col.CompareTag(Tags.DeadBody)) {
                 EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), "Search Body");
                 if (input.interact.WasPressedThisFrame()) {
+                    thisFrame.flags |= GameData.FrameFlags.SearchingBody;
                     inventories.lootPtr.slots = curRaid.deadBodySlotsLookup[col.gameObject];
                     OpenPlayerInventory();
                     OpenLootInventory(LootInventoryOrigin.Body);
@@ -68,6 +73,7 @@ public partial class Game {
             if (col.CompareTag(Tags.Bush)) {
                 EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), "Search Bush");
                 if (input.interact.WasPressedThisFrame()) {
+                    thisFrame.flags |= GameData.FrameFlags.SearchingBush;
                     inventories.lootPtr.slots = curRaid.bushSlotsLookup[col.gameObject];
                     OpenPlayerInventory();
                     OpenLootInventory(LootInventoryOrigin.Bush);
@@ -78,6 +84,7 @@ public partial class Game {
                 int soulsPrice = curRaid.map.altarSoulPrice;
                 EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), $"{soulsPrice} Souls");
                 if (input.interact.WasPressedThisFrame() && player.state.soulCurrency >= soulsPrice) {
+                    thisFrame.flags |= GameData.FrameFlags.SummonedUpgrade;
                     player.state.soulCurrency -= soulsPrice;
                     Item dropItem = GetItemFromDropPool(dropPools.eyeUpgrades);
                     Entity item = SpawnItemAsEntity(dropItem, 1, OffsetY(col.transform.position, 0.2f), Quaternion.identity);

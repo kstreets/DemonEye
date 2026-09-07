@@ -32,7 +32,7 @@ MonoBehaviour:
   rarity: 2
   dropOrigins:
   - dropPool: {fileID: 11400000, guid: 3c4ecb30986cb144bb8b92852af68d07, type: 2}
-    chanceToSpawn: 0.241
+    chanceToSpawn: 0.207
     maxStackCount: 1
   modifiesStats: 0
   critChance: 0

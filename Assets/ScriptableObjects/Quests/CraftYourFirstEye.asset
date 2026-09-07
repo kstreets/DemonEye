@@ -14,15 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Quest
   uuid: 1760108596
   title: Forging a Demon Eye
-  description: 'You need to learn how to create Demon Eyes and shove them into your
-    eye socket.
-
-    It will give your attacks all sorts of upgrades depending on
-    the combination of eye upgrades you forge with.
-
-    Bring a handful of eye upgrades
-    back to the hideout along with a regular ole eye and use the forge to create
-    a demon eye.'
+  description: You need to learn how to create Demon Eyes and shove them into your
+    eye socket. It will give your attacks all sorts of upgrades depending on the
+    combination of eye upgrades you forge with. Bring a handful of eye upgrades back
+    to the hideout along with a regular ole eye and use the forge to create a demon
+    eye.
   traderReputationReward: 100
   objectives:
   - type: 10
@@ -35,7 +31,7 @@ MonoBehaviour:
     keepFetchedItems: 1
   - type: 20
     description: 
-    targetValue: 3
+    targetValue: 5
     targetEnemy: {fileID: 0}
     targetItem: {fileID: 0}
     targetItemType: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}

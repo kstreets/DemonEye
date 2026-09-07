@@ -4,7 +4,7 @@ using UnityEngine.Assertions;
 
 public static class Physics {
     
-    private static List<Collider2D> overlapCircleResults = new(1000);
+    private static List<Collider2D> overlapCircleResults = new(500);
     
     public static List<Collider2D> OverlapCircle(Vector2 center, float radius, LayerMask mask) {
         overlapCircleResults.Clear();

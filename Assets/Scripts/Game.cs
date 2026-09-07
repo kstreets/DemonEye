@@ -34,7 +34,7 @@ public partial class Game : MonoBehaviour {
     public MapSelectionPanel mapSelectionPanel;
     public QuestsPanel questsPanel;
     public GameData.SkillsPanel skillsPanel;
-    public Audio audio; 
+    public Audio audio;
     
     [NonSerialized] public readonly GameData.Input input = new();
     [NonSerialized] public readonly EntityPools entityPools = new();
@@ -48,6 +48,7 @@ public partial class Game : MonoBehaviour {
     [NonSerialized] public readonly HotBar hotBar = new();
     [NonSerialized] public readonly PerFrameData thisFrame = new();
     
+    [NonSerialized] public HideoutState hideoutState;
     [NonSerialized] public PersistentFlags persistentFlags;
 
     private void Start() {
@@ -58,7 +59,7 @@ public partial class Game : MonoBehaviour {
     private void Update() {
         states.gameStateMachine.Tick();
         DemonEyeTween.Update();
-        UpdateQuests();
+        UpdateQuests(); // Must be after game state tick, trust me bro
         ClearPerFrameData();
         
 #if UNITY_EDITOR
@@ -256,16 +257,16 @@ public partial class Game : MonoBehaviour {
         PlayAudioClip(audio.ambientClip, Vector2.zero, loop: true);
         
         WaterFeature.waterSettings = curRaid.map.waterSettings;
-        thisFrame.flags |= FrameFlags.PostRaidInit;
+        thisFrame.flags |= FrameFlags.PostInitRaid;
     }
     
     private void UpdateRaidState() {
         RaidState prevState = curRaid.state;
         
-        if (spawnManager.timeUntilFinalPhase >= 0f) {
+        if (spawnManager.BeforeLastWave) {
             curRaid.state = RaidState.InitialWaves;
         }
-        else if (!spawnManager.isFinishedSpawning || entities.enemies.Count > 0) {
+        else if (!spawnManager.FinishedSpawningThisWave || entities.enemies.Count > 0) {
             curRaid.state = RaidState.FinalWave;
         }
         else {

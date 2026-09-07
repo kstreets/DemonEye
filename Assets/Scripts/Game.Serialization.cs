@@ -10,6 +10,7 @@ public partial class Game {
     public class GameState {
         public PersistentFlags persistentFlags;
         
+        public HideoutState hideoutState;
         public PlayerState playerState;
         public Trader.State traderState;
         
@@ -31,6 +32,7 @@ public partial class Game {
         using BinaryWriter binWriter = new(stream);
         
         SerializeInt(binWriter, (int)persistentFlags);
+        SerializeHideoutState(binWriter, hideoutState);
         SerializePlayerState(binWriter, player);
         SerializeTraderState(binWriter, config.trader.state);
         
@@ -68,6 +70,7 @@ public partial class Game {
         
         return new() {
             persistentFlags = (PersistentFlags)DeserializeInt(binReader),
+            hideoutState = DeserializeHideoutState(binReader),
             playerState = DeserializePlayerState(binReader),
             traderState = DeserializeTraderState(binReader),
             playerInventoryItems = DeserializeInventory(binReader),
@@ -76,6 +79,16 @@ public partial class Game {
             forgeInventoryItems = DeserializeInventory(binReader),
             mapStates = DeserializeList(binReader, DeserializeMapState),
             questStates = DeserializeList(binReader, DeserializeQuestState)
+        };
+    }
+    
+    private void SerializeHideoutState(BinaryWriter binWriter, HideoutState hideoutState) {
+        binWriter.Write(hideoutState.pentagramLevelIndex);
+    }
+    
+    private HideoutState DeserializeHideoutState(BinaryReader binReader) {
+        return new() {
+            pentagramLevelIndex = binReader.ReadInt32(),
         };
     }
 
@@ -157,8 +170,6 @@ public partial class Game {
         binWriter.Write(itemInstance.count);
         binWriter.Write(itemInstance.isDemonEye);
         SerializeString(binWriter, itemInstance.demonEyeName);
-        binWriter.Write(itemInstance.demonEyeXp);
-        binWriter.Write(itemInstance.demonEyeUpgradesAvailable);
     }
     
     private ItemInstance DeserializeItemInstance(BinaryReader binReader) {
@@ -168,8 +179,6 @@ public partial class Game {
             count = binReader.ReadInt32(),
             isDemonEye = binReader.ReadBoolean(),
             demonEyeName = DeserializeString(binReader),
-            demonEyeXp = binReader.ReadInt32(),
-            demonEyeUpgradesAvailable = binReader.ReadInt32(),
         };
     }
     

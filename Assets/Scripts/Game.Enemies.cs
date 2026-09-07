@@ -4,6 +4,7 @@ using PrimeTween;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Pool;
+using static GameData;
 using Random = UnityEngine.Random;
 
 public partial class Game {
@@ -75,7 +76,6 @@ public partial class Game {
         
         PlayAudioClip(audio.bloodBurstClip, deadEnemy.position);
         PlayerOnEnemyDeath(deadEnemy);
-        DemonEyeOnEnemyDeath(deadEnemy);
         
         if (!thisFrame.enemyKillCount.TryAdd(deadEnemy.data, 1)) {
             thisFrame.enemyKillCount[deadEnemy.data]++;
@@ -479,13 +479,11 @@ public partial class Game {
     
     public class EnemySpawnManager {
         public float timeInCurPhase;
-        public float totalTimeLeft;
-        public float timeUntilFinalPhase;
-        public float timeSpentInInventoryThisWave;
+        public float startNextWaveEarlyDelay;
+        public float timeAddedThroughActions;
         public int curPhaseIndex;
-        public RaidSpawnPattern spawnPattern;
-        public bool isFinishedSpawning;
         public bool spawnedThisFrame;
+        public RaidSpawnPattern spawnPattern;
         
         public readonly List<int> chosenVarientIndices = new();
         
@@ -495,10 +493,13 @@ public partial class Game {
         public readonly List<(float time, EnemyData enemy)> spawnEvents = new();
         public int spawnTimeIndex;
        
-        public bool FinishedSpawningThisWave => !spawnEvents.IndexInRange(spawnTimeIndex);
-        
         public int CurWaveNumber => Mathf.Clamp(curPhaseIndex + 1, 0, chosenVarientIndices.Count);
         public int TotalWaveCount => chosenVarientIndices.Count;
+        
+        public bool BeforeLastWave => curPhaseIndex < chosenVarientIndices.Count - 1;
+        public bool OnLastWave => curPhaseIndex == chosenVarientIndices.Count - 1;
+        public bool FinishedSpawningThisWave => !spawnEvents.IndexInRange(spawnTimeIndex);
+        public bool FinishedSpawningForRaid => OnLastWave && FinishedSpawningThisWave;
         
         public int CurVarientIndex => chosenVarientIndices.IndexInRange(curPhaseIndex) ? chosenVarientIndices[curPhaseIndex] : -1;
         public List<RaidSpawnPattern.PhasePool> PhasePools => spawnPattern.phasePools; 
@@ -510,23 +511,18 @@ public partial class Game {
     
     private void InitSpawnManager(RaidSpawnPattern pattern) {
         spawnManager.spawnEvents.Clear();
-        spawnManager.isFinishedSpawning = false;
         spawnManager.spawnedThisFrame = false;
         spawnManager.spawnPattern = pattern;
         spawnManager.curPhaseIndex = -1;
         spawnManager.timeInCurPhase = 0f;
-        spawnManager.timeSpentInInventoryThisWave = 0f;
-        spawnManager.totalTimeLeft = pattern.timeBeforeFirstPhase;
+        spawnManager.startNextWaveEarlyDelay = 0f;
+        spawnManager.timeAddedThroughActions = 0f;
         
         spawnManager.chosenVarientIndices.Clear();
         foreach (RaidSpawnPattern.PhasePool pool in pattern.phasePools) {
             int randomVarientIndex = Random.Range(0, pool.variants.Count);
             spawnManager.chosenVarientIndices.Add(randomVarientIndex);
-            spawnManager.totalTimeLeft += pool.variants[randomVarientIndex].phaseDuration;
         }
-        
-        float lastPhaseDuration = pattern.phasePools[^1].variants[spawnManager.chosenVarientIndices[^1]].phaseDuration;
-        spawnManager.timeUntilFinalPhase = spawnManager.totalTimeLeft - lastPhaseDuration;
     }
     
     private Limiter spawnLimiterForEnemyBatching;
@@ -535,29 +531,56 @@ public partial class Game {
         EnemySpawnManager sm = spawnManager;
         sm.spawnedThisFrame = false;
         
-        if (sm.isFinishedSpawning) return;
-        
-        // If the player is looking at their inventory or reading an item popup we give them some extra time before spawning more enemies
-        if ((PlayerInventoryIsOpen && !LootInventoryIsOpen) || ui.itemDescPopupPickup.IsShowing) {
-            sm.timeSpentInInventoryThisWave += Time.deltaTime;
-        }
-        
-        float extraTimeGivenByDillyDallying = 0f;
-        const float minInventoryTimeToGrantDillyDallying = 5f;
-        const float maxDillyDallyingTime = 12f;
-        if (sm.timeSpentInInventoryThisWave > minInventoryTimeToGrantDillyDallying) {
-            extraTimeGivenByDillyDallying = Mathf.Clamp(sm.timeSpentInInventoryThisWave - minInventoryTimeToGrantDillyDallying, 0f, maxDillyDallyingTime);
-        }
+        if (sm.FinishedSpawningForRaid) return;
         
         sm.timeInCurPhase += Time.deltaTime;
-        sm.totalTimeLeft -= Time.deltaTime;
-        sm.timeUntilFinalPhase -= Time.deltaTime;
         
-        float waveDuration = sm.curPhaseIndex == -1 ? sm.spawnPattern.timeBeforeFirstPhase : sm.CurPhase.phaseDuration;
-        bool startNextWave = sm.timeInCurPhase >= waveDuration + extraTimeGivenByDillyDallying;
-        bool onLastPhase = sm.curPhaseIndex == sm.spawnPattern.phasePools.Count - 1;
+        float waveDuration = sm.curPhaseIndex == -1 ? sm.spawnPattern.timeBeforeFirstPhase : sm.CurPhase.maxDuration;
+        bool startNextWave = sm.timeInCurPhase >= waveDuration;
         
-        if (startNextWave && !onLastPhase) {
+        const float maxTimeCanAddThroughActions = 10f;
+        if (sm.FinishedSpawningThisWave && sm.timeAddedThroughActions < maxTimeCanAddThroughActions) {
+            float prevTime = sm.timeAddedThroughActions;
+            
+            if (thisFrame.flags.HasFlag(FrameFlags.SearchingBody)) {
+                sm.timeAddedThroughActions += 2.5f;
+            }
+            if (thisFrame.flags.HasFlag(FrameFlags.SearchingBush)) {
+                sm.timeAddedThroughActions += 1.5f;
+            }
+            if (thisFrame.flags.HasFlag(FrameFlags.SummonedUpgrade)) {
+                sm.timeAddedThroughActions += 1f;
+            }
+            if (thisFrame.flags.HasFlag(FrameFlags.ShotRock)) {
+                sm.timeAddedThroughActions += 0.35f;
+            }
+            
+            if (thisFrame.flags.HasFlag(FrameFlags.PickedUpLoot)) {
+                int nearbyItems = Physics.OverlapCircle(player.Center, 0.5f, Masks.ItemMask).Count;
+                if (nearbyItems >= 2) {
+                    sm.timeAddedThroughActions += 2f;
+                }
+            }
+            
+            // If the player is looking at their inventory or reading an item popup we give them some extra time
+            if ((PlayerInventoryIsOpen && !LootInventoryIsOpen) || ui.itemDescPopupPickup.IsShowing) {
+                sm.timeAddedThroughActions += Time.deltaTime + Mathf.Epsilon;
+            }
+            
+            sm.timeAddedThroughActions = Mathf.Clamp(sm.timeAddedThroughActions, 0f, maxTimeCanAddThroughActions);
+            float timeAdded = sm.timeAddedThroughActions - prevTime;
+            sm.startNextWaveEarlyDelay += timeAdded;
+        }
+        
+        bool afterFirstWave = sm.curPhaseIndex > -1;
+        if (afterFirstWave && sm.FinishedSpawningThisWave && entities.enemies.Count <= 0) {
+            sm.startNextWaveEarlyDelay -= Time.deltaTime;
+            if (sm.startNextWaveEarlyDelay <= 0f) {
+                startNextWave = true;
+            }
+        }
+        
+        if (startNextWave && !sm.OnLastWave) {
             sm.curPhaseIndex++;
 
 #if UNITY_EDITOR
@@ -570,7 +593,7 @@ public partial class Game {
             
             sm.timeInCurPhase = 0f;
             sm.spawnTimeIndex = 0;
-            sm.timeSpentInInventoryThisWave = 0f;
+            sm.startNextWaveEarlyDelay = sm.CurPhase.startNextPhaseEarlyDelay;
 
             float totalWeight = 0f;
             for (int i = 0; i < EnemySpawnManager.prefixedSumResolution; i++) {
@@ -627,10 +650,6 @@ public partial class Game {
             TeleportEnemy(enemy, randomSpawnPos, TeleportType.Spawn);
             sm.spawnTimeIndex++;
             sm.spawnedThisFrame = true;
-        }
-        
-        if (sm.FinishedSpawningThisWave && onLastPhase) {
-            sm.isFinishedSpawning = true;
         }
         
     }

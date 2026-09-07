@@ -165,7 +165,7 @@ public partial class Game {
                 break;
             }
             case QuestObjectiveTypes.PickPocket: {
-                if (thisFrame.flags.HasFlag(FrameFlags.PostRaidInit)) {
+                if (thisFrame.flags.HasFlag(FrameFlags.PostInitRaid)) {
                     SpawnQuestItemOnDeadBody(quest, obj);
                 }
                 UpdateObjectiveFetchItem(quest, obj);
@@ -206,13 +206,36 @@ public partial class Game {
     }
     
     private void UpdateObjectiveFetchItem(Quest quest, ObjectiveData obj) {
-        int count = GetOwnedCountOfItem(obj.targetItem);
-        SetProgressValue(quest, obj, count);
+        int itemCount = obj.keepFetchedItems ? GetItemCountInInventory(inventories.player, obj.targetItem) : GetOwnedCountOfItem(obj.targetItem);
+        UpdateObjectiveFetch(quest, obj, itemCount);
     }
     
     private void UpdateObjectiveFetchType(Quest quest, ObjectiveData obj) {
-        int count = GetOwnedCountOfItem(obj.targetItemType);
-        SetProgressValue(quest, obj, count);
+        int itemCount = obj.keepFetchedItems ? GetItemCountInInventory(inventories.player, obj.targetItemType) : GetOwnedCountOfItem(obj.targetItemType);
+        UpdateObjectiveFetch(quest, obj, itemCount);
+    }
+    
+    private void UpdateObjectiveFetch(Quest quest, ObjectiveData obj, int itemCount) {
+        // If we keep the fetched items we only care about if the player returns with them, not if they have it in their stash.
+        // Item count should be the number of items currently in the player's inventory when keepFetchedItems is true.
+        if (obj.keepFetchedItems) {
+            bool justExitedRaid = thisFrame.flags.HasAnyFlag(FrameFlags.ExitTaken | FrameFlags.EarlyExitTaken);
+            if (justExitedRaid) {
+                IncreaseProgressValue(quest, obj, itemCount);
+            }
+            return;
+        }
+        
+        // If we don't keep the fetched items, we need to own all of them at the time of quest completion.
+        // We don't own the item unless we are outside of the raid.
+        if (!InRaid) {
+            SetProgressValue(quest, obj, itemCount);
+        }
+    }
+    
+    private int GetProgressValue(Quest quest, ObjectiveData obj) {
+        int i = quest.objectives.IndexOf(obj);
+        return quest.state.objectiveProgresses[i];
     }
 
     private void SetProgressValue(Quest quest, ObjectiveData obj, int value) {

@@ -135,14 +135,15 @@ public partial class Game {
             ToggleHideoutPanels(skillsPanel.panel.rectTransform, skillsPanel.playerStatsPanel.rectTransform);
         });
 
-        skillsPanel.panel.hasteSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(skillUpgradePaths.haste, player.state.hasteSkillLevel));
-        skillsPanel.panel.intellectSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(skillUpgradePaths.intellect, player.state.intellectSkillLevel));
-        skillsPanel.panel.lifeBloodSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(skillUpgradePaths.lifeBlood, player.state.lifeBloodSkillLevel));
-        skillsPanel.panel.strengthSkillRow.levelUpButton.AddListener(() => OnLevelupButtonPressed(skillUpgradePaths.strength, player.state.strengthSkillLevel));
+        skillsPanel.panel.hasteSkillRow.levelUpButton.AddListener(() => OnSkillLevelUpButtonPressed(skillUpgradePaths.haste, player.state.hasteSkillLevel));
+        skillsPanel.panel.intellectSkillRow.levelUpButton.AddListener(() => OnSkillLevelUpButtonPressed(skillUpgradePaths.intellect, player.state.intellectSkillLevel));
+        skillsPanel.panel.lifeBloodSkillRow.levelUpButton.AddListener(() => OnSkillLevelUpButtonPressed(skillUpgradePaths.lifeBlood, player.state.lifeBloodSkillLevel));
+        skillsPanel.panel.strengthSkillRow.levelUpButton.AddListener(() => OnSkillLevelUpButtonPressed(skillUpgradePaths.strength, player.state.strengthSkillLevel));
         
         eyeForgePanel.forgeToggle.AddListener(OnPentagramForgeTogglePressed);
         eyeForgePanel.levelUpToggle.AddListener(OnPentagramLevelUpTogglePressed);
         eyeForgePanel.forgeButton.AddListener(OnForgeButtonPressed);
+        eyeForgePanel.levelUpButton.AddListener(OnLevelUpPentagramPressed);
         
         transactionPanel.transaction.buyToggle.AddListener(OnBuyTogglePressed);
         transactionPanel.transaction.sellToggle.AddListener(OnSellTogglePressed);

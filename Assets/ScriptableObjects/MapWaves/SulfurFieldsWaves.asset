@@ -21,7 +21,9 @@ MonoBehaviour:
     variants:
     - name: Variant 0
       phaseDuration: 45
+      maxDuration: 45
       spawnDuration: 15
+      startNextPhaseEarlyDelay: 5
       spawnCellRange: {x: 20, y: 28}
       repositionCellRange: {x: 20, y: 28}
       spawnRateCurve:
@@ -51,11 +53,47 @@ MonoBehaviour:
       enemyBatches:
       - enemyCount: 30
         enemyData: {fileID: 11400000, guid: c955cc90bf6af754abb6438085c0d619, type: 2}
+    - name: Variant 1
+      phaseDuration: 45
+      maxDuration: 45
+      spawnDuration: 15
+      startNextPhaseEarlyDelay: 5
+      spawnCellRange: {x: 20, y: 28}
+      repositionCellRange: {x: 20, y: 28}
+      spawnRateCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 0
+      enemyBatches:
+      - enemyCount: 50
+        enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
   - name: Wave 1
     variants:
     - name: Variant 0
       phaseDuration: 75
+      maxDuration: 75
       spawnDuration: 45
+      startNextPhaseEarlyDelay: 5
       spawnCellRange: {x: 20, y: 28}
       repositionCellRange: {x: 20, y: 28}
       spawnRateCurve:
@@ -91,7 +129,9 @@ MonoBehaviour:
     variants:
     - name: Variant 0
       phaseDuration: 70
+      maxDuration: 70
       spawnDuration: 40
+      startNextPhaseEarlyDelay: 0
       spawnCellRange: {x: 20, y: 28}
       repositionCellRange: {x: 20, y: 28}
       spawnRateCurve:
@@ -127,7 +167,9 @@ MonoBehaviour:
     variants:
     - name: Variant 0
       phaseDuration: 70
+      maxDuration: 70
       spawnDuration: 40
+      startNextPhaseEarlyDelay: 8
       spawnCellRange: {x: 20, y: 28}
       repositionCellRange: {x: 20, y: 28}
       spawnRateCurve:
@@ -165,7 +207,9 @@ MonoBehaviour:
     variants:
     - name: Variant 0
       phaseDuration: 60
+      maxDuration: 60
       spawnDuration: 30
+      startNextPhaseEarlyDelay: 8
       spawnCellRange: {x: 20, y: 28}
       repositionCellRange: {x: 20, y: 28}
       spawnRateCurve:
@@ -199,7 +243,9 @@ MonoBehaviour:
     variants:
     - name: Variant 0
       phaseDuration: 80
+      maxDuration: 80
       spawnDuration: 50
+      startNextPhaseEarlyDelay: 8
       spawnCellRange: {x: 20, y: 28}
       repositionCellRange: {x: 20, y: 28}
       spawnRateCurve:
@@ -237,7 +283,9 @@ MonoBehaviour:
     variants:
     - name: Variant 0
       phaseDuration: 70
+      maxDuration: 70
       spawnDuration: 45
+      startNextPhaseEarlyDelay: 8
       spawnCellRange: {x: 20, y: 28}
       repositionCellRange: {x: 20, y: 28}
       spawnRateCurve:
@@ -273,7 +321,9 @@ MonoBehaviour:
     variants:
     - name: Variant 0
       phaseDuration: 60
+      maxDuration: 75
       spawnDuration: 60
+      startNextPhaseEarlyDelay: 8
       spawnCellRange: {x: 20, y: 28}
       repositionCellRange: {x: 20, y: 28}
       spawnRateCurve:

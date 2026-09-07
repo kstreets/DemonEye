@@ -12,7 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c293e69f0c7ed74d8e9a89c90190e46, type: 3}
   m_Name: Trader
   m_EditorClassIdentifier: Assembly-CSharp::Trader
-  traderHeadshot: {fileID: 815896414, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
-  traderName: The Potion Man
   levels:
-    prefixedLevels: 00000000f4010000a4060000800c0000
+    prefixedLevels: 00000000fa0000005203000040060000d0070000

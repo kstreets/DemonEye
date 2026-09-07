@@ -21,6 +21,7 @@ public class GameData {
         public DemonEyeLevels demonEyeLevels;
         public UpgradePath eyeForgeUpgradePath;
         public List<MapData> maps;
+        public const int demonEyeCoreUpgradeCount = 5;
     }
     
     [Serializable]
@@ -431,6 +432,10 @@ public class GameData {
         public Data data;
     } 
     
+    public class HideoutState {
+        public int pentagramLevelIndex;
+    }
+    
     [Flags]
     public enum PersistentFlags {
         None                   = 0,
@@ -444,8 +449,13 @@ public class GameData {
         ExitTaken       = 1 << 1,
         SkillUpgraded   = 1 << 2,
         BleedStopped    = 1 << 3,
-        PostRaidInit    = 1 << 4,
+        PostInitRaid    = 1 << 4,
         DemonEyeChanged = 1 << 5,
+        SearchingBody   = 1 << 6,
+        SearchingBush   = 1 << 7,
+        PickedUpLoot    = 1 << 8,
+        ShotRock        = 1 << 9,
+        SummonedUpgrade = 1 << 10,
     }
     
     public class PerFrameData {

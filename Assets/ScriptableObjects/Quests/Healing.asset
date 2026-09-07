@@ -18,10 +18,8 @@ MonoBehaviour:
     demons.
 
     Its important to bring health potions, bandages, or anything else
-    that can heal you when going into raids.
-
-    Next time you take damage, use
-    any of these to heal yourself.'
+    that can heal you when going into raids. Next time you take damage, use any of
+    these to heal yourself.'
   traderReputationReward: 100
   objectives:
   - type: 80

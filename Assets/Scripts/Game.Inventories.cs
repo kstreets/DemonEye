@@ -16,8 +16,6 @@ public partial class Game {
         
         public bool isDemonEye;
         public string demonEyeName;
-        public int demonEyeXp;
-        public int demonEyeUpgradesAvailable;
 
         [NonSerialized] public bool notDiscovered;
         [NonSerialized] public bool traderOwned;
@@ -39,7 +37,7 @@ public partial class Game {
         }
         
         public bool IsFullStack => count == ItemRef.MaxStackCount;
-        public int DemonEyeLevel => gameInstance.config.demonEyeLevels.levels.GetLevelFromXp(demonEyeXp);
+        public int DemonEyeLevel => nestedUuids.Count / GameData.Config.demonEyeCoreUpgradeCount;
         
         public ItemInstance(UuidScriptableObject uuidObject = null, int count = 1) {
             if (uuidObject == null) return;
@@ -53,8 +51,6 @@ public partial class Game {
                 count = count,
                 isDemonEye = isDemonEye,
                 demonEyeName = demonEyeName,
-                demonEyeXp = demonEyeXp,
-                demonEyeUpgradesAvailable = demonEyeUpgradesAvailable,
                 notDiscovered = notDiscovered,
                 traderOwned = traderOwned,
                 traderSlotIndex = traderSlotIndex,
@@ -120,7 +116,7 @@ public partial class Game {
         SpawnUiSlots(transactionPanel.inventoryParent, transactionInventorySize);
         inventories.transaction = CreateInventory(transactionPanel.inventoryParent, transactionInventorySize);
 
-        const int crucibleInventorySize = 6;
+        const int crucibleInventorySize = GameData.Config.demonEyeCoreUpgradeCount + 1;
         SpawnUiSlots(eyeForgePanel.pentagramParent, crucibleInventorySize, prefabs.eyeForgeSlot);
         inventories.eyeForge = CreateInventory(eyeForgePanel.pentagramParent, crucibleInventorySize);
         SetupEyeForgeInventorySlots();

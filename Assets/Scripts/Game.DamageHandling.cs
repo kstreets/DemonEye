@@ -31,6 +31,7 @@ public partial class Game {
         }
         else {
             HandleDamageRock(projectile, entity);
+            thisFrame.flags |= GameData.FrameFlags.ShotRock;
         }
     }
     

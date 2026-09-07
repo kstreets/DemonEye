@@ -70,26 +70,11 @@ public partial class Game {
         thisFrame.flags |= GameData.FrameFlags.DemonEyeChanged;
     }
 
-    private void DemonEyeOnEnemyDeath(Enemy enemy) {
-        if (demonEye.equipedItem == null) return;
-
-        int enemyXp = enemy.data.xpWorthPerKill;
-        PrefixedLevels levels = config.demonEyeLevels.levels;
-
-        int levelsIncreased = levels.LevelsGainedFromXp(demonEye.equipedItem.demonEyeXp, enemyXp);
-        if (levelsIncreased > 0) {
-            demonEye.equipedItem.demonEyeUpgradesAvailable += levelsIncreased;
-        }
-
-        demonEye.equipedItem.demonEyeXp += enemyXp;
-    }
-    
     public ItemInstance CreateNewDemonEyeItemInstance(string demonEyeName, List<ItemInstance> eyeUpgradeItemInstances) {
         ItemInstance newDemonEyeItemInstance = new() {
             nestedUuids = new(),
             isDemonEye = true,
             demonEyeName = demonEyeName,
-            demonEyeXp = 0,
         };
         
         foreach (ItemInstance upgradeInstance in eyeUpgradeItemInstances) {
@@ -263,8 +248,7 @@ public partial class Game {
     }
     
     private void GetDemonEyeCoreUpgrades(ItemInstance demonEyeItemInstance, ref List<EyeUpgrade> upgrades) {
-        int coreDemonEyeUpgradeCount = inventories.eyeForge.slots.Length - 1;
-        int count = Mathf.Min(coreDemonEyeUpgradeCount, demonEyeItemInstance.nestedUuids.Count);
+        int count = Mathf.Min(GameData.Config.demonEyeCoreUpgradeCount, demonEyeItemInstance.nestedUuids.Count);
         
         for (int i = 0; i < count; i++) {
             UuidScriptableObject uuidObject = res.lookup[demonEyeItemInstance.nestedUuids[i]];

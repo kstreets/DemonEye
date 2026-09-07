@@ -24,7 +24,7 @@ public class CoolerGrid : MonoBehaviour {
     public int height = 100;
     public float cellSize = 0.1f;
 
-    // Approximate ratio between and straight diagonal 
+    // Approximate ratio between straight diagonal 
     private const int dijkstraOrthogonalDist = 7;
     private const int dijkstraDiagonalDist = 10;
 
@@ -33,18 +33,27 @@ public class CoolerGrid : MonoBehaviour {
     private Vector2 predictedPlayerPos;
     
     private JobHandle? flowFieldJobHandle;
-    private NativeArray<int> nativeDistances;
-    private NativeArray<bool> nativeTraversables; 
+
+    // Job inputs that are either fully static (positions) or only change when an obstacle
+    // moves (traversables), so they are built once instead of every schedule.
+    private NativeArray<bool> nativeTraversables;
     private NativeArray<Vector2> nativePositions;
-    private NativeArray<Vector2> flowFieldJobResults;
+    private bool traversablesDirty;
+
+    private struct FlowFieldBuffers {
+        public NativeArray<int> distances;
+        public NativeArray<Vector2> results;
+    }
+    private readonly FlowFieldBuffers[] buffers = new FlowFieldBuffers[2];
+    
+    private int readBufferIndex;
+    private bool flowFieldReady;
 
     private struct GridCell {
         public Vector2 position;
         public bool traversable;
-        
+
         // These values get updated during runtime
-        public Vector2 flowDir;
-        public int distFromPlayerCell;
         public float spawnWeight;
         public bool isObstacleObstructed;
     }
@@ -54,27 +63,46 @@ public class CoolerGrid : MonoBehaviour {
 
     public void Init() {
         gridGameObjectPosition = transform.position;
-        nativeDistances = new(precomputedCells.Count, Allocator.Persistent);
-        nativeTraversables = new(precomputedCells.Count, Allocator.Persistent);
-        nativePositions = new(precomputedCells.Count, Allocator.Persistent);
-        flowFieldJobResults = new(precomputedCells.Count, Allocator.Persistent);
+
+        int cellCount = precomputedCells.Count;
+        nativeTraversables = new(cellCount, Allocator.Persistent);
+        nativePositions = new(cellCount, Allocator.Persistent);
         
-        gridCells = new GridCell[precomputedCells.Count];
-        for (int i = 0; i < precomputedCells.Count; i++) {
+        for (int i = 0; i < buffers.Length; i++) {
+            buffers[i] = new() {
+                distances = new(cellCount, Allocator.Persistent),
+                results = new(cellCount, Allocator.Persistent),
+            };
+        }
+        readBufferIndex = 0;
+        flowFieldReady = false;
+
+        gridCells = new GridCell[cellCount];
+        for (int i = 0; i < cellCount; i++) {
             PrecomputedCellData precomputedCellData = precomputedCells[i];
             gridCells[i] = new() {
                 position = precomputedCellData.position,
                 traversable = precomputedCellData.traversable,
             };
+
+            // Static for the lifetime of the grid
+            nativePositions[i] = precomputedCellData.position;
+            nativeTraversables[i] = precomputedCellData.traversable;
         }
+
+        traversablesDirty = false;
     }
 
     public void Deinit() {
         flowFieldJobHandle?.Complete();
-        nativeDistances.Dispose();
-        nativeTraversables.Dispose();
-        nativePositions.Dispose();
-        flowFieldJobResults.Dispose();
+        flowFieldJobHandle = null;
+
+        for (int i = 0; i < buffers.Length; i++) {
+            if (buffers[i].distances.IsCreated) buffers[i].distances.Dispose();
+            if (buffers[i].results.IsCreated) buffers[i].results.Dispose();
+        }
+        if (nativeTraversables.IsCreated) nativeTraversables.Dispose();
+        if (nativePositions.IsCreated) nativePositions.Dispose();
     }
 
     public void AddObstacle(Vector2 position, int cellRadius) {
@@ -89,6 +117,8 @@ public class CoolerGrid : MonoBehaviour {
                 obstructed = true;
             }
         }
+
+        traversablesDirty = true;
     }
 
     public void ClearObstacle(Vector2 position, int cellRadius) {
@@ -103,6 +133,8 @@ public class CoolerGrid : MonoBehaviour {
                 obstructed = false;
             }
         }
+
+        traversablesDirty = true;
     }
 
     public void FeedPlayerVelocity(Vector2 playerPos, Vector2 playerVelocity) {
@@ -112,7 +144,7 @@ public class CoolerGrid : MonoBehaviour {
     }
 
     public Vector3 GetSpawnPosition(Vector2 playerPosition, int innerCellRadius, int outerCellRadius, bool predictPlayerPos, List<Vector2> reservedPositions) {
-        if (!TryGetCellAtPosition(playerPosition, out GridCell playerCell)) {
+        if (!TryGetCellAtPosition(playerPosition, out GridCell playerCell, out _)) {
             return Vector2.zero;
         }
         
@@ -129,21 +161,26 @@ public class CoolerGrid : MonoBehaviour {
     }
     
     public void ScheduleFlowFieldCalculation(Vector2 sourcePosition) {
-        // Make sure that we finish the previous job before starting this new one
-        UpdateFlowFieldFromPreviousJob(forceComplete: true);
-        
+        UpdateFlowFieldFromPreviousJob();
+        if (flowFieldJobHandle.HasValue) return;
+
         int sourceIndex = GetCellIndexAtPosition(sourcePosition);
         if (sourceIndex < 0 || sourceIndex >= gridCells.Length) return;
-        
-        for (int i = 0; i < gridCells.Length; i++) {
-            nativeDistances[i] = i == sourceIndex ? 0 : int.MaxValue;
-            nativeTraversables[i] = gridCells[i].isObstacleObstructed ? false : gridCells[i].traversable;
-            nativePositions[i] = gridCells[i].position;
-            flowFieldJobResults[i] = Vector2.zero;
+
+        // Positions are static and results are fully overwritten by the job, so the only
+        // per-schedule input work is refreshing traversability after an obstacle changed.
+        if (traversablesDirty) {
+            for (int i = 0; i < gridCells.Length; i++) {
+                nativeTraversables[i] = gridCells[i].isObstacleObstructed ? false : gridCells[i].traversable;
+            }
+            traversablesDirty = false;
         }
 
+        int writeBufferIndex = 1 - readBufferIndex;
+        FlowFieldBuffers write = buffers[writeBufferIndex];
+
         DijkstraJob dijkstraJob = new() {
-            distances = nativeDistances,
+            distances = write.distances,
             traversable = nativeTraversables,
             gridWidth = width,
             gridHeight = height,
@@ -151,10 +188,10 @@ public class CoolerGrid : MonoBehaviour {
         };
 
         FlowFieldJob flowFieldJob = new() {
-            distances = nativeDistances,
+            distances = write.distances,
             traversables = nativeTraversables,
             positions = nativePositions,
-            results = flowFieldJobResults,
+            results = write.results,
             gridWidth = width,
             gridHeight = height,
         };
@@ -162,52 +199,52 @@ public class CoolerGrid : MonoBehaviour {
         JobHandle dijkstraJobHandle = dijkstraJob.Schedule();
         flowFieldJobHandle = flowFieldJob.Schedule(gridCells.Length, 128, dijkstraJobHandle);
     }
-    
+
     public void UpdateFlowFieldFromPreviousJob(bool forceComplete = false) {
         bool jobExists = flowFieldJobHandle.HasValue;
         if (!jobExists) return;
-        
+
         bool jobHasntFinishedYet = !flowFieldJobHandle.Value.IsCompleted;
         if (jobHasntFinishedYet && !forceComplete) return;
-        
-        flowFieldJobHandle.Value.Complete();
 
-        for (int i = 0; i < gridCells.Length; i++) {
-            ref GridCell cell = ref gridCells[i];  // Must be an array for this to work
-            cell.flowDir = flowFieldJobResults[i];
-            cell.distFromPlayerCell = nativeDistances[i];
-        }
-        
+        flowFieldJobHandle.Value.Complete();
         flowFieldJobHandle = null;
+
+        // The buffer the job just finished writing becomes the one readers see. Nothing is
+        // copied out of it - GetFlowFieldDirection and the spawn logic index straight in.
+        readBufferIndex = 1 - readBufferIndex;
+        flowFieldReady = true;
     }
 
     public Vector2 GetFlowFieldDirection(Vector2 position) {
-        if (TryGetCellAtPosition(position, out GridCell cell)) {
-            return cell.flowDir;
+        if (!flowFieldReady) return Vector2.zero;
+        if (TryGetCellAtPosition(position, out _, out int index)) {
+            return buffers[readBufferIndex].results[index];
         }
         return Vector2.zero;
     }
 
     public Vector2 GetCellPosition(Vector2 position) {
-        if (TryGetCellAtPosition(position, out GridCell cell)) {
+        if (TryGetCellAtPosition(position, out GridCell cell, out _)) {
             return cell.position;
         }
         return Vector2.zero;
     }
 
-    private bool TryGetCellAtPosition(Vector2 position, out GridCell cell) {
+    private bool TryGetCellAtPosition(Vector2 position, out GridCell cell, out int index) {
         Vector2 posInGridSpace = position - gridGameObjectPosition;
 
         int x = Mathf.FloorToInt(posInGridSpace.x / cellSize);
         int y = Mathf.FloorToInt(posInGridSpace.y / cellSize);
 
-        int index = y * width + x;
+        index = y * width + x;
         if (gridCells.IndexInRange(index)) {
             cell = gridCells[index];
             return true;
         }
 
         cell = new();
+        index = -1;
         return false;
     }
 
@@ -233,18 +270,22 @@ public class CoolerGrid : MonoBehaviour {
                 if (isCellWereWorkingOn || isInsideInnerRadius) continue;
 
                 Vector2 neighborPos = playerCell.position + new Vector2(x, y) * cellSize;
-                if (!TryGetCellAtPosition(neighborPos, out GridCell neighbor)) continue;
+                if (!TryGetCellAtPosition(neighborPos, out GridCell neighbor, out int neighborIndex)) continue;
                 if (!neighbor.traversable || neighbor.isObstacleObstructed) continue;
-                    
+
+                // Before the first flow field completes, treat every cell as reachable
+                // (distance 0) instead of walking the unreachable path for all of them.
+                int neighborDist = flowFieldReady ? buffers[readBufferIndex].distances[neighborIndex] : 0;
+
                 // Player is in unreachable position, add anyways so we have something in the list
-                if (neighbor.distFromPlayerCell == int.MaxValue) {
-                    spawnCells.Add(neighbor); 
+                if (neighborDist == int.MaxValue) {
+                    spawnCells.Add(neighbor);
                     Debug.Log("Player is unreachable");
                     continue;
                 }
-                    
+
                 // Convert dijkstra distance into world distance
-                float distFromPlayer = (neighbor.distFromPlayerCell / (float)dijkstraOrthogonalDist) * cellSize;
+                float distFromPlayer = (neighborDist / (float)dijkstraOrthogonalDist) * cellSize;
                 if (distFromPlayer > maxDistCellCanBeFromPlayer) continue;
                     
                 spawnCells.Add(neighbor);
@@ -324,9 +365,15 @@ public class CoolerGrid : MonoBehaviour {
         }
 
         public void Execute() {
+            // Reset distances here, inside the Burst job, instead of on the main thread
+            for (int i = 0; i < distances.Length; i++) {
+                distances[i] = int.MaxValue;
+            }
+            distances[startingIndex] = 0;
+
             NativeArray<bool> visited = new(distances.Length, Allocator.Temp);
             NativePriorityQueue<QueueItem> unvisited = new(distances.Length, Allocator.Temp);
-            
+
             unvisited.Enqueue(new() {
                 distance = distances[startingIndex],
                 indexIntoArrays = startingIndex,
@@ -527,7 +574,7 @@ public class CoolerGrid : MonoBehaviour {
         
         Init();
         ScheduleFlowFieldCalculation(sourcePosForTesting.position);
-        UpdateFlowFieldFromPreviousJob();
+        UpdateFlowFieldFromPreviousJob(forceComplete: true);
         Deinit();
     }
 

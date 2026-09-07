@@ -123,23 +123,397 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: AttackRune1_0
+      name: NewSwampProps_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 16
-        height: 16
+        x: 63
+        y: 441
+        width: 62
+        height: 62
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 94d6a917db308d800800000000000000
-      internalID: 637263459462573385
+      spriteID: 65f61fabfd91add4c99b874393ce09df
+      internalID: 1403076836
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSwampProps_1
+      rect:
+        serializedVersion: 2
+        x: 134
+        y: 449
+        width: 41
+        height: 37
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7d957d5577502be458f2289033a33ca5
+      internalID: 826143846
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSwampProps_2
+      rect:
+        serializedVersion: 2
+        x: 196
+        y: 450
+        width: 29
+        height: 39
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f931d26df1a4337458199dca1abf5e39
+      internalID: -1630562844
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSwampProps_3
+      rect:
+        serializedVersion: 2
+        x: 17
+        y: 367
+        width: 36
+        height: 54
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 09648ffe24d20574aa76a52ccc3a5979
+      internalID: -932787060
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSwampProps_4
+      rect:
+        serializedVersion: 2
+        x: 61
+        y: 366
+        width: 61
+        height: 63
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6059d4777deb8a64ab60a8b5b673c699
+      internalID: 721719576
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSwampProps_5
+      rect:
+        serializedVersion: 2
+        x: 137
+        y: 370
+        width: 25
+        height: 34
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 10145b73313e47f46947e078a47e3f34
+      internalID: 1134609946
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSwampProps_6
+      rect:
+        serializedVersion: 2
+        x: 81
+        y: 329
+        width: 26
+        height: 26
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 475b1a0f13e6f014aa1c815dc139dbbd
+      internalID: -160219869
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSwampProps_7
+      rect:
+        serializedVersion: 2
+        x: 51
+        y: 332
+        width: 18
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 945dfc325fcf5a74e9c460b620d0e1ff
+      internalID: 116798916
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSwampProps_8
+      rect:
+        serializedVersion: 2
+        x: 26
+        y: 332
+        width: 15
+        height: 9
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2b846685ad6afaa46a6a21691e3e4ca3
+      internalID: -600490401
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSwampProps_9
+      rect:
+        serializedVersion: 2
+        x: 41
+        y: 300
+        width: 13
+        height: 26
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e6d608b6f6234c9459d012709e8dfb22
+      internalID: 1704882713
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSwampProps_10
+      rect:
+        serializedVersion: 2
+        x: 61
+        y: 300
+        width: 10
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 24680116340f8664c917604ee5f6ca1e
+      internalID: -390064549
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSwampProps_11
+      rect:
+        serializedVersion: 2
+        x: 26
+        y: 300
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5957109c691272a4eb26e42504eb0463
+      internalID: 1432803681
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSwampProps_12
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 292
+        width: 44
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 819218d3d04912a468a81593d79a3e60
+      internalID: 1747025078
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSwampProps_13
+      rect:
+        serializedVersion: 2
+        x: 84
+        y: 273
+        width: 32
+        height: 13
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: caff4a518dec9a4478a1e249b9a9c8a9
+      internalID: 1280536940
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSwampProps_14
+      rect:
+        serializedVersion: 2
+        x: 23
+        y: 263
+        width: 44
+        height: 27
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 167189ed91f40ff4f8cc19010ee69375
+      internalID: -161552369
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSwampProps_15
+      rect:
+        serializedVersion: 2
+        x: 17
+        y: 201
+        width: 82
+        height: 58
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ab7c38c3bbf6985439fe898b2b67c63c
+      internalID: -1940567972
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSwampProps_16
+      rect:
+        serializedVersion: 2
+        x: 104
+        y: 193
+        width: 69
+        height: 71
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 70eebdb5e0fe4cf4e823b1758f36e4c6
+      internalID: 1609641771
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSwampProps_17
+      rect:
+        serializedVersion: 2
+        x: 130
+        y: 272
+        width: 20
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 67711aba041a1b649a0a8dfadfc61e3a
+      internalID: -822621762
       vertices: []
       indices: 
       edges: []
@@ -148,7 +522,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 927e7cd24c79dde49947fc574814c3ad
     internalID: 0
     vertices: []
     indices: 
@@ -159,6 +533,25 @@ TextureImporter:
       entries: []
     nameFileIdTable:
       AttackRune1_0: 637263459462573385
+      NewSwampProps_0: 1403076836
+      NewSwampProps_1: 826143846
+      NewSwampProps_10: -390064549
+      NewSwampProps_11: 1432803681
+      NewSwampProps_12: 1747025078
+      NewSwampProps_13: 1280536940
+      NewSwampProps_14: -161552369
+      NewSwampProps_15: -1940567972
+      NewSwampProps_16: 1609641771
+      NewSwampProps_17: -822621762
+      NewSwampProps_18: 906092741
+      NewSwampProps_2: -1630562844
+      NewSwampProps_3: -932787060
+      NewSwampProps_4: 721719576
+      NewSwampProps_5: 1134609946
+      NewSwampProps_6: -160219869
+      NewSwampProps_7: 116798916
+      NewSwampProps_8: -600490401
+      NewSwampProps_9: 1704882713
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
