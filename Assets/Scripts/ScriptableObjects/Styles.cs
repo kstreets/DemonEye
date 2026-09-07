@@ -4,6 +4,9 @@ using UnityEngine;
 public class Styles : ScriptableObject {
     
     public Texture2D cursorTexture;
+    public Sprite quickUsePlaceholderSprite;
+    public Sprite eyeUpgradePlaceholderSprite;
+    public Sprite simpleEyePlaceholderSprite;
     
     public Color commonTextColor;
     public Color uncommonTextColor;
@@ -17,6 +20,7 @@ public class Styles : ScriptableObject {
     public Color epicColor;
     public Color legendaryColor;
 
+    public Color itemPlaceholderColor;
     public Color itemCountColor;
     public Color headerTextColor;
     public Color popInTextColor;

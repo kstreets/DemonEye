@@ -68,7 +68,7 @@ Material:
     m_Floats:
     - _ColorMask: 15
     - _EndRange: 0.28
-    - _Fill: 0
+    - _Fill: 0.001
     - _QueueControl: -1
     - _QueueOffset: 0
     - _StartRange: 0

@@ -29,6 +29,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: -1943364333, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
     - target: {fileID: 6890701791358644999, guid: 0412bcb04847baa4d920e89c3e52615d, type: 3}
+      propertyPath: forgeEffect
+      value: 
+      objectReference: {fileID: 858785456182314403}
+    - target: {fileID: 6890701791358644999, guid: 0412bcb04847baa4d920e89c3e52615d, type: 3}
       propertyPath: pixelFillManager
       value: 
       objectReference: {fileID: 858785456182314403}

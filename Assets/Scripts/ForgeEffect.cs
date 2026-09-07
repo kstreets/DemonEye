@@ -5,13 +5,14 @@ using UnityEngine.UI;
 #if UNITY_EDITOR
 [ExecuteAlways]
 #endif
-public class PixelFillManager : MonoBehaviour {
+public class ForgeEffect : MonoBehaviour {
     
     public Image image;
     public Material pixelFillMaterial;
     public Texture fillMask;
     public Texture upwardsFillMask;
     
+    private static readonly int activeId = Shader.PropertyToID("_Active");
     private static readonly int fillId = Shader.PropertyToID("_Fill");
     private static readonly int offsetSizeId = Shader.PropertyToID("_Offset_Size");
     private static readonly int intoOffsetSizeId = Shader.PropertyToID("_IntoOffset_Size");
@@ -42,6 +43,11 @@ public class PixelFillManager : MonoBehaviour {
             _ => throw new ArgumentOutOfRangeException(nameof(fillDir), fillDir, null),
         });  
         SetMaterialFill(1f);
+        SetActive(false);
+    }
+    
+    public void SetActive(bool active) {
+        image.material.SetInt(activeId, active ? 1 : 0);
     }
     
     public void SetMaterialFill(float fill) {

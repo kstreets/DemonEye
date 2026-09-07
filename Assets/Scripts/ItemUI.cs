@@ -4,11 +4,12 @@ using UnityEngine.UI;
 
 public class ItemUI : MonoBehaviour {
     
+    public Sprite placeholderSprite;
     public Styles styles;
     public RectTransform rectTransform;
     public Image image;
     public TextMeshProUGUI countText;
-    public PixelFillManager pixelFillManager; // Only pentagram inventory slots will have this
+    public ForgeEffect forgeEffect; // Only pentagram inventory slots will have this
     
     private void Awake() {
         ClearItem();
@@ -19,6 +20,8 @@ public class ItemUI : MonoBehaviour {
         image.enabled = true;
         countText.gameObject.SetActive(true);
         countText.text = count.ToString();
+        image.color = Color.white;
+        forgeEffect?.SetActive(true);
     }
     
     public void SetPlaceholderItem(Item data) {
@@ -26,6 +29,7 @@ public class ItemUI : MonoBehaviour {
         image.enabled = true;
         countText.gameObject.SetActive(false);
         image.color = Color.gray2;
+        forgeEffect?.SetActive(true);
     }
 
     public void UpdateCount(int count) {
@@ -33,11 +37,13 @@ public class ItemUI : MonoBehaviour {
     }
     
     public void ClearItem() {
-        image.sprite = null;
-        image.enabled = false;
+        bool usePlaceHolder = placeholderSprite != null;
+        image.sprite = usePlaceHolder ? placeholderSprite : null;
+        image.color = styles.itemPlaceholderColor;
+        image.enabled = usePlaceHolder;
         countText.text = "";
         countText.color = styles.itemCountColor; 
-        image.color = Color.white;
+        forgeEffect?.SetActive(false);
     }
 
     public void ToggleGray() {

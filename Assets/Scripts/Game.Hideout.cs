@@ -464,7 +464,7 @@ public partial class Game {
             foreach (InventorySlot slot in inventories.eyeForge.slots) {
                 slot.ui.itemUI.rectTransform.anchoredPosition = Vector2.zero;
                 slot.ui.itemUI.rectTransform.localScale = Vector3.one;
-                slot.ui.itemUI.pixelFillManager.SetMaterialFill(1f);
+                slot.ui.itemUI.forgeEffect.SetMaterialFill(1f);
                 
                 if (slot.itemInstance == null) continue;
                 
@@ -501,11 +501,11 @@ public partial class Game {
         
         bool upgradingDemonEye = slots[0].itemInstance.isDemonEye;
         if (upgradingDemonEye) {
-            slots[0].ui.itemUI.pixelFillManager.SetIntoSprite(config.demonEyeLevels.levelSprites[1]);
+            slots[0].ui.itemUI.forgeEffect.SetIntoSprite(config.demonEyeLevels.levelSprites[1]);
         } else {
-            slots[0].ui.itemUI.pixelFillManager.SetIntoSprite(config.demonEyeLevels.levelSprites[0]);
+            slots[0].ui.itemUI.forgeEffect.SetIntoSprite(config.demonEyeLevels.levelSprites[0]);
         }
-        slots[0].ui.itemUI.pixelFillManager.UseSmoothing(false);
+        slots[0].ui.itemUI.forgeEffect.UseSmoothing(false);
         
         Tween.Custom(this, 0f, 1f, fillDuration, ease: Ease.Linear, onValueChange: (target, val) => {
             target.SetPentagramFill(target.curves.pentagramFill.Evaluate(val));
@@ -520,25 +520,25 @@ public partial class Game {
             float duration = 2.5f;
             
             Tween.Custom(slots[0], 1f, 0f, fillDuration * 0.85f, ease: Ease.OutCubic, startDelay: perUpgradeDissolveDelay, onValueChange: (targetSlot, val) => {
-                targetSlot.ui.itemUI.pixelFillManager.SetMaterialFill(val);
+                targetSlot.ui.itemUI.forgeEffect.SetMaterialFill(val);
             });
             
             Tween.Custom(slots[1], 1f, 0f, duration, ease: ease, onValueChange: (targetSlot, val) => {
-                targetSlot.ui.itemUI.pixelFillManager.SetMaterialFill(val);
+                targetSlot.ui.itemUI.forgeEffect.SetMaterialFill(val);
             });
             
             Tween.Custom(slots[2], 1f, 0f, duration, ease: ease, startDelay: perUpgradeDissolveDelay * 2, onValueChange: (targetSlot, val) => {
-                targetSlot.ui.itemUI.pixelFillManager.SetMaterialFill(val);
+                targetSlot.ui.itemUI.forgeEffect.SetMaterialFill(val);
             });
             Tween.Custom(slots[5], 1f, 0f, duration, ease: ease, startDelay: perUpgradeDissolveDelay * 2, onValueChange: (targetSlot, val) => {
-                targetSlot.ui.itemUI.pixelFillManager.SetMaterialFill(val);
+                targetSlot.ui.itemUI.forgeEffect.SetMaterialFill(val);
             });
             
             Tween.Custom(slots[3], 1f, 0f, duration, ease: ease, startDelay: perUpgradeDissolveDelay * 4, onValueChange: (targetSlot, val) => {
-                targetSlot.ui.itemUI.pixelFillManager.SetMaterialFill(val);
+                targetSlot.ui.itemUI.forgeEffect.SetMaterialFill(val);
             });
             Tween.Custom(slots[4], 1f, 0f, duration, ease: ease, startDelay: perUpgradeDissolveDelay * 4, onValueChange: (targetSlot, val) => {
-                targetSlot.ui.itemUI.pixelFillManager.SetMaterialFill(val);
+                targetSlot.ui.itemUI.forgeEffect.SetMaterialFill(val);
             });
         }
         

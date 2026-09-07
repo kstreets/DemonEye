@@ -97,6 +97,7 @@ public partial class Game {
         InventorySlotUI[] quickUseSlots = playerPanel.quickUseParent.GetComponentsInChildren<InventorySlotUI>();
         foreach (InventorySlotUI slotUI in quickUseSlots) {
             slotUI.onlyAcceptedItemType = itemTypes.quickUse;
+            slotUI.itemUI.placeholderSprite = config.styles.quickUsePlaceholderSprite;
         }
         
         const int stashInventorySize = 40;
@@ -136,7 +137,8 @@ public partial class Game {
             InventorySlotUI slotUI = inventories.eyeForge.slots[i].ui;
             slotUI.disallowItemStacking = true;
             slotUI.onlyAcceptedItemType = isCenterSlot ? itemTypes.eye : itemTypes.eyeUpgrade;
-            slotUI.itemUI.pixelFillManager.Init(isCenterSlot ? PixelFillManager.FillDirection.None : PixelFillManager.FillDirection.Up);
+            slotUI.itemUI.placeholderSprite = isCenterSlot ? config.styles.simpleEyePlaceholderSprite : config.styles.eyeUpgradePlaceholderSprite;
+            slotUI.itemUI.forgeEffect.Init(isCenterSlot ? ForgeEffect.FillDirection.None : ForgeEffect.FillDirection.Up);
 
             if (isCenterSlot) {
                 slotUI.gameObject.transform.position = eyeForgePanel.pentagramParent.position;
