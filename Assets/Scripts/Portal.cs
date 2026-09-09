@@ -31,7 +31,6 @@ public class Portal : MonoBehaviour {
     private Tween openPortalAnimationTween;
     
     private Sequence openCloseSequence;
-    private float particleStartLifetime;
     private float particleStartSpeed;
     
     private static readonly int aspectRatioId = Shader.PropertyToID("_AspectRatio");
@@ -49,8 +48,7 @@ public class Portal : MonoBehaviour {
         crystalSpriteRenderer.material.SetVector(offsetSizeId, crystalSpriteRenderer.sprite.OffsetAndSizeInTexture());
         
         summoningParticles.gameObject.SetActive(false);
-        particleStartLifetime = summoningParticles.main.startLifetimeMultiplier;
-        particleStartSpeed = summoningParticles.main.startSpeedMultiplier;
+        particleStartSpeed = summoningParticles.velocityOverLifetime.radialMultiplier;
         
         foreach (Transform fragTrans in crystalFragments) {
             fragTrans.gameObject.SetActive(false);
@@ -60,28 +58,27 @@ public class Portal : MonoBehaviour {
     public void StartOpenCloseSequence(float openDelay, float openDuration) {
         state = State.BeingSummoned;
         
-        crystalTrans.DoTweenShake(6f, 0.01f, openDelay, crystalShakeMagnitudeCurve, crystalShakeJitterCurve);
+        crystalTrans.DoTweenShake(15f, 0.015f, openDelay, crystalShakeMagnitudeCurve, crystalShakeJitterCurve);
         summoningParticles.gameObject.SetActive(true);
         
-        Tween.ShakeLocalPosition(crystalTrans, new Vector3(0.02f, 0.02f, 0f), 0.2f);
+        Tween.PunchScale(crystalTrans, new(0.2f, 0.2f, 0f), 0.2f, 12f);
         
         // Summoning
-        const float particleRampUpPercentage = 0.67f;
-        TweenSettings particleSettings = new() { duration = openDelay * particleRampUpPercentage };
+        const float particleRampUpPercentage = 0.8f;
+        TweenSettings particleSettings = new() { duration = openDelay * particleRampUpPercentage, ease = Ease.InSine };
         Tween.Custom(this, 0f, 1f, particleSettings, static (portal, comp) => {
-            const float particleRampingSpeed = 1.5f;
-            float emissionMultiplier = Mathf.Lerp(10f, 60f, comp);
+            const float particleRampingSpeed = 1.7f;
+            float emissionMultiplier = Mathf.Lerp(5f, 30f, comp);
             float speedMultiplier = Mathf.Lerp(portal.particleStartSpeed, portal.particleStartSpeed * particleRampingSpeed, comp);
-            float lifetimeMultiplier = Mathf.Lerp(portal.particleStartLifetime, portal.particleStartLifetime / particleRampingSpeed, comp);
             
-            ParticleSystem.MainModule main = portal.summoningParticles.main;
+            ParticleSystem.VelocityOverLifetimeModule velocity = portal.summoningParticles.velocityOverLifetime;
             ParticleSystem.EmissionModule emission = portal.summoningParticles.emission;
-            main.startSpeedMultiplier = speedMultiplier;
-            main.startLifetimeMultiplier = lifetimeMultiplier;
             emission.rateOverTimeMultiplier = emissionMultiplier; 
-        });
+            velocity.radialMultiplier = speedMultiplier;
+        })
+        .OnComplete(this, static (portal) => portal.summoningParticles.Stop());
         
-        TweenSettings crystalSettings = new() { duration = openDelay, ease = Ease.InSine };
+        TweenSettings crystalSettings = new() { duration = openDelay * particleRampUpPercentage, ease = Ease.InCubic };
         Tween.Custom(crystalSpriteRenderer, 0f, 1f, crystalSettings, static (crystalSpriteRenderer, comp) => {
             crystalSpriteRenderer.material.SetFloat(fillId, comp);
         });
@@ -96,7 +93,7 @@ public class Portal : MonoBehaviour {
             portal.openPortalSpriteRenderer.gameObject.SetActive(true);
             portal.StartAnimating();
             
-            Tween.Custom(portal, portal.rotationSpeed * 5f, portal.rotationSpeed, 2f, onValueChange: static (portal, speed) => {
+            Tween.Custom(portal, portal.rotationSpeed * 6f, portal.rotationSpeed, 3f, onValueChange: static (portal, speed) => {
                 portal.rotationSpeed = speed;
             });
             
@@ -115,7 +112,6 @@ public class Portal : MonoBehaviour {
         }));
         
         openCloseSequence.Group(Tween.Delay(this, 0.1f, static (portal) => {
-            portal.summoningParticles.Stop();
             portal.crystalTrans.GetComponent<SpriteRenderer>().enabled = false;
             portal.state = State.Open; 
         }));

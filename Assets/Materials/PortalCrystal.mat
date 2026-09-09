@@ -76,7 +76,7 @@ Material:
     - _IntoOffset_Size: {r: 0, g: 0, b: 0, a: 0}
     - _Offset_Size: {r: 0.12695312, g: 0.04296875, b: 0.03125, a: 0.03125}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
-    - _RevealColor: {r: 0.7331535, g: 1, b: 0.68867916, a: 1}
+    - _RevealColor: {r: 0.5496023, g: 0.98742133, b: 0.65063745, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &6487792206828267422
