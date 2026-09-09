@@ -58,12 +58,12 @@ Material:
     - _Clip: 1
     - _EnableExternalAlpha: 0
     - _FadeIn: 0
-    - _Fill: 0
+    - _Fill: 1
     - _NoiseScale: 4
     - _PixelDensity: 32
     - _QueueControl: 0
     - _QueueOffset: 0
-    - _Rotation: 48.068615
+    - _Rotation: -992.2
     - _TwirlStrength: 13
     - _ZWrite: 0
     m_Colors:

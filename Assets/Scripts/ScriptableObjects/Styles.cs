@@ -19,6 +19,7 @@ public class Styles : ScriptableObject {
     public Color rareColor;
     public Color epicColor;
     public Color legendaryColor;
+    public float slotRarityAlpha;
 
     public Color itemPlaceholderColor;
     public Color itemCountColor;
@@ -37,10 +38,6 @@ public class Styles : ScriptableObject {
 
     public Vector4 normalButtonTextMargin;
     public Vector4 pressedButtonTextMargin;
-
-    public Color nonSelectedTraderBackground;
-    public Color selectedTraderBackground;
-    public Color nonSelectedTraderHeadshotTint;
 
     public Color grayedOutItemTint;
     public Color grayedOutOverlay;
@@ -77,6 +74,17 @@ public class Styles : ScriptableObject {
             Item.Rarity.Epic      => epicColor,
             Item.Rarity.Legendary => legendaryColor,
             _                     => commonColor,
+        };
+    }
+    
+    public Color GetSlotColorForRarity(Item.Rarity rarity) {
+        return rarity switch {
+            Item.Rarity.Common    => commonTextColor.Alpha(slotRarityAlpha),
+            Item.Rarity.Uncommon  => uncommonTextColor.Alpha(slotRarityAlpha),
+            Item.Rarity.Rare      => rareTextColor.Alpha(slotRarityAlpha),
+            Item.Rarity.Epic      => epicTextColor.Alpha(slotRarityAlpha),
+            Item.Rarity.Legendary => legendaryTextColor.Alpha(slotRarityAlpha),
+            _                     => commonTextColor.Alpha(slotRarityAlpha),
         };
     }
 

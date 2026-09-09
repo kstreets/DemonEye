@@ -17,7 +17,7 @@ MonoBehaviour:
   eyeUpgradePlaceholderSprite: {fileID: 203191926, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   simpleEyePlaceholderSprite: {fileID: 198821079, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   commonTextColor: {r: 0.28627452, g: 0.48235294, b: 0.3196935, a: 1}
-  uncommonTextColor: {r: 0.24949563, g: 0.4887094, b: 0.5471698, a: 1}
+  uncommonTextColor: {r: 0.31867796, g: 0.53797925, b: 0.8238993, a: 1}
   rareTextColor: {r: 0.5882353, g: 0.27058825, b: 0.8352941, a: 1}
   epicTextColor: {r: 0.78431374, g: 0.2, b: 0.46666667, a: 1}
   legendaryTextColor: {r: 0.8352941, g: 0.27058825, b: 0.27450982, a: 1}
@@ -26,12 +26,13 @@ MonoBehaviour:
   rareColor: {r: 0.87205184, g: 0.70754707, b: 1, a: 1}
   epicColor: {r: 1, g: 0.6949685, b: 0.8336192, a: 1}
   legendaryColor: {r: 1, g: 0.5251572, b: 0.5251572, a: 1}
-  itemPlaceholderColor: {r: 0.27450982, g: 0.22352943, b: 0.21568629, a: 1}
+  slotRarityAlpha: 1
+  itemPlaceholderColor: {r: 0.25157225, g: 0.22380435, b: 0.22071902, a: 1}
   itemCountColor: {r: 0.8930817, g: 0.84533834, b: 0.84533834, a: 1}
   headerTextColor: {r: 0.7490196, g: 0.6627451, b: 0.57254905, a: 1}
   popInTextColor: {r: 1, g: 0.8562826, b: 0.43710685, a: 1}
   coinCurrencyColor: {r: 0.95686275, g: 0.6, b: 0.25882354, a: 1}
-  inputIconTint: {r: 0.8235294, g: 0.7019608, b: 0.6901961, a: 1}
+  inputIconTint: {r: 0.899371, g: 0.83490443, b: 0.82866573, a: 1}
   underWeightColor: {r: 0.6901961, g: 0.7882353, b: 0.8117647, a: 1}
   startingOverWeightColor: {r: 0.8553459, g: 0.37387756, b: 0.3772212, a: 1}
   endingOverWeightColor: {r: 0.78616345, g: 0.22002682, b: 0.22395845, a: 1}
@@ -39,12 +40,9 @@ MonoBehaviour:
   selectedHideoutTabMargin: {x: 0, y: 0, z: 0, w: 0}
   normalButtonTextMargin: {x: 0, y: 0, z: 0, w: 7}
   pressedButtonTextMargin: {x: 0, y: 0, z: 0, w: 3}
-  nonSelectedTraderBackground: {r: 0, g: 0, b: 0, a: 1}
-  selectedTraderBackground: {r: 0.18431373, g: 0.14901961, b: 0.14509805, a: 1}
-  nonSelectedTraderHeadshotTint: {r: 0.57861626, g: 0.57861626, b: 0.57861626, a: 1}
   grayedOutItemTint: {r: 1, g: 1, b: 1, a: 0.23529412}
   grayedOutOverlay: {r: 0, g: 0, b: 0, a: 0.5019608}
-  selectedUnderlay: {r: 0.7490196, g: 0.5667975, b: 0.5019608, a: 0.3882353}
+  selectedUnderlay: {r: 0.42767292, g: 0.35966024, b: 0.34832478, a: 1}
   outOfStockCountColor: {r: 0.8352942, g: 0.27058825, b: 0.27450982, a: 1}
   normalDamageColor: {r: 1, g: 1, b: 1, a: 1}
   critDamageColor: {r: 1, g: 0.8286626, b: 0.22327036, a: 1}

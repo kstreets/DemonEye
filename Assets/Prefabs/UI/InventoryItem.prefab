@@ -89,11 +89,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f36e975da9ee6b849a12ca1ecb1f190b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemUI
+  placeholderSprite: {fileID: 0}
   styles: {fileID: 11400000, guid: f4b4ae74a1e122340bf1d9d4fa5ab586, type: 2}
   rectTransform: {fileID: 6352755194111612605}
   image: {fileID: 6300235184742368939}
   countText: {fileID: 1253270400355161173}
-  pixelFillManager: {fileID: 0}
+  forgeEffect: {fileID: 0}
 --- !u!1 &6629419323779652318
 GameObject:
   m_ObjectHideFlags: 0
@@ -128,7 +129,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: 3, y: -6}
+  m_AnchoredPosition: {x: 10, y: -6}
   m_SizeDelta: {x: 50, y: 50}
   m_Pivot: {x: 1, y: 0}
 --- !u!222 &4158275366625840808

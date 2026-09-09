@@ -236,7 +236,7 @@ public static class DemonEyeTween {
     
     public static void UpdateShake(TweenObject tween) {
         float comp = UpdateAndGetCompletion(tween);
-        float magnitude = tween.animationCurve.Evaluate(comp);
+        float magnitude = tween.animationCurve.Evaluate(comp) * tween.float2;
         float jitter = tween.altAnimationCurve?.Evaluate(comp) * tween.float1 ?? tween.float1;
         
         tween.float3 = (tween.float3 + jitter * Time.deltaTime) % 1f;

@@ -18,7 +18,7 @@ public class ItemUI : MonoBehaviour {
     public void SetItem(Item data, int count) {
         image.sprite = data.inventorySprite;
         image.enabled = true;
-        countText.gameObject.SetActive(true);
+        countText.gameObject.SetActive(true); 
         countText.text = count.ToString();
         image.color = Color.white;
         forgeEffect?.SetActive(true);

@@ -2480,9 +2480,9 @@ TextureImporter:
       name: Portal_Crystal
       rect:
         serializedVersion: 2
-        x: 68
+        x: 65
         y: 22
-        width: 9
+        width: 16
         height: 16
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -2636,7 +2636,7 @@ TextureImporter:
         serializedVersion: 2
         x: 71
         y: 36
-        width: 4
+        width: 2
         height: 2
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -2656,10 +2656,10 @@ TextureImporter:
       name: ItemSpriteSheet_111
       rect:
         serializedVersion: 2
-        x: 71
+        x: 72
         y: 33
-        width: 3
-        height: 3
+        width: 2
+        height: 2
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -2679,9 +2679,9 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 68
-        y: 30
-        width: 3
-        height: 4
+        y: 31
+        width: 2
+        height: 3
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -2700,10 +2700,10 @@ TextureImporter:
       name: ItemSpriteSheet_113
       rect:
         serializedVersion: 2
-        x: 74
-        y: 32
-        width: 3
-        height: 4
+        x: 75
+        y: 33
+        width: 2
+        height: 2
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -2722,10 +2722,10 @@ TextureImporter:
       name: ItemSpriteSheet_114
       rect:
         serializedVersion: 2
-        x: 71
-        y: 29
-        width: 3
-        height: 4
+        x: 72
+        y: 30
+        width: 2
+        height: 2
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -2745,9 +2745,9 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 74
-        y: 26
+        y: 30
         width: 3
-        height: 6
+        height: 2
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -2767,9 +2767,9 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 71
-        y: 25
-        width: 3
-        height: 4
+        y: 27
+        width: 2
+        height: 2
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -2789,9 +2789,9 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 68
-        y: 25
-        width: 3
-        height: 5
+        y: 28
+        width: 2
+        height: 2
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -2810,10 +2810,10 @@ TextureImporter:
       name: ItemSpriteSheet_118
       rect:
         serializedVersion: 2
-        x: 69
+        x: 70
         y: 22
-        width: 4
-        height: 3
+        width: 3
+        height: 2
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -3453,7 +3453,7 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -3475,7 +3475,7 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -3497,7 +3497,7 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []

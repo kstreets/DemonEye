@@ -8,6 +8,7 @@ public class InventorySlotUI : MonoBehaviour {
     public ItemType onlyAcceptedItemType;
     public bool acceptDerivativeTypes = true;
     public Image slotImage;
+    public Image rarityFrameImage;
     public Image overlayImage;
     public Image underlayImage;
     public Sprite activeSlotSprite;
@@ -72,10 +73,12 @@ public class InventorySlotUI : MonoBehaviour {
 
     public void SetItem(Item item, int count) {
         itemUI.SetItem(item, count);
+        rarityFrameImage.color = styles.GetSlotColorForRarity(item.GetRarity());
     }
     
     public void SetPlaceHolderItemImage(Item item) {
         itemUI.SetPlaceholderItem(item);
+        rarityFrameImage.color = styles.GetSlotColorForRarity(item.GetRarity());
     }
     
     public void ToggleOutOfStock() {
@@ -101,6 +104,7 @@ public class InventorySlotUI : MonoBehaviour {
     
     public void ClearItem() {
         overlayImage.gameObject.SetActive(false);
+        rarityFrameImage.color = Color.clear;
         itemUI.ClearItem();
     }
     
