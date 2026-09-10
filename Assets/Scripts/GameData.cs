@@ -51,6 +51,7 @@ public class GameData {
         public GameObject projectileImpact;
         public GameObject teleportIn;
         public GameObject teleportOut;
+        public GameObject expressExitPortal;
         public GameObject bloodSplatter;
         public GameObject runSmoke;
         public GameObject slamSmoke;
@@ -339,6 +340,7 @@ public class GameData {
         public EntityPool<Entity> projectileImpact;
         public EntityPool<Entity> teleportIn;
         public EntityPool<Entity> teleportOut;
+        public EntityPool<Entity> expressExitPortal;
         public EntityPool<Entity> bloodSplatter;
         public EntityPool<Entity> runSmoke;
         public EntityPool<Entity> damageNumber;
@@ -419,6 +421,8 @@ public class GameData {
         public Limiter flowFieldLimiter;
         
         public List<Vector2> teleportingInPositions = new();
+        public List<Portal> activeExitPortals = new();
+    
         public Dictionary<GameObject, InventorySlot[]> bushSlotsLookup = new();
         public Dictionary<GameObject, InventorySlot[]> deadBodySlotsLookup = new();
         

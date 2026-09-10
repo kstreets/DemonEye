@@ -444,10 +444,7 @@ public partial class Game : MonoBehaviour {
             camera.pixelPerfect.assetsPPU = (int)val;
         }));
         
-        sequence.ChainDelay(0.05f);
-        sequence.Chain(Tween.Scale(exitPortalTakenByPlayer.transform, Vector3.zero, 0.25f, Ease.InOutBounce));
-        
-        sequence.ChainDelay(0.15f);
+        sequence.ChainDelay(0.25f);
         
         ui.deathBgImage.enabled = true;
         ui.deathBgImage.fillAmount = 1f;

@@ -248,6 +248,7 @@ public class GameplayTestingWindow : EditorWindow {
         
         RaidSpawnPattern clonedWaves = Instantiate(currentMap.spawning);
         clonedWaves.timeBeforeFirstPhase = 5f;
+        Debug.Log(clonedWaves.phasePools.Count);
         clonedWaves.phasePools.RemoveRange(0, startWaveIndex);
         return clonedWaves;
     }

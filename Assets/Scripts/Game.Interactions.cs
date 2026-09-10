@@ -117,15 +117,22 @@ public partial class Game {
                 if (portal.state == Portal.State.Open) {
                     EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Take Exit Portal");
                     if (input.interact.WasPressedThisFrame()) {
-                        exitPortalTakenByPlayer = portal;
-                        exitPortalTakenByPlayer.StopClosingSequence();
-                        
+                        portal.OnPlayerTook();
                         bool winExit = curRaid.state == RaidState.PostFinalWave;
                         states.gameStateMachine.SetStateIfNotCurrent(winExit ? states.winExit : states.earlyExit);
                         thisFrame.flags |= winExit ? GameData.FrameFlags.ExitTaken : GameData.FrameFlags.EarlyExitTaken;
                     }
                 }
-                
+            }
+            
+            if (col.CompareTag(Tags.ExpressExitPortal)) {
+                EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Take Exit Portal");
+                if (input.interact.WasPressedThisFrame()) {
+                    col.transform.GetComponent<SummonedPortal>().Close(activeStateOnComplete: false);
+                    bool winExit = curRaid.state == RaidState.PostFinalWave;
+                    states.gameStateMachine.SetStateIfNotCurrent(winExit ? states.winExit : states.earlyExit);
+                    thisFrame.flags |= winExit ? GameData.FrameFlags.ExitTaken : GameData.FrameFlags.EarlyExitTaken;
+                }
             }
         }
     }

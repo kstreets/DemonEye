@@ -13,6 +13,7 @@ TagManager:
   - Bush
   - Mineable
   - Chest
+  - ExpressExitPortal
   layers:
   - Default
   - TransparentFX

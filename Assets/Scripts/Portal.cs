@@ -11,6 +11,7 @@ public class Portal : MonoBehaviour {
     
     public ParticleSystem summoningParticles;
     public GameObject crystalExplosion;
+    public SummonedPortal summonedPortal;
     
     [Header("Crystal")]
     public Transform crystalTrans;
@@ -20,28 +21,17 @@ public class Portal : MonoBehaviour {
     public AnimationCurve crystalShakeJitterCurve;
     public Transform[] crystalFragments;
     
-    [Header("Opened Portal")]
-    public SpriteRenderer openPortalSpriteRenderer;
-    public float presentDelay;
-    public float rotationSpeed;
-    public AnimationCurve openPortalAnimationCurve; 
-    
-    private float rotation;
-    private Limiter presentLimiter;
-    private Tween openPortalAnimationTween;
-    
     private Sequence openCloseSequence;
     private float particleStartSpeed;
     
-    private static readonly int aspectRatioId = Shader.PropertyToID("_AspectRatio");
     private static readonly int offsetSizeId = Shader.PropertyToID("_Offset_Size");
-    private static readonly int rotationId = Shader.PropertyToID("_Rotation");
     private static readonly int fillId = Shader.PropertyToID("_Fill");
     
     public void Init() {
+        summonedPortal.Init();
+        summonedPortal.gameObject.SetActive(false);
+        
         crystalSpriteRenderer.material = new(crystalSpriteRenderer.sharedMaterial);
-        openPortalSpriteRenderer.material = new(openPortalSpriteRenderer.sharedMaterial);
-        openPortalSpriteRenderer.gameObject.SetActive(false);
         crystalExplosion.SetActive(false);
         
         crystalSpriteRenderer.material.SetFloat(fillId, 0f);
@@ -90,12 +80,8 @@ public class Portal : MonoBehaviour {
             portal.crystalExplosion.SetActive(true);
             portal.crystalOscillator.enabled = false;
             
-            portal.openPortalSpriteRenderer.gameObject.SetActive(true);
-            portal.StartAnimating();
-            
-            Tween.Custom(portal, portal.rotationSpeed * 6f, portal.rotationSpeed, 3f, onValueChange: static (portal, speed) => {
-                portal.rotationSpeed = speed;
-            });
+            portal.summonedPortal.gameObject.SetActive(true);
+            portal.summonedPortal.Open();
             
             foreach (Transform fragTrans in portal.crystalFragments) {
                 fragTrans.gameObject.SetActive(true);
@@ -103,14 +89,7 @@ public class Portal : MonoBehaviour {
                 Vector3 endPos = fragTrans.position + Game.RotationVector(randomAngle, 0.3f, 0.4f);
                 AddBounceEffect(fragTrans, endPos, 0.55f, 0.75f);
             }
-            
         });
-        
-        openCloseSequence.Chain(Tween.Custom(this, 0f, 1f, 0.9f, onValueChange: static (portal, comp) => {
-            comp = portal.openPortalAnimationCurve.Evaluate(comp);
-            portal.openPortalSpriteRenderer.material.SetFloat(fillId, comp);
-        }));
-        
         openCloseSequence.Group(Tween.Delay(this, 0.1f, static (portal) => {
             portal.crystalTrans.GetComponent<SpriteRenderer>().enabled = false;
             portal.state = State.Open; 
@@ -120,38 +99,15 @@ public class Portal : MonoBehaviour {
         openCloseSequence.ChainDelay(openDuration);
         
         // Close
-        openCloseSequence.ChainCallback(this, static (portal) => portal.state = State.Closed);
-        openCloseSequence.Chain(Tween.Custom(this, 1f, 0f, 1f, static (portal, comp) => {
-            portal.openPortalSpriteRenderer.material.SetFloat(fillId, comp);
-        }));
         openCloseSequence.ChainCallback(this, static (portal) => {
-            portal.StopAnimating();
-            portal.openPortalSpriteRenderer.gameObject.SetActive(false);
+            portal.state = State.Closed;
+            portal.summonedPortal.Close(activeStateOnComplete: false);
         });
     }
     
-    public void StopClosingSequence() {
+    public void OnPlayerTook() {
         openCloseSequence.Stop();
-    }
-    
-    private void StartAnimating() {
-        openPortalAnimationTween = Tween.Custom(this, 0f, 0f, 1f, cycles: -1, onValueChange: static (portal, _) => {
-            portal.UpdateAnimation();
-        });
-    }
-    
-    private void StopAnimating() {
-        openPortalAnimationTween.Stop();
-    }
-    
-    private void UpdateAnimation() {
-        rotation += rotationSpeed * Time.deltaTime;
-        rotation %= 360f;
-        if (!presentLimiter.TimeHasPassed(presentDelay)) return;
-        
-        openPortalSpriteRenderer.sharedMaterial.SetFloat(aspectRatioId, openPortalSpriteRenderer.sprite.AspectRatio());
-        openPortalSpriteRenderer.sharedMaterial.SetVector(offsetSizeId, openPortalSpriteRenderer.sprite.OffsetAndSizeInTexture());
-        openPortalSpriteRenderer.sharedMaterial.SetFloat(rotationId, rotation);
+        summonedPortal.Close(activeStateOnComplete: false);
     }
 
     private static void AddBounceEffect(Transform trans, Vector3 pos, float minDuration, float maxDuration) {

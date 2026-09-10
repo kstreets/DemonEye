@@ -196,11 +196,8 @@ public partial class Game {
         }
     }
     
-    private List<Portal> activeExitPortals = new();
-    private Portal exitPortalTakenByPlayer;
-    
     private Portal GetExitPortalFromTransform(Transform trans) {
-        foreach (Portal portal in activeExitPortals) {
+        foreach (Portal portal in curRaid.activeExitPortals) {
             if (portal.transform == trans) {
                 return portal;
             }
@@ -212,9 +209,7 @@ public partial class Game {
     private void SpawnInitialExitPortals(Transform exitPortalParent, int exitPortalsCount) {
         Assert.IsTrue(exitPortalsCount > 0, $"{nameof(exitPortalsCount)} needs to be 1 or more");
         
-        activeExitPortals.Clear();
-        exitPortalTakenByPlayer = null;
-        
+        curRaid.activeExitPortals.Clear();
         using var _ = ListPool<Portal>.Get(out List<Portal> possibleExitPortals);
         
         foreach (Transform portalTrans in exitPortalParent) {
@@ -233,7 +228,7 @@ public partial class Game {
             Portal portal = possibleExitPortals[i];
             portal.Init();
             portal.gameObject.SetActive(true);
-            activeExitPortals.Add(portal);
+            curRaid.activeExitPortals.Add(portal);
         }
     }
     
@@ -241,18 +236,8 @@ public partial class Game {
         for (int i = 0; i < 100; i++) {
             Vector2 randomPos = (Vector2)player.position + Random.insideUnitCircle * Random.Range(0.5f, 1.5f);
             if (Physics.OverlapCircle(randomPos, 0.2f, Masks.StaticLevelMask).Count > 0) continue;
-            
-            Transform exitPortalParent = curRaid.mapInstance.exitPortalsParent;
-            int randomSpawnIndex = Random.Range(0, exitPortalParent.childCount);
-            Transform newExitPortalTrans = exitPortalParent.GetChild(randomSpawnIndex);
-            
-            newExitPortalTrans.gameObject.SetActive(true);
-            newExitPortalTrans.position = randomPos;
-            
-            activeExitPortals.Add(newExitPortalTrans.GetComponent<Portal>());
-            
-            Tween.Scale(newExitPortalTrans, 0f, 1f, 0.5f, Ease.OutBack);
-            PlayAudioClip(audio.portalSpawnClip, newExitPortalTrans.position);
+            SpawnEntity(entityPools.expressExitPortal, randomPos, Quaternion.identity).gameObject.GetComponent<SummonedPortal>().Open();
+            PlayAudioClip(audio.portalSpawnClip, randomPos);
             return true;
         }
         return false;

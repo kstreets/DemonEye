@@ -66,11 +66,11 @@ public class MapData : ScriptableObject {
                 }
                 break;
             case PlayModeStateChange.ExitingPlayMode:
-                if (GetInjectedRaidSpawnPattern != null) {
+                if (originalRaidSpawnPattern != null) {
                     spawning = originalRaidSpawnPattern;
                 }
                 break;
-        }     
+        }
     }
     
 #endif
