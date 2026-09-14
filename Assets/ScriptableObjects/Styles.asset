@@ -17,7 +17,7 @@ MonoBehaviour:
   eyeUpgradePlaceholderSprite: {fileID: 203191926, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   simpleEyePlaceholderSprite: {fileID: 198821079, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   commonTextColor: {r: 0.28627452, g: 0.48235294, b: 0.3196935, a: 1}
-  uncommonTextColor: {r: 0.31867796, g: 0.53797925, b: 0.8238993, a: 1}
+  uncommonTextColor: {r: 0.14162803, g: 0.42251694, b: 0.5849056, a: 1}
   rareTextColor: {r: 0.5882353, g: 0.27058825, b: 0.8352941, a: 1}
   epicTextColor: {r: 0.78431374, g: 0.2, b: 0.46666667, a: 1}
   legendaryTextColor: {r: 0.8352941, g: 0.27058825, b: 0.27450982, a: 1}
@@ -27,7 +27,7 @@ MonoBehaviour:
   epicColor: {r: 1, g: 0.6949685, b: 0.8336192, a: 1}
   legendaryColor: {r: 1, g: 0.5251572, b: 0.5251572, a: 1}
   slotRarityAlpha: 1
-  itemPlaceholderColor: {r: 0.25157225, g: 0.22380435, b: 0.22071902, a: 1}
+  itemPlaceholderColor: {r: 0.2578616, g: 0.20990351, b: 0.20191048, a: 1}
   itemCountColor: {r: 0.8930817, g: 0.84533834, b: 0.84533834, a: 1}
   headerTextColor: {r: 0.7490196, g: 0.6627451, b: 0.57254905, a: 1}
   popInTextColor: {r: 1, g: 0.8562826, b: 0.43710685, a: 1}

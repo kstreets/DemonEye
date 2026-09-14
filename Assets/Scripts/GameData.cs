@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Coffee.UIExtensions;
 using Febucci.TextAnimatorForUnity;
 using TMPro;
 using Unity.Cinemachine;
@@ -119,6 +120,7 @@ public class GameData {
         public AnimationCurve pentagramFill;
         public AnimationCurve pentagramItemShake;
         public AnimationCurve questBurn;
+        public AnimationCurve questBurnEmbers;
         public AnimationCurve discoverSlotTimingCurve;
     }
     
@@ -148,6 +150,7 @@ public class GameData {
         public TextMeshProUGUI interactDetails;
         public RectTransform portalArrow;
         public RectTransform damageNumbersParent;
+        public UIParticle screenBurnParticles;
     }
     
     [Serializable]
@@ -274,7 +277,6 @@ public class GameData {
         public ToggleButtonGroup toggleButtonGroup;
         public TraderRepBar traderRepBar;
         public Image scortchedOverlayImage;
-        public ParticleSystem emberParticles;
     }
     
     [Serializable]

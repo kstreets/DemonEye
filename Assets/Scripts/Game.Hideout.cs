@@ -760,9 +760,9 @@ public partial class Game {
         questPackage.questToggleButton.gameObject.SetActive(false);
         questPackage.questUI.completeButton.KeepPressed();
         
-        const float burnTime = 2f;
-        const float scortchFadeTime = 1.8f;
-        const float fadeScortchDelay = 0.3f;
+        const float burnTime = 1.8f;
+        const float scortchFadeTime = 1.6f;
+        const float fadeScortchDelay = 0.6f;
 
         // Animate the black scortched overlay
         float aspect = questsPanel.scortchedOverlayImage.rectTransform.AspectRatio();
@@ -775,14 +775,10 @@ public partial class Game {
             
         // Burn the quest body
         questPackage.questUI.transform.SetAsLastSibling();
-        questPackage.questUI.Burn(burnTime, curves.questBurn);
-        
-        // Play the ember particles
-        questsPanel.emberParticles.Play();
-        questsPanel.emberParticles.transform.parent.SetAsLastSibling();
+        questPackage.questUI.Burn(burnTime, curves.questBurn, curves.questBurnEmbers);
         
         // When done burning, release the quest package. The shader finishes a little early so we modify the duration.
-        Tween.Delay(questPackage, burnTime * 0.85f, static (burningQuestPkg) => {
+        Tween.Delay(questPackage, burnTime, static (burningQuestPkg) => {
             gameInstance.RemoveQuestFromDisplay(burningQuestPkg); 
         });
     }
@@ -823,7 +819,10 @@ public partial class Game {
         );
     }
 
-    private void OnSkillLevelUpButtonPressed(SkillUpgradePath upgradePath, int playerStatLevel) {
+    private void OnSkillLevelUpButtonPressed(SkillLevelUpRow skillRow, SkillUpgradePath upgradePath, int playerStatLevel) {
+        ui.screenBurnParticles.Play();
+        skillRow.Burn(1.5f, curves.questBurn);
+        
         UpgradeStatResult result = CanUpgradeSkill(upgradePath, playerStatLevel);
         if (result == UpgradeStatResult.CantAfford || result == UpgradeStatResult.AtMaxLevel) return;
         
@@ -885,6 +884,8 @@ public partial class Game {
     private enum UpgradeStatResult { CantAfford, Affordable, AtMaxLevel }
     
     private UpgradeStatResult CanUpgradeSkill(SkillUpgradePath upgradePath, int playerSkillLevel) {
+        return UpgradeStatResult.Affordable;
+        
         if (!upgradePath.soulsNeededPerLevel.IndexInRange(playerSkillLevel)) {
             return UpgradeStatResult.AtMaxLevel;
         }

@@ -16,6 +16,7 @@ public class QuestUI : MonoBehaviour {
     public List<QuestObjectiveUI> objectiveUIs;
     public Mask burnMask;
     public Image burnEffectImage;
+    public BurnEdgeEmberSpawner emberSpawner;
     
     private static readonly int dissolveAmountId = Shader.PropertyToID("_DissolveAmount");
     private static readonly int aspectRatioId = Shader.PropertyToID("_AspectRatio");
@@ -54,36 +55,44 @@ public class QuestUI : MonoBehaviour {
         }
     }
     
-    private class BurnData {
+    public class BurnData {
         public Mask burnMask;
         public Image burnEffectImage;
-        public AnimationCurve curve;
+        public BurnEdgeEmberSpawner emberSpawner;
+        public AnimationCurve edgeCurve;
+        public AnimationCurve particleCurve;
     }
     private BurnData burnData = new();
     
-    public void Burn(float duration, AnimationCurve curve) {
+    public void Burn(float duration, AnimationCurve edgeCurve, AnimationCurve particleCurve) {
         float aspectRatio = rectTransform.AspectRatio();
         burnMask.graphic.materialForRendering.SetFloat(aspectRatioId, aspectRatio);
         burnEffectImage.material.SetFloat(aspectRatioId, aspectRatio);
+        emberSpawner.emberParticles.Play();
         
         burnData.burnMask = burnMask;
         burnData.burnEffectImage = burnEffectImage;
-        burnData.curve = curve;
+        burnData.edgeCurve = edgeCurve;
+        burnData.emberSpawner = emberSpawner;
+        burnData.particleCurve = particleCurve;
         
         Tween.Custom(burnData, 0f, 1f, duration, onValueChange: static (data, comp) => {
             Material maskMat = data.burnMask.graphic.materialForRendering;
             Material burnMat = data.burnEffectImage.material;
             Vector4 offsetAndSize = data.burnEffectImage.OffsetAndSizeInTexture();
-            comp = data.curve.Evaluate(comp);
+            float edgeComp = data.edgeCurve.Evaluate(comp);
             
-            maskMat.SetFloat(dissolveAmountId, comp);
-            burnMat.SetFloat(dissolveAmountId, comp);
+            maskMat.SetFloat(dissolveAmountId, edgeComp);
+            burnMat.SetFloat(dissolveAmountId, edgeComp);
             maskMat.SetVector(offsetSizeId, offsetAndSize);
             burnMat.SetVector(offsetSizeId, offsetAndSize);
+            
+            data.emberSpawner.BurnProgress = data.particleCurve.Evaluate(comp);
         })
         .OnComplete(burnData, static (data) => {
             data.burnMask.graphic.materialForRendering.SetFloat(dissolveAmountId, 0f);
             data.burnEffectImage.material.SetFloat(dissolveAmountId, 0f);
+            data.emberSpawner.emberParticles.Stop();
         });
     }
     
