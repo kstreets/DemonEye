@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using PrimeTween;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Pool;
 using Random = UnityEngine.Random;
 
 public partial class Game {
@@ -339,19 +340,32 @@ public partial class Game {
     
     private void SummonEyeUpgradeFromAltar(Collider2D altarCol) {
         Altar altar = altarCol.GetComponent<Altar>();
-        altar.bloodBubbleSpawns.Shuffle();
         
-        float curBubbleSpawnTime = 0f;
+        SpawnEntityOneShot(entityPools.altarSoulSwirl, altar.soulSwirlSpawnPoint.position, Quaternion.identity);
         
-        const int bubbleAnimationLoops = 2;
-        for (int i = 0; i < bubbleAnimationLoops; i++) {
-            foreach (Transform spawnTrans in altar.bloodBubbleSpawns) {
-                float spawnDelay = curBubbleSpawnTime + Random.Range(0.1f, 0.25f);
-                Tween.Delay(spawnTrans, spawnDelay, static (spawnTrans) => { 
-                    gameInstance.SpawnEntityOneShot(gameInstance.entityPools.bloodBubble, spawnTrans.position, spawnTrans.rotation);
-                });
-                curBubbleSpawnTime = spawnDelay;
+        using var _ = ListPool<Transform>.Get(out var bubbleSpawns);
+        int curSpawnIndex = int.MaxValue;
+        const int bubbleCount = 26;
+        
+        for (int i = 0; i < bubbleCount; i++) {
+            if (!altar.bloodBubbleSpawns.IndexInRange(curSpawnIndex)) {
+                curSpawnIndex = 0;
+                altar.bloodBubbleSpawns.Shuffle();
             }
+            bubbleSpawns.Add(altar.bloodBubbleSpawns[curSpawnIndex]);
+            curSpawnIndex++;
+        }
+        
+        const float startBubblesDelay = 0.25f;
+        float curBubbleSpawnTime = startBubblesDelay;
+        
+        for (int i = 0; i < bubbleCount; i++) {
+            float bubbleAcc = curves.altarBubbleRate.Evaluate(i / (float)bubbleCount);
+            float spawnDelay = curBubbleSpawnTime + Random.Range(0.1f, 0.25f) * (1f - bubbleAcc);
+            Tween.Delay(bubbleSpawns[i], spawnDelay, static (spawnTrans) => { 
+                gameInstance.SpawnEntityOneShot(gameInstance.entityPools.bloodBubble, spawnTrans.position, spawnTrans.rotation);
+            });
+            curBubbleSpawnTime = spawnDelay;
         }
         
         Tween.Delay(altar, curBubbleSpawnTime * 0.95f, static (altar) => {

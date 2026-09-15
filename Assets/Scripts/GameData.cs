@@ -69,6 +69,7 @@ public class GameData {
         public GameObject notification;
         public GameObject bloodBubble;
         public GameObject eyeUpgradeReveal;
+        public GameObject altarSoulSwirl;
     }
     
     [Serializable]
@@ -126,6 +127,7 @@ public class GameData {
         public AnimationCurve skillBurn;
         public AnimationCurve skillBurnEmbers;
         public AnimationCurve discoverSlotTimingCurve;
+        public AnimationCurve altarBubbleRate;
     }
     
     [Serializable] 
@@ -357,6 +359,7 @@ public class GameData {
         public EntityPool<Entity> notification;
         public EntityPool<Entity> bloodBubble;
         public EntityPool<Entity> eyeUpgradeReveal;
+        public EntityPool<Entity> altarSoulSwirl;
     }
     
     public class States {

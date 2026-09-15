@@ -18363,6 +18363,7 @@ MonoBehaviour:
     notification: {fileID: 8760356114839281005, guid: d43d8e7b649398e48a228f1b992e9f23, type: 3}
     bloodBubble: {fileID: 3572148981998031263, guid: 610f7a2b979281646bded7f3104b3933, type: 3}
     eyeUpgradeReveal: {fileID: 4553326254823822022, guid: c5302836b68aa364fa728950c016dee4, type: 3}
+    altarSoulSwirl: {fileID: 6295211181386641826, guid: a89d850501e56204d86cca7cd50f8059, type: 3}
   itemTypes:
     quickUse: {fileID: 11400000, guid: 229fbe8e9203e95499f73ff3b9ecfb68, type: 2}
     backpack: {fileID: 11400000, guid: b4838a3d7e08dae4fbca579b80e09e71, type: 2}
@@ -18713,6 +18714,30 @@ MonoBehaviour:
         tangentMode: 34
         weightedMode: 0
         inWeight: 0.33333334
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    altarBubbleRate:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0.18626727
+        outSlope: 0.18626727
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0.07657316
+      - serializedVersion: 3
+        time: 0.88782287
+        value: 1
+        inSlope: 2.1348057
+        outSlope: 2.1348057
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.035633087
         outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2

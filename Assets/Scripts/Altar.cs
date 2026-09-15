@@ -9,6 +9,7 @@ public class Altar : MonoBehaviour {
     public Animator bloodPoolAnimator;
     public ParticleSystem bloodExplosionParticles;
     public List<Transform> bloodBubbleSpawns;
+    public Transform soulSwirlSpawnPoint;
     
     [NonSerialized] public Item summoningItem;
     
