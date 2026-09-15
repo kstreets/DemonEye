@@ -58,6 +58,7 @@ public class QuestUI : MonoBehaviour {
     public class BurnData {
         public Mask burnMask;
         public Image burnEffectImage;
+        public Image scortchedImage;
         public BurnEdgeEmberSpawner emberSpawner;
         public AnimationCurve edgeCurve;
         public AnimationCurve particleCurve;
@@ -68,7 +69,7 @@ public class QuestUI : MonoBehaviour {
         float aspectRatio = rectTransform.AspectRatio();
         burnMask.graphic.materialForRendering.SetFloat(aspectRatioId, aspectRatio);
         burnEffectImage.material.SetFloat(aspectRatioId, aspectRatio);
-        emberSpawner.emberParticles.Play();
+        emberSpawner.Play();
         
         burnData.burnMask = burnMask;
         burnData.burnEffectImage = burnEffectImage;
@@ -92,7 +93,7 @@ public class QuestUI : MonoBehaviour {
         .OnComplete(burnData, static (data) => {
             data.burnMask.graphic.materialForRendering.SetFloat(dissolveAmountId, 0f);
             data.burnEffectImage.material.SetFloat(dissolveAmountId, 0f);
-            data.emberSpawner.emberParticles.Stop();
+            data.emberSpawner.Stop();
         });
     }
     

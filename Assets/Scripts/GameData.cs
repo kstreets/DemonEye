@@ -121,6 +121,8 @@ public class GameData {
         public AnimationCurve pentagramItemShake;
         public AnimationCurve questBurn;
         public AnimationCurve questBurnEmbers;
+        public AnimationCurve skillBurn;
+        public AnimationCurve skillBurnEmbers;
         public AnimationCurve discoverSlotTimingCurve;
     }
     
@@ -150,7 +152,6 @@ public class GameData {
         public TextMeshProUGUI interactDetails;
         public RectTransform portalArrow;
         public RectTransform damageNumbersParent;
-        public UIParticle screenBurnParticles;
     }
     
     [Serializable]

@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: CanvasScorched
-  m_Shader: {fileID: -6465566751694194690, guid: 23538376ee6e27f4aa61473c2a87aa50, type: 3}
+  m_Name: CanvasMaskQuest
+  m_Shader: {fileID: -6465566751694194690, guid: 6824524fc283f134b98da66949aaceec, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -23,6 +23,10 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _AlphaMask:
+        m_Texture: {fileID: 2800000, guid: 1f75a410ea1d7984a8b240d85b081a03, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _AlphaTex:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -53,13 +57,17 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _AspectRatio: 2.609756
+    - _AlphaClip: 0.5
+    - _AspectRatio: 5.923077
     - _ColorMask: 15
+    - _DetailNoiseScale: 126
+    - _DetailStrength: 0.2
+    - _DissolveAmount: 0
+    - _EdgeSize: 0.015
     - _EnableExternalAlpha: 0
-    - _NoiseScale: 180
-    - _NoiseStrength: 0.3
-    - _Opacity: 0
-    - _PixelDensity: 2000
+    - _NoiseScale: 13
+    - _NoiseStrength: 0.5
+    - _PixelDensity: 1800
     - _Stencil: 0
     - _StencilComp: 8
     - _StencilOp: 0
@@ -69,9 +77,10 @@ Material:
     - _UIMaskSoftnessY: 1
     - _ZWrite: 0
     m_Colors:
-    - _BurntColor: {r: 0, g: 0, b: 0, a: 1}
+    - White: {r: 1, g: 1, b: 1, a: 1}
     - _ClipRect: {r: 0, g: 0, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _Offset_Size: {r: 0.3125, g: 0.9375, b: 0.0625, a: 0.0625}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

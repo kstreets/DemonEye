@@ -1,6 +1,5 @@
 using UnityEngine;
 
-[ExecuteAlways]
 [RequireComponent(typeof(ParticleSystem))]
 public class BurnEdgeEmberSpawner : MonoBehaviour {
     
@@ -20,10 +19,21 @@ public class BurnEdgeEmberSpawner : MonoBehaviour {
     [Range(0f, 1f)] public float BurnProgress;
  
     private float _emitAccumulator;
+    private bool _playing;
+    
+    public void Play() {
+        emberParticles?.Play();
+        _playing = true;
+    }
+    
+    public void Stop() {
+        emberParticles?.Stop();
+        _playing = false;  
+    } 
  
     private void Update()
     {
-        if (targetRect == null || emberParticles == null) return;
+        if (targetRect == null || emberParticles == null || !_playing) return;
  
         Vector2 dir = burnDirection.normalized;
         Vector2 perp = new Vector2(-dir.y, dir.x);

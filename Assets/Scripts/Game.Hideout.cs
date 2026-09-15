@@ -760,7 +760,7 @@ public partial class Game {
         questPackage.questToggleButton.gameObject.SetActive(false);
         questPackage.questUI.completeButton.KeepPressed();
         
-        const float burnTime = 1.8f;
+        const float burnTime = 1.4f;
         const float scortchFadeTime = 1.6f;
         const float fadeScortchDelay = 0.6f;
 
@@ -820,34 +820,49 @@ public partial class Game {
     }
 
     private void OnSkillLevelUpButtonPressed(SkillLevelUpRow skillRow, SkillUpgradePath upgradePath, int playerStatLevel) {
-        ui.screenBurnParticles.Play();
-        skillRow.Burn(1.5f, curves.questBurn);
-        
         UpgradeStatResult result = CanUpgradeSkill(upgradePath, playerStatLevel);
         if (result == UpgradeStatResult.CantAfford || result == UpgradeStatResult.AtMaxLevel) return;
         
-        player.state.soulCurrency -= upgradePath.soulsNeededPerLevel[playerStatLevel];
-
-        if (upgradePath == skillUpgradePaths.haste) {
-            player.state.hasteSkillLevel++;
-        }
-        else if (upgradePath == skillUpgradePaths.intellect) {
-            player.state.intellectSkillLevel++;
-        }
-        else if (upgradePath == skillUpgradePaths.lifeBlood) {
-            int prevFullPlayerHealth = FullPlayerHealth();
-            player.state.lifeBloodSkillLevel++;
-            int newFullPlayerHealth = FullPlayerHealth();
-            player.health += newFullPlayerHealth - prevFullPlayerHealth;
-        }
-        else if (upgradePath == skillUpgradePaths.strength) {
-            player.state.strengthSkillLevel++;
-        }
-        
         thisFrame.flags |= FrameFlags.SkillUpgraded;
         
-        SaveGameState();
-        RefreshSkillsPanel();
+        skillRow.levelUpButton.KeepPressed();
+        string restoreText = skillRow.levelUpButton.text.text;
+        skillRow.levelUpButton.text.text = "Leveling...";
+        
+        const float burnAnimationTime = 1.5f;
+        skillRow.Burn(burnAnimationTime, curves.skillBurn, curves.skillBurnEmbers);
+        
+        const float delayBeforeUpgradeHappens = burnAnimationTime * 0.23f;
+        Tween.Delay(delayBeforeUpgradeHappens, () => 
+        {
+            player.state.soulCurrency -= upgradePath.soulsNeededPerLevel[playerStatLevel];
+            
+            if (upgradePath == skillUpgradePaths.haste) {
+                player.state.hasteSkillLevel++;
+            }
+            else if (upgradePath == skillUpgradePaths.intellect) {
+                player.state.intellectSkillLevel++;
+            }
+            else if (upgradePath == skillUpgradePaths.lifeBlood) {
+                int prevFullPlayerHealth = FullPlayerHealth();
+                player.state.lifeBloodSkillLevel++;
+                int newFullPlayerHealth = FullPlayerHealth();
+                player.health += newFullPlayerHealth - prevFullPlayerHealth;
+            }
+            else if (upgradePath == skillUpgradePaths.strength) {
+                player.state.strengthSkillLevel++;
+            }
+        
+            SaveGameState();
+            RefreshSkillsPanel();
+        });
+        
+        const float delayBetweenRapidUpgrades = burnAnimationTime * 0.65f;
+        Tween.Delay(delayBetweenRapidUpgrades, () => 
+        {
+            skillRow.levelUpButton.StopKeepPressed();
+            skillRow.levelUpButton.text.text = restoreText;
+        });
     }
     
     private void RefreshSkillsPanel() {
@@ -884,8 +899,6 @@ public partial class Game {
     private enum UpgradeStatResult { CantAfford, Affordable, AtMaxLevel }
     
     private UpgradeStatResult CanUpgradeSkill(SkillUpgradePath upgradePath, int playerSkillLevel) {
-        return UpgradeStatResult.Affordable;
-        
         if (!upgradePath.soulsNeededPerLevel.IndexInRange(playerSkillLevel)) {
             return UpgradeStatResult.AtMaxLevel;
         }
