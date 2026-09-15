@@ -1021,7 +1021,7 @@ TextureImporter:
       name: decorative_props_30
       rect:
         serializedVersion: 2
-        x: 256
+        x: 275
         y: 287
         width: 13
         height: 11
@@ -2562,11 +2562,11 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 209
-        y: 303
+        y: 302
         width: 32
-        height: 42
+        height: 43
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -2575,6 +2575,116 @@ TextureImporter:
       bones: []
       spriteID: 27321c56f784b84439d7375a21db49c0
       internalID: -16993695087110111
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decorative_props_25
+      rect:
+        serializedVersion: 2
+        x: 244
+        y: 331
+        width: 22
+        height: 10
+      alignment: 9
+      pivot: {x: 0.5, y: -2}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 32170d06be77cc14f98e9ff6ab4da7b7
+      internalID: -4934473219586607067
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decorative_props_28
+      rect:
+        serializedVersion: 2
+        x: 244
+        y: 321
+        width: 22
+        height: 10
+      alignment: 9
+      pivot: {x: 0.5, y: -2}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: aa15155f439c56e4cabece3ad7a3d670
+      internalID: -1605069133019481566
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decorative_props_29
+      rect:
+        serializedVersion: 2
+        x: 244
+        y: 311
+        width: 22
+        height: 10
+      alignment: 9
+      pivot: {x: 0.5, y: -2}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0b9b6c14872bf9540905cc9808dfd87d
+      internalID: 6929415761354185740
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decorative_props_52
+      rect:
+        serializedVersion: 2
+        x: 244
+        y: 301
+        width: 22
+        height: 10
+      alignment: 9
+      pivot: {x: 0.5, y: -2}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 68ebb87f7413826409f426e4d4b7716a
+      internalID: 5199631508323728016
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: decorative_props_55
+      rect:
+        serializedVersion: 2
+        x: 244
+        y: 291
+        width: 22
+        height: 10
+      alignment: 9
+      pivot: {x: 0.5, y: -2}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0f2e013a381908e4f95755135247e536
+      internalID: 1790260422883046622
       vertices: []
       indices: 
       edges: []

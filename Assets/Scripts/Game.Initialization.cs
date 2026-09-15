@@ -77,6 +77,8 @@ public partial class Game {
         entityPools.blast = CreateEntityPool<Entity>(prefabs.blast, 5, null);
         entityPools.lootReveal = CreateEntityPool<Entity>(prefabs.lootReveal, 1, null);
         entityPools.notification = CreateEntityPool<Entity>(prefabs.notification, 2, null);
+        entityPools.bloodBubble = CreateEntityPool<Entity>(prefabs.bloodBubble, 10, null);
+        entityPools.eyeUpgradeReveal = CreateEntityPool<Entity>(prefabs.eyeUpgradeReveal, 1, null);
     }
 
     private void InitGameStates() {

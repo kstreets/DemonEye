@@ -18361,6 +18361,8 @@ MonoBehaviour:
     questSelectionToggle: {fileID: 8186757792818746842, guid: 56d645af1dfcddf4ea2f3a6f6d6974eb, type: 3}
     quest: {fileID: 7601280925113951189, guid: a542f2fd657b8f44d925aa64fa59b3fd, type: 3}
     notification: {fileID: 8760356114839281005, guid: d43d8e7b649398e48a228f1b992e9f23, type: 3}
+    bloodBubble: {fileID: 3572148981998031263, guid: 610f7a2b979281646bded7f3104b3933, type: 3}
+    eyeUpgradeReveal: {fileID: 4553326254823822022, guid: c5302836b68aa364fa728950c016dee4, type: 3}
   itemTypes:
     quickUse: {fileID: 11400000, guid: 229fbe8e9203e95499f73ff3b9ecfb68, type: 2}
     backpack: {fileID: 11400000, guid: b4838a3d7e08dae4fbca579b80e09e71, type: 2}

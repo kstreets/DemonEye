@@ -83,6 +83,8 @@ public class Portal : MonoBehaviour {
             portal.summonedPortal.gameObject.SetActive(true);
             portal.summonedPortal.Open();
             
+            Game.gameInstance.camera.cameraShake.Shake(5f, 0.1f, 0.5f, portal.transform.position, falloffStartRange: 0.7f, falloffDistance: 2f, CameraShake.Falloff.Linear);
+            
             foreach (Transform fragTrans in portal.crystalFragments) {
                 fragTrans.gameObject.SetActive(true);
                 float randomAngle = Random.Range(0, 2) == 0 ? Random.Range(-40f, 0f) : Random.Range(-140f, -180f);

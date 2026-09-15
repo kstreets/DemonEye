@@ -85,10 +85,8 @@ public partial class Game {
                 EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), $"{soulsPrice} Souls");
                 if (input.interact.WasPressedThisFrame() && player.state.soulCurrency >= soulsPrice) {
                     thisFrame.flags |= GameData.FrameFlags.SummonedUpgrade;
+                    SummonEyeUpgradeFromAltar(col);
                     player.state.soulCurrency -= soulsPrice;
-                    Item dropItem = GetItemFromDropPool(dropPools.eyeUpgrades);
-                    Entity item = SpawnItemAsEntity(dropItem, 1, OffsetY(col.transform.position, 0.2f), Quaternion.identity);
-                    item.spriteRenderer.sortingOrder = 1;
                     col.enabled = false;
                 }
             }
@@ -337,6 +335,47 @@ public partial class Game {
     
     private void StopSearchingSoundLoop() {
         StopAudioClip(curRaid.data.interactions.activeSearchingLoopClip);
+    }
+    
+    private void SummonEyeUpgradeFromAltar(Collider2D altarCol) {
+        Altar altar = altarCol.GetComponent<Altar>();
+        altar.bloodBubbleSpawns.Shuffle();
+        
+        float curBubbleSpawnTime = 0f;
+        
+        const int bubbleAnimationLoops = 2;
+        for (int i = 0; i < bubbleAnimationLoops; i++) {
+            foreach (Transform spawnTrans in altar.bloodBubbleSpawns) {
+                float spawnDelay = curBubbleSpawnTime + Random.Range(0.1f, 0.25f);
+                Tween.Delay(spawnTrans, spawnDelay, static (spawnTrans) => { 
+                    gameInstance.SpawnEntityOneShot(gameInstance.entityPools.bloodBubble, spawnTrans.position, spawnTrans.rotation);
+                });
+                curBubbleSpawnTime = spawnDelay;
+            }
+        }
+        
+        Tween.Delay(altar, curBubbleSpawnTime * 0.95f, static (altar) => {
+            altar.bloodPoolAnimator.Play(Altar.bloodDrainAnimHash);
+        });
+        
+        Tween.Delay(altar, curBubbleSpawnTime, static (altar) => {
+            altar.bloodExplosionParticles.Play();
+            gameInstance.camera.cameraShake.Shake(5f, 0.1f, 0.5f, altar.transform.position, falloffStartRange: 0.5f, falloffDistance: 1.5f, CameraShake.Falloff.Linear);
+            
+            altar.summoningItem = gameInstance.GetItemFromDropPool(gameInstance.dropPools.eyeUpgrades);
+            Entity item = gameInstance.SpawnItemAsEntity(altar.summoningItem, 1, altar.transform.position, Quaternion.identity);
+            item.spriteRenderer.sortingOrder = 1;
+            
+            Vector3 endPos = altar.transform.position.Offset(y: 0.21f);
+            Tween.Position(item.trans, endPos, 0.12f, Ease.OutBack);
+            Tween.Scale(item.trans, 0f, 1f, 0.16f, Ease.OutBack);
+            
+            Tween.Delay(altar, 0.12f, static (altar) => {
+                Entity reveal = gameInstance.SpawnEntityOneShot(gameInstance.entityPools.eyeUpgradeReveal, altar.transform.position.Offset(y: 0.21f), Quaternion.identity);
+                reveal.spriteRenderer.color = gameInstance.config.styles.GetColorForRarity(altar.summoningItem.GetRarity());
+            });
+        });
+        
     }
     
     private void CheckForHotBarInteractions() {

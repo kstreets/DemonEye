@@ -67,6 +67,8 @@ public class GameData {
         public GameObject questSelectionToggle;
         public GameObject quest;
         public GameObject notification;
+        public GameObject bloodBubble;
+        public GameObject eyeUpgradeReveal;
     }
     
     [Serializable]
@@ -353,6 +355,8 @@ public class GameData {
         public EntityPool<Entity> blast;
         public EntityPool<Entity> lootReveal;
         public EntityPool<Entity> notification;
+        public EntityPool<Entity> bloodBubble;
+        public EntityPool<Entity> eyeUpgradeReveal;
     }
     
     public class States {

@@ -17,7 +17,7 @@ MonoBehaviour:
   eyeUpgradePlaceholderSprite: {fileID: 203191926, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   simpleEyePlaceholderSprite: {fileID: 198821079, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   commonTextColor: {r: 0.28627452, g: 0.48235294, b: 0.3196935, a: 1}
-  uncommonTextColor: {r: 0.14162803, g: 0.42251694, b: 0.5849056, a: 1}
+  uncommonTextColor: {r: 0.15990263, g: 0.5082016, b: 0.6603774, a: 1}
   rareTextColor: {r: 0.5882353, g: 0.27058825, b: 0.8352941, a: 1}
   epicTextColor: {r: 0.78431374, g: 0.2, b: 0.46666667, a: 1}
   legendaryTextColor: {r: 0.8352941, g: 0.27058825, b: 0.27450982, a: 1}
