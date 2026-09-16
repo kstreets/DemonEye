@@ -100,7 +100,7 @@ public partial class Game {
             slotUI.itemUI.placeholderSprite = config.styles.quickUsePlaceholderSprite;
         }
         
-        const int stashInventorySize = 40;
+        const int stashInventorySize = 45;
         SpawnUiSlots(stashPanel.inventoryParent, stashInventorySize);
         inventories.stash = CreateInventory(stashPanel.inventoryParent, stashInventorySize);
        
