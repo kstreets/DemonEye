@@ -48,7 +48,7 @@ public partial class Game {
     
     public enum PlayerStat {
         BleedResist, CarryCapacity, CritChance, CritMulti, DamageMulti, FireratePercentage, Health, 
-        HealingAmount, HealingSpeed, LootingSpeed, MovementSpeedPercentage, ProjectileCount, RangePercentage,
+        HealingOnRaidExit, HealingSpeed, LootingSpeed, MovementSpeedPercentage, ProjectileCount, RangePercentage,
     }
     
     private static class PlayerAnimations {
@@ -88,6 +88,7 @@ public partial class Game {
     private void DeinitPlayer() {
         player.bleeding = false;
         playerPanel.previewImage.sprite = player.defaultPlayerPreviewSprite;
+        HealPlayer((int)GetAbsoluteStat(PlayerStat.HealingOnRaidExit));
     }
     
     private void PlayerOnEnemyDeath(Enemy enemy) {
@@ -323,8 +324,8 @@ public partial class Game {
 
     private void HavePlayerConsumeItem(Inventory fromInventory, int slotIndex) {
         if (player.isHealingOverTime || player.isConsumingItem) return;
+        
         ConsumableItem item = fromInventory.slots[slotIndex].itemInstance.ItemRef as ConsumableItem;
-
         if (!item) return;
         
         bool itemHeals = item.healingAmount > 0;
@@ -363,7 +364,8 @@ public partial class Game {
         
         player.consumption.tween = Tween.Delay(item, actionDelay, static (item) => {
             if (item.healingAmount > 0) {
-                gameInstance.HealPlayer(item.healingAmount, item.healingDuration);
+                float healingDuration = gameInstance.InRaid ? item.healingDuration : 0f; // Instant healing while not in raid
+                gameInstance.HealPlayer(item.healingAmount, healingDuration);
             }
             if (item.bandageAmount > 0) {
                 player.bleeding = false;
@@ -404,6 +406,9 @@ public partial class Game {
         }
         
         Assert.IsFalse(player.isHealingOverTime, "Player is already healing over time, only 1 healing over time can be active");
+        
+        float durationSkillReduction = (duration * GetAbsoluteStat(PlayerStat.HealingSpeed)) - duration;  
+        duration -= durationSkillReduction;
         
         player.healing.healingGiven = 0;
         player.healing.targetHealing = healing;
@@ -480,9 +485,9 @@ public partial class Game {
             PlayerStat.CritMulti       => player.state.intellectSkillLevel,
             PlayerStat.ProjectileCount => player.state.intellectSkillLevel,
             
-            PlayerStat.Health        => player.state.lifeBloodSkillLevel,
-            PlayerStat.HealingAmount => player.state.lifeBloodSkillLevel,
-            PlayerStat.HealingSpeed  => player.state.lifeBloodSkillLevel,
+            PlayerStat.Health            => player.state.lifeBloodSkillLevel,
+            PlayerStat.HealingOnRaidExit => player.state.lifeBloodSkillLevel,
+            PlayerStat.HealingSpeed      => player.state.lifeBloodSkillLevel,
             
             PlayerStat.BleedResist   => player.state.strengthSkillLevel,
             PlayerStat.DamageMulti   => player.state.strengthSkillLevel,
@@ -508,7 +513,8 @@ public partial class Game {
             PlayerStat.MovementSpeedPercentage => 1f,
             PlayerStat.ProjectileCount         => 1f,
             PlayerStat.RangePercentage         => 1f,
-            _                                   => 0f, 
+            PlayerStat.HealingSpeed            => 1f,
+            _                                  => 0f, 
         };
         return startingValue + GetPlayerStatAdjustment(stat);
     }
@@ -521,7 +527,7 @@ public partial class Game {
             PlayerStat.DamageMulti             => GetPlayerStatLevel(PlayerStat.DamageMulti) * config.gameplay.damageMultiplierIncPerLevel,
             PlayerStat.FireratePercentage      => GetPlayerStatLevel(PlayerStat.FireratePercentage) * config.gameplay.firerateIncPerLevel,
             PlayerStat.Health                  => GetPlayerStatLevel(PlayerStat.Health) * config.gameplay.healthIncPerLevel,
-            PlayerStat.HealingAmount           => GetPlayerStatLevel(PlayerStat.HealingAmount) * config.gameplay.healingIncPerLevel,
+            PlayerStat.HealingOnRaidExit       => GetPlayerStatLevel(PlayerStat.HealingOnRaidExit) * config.gameplay.healingIncOnRaidExitPerLevel,
             PlayerStat.HealingSpeed            => GetPlayerStatLevel(PlayerStat.HealingSpeed) * config.gameplay.healingSpeedIncPerLevel,
             PlayerStat.LootingSpeed            => GetPlayerStatLevel(PlayerStat.LootingSpeed) * config.gameplay.lootingSpeedIncPerLevel,
             PlayerStat.MovementSpeedPercentage => GetPlayerStatLevel(PlayerStat.MovementSpeedPercentage) * config.gameplay.movementSpeedIncPerLevel,

@@ -808,9 +808,9 @@ public partial class Game {
             $"{DisplayIncrease(config.gameplay.projectileCountIncPerLevel)} Projectile Count"
         );
         skillsPanel.panel.lifeBloodSkillRow.Init(skillUpgradePaths.lifeBlood.MaxLevel, 
-            $"{DisplayIncrease(config.gameplay.healthIncPerLevel)} Health\n" +
-            $"{DisplayProbIncrease(config.gameplay.healingSpeedIncPerLevel)} Healing Speed\n" +
-            $"{DisplayProbIncrease(config.gameplay.healingIncPerLevel)} Healing Amount"
+            $"{DisplayIncrease(config.gameplay.healthIncPerLevel)} Max Health\n" +
+            $"{DisplayIncrease(config.gameplay.healingIncOnRaidExitPerLevel)} Healing on Extraction\n" +
+            $"{DisplayProbIncrease(config.gameplay.healingSpeedIncPerLevel)} Healing Speed"
         );
         skillsPanel.panel.strengthSkillRow.Init(skillUpgradePaths.strength.MaxLevel, 
             $"{DisplayProbIncrease(config.gameplay.bleedResistIncPerLevel)} Bleed Resist\n" +
@@ -875,8 +875,8 @@ public partial class Game {
         pStats.damageRow.statValueText.text = DisplayMultiplierNoColor(GetPlayerStat(PlayerStat.DamageMulti));
         pStats.firerateRow.statValueText.text = DisplayProbNoColor(GetPlayerStat(PlayerStat.FireratePercentage));
         pStats.healthRow.statValueText.text = ((int)(GetPlayerStat(PlayerStat.Health))).ToString();
-        pStats.healingAmountRow.statValueText.text = DisplayIncrease(GetPlayerStatAdjustment(PlayerStat.HealingAmount));
-        pStats.healingSpeedRow.statValueText.text = DisplayProbIncrease(GetPlayerStatAdjustment(PlayerStat.HealingSpeed));
+        pStats.healingOnRaidExitRow.statValueText.text = ((int)(GetPlayerStat(PlayerStat.HealingOnRaidExit))).ToString();
+        pStats.healingSpeedRow.statValueText.text = DisplayProbNoColor(GetPlayerStat(PlayerStat.HealingSpeed));
         pStats.lootingSpeedRow.statValueText.text = DisplayProbNoColor(GetPlayerStat(PlayerStat.LootingSpeed));
         pStats.movementSpeedRow.statValueText.text = DisplayProbNoColor(GetPlayerStat(PlayerStat.MovementSpeedPercentage));
         pStats.projectileCountRow.statValueText.text = DisplayNumberNoColor(GetPlayerStat(PlayerStat.ProjectileCount));

@@ -253,10 +253,6 @@ public partial class Game {
         Color boostedColor = config.styles.increaseDescColor;
         EquipedStatsPanel equipedStatsPanel = playerPanel.equipedStatsPanel;
         
-        equipedStatsPanel.bleedResistText.text = Boosted(PlayerStat.BleedResist) ? 
-            DisplayProb(GetAbsoluteStat(PlayerStat.BleedResist), boostedColor) : 
-            DisplayProbNoColor(GetAbsoluteStat(PlayerStat.BleedResist));
-        
         equipedStatsPanel.critChanceText.text = Boosted(PlayerStat.CritChance) ? 
             DisplayProb(GetAbsoluteStat(PlayerStat.CritChance), boostedColor) :
             DisplayProbNoColor(GetAbsoluteStat(PlayerStat.CritChance));

@@ -41,7 +41,7 @@ public class GameplayConfig : ScriptableObject {
     public float damageMultiplierIncPerLevel;
     public float firerateIncPerLevel;
     public int healthIncPerLevel;
-    public int healingIncPerLevel;
+    public int healingIncOnRaidExitPerLevel;
     public float healingSpeedIncPerLevel;
     public float lootingSpeedIncPerLevel;
     public float movementSpeedIncPerLevel;

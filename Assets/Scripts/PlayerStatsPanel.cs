@@ -9,7 +9,7 @@ public class PlayerStatsPanel : MonoBehaviour {
     public PlayerStatRow damageRow;
     public PlayerStatRow firerateRow;
     public PlayerStatRow healthRow;
-    public PlayerStatRow healingAmountRow;
+    public PlayerStatRow healingOnRaidExitRow;
     public PlayerStatRow healingSpeedRow;
     public PlayerStatRow lootingSpeedRow;
     public PlayerStatRow movementSpeedRow;

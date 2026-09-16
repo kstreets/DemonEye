@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class EquipedStatsPanel : MonoBehaviour {
     
-    public TextMeshProUGUI bleedResistText;
     public TextMeshProUGUI critChanceText;
     public TextMeshProUGUI critMultiText;
     public TextMeshProUGUI damageText;

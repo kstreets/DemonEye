@@ -37,8 +37,8 @@ MonoBehaviour:
   damageMultiplierIncPerLevel: 0.05
   firerateIncPerLevel: 0.02
   healthIncPerLevel: 10
-  healingIncPerLevel: 10
-  healingSpeedIncPerLevel: 0.05
+  healingIncOnRaidExitPerLevel: 6
+  healingSpeedIncPerLevel: 0.03
   lootingSpeedIncPerLevel: 0.05
   movementSpeedIncPerLevel: 0.01
   projectileCountIncPerLevel: 0.25
