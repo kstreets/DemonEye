@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Coffee.UIExtensions;
 using Febucci.TextAnimatorForUnity;
 using TMPro;
 using Unity.Cinemachine;
@@ -17,6 +16,7 @@ public class GameData {
     public class Config {
         public StartingItemsConfig startingItems;
         public Styles styles;
+        public EnemyColors enemyColors;
         public GameplayConfig gameplay;
         public Trader trader;
         public DemonEyeLevels demonEyeLevels;

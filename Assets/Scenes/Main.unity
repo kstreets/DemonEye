@@ -18313,6 +18313,7 @@ MonoBehaviour:
   config:
     startingItems: {fileID: 11400000, guid: 289cab2c4c800154ebe376a64e8eb57a, type: 2}
     styles: {fileID: 11400000, guid: f4b4ae74a1e122340bf1d9d4fa5ab586, type: 2}
+    enemyColors: {fileID: 11400000, guid: a9f664ece90c23947be476acace5664c, type: 2}
     gameplay: {fileID: 11400000, guid: 047f9f114e4a4a540874b19b32b4a4f9, type: 2}
     trader: {fileID: 11400000, guid: bf186d98193cfd144a3ea37342a49246, type: 2}
     demonEyeLevels: {fileID: 11400000, guid: 13f25dc6c6512d14c88e6f7ece88a657, type: 2}

@@ -71,10 +71,6 @@ public partial class Game {
             }
         }
                     
-        Entity bloodSplatterEntity = SpawnEntity(entityPools.bloodSplatter, deadEnemy.position, Quaternion.identity);
-        DestroyEntity(bloodSplatterEntity, CurrentClipLength(bloodSplatterEntity.animator));
-        
-        PlayAudioClip(audio.bloodBurstClip, deadEnemy.position);
         PlayerOnEnemyDeath(deadEnemy);
         
         if (!thisFrame.enemyKillCount.TryAdd(deadEnemy.data, 1)) {
@@ -197,9 +193,14 @@ public partial class Game {
                 deadEnemy.collider.enabled = false;
                 
                 const float deathDelay = 0.03f;
-                Delay(deadEnemy, deathDelay, static (deadEnemy) => gameInstance.OnEnemyDeath(deadEnemy));
-                DissolveAndDestroy(deadEnemy, 0.6f);
+                Delay(deadEnemy, deathDelay, static (deadEnemy) => {
+                    Game game = gameInstance;
+                    game.SpawnEntityOneShot(game.entityPools.bloodSplatter, deadEnemy.position, Quaternion.identity);
+                    game.PlayAudioClip(game.audio.bloodBurstClip, deadEnemy.position);
+                    game.OnEnemyDeath(deadEnemy);
+                });
                 
+                DissolveAndDestroy(deadEnemy, 0.6f, config.enemyColors.enemyDissolveBloodColor);
                 enemies.RemoveAt(i);
             }
         }
@@ -228,6 +229,8 @@ public partial class Game {
                 Delay(collidedWithEnemy, deathDelay, static (deadEnemy) => gameInstance.OnEnemyDeath(deadEnemy));
                 enemies.Remove(collidedWithEnemy);
                 collidedWithEnemy.collider.enabled = false;
+                DissolveAndDestroy(collidedWithEnemy, 0.8f, config.enemyColors.enemyDissolvePetrifyColor);
+                camera.cameraShake.Shake(2f, 0.05f, 0.15f);
                 
                 List<Collider2D> targetEnemies = Physics.OverlapCircle(player.position, 12f, Masks.EnemyMask);
 

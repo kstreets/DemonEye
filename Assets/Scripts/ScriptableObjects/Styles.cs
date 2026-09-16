@@ -50,7 +50,7 @@ public class Styles : ScriptableObject {
     public Color hemorrhageDamageColor;
     public Color poisonDamageColor;
     public Color playerDamageColor;
-
+    
     public Color increaseDescColor;
     public Color decreaseDescColor;
     public Color timeDescColor;

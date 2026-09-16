@@ -241,8 +241,6 @@ public partial class Game {
         entity.SetEffect(EffectsIndicies.HitFlash, tween);
     }
 
-    private static int poisonedPropertyId = Shader.PropertyToID("_Poisoned");
-    
     public struct PoisonedEffect {
         public Entity poisonDebuffEntity;
     }
@@ -257,14 +255,9 @@ public partial class Game {
         
         entity.GetEffect(EffectsIndicies.Poisoned).Stop();
         
-        entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
-        entity.matPropertyBlock.SetFloat(poisonedPropertyId, 1);
-        entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
-
+        SetHSVColorEffect(entity, config.enemyColors.poisonHSV);
         Tween tween = Delay(entity, duration, static entity => {
-            entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
-            entity.matPropertyBlock.SetFloat(poisonedPropertyId, 0);
-            entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
+            gameInstance.ClearHSVColorEffect(entity);
             gameInstance.DestroyEntity(entity.poisonedEffect.poisonDebuffEntity);
         });
         
@@ -272,17 +265,28 @@ public partial class Game {
     }
     
     public void AddPetrifyEffect(Entity entity, float duration) {
-        entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
-        entity.matPropertyBlock.SetFloat(poisonedPropertyId, 1);
-        entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
-
-        Tween tween = Delay(entity, duration, static entity => {
-            entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
-            entity.matPropertyBlock.SetFloat(poisonedPropertyId, 0);
-            entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
-        });
-        
+        SetHSVColorEffect(entity, config.enemyColors.petrifiedHSV);
+        Tween tween = Delay(entity, duration, static entity => gameInstance.ClearHSVColorEffect(entity));
         entity.SetEffect(EffectsIndicies.Petrify, tween);
+    }
+    
+    private static int hsvColorPropertyId = Shader.PropertyToID("_HSVColor");
+    private static int hsvChannelMaskPropertyId = Shader.PropertyToID("_HSVChannelMask");
+    
+    private void ClearHSVColorEffect(Entity entity) {
+        SetHSVColorEffect(entity, Vector3.zero);
+    }
+    
+    private void SetHSVColorEffect(Entity entity, Vector3 hsvColor) {
+        Vector3 channelMask = hsvColor;
+        channelMask.x = hsvColor.x > Mathf.Epsilon ? hsvColor.x : 0;
+        channelMask.y = hsvColor.y > Mathf.Epsilon ? hsvColor.y : 0;
+        channelMask.z = hsvColor.z > Mathf.Epsilon ? hsvColor.z : 0;
+        
+        entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
+        entity.matPropertyBlock.SetVector(hsvColorPropertyId, hsvColor);
+        entity.matPropertyBlock.SetVector(hsvChannelMaskPropertyId, channelMask);
+        entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
     }
     
     public struct BounceEffect {
@@ -362,12 +366,14 @@ public partial class Game {
     
     
     private static int dissolvePropertyId = Shader.PropertyToID("_Dissolve");
+    private static int dissolveColorPropertyId = Shader.PropertyToID("_DissolveColor");
     private static int dissolveAspectRatioPropertyId = Shader.PropertyToID("_AspectRatio");
     
-    private void DissolveAndDestroy(Entity entity, float duration) {
+    private void DissolveAndDestroy(Entity entity, float duration, Color insideColor) {
         if (entity.GetEffect(EffectsIndicies.Dissolve).isAlive) return;
         
         entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
+        entity.matPropertyBlock.SetColor(dissolveColorPropertyId, insideColor);
         entity.matPropertyBlock.SetFloat(dissolveAspectRatioPropertyId, entity.spriteRenderer.sprite.AspectRatio());
         entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
         
