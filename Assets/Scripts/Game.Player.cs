@@ -233,12 +233,9 @@ public partial class Game {
         }
         
         if (demonEye.equiped.blast.TryGetValue(out var blast) && player.consecutiveShotCount > 0 && player.consecutiveShotCount % blast.numshotsUntilOverheat == 0) {
-            Vector2 spawnPos = OffsetY(player.position, 0.1f);
-            
-            Entity expEntity = SpawnEntity(entityPools.blast, spawnPos, Quaternion.identity); 
-            DestroyEntity(expEntity, CurrentClipLength(expEntity.animator));
-            
-            List<Collider2D> cols = Physics.OverlapCircle(spawnPos, blast.radius, Masks.EnemyMask);
+            Vector2 spawnPos = OffsetY(player.position, 0.25f);
+            SpawnEntityOneShot(entityPools.blast, spawnPos, Quaternion.identity); 
+            List<Collider2D> cols = Physics.OverlapCircle(player.position, blast.radius, Masks.EnemyMask);
             foreach (Collider2D col in cols) {
                 Enemy enemy = entities.lookup[col.gameObject] as Enemy;
                 int damage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(enemy) * blast.damageMulti);
