@@ -800,7 +800,7 @@ public partial class Game {
         skillsPanel.panel.hasteSkillRow.Init(skillUpgradePaths.haste.MaxLevel, 
             $"{DisplayProbIncrease(config.gameplay.movementSpeedIncPerLevel)} Movement Speed\n" +
             $"{DisplayProbIncrease(config.gameplay.lootingSpeedIncPerLevel)} Looting Speed\n" +
-            $"{DisplayProbIncrease(config.gameplay.firerateIncPerLevel)} Firerate"
+            $"{DisplayProbIncrease(config.gameplay.firerateIncPerLevel)} Rate of Fire"
         );
         skillsPanel.panel.intellectSkillRow.Init(skillUpgradePaths.intellect.MaxLevel, 
             $"{DisplayProbIncrease(config.gameplay.critChanceIncPerLevel)} Critical Strike Chance\n" +

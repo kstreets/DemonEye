@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 29fbcd3214194ec4ab46073d5d754df6, type: 3}
-  m_Name: Petrify
+  m_Name: SoulVolley
   m_EditorClassIdentifier: Assembly-CSharp::PetrifyEyeUpgrade
   uuid: -11790133
-  displayName: Petrify
+  displayName: Soul Volley
   inventorySprite: {fileID: -1678527319, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   dropSprite: {fileID: 0}
   pickupRadius: 0.07
@@ -46,6 +46,7 @@ MonoBehaviour:
   weight: 0
   description: 
   relativeMechanicDesc: {fileID: 0}
-  probability: 0.06
-  duration: 10000
-  volleyCount: 10
+  styles: {fileID: 11400000, guid: f4b4ae74a1e122340bf1d9d4fa5ab586, type: 2}
+  volleyCount: 8
+  soulsNeededPerVolley: 15
+  projDamageMultiplier: 1.5

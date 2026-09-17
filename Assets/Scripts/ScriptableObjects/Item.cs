@@ -116,7 +116,7 @@ public class Item : UuidScriptableObject  {
             if (!Mathf.Approximately(critChance, 0f))         desc += $"\n{DisplayProbIncDec(GetCritChance(stackCount))} Crit Chance";
             if (!Mathf.Approximately(critMultiplier, 0f))     desc += $"\n{DisplayMultiplierIncDec(GetCritMultiplier(stackCount))} Crit Multiplier";
             if (!Mathf.Approximately(damageMultiplier, 0f))   desc += $"\n{DisplayMultiplierIncDec(GetDamageMultiplier(stackCount))} Damage";
-            if (!Mathf.Approximately(fireratePercentage, 0f)) desc += $"\n{DisplayProbIncDec(GetFireratePercentage(stackCount))} Firerate";
+            if (!Mathf.Approximately(fireratePercentage, 0f)) desc += $"\n{DisplayProbIncDec(GetFireratePercentage(stackCount))} Rate of Fire";
             if (!Mathf.Approximately(projectileCount, 0f))    desc += $"\n{DisplayIncDec(GetProjectileCount(stackCount))} Projectile Count";
             if (!Mathf.Approximately(rangePercentage, 0f))    desc += $"\n{DisplayProbIncDec(GetRangePercentage(stackCount))} Range";
         }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using PrimeTween;
 using TMPro;
@@ -5,6 +6,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 public partial class Game {
     
@@ -16,13 +18,14 @@ public partial class Game {
     private bool ShowingPlayerPanel => playerPanel.panel.gameObject.activeInHierarchy;
     private bool ShowingForgeDetailsPanel => eyeForgeDetailsPanel.panel.gameObject.activeInHierarchy;
     
-    private void InitUI() {
+    private void InitUI(GameState gameState) {
         Cursor.visible = true;
         Cursor.SetCursor(config.styles.cursorTexture, Vector2.zero, CursorMode.Auto);
         
         CloseHideoutUI();
         CloseRaidUI();
         ShowMainMenuUI();
+        InitCurrencyNumbers(gameState);
         ui.menuBackButton.gameObject.SetActive(false);
         ui.largeRaidTextTypewriter.gameObject.SetActive(false);
     }
@@ -189,19 +192,39 @@ public partial class Game {
         playerPanel.playerHalfParent.anchoredPosition = defaultPlayerHalfAnchorPos;
     }
     
-    // Here just so that we don't allocate strings every frame
     private int prevSoulCurrency = int.MinValue;
     private int prevCoinCurrency = int.MinValue;
+    private Sequence soulCurrencySequence;
+    private Sequence coinCurrencySequence;
+    
+    private void InitCurrencyNumbers(GameState gameState) {
+        playerInfo.soulsCurrencyText.text = gameState.playerState.soulCurrency.ToString("N0");
+        playerInfo.coinCurrencyText.text = gameState.playerState.coinCurrency.ToString("N0");
+        prevSoulCurrency = gameState.playerState.soulCurrency;
+        prevCoinCurrency = gameState.playerState.coinCurrency;
+    }
     
     private void UpdateCurrencyNumbers() {
         if (prevSoulCurrency != player.state.soulCurrency) {
-            playerInfo.soulsCurrencyText.text = player.state.soulCurrency.ToString("N0");
+            soulCurrencySequence.Complete();
+            soulCurrencySequence = AnimateCurrency(playerInfo.soulsCurrencyText, prevSoulCurrency, player.state.soulCurrency);
         }
         if (prevCoinCurrency != player.state.coinCurrency) {
-            playerInfo.coinCurrencyText.text = player.state.coinCurrency.ToString("N0");
+            coinCurrencySequence.Complete();
+            coinCurrencySequence = AnimateCurrency(playerInfo.coinCurrencyText, prevCoinCurrency, player.state.coinCurrency);
         }
         prevSoulCurrency = player.state.soulCurrency;
         prevCoinCurrency = player.state.coinCurrency;
+    }
+    
+    public static Sequence AnimateCurrency(TextMeshProUGUI textMesh, int previous, int current) {
+        const float duration = 0.25f;
+        Sequence seq = Sequence.Create();
+        seq.Group(Tween.Custom(textMesh, previous, current, duration, static (textMesh, val) => {
+            textMesh.text = val.ToString("N0");
+        }));
+        seq.Group(Tween.PunchScale(textMesh.transform, Vector3.one * 0.22f, duration * 0.75f));
+        return seq;
     }
     
     private void UpdateInRaidUI() {

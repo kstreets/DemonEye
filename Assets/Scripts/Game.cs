@@ -150,6 +150,7 @@ public partial class Game : MonoBehaviour {
 
     private void OnRaidStateEnter() {
         InitRaid();
+        DemonEyeOnRaidEnter();
     }
 
     private void OnRaidStateExit() {

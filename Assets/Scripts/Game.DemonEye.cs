@@ -38,6 +38,7 @@ public partial class Game {
         public StoppingPowerEyeUpgrade.InstanceData? stoppingPower;
         public ProjectileCountEyeUpgrade.InstanceData? projectileCount;
         public PoisonEyeUpgrade.InstanceData? poison;
+        public OptionalRef<SoulVolleyEyeUpgrade.InstanceData> soulVolley;
         
         public BleedCritAugment.InstanceData? bleedCritAugment;
         public DoubleCritAugment.InstanceData? doubleCritAugment;
@@ -63,11 +64,19 @@ public partial class Game {
         demonEye.equipedItem = null;
     }
     
+    // When starting a raid we want to re-apply the upgrade instances so any upgrade instance's tracking values get reset automatically
+    private void DemonEyeOnRaidEnter() {
+        if (demonEye.equiped != demonEye.empty) {
+            AddDemonEyeUpgradesToInstance(demonEye.equiped);
+        }
+    }
+    
     private void OnEquipDemonEye(DemonEyeInstance newDemonEye, ItemInstance newEyeItemInstance) {
         demonEye.equiped = newDemonEye;
         demonEye.equipedItem = newEyeItemInstance;
         curRaid.data.damaging.Reset();
         thisFrame.flags |= GameData.FrameFlags.DemonEyeChanged;
+        AddDemonEyeUpgradesToInstance(newDemonEye);
     }
 
     public ItemInstance CreateNewDemonEyeItemInstance(string demonEyeName, List<ItemInstance> eyeUpgradeItemInstances) {
@@ -124,15 +133,18 @@ public partial class Game {
             upgradeInstances = equipedUpgrades,
             augmentInstances = equipedAugments,
         };
-        
-        foreach (EquipedUpgradeInstance upgradeInstance in equipedUpgrades) { 
-            upgradeInstance.ApplyToEye(newDemonEye); 
-        }
-        foreach (EquipedAugmentInstance augmentInstance in equipedAugments) { 
-            augmentInstance.ApplyToEye(newDemonEye); 
-        }
+        AddDemonEyeUpgradesToInstance(newDemonEye);
         
         return newDemonEye;
+    }
+    
+    private void AddDemonEyeUpgradesToInstance(DemonEyeInstance demonEyeInstance) {
+        foreach (EquipedUpgradeInstance upgradeInstance in demonEyeInstance.upgradeInstances) { 
+            upgradeInstance.ApplyToEye(demonEyeInstance); 
+        }
+        foreach (EquipedAugmentInstance augmentInstance in demonEyeInstance.augmentInstances) { 
+            augmentInstance.ApplyToEye(demonEyeInstance); 
+        }
     }
     
     private void RegisterDemonEyeInstance(ItemInstance demonEyeItem, DemonEyeInstance demonEyeInstance) {

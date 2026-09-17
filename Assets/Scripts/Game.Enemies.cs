@@ -36,7 +36,6 @@ public partial class Game {
         public OptionalRef<HemorrhageAugment.InstanceData> hemorrhage;
         public OptionalRef<PoisonEyeUpgrade.InstanceData> poison;
         public OptionalRef<SlowEyeUpgrade.InstanceData> slow;
-        public OptionalRef<PetrifyEyeUpgrade.InstanceData> petrify;
         public OptionalRef<KnockBackAugment.InstanceData> knockBack;
     }
     
@@ -92,11 +91,6 @@ public partial class Game {
             Enemy enemy = enemies[i];
             
             if (!enemy.gameObject.activeInHierarchy) continue;
-            
-            if (enemy.petrify.HasValue) {
-                enemy.animator.enabled = false;
-                continue;
-            }
             
             float distFromPlayer = Vector2.Distance(player.Center, enemy.Center);
             enemy.curRunningSumFrameCount++;
@@ -223,34 +217,7 @@ public partial class Game {
             }
             
             Enemy collidedWithEnemy = entities.lookup[closestColToPlayer.gameObject] as Enemy;
-            
-            if (collidedWithEnemy.petrify.HasValue) {
-                const float deathDelay = 0.12f;
-                Delay(collidedWithEnemy, deathDelay, static (deadEnemy) => gameInstance.OnEnemyDeath(deadEnemy));
-                enemies.Remove(collidedWithEnemy);
-                collidedWithEnemy.collider.enabled = false;
-                DissolveAndDestroy(collidedWithEnemy, 0.8f, config.enemyColors.enemyDissolvePetrifyColor);
-                camera.cameraShake.Shake(2f, 0.05f, 0.15f);
-                
-                List<Collider2D> targetEnemies = Physics.OverlapCircle(player.position, 12f, Masks.EnemyMask);
-
-                targetEnemies.Sort((a, b) => {
-                    float distA = (a.transform.position - player.position).sqrMagnitude;
-                    float distB = (b.transform.position - player.position).sqrMagnitude;
-                    return distA.CompareTo(distB);
-                });
-
-                if (targetEnemies.Count > 0) {
-                    int projCount = collidedWithEnemy.petrify.GetValue().volleyCount;
-                    for (int i = 0; i < projCount; i++) {
-                        Enemy enemy = entities.lookup[targetEnemies[i % targetEnemies.Count].gameObject] as Enemy;
-                        SpawnSoulTrackingProjectile(playerPos, enemy);
-                    }
-                }
-            }
-            else {
-                DamagePlayer(collidedWithEnemy.data.collisionDamage, PlayerDamageType.Collision, collidedWithEnemy);
-            }
+            DamagePlayer(collidedWithEnemy.data.collisionDamage, PlayerDamageType.Collision, collidedWithEnemy);
         }
     }
     
@@ -264,11 +231,6 @@ public partial class Game {
     }
     
     private void MoveEnemy(Enemy enemy, bool isAttacking) {
-        if (enemy.petrify.HasValue) {
-            enemy.rigidbody.linearVelocity = Vector3.zero;
-            return;
-        }
-        
         float speed = enemy.data.speed;
         
         if (enemy.knockBack.HasValue) {

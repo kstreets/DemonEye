@@ -923,8 +923,12 @@ public partial class Game {
     }
 
     private void RemoveItemFromInventory(Inventory inventory, int slotIndex) {
-        inventory.slots[slotIndex].itemInstance = null;
-        inventory.slots[slotIndex].ui.ClearItem();
+        ClearInventorySlot(inventory.slots[slotIndex]);
+    }
+    
+    private void ClearInventorySlot(InventorySlot slot) {
+        slot.itemInstance = null;
+        slot.ui.ClearItem();
     }
 
     // Returns the count of items we removed

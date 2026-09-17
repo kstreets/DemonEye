@@ -4,6 +4,7 @@ using PrimeTween;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Pool;
+using Random = UnityEngine.Random;
 
 public partial class Game {
     
@@ -22,11 +23,11 @@ public partial class Game {
         public float curTimeAlive;
         public float distTraveled;
         public Vector2 velocity;
+        public Vector2 initDir;
         public LayerMask layerMask;
         public DemonEyeInstance eyeInstanceSpawnedFrom;
         public Entity sourceEntity;
         public Entity targetEntity;
-        public float targetingAcceleration;
         public List<Entity> ignoreEntities;
     }
     
@@ -84,8 +85,8 @@ public partial class Game {
     }
 
     private void UpdateProjectiles() {
-        UpdateDefaultProjectiles();
         UpdateSoulTrackingProjectiles();
+        UpdateDefaultProjectiles();
     }
     
     private void UpdateDefaultProjectiles() {
@@ -167,29 +168,44 @@ public partial class Game {
         return proj.ignoreEntities?.Contains(entity) ?? false;
     }
     
-    private void SpawnSoulTrackingProjectile(Vector2 spawnPos, Entity targetEntity) {
-        Vector2 initDir = Vector2.up;
-        Quaternion projectileRotation = Quaternion.AngleAxis(Vector2.SignedAngle(Vector2.right, initDir), Vector3.forward);
-        Projectile projectile = SpawnEntity(entityPools.soulProjectile, spawnPos, projectileRotation);
+    private void SpawnSoulTrackingProjectile(Entity targetEntity, int damage, float spawnDelay) {
+        Projectile projectile = SpawnEntity(entityPools.soulProjectile, Vector3.zero, Quaternion.identity);
         projectile.targetEntity = targetEntity;
-        projectile.targetingAcceleration = Mathf.Lerp(60f, 40f, Vector2.Distance(spawnPos, targetEntity.position));
-        entities.soulTrackingProjectiles.Add(projectile);
+        projectile.flatDamage = damage;
+        projectile.gameObject.SetActive(false);
+        
+        Delay(projectile, spawnDelay, static (projectile) => {
+            Vector2 spawnPos = gameInstance.PlayerEyePos;
+            Vector2 dirToTarget = ((Vector2)projectile.targetEntity.Center - spawnPos).normalized; 
+            Vector2 initDir = Vector2.Lerp(Vector2.up, dirToTarget, Random.Range(0.3f, 1f));
+            Quaternion projectileRotation = Quaternion.AngleAxis(Vector2.SignedAngle(Vector2.right, initDir), Vector3.forward);
+            
+            projectile.position = spawnPos;  
+            projectile.rotation = projectileRotation;  
+            projectile.initDir = initDir;
+            // We set this in case it gets switched to a default projectile later when the target enemy dies
+            projectile.lifeTimeDuration = gameInstance.GetProjectileRangeInSeconds();
+            
+            projectile.gameObject.SetActive(true);
+            gameInstance.entities.soulTrackingProjectiles.Add(projectile);
+        });
     }
     
     private void UpdateSoulTrackingProjectiles() {
         for (int i = entities.soulTrackingProjectiles.Count - 1; i >= 0; i--) {
             Projectile proj = entities.soulTrackingProjectiles[i]; 
             
-            if (!EntityIsValid( proj.targetEntity)) {
-                DestroyEntity(proj); 
+            // When the tracking enemy is no longer alive, we keep the projectile going by switching it to a normal projectile
+            if (!EntityIsValid(proj.targetEntity)) {
                 entities.soulTrackingProjectiles.RemoveAt(i);
+                entities.projectiles.Add(proj);
                 continue;
             }
             
             if (Vector2.Distance(proj.position, proj.targetEntity.position) < 0.035f) {
                 DestroyEntity(proj); 
                 entities.soulTrackingProjectiles.RemoveAt(i);
-                DamageEnemy(proj.targetEntity, 20, isCriticalStrike: false);
+                DamageEnemy(proj.targetEntity, proj.flatDamage.Value, isCriticalStrike: false);
                 continue;
             }
             
@@ -198,9 +214,10 @@ public partial class Game {
             float arcT = Mathf.Clamp01(proj.curTimeAlive / arcRampDuration);
             
             Vector2 dirToTarget = (proj.targetEntity.position - proj.position).normalized;
-            Vector2 aimDir = Vector2.Lerp(Vector2.up, dirToTarget, arcT).normalized;
+            Vector2 aimDir = Vector2.Lerp(proj.initDir, dirToTarget, arcT).normalized;
             Vector2 velocity = aimDir * (config.gameplay.projectileSpeed * Time.deltaTime);
             proj.position = proj.position.Offset(x: velocity.x, y: velocity.y);
+            proj.velocity = velocity; // We don't use the velocity here but if it swiches to a normal projectile "it just works"
         }
     }
 

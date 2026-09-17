@@ -442,6 +442,7 @@ public class GameData {
             public InteractionData interactions;
             public TrinketData trinkets;
             public Limiter reteleportLimitter;
+            public int soulsGained;
         }
         public Data data;
     } 

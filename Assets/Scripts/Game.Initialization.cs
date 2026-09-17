@@ -19,8 +19,8 @@ public partial class Game {
         InitGameStates();
         InitMenuNavigation();
         InitHotBar();
-        InitUI();
         
+        InitUI(gameState);
         InitEntities(gameState);
         InitMaps(gameState);
         InitInventories(gameState);

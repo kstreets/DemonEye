@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using PrimeTween;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -16,13 +16,13 @@ public class TransactionPanel : MonoBehaviour {
     [Header("Selling")]
     public Transform sellParent;
     public TextMeshProUGUI sellInfoText;
+    public TextMeshProUGUI coinCurrencyText;
     public ButtonFeel sellButton;
     
     [Header("Purchasing")]
     public Transform purchasingParent;
     public ItemDescPopup purchasingItemDesc;
     public ResourceRequirementList resourceRequirementList;
-    // public List<ResourceRequirement> resourceRequirements;
     public ButtonFeel barterPurchaseButton;
     public ButtonFeel moneyPurchaseButton;
     public GameObject outOfStockNotifier;
@@ -70,12 +70,35 @@ public class TransactionPanel : MonoBehaviour {
         moneyPurchaseButton.text.text = $"Purchase for <sprite=0>{buyPriceString}";
     }
 
+    private int prevSellPrice = int.MinValue; // Makes sure to update initially
+    private Sequence sellPriceSequence;
+    
     public void UpdateSellPrice(int sellPrice) {
         sellParent.gameObject.SetActive(true);
         purchasingParent.gameObject.SetActive(false);
         
-        string sellPriceString = ColorText(sellPrice.ToString("N0"), styles.coinCurrencyColor);
-        sellInfoText.text = $"Sell for <sprite=0>{sellPriceString}";
+        if (prevSellPrice == sellPrice) return;
+        
+        if (sellPrice == 0 && prevSellPrice == int.MinValue) {
+            sellInfoText.text = "Place Items to Sell";
+            coinCurrencyText.gameObject.SetActive(false);
+        }
+        else if (sellPrice == 0) {
+            sellPriceSequence.Complete();
+            sellPriceSequence = AnimateCurrency(coinCurrencyText, prevSellPrice, sellPrice);
+            sellPriceSequence.OnComplete(this, static (transctionPanel) => {
+                transctionPanel.sellInfoText.text = "Place Items to Sell";
+                transctionPanel.coinCurrencyText.gameObject.SetActive(false);
+            });
+        }
+        else {
+            sellInfoText.text = "Sell for <sprite=0>";
+            coinCurrencyText.gameObject.SetActive(true);
+            sellPriceSequence.Complete();
+            sellPriceSequence = AnimateCurrency(coinCurrencyText, prevSellPrice, sellPrice);
+        }
+        
+        prevSellPrice = sellPrice;
     }
 
 }

@@ -35,7 +35,7 @@ public partial class Game {
         public Sprite defaultPlayerPreviewSprite;
         public PlayerState state;
     }
-
+    
     public class PlayerState {
         public int initHealth;
         public int soulCurrency;
@@ -98,7 +98,35 @@ public partial class Game {
                 trinkets.data.activeDuration.Add(speedBoost.duration);
             }
         }
-        player.state.soulCurrency += enemy.data.soulWorthPerKill;
+        
+        int souls = enemy.data.soulWorthPerKill;
+        player.state.soulCurrency += souls;
+        curRaid.data.soulsGained += souls;
+        
+        if (demonEye.equiped.soulVolley.HasValue) {
+            ref var soulVolley = ref demonEye.equiped.soulVolley.GetValue();
+            soulVolley.curSoulsTowardsVolley += souls;
+            
+            if (soulVolley.curSoulsTowardsVolley >= soulVolley.soulsNeededPerVolley) {
+                soulVolley.curSoulsTowardsVolley %= soulVolley.soulsNeededPerVolley; // Keep any overflow
+                
+                List<Collider2D> targetEnemies = Physics.OverlapCircle(player.position, GetProjectileRangeDistance(), Masks.EnemyMask);
+
+                targetEnemies.Sort((a, b) => {
+                    float distA = (a.transform.position - player.position).sqrMagnitude;
+                    float distB = (b.transform.position - player.position).sqrMagnitude;
+                    return distA.CompareTo(distB);
+                });
+
+                if (targetEnemies.Count > 0) {
+                    for (int i = 0; i < soulVolley.volleyCount; i++) {
+                        Enemy targetedEnemy = entities.lookup[targetEnemies[i % targetEnemies.Count].gameObject] as Enemy;
+                        int damage = Mathf.RoundToInt(GetBaseDamage() * soulVolley.damageMultiplier);
+                        SpawnSoulTrackingProjectile(targetedEnemy, damage, i * 0.06f);
+                    }
+                }
+            }
+        }
     }
     
     private void UpdatePlayer() {
@@ -248,7 +276,7 @@ public partial class Game {
     }
     
     private void GetAttackTargets(int targetCount, ref List<Vector3> targets) {
-        float overlapDist = config.gameplay.projectileSpeed * GetProjectileRangeInSeconds();
+        float overlapDist = GetProjectileRangeDistance();
         List<Collider2D> cols = Physics.OverlapCircle(player.position, overlapDist, Masks.TargetableEnemyMask);
         
         if (cols.Count <= 0) {
@@ -597,6 +625,10 @@ public partial class Game {
     
     private float GetProjectileRangeInSeconds() {
         return config.gameplay.rangeInSeconds * GetAbsoluteStat(PlayerStat.RangePercentage);
+    }
+    
+    private float GetProjectileRangeDistance() {
+        return config.gameplay.projectileSpeed * GetProjectileRangeInSeconds();
     }
     
     private void GetEncumberingWeightRange(out int startingWeight, out int endingWeight) {

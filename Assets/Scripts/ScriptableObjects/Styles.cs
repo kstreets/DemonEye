@@ -27,6 +27,7 @@ public class Styles : ScriptableObject {
     public Color popInTextColor;
     
     public Color coinCurrencyColor;
+    public Color soulCurrencyColor;
     public Color inputIconTint;
 
     public Color underWeightColor;

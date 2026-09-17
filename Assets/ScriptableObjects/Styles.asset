@@ -32,6 +32,7 @@ MonoBehaviour:
   headerTextColor: {r: 0.7490196, g: 0.6627451, b: 0.57254905, a: 1}
   popInTextColor: {r: 1, g: 0.8562826, b: 0.43710685, a: 1}
   coinCurrencyColor: {r: 0.95686275, g: 0.6, b: 0.25882354, a: 1}
+  soulCurrencyColor: {r: 0.65882355, g: 0.76470596, b: 0.80392164, a: 1}
   inputIconTint: {r: 0.899371, g: 0.83490443, b: 0.82866573, a: 1}
   underWeightColor: {r: 0.6901961, g: 0.7882353, b: 0.8117647, a: 1}
   startingOverWeightColor: {r: 0.8553459, g: 0.37387756, b: 0.3772212, a: 1}
@@ -50,8 +51,6 @@ MonoBehaviour:
   hemorrhageDamageColor: {r: 0.9559748, g: 0.087179996, b: 0.15755764, a: 1}
   poisonDamageColor: {r: 0.3576005, g: 0.7735849, b: 0.3576005, a: 1}
   playerDamageColor: {r: 0.7798742, g: 0.14388993, b: 0.12016913, a: 1}
-  enemyDissolveBloodColor: {r: 0.9137255, g: 0.25882354, b: 0.17254902, a: 1}
-  enemyDissolvePetrifyColor: {r: 0.41960785, g: 0.29411766, b: 0.30588236, a: 1}
   increaseDescColor: {r: 0.35686275, g: 0.7725491, b: 0.35686275, a: 1}
   decreaseDescColor: {r: 0.8352942, g: 0.27058825, b: 0.27450982, a: 1}
   timeDescColor: {r: 0.7610062, g: 0.45321578, b: 0.380503, a: 1}

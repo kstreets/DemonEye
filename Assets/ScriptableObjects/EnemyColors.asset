@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: EnemyColors
   m_EditorClassIdentifier: Assembly-CSharp::EnemyColors
   enemyDissolveBloodColor: {r: 0.9137255, g: 0.25882354, b: 0.17254902, a: 1}
-  enemyDissolvePetrifyColor: {r: 0.29210794, g: 0.2743364, b: 0.61006284, a: 1}
+  enemyDissolvePetrifyColor: {r: 0.44313726, g: 0.5132333, b: 0.7372549, a: 1}
   poisonHSV: {x: 0.33, y: 0, z: 0}
   petrifiedHSV: {x: 0.69, y: 0.35, z: 0}

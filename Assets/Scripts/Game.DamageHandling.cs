@@ -17,7 +17,10 @@ public partial class Game {
         });
     }
     
-    private void DamageEnemy(Entity enemy, int damage, bool isCriticalStrike) {
+    private void DamageEnemy(Entity enemy, int damage, bool isCriticalStrike, bool useEnemyDamageMultiplier = true) {
+        if (useEnemyDamageMultiplier) {
+            damage = Mathf.RoundToInt(damage * GetDamageMultiplierOnEnemy((Enemy)enemy));
+        }
         enemy.health -= damage;
         AddFlashHitEffect(enemy);
         SpawnDamageNumber(EnemyDamageNumberSpawnPos(enemy), damage, isCriticalStrike ? DamageColor.Crit : DamageColor.Normal);
@@ -39,9 +42,6 @@ public partial class Game {
         var entityLookup = entities.lookup;
         if (entityLookup[entity.gameObject] is not Enemy enemy) return;
         
-        // We don't do anything if the enemy is petrified
-        if (enemy.petrify.HasValue) return;
-        
         /*
         ============== Simple projectile land ===================
         Any projectile with flat damage is deemed to be a simple projectile
@@ -49,7 +49,7 @@ public partial class Game {
         */
         
         if (projectile.flatDamage.HasValue) {
-            DamageEnemy(enemy, projectile.flatDamage.Value, false);
+            DamageEnemy(enemy, projectile.flatDamage.Value, isCriticalStrike: false);
             return;
         }
         
@@ -67,7 +67,7 @@ public partial class Game {
         }
 
         int damage = GetProjectileDamage(projectile, enemy, isCriticalStrike);
-        DamageEnemy(enemy, damage, isCriticalStrike);
+        DamageEnemy(enemy, damage, isCriticalStrike, useEnemyDamageMultiplier: false); // GetProjectileDamage already includes enemy multiplier
         
         DemonEyeInstance eyeInstance = projectile.eyeInstanceSpawnedFrom;
         foreach (EquipedUpgradeInstance modInstance in eyeInstance.upgradeInstances) {
@@ -76,9 +76,6 @@ public partial class Game {
         foreach (EquipedAugmentInstance augmentInstance in eyeInstance.augmentInstances) {
             augmentInstance.ApplyToEnemy(enemy);
         }
-        
-        // If it has petrify its because it just got added and nothing special should happen
-        if (enemy.petrify.HasValue) return;
         
         if (eyeInstance.explosion.TryGetValue(out var explosion) && RollProbability(explosion.probability)) {
             Vector2 expSpawnPos = GetExplosionPosition(projectile, enemy);

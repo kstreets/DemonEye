@@ -279,9 +279,9 @@ public partial class Game {
     
     private void SetHSVColorEffect(Entity entity, Vector3 hsvColor) {
         Vector3 channelMask = hsvColor;
-        channelMask.x = hsvColor.x > Mathf.Epsilon ? hsvColor.x : 0;
-        channelMask.y = hsvColor.y > Mathf.Epsilon ? hsvColor.y : 0;
-        channelMask.z = hsvColor.z > Mathf.Epsilon ? hsvColor.z : 0;
+        channelMask.x = hsvColor.x > Mathf.Epsilon ? 1 : 0;
+        channelMask.y = hsvColor.y > Mathf.Epsilon ? 1 : 0;
+        channelMask.z = hsvColor.z > Mathf.Epsilon ? 1 : 0;
         
         entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
         entity.matPropertyBlock.SetVector(hsvColorPropertyId, hsvColor);
@@ -392,6 +392,10 @@ public partial class Game {
     }
     
     private Tween Delay<T>(T entity, float delay, Action<T> callback) where T: Entity {
+        if (delay <= 0f) {
+            callback?.Invoke(entity);
+            return default;
+        }
         return Tween.Delay(entity, delay, onComplete: callback, onValidate: EntityIsValid);
     }
     

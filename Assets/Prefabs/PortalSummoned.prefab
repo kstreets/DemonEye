@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 2770450147491380849}
   - component: {fileID: 3139670199153717026}
   m_Layer: 0
-  m_Name: Portal_Summoned
+  m_Name: PortalSummoned
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
