@@ -137,7 +137,7 @@ public class GameData {
         public ItemDescPopup itemDescPopupInv;
         public ItemDescPopup itemDescPopupPickup;
         public MechanicDescPopup mechanicDescPopup;
-        public UIElementPopup uiElementPopup;
+        public UIHintPopUp hintPopup;
         public RectTransform hideoutParent;
         public RectTransform hotBarParent;
         public RectTransform notificationParent;
@@ -156,6 +156,9 @@ public class GameData {
         public TextMeshProUGUI interactDetails;
         public RectTransform portalArrow;
         public RectTransform damageNumbersParent;
+        
+        public RectTransform quickUseHeaderText;
+        public RectTransform stashPanelHeaderText;
     }
     
     [Serializable]

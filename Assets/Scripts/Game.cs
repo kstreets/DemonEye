@@ -115,6 +115,7 @@ public partial class Game : MonoBehaviour {
     private void OnHideoutStateUpdate() {
         UpdateHideoutNotifiers();
         UpdateInventory();
+        UpdateUIHints();
         UpdateTransactionUI();
         UpdateForgeState();
         UpdateForgeInfoPanel();
@@ -159,7 +160,7 @@ public partial class Game : MonoBehaviour {
         CloseLootInventory();
         HideInventoryItemPopup();
         HideInteractionPopup();
-        HideUIElementPopup();
+        HideHint();
         CloseRaidUI();
         StopAllAudioClips();
         TraderOnExitRaid();

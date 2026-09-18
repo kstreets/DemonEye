@@ -446,8 +446,6 @@ public partial class Game {
         }
 
         ButtonFeel forgeButton = eyeForgePanel.forgeButton;
-        toggledOffHoverableUIElement = forgeButton.rectTransform;
-        
         forgeButton.KeepPressed();
         string prevButtonText = forgeButton.text.text;
         forgeButton.text.text = "Forging...";

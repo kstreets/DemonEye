@@ -1,8 +1,8 @@
-using System;
 using System.Collections.Generic;
 using PrimeTween;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
@@ -26,6 +26,7 @@ public partial class Game {
         CloseRaidUI();
         ShowMainMenuUI();
         InitCurrencyNumbers(gameState);
+        InitUIHints();
         ui.menuBackButton.gameObject.SetActive(false);
         ui.largeRaidTextTypewriter.gameObject.SetActive(false);
     }
@@ -94,7 +95,7 @@ public partial class Game {
     private void CloseHideoutUI() {
         ToggleHideoutPanels();
         HideInventoryItemPopup(); 
-        HideUIElementPopup();
+        HideHint();
         ToggleSlimPlayerPanel(false);
         ui.menuBackButton.gameObject.SetActive(false);
         playerInfo.parent.gameObject.SetActive(false);
@@ -126,7 +127,7 @@ public partial class Game {
 
     private void CloseRaidUI() {
         HideInventoryItemPopup(); 
-        HideUIElementPopup();
+        HideHint();
         ui.interactPrompt.gameObject.SetActive(false);
         ui.interactDetails.gameObject.SetActive(false);
         playerInfo.parent.gameObject.SetActive(false);
@@ -545,90 +546,123 @@ public partial class Game {
         };
         Tween.Scale(popupRectTransform, Vector3.one * 0.75f, Vector3.one, settings);
     }
-
-    private void UpdateUIElementPopup() {
-        UIHoverInfo hoverInfo = UpdateUIHover();
+    
+    
+    public class UIHints {
+        public readonly List<RectTransform> hoverableRectTransforms = new();
+        public readonly List<InventorySlot> hoverableInventorySlots = new();
+        public readonly Dictionary<RectTransform, string> descriptionLookup = new();
+        public HintHoverInfo lastHintHoverInfo;
+    }
+    private UIHints uiHints = new();
+    
+    private void InitUIHints() {
+        AddHint(inventories.player.slots[0], "Demon Eye Slot");
+        AddHint(inventories.player.slots[1], "Backpack Slot");
+        AddHint(inventories.player.slots[2], "Trinket Slot");
         
-        if (!hoverInfo.hoveringTransform || hoverInfo.shouldNotShow) {
-            HideUIElementPopup();
+        const string quickUseDesc = "Consumable items placed here are available on the hotbar during raids";
+        AddHint(inventories.player.slots[3], quickUseDesc);
+        AddHint(inventories.player.slots[4], quickUseDesc);
+        AddHint(inventories.player.slots[5], quickUseDesc);
+        AddHint(inventories.player.slots[6], quickUseDesc);
+        AddHint(ui.quickUseHeaderText, quickUseDesc);
+        
+        AddHint(inventories.eyeForge.slots[0], "Place an Eyeball or Demon Eye here to create or level up a Demon Eye");
+        
+        string eyeUpgradeDesc = $"Place {DisplayNumber(1)} of {DisplayNumber(5)} Eye Upgrades here to create or level up a Demon Eye.";
+        AddHint(inventories.eyeForge.slots[1],  eyeUpgradeDesc);
+        AddHint(inventories.eyeForge.slots[2],  eyeUpgradeDesc);
+        AddHint(inventories.eyeForge.slots[3],  eyeUpgradeDesc);
+        AddHint(inventories.eyeForge.slots[4],  eyeUpgradeDesc);
+        AddHint(inventories.eyeForge.slots[5],  eyeUpgradeDesc);
+        
+        AddHint(ui.stashPanelHeaderText, "A place to keep all your items safe. Stashed items remain even after dying.");
+    }
+    
+    private void AddHint(InventorySlot slot, string description) {
+        RectTransform rectTransform = slot.ui.rectTransform;
+        Assert.IsFalse(uiHints.descriptionLookup.ContainsKey(rectTransform), "Hint RectTransform has already been added");
+        uiHints.hoverableInventorySlots.Add(slot);
+        uiHints.descriptionLookup.Add(rectTransform, description);
+    }
+        
+    private void AddHint(RectTransform rectTransform, string description) {
+        Assert.IsFalse(uiHints.descriptionLookup.ContainsKey(rectTransform), "Hint RectTransform has already been added");
+        uiHints.hoverableRectTransforms.Add(rectTransform);
+        uiHints.descriptionLookup.Add(rectTransform, description);
+    }
+
+    private void UpdateUIHints() {
+        HintHoverInfo hoverInfo = UpdateHintHover();
+        
+        if (!hoverInfo.hoveringTransform) {
+            HideHint();
             return;
         }
         
-        const float hoverTimeUntilTooltip = 0.32f;
+        const float hoverTimeUntilTooltip = 0.5f;
         bool spentEnoughTimeHovering = hoverInfo.timeSpentHovering >= hoverTimeUntilTooltip;
         
         if (spentEnoughTimeHovering) {
-            ShowUIElementPopup(hoverInfo);
+            ShowHint(hoverInfo);
         }
         else {
-            HideUIElementPopup();
+            HideHint();
         }
     }
 
-    private void ShowUIElementPopup(UIHoverInfo hoverInfo) {
-        if (ui.uiElementPopup.gameObject.activeInHierarchy) return;
-        
-        ui.uiElementPopup.gameObject.SetActive(true);
-        TweenPopUp(ui.uiElementPopup.rectTransform);
-        
-        ui.uiElementPopup.descFitter.ForceRecalculate();
-        FitPopupSize(ui.uiElementPopup.rectTransform, ui.uiElementPopup.descText.rectTransform.rect);
-        
-        // Set popup position
+    private void ShowHint(HintHoverInfo hoverInfo) {
+        if (ui.hintPopup.gameObject.activeInHierarchy) return;
         Vector2 hoveredCenter = hoverInfo.hoveringTransform.WorldRect().center;
-        Vector2 popupOffset = new(0f, hoverInfo.hoveringTransform.rect.height);
-        ui.uiElementPopup.transform.position = hoveredCenter + popupOffset;
+        Vector2 popupOffset = new(0f, hoverInfo.hoveringTransform.rect.height * 0.7f);
+        ui.hintPopup.Show(hoveredCenter + popupOffset, uiHints.descriptionLookup[hoverInfo.hoveringTransform]);
     }
 
-    private void HideUIElementPopup() {
-        ui.uiElementPopup.gameObject.SetActive(false);
+    private void HideHint() {
+        ui.hintPopup.Hide();
     }
     
-    private List<RectTransform> hoverableUIElements = new();
-    private RectTransform toggledOffHoverableUIElement;
-    
-    public struct UIHoverInfo {
+    public struct HintHoverInfo {
         public RectTransform hoveringTransform;
         public float timeSpentHovering;
-        public bool shouldNotShow;
     }
     
-    private UIHoverInfo lastUIHoverInfo;
-
-    private UIHoverInfo UpdateUIHover() {
-        UIHoverInfo info = new();
+    private HintHoverInfo UpdateHintHover() {
+        HintHoverInfo info = new();
         Vector2 mousePos = Mouse.current.position.ReadValue();
         
-        foreach (RectTransform element in hoverableUIElements) {
-            if (!element.gameObject.activeInHierarchy) continue;
-            
-            Vector2 localMousePos = element.InverseTransformPoint(mousePos);
-            Bounds localUiBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(element);
-            if (!localUiBounds.Contains(localMousePos)) continue;
-            
-            info.hoveringTransform = element;
-            
-            bool hoveringOverPrevElement = info.hoveringTransform == lastUIHoverInfo.hoveringTransform;
-            if (hoveringOverPrevElement) {
-                info.timeSpentHovering = lastUIHoverInfo.timeSpentHovering + Time.deltaTime;
-            }
-            else {
-                info.timeSpentHovering = 0f;
-            }
-            
-            break;
-        }
-
-        if (info.hoveringTransform == toggledOffHoverableUIElement) {
-            info.shouldNotShow = true;
-        }
-        else {
-            info.shouldNotShow = false;
-            toggledOffHoverableUIElement = null;
+        foreach (RectTransform element in uiHints.hoverableRectTransforms) {
+            if (UpdateHintHoverInfoForRectTransform(element, mousePos, ref info)) break;
         }
         
-        lastUIHoverInfo = info;
+        foreach (InventorySlot slot in uiHints.hoverableInventorySlots) {
+            if (slot.itemInstance != null) continue; // Don't have hints show when slot has an item
+            if (UpdateHintHoverInfoForRectTransform(slot.ui.rectTransform, mousePos, ref info)) break;
+        }
+        
+        uiHints.lastHintHoverInfo = info;
         return info;
+    }
+    
+    private bool UpdateHintHoverInfoForRectTransform(RectTransform element, Vector2 mousePos, ref HintHoverInfo info) {
+        if (!element.gameObject.activeInHierarchy) return false;
+            
+        Vector2 localMousePos = element.InverseTransformPoint(mousePos);
+        Bounds localUiBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(element);
+        if (!localUiBounds.Contains(localMousePos)) return false;
+            
+        info.hoveringTransform = element;
+            
+        bool hoveringOverPrevElement = info.hoveringTransform == uiHints.lastHintHoverInfo.hoveringTransform;
+        if (hoveringOverPrevElement) {
+            info.timeSpentHovering = uiHints.lastHintHoverInfo.timeSpentHovering + Time.deltaTime;
+        }
+        else {
+            info.timeSpentHovering = 0f;
+        }
+        
+        return true;
     }
 
     private void EnableInteractionPrompt(Vector3 position, string detailsString) {

@@ -20,10 +20,10 @@ public partial class Game {
         InitMenuNavigation();
         InitHotBar();
         
+        InitInventories(gameState);
         InitUI(gameState);
         InitEntities(gameState);
         InitMaps(gameState);
-        InitInventories(gameState);
         InitQuests(gameState);
         InitHideout(gameState);
 
