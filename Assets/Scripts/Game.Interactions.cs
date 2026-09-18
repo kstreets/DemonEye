@@ -345,7 +345,7 @@ public partial class Game {
         
         using var _ = ListPool<Transform>.Get(out var bubbleSpawns);
         int curSpawnIndex = int.MaxValue;
-        const int bubbleCount = 26;
+        const int bubbleCount = 30;
         
         for (int i = 0; i < bubbleCount; i++) {
             if (!altar.bloodBubbleSpawns.IndexInRange(curSpawnIndex)) {
@@ -357,18 +357,19 @@ public partial class Game {
         }
         
         const float startBubblesDelay = 0.25f;
+        const float bubbleInterval = 0.35f;
         float curBubbleSpawnTime = startBubblesDelay;
         
         for (int i = 0; i < bubbleCount; i++) {
             float bubbleAcc = curves.altarBubbleRate.Evaluate(i / (float)bubbleCount);
-            float spawnDelay = curBubbleSpawnTime + Random.Range(0.1f, 0.25f) * (1f - bubbleAcc);
+            float spawnDelay = curBubbleSpawnTime + bubbleInterval * (1f - bubbleAcc);
             Tween.Delay(bubbleSpawns[i], spawnDelay, static (spawnTrans) => { 
                 gameInstance.SpawnEntityOneShot(gameInstance.entityPools.bloodBubble, spawnTrans.position, spawnTrans.rotation);
             });
             curBubbleSpawnTime = spawnDelay;
         }
         
-        Tween.Delay(altar, curBubbleSpawnTime * 0.95f, static (altar) => {
+        Tween.Delay(altar, curBubbleSpawnTime * 0.97f, static (altar) => {
             altar.bloodPoolAnimator.Play(Altar.bloodDrainAnimHash);
         });
         
