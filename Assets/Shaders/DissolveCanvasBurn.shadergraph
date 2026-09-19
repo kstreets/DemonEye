@@ -1463,6 +1463,9 @@
         },
         {
             "m_Id": "9cde19feda81467784a63c2258c58f36"
+        },
+        {
+            "m_Id": "d6d517ea57d6490da039a6ca1d1c2d7d"
         }
     ],
     "synonyms": [],
@@ -1553,10 +1556,10 @@
     "promotedFromAssetID": "",
     "promotedFromCategoryName": "",
     "promotedOrdering": -1,
-    "m_Name": "DissolveAmount",
+    "m_Name": "Completion",
     "m_DefaultRefNameVersion": 1,
-    "m_RefNameGeneratedByDisplayName": "DissolveAmount",
-    "m_DefaultReferenceName": "_DissolveAmount",
+    "m_RefNameGeneratedByDisplayName": "Completion",
+    "m_DefaultReferenceName": "_Completion",
     "m_OverrideReferenceName": "",
     "m_GeneratePropertyBlock": true,
     "m_UseCustomSlotLabel": false,
@@ -2215,7 +2218,7 @@
     "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
     "m_ObjectId": "8b9fb9f635d34a87bbf34605f47e004d",
     "m_Id": 0,
-    "m_DisplayName": "DissolveAmount",
+    "m_DisplayName": "Completion",
     "m_SlotType": 1,
     "m_Hidden": false,
     "m_ShaderOutputName": "Out",
@@ -2331,7 +2334,7 @@
     "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
     "m_ObjectId": "8e2f7515865b42ea9afe743f032d5a83",
     "m_Id": 0,
-    "m_DisplayName": "DissolveAmount",
+    "m_DisplayName": "Completion",
     "m_SlotType": 1,
     "m_Hidden": false,
     "m_ShaderOutputName": "Out",
@@ -3379,6 +3382,22 @@
         "z": 0.0,
         "w": 0.0
     },
+    "m_LiteralMode": false
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
+    "m_ObjectId": "d6d517ea57d6490da039a6ca1d1c2d7d",
+    "m_Id": 4,
+    "m_DisplayName": "BackFill",
+    "m_SlotType": 1,
+    "m_Hidden": false,
+    "m_ShaderOutputName": "BackFill",
+    "m_StageCapability": 2,
+    "m_Value": 0.0,
+    "m_DefaultValue": 0.0,
+    "m_Labels": [],
     "m_LiteralMode": false
 }
 

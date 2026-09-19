@@ -17,7 +17,7 @@ public class SkillLevelUpRow : MonoBehaviour {
     public ButtonFeel levelUpButton;
     public Image[] levelProgressDots;
     
-    private static readonly int dissolveAmountId = Shader.PropertyToID("_DissolveAmount");
+    private static readonly int dissolveAmountId = Shader.PropertyToID("_Completion");
     private static readonly int opacityId = Shader.PropertyToID("_Opacity");
 
     public void Init(int maxLevel, string statDesc) {

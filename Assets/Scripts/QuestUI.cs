@@ -18,15 +18,15 @@ public class QuestUI : MonoBehaviour {
     public Image burnEffectImage;
     public BurnEdgeEmberSpawner emberSpawner;
     
-    private static readonly int dissolveAmountId = Shader.PropertyToID("_DissolveAmount");
+    private static readonly int completionId = Shader.PropertyToID("_Completion");
     private static readonly int aspectRatioId = Shader.PropertyToID("_AspectRatio");
     private static readonly int offsetSizeId = Shader.PropertyToID("_Offset_Size");
     
     public void Init() {
         burnMask.graphic.material = new(burnMask.graphic.material);
         burnEffectImage.material = new(burnEffectImage.material);
-        burnMask.graphic.materialForRendering.SetFloat(dissolveAmountId, 0f);
-        burnEffectImage.material.SetFloat(dissolveAmountId, 0f);
+        burnMask.graphic.materialForRendering.SetFloat(completionId, 0f);
+        burnEffectImage.material.SetFloat(completionId, 0f);
     }
     
     public void Display(Quest quest) {
@@ -83,16 +83,16 @@ public class QuestUI : MonoBehaviour {
             Vector4 offsetAndSize = data.burnEffectImage.OffsetAndSizeInTexture();
             float edgeComp = data.edgeCurve.Evaluate(comp);
             
-            maskMat.SetFloat(dissolveAmountId, edgeComp);
-            burnMat.SetFloat(dissolveAmountId, edgeComp);
+            maskMat.SetFloat(completionId, edgeComp);
+            burnMat.SetFloat(completionId, edgeComp);
             maskMat.SetVector(offsetSizeId, offsetAndSize);
             burnMat.SetVector(offsetSizeId, offsetAndSize);
             
             data.emberSpawner.BurnProgress = data.particleCurve.Evaluate(comp);
         })
         .OnComplete(burnData, static (data) => {
-            data.burnMask.graphic.materialForRendering.SetFloat(dissolveAmountId, 0f);
-            data.burnEffectImage.material.SetFloat(dissolveAmountId, 0f);
+            data.burnMask.graphic.materialForRendering.SetFloat(completionId, 0f);
+            data.burnEffectImage.material.SetFloat(completionId, 0f);
             data.emberSpawner.Stop();
         });
     }

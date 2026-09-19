@@ -138,6 +138,7 @@ public class GameData {
         public ItemDescPopup itemDescPopupPickup;
         public MechanicDescPopup mechanicDescPopup;
         public UIHintPopUp hintPopup;
+        public LevelUpNotification levelUpNotification;
         public RectTransform hideoutParent;
         public RectTransform hotBarParent;
         public RectTransform notificationParent;

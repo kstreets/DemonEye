@@ -75,6 +75,7 @@ public partial class Game {
         bool increasedLevel = wouldGainLevels > 0;
         if (increasedLevel) {
             CheckForTraderRestock(forceRestock: true);
+            ui.levelUpNotification.Show($"Reached Trader Level {config.trader.GetLevel()}");
         }
         CalculateAndSetTraderRepBars();
     }
@@ -594,6 +595,7 @@ public partial class Game {
     
     private void OnLevelUpPentagramPressed() {
         hideoutState.pentagramLevelIndex++;
+        ui.levelUpNotification.Show($"Pentagram Level {hideoutState.pentagramLevelIndex + 1}");
         SaveGameState();
     }
     

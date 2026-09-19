@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: CanvasScortchedQuest
-  m_Shader: {fileID: -6465566751694194690, guid: 23538376ee6e27f4aa61473c2a87aa50, type: 3}
+  m_Name: CanvasBurnLevelUpNotification
+  m_Shader: {fileID: -6465566751694194690, guid: 8e8e44609b9073c439ccb233e64c65d8, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -19,12 +19,12 @@ Material:
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
-  m_LockedProperties: 
+  m_LockedProperties: _EdgeSize
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
     - _AlphaMask:
-        m_Texture: {fileID: 2800000, guid: 1f75a410ea1d7984a8b240d85b081a03, type: 3}
+        m_Texture: {fileID: 2800000, guid: ceab29f3c43d16141997a16e737fb6a7, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _AlphaTex:
@@ -58,23 +58,19 @@ Material:
     m_Ints: []
     m_Floats:
     - _AlphaClip: 0.5
-    - _AspecRatio: 0
-    - _AspectRatio: 2.5721154
-    - _AspectRatioS: 2.54
+    - _AspectRatio: 0.2857143
     - _ColorMask: 15
-    - _Completion: 0
-    - _DetailNoiseScale: 100
-    - _DetailStrength: 0.05
+    - _Completion: 1
+    - _DetailNoiseScale: 200
+    - _DetailStrength: 0
     - _DissolveAmount: 0
-    - _EdgeSize: 0.02
+    - _EdgeSize: 0.2
     - _EnableExternalAlpha: 0
-    - _NoiseScale: 1
-    - _NoiseScaleS: 37.88
-    - _NoiseStrength: 0.3
-    - _NoiseStrengthS: 0.3
-    - _Opacity: 0
+    - _NoiseScale: 10
+    - _NoiseStrength: 0.9
     - _PixelDensity: 1800
-    - _PixelDensityS: 1800
+    - _Pixels: 2000
+    - _Ratio: 1.01
     - _Stencil: 0
     - _StencilComp: 8
     - _StencilOp: 0
@@ -82,17 +78,15 @@ Material:
     - _StencilWriteMask: 255
     - _UIMaskSoftnessX: 1
     - _UIMaskSoftnessY: 1
-    - _UsingEdge: 0
     - _ZWrite: 0
     m_Colors:
     - White: {r: 1, g: 1, b: 1, a: 1}
-    - _BurntColor: {r: 0, g: 0, b: 0, a: 1}
-    - _BurntColorS: {r: 0, g: 0, b: 0, a: 1}
     - _ClipRect: {r: 0, g: 0, b: 0, a: 0}
-    - _Color: {r: 0, g: 0, b: 0, a: 1}
-    - _Color_1: {r: 0, g: 0, b: 0, a: 1}
-    - _Color_2: {r: 0, g: 0, b: 0, a: 1}
+    - _Color: {r: 0.16352195, g: 0.014905279, b: 0, a: 1}
+    - _Color_1: {r: 22.627417, g: 2.2397156, b: 0, a: 1}
+    - _Color_2: {r: 0, g: 7.8554907, b: 10.403305, a: 1}
     - _Offset_Size: {r: 0.3125, g: 0.9375, b: 0.0625, a: 0.0625}
+    - _Ratio: {r: 2.5, g: 1, b: 1, a: 1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

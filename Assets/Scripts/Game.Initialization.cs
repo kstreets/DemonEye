@@ -21,11 +21,12 @@ public partial class Game {
         InitHotBar();
         
         InitInventories(gameState);
-        InitUI(gameState);
         InitEntities(gameState);
         InitMaps(gameState);
         InitQuests(gameState);
         InitHideout(gameState);
+        
+        InitUI();
 
         bool createInitialSaveFile = gameState == null;
         if (createInitialSaveFile) {

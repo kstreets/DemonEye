@@ -18,15 +18,17 @@ public partial class Game {
     private bool ShowingPlayerPanel => playerPanel.panel.gameObject.activeInHierarchy;
     private bool ShowingForgeDetailsPanel => eyeForgeDetailsPanel.panel.gameObject.activeInHierarchy;
     
-    private void InitUI(GameState gameState) {
+    private void InitUI() {
         Cursor.visible = true;
         Cursor.SetCursor(config.styles.cursorTexture, Vector2.zero, CursorMode.Auto);
         
         CloseHideoutUI();
         CloseRaidUI();
         ShowMainMenuUI();
-        InitCurrencyNumbers(gameState);
+        InitCurrencyNumbers();
         InitUIHints();
+        
+        ui.levelUpNotification.Init();
         ui.menuBackButton.gameObject.SetActive(false);
         ui.largeRaidTextTypewriter.gameObject.SetActive(false);
     }
@@ -198,11 +200,11 @@ public partial class Game {
     private Sequence soulCurrencySequence;
     private Sequence coinCurrencySequence;
     
-    private void InitCurrencyNumbers(GameState gameState) {
-        playerInfo.soulsCurrencyText.text = gameState.playerState.soulCurrency.ToString("N0");
-        playerInfo.coinCurrencyText.text = gameState.playerState.coinCurrency.ToString("N0");
-        prevSoulCurrency = gameState.playerState.soulCurrency;
-        prevCoinCurrency = gameState.playerState.coinCurrency;
+    private void InitCurrencyNumbers() {
+        playerInfo.soulsCurrencyText.text = player.state.soulCurrency.ToString("N0");
+        playerInfo.coinCurrencyText.text = player.state.coinCurrency.ToString("N0");
+        prevSoulCurrency = player.state.soulCurrency;
+        prevCoinCurrency = player.state.coinCurrency;
     }
     
     private void UpdateCurrencyNumbers() {
