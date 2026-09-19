@@ -572,7 +572,7 @@ public partial class Game {
         
         AddHint(inventories.eyeForge.slots[0], "Place an Eyeball or Demon Eye here to create or level up a Demon Eye");
         
-        string eyeUpgradeDesc = $"Place {DisplayNumber(1)} of {DisplayNumber(5)} Eye Upgrades here to create or level up a Demon Eye.";
+        string eyeUpgradeDesc = $"Place {DisplayNumber(1)} of {DisplayNumber(5)} Eye Upgrades here to create or level up a Demon Eye";
         AddHint(inventories.eyeForge.slots[1],  eyeUpgradeDesc);
         AddHint(inventories.eyeForge.slots[2],  eyeUpgradeDesc);
         AddHint(inventories.eyeForge.slots[3],  eyeUpgradeDesc);

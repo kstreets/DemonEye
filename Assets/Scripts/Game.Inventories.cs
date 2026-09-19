@@ -930,6 +930,16 @@ public partial class Game {
         slot.itemInstance = null;
         slot.ui.ClearItem();
     }
+    
+    private void RemoveOwnedItemsFromInventories(List<ItemWithCount> itemWithCounts) {
+        foreach (ItemWithCount itemWCount in itemWithCounts) {
+            int removedCount = RemoveNumberOfItemsFromInventory(inventories.stash, itemWCount.item, itemWCount.count);
+            if (removedCount != itemWCount.count) {
+                int additionalRemoveCount = itemWCount.count - removedCount;
+                RemoveNumberOfItemsFromInventory(inventories.player, itemWCount.item, additionalRemoveCount);
+            }
+        }
+    }
 
     // Returns the count of items we removed
     private int RemoveNumberOfItemsFromInventory(Inventory inventory, Item item, int count) {
@@ -1083,16 +1093,16 @@ public partial class Game {
         return itemCount;
     }
     
-    private bool HasAllItemRequirements(List<ItemWithCount> itemsWithCounts) {
+    private bool OwnsAllItems(List<ItemWithCount> itemsWithCounts) {
         foreach (ItemWithCount itemsWithCount in itemsWithCounts) {
-            if (!HasSingleItemRequirement(itemsWithCount)) {
+            if (!OwnsSingleItemWithCount(itemsWithCount)) {
                 return false;
             }
         }
         return true;
     }
 
-    private bool HasSingleItemRequirement(ItemWithCount itemWithCount) {
+    private bool OwnsSingleItemWithCount(ItemWithCount itemWithCount) {
         int itemCount = 0;
         itemCount += GetItemCountInInventory(inventories.stash, itemWithCount.item);
         itemCount += GetItemCountInInventory(inventories.player, itemWithCount.item);

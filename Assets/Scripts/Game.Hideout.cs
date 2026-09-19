@@ -239,18 +239,9 @@ public partial class Game {
         if (curTradingInventorySlot == null) return;
 
         Item curTradingItem = curTradingInventorySlot.itemInstance.ItemRef;
-        foreach (ItemWithCount barterReq in curTradingItem.traderSpawning.barterRequirements) {
-            if (GetOwnedCountOfItem(barterReq.item) < barterReq.count) return;
-        }
+        if (!OwnsAllItems(curTradingItem.traderSpawning.barterRequirements)) return;
             
-        foreach (ItemWithCount barterReq in curTradingItem.traderSpawning.barterRequirements) {
-            int removedCount = RemoveNumberOfItemsFromInventory(inventories.stash, barterReq.item, barterReq.count);
-            if (removedCount != barterReq.count) {
-                int additionalRemoveCount = barterReq.count - removedCount;
-                RemoveNumberOfItemsFromInventory(inventories.player, barterReq.item, additionalRemoveCount);
-            }
-        }
-
+        RemoveOwnedItemsFromInventories(curTradingItem.traderSpawning.barterRequirements);
         TryAddItemToInventory(inventories.stash, curTradingItem, 1);
         ReduceTradingItemStock();
         TriggerTraderShopDialogue(TraderShopDialogueType.Purchase);
@@ -340,6 +331,13 @@ public partial class Game {
     private void UpdateForgePanel() {
         if (!OnEyeForgeTab) return;
         
+        int curPentagramLevel = hideoutState.pentagramLevelIndex + 1;
+        int curLevelDisplayed = (int)char.GetNumericValue(eyeForgePanel.panelTextMesh.text[^1]);
+        if (curPentagramLevel != curLevelDisplayed) {
+            eyeForgePanel.panelTextMesh.text = $"Pentagram - Level {curPentagramLevel}";
+            eyeForgePanel.subHeaderTextMesh.text = $"Unlocks Demon Eye Level {curPentagramLevel + 1}";
+        }
+        
         if (ForgeIsOnCrafting) {
             bool canForge = (forgeMode is ForgeMode.Forging or ForgeMode.UpgradingDemonEye) && EverySlotHasAnItem(inventories.eyeForge);
             ButtonFeel forgeButton = eyeForgePanel.forgeButton;
@@ -370,10 +368,13 @@ public partial class Game {
             if (levelUpExists) {
                 List<ItemWithCount> itemRequirements = config.eyeForgeUpgradePath.pathUpgrades[upgradeIndex].requirements;
                 eyeForgePanel.levelUpRequirementList.Show(itemRequirements);
-                eyeForgePanel.levelUpButton.SetClickableState(HasAllItemRequirements(itemRequirements));
+                eyeForgePanel.levelUpButton.SetClickableState(OwnsAllItems(itemRequirements));
+                eyeForgePanel.maxLevelReachedNotifier.SetActive(false);
             }
             else {
-                //Todo: Need to tell the player that the pentagram is at max level
+                eyeForgePanel.levelUpRequirementList.gameObject.SetActive(false);
+                eyeForgePanel.levelUpButton.SetClickableState(false);
+                eyeForgePanel.maxLevelReachedNotifier.SetActive(true);
             }
         }
     }
@@ -593,10 +594,30 @@ public partial class Game {
         }
     }
     
+    private static int completionPropertyId = Shader.PropertyToID("_Completion");
+    private Sequence levelUpPentagramSequence;
+    
     private void OnLevelUpPentagramPressed() {
-        hideoutState.pentagramLevelIndex++;
-        ui.levelUpNotification.Show($"Pentagram Level {hideoutState.pentagramLevelIndex + 1}");
-        SaveGameState();
+        levelUpPentagramSequence.Complete();
+        levelUpPentagramSequence = Sequence.Create();
+        
+        eyeForgePanel.burnEffectImage.material.SetFloat(completionPropertyId, 0f);
+        levelUpPentagramSequence.Group(
+            Tween.Custom(eyeForgePanel.burnEffectImage, 0f, 1f, 1.5f, static (image, comp) => {
+                image.material.SetFloat(completionPropertyId, comp);
+            })
+        );
+        
+        levelUpPentagramSequence.Group(
+            Tween.Delay(0.25f, static () => {
+                List<ItemWithCount> reqs = gameInstance.config.eyeForgeUpgradePath.pathUpgrades[gameInstance.hideoutState.pentagramLevelIndex].requirements;
+                gameInstance.RemoveOwnedItemsFromInventories(reqs);
+                gameInstance.hideoutState.pentagramLevelIndex++;
+                gameInstance.SaveGameState();
+            })
+        );
+        
+        ui.levelUpNotification.Show($"Pentagram Level {hideoutState.pentagramLevelIndex + 2}", delay: 0.62f);
     }
     
     private void OnPentagramForgeTogglePressed() {
