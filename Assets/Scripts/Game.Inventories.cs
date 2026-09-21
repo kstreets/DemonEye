@@ -650,8 +650,9 @@ public partial class Game {
             bool droppingItemInHideout = hoverInfo.inventory == null && InHideout;
             bool tryingToPlaceItemToSellWhileBuying = hoverInfo.inventory == inventories.transaction && transactionState == TransactionState.Buying;
             bool tryingToPlaceInTraderInventory = hoverInfo.inventory == inventories.trader;
+            bool tryingToPlaceWhileUpgradingDemonEye = hoverInfo.inventory == inventories.eyeForge && forgeMode == ForgeMode.UpgradingDemonEye;
             
-            if (droppingItemInHideout || tryingToPlaceItemToSellWhileBuying || tryingToPlaceInTraderInventory) {
+            if (droppingItemInHideout || tryingToPlaceItemToSellWhileBuying || tryingToPlaceInTraderInventory || tryingToPlaceWhileUpgradingDemonEye) {
                 TryAddItemToInventory(startDragInfo.inventory, dragItemInstance, startDragInfo.slotIndex);
                 EndDragAndDropItem();
                 return IsDraggingItem;
@@ -720,7 +721,6 @@ public partial class Game {
             bool placingEntireStack = !placingSingleItemFromStack;
             if (placingEntireStack) {
                 InventoryAddResult result = TryAddItemToInventory(hoverInfo.inventory, dragItemInstance, hoverInfo.slotIndex);
-
                 if (result.type == InventoryAddResult.ResultType.Success) {
                     EndDragAndDropItem();
                 }
@@ -858,30 +858,13 @@ public partial class Game {
     private void MoveItemBetweenInventories(Inventory fromInventory, Inventory toInventory, int slotIndex, MoveItemOption moveOption) {
         ItemInstance itemInstance = GetInventoryItem(fromInventory, slotIndex);
         if (itemInstance == null || itemInstance.notDiscovered) return;
-
+        
+        // If we are upgrading a demon eye we don't want to 'manually' be able to add any eye upgrades, as it would get confusing 
+        if (toInventory == inventories.eyeForge && forgeMode is ForgeMode.UpgradingDemonEye) return;
+        
         int specificSlotToMoveTo = -1;
         if (fromInventory == inventories.transaction && toInventory == inventories.trader) {
             specificSlotToMoveTo = itemInstance.traderSlotIndex;
-        }
-        
-        if (fromInventory == inventories.stash && toInventory == inventories.eyeForge && 
-            (forgeMode is ForgeMode.UpgradingDemonEye or ForgeMode.UpgradingButJustDemonEye)) 
-        {
-            ItemInstance eyeItemInstance = inventories.eyeForge.slots[0].itemInstance;
-            using var _ = ListPool<EyeUpgrade>.Get(out var upgrades);
-            GetDemonEyeCoreUpgrades(eyeItemInstance, ref upgrades);
-            
-            for (int i = 0; i < upgrades.Count; i++) {
-                EyeUpgrade baseEyeUpgrade = GetEyeUpgradeFromItemInstance(itemInstance);
-                int forgeIndex = i + 1;
-                if (inventories.eyeForge.slots[forgeIndex].itemInstance == null && upgrades[i] == baseEyeUpgrade) {
-                    specificSlotToMoveTo = forgeIndex;
-                    break;
-                }
-            }
-            
-            bool noMatchingCoreUpgradeFound = specificSlotToMoveTo == -1;
-            if (noMatchingCoreUpgradeFound) return;
         }
         
         if (moveOption == MoveItemOption.Single) {
@@ -977,6 +960,27 @@ public partial class Game {
             return null;
         }
         return inventory.slots[slotIndex].itemInstance;
+    }
+    
+    private int FindFirstInventorySlotOfItem(Inventory inventory, Item item) {
+        for (int i = 0; i < inventory.slots.Length; i++) {
+            InventorySlot slot = inventory.slots[i];
+            if (slot.itemInstance == null) continue;
+            if (slot.itemInstance.itemOrInstanceUuid == item.uuid) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    
+    private static InventorySlot FindFirstEmptyInventorySlot(Inventory inventory) {
+        for (int i = 0; i < inventory.slots.Length; i++) {
+            InventorySlot slot = inventory.slots[i];
+            if (slot.itemInstance == null) {
+                return slot;
+            }
+        }
+        return null;
     }
 
     // Returns true if we reduced the item to nothing
@@ -1078,11 +1082,28 @@ public partial class Game {
         }
         return true;
     }
+    
+    public bool ReduceOwnedCountOfItem(Item item, int reductionCount = 1) {
+        int slotIndex = FindFirstInventorySlotOfItem(inventories.stash, item);
+        if (slotIndex != -1) {
+            ReduceItemCountInInventory(inventories.stash, slotIndex, reductionCount);
+            return true;
+        }
+        slotIndex = FindFirstInventorySlotOfItem(inventories.player, item);
+        if (slotIndex != -1) {
+            ReduceItemCountInInventory(inventories.player, slotIndex, reductionCount);
+            return true;
+        }
+        return false;
+    }
 
     public int GetOwnedCountOfItem(Item item) {
         int itemCount = 0;
         itemCount += GetItemCountInInventory(inventories.stash, item);
         itemCount += GetItemCountInInventory(inventories.player, item);
+        if (IsDraggingItem && dragItemInstance.ItemRef == item) {
+            itemCount += dragItemInstance.count;
+        }
         return itemCount;
     }
     
@@ -1090,10 +1111,13 @@ public partial class Game {
         int itemCount = 0;
         itemCount += GetItemCountInInventory(inventories.stash, itemType);
         itemCount += GetItemCountInInventory(inventories.player, itemType);
+        if (IsDraggingItem && dragItemInstance.ItemRef.type == itemType) {
+            itemCount += dragItemInstance.count;
+        }
         return itemCount;
     }
     
-    private bool OwnsAllItems(List<ItemWithCount> itemsWithCounts) {
+    private bool OwnsAllItemsOfCounts(List<ItemWithCount> itemsWithCounts) {
         foreach (ItemWithCount itemsWithCount in itemsWithCounts) {
             if (!OwnsSingleItemWithCount(itemsWithCount)) {
                 return false;
@@ -1106,7 +1130,31 @@ public partial class Game {
         int itemCount = 0;
         itemCount += GetItemCountInInventory(inventories.stash, itemWithCount.item);
         itemCount += GetItemCountInInventory(inventories.player, itemWithCount.item);
+        if (IsDraggingItem && dragItemInstance.ItemRef == itemWithCount.item) {
+            itemCount += dragItemInstance.count;
+        }
         return itemCount >= itemWithCount.count; 
+    }
+    
+    private void ItemListToUniqueItemsWithCount<T>(List<T> items, ref List<ItemWithCount> itemsWithCounts) where T : Item {
+        var itemCountLookup = DictionaryPool<T, int>.Get();
+        foreach (T item in items) {
+            itemCountLookup.TryAdd(item, 0);
+            itemCountLookup[item]++;
+        }
+                
+        var uniqueItems = HashSetPool<T>.Get();
+        uniqueItems.UnionWith(items);
+                
+        foreach (T item in uniqueItems) {
+            itemsWithCounts.Add(new() {
+                item = item, 
+                count = itemCountLookup[item],
+            });
+        }
+        
+        DictionaryPool<T, int>.Release(itemCountLookup);
+        HashSetPool<T>.Release(uniqueItems);
     }
 
     private int GetInventoryWeight(Inventory inventory) {

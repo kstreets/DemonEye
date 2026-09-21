@@ -239,7 +239,7 @@ public partial class Game {
         if (curTradingInventorySlot == null) return;
 
         Item curTradingItem = curTradingInventorySlot.itemInstance.ItemRef;
-        if (!OwnsAllItems(curTradingItem.traderSpawning.barterRequirements)) return;
+        if (!OwnsAllItemsOfCounts(curTradingItem.traderSpawning.barterRequirements)) return;
             
         RemoveOwnedItemsFromInventories(curTradingItem.traderSpawning.barterRequirements);
         TryAddItemToInventory(inventories.stash, curTradingItem, 1);
@@ -286,8 +286,11 @@ public partial class Game {
     // Eye Forge 
     // ************************
     
-    private enum ForgeMode { Empty, Forging, ForgingButJustEye, ForgingButWithoutEye, UpgradeNotAvailableForDemonEye, UpgradingButJustDemonEye, UpgradingDemonEye, }
+    private enum ForgeMode { Empty, Forging, UpgradingDemonEye, }
     private ForgeMode forgeMode;
+    
+    private enum ForgeError { Nothing, ForgingButJustEye, ForgingButWithoutEye, PentagramLevelTooLow, }
+    private ForgeError forgeError;
     
     private bool ForgeIsOnCrafting => eyeForgePanel.forgingParent.activeInHierarchy;
     private bool ForgeIsOnLevelUp => eyeForgePanel.levelUpParent.activeInHierarchy;
@@ -300,23 +303,28 @@ public partial class Game {
 
         if (crucibleItemCount <= 0) {
             forgeMode = ForgeMode.Empty;
+            forgeError = ForgeError.Nothing;
         }
         else if (eyeSlotItemInstance != null && eyeSlotItemInstance.isDemonEye) {
+            forgeMode = ForgeMode.UpgradingDemonEye;
             if (eyeSlotItemInstance.DemonEyeLevel > hideoutState.pentagramLevelIndex) {
-                forgeMode = ForgeMode.UpgradeNotAvailableForDemonEye;
+                forgeError = ForgeError.PentagramLevelTooLow;
             }
             else {
-                forgeMode = GetInventoryItemCount(inventories.eyeForge) > 1 ? ForgeMode.UpgradingDemonEye : ForgeMode.UpgradingButJustDemonEye;
+                forgeError = ForgeError.Nothing;
             }
-        }
-        else if (eyeSlotItemInstance != null && crucibleItemCount == 1) {
-            forgeMode = ForgeMode.ForgingButJustEye;
-        }
-        else if (eyeSlotItemInstance == null) {
-            forgeMode = ForgeMode.ForgingButWithoutEye;
         }
         else {
             forgeMode = ForgeMode.Forging;
+            if (eyeSlotItemInstance != null && crucibleItemCount == 1) {
+                forgeError = ForgeError.ForgingButJustEye;
+            }
+            else if (eyeSlotItemInstance == null) {
+                forgeError = ForgeError.ForgingButWithoutEye;
+            }
+            else {
+                forgeError = ForgeError.Nothing;
+            }
         }
         
         if (forgeMode is ForgeMode.Empty && !ShowingPlayerPanel) {
@@ -338,27 +346,60 @@ public partial class Game {
             eyeForgePanel.subHeaderTextMesh.text = $"Unlocks Demon Eye Level {curPentagramLevel + 1}";
         }
         
-        if (ForgeIsOnCrafting) {
-            bool canForge = (forgeMode is ForgeMode.Forging or ForgeMode.UpgradingDemonEye) && EverySlotHasAnItem(inventories.eyeForge);
+        if (ForgeIsOnCrafting && !PlayingForgeAnimation) {
+            bool canForge = false;
             ButtonFeel forgeButton = eyeForgePanel.forgeButton;
+            
+            forgeButton.text.text = forgeMode is ForgeMode.UpgradingDemonEye ? "Upgrade" : "Forge";
+            
+            if (forgeMode is ForgeMode.UpgradingDemonEye) {
+                ItemInstance eyeItemInstance = inventories.eyeForge.slots[0].itemInstance;
+                
+                // We want to remove any previously placed eye upgrades because the upgrade placehoder items will hide them.
+                // Note we try to move the items to the Stash, but if not enough space, then the Player inventory, but if they are full then
+                // we just do nothing because we don't have a safe way of moving the item, should probably dynamically add a slot in the case but eh.
+                for (int i = 1; i < inventories.eyeForge.slots.Length; i++) {
+                    if (inventories.eyeForge.slots[i].itemInstance != null) {
+                        MoveItemBetweenInventories(inventories.eyeForge, inventories.stash, i, MoveItemOption.FullStack);
+                    }
+                    if (inventories.eyeForge.slots[i].itemInstance != null) {
+                        MoveItemBetweenInventories(inventories.eyeForge, inventories.player, i, MoveItemOption.FullStack);
+                    }
+                }
+                
+                var upgrades = ListPool<EyeUpgrade>.Get();
+                GetDemonEyeCoreUpgrades(eyeItemInstance, ref upgrades);
+                
+                var upgradeCountLookup = DictionaryPool<EyeUpgrade, int>.Get();
+                foreach (EyeUpgrade upgrade in upgrades) {
+                    upgradeCountLookup.TryAdd(upgrade, 0);
+                    upgradeCountLookup[upgrade]++;
+                }
+                
+                for (int i = 0; i < upgrades.Count; i++) {
+                    InventorySlot slot = inventories.eyeForge.slots[i + 1];
+                    EyeUpgrade upgrade = upgrades[i];
+                    slot.ui.SetPlaceHolderItemImage(upgrade);
+                    slot.ui.itemUI.UpdateOwnedVsRequiredCount(GetOwnedCountOfItem(upgrade), upgradeCountLookup[upgrade]);
+                }
+                
+                var itemsWithCount = ListPool<ItemWithCount>.Get();
+                ItemListToUniqueItemsWithCount(upgrades, ref itemsWithCount);
+                canForge = OwnsAllItemsOfCounts(itemsWithCount);
+                
+                ListPool<EyeUpgrade>.Release(upgrades);
+                ListPool<ItemWithCount>.Release(itemsWithCount);
+                DictionaryPool<EyeUpgrade, int>.Release(upgradeCountLookup);
+            }
+            else {
+                canForge = forgeMode is ForgeMode.Forging && EverySlotHasAnItem(inventories.eyeForge);
+            }
             
             if (canForge && forgeButton.isDisabled) {
                 forgeButton.Enable();
             }
             else if (!canForge && !forgeButton.isDisabled) {
                 forgeButton.Disable();
-            }
-        
-            if (forgeMode is ForgeMode.UpgradingDemonEye or ForgeMode.UpgradingButJustDemonEye) {
-                ItemInstance eyeItemInstance = inventories.eyeForge.slots[0].itemInstance;
-                using var _ = ListPool<EyeUpgrade>.Get(out var upgrades);
-                GetDemonEyeCoreUpgrades(eyeItemInstance, ref upgrades);
-
-                for (int i = 0; i < upgrades.Count; i++) {
-                    if (inventories.eyeForge.slots[i + 1].itemInstance == null) {
-                        inventories.eyeForge.slots[i + 1].ui.SetPlaceHolderItemImage(upgrades[i]);
-                    }
-                }
             }
         }
         else if (ForgeIsOnLevelUp) {
@@ -368,7 +409,7 @@ public partial class Game {
             if (levelUpExists) {
                 List<ItemWithCount> itemRequirements = config.eyeForgeUpgradePath.pathUpgrades[upgradeIndex].requirements;
                 eyeForgePanel.levelUpRequirementList.Show(itemRequirements);
-                eyeForgePanel.levelUpButton.SetClickableState(OwnsAllItems(itemRequirements));
+                eyeForgePanel.levelUpButton.SetClickableState(OwnsAllItemsOfCounts(itemRequirements));
                 eyeForgePanel.maxLevelReachedNotifier.SetActive(false);
             }
             else {
@@ -391,18 +432,18 @@ public partial class Game {
             demonEyeDesc.HideAllElements();
             return;
         }
-        if (forgeMode == ForgeMode.ForgingButJustEye && !eyeSlotItemInstance.isDemonEye) {
+        if (forgeMode == ForgeMode.Forging && forgeError == ForgeError.ForgingButJustEye) {
             hintText.text = $"Requires {DisplayNumber(5)} eye upgrades to forge a Demon Eye.";
             demonEyeDesc.HideAllElements();
             return;
         }
-        if (forgeMode == ForgeMode.UpgradeNotAvailableForDemonEye) {
+        if (forgeMode == ForgeMode.UpgradingDemonEye && forgeError == ForgeError.PentagramLevelTooLow) {
             hintText.text = $"Requires pentagram level {DisplayNumber(eyeSlotItemInstance.DemonEyeLevel + 1)} to upgrade the Demon Eye.";
             demonEyeDesc.HideAllElements();
             return;
         }
         
-        if (forgeMode == ForgeMode.ForgingButWithoutEye) {
+        if (forgeError == ForgeError.ForgingButWithoutEye) {
             hintText.text = "Missing eyeball in the center.";
         }
         else {
@@ -428,65 +469,74 @@ public partial class Game {
     private void OnForgeButtonPressed() {
         if (PlayingForgeAnimation) return;
         
-        int eyeSlotIndex = 0;
-        ItemInstance eyeItemInstance = null;
-
-        for (int i = 0; i < inventories.eyeForge.slots.Length; i++) {
-            InventorySlot slot = inventories.eyeForge.slots[i];
-            if (slot.ui.AcceptsItemType(itemTypes.eye)) {
-                eyeItemInstance = slot.itemInstance;
-                eyeSlotIndex = i;
-            }
-        }
-
+        ItemInstance eyeItemInstance = inventories.eyeForge.slots[0].itemInstance;
         if (eyeItemInstance == null) return;
-
-        for (int i = 0; i < inventories.eyeForge.slots.Length; i++) {
-            if (i == eyeSlotIndex) continue;
-            if (inventories.eyeForge.slots[i].itemInstance != null) break;
-            if (i == inventories.eyeForge.slots.Length - 1) return;
-        }
-
+        
         ButtonFeel forgeButton = eyeForgePanel.forgeButton;
         forgeButton.KeepPressed();
-        string prevButtonText = forgeButton.text.text;
-        forgeButton.text.text = "Forging...";
+        forgeButton.text.text = forgeMode is ForgeMode.Forging ? "Forging..." : "Upgrading...";
         
-        string demonEyeName = randomDemonEyeNames.GetRandom();
+        if (forgeMode is ForgeMode.Forging) {
+            DoEyeForgeAnimation(OnEyeForgeAnimationFinished);
+            return;
+        }
         
-        DoEyeForgeAnimation(onAnimationEndCallback: () => {
-            forgeButton.StopKeepPressed();
-            forgeButton.text.text = prevButtonText;
+        using var _ = ListPool<EyeUpgrade>.Get(out var upgrades);
+        GetDemonEyeCoreUpgrades(eyeItemInstance, ref upgrades);
+        
+        const float startFillingUpgradesDelay = 0.2f;
+        const float perUpgradeFillDelay = 0.08f;
+        for (int i = 0; i < upgrades.Count; i++) {
+            inventories.eyeForge.slots[i + 1].ui.ClearItem();
+            Tween.Delay(upgrades[i], startFillingUpgradesDelay + (i * perUpgradeFillDelay), static (eyeUpgrade) => {
+                gameInstance.ReduceOwnedCountOfItem(eyeUpgrade);
+                Inventory eyeForgeInventory = gameInstance.inventories.eyeForge;
+                InventorySlot slot = FindFirstEmptyInventorySlot(eyeForgeInventory);
+                slot.itemInstance = new(eyeUpgrade);
+                gameInstance.TweenItemMove(slot.ui.itemUI);
+            });
+        }
+        
+        const float startForgeDelay = 0.2f;
+        float totalStartForgeDelay = startForgeDelay + ((upgrades.Count * perUpgradeFillDelay));
+        Tween.Delay(totalStartForgeDelay, static () => gameInstance.DoEyeForgeAnimation(gameInstance.OnEyeForgeAnimationFinished));
+    }
+    
+    private void OnEyeForgeAnimationFinished() {
+        const int eyeSlotIndex = 0;
+        
+        ButtonFeel forgeButton = eyeForgePanel.forgeButton;
+        forgeButton.StopKeepPressed();
             
-            ItemInstance eyeSlotItemInstance = inventories.eyeForge.slots[eyeSlotIndex].itemInstance;
-            using var _ = ListPool<ItemInstance>.Get(out var eyeUpgradeItemInstances);
+        ItemInstance eyeSlotItemInstance = inventories.eyeForge.slots[eyeSlotIndex].itemInstance;
+        using var _ = ListPool<ItemInstance>.Get(out var eyeUpgradeItemInstances);
 
-            foreach (InventorySlot slot in inventories.eyeForge.slots) {
-                slot.ui.itemUI.rectTransform.anchoredPosition = Vector2.zero;
-                slot.ui.itemUI.rectTransform.localScale = Vector3.one;
-                slot.ui.itemUI.forgeEffect.SetMaterialFill(1f);
+        foreach (InventorySlot slot in inventories.eyeForge.slots) {
+            slot.ui.itemUI.rectTransform.anchoredPosition = Vector2.zero;
+            slot.ui.itemUI.rectTransform.localScale = Vector3.one;
+            slot.ui.itemUI.forgeEffect.SetMaterialFill(1f);
                 
-                if (slot.itemInstance == null) continue;
+            if (slot.itemInstance == null) continue;
                 
-                if (slot.ui.AcceptsItemType(itemTypes.eyeUpgrade)) {
-                    eyeUpgradeItemInstances.Add(slot.itemInstance);
-                }
-                slot.itemInstance = null;
+            if (slot.ui.AcceptsItemType(itemTypes.eyeUpgrade)) {
+                eyeUpgradeItemInstances.Add(slot.itemInstance);
             }
+            slot.itemInstance = null;
+        }
             
-            if (eyeSlotItemInstance.isDemonEye) {
-                UpgradeDemonEye(eyeSlotItemInstance, eyeUpgradeItemInstances);
-                inventories.eyeForge.slots[eyeSlotIndex].itemInstance = eyeSlotItemInstance;
-            }
-            else {
-                ItemInstance newDemonEye = CreateNewDemonEyeItemInstance(demonEyeName, eyeUpgradeItemInstances);
-                inventories.eyeForge.slots[eyeSlotIndex].itemInstance = newDemonEye;
-            }
-        });
+        if (eyeSlotItemInstance.isDemonEye) {
+            UpgradeDemonEye(eyeSlotItemInstance, eyeUpgradeItemInstances);
+            inventories.eyeForge.slots[eyeSlotIndex].itemInstance = eyeSlotItemInstance;
+        }
+        else {
+            string demonEyeName = randomDemonEyeNames.GetRandom();
+            ItemInstance newDemonEye = CreateNewDemonEyeItemInstance(demonEyeName, eyeUpgradeItemInstances);
+            inventories.eyeForge.slots[eyeSlotIndex].itemInstance = newDemonEye;
+        }
     }
     
     private Sequence eyeForgeSequence;
-    private bool PlayingForgeAnimation => eyeForgeSequence.isAlive;
+    private bool PlayingForgeAnimation => eyeForgeSequence.isAlive || eyeForgePanel.forgeButton.beingKeptPressed;
     
     private void DoEyeForgeAnimation(Action onAnimationEndCallback) {
         const float fillDuration = 5.5f;

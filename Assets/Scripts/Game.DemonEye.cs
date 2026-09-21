@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine.Assertions;
 using UnityEngine.Pool;
-using Mathf = UnityEngine.Mathf;
 
 public partial class Game {
     
@@ -260,13 +259,11 @@ public partial class Game {
     }
     
     private void GetDemonEyeCoreUpgrades(ItemInstance demonEyeItemInstance, ref List<EyeUpgrade> upgrades) {
-        int count = Mathf.Min(GameData.Config.demonEyeCoreUpgradeCount, demonEyeItemInstance.nestedUuids.Count);
-        
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < GameData.Config.demonEyeCoreUpgradeCount; i++) {
             UuidScriptableObject uuidObject = res.lookup[demonEyeItemInstance.nestedUuids[i]];
             
             if (uuidObject is Augment augment) {
-                upgrades.Add(augment.derivedFrom);
+                upgrades.Add(augment.augmentedEyeUpgrade);
                 continue;
             }
             if (uuidObject is EyeUpgrade upgradeItem) {

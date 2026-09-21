@@ -1,7 +1,7 @@
 using System;
 
 [Serializable]
-public class ItemWithCount {
+public struct ItemWithCount {
 
     public Item item;
     public int count;

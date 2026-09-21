@@ -5,6 +5,7 @@ using static Game;
 public class ResourceRequirementList : MonoBehaviour {
     
     public List<ResourceRequirement> resourceRequirements;
+    public ResourceRequirement.TextOption textOption;
     
     public void HideAll() {
         foreach (ResourceRequirement resReq in resourceRequirements) {
@@ -18,7 +19,7 @@ public class ResourceRequirementList : MonoBehaviour {
             ItemWithCount itemWithCount = displayList[i];
             ResourceRequirement resReq = resourceRequirements[i];
             resReq.gameObject.SetActive(true);
-            resReq.Set(itemWithCount.item, itemWithCount.count, gameInstance.GetOwnedCountOfItem(itemWithCount.item));
+            resReq.Set(itemWithCount.item, itemWithCount.count, gameInstance.GetOwnedCountOfItem(itemWithCount.item), textOption);
         }
     }
     
