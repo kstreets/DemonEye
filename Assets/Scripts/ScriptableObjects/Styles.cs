@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.Assertions;
+using UnityEngine.UI;
 
 [CreateAssetMenu(fileName = "Styles", menuName = "Scriptable Objects/Styles")]
 public class Styles : ScriptableObject {
@@ -55,6 +57,8 @@ public class Styles : ScriptableObject {
     public Color increaseDescColor;
     public Color decreaseDescColor;
     public Color timeDescColor;
+    
+    public Sprite[] romanNumerals;
 
     public Color GetTextColorForRarity(Item.Rarity rarity) {
         return rarity switch {
@@ -87,6 +91,12 @@ public class Styles : ScriptableObject {
             Item.Rarity.Legendary => legendaryTextColor.Alpha(slotRarityAlpha),
             _                     => commonTextColor.Alpha(slotRarityAlpha),
         };
+    }
+    
+    public Sprite RomanNumeralSprite(int num) {
+        num -= 1;
+        Assert.IsTrue(romanNumerals.IndexInRange(num));
+        return romanNumerals[num];
     }
 
 }

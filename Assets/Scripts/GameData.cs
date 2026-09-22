@@ -234,7 +234,7 @@ public class GameData {
     [Serializable]
     public class EyeForgePanel {
         public RectTransform panel;
-        public TextMeshProUGUI panelTextMesh;
+        public Image panelNumeral;
         public ToggleButtonGroup toggleButtonGroup;
         public ToggleButton forgeToggle;
         public ToggleButton levelUpToggle;
@@ -243,6 +243,7 @@ public class GameData {
         public GameObject forgingParent;
         public RectTransform pentagramParent;
         public Image pentagramFillImage;
+        public TextMeshProUGUI forgeHintTextMesh;
         public ButtonFeel forgeButton;
         
         public GameObject levelUpParent;
@@ -255,7 +256,10 @@ public class GameData {
     [Serializable]
     public class EyeForgeDetailsPanel {
         public RectTransform panel;
-        public TextMeshProUGUI forgingHintText;
+        public TextMeshProUGUI panelHeaderText;
+        public GameObject upgradeHeader;
+        public Image upgradeFromNumeral;
+        public Image upgradeToNumeral;
         public DemonEyeDescList demonEyeDesc;
     }
     

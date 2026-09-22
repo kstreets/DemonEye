@@ -22,7 +22,7 @@ public class DemonEyeDescList : MonoBehaviour {
         augmentDescObjectPool.CreateObjects(preCachingSize);
     }
     
-    public void UpdateDisplay(EyeUpgradeSet eyeUpgradeSet) {
+    public void UpdateDisplay(EyeUpgradeSet eyeUpgradeSet, bool showCountsAsIncrease) {
         for (int i = 0; i < elements.Length; i++) {
             DemonEyeDescElement demonEyeDescElm = elements[i];
             List<AugmentDescription> curAugmentDescList = childAugmentDescTrackingList[i];
@@ -43,7 +43,7 @@ public class DemonEyeDescList : MonoBehaviour {
             }
             
             demonEyeDescElm.gameObject.SetActive(true);
-            demonEyeDescElm.UpdateDisplay(upgradeElm, curAugmentDescList);
+            demonEyeDescElm.UpdateDisplay(upgradeElm, curAugmentDescList, showCountsAsIncrease);
         }
     }
     

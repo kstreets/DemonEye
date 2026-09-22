@@ -111,6 +111,31 @@ MonoBehaviour:
     m_GlyphIndex: 87
     m_Scale: 1.2
     m_Name: UISpriteSheet_64
+  - m_ElementType: 2
+    m_Unicode: 65534
+    m_GlyphIndex: 121
+    m_Scale: 1.5
+    m_Name: UISpriteSheet_39
+  - m_ElementType: 2
+    m_Unicode: 65534
+    m_GlyphIndex: 120
+    m_Scale: 1.5
+    m_Name: UISpriteSheet_38
+  - m_ElementType: 2
+    m_Unicode: 65534
+    m_GlyphIndex: 118
+    m_Scale: 1.5
+    m_Name: UISpriteSheet_37
+  - m_ElementType: 2
+    m_Unicode: 65534
+    m_GlyphIndex: 122
+    m_Scale: 1.5
+    m_Name: UISpriteSheet_18
+  - m_ElementType: 2
+    m_Unicode: 65534
+    m_GlyphIndex: 119
+    m_Scale: 1
+    m_Name: UISpriteSheet_40
   m_GlyphTable:
   - m_Index: 0
     m_Metrics:
@@ -2000,6 +2025,86 @@ MonoBehaviour:
     m_AtlasIndex: 0
     m_ClassDefinitionType: 0
     sprite: {fileID: 2140999340, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
+  - m_Index: 118
+    m_Metrics:
+      m_Width: 16
+      m_Height: 16
+      m_HorizontalBearingX: 0
+      m_HorizontalBearingY: 11.5
+      m_HorizontalAdvance: 16
+    m_GlyphRect:
+      m_X: 336
+      m_Y: 0
+      m_Width: 16
+      m_Height: 16
+    m_Scale: 1
+    m_AtlasIndex: 0
+    m_ClassDefinitionType: 0
+    sprite: {fileID: -903596459, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
+  - m_Index: 119
+    m_Metrics:
+      m_Width: 16
+      m_Height: 16
+      m_HorizontalBearingX: -8
+      m_HorizontalBearingY: 8
+      m_HorizontalAdvance: 16
+    m_GlyphRect:
+      m_X: 320
+      m_Y: 16
+      m_Width: 16
+      m_Height: 16
+    m_Scale: 1
+    m_AtlasIndex: 0
+    m_ClassDefinitionType: 0
+    sprite: {fileID: -1444683086, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
+  - m_Index: 120
+    m_Metrics:
+      m_Width: 16
+      m_Height: 16
+      m_HorizontalBearingX: 0
+      m_HorizontalBearingY: 11.5
+      m_HorizontalAdvance: 16
+    m_GlyphRect:
+      m_X: 320
+      m_Y: 0
+      m_Width: 16
+      m_Height: 16
+    m_Scale: 1
+    m_AtlasIndex: 0
+    m_ClassDefinitionType: 0
+    sprite: {fileID: -1433164497, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
+  - m_Index: 121
+    m_Metrics:
+      m_Width: 16
+      m_Height: 16
+      m_HorizontalBearingX: -3
+      m_HorizontalBearingY: 11.5
+      m_HorizontalAdvance: 16
+    m_GlyphRect:
+      m_X: 304
+      m_Y: 0
+      m_Width: 16
+      m_Height: 16
+    m_Scale: 1
+    m_AtlasIndex: 0
+    m_ClassDefinitionType: 0
+    sprite: {fileID: -1059821501, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
+  - m_Index: 122
+    m_Metrics:
+      m_Width: 16
+      m_Height: 16
+      m_HorizontalBearingX: 0
+      m_HorizontalBearingY: 11.5
+      m_HorizontalAdvance: 16
+    m_GlyphRect:
+      m_X: 352
+      m_Y: 0
+      m_Width: 16
+      m_Height: 16
+    m_Scale: 1
+    m_AtlasIndex: 0
+    m_ClassDefinitionType: 0
+    sprite: {fileID: 221170792, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
   spriteInfoList:
   - id: 0
     x: 0

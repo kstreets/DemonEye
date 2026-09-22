@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using PrimeTween;
 using TMPro;
@@ -554,6 +555,7 @@ public partial class Game {
         public readonly List<RectTransform> hoverableRectTransforms = new();
         public readonly List<InventorySlot> hoverableInventorySlots = new();
         public readonly Dictionary<RectTransform, string> descriptionLookup = new();
+        public readonly Dictionary<RectTransform, Func<string>> descriptionCallbackLookup = new();
         public HintHoverInfo lastHintHoverInfo;
     }
     private UIHints uiHints = new();
@@ -580,6 +582,45 @@ public partial class Game {
         AddHint(inventories.eyeForge.slots[5],  eyeUpgradeDesc);
         
         AddHint(ui.stashPanelHeaderText, "A place to keep all your items safe. Stashed items remain even after dying.");
+        
+        AddHintWithCallback(eyeForgePanel.forgeButton.rectTransform, static () => {
+            if (gameInstance.PlayingForgeAnimation) {
+                return string.Empty;
+            }
+            
+            ForgeMode forgeMode = gameInstance.forgeMode;
+            ForgeError forgeError = gameInstance.forgeError;
+            Inventory eyeForgeInventory = gameInstance.inventories.eyeForge;
+            
+            if (forgeMode == ForgeMode.Empty) {
+                return "Place an eyeball in the center to start the Demon Eye forging process";
+            }
+            if (forgeError == ForgeError.ForgingButJustEye) {
+                return $"Requires {DisplayNumber(5)} Eye Upgrades to forge a Demon Eye";
+            }
+            if (forgeError == ForgeError.ForgingButMissingUpgrades) {
+                int curEyeUpgradeCount = gameInstance.GetInventoryItemCount(eyeForgeInventory) - 1;
+                int eyeUpgradesStillNeeded = GameData.Config.demonEyeCoreUpgradeCount - curEyeUpgradeCount;
+                return $"Requires {DisplayNumber(eyeUpgradesStillNeeded)} more Eye Upgrades to forge a Demon Eye";
+            }
+            if (forgeError == ForgeError.ForgingButWithoutEye) {
+                return "Missing eyeball in the center";
+            }
+            if (forgeError == ForgeError.PentagramLevelTooLow) {
+                int pentegramLevelRequired = eyeForgeInventory.slots[0].itemInstance.DemonEyeLevel + 1;
+                return $"Pentagram needs to be level {pentegramLevelRequired} to upgrade this Demon Eye";
+            }
+            if (forgeError == ForgeError.NeedsToOwnMoreEyeUpgrades) {
+                return "Eye Upgrades requirement have not been met";
+            }
+            if (forgeMode == ForgeMode.UpgradingDemonEye) {
+                return "Upgrade Demon Eye";
+            }
+            if (forgeMode == ForgeMode.PostForgeOrUpgrade) {
+                return "Continue with upgrading the Demon Eye";
+            }
+            return "Craft Demon Eye";
+        });
     }
     
     private void AddHint(InventorySlot slot, string description) {
@@ -594,7 +635,14 @@ public partial class Game {
         uiHints.hoverableRectTransforms.Add(rectTransform);
         uiHints.descriptionLookup.Add(rectTransform, description);
     }
-
+    
+    private void AddHintWithCallback(RectTransform rectTransform, Func<string> getDescriptionCallback) {
+        Assert.IsFalse(uiHints.descriptionLookup.ContainsKey(rectTransform), "Hint RectTransform has already been added");
+        Assert.IsFalse(getDescriptionCallback == null, "Description callback should not be null");
+        uiHints.hoverableRectTransforms.Add(rectTransform);
+        uiHints.descriptionCallbackLookup.Add(rectTransform, getDescriptionCallback);
+    }
+    
     private void UpdateUIHints() {
         HintHoverInfo hoverInfo = UpdateHintHover();
         
@@ -615,10 +663,25 @@ public partial class Game {
     }
 
     private void ShowHint(HintHoverInfo hoverInfo) {
-        if (ui.hintPopup.gameObject.activeInHierarchy) return;
+        if (ui.hintPopup.gameObject.activeInHierarchy) {
+            // This makes sure that hints that can change during runtime are always up to date when already showing
+            if (uiHints.descriptionCallbackLookup.TryGetValue(hoverInfo.hoveringTransform, out Func<string> callback)) {
+                ui.hintPopup.descText.text = callback.Invoke();
+            }
+            return;
+        }
+        
         Vector2 hoveredCenter = hoverInfo.hoveringTransform.WorldRect().center;
         Vector2 popupOffset = new(0f, hoverInfo.hoveringTransform.rect.height * 0.7f);
-        ui.hintPopup.Show(hoveredCenter + popupOffset, uiHints.descriptionLookup[hoverInfo.hoveringTransform]);
+        
+        if (uiHints.descriptionLookup.TryGetValue(hoverInfo.hoveringTransform, out string desc)) {
+            ui.hintPopup.Show(hoveredCenter + popupOffset, desc);
+        }
+        else if (uiHints.descriptionCallbackLookup.TryGetValue(hoverInfo.hoveringTransform, out Func<string> callback)) {
+            string description = callback.Invoke();
+            if (description == string.Empty) return;
+            ui.hintPopup.Show(hoveredCenter + popupOffset, description);
+        }
     }
 
     private void HideHint() {

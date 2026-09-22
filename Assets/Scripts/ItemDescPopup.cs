@@ -48,7 +48,7 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
     
     private void SetName(ItemInstance itemInstance, Item item) {
         if (itemInstance.isDemonEye) {
-            nameText.text = $"{itemInstance.demonEyeName} (Lvl {itemInstance.DemonEyeLevel})";
+            nameText.text = $"{itemInstance.demonEyeName} {ColorSprite(GetTextMeshRomanNumeralIndex(itemInstance.DemonEyeLevel), styles.headerTextColor)}";
             return;
         }
         nameText.text = item.displayName;
@@ -112,7 +112,7 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
         demonEyeDesc.gameObject.SetActive(itemInstance.isDemonEye);
         
         if (itemInstance.isDemonEye) {
-            demonEyeDesc.UpdateDisplay(gameInstance.EyeUpgradeSetFromIds(itemInstance.nestedUuids));
+            demonEyeDesc.UpdateDisplay(gameInstance.EyeUpgradeSetFromIds(itemInstance.nestedUuids), showCountsAsIncrease: false);
         }
         else {
             descText.text = item.GetDescription();

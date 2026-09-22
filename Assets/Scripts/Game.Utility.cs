@@ -64,6 +64,11 @@ public partial class Game {
         int secondsLeft = Mathf.FloorToInt(time % 60f);
         return $"{minutesLeft:00}:{secondsLeft:00}";
     }
+    
+    public static int GetTextMeshRomanNumeralIndex(int num) {
+        const int startingIndex = 6;
+        return startingIndex + (num - 1);
+    }
 
     private static string SizeText(string text, int fontSize) {
         return $"<size={fontSize}>{text}</size>";
@@ -71,6 +76,10 @@ public partial class Game {
     
     public static string ColorText(string text, Color color) {
         return $"<color=#{ColorUtility.ToHtmlStringRGBA(color)}>{text}</color>";
+    }
+    
+    public static string ColorSprite(int spriteIndex, Color color) {
+        return $"<sprite index={spriteIndex} color=#{ColorUtility.ToHtmlStringRGBA(color)}>";
     }
     
     public static string DisplayProb(float probability, Color? color = default) {

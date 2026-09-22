@@ -10,12 +10,14 @@ public class DemonEyeDescElement : MonoBehaviour  {
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI descText;
     public RectTransform bodyLayout;
-
-    public void UpdateDisplay(EyeUpgradeSet.Element modifierSetElm, List<AugmentDescription> augmentDescriptions) {
+    
+    public void UpdateDisplay(EyeUpgradeSet.Element modifierSetElm, List<AugmentDescription> augmentDescriptions, bool showCountsAsIncrease) {
         Assert.IsTrue(!modifierSetElm.HasAugments || modifierSetElm.augmentsAndCount.Count == augmentDescriptions.Count,
             "Parent should be supplying the correct number of augment descriptions");
         
-        nameText.text = ColorText($"{modifierSetElm.EyeUpgrade.displayName} <size=87%>x{modifierSetElm.upgradeCount}</size>", styles.headerTextColor);
+        Color countTextColor = showCountsAsIncrease ? styles.increaseDescColor : styles.headerTextColor; 
+        nameText.text = ColorText($"{modifierSetElm.EyeUpgrade.displayName} ", styles.headerTextColor);
+        nameText.text += ColorText($"<size=87%>x{modifierSetElm.upgradeCount}</size>", countTextColor);
         descText.text = modifierSetElm.EyeUpgrade.GetDescription(modifierSetElm.upgradeCount);
         
         for (int i = 0; i < augmentDescriptions.Count; i++) {
@@ -26,7 +28,7 @@ public class DemonEyeDescElement : MonoBehaviour  {
             bool showAugmentStackCount = augmentStackCount > 1;
             augmentDesc.stackCountTextMesh.gameObject.SetActive(showAugmentStackCount);
             if (showAugmentStackCount) {
-                augmentDesc.stackCountTextMesh.text = $"x{augmentStackCount}";
+                augmentDesc.stackCountTextMesh.text = ColorText($"x{augmentStackCount}", countTextColor);
             }
             
             // BUG: There is a purely visual bug with Unity's new hierarchy where it might appear that this set parent call isn't working
