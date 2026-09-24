@@ -325,6 +325,11 @@ public class GameData {
         public DynamicClip lootingBushLoop;
         public DynamicClip rarityRevealClip;
         public DynamicClip togglePressClip;
+        public DynamicClip coinSplashClip;
+        public DynamicClip cashRegisterClip;
+        public DynamicClip purchaseClip;
+        public DynamicClip itemMoveClip;
+        public DynamicClip itemSelectClip;
         
         public Dictionary<int, List<DynamicClipRecord>> records = new(50);
         public Dictionary<AudioSource, int> generationLookup = new();
@@ -505,6 +510,7 @@ public class GameData {
         PickedUpLoot    = 1 << 8,
         ShotRock        = 1 << 9,
         SummonedUpgrade = 1 << 10,
+        SoldToTrader    = 1 << 11,
     }
     
     public class PerFrameData {

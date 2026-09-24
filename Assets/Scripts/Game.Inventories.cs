@@ -850,7 +850,9 @@ public partial class Game {
     }
     
     private void TweenItemMove(ItemUI itemUI) {
+        if (!itemUI.gameObject.activeInHierarchy) return;
         Tween.PunchScale(itemUI.rectTransform, Vector3.one * 0.15f, 0.135f);
+        PlayAudioClip(audio.itemMoveClip);
     }
 
     private enum MoveItemOption { FullStack, Single }

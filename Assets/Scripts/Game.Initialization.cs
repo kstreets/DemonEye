@@ -114,35 +114,35 @@ public partial class Game {
         });
         
         hideoutTabs.characterButton.onClick.AddListener(() => {
-            PlayAudioClip(audio.togglePressClip, Vector2.zero);
+            PlayAudioClip(audio.togglePressClip);
             ToggleHideoutTab(hideoutTabs.characterButton, hideoutTabs.characterText);
             ToggleHideoutPanels(playerPanel.panel, stashPanel.panel);
             ToggleSlimPlayerPanel(false);
         });
         
         hideoutTabs.eyeForgeButton.onClick.AddListener(() => {
-            PlayAudioClip(audio.togglePressClip, Vector2.zero);
+            PlayAudioClip(audio.togglePressClip);
             ToggleHideoutTab(hideoutTabs.eyeForgeButton, hideoutTabs.eyeForgeText);
             ToggleHideoutPanels(playerPanel.panel, eyeForgePanel.panel, stashPanel.panel);
             ToggleSlimPlayerPanel(true);
         });
         
         hideoutTabs.traderButton.onClick.AddListener(() => {
-            PlayAudioClip(audio.togglePressClip, Vector2.zero);
+            PlayAudioClip(audio.togglePressClip);
             ToggleHideoutTab(hideoutTabs.traderButton, hideoutTabs.traderText);
             ToggleHideoutPanels(traderPanel.panel, transactionPanel.panel, stashPanel.panel);
             TriggerTraderShopDialogue(TraderShopDialogueType.Greeting); 
         });
         
         hideoutTabs.questsButton.onClick.AddListener(() => {
-            PlayAudioClip(audio.togglePressClip, Vector2.zero);
+            PlayAudioClip(audio.togglePressClip);
             ToggleHideoutTab(hideoutTabs.questsButton, hideoutTabs.questsText);
             ToggleHideoutPanels(questsPanel.panel);
             RefreshQuestDisplays();
         });
         
         hideoutTabs.skillsButton.onClick.AddListener(() => {
-            PlayAudioClip(audio.togglePressClip, Vector2.zero);
+            PlayAudioClip(audio.togglePressClip);
             ToggleHideoutTab(hideoutTabs.skillsButton, hideoutTabs.skillsText);
             ToggleHideoutPanels(skillsPanel.panel.rectTransform, skillsPanel.playerStatsPanel.rectTransform);
         });

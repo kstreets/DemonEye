@@ -2924,6 +2924,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1085995378}
     m_Modifications:
+    - target: {fileID: 918381908962251433, guid: 4add96f54f6ffed44b65bd2e53c29d92, type: 3}
+      propertyPath: hoveredClip
+      value: 
+      objectReference: {fileID: 11400000, guid: 2d2842778d60fe24981b29388f7ded4a, type: 2}
     - target: {fileID: 5648879043497698102, guid: 4add96f54f6ffed44b65bd2e53c29d92, type: 3}
       propertyPath: m_text
       value: Hideout
@@ -10227,6 +10231,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1085995378}
     m_Modifications:
+    - target: {fileID: 918381908962251433, guid: 4add96f54f6ffed44b65bd2e53c29d92, type: 3}
+      propertyPath: hoveredClip
+      value: 
+      objectReference: {fileID: 11400000, guid: 2d2842778d60fe24981b29388f7ded4a, type: 2}
     - target: {fileID: 5648879043497698102, guid: 4add96f54f6ffed44b65bd2e53c29d92, type: 3}
       propertyPath: m_text
       value: Exit
@@ -13250,6 +13258,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1085995378}
     m_Modifications:
+    - target: {fileID: 918381908962251433, guid: 4add96f54f6ffed44b65bd2e53c29d92, type: 3}
+      propertyPath: hoveredClip
+      value: 
+      objectReference: {fileID: 11400000, guid: 2d2842778d60fe24981b29388f7ded4a, type: 2}
     - target: {fileID: 5648879043497698102, guid: 4add96f54f6ffed44b65bd2e53c29d92, type: 3}
       propertyPath: m_text
       value: Settings
@@ -19871,6 +19883,11 @@ MonoBehaviour:
     lootingBushLoop: {fileID: 11400000, guid: 1b7228467a7559c4e85c537322e1d7a8, type: 2}
     rarityRevealClip: {fileID: 11400000, guid: 166c33f53db0eed469de35e3c26c3e63, type: 2}
     togglePressClip: {fileID: 11400000, guid: fcf594ae8947a754fbe311a841f43d5e, type: 2}
+    coinSplashClip: {fileID: 11400000, guid: b14f3a4e8cd04fd4d80faaef0d53a413, type: 2}
+    cashRegisterClip: {fileID: 11400000, guid: b22f77b0b81aa364fad1b75559b6efaf, type: 2}
+    purchaseClip: {fileID: 11400000, guid: 957d318089d396444959abf2ce888578, type: 2}
+    itemMoveClip: {fileID: 11400000, guid: 89a33859eea85ba4486966b6bb37fc38, type: 2}
+    itemSelectClip: {fileID: 11400000, guid: 3fee7cdf1c23b804c97294a60baf0dc5, type: 2}
   music:
     masterGroup: {fileID: 24300002, guid: 045edcbc93f71d548a0426204df6ca60, type: 2}
     mainMenuGroup: {fileID: -2699966960544205561, guid: 045edcbc93f71d548a0426204df6ca60, type: 2}
@@ -25531,6 +25548,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1085995378}
     m_Modifications:
+    - target: {fileID: 918381908962251433, guid: 4add96f54f6ffed44b65bd2e53c29d92, type: 3}
+      propertyPath: hoveredClip
+      value: 
+      objectReference: {fileID: 11400000, guid: 2d2842778d60fe24981b29388f7ded4a, type: 2}
     - target: {fileID: 8442199821400874121, guid: 4add96f54f6ffed44b65bd2e53c29d92, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5

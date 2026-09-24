@@ -177,6 +177,7 @@ public partial class Game {
         if (tweenSize && curTradingInventorySlot != null) {
             ItemUI itemUI = curTradingInventorySlot.ui.itemUI;
             Tween.PunchScale(itemUI.rectTransform, Vector3.one * 0.3f, 0.12f, 5f);
+            PlayAudioClip(audio.itemSelectClip);
         }
         
         ItemInstance tradingItemInstance = curTradingInventorySlot?.itemInstance;
@@ -219,6 +220,8 @@ public partial class Game {
         int sellPrice = GetInventoryValue(inventories.transaction, InventoryValueType.Sell);
         player.state.coinCurrency += sellPrice;
         ClearInventory(inventories.transaction);
+        PlayAudioClip(audio.cashRegisterClip);
+        thisFrame.flags |= FrameFlags.SoldToTrader;
     }
     
     private void OnMoneyPurchaseButtonPressed() {
@@ -232,6 +235,7 @@ public partial class Game {
             // After buying items we just make sure all items in stash are no longer trader owned
             ClearItemsAsTraderOwned(inventories.stash);
             TriggerTraderShopDialogue(TraderShopDialogueType.Purchase);
+            PlayAudioClip(audio.purchaseClip);
         }
     }
     
@@ -245,6 +249,7 @@ public partial class Game {
         TryAddItemToInventory(inventories.stash, curTradingItem, 1);
         ReduceTradingItemStock();
         TriggerTraderShopDialogue(TraderShopDialogueType.Purchase);
+        PlayAudioClip(audio.purchaseClip);
     }
     
     private void UpdateTransactionUI() {
@@ -253,11 +258,18 @@ public partial class Game {
         if (transactionState == TransactionState.Buying) {
             transactionPanel.transaction.UpdateBuyItem(curTradingInventorySlot?.itemInstance);
             transactionPanel.transaction.toggleGroup.ManualyToggleCosmetically(transactionPanel.transaction.buyToggle);
+            transactionPanel.transaction.ClearSellPrice();
         }
         else if (transactionState == TransactionState.Selling) {
             int sellPrice = GetInventoryValue(inventories.transaction, InventoryValueType.Sell);
-            transactionPanel.transaction.UpdateSellPrice(sellPrice);
+            if (thisFrame.flags.HasFlag(FrameFlags.SoldToTrader)) {
+                transactionPanel.transaction.ClearSellPrice();
+            }
+            else {
+                transactionPanel.transaction.UpdateSellPrice(sellPrice);
+            }
             transactionPanel.transaction.toggleGroup.ManualyToggleCosmetically(transactionPanel.transaction.sellToggle);
+            transactionPanel.transaction.sellButton.SetClickableState(GetInventoryItemCount(inventories.transaction) > 0);
         }
     }
     

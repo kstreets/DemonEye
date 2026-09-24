@@ -30,8 +30,10 @@ public partial class Game {
         }
     }
     
+    public AudioClipHandle PlayAudioClip(DynamicClip dynamicClip) => PlayAudioClip(dynamicClip, Vector2.zero);
+    
     public AudioClipHandle PlayAudioClip(DynamicClip dynamicClip, Vector2 position, float volumeScaler = 1f, float pitch = 0f, bool loop = false) {
-        if (ClipIsViolatingLocalArea(dynamicClip, position)) {
+        if (ClipShouldNotBePlayed(dynamicClip, position)) {
             return new();
         }
         
@@ -96,13 +98,21 @@ public partial class Game {
         }
     }
     
-    private bool ClipIsViolatingLocalArea(DynamicClip clip, Vector2 clipPos) {
-        if (clip.localAreaCooldownTime <= 0f || clip.localAreaDistance <= 0f) {
-            return false;
-        }
-        
+    private bool ClipShouldNotBePlayed(DynamicClip clip, Vector2 clipPos) {
         var clipRecords = audio.records;
         bool recordsExits = clipRecords.TryGetValue(clip.GetInstanceID(), out List<DynamicClipRecord> records);
+        
+        if (recordsExits && clip.maxSimultaneous > 0) {
+            int countPlayedThisFrame = 0;
+            foreach (DynamicClipRecord record in records) {
+                if (record.timePlayed == Time.time) {
+                    countPlayedThisFrame++;
+                }
+            }
+            if (countPlayedThisFrame >= clip.maxSimultaneous) {
+                return true;
+            }
+        }
         
         if (!recordsExits) {
             const int initCapacity = 10;
@@ -114,6 +124,14 @@ public partial class Game {
             });
             
             clipRecords.Add(clip.GetInstanceID(), newRecords);
+            return false;
+        }
+        
+        if (clip.localAreaCooldownTime <= 0f || clip.localAreaDistance <= 0f) {
+            records.Add(new() {  
+                timePlayed = Time.time, 
+                positionPlayed = clipPos,
+            });
             return false;
         }
         

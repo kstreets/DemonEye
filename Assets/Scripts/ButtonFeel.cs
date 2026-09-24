@@ -45,7 +45,9 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
         beingHovered = true;
         if (!highlightedSprite) return;
         image.sprite = GetHighlightedSprite();
-        Game.gameInstance.PlayAudioClip(hoveredClip, Vector2.zero);
+        if (hoveredClip != null) {
+            Game.gameInstance.PlayAudioClip(hoveredClip);
+        }
         if (isDisabled || beingKeptPressed) {
             SetMargin(styles.pressedButtonTextMargin);
         }
@@ -124,7 +126,7 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
 
     private void OnButtonClicked() {
         if (isDisabled || beingKeptPressed) return;
-        Game.gameInstance.PlayAudioClip(pressedClip, Vector2.zero);
+        Game.gameInstance.PlayAudioClip(pressedClip);
         buttonListenerCallback?.Invoke();
     }
 

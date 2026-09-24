@@ -53,7 +53,7 @@ public class ToggleButtonGroup : MonoBehaviour {
         UnityAction callback = () => {
             // Place sound here because we only want it to play when we actually click on it.
             // OnButtonClicked can be manually called without the player pressing the button.
-            Game.gameInstance.PlayAudioClip(pressedClip, Vector2.zero);
+            Game.gameInstance.PlayAudioClip(pressedClip);
             OnButtonClicked(toggle);
         };
         callbacks.TryAdd(toggle, callback);

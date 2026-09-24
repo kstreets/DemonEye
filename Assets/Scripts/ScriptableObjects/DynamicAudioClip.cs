@@ -11,6 +11,7 @@ public class DynamicClip : ScriptableObject {
     public float maxDistance = 500f;
     public float minPitch = 1f;
     public float maxPitch = 1f;
+    public int maxSimultaneous;
 
     [Header("Local Area")]
     public float localAreaCooldownTime;

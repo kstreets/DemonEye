@@ -285,4 +285,4 @@ MonoBehaviour:
   isDisabled: 0
   beingKeptPressed: 0
   pressedClip: {fileID: 11400000, guid: edda9b35a3d9e244cad17c16a85c2be5, type: 2}
-  hoveredClip: {fileID: 11400000, guid: 2d2842778d60fe24981b29388f7ded4a, type: 2}
+  hoveredClip: {fileID: 0}

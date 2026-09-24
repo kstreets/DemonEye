@@ -80,8 +80,7 @@ public class TransactionPanel : MonoBehaviour {
         if (prevSellPrice == sellPrice) return;
         
         if (sellPrice == 0 && prevSellPrice == int.MinValue) {
-            sellInfoText.text = "Place Items to Sell";
-            coinCurrencyText.gameObject.SetActive(false);
+            ClearSellPrice();
         }
         else if (sellPrice == 0) {
             sellPriceSequence.Complete();
@@ -90,15 +89,24 @@ public class TransactionPanel : MonoBehaviour {
                 transctionPanel.sellInfoText.text = "Place Items to Sell";
                 transctionPanel.coinCurrencyText.gameObject.SetActive(false);
             });
+            gameInstance.PlayAudioClip(gameInstance.audio.coinSplashClip);
         }
         else {
             sellInfoText.text = "Sell for <sprite=0>";
             coinCurrencyText.gameObject.SetActive(true);
             sellPriceSequence.Complete();
             sellPriceSequence = AnimateCurrency(coinCurrencyText, prevSellPrice, sellPrice);
+            gameInstance.PlayAudioClip(gameInstance.audio.coinSplashClip);
         }
         
         prevSellPrice = sellPrice;
+    }
+    
+    public void ClearSellPrice() {
+        if (!coinCurrencyText.gameObject.activeSelf) return;
+        sellInfoText.text = "Place Items to Sell";
+        coinCurrencyText.gameObject.SetActive(false);
+        prevSellPrice = 0;
     }
 
 }
