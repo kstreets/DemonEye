@@ -35,6 +35,7 @@ public partial class Game : MonoBehaviour {
     public QuestsPanel questsPanel;
     public GameData.SkillsPanel skillsPanel;
     public Audio audio;
+    public Music music;
     
     [NonSerialized] public readonly GameData.Input input = new();
     [NonSerialized] public readonly EntityPools entityPools = new();
@@ -93,6 +94,7 @@ public partial class Game : MonoBehaviour {
     private void OnMainMenuStateEnter() {
         Cursor.visible = true;
         ShowMainMenuUI();
+        PlayMusic(music.mainMenuMusic, MusicOption.Fast);
     }
 
     private void OnMainMenuStateExit() {
@@ -152,6 +154,7 @@ public partial class Game : MonoBehaviour {
     private void OnRaidStateEnter() {
         InitRaid();
         DemonEyeOnRaidEnter();
+        StopMusic(MusicOption.Smooth);
     }
 
     private void OnRaidStateExit() {
@@ -178,6 +181,7 @@ public partial class Game : MonoBehaviour {
         UpdateSpawnManager();
         UpdateEnemies();
         RefreshAllInventoryDisplays();
+        UpdateGameplayMusic();
     }
 
     private void OnRaidStateFixedUpdate() {
@@ -195,6 +199,7 @@ public partial class Game : MonoBehaviour {
     private void OnEarlyExitEnter() {
         SaveGameState();
         AnimateEarlyExitSequence(() => states.gameStateMachine.SetStateIfNotCurrent(states.mainMenu));
+        StopMusic(MusicOption.Fast); // Needs to be after animation sequence because it stops all tweens
     }
     
     private void OnEarlyExitExit() {
@@ -220,6 +225,7 @@ public partial class Game : MonoBehaviour {
         ClearInventory(inventories.player);
         SaveGameState();
         AnimateGameOverSequence(() => states.gameStateMachine.SetStateIfNotCurrent(states.mainMenu)); 
+        StopMusic(MusicOption.Fast); // Needs to be after animation sequence because it stops all tweens
     }
     
     private void OnGameOverExit() {
@@ -277,7 +283,7 @@ public partial class Game : MonoBehaviour {
 
         curRaid.stateSwitchedThisFrame = prevState != curRaid.state;
         
-        if (curRaid.stateSwitchedThisFrame && curRaid.state == RaidState.FinalWave) {
+        if ((curRaid.stateSwitchedThisFrame && curRaid.state == RaidState.FinalWave) || spawnManager.waveStartedThisFrame) {
             PlayAudioClip(audio.finalWaveStingerClip, player.position);
         }
 

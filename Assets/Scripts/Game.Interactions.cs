@@ -9,22 +9,12 @@ using Random = UnityEngine.Random;
 public partial class Game {
     
     public struct InteractionData {
-        public float timeSpentSummoningPortal;
-        
         public Sequence discoverSlotsSequence;
         public Tween searchCirclePopInTween;
         public Timer discoverItemTimer;
         public int discoverItemIndex;
         public LootInventoryOrigin curLootOrigin;
         public AudioClipHandle activeSearchingLoopClip;
-    }
-    
-    private void CancelPortalSummoning() {
-        curRaid.data.interactions.timeSpentSummoningPortal = 0f;
-    }
-    
-    private bool InteractingWithPortal() {
-        return curRaid.data.interactions.timeSpentSummoningPortal > Mathf.Epsilon;
     }
     
     private void CheckForInteractions() { 

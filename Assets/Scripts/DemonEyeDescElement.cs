@@ -8,6 +8,7 @@ public class DemonEyeDescElement : MonoBehaviour  {
     
     public Styles styles;
     public TextMeshProUGUI nameText;
+    public TextMeshProUGUI countText;
     public TextMeshProUGUI descText;
     public RectTransform bodyLayout;
     
@@ -17,23 +18,15 @@ public class DemonEyeDescElement : MonoBehaviour  {
         
         Color countTextColor = showCountsAsIncrease ? styles.increaseDescColor : styles.headerTextColor; 
         nameText.text = ColorText($"{modifierSetElm.EyeUpgrade.displayName} ", styles.headerTextColor);
-        nameText.text += ColorText($"<size=87%>x{modifierSetElm.upgradeCount}</size>", countTextColor);
+        countText.text = ColorText($"x{modifierSetElm.upgradeCount}", countTextColor);
         descText.text = modifierSetElm.EyeUpgrade.GetDescription(modifierSetElm.upgradeCount);
         
         for (int i = 0; i < augmentDescriptions.Count; i++) {
             AugmentDescription augmentDesc = augmentDescriptions[i];
             (Augment augment, int augmentStackCount) = modifierSetElm.augmentsAndCount[i];
-            
             augmentDesc.descTextMesh.text = augment.GetDescription(augmentStackCount);
-            bool showAugmentStackCount = augmentStackCount > 1;
-            augmentDesc.stackCountTextMesh.gameObject.SetActive(showAugmentStackCount);
-            if (showAugmentStackCount) {
-                augmentDesc.stackCountTextMesh.text = ColorText($"x{augmentStackCount}", countTextColor);
-            }
-            
             // BUG: There is a purely visual bug with Unity's new hierarchy where it might appear that this set parent call isn't working
             augmentDesc.transform.SetParent(bodyLayout);
-            
             // Augments show at the top of the body content and we make sure to preserve the sorted order
             augmentDesc.transform.SetSiblingIndex(i);
         }

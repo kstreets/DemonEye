@@ -1,3 +1,4 @@
+using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -12,6 +13,7 @@ public partial class Game {
         InitInput();
         InitResources();
         InitAudio();
+        InitMusic();
         DemonEyeTween.Init();
         InitDemonEye();
         InitButtonCallbacks();
@@ -112,30 +114,35 @@ public partial class Game {
         });
         
         hideoutTabs.characterButton.onClick.AddListener(() => {
+            PlayAudioClip(audio.togglePressClip, Vector2.zero);
             ToggleHideoutTab(hideoutTabs.characterButton, hideoutTabs.characterText);
             ToggleHideoutPanels(playerPanel.panel, stashPanel.panel);
             ToggleSlimPlayerPanel(false);
         });
         
         hideoutTabs.eyeForgeButton.onClick.AddListener(() => {
+            PlayAudioClip(audio.togglePressClip, Vector2.zero);
             ToggleHideoutTab(hideoutTabs.eyeForgeButton, hideoutTabs.eyeForgeText);
             ToggleHideoutPanels(playerPanel.panel, eyeForgePanel.panel, stashPanel.panel);
             ToggleSlimPlayerPanel(true);
         });
         
         hideoutTabs.traderButton.onClick.AddListener(() => {
+            PlayAudioClip(audio.togglePressClip, Vector2.zero);
             ToggleHideoutTab(hideoutTabs.traderButton, hideoutTabs.traderText);
             ToggleHideoutPanels(traderPanel.panel, transactionPanel.panel, stashPanel.panel);
             TriggerTraderShopDialogue(TraderShopDialogueType.Greeting); 
         });
         
         hideoutTabs.questsButton.onClick.AddListener(() => {
+            PlayAudioClip(audio.togglePressClip, Vector2.zero);
             ToggleHideoutTab(hideoutTabs.questsButton, hideoutTabs.questsText);
             ToggleHideoutPanels(questsPanel.panel);
             RefreshQuestDisplays();
         });
         
         hideoutTabs.skillsButton.onClick.AddListener(() => {
+            PlayAudioClip(audio.togglePressClip, Vector2.zero);
             ToggleHideoutTab(hideoutTabs.skillsButton, hideoutTabs.skillsText);
             ToggleHideoutPanels(skillsPanel.panel.rectTransform, skillsPanel.playerStatsPanel.rectTransform);
         });

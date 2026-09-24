@@ -448,6 +448,7 @@ public partial class Game {
         public float timeAddedThroughActions;
         public int curPhaseIndex;
         public bool spawnedThisFrame;
+        public bool waveStartedThisFrame;
         public RaidSpawnPattern spawnPattern;
         
         public readonly List<int> chosenVarientIndices = new();
@@ -460,6 +461,7 @@ public partial class Game {
        
         public int CurWaveNumber => Mathf.Clamp(curPhaseIndex + 1, 0, chosenVarientIndices.Count);
         public int TotalWaveCount => chosenVarientIndices.Count;
+        public float TotalCompletion => CurWaveNumber / (float)TotalWaveCount;
         
         public bool BeforeLastWave => curPhaseIndex < chosenVarientIndices.Count - 1;
         public bool OnLastWave => curPhaseIndex == chosenVarientIndices.Count - 1;
@@ -495,6 +497,7 @@ public partial class Game {
     private void UpdateSpawnManager() {
         EnemySpawnManager sm = spawnManager;
         sm.spawnedThisFrame = false;
+        sm.waveStartedThisFrame = false;
         
         if (sm.FinishedSpawningForRaid) return;
         
@@ -547,6 +550,7 @@ public partial class Game {
         
         if (startNextWave && !sm.OnLastWave) {
             sm.curPhaseIndex++;
+            sm.waveStartedThisFrame = true;
 
 #if UNITY_EDITOR
             foreach (RaidSpawnPattern.EnemyBatch batch in sm.CurPhase.enemyBatches) {

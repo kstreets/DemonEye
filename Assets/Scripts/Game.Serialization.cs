@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Pool;
 using static GameData;
 
 public partial class Game {
@@ -43,7 +43,7 @@ public partial class Game {
 
         // Maps
         {
-            using var _ = ListPool<MapData.State>.Get(out var mapStates);
+            using var _ = UnityEngine.Pool.ListPool<MapData.State>.Get(out var mapStates);
             foreach (MapData map in config.maps) {
                 mapStates.Add(map.state);
             }
@@ -51,7 +51,7 @@ public partial class Game {
         }
         // Quests
         { 
-            using var _ = ListPool<Quest.State>.Get(out var questStates);
+            using var _ = UnityEngine.Pool.ListPool<Quest.State>.Get(out var questStates);
             foreach (Quest quest in quests.graph.unorderedQuests) {
                 questStates.Add(quest.state);
             }
@@ -127,7 +127,7 @@ public partial class Game {
     }
     
     private void SerializeInventory(BinaryWriter writer, Inventory inventory) {
-        using var _ = ListPool<ItemInstance>.Get(out var items);
+        using var _ = UnityEngine.Pool.ListPool<ItemInstance>.Get(out var items);
         foreach (InventorySlot slot in inventory.slots) {
             items.Add(slot.itemInstance);
         }

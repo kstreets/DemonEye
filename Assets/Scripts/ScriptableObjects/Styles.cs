@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.UI;
 
 [CreateAssetMenu(fileName = "Styles", menuName = "Scriptable Objects/Styles")]
 public class Styles : ScriptableObject {
@@ -26,6 +25,7 @@ public class Styles : ScriptableObject {
     public Color itemPlaceholderColor;
     public Color itemCountColor;
     public Color headerTextColor;
+    public Color subHeaderTextColor;
     public Color popInTextColor;
     
     public Color coinCurrencyColor;
@@ -57,6 +57,7 @@ public class Styles : ScriptableObject {
     public Color increaseDescColor;
     public Color decreaseDescColor;
     public Color timeDescColor;
+    public Color secondaryGreenColor;
     
     public Sprite[] romanNumerals;
 

@@ -103,6 +103,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -282,4 +283,6 @@ MonoBehaviour:
   disabledSprite: {fileID: 1226795369, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
   highlightedDisabledSprite: {fileID: -870479080, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
   isDisabled: 0
-  keepPressed: 0
+  beingKeptPressed: 0
+  pressedClip: {fileID: 11400000, guid: edda9b35a3d9e244cad17c16a85c2be5, type: 2}
+  hoveredClip: {fileID: 11400000, guid: 2d2842778d60fe24981b29388f7ded4a, type: 2}

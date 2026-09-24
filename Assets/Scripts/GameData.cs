@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using Febucci.TextAnimatorForUnity;
+using PrimeTween;
 using TMPro;
 using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
@@ -322,11 +324,32 @@ public class GameData {
         public DynamicClip lootingBodyLoop;
         public DynamicClip lootingBushLoop;
         public DynamicClip rarityRevealClip;
+        public DynamicClip togglePressClip;
         
         public Dictionary<int, List<DynamicClipRecord>> records = new(50);
         public Dictionary<AudioSource, int> generationLookup = new();
         public List<AudioClipHandle> loopingSources = new();
         public Queue<AudioSource> reservedSources;
+    }
+    
+    [Serializable]
+    public class Music {
+        public AudioMixerGroup masterGroup;
+        public AudioMixerGroup mainMenuGroup;
+        public AudioMixerGroup gameplayGroup;
+        public AudioClip mainMenuMusic;
+        public AudioClip[] gameplayMusic;
+        public AudioMixerSnapshot defaultSnapshot;
+        public AudioMixerSnapshot lowPassSnapshot;
+        
+        [NonSerialized] public AudioSource source;
+        [NonSerialized] public AudioClip lastGameplaySong;
+        [NonSerialized] public Tween fadingOutTween;
+        [NonSerialized] public Tween fadingInTween;
+        [NonSerialized] public SongTransition songTransition;
+        [NonSerialized] public float timeCurSongStarted;
+        [NonSerialized] public AudioMixerSnapshot[] gameplayLowpassSnapshots;
+        [NonSerialized] public float[] gameplaySnapshotWeights;
     }
     
     public class Input {

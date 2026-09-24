@@ -8,6 +8,7 @@ public class ToggleButtonGroup : MonoBehaviour {
     public Sprite selectedSprite;
     public Sprite nonSelectedSprite;
     public List<ToggleButton> toggles = new();
+    public DynamicClip pressedClip;
     
     private Dictionary<ToggleButton, UnityAction> callbacks = new();
 
@@ -49,7 +50,12 @@ public class ToggleButtonGroup : MonoBehaviour {
     }
 
     private void InitializeToggle(ToggleButton toggle) {
-        UnityAction callback = () => OnButtonClicked(toggle);
+        UnityAction callback = () => {
+            // Place sound here because we only want it to play when we actually click on it.
+            // OnButtonClicked can be manually called without the player pressing the button.
+            Game.gameInstance.PlayAudioClip(pressedClip, Vector2.zero);
+            OnButtonClicked(toggle);
+        };
         callbacks.TryAdd(toggle, callback);
         toggle.button.onClick.AddListener(callback);
     }

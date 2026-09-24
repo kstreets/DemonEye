@@ -30,7 +30,7 @@ public partial class Game {
         }
     }
     
-    private AudioClipHandle PlayAudioClip(DynamicClip dynamicClip, Vector2 position, float volumeScaler = 1f, float pitch = 0f, bool loop = false) {
+    public AudioClipHandle PlayAudioClip(DynamicClip dynamicClip, Vector2 position, float volumeScaler = 1f, float pitch = 0f, bool loop = false) {
         if (ClipIsViolatingLocalArea(dynamicClip, position)) {
             return new();
         }

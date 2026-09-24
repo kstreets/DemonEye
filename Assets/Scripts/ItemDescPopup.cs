@@ -121,7 +121,6 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
         if (item.IsAugmented) {
             augmentDesc.gameObject.SetActive(true);
             augmentDesc.descTextMesh.text = item.augmentCreatedFrom.GetDescription();
-            augmentDesc.stackCountTextMesh.gameObject.SetActive(false);
         }
         
         if (item.type == gameInstance.itemTypes.quickUse && !itemInstance.traderOwned) {

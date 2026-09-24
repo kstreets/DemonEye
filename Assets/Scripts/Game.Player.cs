@@ -88,7 +88,9 @@ public partial class Game {
     private void DeinitPlayer() {
         player.bleeding = false;
         playerPanel.previewImage.sprite = player.defaultPlayerPreviewSprite;
-        HealPlayer((int)GetAbsoluteStat(PlayerStat.HealingOnRaidExit));
+        if (player.health > 0) { // We only want to restore health if the player isn't dead
+            HealPlayer((int)GetAbsoluteStat(PlayerStat.HealingOnRaidExit));
+        }
     }
     
     private void PlayerOnEnemyDeath(Enemy enemy) {
@@ -154,7 +156,7 @@ public partial class Game {
             return;
         }
 
-        if (PlayerInventoryIsOpen || InteractingWithPortal()) return;
+        if (PlayerInventoryIsOpen) return;
         
         Vector2 moveInput = input.move.ReadValue<Vector2>();
         Vector2 prevPos = player.position;
@@ -474,10 +476,9 @@ public partial class Game {
         bool ignoreCollisionDamage = !player.enemyCollisionDamageLimiter.TimeHasPassed(config.gameplay.repeatCollisionDamageDelay);
         if (damageType == PlayerDamageType.Collision && ignoreCollisionDamage) return;
         
-        player.health -= damage;
+        player.health = Mathf.Clamp(player.health - damage, 0, int.MaxValue);
         AddFlashHitEffect(player);
         SpawnPlayerDamageNumber(damage);
-        CancelPortalSummoning();
         
         float damageImpactScale = Mathf.Clamp01(damage / 65f);
         float damageShakeFreq = Mathf.Lerp(6f, 10f, damageImpactScale);
