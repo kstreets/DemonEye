@@ -25,6 +25,7 @@ public class GameplayTestingWindow : EditorWindow {
     private Button PlayerDamageButton => root.Q<Button>("PlayerDamageBttn");
     private Button PlayerBleedButton => root.Q<Button>("PlayerBleedBttn");
     private Button MoneyButton => root.Q<Button>("MoneyBttn");
+    private Button SoulsButton => root.Q<Button>("SoulsBttn");
     private SliderInt TraderLevelSlider => root.Q<SliderInt>("TraderLevelSlider");
     
     private List<MapData> Maps => FindFirstObjectByType<Game>().config.maps;
@@ -48,6 +49,7 @@ public class GameplayTestingWindow : EditorWindow {
         PlayerDamageButton.RegisterCallback<ClickEvent>(OnDamagePlayer);
         PlayerBleedButton.RegisterCallback<ClickEvent>(OnMakePlayerBleed);
         MoneyButton.RegisterCallback<ClickEvent>(OnGiveMoney);
+        SoulsButton.RegisterCallback<ClickEvent>(OnGiveSouls);
         TraderLevelSlider.RegisterValueChangedCallback(OnTraderLevelChanged);
         
         // Restore settings after domain reload
@@ -266,6 +268,11 @@ public class GameplayTestingWindow : EditorWindow {
     private void OnGiveMoney(ClickEvent e) {
         if (!Application.isPlaying) return;
         Game.player.state.coinCurrency += 5000;
+    }
+    
+    private void OnGiveSouls(ClickEvent e) {
+        if (!Application.isPlaying) return;
+        Game.player.state.soulCurrency += 500;
     }
     
     private void OnTraderLevelChanged(ChangeEvent<int> changeEvent) {

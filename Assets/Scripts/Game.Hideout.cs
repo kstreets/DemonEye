@@ -431,7 +431,7 @@ public partial class Game {
             }
             if (forgeMode == ForgeMode.UpgradingDemonEye) {
                 ItemInstance eyeItemInstance = inventories.eyeForge.slots[0].itemInstance;
-                canForge = OwnsEyeUpgradesRequiredToUpgradeDemonEye(eyeItemInstance);
+                canForge = forgeError != ForgeError.PentagramLevelTooLow && OwnsEyeUpgradesRequiredToUpgradeDemonEye(eyeItemInstance);
             }
             
             if (canForge && forgeButton.isDisabled) {
@@ -706,6 +706,8 @@ public partial class Game {
     private Sequence levelUpPentagramSequence;
     
     private void OnLevelUpPentagramPressed() {
+        PlayAudioClip(audio.burnClip);
+        
         levelUpPentagramSequence.Complete();
         levelUpPentagramSequence = Sequence.Create();
         
@@ -856,6 +858,8 @@ public partial class Game {
     }
 
     private void OnQuestCompleteClicked(QuestPackage questPackage) {
+        PlayAudioClip(audio.burnClip);
+        
         QuestGraphRuntime.Node compQuestNode = questPackage.questNode;
         IncreaseTraderRep(compQuestNode.curQuest.traderReputationReward);
         compQuestNode.curQuest.state.submitted = true;
@@ -960,6 +964,7 @@ public partial class Game {
         
         const float burnAnimationTime = 1.5f;
         skillRow.Burn(burnAnimationTime, curves.skillBurn, curves.skillBurnEmbers);
+        PlayAudioClip(audio.burnClip);
         
         const float delayBeforeUpgradeHappens = burnAnimationTime * 0.23f;
         Tween.Delay(delayBeforeUpgradeHappens, () => 

@@ -332,6 +332,7 @@ public partial class Game {
         Altar altar = altarCol.GetComponent<Altar>();
         
         SpawnEntityOneShot(entityPools.altarSoulSwirl, altar.soulSwirlSpawnPoint.position, Quaternion.identity);
+        PlayAudioClip(audio.altarSoulsClip, altar.soulSwirlSpawnPoint.position);
         
         using var _ = ListPool<Transform>.Get(out var bubbleSpawns);
         int curSpawnIndex = int.MaxValue;
@@ -355,6 +356,7 @@ public partial class Game {
             float spawnDelay = curBubbleSpawnTime + bubbleInterval * (1f - bubbleAcc);
             Tween.Delay(bubbleSpawns[i], spawnDelay, static (spawnTrans) => { 
                 gameInstance.SpawnEntityOneShot(gameInstance.entityPools.bloodBubble, spawnTrans.position, spawnTrans.rotation);
+                gameInstance.PlayAudioClip(gameInstance.audio.altarBubbleClip, spawnTrans.position);
             });
             curBubbleSpawnTime = spawnDelay;
         }
@@ -365,6 +367,7 @@ public partial class Game {
         
         Tween.Delay(altar, curBubbleSpawnTime, static (altar) => {
             altar.bloodExplosionParticles.Play();
+            gameInstance.PlayAudioClip(gameInstance.audio.altarBloodExplosionClip, altar.bloodExplosionParticles.transform.position);
             gameInstance.camera.cameraShake.Shake(5f, 0.1f, 0.5f, altar.transform.position, falloffStartRange: 0.5f, falloffDistance: 1.5f, CameraShake.Falloff.Linear);
             
             altar.summoningItem = gameInstance.GetItemFromDropPool(gameInstance.dropPools.eyeUpgrades);
@@ -378,6 +381,8 @@ public partial class Game {
             Tween.Delay(altar, 0.12f, static (altar) => {
                 Entity reveal = gameInstance.SpawnEntityOneShot(gameInstance.entityPools.eyeUpgradeReveal, altar.transform.position.Offset(y: 0.21f), Quaternion.identity);
                 reveal.spriteRenderer.color = gameInstance.config.styles.GetColorForRarity(altar.summoningItem.GetRarity());
+                GetRarityVolumeAndPitch(altar.summoningItem.GetRarity(), out float rarityVolume, out float rarityPitch);
+                gameInstance.PlayAudioClip(gameInstance.audio.rarityRevealClip, player.position, rarityVolume, rarityPitch);
             });
         });
         

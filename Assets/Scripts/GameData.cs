@@ -309,6 +309,9 @@ public class GameData {
         public DynamicClip shootClip;
         public DynamicClip stoneBreakClip;
         public DynamicClip stoneHitClip;
+        public DynamicClip altarSoulsClip;
+        public DynamicClip altarBubbleClip;
+        public DynamicClip altarBloodExplosionClip;
         public DynamicClip projectileImpact;
         public DynamicClip bloodBurstClip;
         public DynamicClip footStepClip;
@@ -332,6 +335,7 @@ public class GameData {
         public DynamicClip itemSelectClip;
         public DynamicClip forgingClip;
         public DynamicClip startForgingClip;
+        public DynamicClip burnClip;
         
         public Dictionary<int, List<DynamicClipRecord>> records = new(50);
         public Dictionary<AudioSource, int> generationLookup = new();

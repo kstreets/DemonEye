@@ -14488,6 +14488,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LevelUpNotification
   burnEffectImage: {fileID: 1543430912}
   textMesh: {fileID: 602070035}
+  sfxClip: {fileID: 11400000, guid: 6c0f1adda28d74e4887c8092ff949112, type: 2}
 --- !u!1 &1574782834
 GameObject:
   m_ObjectHideFlags: 0
@@ -19713,14 +19714,14 @@ MonoBehaviour:
       - serializedVersion: 3
         time: 0
         value: 0
-        inSlope: 0
-        outSlope: 0
+        inSlope: 0.8742746
+        outSlope: 0.8742746
         tangentMode: 0
         weightedMode: 0
         inWeight: 0
-        outWeight: 0.09444884
+        outWeight: 0.05231236
       - serializedVersion: 3
-        time: 0.67
+        time: 0.8593756
         value: 0.92
         inSlope: 0.32260227
         outSlope: 0.32260227
@@ -19867,6 +19868,9 @@ MonoBehaviour:
     shootClip: {fileID: 11400000, guid: 9e1e0626297e3fe40bec071766b0aa5d, type: 2}
     stoneBreakClip: {fileID: 11400000, guid: 7effee71000346c46ada8045e443ba43, type: 2}
     stoneHitClip: {fileID: 11400000, guid: 048e8b70676e65044af625cf517f47b8, type: 2}
+    altarSoulsClip: {fileID: 11400000, guid: b5adedb42b2ba3c4a99d490d5dcbe180, type: 2}
+    altarBubbleClip: {fileID: 11400000, guid: a2e971548a9c443478fee1284bc5c6b9, type: 2}
+    altarBloodExplosionClip: {fileID: 11400000, guid: 46fe7875d5fe8a74587806de53fa41cc, type: 2}
     projectileImpact: {fileID: 11400000, guid: 121d92ac61cb2e9479ca8010075584ed, type: 2}
     bloodBurstClip: {fileID: 11400000, guid: 8c9f3d4b007c26649988ddbf01957e28, type: 2}
     footStepClip: {fileID: 11400000, guid: 698fec5a234992a419db48a118938612, type: 2}
@@ -19890,6 +19894,7 @@ MonoBehaviour:
     itemSelectClip: {fileID: 11400000, guid: 3fee7cdf1c23b804c97294a60baf0dc5, type: 2}
     forgingClip: {fileID: 11400000, guid: 79f652130ce8c3443a2a058db704844a, type: 2}
     startForgingClip: {fileID: 11400000, guid: 5c5bb208034f52549bd84209dcfbb089, type: 2}
+    burnClip: {fileID: 11400000, guid: 51d5f2cac49c7c242952e48493a0d6bf, type: 2}
   music:
     masterGroup: {fileID: 24300002, guid: 045edcbc93f71d548a0426204df6ca60, type: 2}
     mainMenuGroup: {fileID: -2699966960544205561, guid: 045edcbc93f71d548a0426204df6ca60, type: 2}
