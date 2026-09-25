@@ -528,6 +528,8 @@ public partial class Game {
         forgeButton.KeepPressed();
         forgeButton.text.text = forgeMode is ForgeMode.Forging ? "Forging..." : "Upgrading...";
         
+        PlayAudioClip(audio.startForgingClip);
+        
         if (forgeMode is ForgeMode.Forging) {
             DoEyeForgeAnimation(OnEyeForgeAnimationFinished);
             return;
@@ -593,6 +595,8 @@ public partial class Game {
     private bool PlayingForgeAnimation => eyeForgeSequence.isAlive || eyeForgePanel.forgeButton.beingKeptPressed;
     
     private void DoEyeForgeAnimation(Action onAnimationEndCallback) {
+        PlayAudioClip(audio.forgingClip);
+        
         const float fillDuration = 5.5f;
         const float perUpgradeExplosionDelay = 0.2f;
         const float perUpgradeDissolveDelay = 0.6f;

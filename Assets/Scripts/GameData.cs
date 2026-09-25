@@ -330,6 +330,8 @@ public class GameData {
         public DynamicClip purchaseClip;
         public DynamicClip itemMoveClip;
         public DynamicClip itemSelectClip;
+        public DynamicClip forgingClip;
+        public DynamicClip startForgingClip;
         
         public Dictionary<int, List<DynamicClipRecord>> records = new(50);
         public Dictionary<AudioSource, int> generationLookup = new();

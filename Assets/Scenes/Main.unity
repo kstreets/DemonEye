@@ -19888,6 +19888,8 @@ MonoBehaviour:
     purchaseClip: {fileID: 11400000, guid: 957d318089d396444959abf2ce888578, type: 2}
     itemMoveClip: {fileID: 11400000, guid: 89a33859eea85ba4486966b6bb37fc38, type: 2}
     itemSelectClip: {fileID: 11400000, guid: 3fee7cdf1c23b804c97294a60baf0dc5, type: 2}
+    forgingClip: {fileID: 11400000, guid: 79f652130ce8c3443a2a058db704844a, type: 2}
+    startForgingClip: {fileID: 11400000, guid: 5c5bb208034f52549bd84209dcfbb089, type: 2}
   music:
     masterGroup: {fileID: 24300002, guid: 045edcbc93f71d548a0426204df6ca60, type: 2}
     mainMenuGroup: {fileID: -2699966960544205561, guid: 045edcbc93f71d548a0426204df6ca60, type: 2}
