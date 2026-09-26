@@ -226,6 +226,7 @@ public partial class Game : MonoBehaviour {
         SaveGameState();
         AnimateGameOverSequence(() => states.gameStateMachine.SetStateIfNotCurrent(states.mainMenu)); 
         StopMusic(MusicOption.Fast); // Needs to be after animation sequence because it stops all tweens
+        PlayAudioClip(audio.deathStingerClip);
     }
     
     private void OnGameOverExit() {
