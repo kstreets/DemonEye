@@ -21,6 +21,10 @@ public class Portal : MonoBehaviour {
     public AnimationCurve crystalShakeJitterCurve;
     public Transform[] crystalFragments;
     
+    [Header("SFX")]
+    public DynamicClip crystalHitClip;
+    public DynamicClip portalSummoningClip;
+    
     private Sequence openCloseSequence;
     private float particleStartSpeed;
     
@@ -52,8 +56,11 @@ public class Portal : MonoBehaviour {
         summoningParticles.gameObject.SetActive(true);
         
         Tween.PunchScale(crystalTrans, new(0.2f, 0.2f, 0f), 0.2f, 12f);
+        Game.gameInstance.PlayAudioClip(crystalHitClip, crystalTrans.position);
         
         // Summoning
+        Game.gameInstance.PlayAudioClip(portalSummoningClip, crystalTrans.position);
+        
         const float particleRampUpPercentage = 0.8f;
         TweenSettings particleSettings = new() { duration = openDelay * particleRampUpPercentage, ease = Ease.InSine };
         Tween.Custom(this, 0f, 1f, particleSettings, static (portal, comp) => {

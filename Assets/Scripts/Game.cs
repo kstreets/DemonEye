@@ -283,8 +283,11 @@ public partial class Game : MonoBehaviour {
 
         curRaid.stateSwitchedThisFrame = prevState != curRaid.state;
         
-        if ((curRaid.stateSwitchedThisFrame && curRaid.state == RaidState.FinalWave) || spawnManager.waveStartedThisFrame) {
+        if (curRaid.stateSwitchedThisFrame && curRaid.state == RaidState.FinalWave) {
             PlayAudioClip(audio.finalWaveStingerClip, player.position);
+        }
+        else if (spawnManager.waveStartedThisFrame) {
+            PlayAudioClip(audio.nextWaveStingerClip, player.position);
         }
 
         if (curRaid.stateSwitchedThisFrame && curRaid.state == RaidState.PostFinalWave) {

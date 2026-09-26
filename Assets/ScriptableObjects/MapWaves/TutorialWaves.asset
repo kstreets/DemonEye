@@ -20,7 +20,6 @@ MonoBehaviour:
   - name: Wave 0
     variants:
     - name: Variant 0
-      phaseDuration: 42
       maxDuration: 42
       spawnDuration: 10
       startNextPhaseEarlyDelay: 10
@@ -56,7 +55,6 @@ MonoBehaviour:
   - name: Wave 1
     variants:
     - name: Variant 0
-      phaseDuration: 45
       maxDuration: 45
       spawnDuration: 15
       startNextPhaseEarlyDelay: 10
@@ -92,7 +90,6 @@ MonoBehaviour:
   - name: Wave 2
     variants:
     - name: Variant 0
-      phaseDuration: 42
       maxDuration: 42
       spawnDuration: 15
       startNextPhaseEarlyDelay: 10
@@ -128,7 +125,6 @@ MonoBehaviour:
   - name: Wave 3
     variants:
     - name: Variant 0
-      phaseDuration: 50
       maxDuration: 50
       spawnDuration: 30
       startNextPhaseEarlyDelay: 10
@@ -166,7 +162,6 @@ MonoBehaviour:
   - name: Wave 4
     variants:
     - name: Variant 0
-      phaseDuration: 58
       maxDuration: 58
       spawnDuration: 40
       startNextPhaseEarlyDelay: 10
@@ -204,7 +199,6 @@ MonoBehaviour:
   - name: Wave 5
     variants:
     - name: Variant 0
-      phaseDuration: 45
       maxDuration: 45
       spawnDuration: 45
       startNextPhaseEarlyDelay: 10

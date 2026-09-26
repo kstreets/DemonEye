@@ -319,6 +319,7 @@ public class GameData {
         public DynamicClip teleportOutClip;
         public DynamicClip portalSpawnClip;
         public DynamicClip portalDespawnClip;
+        public DynamicClip nextWaveStingerClip;
         public DynamicClip finalWaveStingerClip;
         public DynamicClip lootRevealClip;
         public DynamicClip slotRevealClip;

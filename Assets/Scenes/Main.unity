@@ -19878,6 +19878,7 @@ MonoBehaviour:
     teleportOutClip: {fileID: 11400000, guid: ed9732b4cb43fa14dbb13e7c390aa09a, type: 2}
     portalSpawnClip: {fileID: 11400000, guid: f684b5ee037961046add3030af64210e, type: 2}
     portalDespawnClip: {fileID: 11400000, guid: c5c1981acd5a8764faae17de16a098bc, type: 2}
+    nextWaveStingerClip: {fileID: 11400000, guid: bcc14c651c571a84aa70702fa30f6277, type: 2}
     finalWaveStingerClip: {fileID: 11400000, guid: 49d8e84ba4e551a44ad67a6050663888, type: 2}
     lootRevealClip: {fileID: 11400000, guid: 5d180e1f784a2b649ac1ad820b6e476c, type: 2}
     slotRevealClip: {fileID: 11400000, guid: 104e93c0ef4fdbf49bbda2a0d1f58c49, type: 2}
