@@ -124,11 +124,11 @@ MonoBehaviour:
         m_PostInfinity: 2
         m_RotationOrder: 0
       enemyBatches:
-      - enemyCount: 50
+      - enemyCount: 40
         enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
       - enemyCount: 40
         enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
-      - enemyCount: 30
+      - enemyCount: 60
         enemyData: {fileID: 11400000, guid: 5cce6b9f6ebb4594aad6a6d97af02a9c, type: 2}
   - name: Wave 3
     variants:
@@ -136,7 +136,7 @@ MonoBehaviour:
       maxDuration: 45
       spawnDuration: 30
       startNextPhaseEarlyDelay: 8
-      spawnCellRange: {x: 10, y: 12}
+      spawnCellRange: {x: 11, y: 13}
       repositionCellRange: {x: 9, y: 11}
       spawnRateCurve:
         serializedVersion: 2
@@ -163,11 +163,11 @@ MonoBehaviour:
         m_PostInfinity: 2
         m_RotationOrder: 0
       enemyBatches:
-      - enemyCount: 50
+      - enemyCount: 70
         enemyData: {fileID: 11400000, guid: 5cce6b9f6ebb4594aad6a6d97af02a9c, type: 2}
-      - enemyCount: 50
+      - enemyCount: 60
         enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
-      - enemyCount: 20
+      - enemyCount: 40
         enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
   - name: Wave 4
     variants:
@@ -175,7 +175,7 @@ MonoBehaviour:
       maxDuration: 45
       spawnDuration: 30
       startNextPhaseEarlyDelay: 8
-      spawnCellRange: {x: 10, y: 12}
+      spawnCellRange: {x: 12, y: 14}
       repositionCellRange: {x: 9, y: 11}
       spawnRateCurve:
         serializedVersion: 2
@@ -204,9 +204,9 @@ MonoBehaviour:
       enemyBatches:
       - enemyCount: 60
         enemyData: {fileID: 11400000, guid: 5cce6b9f6ebb4594aad6a6d97af02a9c, type: 2}
-      - enemyCount: 35
+      - enemyCount: 45
         enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
-      - enemyCount: 35
+      - enemyCount: 30
         enemyData: {fileID: 11400000, guid: 8a749b46a2a7d944892efbf025fbe2a1, type: 2}
   - name: Wave 5
     variants:
@@ -214,7 +214,7 @@ MonoBehaviour:
       maxDuration: 55
       spawnDuration: 40
       startNextPhaseEarlyDelay: 8
-      spawnCellRange: {x: 10, y: 12}
+      spawnCellRange: {x: 13, y: 15}
       repositionCellRange: {x: 10, y: 12}
       spawnRateCurve:
         serializedVersion: 2
@@ -241,11 +241,11 @@ MonoBehaviour:
         m_PostInfinity: 2
         m_RotationOrder: 0
       enemyBatches:
-      - enemyCount: 100
+      - enemyCount: 120
         enemyData: {fileID: 11400000, guid: 5cce6b9f6ebb4594aad6a6d97af02a9c, type: 2}
-      - enemyCount: 50
+      - enemyCount: 60
         enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
-      - enemyCount: 50
+      - enemyCount: 45
         enemyData: {fileID: 11400000, guid: 8a749b46a2a7d944892efbf025fbe2a1, type: 2}
   - name: Wave 6
     variants:
@@ -253,7 +253,7 @@ MonoBehaviour:
       maxDuration: 50
       spawnDuration: 35
       startNextPhaseEarlyDelay: 8
-      spawnCellRange: {x: 10, y: 12}
+      spawnCellRange: {x: 13, y: 15}
       repositionCellRange: {x: 8, y: 12}
       spawnRateCurve:
         serializedVersion: 2
@@ -280,11 +280,11 @@ MonoBehaviour:
         m_PostInfinity: 2
         m_RotationOrder: 0
       enemyBatches:
-      - enemyCount: 100
+      - enemyCount: 130
         enemyData: {fileID: 11400000, guid: 5cce6b9f6ebb4594aad6a6d97af02a9c, type: 2}
-      - enemyCount: 40
+      - enemyCount: 20
         enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
-      - enemyCount: 50
+      - enemyCount: 70
         enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
       - enemyCount: 40
         enemyData: {fileID: 11400000, guid: 8a749b46a2a7d944892efbf025fbe2a1, type: 2}
@@ -294,7 +294,7 @@ MonoBehaviour:
       maxDuration: 45
       spawnDuration: 45
       startNextPhaseEarlyDelay: 0
-      spawnCellRange: {x: 11, y: 13}
+      spawnCellRange: {x: 14, y: 16}
       repositionCellRange: {x: 10, y: 12}
       spawnRateCurve:
         serializedVersion: 2
@@ -321,11 +321,11 @@ MonoBehaviour:
         m_PostInfinity: 2
         m_RotationOrder: 0
       enemyBatches:
-      - enemyCount: 60
+      - enemyCount: 80
         enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
-      - enemyCount: 60
+      - enemyCount: 40
         enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
-      - enemyCount: 100
+      - enemyCount: 150
         enemyData: {fileID: 11400000, guid: 5cce6b9f6ebb4594aad6a6d97af02a9c, type: 2}
-      - enemyCount: 30
-        enemyData: {fileID: 11400000, guid: cc0cbb56eaca641408b7d1856ed0d048, type: 2}
+      - enemyCount: 60
+        enemyData: {fileID: 11400000, guid: 8a749b46a2a7d944892efbf025fbe2a1, type: 2}

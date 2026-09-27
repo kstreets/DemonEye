@@ -276,8 +276,15 @@ public partial class Game {
     private enum TraderShopDialogueType { Greeting, Purchase }
 
     private Tween traderDialogueTween;
+    private string prevTraderDialogue;
+    private int raidCountOnLastDialogueTrigger = -1;
 
     private void TriggerTraderShopDialogue(TraderShopDialogueType dialogueType) {
+        bool canPlayNewDialogue = raidCountOnLastDialogueTrigger != curSession.raidsEntered;
+        if (!canPlayNewDialogue) return;
+        
+        raidCountOnLastDialogueTrigger = curSession.raidsEntered;
+        
         traderDialogueTween.Stop();
         traderPanel.shopTextTypewriter.gameObject.SetActive(false);
 
@@ -285,10 +292,9 @@ public partial class Game {
         traderDialogueTween = Tween.Delay(0.1f, () => {
             var typewriter = gameInstance.traderPanel.shopTextTypewriter;
             if (dialogueType == TraderShopDialogueType.Greeting) {
-                typewriter.ShowText("{ffade}{shake}Can you actually buy something this time?");
-            }
-            if (dialogueType == TraderShopDialogueType.Purchase) {
-                typewriter.ShowText("{ffade}{shake}Pleasure doing business. Keep it real.\n{ffade}{shake}That one was a 34% mark up.");
+                string dialogue = traderGreetings.GetRandom(prevTraderDialogue);
+                prevTraderDialogue = dialogue;
+                typewriter.ShowText("{ffade}{shake}" + dialogue);
             }
             typewriter.gameObject.SetActive(true);
         });
@@ -1041,5 +1047,20 @@ public partial class Game {
         }
         return UpgradeStatResult.CantAfford;
     }
+    
+    public static string[] traderGreetings = {
+        "Can you actually buy something this time?",
+        "Can I interest you in a pyramid scheme?",
+        "Nice to see you haven't given up yet.",
+        "Are you finished with those quests yet?",
+        "You're becoming my favorite client. Only 174% markup for you!",
+        "I have made investments that might ruin me financially.",
+        "Chop chop! I got a nap scheduled in 10 minutes.",
+    };
+    
+    public static string[] postTutorialTraderGreetings = {
+        "If you need more money you can always load up on loot at the Starting Grounds and sell it all.",
+        "Have you read my book yet? My other clients say they highly recommend it.",
+    };
     
 }

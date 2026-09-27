@@ -744,5 +744,9 @@ public partial class Game {
         ui.interactDetails.gameObject.SetActive(false);
         
     }
+    
+    public void PlayTypewritterCharacterShowSound() {
+        PlayAudioClip(audio.textCharAppearClip);
+    }
 
 }

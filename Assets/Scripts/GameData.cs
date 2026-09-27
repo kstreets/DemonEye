@@ -338,6 +338,7 @@ public class GameData {
         public DynamicClip startForgingClip;
         public DynamicClip burnClip;
         public DynamicClip deathStingerClip;
+        public DynamicClip textCharAppearClip;
         
         public Dictionary<int, List<DynamicClipRecord>> records = new(50);
         public Dictionary<AudioSource, int> generationLookup = new();
@@ -464,6 +465,10 @@ public class GameData {
     public class Trinkets {
         public Trinket equiped;
         public ref TrinketData data => ref gameInstance.curRaid.data.trinkets;
+    }
+    
+    public class CurrentGamingSession {
+        public int raidsEntered;
     }
     
     public class CurrentRaid {

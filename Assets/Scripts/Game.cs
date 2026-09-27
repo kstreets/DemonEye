@@ -44,6 +44,7 @@ public partial class Game : MonoBehaviour {
     [NonSerialized] public readonly GameData.Resources res = new();
     [NonSerialized] public readonly DemonEye demonEye = new();
     [NonSerialized] public readonly Trinkets trinkets = new();
+    [NonSerialized] public readonly CurrentGamingSession curSession = new();
     [NonSerialized] public readonly CurrentRaid curRaid = new();
     [NonSerialized] public readonly Inventories inventories = new();
     [NonSerialized] public readonly HotBar hotBar = new();
@@ -250,6 +251,8 @@ public partial class Game : MonoBehaviour {
         curRaid.state = RaidState.None;
         curRaid.data.Reset();
         curRaid.teleportingInPositions.Clear();
+        
+        curSession.raidsEntered++;
         
         Cursor.visible = false;
 
