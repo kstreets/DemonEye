@@ -70,6 +70,16 @@ public partial class Game : MonoBehaviour {
         else {
             Time.timeScale = 1f;
         }
+        
+        if (Keyboard.current.slashKey.wasPressedThisFrame) {
+            for (int i = entities.enemies.Count - 1; i >= 0; i--) {
+                DestroyEntity(entities.enemies[i]);
+                entities.enemies.RemoveAt(i);
+            }
+            spawnManager.spawnTimeIndex = int.MaxValue;
+            spawnManager.timeInCurPhase = 9999999f;
+            spawnManager.startNextWaveDelay = 0f;
+        }
 #endif
     }
     

@@ -23,7 +23,7 @@ MonoBehaviour:
   eyeUpgradeOnBodyChance: 0.15
   consecutiveEyeUpgradeChanceReductionOnBody: 0.08
   commonLootRarityIncrease: 0
-  uncommonLootRarityIncrease: 0
+  uncommonLootRarityIncrease: 0.2
   rareLootRarityIncrease: 0
   epicLootRarityIncrease: 0
   legendaryLootRarityIncrease: 0

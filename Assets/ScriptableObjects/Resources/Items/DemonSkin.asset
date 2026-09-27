@@ -50,5 +50,4 @@ MonoBehaviour:
   itemGroupProps: {fileID: 0}
   maxStackCount: 15
   weight: 6
-  description: Tough skin of demon's make a good material for making armor. Traders
-    will buy these to make their armor.
+  description: A useful material for making backpacks.

@@ -444,8 +444,9 @@ public partial class Game {
     
     public class EnemySpawnManager {
         public float timeInCurPhase;
-        public float startNextWaveEarlyDelay;
+        public float startNextWaveDelay;
         public float timeAddedThroughActions;
+        public int prevEnemyCount;
         public int curPhaseIndex;
         public bool spawnedThisFrame;
         public bool waveStartedThisFrame;
@@ -482,7 +483,7 @@ public partial class Game {
         spawnManager.spawnPattern = pattern;
         spawnManager.curPhaseIndex = -1;
         spawnManager.timeInCurPhase = 0f;
-        spawnManager.startNextWaveEarlyDelay = 0f;
+        spawnManager.startNextWaveDelay = 0f;
         spawnManager.timeAddedThroughActions = 0f;
         
         spawnManager.chosenVarientIndices.Clear();
@@ -501,52 +502,86 @@ public partial class Game {
         
         if (sm.FinishedSpawningForRaid) return;
         
+        float prevTimeInCurPhase = sm.timeInCurPhase;
         sm.timeInCurPhase += Time.deltaTime;
         
-        float waveDuration = sm.curPhaseIndex == -1 ? sm.spawnPattern.timeBeforeFirstPhase : sm.CurPhase.maxDuration;
-        bool startNextWave = sm.timeInCurPhase >= waveDuration;
+        bool afterFirstWave = sm.curPhaseIndex >= 0;
+        float waveDuration = afterFirstWave ? sm.CurPhase.maxDuration : sm.spawnPattern.timeBeforeFirstPhase;
+        bool timeLimitExceeded = sm.timeInCurPhase >= waveDuration;
+        bool justHitTimeLimit = prevTimeInCurPhase < waveDuration && timeLimitExceeded;
+        int curEnemyCount = entities.enemies.Count;
         
-        const float maxTimeCanAddThroughActions = 10f;
-        if (sm.FinishedSpawningThisWave && sm.timeAddedThroughActions < maxTimeCanAddThroughActions) {
-            float prevTime = sm.timeAddedThroughActions;
-            
-            if (thisFrame.flags.HasFlag(FrameFlags.SearchingBody)) {
-                sm.timeAddedThroughActions += 2.5f;
+        if (afterFirstWave) {
+            if (justHitTimeLimit && curEnemyCount > 0) {
+                int totalEnemiesThisWave = 0;
+                foreach (RaidSpawnPattern.EnemyBatch batch in sm.CurPhase.enemyBatches) {
+                    totalEnemiesThisWave += batch.enemyCount;
+                }
+                float remainingOfTotalPercentage = curEnemyCount / (float)totalEnemiesThisWave; 
+                float addedTime = Mathf.Lerp(1f, 4f, remainingOfTotalPercentage);
+                sm.startNextWaveDelay += addedTime;
             }
-            if (thisFrame.flags.HasFlag(FrameFlags.SearchingBush)) {
-                sm.timeAddedThroughActions += 1.5f;
-            }
-            if (thisFrame.flags.HasFlag(FrameFlags.SummonedUpgrade)) {
-                sm.timeAddedThroughActions += 1f;
-            }
-            if (thisFrame.flags.HasFlag(FrameFlags.ShotRock)) {
-                sm.timeAddedThroughActions += 0.35f;
-            }
-            
-            if (thisFrame.flags.HasFlag(FrameFlags.PickedUpLoot)) {
-                int nearbyItems = Physics.OverlapCircle(player.Center, 0.5f, Masks.ItemMask).Count;
-                if (nearbyItems >= 2) {
-                    sm.timeAddedThroughActions += 2f;
+        
+            bool justKilledLastEnemiesInWave = sm.FinishedSpawningThisWave && sm.prevEnemyCount > 0 && curEnemyCount <= 0;
+            if (justKilledLastEnemiesInWave) {
+                const float struggleThresholdPercentage = 0.8f;
+                float stuggleThreshold = sm.CurPhase.maxDuration * struggleThresholdPercentage;
+                if (sm.timeInCurPhase >= stuggleThreshold) {
+                    float exceededTime = sm.timeInCurPhase - stuggleThreshold;
+                    float maxPossibleExceededTime = sm.CurPhase.maxDuration * (1f - struggleThresholdPercentage);
+                    float addedTime = Mathf.Lerp(1f, 6f, exceededTime / maxPossibleExceededTime);
+                    sm.startNextWaveDelay += addedTime; 
                 }
             }
+            sm.prevEnemyCount = curEnemyCount;
             
-            // If the player is looking at their inventory or reading an item popup we give them some extra time
-            if ((PlayerInventoryIsOpen && !LootInventoryIsOpen) || ui.itemDescPopupPickup.IsShowing) {
-                sm.timeAddedThroughActions += Time.deltaTime + Mathf.Epsilon;
+            const float maxTimeCanAddThroughActions = 13f;
+            if (sm.FinishedSpawningThisWave && sm.timeAddedThroughActions < maxTimeCanAddThroughActions) {
+                float prevTime = sm.timeAddedThroughActions;
+            
+                if (thisFrame.flags.HasFlag(FrameFlags.SearchingBody)) {
+                    sm.timeAddedThroughActions += 3f;
+                }
+                if (thisFrame.flags.HasFlag(FrameFlags.SearchingBush)) {
+                    sm.timeAddedThroughActions += 2f;
+                }
+                if (thisFrame.flags.HasFlag(FrameFlags.SummonedUpgrade)) {
+                    sm.timeAddedThroughActions += 2f;
+                }
+                if (thisFrame.flags.HasFlag(FrameFlags.TookConsumable)) {
+                    float timeToAdd = Mathf.Lerp(1f, 3f, 1f - CurPlayerHealthPercentage());
+                    sm.timeAddedThroughActions += timeToAdd;
+                }
+                if (thisFrame.flags.HasFlag(FrameFlags.ShotRock)) {
+                    sm.timeAddedThroughActions += 0.5f;
+                }
+            
+                if (thisFrame.flags.HasFlag(FrameFlags.PickedUpLoot)) {
+                    int nearbyItems = Physics.OverlapCircle(player.Center, 0.5f, Masks.ItemMask).Count;
+                    if (nearbyItems >= 2) {
+                        sm.timeAddedThroughActions += 2f;
+                    }
+                }
+            
+                // If the player is looking at their inventory or reading an item popup we give them some extra time
+                if ((PlayerInventoryIsOpen && !LootInventoryIsOpen) || ui.itemDescPopupPickup.IsShowing) {
+                    sm.timeAddedThroughActions += Time.deltaTime + Mathf.Epsilon;
+                }
+            
+                sm.timeAddedThroughActions = Mathf.Clamp(sm.timeAddedThroughActions, 0f, maxTimeCanAddThroughActions);
+                float timeAdded = sm.timeAddedThroughActions - prevTime;
+                sm.startNextWaveDelay += timeAdded;
             }
             
-            sm.timeAddedThroughActions = Mathf.Clamp(sm.timeAddedThroughActions, 0f, maxTimeCanAddThroughActions);
-            float timeAdded = sm.timeAddedThroughActions - prevTime;
-            sm.startNextWaveEarlyDelay += timeAdded;
+            if (sm.FinishedSpawningThisWave && entities.enemies.Count <= 0) {
+                sm.startNextWaveDelay -= Time.deltaTime;
+                if (sm.startNextWaveDelay <= 0f) {
+                    timeLimitExceeded = true;
+                }
+            }
         }
         
-        bool afterFirstWave = sm.curPhaseIndex > -1;
-        if (afterFirstWave && sm.FinishedSpawningThisWave && entities.enemies.Count <= 0) {
-            sm.startNextWaveEarlyDelay -= Time.deltaTime;
-            if (sm.startNextWaveEarlyDelay <= 0f) {
-                startNextWave = true;
-            }
-        }
+        bool startNextWave = sm.startNextWaveDelay <= 0f && timeLimitExceeded;
         
         if (startNextWave && !sm.OnLastWave) {
             sm.curPhaseIndex++;
@@ -562,7 +597,7 @@ public partial class Game {
             
             sm.timeInCurPhase = 0f;
             sm.spawnTimeIndex = 0;
-            sm.startNextWaveEarlyDelay = sm.CurPhase.startNextPhaseEarlyDelay;
+            sm.startNextWaveDelay = sm.CurPhase.startNextPhaseEarlyDelay;
 
             float totalWeight = 0f;
             for (int i = 0; i < EnemySpawnManager.prefixedSumResolution; i++) {
@@ -620,7 +655,6 @@ public partial class Game {
             sm.spawnTimeIndex++;
             sm.spawnedThisFrame = true;
         }
-        
     }
     
 }

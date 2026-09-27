@@ -10,35 +10,33 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9bc23522601a56f4d89295cf565d360b, type: 3}
-  m_Name: BookPart2
-  m_EditorClassIdentifier: Assembly-CSharp::Item
-  uuid: -79996570
-  displayName: Book Part 2
-  inventorySprite: {fileID: -1716080893, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
-  dropSprite: {fileID: 2059395755, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  m_Name: Gem
+  m_EditorClassIdentifier: 
+  uuid: 1284549653
+  displayName: Gem
+  inventorySprite: {fileID: 772094228, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  dropSprite: {fileID: -1609354441, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   pickupRadius: 0.07
-  type: {fileID: 0}
+  type: {fileID: 11400000, guid: 3aa9d6e5cf74e89469679d25c1a431eb, type: 2}
   priceCategory: {fileID: 0}
   buyPrice: 0
-  sellPrice: 6000
+  sellPrice: 1000
   mapSpawning:
     spawnsOnAll: 1
     firstSpawnMap: {fileID: 0}
     spawnsOnMaps: []
-  spawnsOnAllMaps: 1
-  firstSpawnMap: {fileID: 0}
-  spawnsOnMaps: []
-  rarity: 1
-  dropOrigins:
-  - dropPool: {fileID: 11400000, guid: ac36b359b2819ad4f84ed57cf20ba475, type: 2}
-    chanceToSpawn: 0.42
-  traderLevelRequired: 0
-  traderStockRange: {x: 1, y: 1}
-  barterRequirements: []
   traderSpawning:
-    levelRequired: 0
+    levelRequired: 1
     stockRange: {x: 1, y: 1}
     barterRequirements: []
+  rarity: 0
+  dropOrigins:
+  - dropPool: {fileID: 11400000, guid: 3c4ecb30986cb144bb8b92852af68d07, type: 2}
+    chanceToSpawn: 0.09
+    maxStackCount: 2
+  - dropPool: {fileID: 11400000, guid: ac36b359b2819ad4f84ed57cf20ba475, type: 2}
+    chanceToSpawn: 0.835
+    maxStackCount: 2
   modifiesStats: 0
   critChance: 0
   critMultiplier: 0
@@ -47,6 +45,6 @@ MonoBehaviour:
   projectileCount: 0
   rangePercentage: 0
   itemGroupProps: {fileID: 0}
-  maxStackCount: 5
-  weight: 2
-  description: 
+  maxStackCount: 15
+  weight: 6
+  description: A foundational component for eye upgrades

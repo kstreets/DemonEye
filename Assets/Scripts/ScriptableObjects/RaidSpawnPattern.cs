@@ -42,7 +42,7 @@ public class RaidSpawnPattern : ScriptableObject {
     public List<PhasePool> phasePools;
     
 #if UNITY_EDITOR
-
+    
     private void OnValidate() {
         if (phasePools == null || phasePools.Count <= 0) return;
         

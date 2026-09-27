@@ -37,9 +37,6 @@ MonoBehaviour:
       count: 3
   rarity: 0
   dropOrigins:
-  - dropPool: {fileID: 11400000, guid: 3c4ecb30986cb144bb8b92852af68d07, type: 2}
-    chanceToSpawn: 0.02
-    maxStackCount: 1
   - dropPool: {fileID: 11400000, guid: 403e542a49d6e3d4c834cdb48dce1626, type: 2}
     chanceToSpawn: 0.02
     maxStackCount: 1

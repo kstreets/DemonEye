@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9bc23522601a56f4d89295cf565d360b, type: 3}
-  m_Name: Book
+  m_Name: Pearl
   m_EditorClassIdentifier: Assembly-CSharp::Item
-  uuid: -912546282
-  displayName: Book
-  inventorySprite: {fileID: 52047638, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
-  dropSprite: {fileID: 1376013578, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  uuid: -79996570
+  displayName: Pearl
+  inventorySprite: {fileID: 144334897, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  dropSprite: {fileID: 917588374, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   pickupRadius: 0.07
   type: {fileID: 11400000, guid: 3aa9d6e5cf74e89469679d25c1a431eb, type: 2}
   priceCategory: {fileID: 0}
   buyPrice: 0
-  sellPrice: 3000
+  sellPrice: 4500
   mapSpawning:
     spawnsOnAll: 1
     firstSpawnMap: {fileID: 0}
@@ -29,13 +29,13 @@ MonoBehaviour:
     levelRequired: 0
     stockRange: {x: 1, y: 1}
     barterRequirements: []
-  rarity: 1
+  rarity: 2
   dropOrigins:
   - dropPool: {fileID: 11400000, guid: 3c4ecb30986cb144bb8b92852af68d07, type: 2}
-    chanceToSpawn: 0.043
+    chanceToSpawn: 0.142
     maxStackCount: 1
   - dropPool: {fileID: 11400000, guid: ac36b359b2819ad4f84ed57cf20ba475, type: 2}
-    chanceToSpawn: 0.378
+    chanceToSpawn: 0.329
     maxStackCount: 1
   modifiesStats: 0
   critChance: 0
@@ -47,5 +47,4 @@ MonoBehaviour:
   itemGroupProps: {fileID: 0}
   maxStackCount: 5
   weight: 2
-  description: <i>Tales of the Best Trader in the Underworld.</i> Sell this item
-    to the Trader. He believes it's valuable. Others tend to disagree.
+  description: 

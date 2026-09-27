@@ -264,7 +264,7 @@ public partial class Game {
         }
         
         if (demonEye.equiped.blast.TryGetValue(out var blast) && player.consecutiveShotCount > 0 && player.consecutiveShotCount % blast.numshotsUntilOverheat == 0) {
-            Vector2 spawnPos = OffsetY(player.position, 0.25f);
+            Vector2 spawnPos = OffsetY(player.position, 0.35f);
             SpawnEntityOneShot(entityPools.blast, spawnPos, Quaternion.identity); 
             List<Collider2D> cols = Physics.OverlapCircle(player.position, blast.radius, Masks.EnemyMask);
             foreach (Collider2D col in cols) {
@@ -323,20 +323,12 @@ public partial class Game {
         Vector2 dir = (targetPos - (Vector2)PlayerEyePos).normalized;
         dir = Quaternion.AngleAxis(accuracyAngle, Vector3.forward) * dir;
         Vector2 velocity = dir * projectileSpeed; 
-        _SpawnProjectile(PlayerEyePos, velocity, entityPools.projectile);
         
-        if (demonEye.equiped.trishot.TryGetValue(out var trishot) && RollProbability(trishot.probability)) {
-            const float baseTriShotAngle = 10f;
-            Vector2 secondShotVelocity = Quaternion.AngleAxis(baseTriShotAngle, Vector3.forward) * velocity;
-            _SpawnProjectile(PlayerEyePos, secondShotVelocity, entityPools.projectile, flgs: ProjectileTypeFlags.Trishot);
-            Vector2 thirdShotVelocity = Quaternion.AngleAxis(-baseTriShotAngle, Vector3.forward) * velocity;
-            _SpawnProjectile(PlayerEyePos, thirdShotVelocity, entityPools.projectile, flgs: ProjectileTypeFlags.Trishot);
+        if (demonEye.equiped.reflectingShot.TryGetValue(out var reflecting) && RollProbability(reflecting.probability)) {
+            _SpawnProjectile(PlayerEyePos, velocity, entityPools.projectile, ProjectileTypeFlags.ReflectedShot);
         }
-
-        if (demonEye.equiped.backwardShot.TryGetValue(out var backShot) && RollProbability(backShot.probability)) {
-            const float backwardsShotSpeedScaler = 1.1f;
-            EntityPool<Projectile> pool = demonEye.equiped.backwardsPiercingAugment.HasValue ? entityPools.piercingShotProjectile : entityPools.projectile; 
-            _SpawnProjectile(PlayerEyePos, -velocity * backwardsShotSpeedScaler, pool, flgs: ProjectileTypeFlags.BackwardsShot);
+        else {
+            _SpawnProjectile(PlayerEyePos, velocity, entityPools.projectile);
         }
         
         // Helper method just to forward the passed in parameters
@@ -370,6 +362,8 @@ public partial class Game {
         else if (itemStopsBleeds) {
             if (!player.bleeding) return;
         }
+        
+        thisFrame.flags |= FrameFlags.TookConsumable;
         
         const float additionalConsumeDelay = 0.15f;
         const float performActionAtAnimationCompletion = 0.9f;
@@ -597,6 +591,7 @@ public partial class Game {
     }
 
     private int FullPlayerHealth() => 100 + (int)GetPlayerStatAdjustment(PlayerStat.Health);
+    private float CurPlayerHealthPercentage() => player.health / (float)FullPlayerHealth();
 
     private float GetPlayerSpeed() {
         float playerSpeed = config.gameplay.baseSpeed * GetAbsoluteStat(PlayerStat.MovementSpeedPercentage);

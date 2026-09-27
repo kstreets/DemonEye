@@ -55,4 +55,4 @@ MonoBehaviour:
   relativeMechanicDesc: {fileID: 0}
   numShotsUntilOverheat: 8
   damageMulti: 2
-  radius: 0.8
+  radius: 0.73

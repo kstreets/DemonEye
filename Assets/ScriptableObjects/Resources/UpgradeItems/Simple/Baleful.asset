@@ -22,8 +22,8 @@ MonoBehaviour:
   buyPrice: 5000
   sellPrice: 400
   mapSpawning:
-    spawnsOnAll: 1
-    firstSpawnMap: {fileID: 0}
+    spawnsOnAll: 0
+    firstSpawnMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
     spawnsOnMaps: []
   traderSpawning:
     levelRequired: 1
@@ -33,10 +33,10 @@ MonoBehaviour:
       count: 5
     - item: {fileID: 11400000, guid: 27c971c009f757f4da645a16777716dc, type: 2}
       count: 2
-  rarity: 0
+  rarity: 1
   dropOrigins:
   - dropPool: {fileID: 11400000, guid: 447693d567ac32848b6d0306b40001c5, type: 2}
-    chanceToSpawn: 0.7
+    chanceToSpawn: 0.492
     maxStackCount: 1
   - dropPool: {fileID: 11400000, guid: ac65e2b20c03fcb43989ec16398ae8cd, type: 2}
     chanceToSpawn: 0.163

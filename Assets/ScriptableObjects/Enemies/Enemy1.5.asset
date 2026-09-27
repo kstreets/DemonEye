@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4a5df0d022d54a7488a42b771db86189, type: 3}
-  m_Name: Enemy2
+  m_Name: Enemy1.5
   m_EditorClassIdentifier: 
-  displayName: 
+  displayName: Lesser Spawn
   type: 0
-  enemyPrefab: {fileID: 7814119993517076521, guid: 1c6e3ff2b721e124aba2ba33cd3aba16, type: 3}
-  animatorOverride: {fileID: 22100000, guid: 71a02aee82e5d1e4abd45350da8f2c56, type: 2}
-  dropPool: {fileID: 11400000, guid: 2f1280ced8a9a0b4eaa9045d5741fb8b, type: 2}
+  enemyPrefab: {fileID: 7814119993517076521, guid: 9aa2852311cbfe34385612ec1a6d1b3f, type: 3}
+  animatorOverride: {fileID: 22100000, guid: 67ba03f72d5d50749bdc6dc339915615, type: 2}
+  dropPool: {fileID: 11400000, guid: 9eeed80dc208fd04986551102c8859ff, type: 2}
   chanceToDropItem: 0.07
   usesFlowField: 1
   excludeCollisionLayers:
@@ -24,15 +24,15 @@ MonoBehaviour:
     m_Bits: 0
   attackDistance: 0.21
   attackDamageDelay: 0.4
-  attackRadius: 0.11
-  sideAttackOffset: {x: 0.165, y: 0.098}
-  upAttackOffset: {x: 0, y: 0.203}
-  donwAttackOffset: {x: 0, y: -0.018}
-  speed: 0.38
-  health: 18
-  damage: 14
-  collisionDamage: 5
-  changeToCauseBleed: 0.15
+  attackRadius: 0.1
+  sideAttackOffset: {x: 0.157, y: 0.081}
+  upAttackOffset: {x: 0, y: 0.16}
+  donwAttackOffset: {x: 0, y: 0.004}
+  speed: 0.45
+  health: 10
+  damage: 10
+  collisionDamage: 3
+  changeToCauseBleed: 0.1
   soulWorthPerKill: 2
-  xpWorthPerKill: 10
-  defaultMass: 13.127501
+  xpWorthPerKill: 5
+  defaultMass: 1

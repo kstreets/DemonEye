@@ -20,8 +20,6 @@ public class GameplayTestingWindow : EditorWindow {
     private VisualElement ItemPoolContainer => root.Q<VisualElement>("ItemPool");
     private Button RefreshButton => root.Q<Button>("RefreshBttn");
     private Button CreateEyeButton => root.Q<Button>("CreateEyeBttn");
-    private Toggle OverrideWavesToggle => root.Q<Toggle>("OverrideWavesToggle");
-    private SliderInt StartWaveSlider => root.Q<SliderInt>("StartWaveSlider");
     private Button PlayerDamageButton => root.Q<Button>("PlayerDamageBttn");
     private Button PlayerBleedButton => root.Q<Button>("PlayerBleedBttn");
     private Button MoneyButton => root.Q<Button>("MoneyBttn");
@@ -44,8 +42,6 @@ public class GameplayTestingWindow : EditorWindow {
         HideInactiveToggle.RegisterCallback<ChangeEvent<bool>>(OnHideInactiveToggled);
         RefreshButton.RegisterCallback<ClickEvent>(OnRefreshClicked);
         CreateEyeButton.RegisterCallback<ClickEvent>(OnCreateEyeClicked);
-        OverrideWavesToggle.RegisterCallback<ChangeEvent<bool>>(OnOverrideWavesToggle);
-        StartWaveSlider.RegisterValueChangedCallback(OnStartWaveSliderChanged);
         PlayerDamageButton.RegisterCallback<ClickEvent>(OnDamagePlayer);
         PlayerBleedButton.RegisterCallback<ClickEvent>(OnMakePlayerBleed);
         MoneyButton.RegisterCallback<ClickEvent>(OnGiveMoney);
@@ -55,8 +51,6 @@ public class GameplayTestingWindow : EditorWindow {
         // Restore settings after domain reload
         MapField.value = currentMap;
         HideInactiveToggle.value = hideInactive;
-        OverrideWavesToggle.value = overrideWaves;
-        StartWaveSlider.value = startWaveIndex;
     }
 
     private void OnEnable() {
@@ -71,8 +65,6 @@ public class GameplayTestingWindow : EditorWindow {
     private void OnPlaymodeStateChanged(PlayModeStateChange changeEvent) {
         bool enabled = changeEvent is PlayModeStateChange.EnteredEditMode or PlayModeStateChange.ExitingPlayMode;
         MapField?.SetEnabled(enabled);
-        OverrideWavesToggle?.SetEnabled(enabled);
-        StartWaveSlider?.SetEnabled(enabled);
     }
     
     private void OnSelectionChange() { 
@@ -86,29 +78,6 @@ public class GameplayTestingWindow : EditorWindow {
     
     private void OnRefreshClicked(ClickEvent e) {
         ListItemPoolForMap();
-    }
-    
-    // We need to rely on this toggle to clear the dependency injection because unity will destroy this window if it becomes not visible.
-    // This also means that the dependency injection stays after the window has closed if this toggle does not change.
-    private void OnOverrideWavesToggle(ChangeEvent<bool> changeEvent) {
-        overrideWaves = changeEvent.newValue;
-        currentMap?.SetRaidSpawnPatternInjection(overrideWaves ? InjectRaidSpawnPattern : null);
-    }
-    
-    private void OnStartWaveSliderChanged(ChangeEvent<int> changeEvent) {
-        startWaveIndex = changeEvent.newValue;
-    }
-    
-    private void UpdateStartWaveSliderMinMax() {
-        if (currentMap == null) {
-            StartWaveSlider.lowValue = 0;
-            StartWaveSlider.highValue = 0;
-            return;
-        }
-        
-        StartWaveSlider.lowValue = 0;
-        StartWaveSlider.highValue = currentMap.spawning.phasePools.Count - 1;
-        StartWaveSlider.value = startWaveIndex;
     }
     
     private void OnCreateEyeClicked(ClickEvent e) {
@@ -134,7 +103,6 @@ public class GameplayTestingWindow : EditorWindow {
         currentMap?.SetRaidSpawnPatternInjection(overrideWaves ? InjectRaidSpawnPattern : null);
         
         ListItemPoolForMap();
-        UpdateStartWaveSliderMinMax();
     }
     
     private void ListItemPoolForMap() {
@@ -250,7 +218,6 @@ public class GameplayTestingWindow : EditorWindow {
         
         RaidSpawnPattern clonedWaves = Instantiate(currentMap.spawning);
         clonedWaves.timeBeforeFirstPhase = 5f;
-        Debug.Log(clonedWaves.phasePools.Count);
         clonedWaves.phasePools.RemoveRange(0, startWaveIndex);
         return clonedWaves;
     }

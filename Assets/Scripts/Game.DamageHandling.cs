@@ -160,10 +160,6 @@ public partial class Game {
             return flatCrit;
         }
         
-        if (proj.typeFlags.HasFlag(ProjectileTypeFlags.BackwardsShot)) {
-            return 1f;
-        }
-        
         float criticalStrikeProb = GetAbsoluteStat(PlayerStat.CritChance);
         if (demonEye.equiped.bleedCritAugment.HasValue && enemy.bleed.HasValue) {
             criticalStrikeProb += demonEye.equiped.bleedCritAugment.Value.probability;
@@ -179,10 +175,6 @@ public partial class Game {
         {
             if (isCriticalHit) {
                 damageMultiplier *= GetAbsoluteStat(PlayerStat.CritMulti);
-            }
-            
-            if (proj.typeFlags.HasFlag(ProjectileTypeFlags.Trishot) && eyeInstance.trishot.TryGetValue(out var triShot)) {
-                damageMultiplier *= triShot.damageMultiplier;
             }
             
             ref int consecutiveCriticalHits = ref curRaid.data.damaging.consecutiveCriticalHits;

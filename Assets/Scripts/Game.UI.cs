@@ -234,7 +234,7 @@ public partial class Game {
     private void UpdateInRaidUI() {
         ui.minimap.UpdateMinimap(player.position);
         
-        playerInfo.healthBarFillImage.fillAmount = player.health / (float)FullPlayerHealth();
+        playerInfo.healthBarFillImage.fillAmount = CurPlayerHealthPercentage();
         playerInfo.bleedDebuffIcon.gameObject.SetActive(player.bleeding);
         
         GetEncumberingWeightRange(out int startingEncumberingWeight, out _);

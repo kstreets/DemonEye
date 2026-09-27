@@ -26,16 +26,11 @@ public partial class Game {
         public List<EquipedUpgradeInstance> upgradeInstances = new();
         public List<EquipedAugmentInstance> augmentInstances = new();
         
-        public FirerateEyeUpgrade.InstanceData? firerate;
-        public TrishotEyeUpgrade.InstanceData? trishot;
-        public RangeEyeUpgrade.InstanceData? range;
         public PenetrationEyeUpgrade.InstanceData? penetration;
-        public BackwardsShotEyeUpgrade.InstanceData? backwardShot;
+        public ReflectingShotEyeUpgrade.InstanceData? reflectingShot;
         public ExplosionEyeUpgrade.InstanceData? explosion;
         public OverheatBlast.InstanceData? blast;
         public BoneShatterEyeUpgrade.InstanceData? boneShatter;
-        public StoppingPowerEyeUpgrade.InstanceData? stoppingPower;
-        public ProjectileCountEyeUpgrade.InstanceData? projectileCount;
         public PoisonEyeUpgrade.InstanceData? poison;
         public OptionalRef<SoulVolleyEyeUpgrade.InstanceData> soulVolley;
         
@@ -44,7 +39,6 @@ public partial class Game {
         public DistanceDamageAugment.InstanceData? distanceDamage;
         public PenetrationDamageAugment.InstanceData? penetrationDamageAugment;
         public DoubleTapAugment.InstanceData? doubleTapAugment;
-        public BackwardsPiercingAugment.InstanceData? backwardsPiercingAugment;
         public MultiProjectileCritAugment.InstanceData? multiProjectileCritAugment;
         
         public EquipedUpgradeInstance GetUpgradeInstance<T>() where T : EyeUpgrade {

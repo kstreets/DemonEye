@@ -11,8 +11,7 @@ public partial class Game {
     [Flags] 
     public enum ProjectileTypeFlags {
         None                        = 1 << 0, 
-        Trishot                     = 1 << 1, 
-        BackwardsShot               = 1 << 2, 
+        ReflectedShot               = 1 << 1, 
     }
     
     public class Projectile : Entity {
@@ -54,7 +53,7 @@ public partial class Game {
         Quaternion? rotation = default, int? flatDamage = default, float? spawnDelay = default, float? flatCritChance = default, 
         LayerMask? layermask = default, ProjectileTypeFlags typeFlags = ProjectileTypeFlags.None) 
     {
-        Quaternion projectileRotation = rotation ?? Quaternion.AngleAxis(Vector2.SignedAngle(Vector2.right, velocity.normalized), Vector3.forward);
+        Quaternion projectileRotation = rotation ?? ProjectileRotationFromVelocity(velocity);
         Projectile projectile = SpawnEntity(pool, spawnPos, projectileRotation);
         
         projectile.velocity = velocity;
@@ -116,8 +115,19 @@ public partial class Game {
             if (!ProjectileIsIgnoringEntity(proj, entity)) {
                 HandleDamage(proj, entity);
                 PlayAudioClip(audio.projectileImpact, proj.position);
+                
+                if (proj.typeFlags.HasFlag(ProjectileTypeFlags.ReflectedShot)) {
+                    int reflectedCount = proj.ignoreEntities?.Count ?? 0;
+                    if (reflectedCount == 0) {
+                        Vector2 reflectedVelocity = Quaternion.AngleAxis(Random.Range(-45, 45), Vector3.forward) * -proj.velocity;
+                        proj.velocity = reflectedVelocity;
+                        proj.rotation = ProjectileRotationFromVelocity(reflectedVelocity);
+                        proj.curTimeAlive = 0f;
+                        continue;
+                    } 
+                }
             }
-
+            
             if (entity is Enemy && ProjectileShouldPassThrough(proj, entity)) continue;
             
             Entity impact = SpawnEntity(entityPools.projectileImpact, proj.position, RandomRotation());
@@ -141,11 +151,17 @@ public partial class Game {
         if (ProjectileIsIgnoringEntity(proj, entity)) {
             return true;
         }
-
-        if (proj.typeFlags.HasFlag(ProjectileTypeFlags.BackwardsShot) && proj.eyeInstanceSpawnedFrom.backwardsPiercingAugment.HasValue) {
+        
+        if (proj.typeFlags.HasFlag(ProjectileTypeFlags.ReflectedShot)) {
+            int previouslyReflectedCount = proj.ignoreEntities?.Count ?? 0;
             ProjectileMarkEntityToIgnore(proj, entity);
-            return true;
+            return previouslyReflectedCount <= 0;
         }
+
+        // if (proj.typeFlags.HasFlag(ProjectileTypeFlags.ReflectedShot) && proj.eyeInstanceSpawnedFrom.backwardsPiercingAugment.HasValue) {
+        //     ProjectileMarkEntityToIgnore(proj, entity);
+        //     return true;
+        // }
 
         if (proj.eyeInstanceSpawnedFrom.penetration.TryGetValue(out var penetration)) {
             ProjectileMarkEntityToIgnore(proj, entity);
@@ -219,6 +235,10 @@ public partial class Game {
             proj.position = proj.position.Offset(x: velocity.x, y: velocity.y);
             proj.velocity = velocity; // We don't use the velocity here but if it swiches to a normal projectile "it just works"
         }
+    }
+    
+    private Quaternion ProjectileRotationFromVelocity(Vector2 velocity) {
+        return Quaternion.AngleAxis(Vector2.SignedAngle(Vector2.right, velocity.normalized), Vector3.forward);
     }
 
 }

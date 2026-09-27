@@ -519,6 +519,7 @@ public class GameData {
         ShotRock        = 1 << 9,
         SummonedUpgrade = 1 << 10,
         SoldToTrader    = 1 << 11,
+        TookConsumable  = 1 << 12,
     }
     
     public class PerFrameData {
