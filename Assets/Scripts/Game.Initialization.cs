@@ -1,4 +1,3 @@
-using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -6,6 +5,9 @@ using UnityEngine.UI;
 public partial class Game {
     
     private void InitGame() {
+        SettingsState settingsState = LoadSettings();
+        InitSettings(settingsState);
+        
         GameState gameState = LoadGameState();
         persistentFlags = gameState?.persistentFlags ?? default;
         camera.defaultPPU = camera.pixelPerfect.assetsPPU;
@@ -90,6 +92,7 @@ public partial class Game {
         var gameStateMachine = states.gameStateMachine;
         
         states.mainMenu = gameStateMachine.CreateState(enter: OnMainMenuStateEnter, exit: OnMainMenuStateExit);
+        states.settingsMenu = gameStateMachine.CreateState(enter: ShowSettingsMenuUI, exit: CloseSettingsMenuUI);
         states.hideout = gameStateMachine.CreateState(update: OnHideoutStateUpdate, lateUpdate: OnHideoutStateLateUpdate, enter: OnHideoutStateEnter, exit: OnHideoutStateExit);
         states.mapSelection = gameStateMachine.CreateState(update: OnMapSelectionUpdate, lateUpdate: OnMapSelectionLateUpdate, enter: OnMapSelectionEnter, exit: OnMapSelectionExit);
         states.raid = gameStateMachine.CreateState(update: OnRaidStateUpdate, fixedUpdate: OnRaidStateFixedUpdate, lateUpdate: OnRaidStateLateUpdate, enter: OnRaidStateEnter, exit: OnRaidStateExit);
@@ -109,9 +112,15 @@ public partial class Game {
             states.gameStateMachine.SetStateIfNotCurrent(states.hideout);
         });
         
+        mainMenu.settingsButton.AddListener(() => {
+            states.gameStateMachine.SetStateIfNotCurrent(states.settingsMenu);
+        });
+        
         ui.menuBackButton.AddListener(() => {
             OnEscapePressed(new());
         });
+        
+        settings.applyChangesButton.AddListener(ApplySettings);
         
         hideoutTabs.characterButton.onClick.AddListener(() => {
             PlayAudioClip(audio.togglePressClip);

@@ -135,6 +135,7 @@ public class GameData {
     [Serializable] 
     public class UI {
         public RectTransform mainCanvasRectTransform;
+        public CanvasScaler mainCanvasScaler;
         public Minimap minimap;
         public ItemDescPopup itemDescPopupInv;
         public ItemDescPopup itemDescPopupPickup;
@@ -142,6 +143,7 @@ public class GameData {
         public UIHintPopUp hintPopup;
         public LevelUpNotification levelUpNotification;
         public RectTransform hideoutParent;
+        public RectTransform settingsParent;
         public RectTransform hotBarParent;
         public RectTransform notificationParent;
         public ItemUI dragAndDropItemUI;
@@ -366,6 +368,20 @@ public class GameData {
         [NonSerialized] public float[] gameplaySnapshotWeights;
     }
     
+    [Serializable]
+    public class Settings {
+        public GameObject settingsParent;
+        public SingleSetting fullscreenMode;
+        public SingleSetting resolution;
+        public SingleSetting targetMonitor;
+        public SingleSetting fpsLimit;
+        public SingleSetting vsync;
+        public ButtonFeel applyChangesButton;
+        
+        [NonSerialized] public SingleSetting[] all;
+        [NonSerialized] public SettingsState curSettingsState;
+    }
+    
     public class Input {
         public InputAction move;
         public InputAction interact;
@@ -412,6 +428,7 @@ public class GameData {
     
     public class States {
         public State mainMenu;
+        public State settingsMenu;
         public State mapSelection;
         public State hideout;
         public State raid;

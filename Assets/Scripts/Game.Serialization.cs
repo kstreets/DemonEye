@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Unity.VisualScripting;
 using UnityEngine;
 using static GameData;
 
@@ -22,9 +21,43 @@ public partial class Game {
         public List<MapData.State> mapStates; 
         public List<Quest.State> questStates; 
     }
+    
+    public string GetSettingsSavePath() {
+        return $"{Application.persistentDataPath}/settings";
+    }
 
     public string GetGameStateSavePath() {
         return $"{Application.persistentDataPath}/save";
+    }
+    
+    public void SaveSettings() {
+        using FileStream stream = File.Open(GetSettingsSavePath(), FileMode.OpenOrCreate); 
+        using BinaryWriter binWriter = new(stream);
+        
+        SettingsState state = settings.curSettingsState;
+        SerializeVector2Int(binWriter, state.resolution);
+        SerializeInt(binWriter, state.fullScreenIndex);
+        SerializeInt(binWriter, state.fpsLimitIndex);
+        SerializeInt(binWriter, state.targetMonitor);
+        SerializeInt(binWriter, state.vsyncEnabled);
+    }
+    
+    public SettingsState LoadSettings() {
+        string savePath = GetSettingsSavePath();
+        if (!File.Exists(savePath)) {
+            return null;
+        } 
+        
+        using FileStream stream = File.Open(savePath, FileMode.Open); 
+        using BinaryReader binReader = new(stream);
+        
+        return new() {
+            resolution = DeserializeVector2Int(binReader),
+            fullScreenIndex = DeserializeInt(binReader),
+            fpsLimitIndex = DeserializeInt(binReader),
+            targetMonitor = DeserializeInt(binReader),
+            vsyncEnabled = DeserializeInt(binReader),
+        };
     }
     
     public void SaveGameState() {
@@ -232,6 +265,17 @@ public partial class Game {
     private Vector2 DeserializeVector2(BinaryReader binReader) {
         float x = binReader.ReadSingle();
         float y = binReader.ReadSingle();
+        return new(x, y);
+    }
+    
+    private void SerializeVector2Int(BinaryWriter binWriter, Vector2Int value) {
+        binWriter.Write(value.x);
+        binWriter.Write(value.y);
+    }
+    
+    private Vector2Int DeserializeVector2Int(BinaryReader binReader) {
+        int x = binReader.ReadInt32();
+        int y = binReader.ReadInt32();
         return new(x, y);
     }
     

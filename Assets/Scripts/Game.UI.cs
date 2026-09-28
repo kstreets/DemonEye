@@ -23,6 +23,7 @@ public partial class Game {
         Cursor.visible = true;
         Cursor.SetCursor(config.styles.cursorTexture, Vector2.zero, CursorMode.Auto);
         
+        CloseSettingsMenuUI();
         CloseHideoutUI();
         CloseRaidUI();
         ShowMainMenuUI();
@@ -69,6 +70,18 @@ public partial class Game {
     private void CloseMainMenuUI() {
         ui.animatedBgImage.gameObject.SetActive(false);
         mainMenu.parent.gameObject.SetActive(false);
+    }
+    
+    private void ShowSettingsMenuUI() {
+        ui.settingsParent.gameObject.SetActive(true);
+        ui.menuBackButton.gameObject.SetActive(true);
+        ui.animatedBgImage.gameObject.SetActive(true);
+    }
+    
+    private void CloseSettingsMenuUI() {
+        ui.settingsParent.gameObject.SetActive(false);
+        ui.menuBackButton.gameObject.SetActive(false);
+        ui.animatedBgImage.gameObject.SetActive(false);
     }
 
     private void ShowMapSelectionUI() {
@@ -743,6 +756,17 @@ public partial class Game {
         ui.interactPrompt.gameObject.SetActive(false);
         ui.interactDetails.gameObject.SetActive(false);
         
+    }
+    
+    private void UIOnScreenSizeChanged() {
+        ui.mainCanvasScaler.scaleFactor = Screen.height switch {
+            >= 2160 => 1.4f,
+            >= 1440 => 1.2f,
+            >= 1080 => 1f, 
+            >= 800 => 0.93f, 
+            >= 700 => 0.86f, 
+            _      => 0.79f, 
+        };
     }
     
     public void PlayTypewritterCharacterShowSound() {

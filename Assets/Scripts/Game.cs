@@ -36,6 +36,7 @@ public partial class Game : MonoBehaviour {
     public GameData.SkillsPanel skillsPanel;
     public Audio audio;
     public Music music;
+    public Settings settings;
     
     [NonSerialized] public readonly GameData.Input input = new();
     [NonSerialized] public readonly EntityPools entityPools = new();
@@ -63,6 +64,7 @@ public partial class Game : MonoBehaviour {
         DemonEyeTween.Update();
         UpdateQuests(); // Must be after game state tick, trust me bro
         ClearPerFrameData();
+        CheckForScreenSizeChange();
         
 #if UNITY_EDITOR
         if (Mouse.current != null && Mouse.current.middleButton.isPressed) {
@@ -487,6 +489,15 @@ public partial class Game : MonoBehaviour {
             camera.pixelPerfect.assetsPPU = initialPPU;
             onCompleteCallback?.Invoke();
         });
+    }
+    
+    private Vector2Int lastScreenSize;
+    
+    private void CheckForScreenSizeChange() {
+        if (lastScreenSize == ScreenSize) return;
+        SettingsOnScreenSizeChanged();
+        UIOnScreenSizeChanged();
+        lastScreenSize = ScreenSize;
     }
 
 }

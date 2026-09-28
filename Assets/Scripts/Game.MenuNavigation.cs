@@ -10,7 +10,7 @@ public partial class Game {
     }
     
     private void OnEscapePressed(InputAction.CallbackContext context) {
-        if (InMapSelection || InHideout) {
+        if (InMapSelection || InHideout || InSettings) {
             states.gameStateMachine.SetState(states.mainMenu);
         }
         if (InRaid && PlayerInventoryIsOpen) {

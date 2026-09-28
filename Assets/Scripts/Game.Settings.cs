@@ -1,0 +1,132 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+public partial class Game {
+    
+    public class SettingsState {
+        public Vector2Int resolution;
+        public int fullScreenIndex;
+        public int fpsLimitIndex;
+        public int targetMonitor;
+        public int vsyncEnabled;
+    }
+    
+    public string[] fullScreenNames = { "Exclusive Full Screen", "Full Screen Window", "Maximized", "Windowed" };
+    public int[] fpsLimits = { 60, 90, 120, 144, 165, -1 };
+    
+    public List<Vector2Int> allScreenResolutions = new();
+    
+    private void InitSettings(SettingsState loadedSettings) {
+        settings.all = settings.settingsParent.GetComponentsInChildren<SingleSetting>();
+        
+        foreach (Resolution resolution in Screen.resolutions) {
+            Vector2Int resDim = new(resolution.width, resolution.height);
+            if (!allScreenResolutions.Contains(resDim)) {
+                allScreenResolutions.Add(resDim);
+            }
+        }
+        
+        loadedSettings ??= GetSensibleDefaultSettings();
+        settings.curSettingsState = loadedSettings;
+        
+        const int numberOfFullscreenModes = 2;
+        settings.fullscreenMode.Init(loadedSettings.fullScreenIndex, numberOfFullscreenModes)
+        .OnChange(i => {
+            int nameIndex = (int)GetScreenModeFromIndex(i);
+            settings.fullscreenMode.Display(fullScreenNames[nameIndex]);
+        })
+        .OnApply(i => {
+            Screen.fullScreenMode = GetScreenModeFromIndex(i);
+            settings.curSettingsState.fullScreenIndex = i;
+        });
+        
+        int startingResolutionIndex = FindSettingResolutionIndex(loadedSettings.resolution);
+        if (startingResolutionIndex == -1) {
+            startingResolutionIndex = allScreenResolutions.Count - 1;
+        }
+        
+        settings.resolution.Init(startingResolutionIndex, allScreenResolutions.Count)
+        .OnChange(i => {
+            Vector2Int screenSize = allScreenResolutions[i];
+            settings.resolution.Display($"{screenSize.x} x {screenSize.y}");
+        })
+        .OnApply(i => {
+            Vector2Int screenSize = allScreenResolutions[i];
+            Screen.SetResolution(screenSize.x, screenSize.y, GetScreenModeFromIndex(settings.fullscreenMode.curIndex));
+            settings.curSettingsState.resolution = screenSize;
+        });
+        
+        settings.fpsLimit.Init(loadedSettings.fpsLimitIndex, fpsLimits.Length)
+        .OnChange((i) => {
+            int chosenFpsLimit = fpsLimits[i];
+            string frameRateString = chosenFpsLimit == -1 ? "Unlimited" : chosenFpsLimit.ToString();
+            settings.fpsLimit.Display(frameRateString);
+            Application.targetFrameRate = chosenFpsLimit;
+            settings.curSettingsState.fpsLimitIndex = i;
+        });
+        
+        settings.targetMonitor.Init(loadedSettings.targetMonitor, Display.displays.Length)
+        .OnChange((i) => {
+            settings.targetMonitor.Display($"Display {i + 1}");
+            settings.curSettingsState.targetMonitor = i;
+        });
+        
+        const int numVsyncSettings = 2;
+        settings.vsync.Init(loadedSettings.vsyncEnabled, numVsyncSettings)
+        .OnChange((i) => {
+            settings.vsync.Display(i == 0 ? "Off" : "On");
+            settings.curSettingsState.vsyncEnabled = i;
+        });
+        
+        ApplySettings();
+    }
+    
+    private void SettingsOnScreenSizeChanged() {
+        Vector2Int settingResolution = allScreenResolutions[settings.resolution.curIndex];
+        if (settingResolution != ScreenSize) {
+            int index = FindSettingResolutionIndex(ScreenSize);
+            if (index != -1) {
+                settings.resolution.ForceChangeWithoutApplying(index);
+            }
+        }
+        
+        FullScreenMode settingScreenMode = GetScreenModeFromIndex(settings.curSettingsState.fullScreenIndex);
+        if (settingScreenMode != Screen.fullScreenMode) {
+            settings.fullscreenMode.ForceChangeWithoutApplying(IndexFromScreenMode(Screen.fullScreenMode));
+        }
+    }
+    
+    private SettingsState GetSensibleDefaultSettings() {
+        return new() {
+            resolution = allScreenResolutions[^1],
+            fullScreenIndex = IndexFromScreenMode(FullScreenMode.FullScreenWindow),
+            fpsLimitIndex = fpsLimits.Length - 1,
+            targetMonitor = 0,
+            vsyncEnabled = 0,
+        };
+    }
+    
+    private void ApplySettings() {
+        foreach (SingleSetting setting in settings.all) {
+            setting.Apply();
+        }
+    }
+    
+    private FullScreenMode GetScreenModeFromIndex(int index) {
+        return index == 0 ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed;
+    }
+    
+    private int IndexFromScreenMode(FullScreenMode mode) {
+        return mode == FullScreenMode.FullScreenWindow ? 0 : 1;
+    }
+    
+    private int FindSettingResolutionIndex(Vector2Int resolution) {
+        for (int i = 0; i < allScreenResolutions.Count; i++) {
+            if (resolution == allScreenResolutions[i]) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    
+}

@@ -18,9 +18,13 @@ public partial class Game {
     
     private Vector2 ScreenCenter => new(Screen.width / 2f, Screen.height / 2f);
     
+    private Vector2Int ScreenSize => new(Screen.width, Screen.height);
+    
     private bool InHideout => states.gameStateMachine.CurState == states.hideout;
     
     private bool InMapSelection => states.gameStateMachine.CurState == states.mapSelection;
+    
+    private bool InSettings => states.gameStateMachine.CurState == states.settingsMenu;
     
     public bool InRaid => states.gameStateMachine.CurState == states.raid;
 
