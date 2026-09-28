@@ -370,13 +370,28 @@ public class GameData {
     
     [Serializable]
     public class Settings {
+        public AudioMixer gameAudioMixer;
+        public AudioMixer musicAudioMixer;
+        
         public GameObject settingsParent;
+        
+        public ToggleButtonGroup toggleGroup;
+        public ToggleButton audioToggle;
+        public ToggleButton displayToggle;
+        
+        public RectTransform audioParent;
+        public RectTransform displayParent;
+        
         public SingleSetting fullscreenMode;
         public SingleSetting resolution;
         public SingleSetting targetMonitor;
         public SingleSetting fpsLimit;
         public SingleSetting vsync;
         public ButtonFeel applyChangesButton;
+        
+        public SingleSetting masterVolume;
+        public SingleSetting musicVolume;
+        public SingleSetting gameVolume;
         
         [NonSerialized] public SingleSetting[] all;
         [NonSerialized] public SettingsState curSettingsState;

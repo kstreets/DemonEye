@@ -40,6 +40,9 @@ public partial class Game {
         SerializeInt(binWriter, state.fpsLimitIndex);
         SerializeInt(binWriter, state.targetMonitor);
         SerializeInt(binWriter, state.vsyncEnabled);
+        SerializeInt(binWriter, state.masterVolumeIndex);
+        SerializeInt(binWriter, state.musicVolumeIndex);
+        SerializeInt(binWriter, state.gameVolumeIndex);
     }
     
     public SettingsState LoadSettings() {
@@ -57,6 +60,9 @@ public partial class Game {
             fpsLimitIndex = DeserializeInt(binReader),
             targetMonitor = DeserializeInt(binReader),
             vsyncEnabled = DeserializeInt(binReader),
+            masterVolumeIndex = DeserializeInt(binReader),
+            musicVolumeIndex = DeserializeInt(binReader),
+            gameVolumeIndex = DeserializeInt(binReader),
         };
     }
     

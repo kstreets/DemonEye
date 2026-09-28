@@ -33,6 +33,7 @@ public partial class Game {
         ui.levelUpNotification.Init();
         ui.menuBackButton.gameObject.SetActive(false);
         ui.largeRaidTextTypewriter.gameObject.SetActive(false);
+        settings.toggleGroup.ManualyToggle(settings.audioToggle);
     }
 
     private Sequence mainMenuSequence;
@@ -82,6 +83,7 @@ public partial class Game {
         ui.settingsParent.gameObject.SetActive(false);
         ui.menuBackButton.gameObject.SetActive(false);
         ui.animatedBgImage.gameObject.SetActive(false);
+        SaveSettings();
     }
 
     private void ShowMapSelectionUI() {
@@ -764,9 +766,13 @@ public partial class Game {
             >= 1440 => 1.2f,
             >= 1080 => 1f, 
             >= 800 => 0.93f, 
-            >= 700 => 0.86f, 
-            _      => 0.79f, 
+            >= 750 => 0.86f,
+            >= 700 => 0.8f,
+            >= 600 => 0.5f,
+            >= 500 => 0.35f,
+            _      => 0.2f, 
         };
+        Canvas.ForceUpdateCanvases();
     }
     
     public void PlayTypewritterCharacterShowSound() {

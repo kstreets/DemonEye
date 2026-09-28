@@ -116,6 +116,16 @@ public partial class Game {
             states.gameStateMachine.SetStateIfNotCurrent(states.settingsMenu);
         });
         
+        settings.displayToggle.AddListener(() => {
+            settings.displayParent.gameObject.SetActive(true);
+            settings.audioParent.gameObject.SetActive(false);
+        });
+        
+        settings.audioToggle.AddListener(() => {
+            settings.displayParent.gameObject.SetActive(false);
+            settings.audioParent.gameObject.SetActive(true);
+        });
+        
         ui.menuBackButton.AddListener(() => {
             OnEscapePressed(new());
         });

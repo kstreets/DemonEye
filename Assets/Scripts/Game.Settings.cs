@@ -9,12 +9,20 @@ public partial class Game {
         public int fpsLimitIndex;
         public int targetMonitor;
         public int vsyncEnabled;
+        
+        public int masterVolumeIndex;
+        public int musicVolumeIndex;
+        public int gameVolumeIndex;
     }
     
-    public string[] fullScreenNames = { "Exclusive Full Screen", "Full Screen Window", "Maximized", "Windowed" };
-    public int[] fpsLimits = { 60, 90, 120, 144, 165, -1 };
+    private string[] fullScreenNames = { "Exclusive Full Screen", "Full Screen Window", "Maximized", "Windowed" };
+    private int[] fpsLimits = { 60, 90, 120, 144, 165, -1 };
     
-    public List<Vector2Int> allScreenResolutions = new();
+    private List<Vector2Int> allScreenResolutions = new();
+    
+    public static void OnAnySettingsChanged() {
+        gameInstance.UpdateApplySettingsButtonState();
+    }
     
     private void InitSettings(SettingsState loadedSettings) {
         settings.all = settings.settingsParent.GetComponentsInChildren<SingleSetting>();
@@ -28,55 +36,88 @@ public partial class Game {
         
         loadedSettings ??= GetSensibleDefaultSettings();
         settings.curSettingsState = loadedSettings;
-        
-        const int numberOfFullscreenModes = 2;
-        settings.fullscreenMode.Init(loadedSettings.fullScreenIndex, numberOfFullscreenModes)
-        .OnChange(i => {
-            int nameIndex = (int)GetScreenModeFromIndex(i);
-            settings.fullscreenMode.Display(fullScreenNames[nameIndex]);
-        })
-        .OnApply(i => {
-            Screen.fullScreenMode = GetScreenModeFromIndex(i);
-            settings.curSettingsState.fullScreenIndex = i;
-        });
-        
-        int startingResolutionIndex = FindSettingResolutionIndex(loadedSettings.resolution);
-        if (startingResolutionIndex == -1) {
-            startingResolutionIndex = allScreenResolutions.Count - 1;
+
+        // Video Settings
+        {
+            const int numberOfFullscreenModes = 2;
+            settings.fullscreenMode.Init(loadedSettings.fullScreenIndex, numberOfFullscreenModes)
+            .OnChange(i => {
+                int nameIndex = (int)GetScreenModeFromIndex(i);
+                settings.fullscreenMode.Display(fullScreenNames[nameIndex]);
+            })
+            .OnApply(i => {
+                Screen.fullScreenMode = GetScreenModeFromIndex(i);
+                settings.curSettingsState.fullScreenIndex = i;
+            });
+            
+            int startingResolutionIndex = FindSettingResolutionIndex(loadedSettings.resolution);
+            if (startingResolutionIndex == -1) {
+                startingResolutionIndex = allScreenResolutions.Count - 1;
+            }
+            
+            settings.resolution.Init(startingResolutionIndex, allScreenResolutions.Count)
+            .OnChange(i => {
+                Vector2Int screenSize = allScreenResolutions[i];
+                settings.resolution.Display($"{screenSize.x} x {screenSize.y}");
+            })
+            .OnApply(i => {
+                Vector2Int screenSize = allScreenResolutions[i];
+                Screen.SetResolution(screenSize.x, screenSize.y, GetScreenModeFromIndex(settings.fullscreenMode.curIndex));
+                settings.curSettingsState.resolution = screenSize;
+            });
+            
+            settings.fpsLimit.Init(loadedSettings.fpsLimitIndex, fpsLimits.Length)
+            .OnChange((i) => {
+                int chosenFpsLimit = fpsLimits[i];
+                string frameRateString = chosenFpsLimit == -1 ? "Unlimited" : chosenFpsLimit.ToString();
+                settings.fpsLimit.Display(frameRateString);
+                Application.targetFrameRate = chosenFpsLimit;
+                settings.curSettingsState.fpsLimitIndex = i;
+            });
+            
+            settings.targetMonitor.Init(loadedSettings.targetMonitor, Display.displays.Length)
+            .OnChange((i) => {
+                settings.targetMonitor.Display($"Display {i + 1}");
+                settings.curSettingsState.targetMonitor = i;
+            });
+            
+            const int numVsyncSettings = 2;
+            settings.vsync.Init(loadedSettings.vsyncEnabled, numVsyncSettings)
+            .OnChange((i) => {
+                settings.vsync.Display(i == 0 ? "Off" : "On");
+                settings.curSettingsState.vsyncEnabled = i;
+            });
         }
+
+        // Audio Settings
+        {
+            const int numVolumeOptions = 11; // 0 - 10
+            const float maxVolumeIndex = numVolumeOptions - 1f;
         
-        settings.resolution.Init(startingResolutionIndex, allScreenResolutions.Count)
-        .OnChange(i => {
-            Vector2Int screenSize = allScreenResolutions[i];
-            settings.resolution.Display($"{screenSize.x} x {screenSize.y}");
-        })
-        .OnApply(i => {
-            Vector2Int screenSize = allScreenResolutions[i];
-            Screen.SetResolution(screenSize.x, screenSize.y, GetScreenModeFromIndex(settings.fullscreenMode.curIndex));
-            settings.curSettingsState.resolution = screenSize;
-        });
+            settings.masterVolume.Init(loadedSettings.masterVolumeIndex, numVolumeOptions)
+            .OnChange(i => {
+                float linearVolume = i / maxVolumeIndex;
+                AudioListener.volume = linearVolume;
+                settings.masterVolume.Display(linearVolume.ToString("0%"));
+                settings.curSettingsState.masterVolumeIndex = i;
+            });
         
-        settings.fpsLimit.Init(loadedSettings.fpsLimitIndex, fpsLimits.Length)
-        .OnChange((i) => {
-            int chosenFpsLimit = fpsLimits[i];
-            string frameRateString = chosenFpsLimit == -1 ? "Unlimited" : chosenFpsLimit.ToString();
-            settings.fpsLimit.Display(frameRateString);
-            Application.targetFrameRate = chosenFpsLimit;
-            settings.curSettingsState.fpsLimitIndex = i;
-        });
+            settings.musicVolume.Init(loadedSettings.musicVolumeIndex, numVolumeOptions)
+            .OnChange(i => {
+                float linearVolume = i / maxVolumeIndex;
+                settings.musicAudioMixer.SetFloat("Volume", linearVolume.LinearToDecibel());
+                settings.musicVolume.Display(linearVolume.ToString("0%"));
+                settings.curSettingsState.musicVolumeIndex = i;
+            });
         
-        settings.targetMonitor.Init(loadedSettings.targetMonitor, Display.displays.Length)
-        .OnChange((i) => {
-            settings.targetMonitor.Display($"Display {i + 1}");
-            settings.curSettingsState.targetMonitor = i;
-        });
-        
-        const int numVsyncSettings = 2;
-        settings.vsync.Init(loadedSettings.vsyncEnabled, numVsyncSettings)
-        .OnChange((i) => {
-            settings.vsync.Display(i == 0 ? "Off" : "On");
-            settings.curSettingsState.vsyncEnabled = i;
-        });
+            settings.gameVolume.Init(loadedSettings.gameVolumeIndex, numVolumeOptions)
+            .OnChange(i => {
+                float linearVolume = i / maxVolumeIndex;
+                settings.gameAudioMixer.SetFloat("Volume", linearVolume.LinearToDecibel());
+                settings.gameVolume.Display(linearVolume.ToString("0%"));
+                settings.curSettingsState.gameVolumeIndex = i;
+            });
+        }
         
         ApplySettings();
     }
@@ -103,6 +144,9 @@ public partial class Game {
             fpsLimitIndex = fpsLimits.Length - 1,
             targetMonitor = 0,
             vsyncEnabled = 0,
+            masterVolumeIndex = 5,
+            musicVolumeIndex = 3,
+            gameVolumeIndex = 10,
         };
     }
     
@@ -110,6 +154,17 @@ public partial class Game {
         foreach (SingleSetting setting in settings.all) {
             setting.Apply();
         }
+        UpdateApplySettingsButtonState();
+    }
+    
+    private void UpdateApplySettingsButtonState() {
+        int changesToApplyCount = 0;
+        foreach (SingleSetting setting in settings.all) {
+            if (setting.HasChangesToApply()) {
+                changesToApplyCount++;
+            }
+        }
+        settings.applyChangesButton.SetClickableState(changesToApplyCount > 0);
     }
     
     private FullScreenMode GetScreenModeFromIndex(int index) {

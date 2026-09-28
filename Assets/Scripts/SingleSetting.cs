@@ -1,4 +1,5 @@
 using System;
+using PrimeTween;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -24,8 +25,8 @@ public class SingleSetting : MonoBehaviour {
         curIndex = startingIndex;
         appliedIndex = int.MinValue;
         SetBreadcrumbIndex(startingIndex); 
-        leftButton.button.onClick.AddListener(OnDecrement);
-        rightButton.button.onClick.AddListener(OnIncrement);
+        leftButton.AddListener(OnDecrement);
+        rightButton.AddListener(OnIncrement);
         return this;
     }
     
@@ -44,9 +45,13 @@ public class SingleSetting : MonoBehaviour {
     }
     
     public void Apply() {
-        if (curIndex == appliedIndex) return;     
+        if (curIndex == appliedIndex) return;
         onApplyCallback?.Invoke(curIndex);
         appliedIndex = curIndex;
+    }
+    
+    public bool HasChangesToApply() {
+        return curIndex != appliedIndex;
     }
     
     public void ForceChangeWithoutApplying(int index) {
@@ -66,7 +71,7 @@ public class SingleSetting : MonoBehaviour {
             breadcrumbs[i].gameObject.SetActive(true);
         }
         
-        if (numOfSettings >= breadcrumbs.Length) {
+        if (numOfSettings > breadcrumbs.Length) {
             index = Mathf.RoundToInt((curIndex / (float)numOfSettings) * (breadcrumbs.Length - 1));
         }
         breadcrumbs[index].sprite = selectedBreadcrumb;
@@ -74,14 +79,30 @@ public class SingleSetting : MonoBehaviour {
     
     private void OnIncrement() {
         curIndex = (curIndex + 1) % numOfSettings;
+        if (onApplyCallback == null) {
+            appliedIndex = curIndex;
+        }
+        
         SetBreadcrumbIndex(curIndex);
         onSettingIndexChanged?.Invoke(curIndex);
+        TweenArrowButton(rightButton.rectTransform);
+        Game.OnAnySettingsChanged();
     }
     
     private void OnDecrement() {
         curIndex = (curIndex - 1 + numOfSettings) % numOfSettings;
+        if (onApplyCallback == null) {
+            appliedIndex = curIndex;
+        }
+        
         SetBreadcrumbIndex(curIndex);
         onSettingIndexChanged?.Invoke(curIndex);
+        TweenArrowButton(leftButton.rectTransform);
+        Game.OnAnySettingsChanged();
+    }
+    
+    private void TweenArrowButton(RectTransform arrowButton) {
+        Tween.PunchScale(arrowButton, Vector3.one * 0.15f, 0.125f);
     }
     
 }

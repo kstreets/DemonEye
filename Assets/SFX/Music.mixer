@@ -63,8 +63,8 @@ AudioMixerController:
   m_EnableSuspend: 1
   m_UpdateMode: 0
   m_ExposedParameters:
-  - guid: 169bc742d66cafb48ab7b38a57c3d520
-    name: GameplayLowPassFreq
+  - guid: b41bcdf3cfa3f444a8db2005edbe0fc4
+    name: Volume
   m_AudioMixerGroupViews:
   - guids:
     - cd41ea1bf5cb1cd4f9572fe88569c27a
@@ -119,7 +119,7 @@ AudioMixerSnapshotController:
   m_SnapshotID: 0c712c6c7d33f8549a907b5935fd3294
   m_FloatValues:
     169bc742d66cafb48ab7b38a57c3d520: 22000
-    b41bcdf3cfa3f444a8db2005edbe0fc4: -14.816617
+    b41bcdf3cfa3f444a8db2005edbe0fc4: 0
   m_TransitionOverrides: {}
 --- !u!244 &359318040000291917
 AudioMixerEffectController:

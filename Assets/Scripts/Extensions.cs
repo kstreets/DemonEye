@@ -9,6 +9,12 @@ using Random = UnityEngine.Random;
 
 public static class Extensions {
 
+    public static float LinearToDecibel(this float value) {
+        const float maxVolume = 0f;
+        const float minVolume = -80f;
+        return Mathf.Log10(Mathf.Clamp(value, 0.0001f, 1f)) * (maxVolume - minVolume) / 4f + maxVolume;
+    }
+    
     public static bool StartsWithVowel(this string str) {
         if (string.IsNullOrEmpty(str)) {
             return false;
