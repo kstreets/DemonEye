@@ -236,7 +236,7 @@ public partial class Game {
             HideInventoryItemPopup();
             return;
         }
-        
+
         InventoryHoverInfo invHoverInfo = UpdateInventoryHover();
         CheckToMoveItem(invHoverInfo);
 
@@ -288,7 +288,7 @@ public partial class Game {
     
     private void ShowInventoryItemPopup(InventoryHoverInfo info) {
         if (ui.itemDescPopupInv.gameObject.activeInHierarchy) return;
-        
+
         InventorySlot hoveredSlot = info.inventory.slots[info.slotIndex];
         
         // Set popup position
@@ -328,10 +328,12 @@ public partial class Game {
     }
 
     private void HideInventoryItemPopup() {
+        if (!ui.itemDescPopupInv.IsShowing) return;
         ui.itemDescPopupInv.Hide();
         ui.mechanicDescPopup.nameText.text = string.Empty;
         ui.mechanicDescPopup.descText.text = string.Empty;
         ui.mechanicDescPopup.gameObject.SetActive(false);
+        lastInventoryHoverInfo.timeSpentHovering = 0f;
     }
     
     private void CheckToMoveItem(InventoryHoverInfo invHoverInfo) {
@@ -464,7 +466,7 @@ public partial class Game {
 
     private void ChangeInventorySize(Inventory inventory, int newSlotCount) {
         bool expanding = newSlotCount > inventory.slots.Length;
-        
+
         InventorySlot[] oldSlots = inventory.slots;
         inventory.slots = new InventorySlot[newSlotCount];
         inventory.slots.InitalizeWithDefault();
@@ -544,7 +546,7 @@ public partial class Game {
     
     private InventoryHoverInfo UpdateInventoryHover() {
         InventoryHoverInfo info = new();
-        Vector2 mousePos = Mouse.current.position.ReadValue();
+        Vector2 mousePos = PointerScreenPos;
         
         foreach (Inventory inventory in inventories.all) {
             if (!inventory.parent.gameObject.activeInHierarchy) continue;
@@ -572,7 +574,7 @@ public partial class Game {
     }
     
     private int GetHoveredInventorySlot(Inventory inventory) {
-        Vector2 mousePos = Mouse.current.position.ReadValue();
+        Vector2 mousePos = PointerScreenPos;
         for (int i = 0; i < inventory.slots.Length; i++) {
             RectTransform rectTrans = inventory.slots[i].ui.rectTransform;
             bool mouseInRect = RectTransformUtility.RectangleContainsScreenPoint(rectTrans, mousePos);
@@ -736,7 +738,7 @@ public partial class Game {
     }
 
     private void DropItemFromInventory(ItemInstance itemInstance, int count = -1) {
-        Vector2 mouseWorldPos = camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+        Vector2 mouseWorldPos = camera.main.ScreenToWorldPoint(PointerScreenPos);
         Vector2 dropDir = (mouseWorldPos - (Vector2)player.position).normalized;
         
         int dropCount = count == -1 ? itemInstance.count : count;
@@ -749,7 +751,11 @@ public partial class Game {
 
     private void UpdateDragAndDropItemToCursor() {
         if (dragItemInstance == null) return;
-        Vector2 mousePos = Mouse.current.position.ReadValue();
+        Vector2 mousePos = PointerScreenPos;
+        if (usingController) {
+            // Offset so the dragged item doesn't completely cover the selected slot
+            mousePos += new Vector2(20f, -20f) * ui.mainCanvasRectTransform.lossyScale.x;
+        }
         ui.dragAndDropItemUI.GetComponent<RectTransform>().position = mousePos;
     }
     
@@ -758,6 +764,12 @@ public partial class Game {
         dragItemInstance = null;
         ui.dragAndDropItemUI.ClearItem();
         ui.dragAndDropItemUI.gameObject.SetActive(false);
+    }
+    
+    private void CancelItemDrag() {
+        if (!IsDraggingItem) return;
+        TryAddItemToInventory(startDragInfo.inventory, dragItemInstance, startDragInfo.slotIndex);
+        EndDragAndDropItem();
     }
 
     public struct InventoryAddResult {
@@ -833,7 +845,7 @@ public partial class Game {
             int newItemCount = allowInfiniteStacking ? remainingItemCount : Mathf.Clamp(remainingItemCount, 0, itemInstance.ItemRef.MaxStackCount);
             newItemCount = slot.ui.disallowItemStacking ? 1 : newItemCount;
             result.addedCount += newItemCount;
-            
+
             ItemInstance newItemInstance = itemInstance.Clone();
             newItemInstance.count = newItemCount;
             slot.itemInstance = newItemInstance;
@@ -872,7 +884,7 @@ public partial class Game {
         if (moveOption == MoveItemOption.Single) {
             ItemInstance newItemInstance = itemInstance.Clone();
             newItemInstance.count = 1;
-            
+
             InventoryAddResult result = TryAddItemToInventory(toInventory, newItemInstance, specificSlotToMoveTo);
             if (result.type is InventoryAddResult.ResultType.Success or InventoryAddResult.ResultType.FailureToAddAll) {
                 int keepItemCount = itemInstance.count - result.addedCount;
@@ -887,7 +899,7 @@ public partial class Game {
     private void MoveEntireItemStack(Inventory fromInventory, Inventory toInventory, int fromSlotIndex, int toSlotIndex = -1) {
         ItemInstance itemInstance = GetInventoryItem(fromInventory, fromSlotIndex);
         if (itemInstance == null) return;
-        
+
         InventoryAddResult moveResult = TryAddItemToInventory(toInventory, itemInstance, toSlotIndex);
         if (moveResult.type == InventoryAddResult.ResultType.Success) {
             RemoveItemFromInventory(fromInventory, fromSlotIndex);

@@ -91,6 +91,7 @@ public partial class Game {
         foreach (ItemInstance upgradeInstance in eyeUpgradeItemInstances) {
             demonEyeItem.nestedUuids.Add(upgradeInstance.itemOrInstanceUuid);
         }
+
         DemonEyeInstance demonEyeInstance = CreateDemonEyeInstance(demonEyeItem);
         RegisterDemonEyeInstance(demonEyeItem, demonEyeInstance);
     }
@@ -121,7 +122,7 @@ public partial class Game {
                 }
             }
         }
-        
+
         DemonEyeInstance newDemonEye = new() {
             upgradeInstances = equipedUpgrades,
             augmentInstances = equipedAugments,

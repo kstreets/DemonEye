@@ -251,7 +251,7 @@ public partial class Game {
     
     private void SpawnQuestItemOnDeadBody(Quest quest, ObjectiveData obj) {
         if (ObjectiveIsComplete(quest, obj)) return;
-        
+
         InventorySlot[] chosenDeadbody = curRaid.deadBodySlotsLookup.RandomValue();
         if (chosenDeadbody == null) return;
         

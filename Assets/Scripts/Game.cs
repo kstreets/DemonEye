@@ -31,7 +31,7 @@ public partial class Game : MonoBehaviour {
     public EyeForgeDetailsPanel eyeForgeDetailsPanel;
     public TraderPanel traderPanel;
     public GameData.TransactionPanel transactionPanel;
-    public MapSelectionPanel mapSelectionPanel;
+    public MapPanels mapPanels;
     public QuestsPanel questsPanel;
     public GameData.SkillsPanel skillsPanel;
     public Audio audio;
@@ -50,6 +50,7 @@ public partial class Game : MonoBehaviour {
     [NonSerialized] public readonly Inventories inventories = new();
     [NonSerialized] public readonly HotBar hotBar = new();
     [NonSerialized] public readonly PerFrameData thisFrame = new();
+    [NonSerialized] public readonly ControllerNavigation controllNav = new();
     
     [NonSerialized] public HideoutState hideoutState;
     [NonSerialized] public PersistentFlags persistentFlags;
@@ -61,6 +62,7 @@ public partial class Game : MonoBehaviour {
     
     private void Update() {
         states.gameStateMachine.Tick();
+        UpdateMenuNavigation();
         DemonEyeTween.Update();
         UpdateQuests(); // Must be after game state tick, trust me bro
         ClearPerFrameData();

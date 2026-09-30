@@ -6,6 +6,7 @@ using TMPro;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
@@ -200,19 +201,12 @@ public class GameData {
     [Serializable]
     public class HideoutTabs {
         public RectTransform parent;
-        public Sprite nonSelectedSprite;
-        public Sprite selectedSprite;
-        public Button characterButton;
-        public Button eyeForgeButton;
-        public Button traderButton;
-        public Button questsButton;
-        public Button skillsButton;
-        public TextMeshProUGUI characterText;
-        public TextMeshProUGUI eyeForgeText;
-        public TextMeshProUGUI traderText;
-        public TextMeshProUGUI questsText;
-        public TextMeshProUGUI skillsText;
-        public GameObject questNotifier;
+        public ToggleButtonGroup toggleGroup;
+        public ToggleButton characterButton;
+        public ToggleButton eyeForgeButton;
+        public ToggleButton traderButton;
+        public ToggleButton questsButton;
+        public ToggleButton skillsButton;
     }
     
     [Serializable]
@@ -284,9 +278,9 @@ public class GameData {
     }
 
     [Serializable]
-    public class MapSelectionPanel {
-        public RectTransform panel;
-        public Button[] buttons;
+    public class MapPanels {
+        public MapSelectionPanel mapSelectionPanel;
+        public MapConfirmationPanel confirmationPanel;
     }
     
     [Serializable]
@@ -411,6 +405,10 @@ public class GameData {
         public InputAction quickUse2;
         public InputAction quickUse3;
         public InputAction quickUse4;
+        public InputAction menuMove;
+        public InputAction menuSubmit;
+        public InputAction menuTabLeft;
+        public InputAction menuTabRight;
     }
     
     public class EntityPools {
@@ -570,6 +568,25 @@ public class GameData {
             public ItemInstance foundSearchItem;
         }
         public Data data;
+    }
+    
+    public class ControllerNavigation {
+        public RectTransform selected;
+        public Vector2 pointerPos;
+        public bool hasPointerPos;
+        public State lastNavGameState;
+        public Vector2 lastNavDir;
+        public float repeatTimer;
+        public GameObject submitPressedOn;
+        public Transform[] ignoredRoots;
+        public PointerEventData pointerEventData;
+        public readonly Dictionary<object, RectTransform> rememberedSelections = new();
+        public readonly List<RectTransform> possibleSelections = new();
+        public readonly Vector3[] navCorners = new Vector3[4];
+        public const float stickDeadzone = 0.5f;
+        public const float repeatDelay = 0.4f;
+        public const float repeatInterval = 0.12f;
+        public const int pointerEventId = -100;
     }
     
 }

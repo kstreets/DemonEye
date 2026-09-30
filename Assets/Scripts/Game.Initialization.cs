@@ -1,13 +1,12 @@
 using UnityEngine.Assertions;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
 
 public partial class Game {
     
     private void InitGame() {
         SettingsState settingsState = LoadSettings();
         InitSettings(settingsState);
-        
+
         GameState gameState = LoadGameState();
         persistentFlags = gameState?.persistentFlags ?? default;
         camera.defaultPPU = camera.pixelPerfect.assetsPPU;
@@ -132,38 +131,38 @@ public partial class Game {
         
         settings.applyChangesButton.AddListener(ApplySettings);
         
-        hideoutTabs.characterButton.onClick.AddListener(() => {
+        hideoutTabs.characterButton.AddListener(() => {
             PlayAudioClip(audio.togglePressClip);
-            ToggleHideoutTab(hideoutTabs.characterButton, hideoutTabs.characterText);
             ToggleHideoutPanels(playerPanel.panel, stashPanel.panel);
             ToggleSlimPlayerPanel(false);
+            CancelItemDrag();
         });
         
-        hideoutTabs.eyeForgeButton.onClick.AddListener(() => {
+        hideoutTabs.eyeForgeButton.AddListener(() => {
             PlayAudioClip(audio.togglePressClip);
-            ToggleHideoutTab(hideoutTabs.eyeForgeButton, hideoutTabs.eyeForgeText);
             ToggleHideoutPanels(playerPanel.panel, eyeForgePanel.panel, stashPanel.panel);
             ToggleSlimPlayerPanel(true);
+            CancelItemDrag();
         });
         
-        hideoutTabs.traderButton.onClick.AddListener(() => {
+        hideoutTabs.traderButton.AddListener(() => {
             PlayAudioClip(audio.togglePressClip);
-            ToggleHideoutTab(hideoutTabs.traderButton, hideoutTabs.traderText);
             ToggleHideoutPanels(traderPanel.panel, transactionPanel.panel, stashPanel.panel);
             TriggerTraderShopDialogue(TraderShopDialogueType.Greeting); 
+            CancelItemDrag();
         });
         
-        hideoutTabs.questsButton.onClick.AddListener(() => {
+        hideoutTabs.questsButton.AddListener(() => {
             PlayAudioClip(audio.togglePressClip);
-            ToggleHideoutTab(hideoutTabs.questsButton, hideoutTabs.questsText);
             ToggleHideoutPanels(questsPanel.panel);
             RefreshQuestDisplays();
+            CancelItemDrag();
         });
         
-        hideoutTabs.skillsButton.onClick.AddListener(() => {
+        hideoutTabs.skillsButton.AddListener(() => {
             PlayAudioClip(audio.togglePressClip);
-            ToggleHideoutTab(hideoutTabs.skillsButton, hideoutTabs.skillsText);
             ToggleHideoutPanels(skillsPanel.panel.rectTransform, skillsPanel.playerStatsPanel.rectTransform);
+            CancelItemDrag();
         });
 
         SkillLevelUpRow hasteRow = skillsPanel.panel.hasteSkillRow;
@@ -189,11 +188,15 @@ public partial class Game {
         transactionPanel.transaction.moneyPurchaseButton.AddListener(OnMoneyPurchaseButtonPressed);
         transactionPanel.transaction.barterPurchaseButton.AddListener(OnBarterPurchaseButtonPressed);
 
-        for (int i = 0; i < mapSelectionPanel.buttons.Length; i++) {
-            Button mapSelectionButton = mapSelectionPanel.buttons[i];
+        for (int i = 0; i < mapPanels.mapSelectionPanel.selectors.Length; i++) {
+            ButtonFeel mapSelectionButton = mapPanels.mapSelectionPanel.selectors[i].selectionButton;
             MapData map = config.maps[i];
-            mapSelectionButton.onClick.AddListener(() => LoadMapAsync(map));
+            mapSelectionButton.AddListener(() => ShowMapConfirmationUI(map));
         }
+        
+        mapPanels.confirmationPanel.teleportButton.AddListener(() => {
+            LoadMapAsync(mapPanels.confirmationPanel.selectedMap);
+        });
     }
     
     private void InitHotBar() {

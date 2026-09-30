@@ -242,7 +242,7 @@ public partial class Game {
         discoverSlotsSequence.ChainCallback(target: this, static (target) => {
             ref int discoverItemIndex = ref target.curRaid.data.interactions.discoverItemIndex;
             ref Timer discoverItemTimer = ref target.curRaid.data.interactions.discoverItemTimer;
-            
+
             InventorySlot slot = target.inventories.lootPtr.slots[discoverItemIndex];
             if (slot.itemInstance != null) {
                 target.AnimateSlotSearch(slot.ui);
@@ -253,8 +253,8 @@ public partial class Game {
         discoverItemTimer.EndAction ??= static () => {
             Inventory lootInventoryPtr = gameInstance.inventories.lootPtr;
             ref Timer discoverItemTimer = ref gameInstance.curRaid.data.interactions.discoverItemTimer;
-            ref int discoverItemIndex = ref gameInstance.curRaid.data.interactions.discoverItemIndex; 
-            
+            ref int discoverItemIndex = ref gameInstance.curRaid.data.interactions.discoverItemIndex;
+
             ItemInstance itemInstance = lootInventoryPtr.slots[discoverItemIndex].itemInstance;
             Item itemRef = itemInstance.ItemRef;
             itemInstance.notDiscovered = false;
@@ -267,7 +267,7 @@ public partial class Game {
             slotUI.SetItem(itemRef, itemInstance.count);
             
             Tween.Scale(slotUI.itemUI.image.rectTransform, Vector3.one * 3.5f, Vector3.one, new TweenSettings(0.2f, Ease.OutBack));
-            
+
             Entity reveal = gameInstance.SpawnEntityOneShot(gameInstance.entityPools.lootReveal, Vector3.zero, Quaternion.identity, slotUI.rectTransform);
             reveal.trans.localPosition = Vector3.zero;
             reveal.image.color = gameInstance.config.styles.GetColorForRarity(itemRef.GetRarity());

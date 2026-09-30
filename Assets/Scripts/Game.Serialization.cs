@@ -33,7 +33,7 @@ public partial class Game {
     public void SaveSettings() {
         using FileStream stream = File.Open(GetSettingsSavePath(), FileMode.OpenOrCreate); 
         using BinaryWriter binWriter = new(stream);
-        
+
         SettingsState state = settings.curSettingsState;
         SerializeVector2Int(binWriter, state.resolution);
         SerializeInt(binWriter, state.fullScreenIndex);

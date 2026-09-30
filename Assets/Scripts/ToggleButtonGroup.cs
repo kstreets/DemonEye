@@ -23,12 +23,41 @@ public class ToggleButtonGroup : MonoBehaviour {
         OnButtonClicked(toggles[0]);
     }
     
+    public bool IsSelected(ToggleButton toggle) {
+        return toggle.image.sprite == selectedSprite;
+    }
+    
+    public ToggleButton GetSelected() {
+        foreach (ToggleButton toggle in toggles) {
+            if (IsSelected(toggle)) {
+                return toggle;
+            }
+        }
+        return null;
+    }
+    
     public void ManualyToggle(ToggleButton toggle) {
         OnButtonClicked(toggle);
     }
 
     public void ManualyToggleCosmetically(ToggleButton toggle) {
         OnButtonClicked(toggle, false);
+    }
+    
+    public void Move(int step) {
+        if (toggles.Count == 0) return;
+        int curIndex = toggles.IndexOf(GetSelected());
+        
+        for (int i = 1; i <= toggles.Count; i++) {
+            int index = ((curIndex + step * i) % toggles.Count + toggles.Count) % toggles.Count;
+            if (index == curIndex) return;
+            
+            ToggleButton toggle = toggles[index];
+            if (toggle.button.IsInteractable()) {
+                toggle.button.onClick.Invoke();
+                return;
+            }
+        }
     }
     
     public void Add(ToggleButton toggle) {

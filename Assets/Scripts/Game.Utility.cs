@@ -24,12 +24,14 @@ public partial class Game {
     
     private bool InMapSelection => states.gameStateMachine.CurState == states.mapSelection;
     
+    private bool SelectingMap => InMapSelection && mapPanels.mapSelectionPanel.gameObject.activeInHierarchy;
+    
+    private bool ConfirmingMapSelection => InMapSelection && mapPanels.confirmationPanel.gameObject.activeInHierarchy;
+    
     private bool InSettings => states.gameStateMachine.CurState == states.settingsMenu;
     
     public bool InRaid => states.gameStateMachine.CurState == states.raid;
 
-    public bool ControllerPluggedIn => Gamepad.current != null;
-    
     private Vector3 RotationVector360(float minDist, float maxDist) {
         return Quaternion.AngleAxis(Random.Range(0, 360), Vector3.forward) * Vector3.right * Random.Range(minDist, maxDist);
     }

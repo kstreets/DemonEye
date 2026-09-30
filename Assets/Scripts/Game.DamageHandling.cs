@@ -68,7 +68,7 @@ public partial class Game {
 
         int damage = GetProjectileDamage(projectile, enemy, isCriticalStrike);
         DamageEnemy(enemy, damage, isCriticalStrike, useEnemyDamageMultiplier: false); // GetProjectileDamage already includes enemy multiplier
-        
+
         DemonEyeInstance eyeInstance = projectile.eyeInstanceSpawnedFrom;
         foreach (EquipedUpgradeInstance modInstance in eyeInstance.upgradeInstances) {
             modInstance.ApplyToEnemy(enemy);
@@ -79,7 +79,7 @@ public partial class Game {
         
         if (eyeInstance.explosion.TryGetValue(out var explosion) && RollProbability(explosion.probability)) {
             Vector2 expSpawnPos = GetExplosionPosition(projectile, enemy);
-            
+
             Entity expEntity = SpawnEntity(entityPools.explosion, expSpawnPos, Quaternion.identity); 
             DestroyEntity(expEntity, CurrentClipLength(expEntity.animator));
             
@@ -133,7 +133,7 @@ public partial class Game {
         if (entity.gridObstacleRadius > 0) {
             curRaid.mapInstance.grid.ClearObstacle(entity.gridObstaclePos, entity.gridObstacleRadius);
         }
-            
+
         Entity smokeEntity = SpawnEntity<Entity>(prefabs.rockSmokePrefab, entity.position, Quaternion.identity);
         DestroyEntity(smokeEntity, 0.417f);
         DestroyEntity(entity);

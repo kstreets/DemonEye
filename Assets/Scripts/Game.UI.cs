@@ -4,17 +4,16 @@ using PrimeTween;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 public partial class Game {
     
-    private bool OnCharacterTab => hideoutTabs.characterButton.image.sprite == hideoutTabs.selectedSprite;
-    private bool OnEyeForgeTab => hideoutTabs.eyeForgeButton.image.sprite == hideoutTabs.selectedSprite;
-    private bool OnTradingTab => hideoutTabs.traderButton.image.sprite == hideoutTabs.selectedSprite;
-    private bool OnQuestsTab => hideoutTabs.questsButton.image.sprite == hideoutTabs.selectedSprite;
+    private bool OnCharacterTab => hideoutTabs.toggleGroup.IsSelected(hideoutTabs.characterButton);
+    private bool OnEyeForgeTab => hideoutTabs.toggleGroup.IsSelected(hideoutTabs.eyeForgeButton);
+    private bool OnTradingTab => hideoutTabs.toggleGroup.IsSelected(hideoutTabs.traderButton);
+    private bool OnQuestsTab => hideoutTabs.toggleGroup.IsSelected(hideoutTabs.questsButton);
     
     private bool ShowingPlayerPanel => playerPanel.panel.gameObject.activeInHierarchy;
     private bool ShowingForgeDetailsPanel => eyeForgeDetailsPanel.panel.gameObject.activeInHierarchy;
@@ -90,7 +89,14 @@ public partial class Game {
         ShowHideoutUI();
         hideoutTabs.parent.gameObject.SetActive(false);
         playerInfo.parent.gameObject.SetActive(false);
-        ToggleHideoutPanels(playerPanel.panel, mapSelectionPanel.panel);
+        ToggleHideoutPanels(playerPanel.panel, mapPanels.mapSelectionPanel.rectTransform);
+        mapPanels.mapSelectionPanel.UpdateSelectorStates(config.maps);
+    }
+    
+    private void ShowMapConfirmationUI(MapData map) {
+        mapPanels.mapSelectionPanel.gameObject.SetActive(false);
+        mapPanels.confirmationPanel.gameObject.SetActive(true);
+        mapPanels.confirmationPanel.Display(map);
     }
 
     private void CloseMapSelectionUI() {
@@ -98,7 +104,6 @@ public partial class Game {
     }
     
     private void ShowHideoutUI() {
-        ToggleHideoutTab(hideoutTabs.characterButton, hideoutTabs.characterText);
         ToggleHideoutPanels(playerPanel.panel, stashPanel.panel);
         ui.menuBackButton.gameObject.SetActive(true);
         playerInfo.coinsCurrencyParent.gameObject.SetActive(true);
@@ -155,26 +160,6 @@ public partial class Game {
         ui.minimap.gameObject.SetActive(false);
     }
 
-    private void ToggleHideoutTab(Button button, TextMeshProUGUI text) {
-        Sprite tabSelectedSprite = hideoutTabs.selectedSprite;
-        Sprite tabNonSelectedSprite = hideoutTabs.nonSelectedSprite;
-        
-        hideoutTabs.characterButton.image.sprite = tabNonSelectedSprite;
-        hideoutTabs.eyeForgeButton.image.sprite = tabNonSelectedSprite;
-        hideoutTabs.traderButton.image.sprite = tabNonSelectedSprite;
-        hideoutTabs.questsButton.image.sprite = tabNonSelectedSprite;
-        hideoutTabs.skillsButton.image.sprite = tabNonSelectedSprite;
-        
-        hideoutTabs.characterText.margin = config.styles.nonSelectedHideoutTabMargin;
-        hideoutTabs.eyeForgeText.margin = config.styles.nonSelectedHideoutTabMargin;
-        hideoutTabs.traderText.margin = config.styles.nonSelectedHideoutTabMargin;
-        hideoutTabs.questsText.margin = config.styles.nonSelectedHideoutTabMargin;
-        hideoutTabs.skillsText.margin = config.styles.nonSelectedHideoutTabMargin;
-        
-        button.image.sprite = tabSelectedSprite;
-        text.margin = config.styles.selectedHideoutTabMargin;
-    }
-
     private void ToggleHideoutPanels(params RectTransform[] panels) {
         playerPanel.panel.gameObject.SetActive(false);
         stashPanel.panel.gameObject.SetActive(false);
@@ -186,7 +171,8 @@ public partial class Game {
         questsPanel.panel.gameObject.SetActive(false);
         skillsPanel.panel.gameObject.SetActive(false);
         skillsPanel.playerStatsPanel.gameObject.SetActive(false);
-        mapSelectionPanel.panel.gameObject.SetActive(false);
+        mapPanels.mapSelectionPanel.gameObject.SetActive(false);
+        mapPanels.confirmationPanel.gameObject.SetActive(false);
         
         foreach (RectTransform rect in panels) {
             rect.gameObject.SetActive(true);
@@ -425,7 +411,7 @@ public partial class Game {
         else {
             endDamageNumPos = OffsetY(OffsetX(spawnPos, xOffset), yOffset);
         }
-        
+
         Entity damageNumber = SpawnEntity(entityPools.damageNumber, spawnPos, Quaternion.identity, ui.damageNumbersParent);
         damageNumber.textMesh.text = damage.ToString();
         
@@ -710,7 +696,7 @@ public partial class Game {
     
     private HintHoverInfo UpdateHintHover() {
         HintHoverInfo info = new();
-        Vector2 mousePos = Mouse.current.position.ReadValue();
+        Vector2 mousePos = PointerScreenPos;
         
         foreach (RectTransform element in uiHints.hoverableRectTransforms) {
             if (UpdateHintHoverInfoForRectTransform(element, mousePos, ref info)) break;
@@ -757,7 +743,6 @@ public partial class Game {
     private void DisableInteractionPrompt() {
         ui.interactPrompt.gameObject.SetActive(false);
         ui.interactDetails.gameObject.SetActive(false);
-        
     }
     
     private void UIOnScreenSizeChanged() {

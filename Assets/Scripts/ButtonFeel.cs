@@ -42,6 +42,8 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
     }
 
     public void OnPointerEnter(PointerEventData eventData) {
+        if (!eventData.FromDominantInputDevice()) return;
+        
         beingHovered = true;
         if (!highlightedSprite) return;
         image.sprite = GetHighlightedSprite();
@@ -57,6 +59,8 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
     }
     
     public void OnPointerExit(PointerEventData eventData) {
+        if (!eventData.FromDominantInputDevice()) return;
+        
         beingHovered = false;
         if (!highlightedSprite) return;
         image.sprite = GetNonHighlightedSprite();

@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using JetBrains.Annotations;
-using PrimeTween;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Pool;
@@ -25,7 +24,7 @@ public partial class Game {
         }
         
         if (maps.Count != gameState.mapStates.Count) {
-            Debug.Log("Maps save does not match current maps. Saves are not going to be loaded");
+            Debug.LogError("Maps save does not match current maps. Saves are not going to be loaded");
             return;
         }
         

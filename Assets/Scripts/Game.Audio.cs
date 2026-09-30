@@ -40,7 +40,7 @@ public partial class Game {
         AudioSource source = audio.reservedSources.Dequeue();
         int nextGeneration = audio.generationLookup[source] + 1;
         audio.generationLookup[source] = nextGeneration;
-        
+
         AudioClipHandle handle = new() {
             audioSource = source,
             generation = nextGeneration,

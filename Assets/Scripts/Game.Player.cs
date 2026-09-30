@@ -138,7 +138,7 @@ public partial class Game {
             const int bleedDamage = 5;
             player.health -= bleedDamage;
             SpawnPlayerDamageNumber(bleedDamage);
-            
+
             Entity bloodDrop = SpawnEntity(entityPools.bloodDrop, OffsetY(player.position, 0.11f), Quaternion.identity);
             AddParentEffect(bloodDrop, player, 0.4f);
             DestroyEntity(bloodDrop, 0.8f);
@@ -481,8 +481,8 @@ public partial class Game {
         
         if (trinkets.equiped is Thorns thorns && trinkets.data.cooldownDuration.HasPassed()) {
             Entity damageEntity = sourceEntity switch {
-                Enemy enemy => enemy,
-                Projectile proj => proj.sourceEntity, 
+            Enemy enemy => enemy,
+            Projectile proj => proj.sourceEntity, 
                 _ => null,
             };
             if (damageEntity != null) {

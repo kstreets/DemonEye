@@ -169,7 +169,7 @@ public partial class Game {
                     
                     enemy.health -= bleedDamage;
                     bleed.lastBleedTime = Time.time;
-                    
+
                     Entity bloodDrop = SpawnEntity(entityPools.bloodDrop, OffsetY(enemy.position, 0.015f), Quaternion.identity);
                     AddParentEffect(bloodDrop, enemy, 0.4f);
                     DestroyEntity(bloodDrop, 0.8f);
@@ -215,7 +215,7 @@ public partial class Game {
                     closestColToPlayer = col;
                 }
             }
-            
+
             Enemy collidedWithEnemy = entities.lookup[closestColToPlayer.gameObject] as Enemy;
             DamagePlayer(collidedWithEnemy.data.collisionDamage, PlayerDamageType.Collision, collidedWithEnemy);
         }
@@ -421,7 +421,7 @@ public partial class Game {
         enemy.position = position;
         enemy.gameObject.SetActive(false);
         enemy.lastTeleportTime = Time.time;
-        
+
         Entity inTeleportFxEntity = SpawnEntity(entityPools.teleportIn, enemy.position, Quaternion.identity);
         float spawnAnimDuration = CurrentClipLength(inTeleportFxEntity.animator);
         DestroyEntity(inTeleportFxEntity, spawnAnimDuration);

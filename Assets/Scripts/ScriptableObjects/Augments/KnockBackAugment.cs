@@ -17,7 +17,7 @@ public class KnockBackAugment : Augment {
 
     public override void AddInstanceToEnemy(Enemy enemy, int stackCount) {
         if (!RollProbability(Probability(stackCount))) return;
-        
+
         Player player = gameInstance.entities.player;
         enemy.knockBack = new InstanceData {
             knockBackDist = knockBackDist,

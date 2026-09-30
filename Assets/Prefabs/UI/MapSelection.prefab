@@ -66,7 +66,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -240452162, guid: 8d540dc49fc145f42be407177c9f2ddf, type: 3}
+  m_Sprite: {fileID: 1129690133, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -225,8 +225,9 @@ GameObject:
   - component: {fileID: 3726583599317892712}
   - component: {fileID: 3454145910895595167}
   - component: {fileID: 4437069347798747700}
+  - component: {fileID: 8800637685719868084}
   m_Layer: 5
-  m_Name: MapEntry
+  m_Name: MapSelection
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -313,6 +314,25 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &8800637685719868084
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3846636822915165304}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed0a9f4b77727234eb1ed63741f017b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MapSelection
+  icon: {fileID: 8226621060413671852}
+  mapNameTextMesh: {fileID: 2176527911708434762}
+  subNameTextMesh: {fileID: 3259125478237937437}
+  iconFrame: {fileID: 8326349430874644425}
+  lockedIcon: {fileID: 1129690133, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
+  selectionButton: {fileID: 2700330201164293900}
+  unlockRequirement: 
 --- !u!1 &8326349430874644425
 GameObject:
   m_ObjectHideFlags: 0
@@ -330,7 +350,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &243944802873351110
 RectTransform:
   m_ObjectHideFlags: 0
@@ -347,8 +367,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.000030517578}
-  m_SizeDelta: {x: 7.2470016, y: 7.2470016}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 6.24, y: 6.24}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7103204515567701011
 CanvasRenderer:
@@ -378,7 +398,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -403899735, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
+  m_Sprite: {fileID: 2144612291, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -535,7 +555,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4806718602898750143, guid: 1388258b3e69b7b488ca8e5df5d1d8c5, type: 3}
       propertyPath: m_Name
-      value: UpgradeButton
+      value: SelectButton
       objectReference: {fileID: 0}
     - target: {fileID: 4806718602898750143, guid: 1388258b3e69b7b488ca8e5df5d1d8c5, type: 3}
       propertyPath: m_IsActive
@@ -630,6 +650,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1388258b3e69b7b488ca8e5df5d1d8c5, type: 3}
+--- !u!114 &2700330201164293900 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3874865120119824866, guid: 1388258b3e69b7b488ca8e5df5d1d8c5, type: 3}
+  m_PrefabInstance: {fileID: 1206904541298231022}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03165f9d0528f6e4d98d6f9e2ff018af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonFeel
 --- !u!224 &6696720130825005356 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 5498981127109160898, guid: 1388258b3e69b7b488ca8e5df5d1d8c5, type: 3}

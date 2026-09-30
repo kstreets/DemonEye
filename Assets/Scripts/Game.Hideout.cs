@@ -27,7 +27,7 @@ public partial class Game {
             bool showingQuest = quests.presentingPkg == questPkg;
             questPkg.questToggleButton.notifier.SetActive(questIsComplete && !showingQuest);
         }
-        hideoutTabs.questNotifier.SetActive(oneOrMoreQuestsReadyToSubmit && !OnQuestsTab);
+        hideoutTabs.questsButton.notifier.SetActive(oneOrMoreQuestsReadyToSubmit && !OnQuestsTab);
     }
     
     // ************************
@@ -179,7 +179,7 @@ public partial class Game {
             Tween.PunchScale(itemUI.rectTransform, Vector3.one * 0.3f, 0.12f, 5f);
             PlayAudioClip(audio.itemSelectClip);
         }
-        
+
         ItemInstance tradingItemInstance = curTradingInventorySlot?.itemInstance;
         transactionPanel.transaction.UpdateBuyItem(tradingItemInstance);
         if (tradingItemInstance != null && transactionState == TransactionState.Selling) {
@@ -526,7 +526,7 @@ public partial class Game {
             forgeMode = ForgeMode.Empty;
             return;
         }
-        
+
         ItemInstance eyeItemInstance = inventories.eyeForge.slots[0].itemInstance;
         if (eyeItemInstance == null) return;
         
@@ -567,7 +567,7 @@ public partial class Game {
         
         ButtonFeel forgeButton = eyeForgePanel.forgeButton;
         forgeButton.StopKeepPressed();
-            
+
         ItemInstance eyeSlotItemInstance = inventories.eyeForge.slots[eyeSlotIndex].itemInstance;
         using var _ = ListPool<ItemInstance>.Get(out var eyeUpgradeItemInstances);
 
@@ -610,7 +610,7 @@ public partial class Game {
 
         float upgradeExplosionsDuration = perUpgradeExplosionDelay * (GetInventoryItemCount(inventories.eyeForge) - 1);
         float totalAnimationDuration = fillDuration + upgradeExplosionsDuration + popOutDuration;
-        
+
         InventorySlot[] slots = inventories.eyeForge.slots;
         
         bool upgradingDemonEye = slots[0].itemInstance.isDemonEye;
@@ -845,7 +845,7 @@ public partial class Game {
         
         ToggleButton toggle = Instantiate(prefabs.questSelectionToggle, questsPanel.questSelectionParent).GetComponent<ToggleButton>();
         questsPanel.toggleButtonGroup.Add(toggle);
-        
+
         QuestPackage questPackage = new() {
             questNode = null,
             questUI = questUI,

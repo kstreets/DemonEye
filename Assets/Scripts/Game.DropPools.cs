@@ -155,7 +155,7 @@ public partial class Game {
                 _                     => throw new ArgumentOutOfRangeException(),
             };
         }
-        
+
         DropOrigin dropOrigin = GetItemDropOrigin(item, dropPool);
         return Mathf.Clamp01(dropOrigin.chanceToSpawn + addChanceToSpawn);
     }

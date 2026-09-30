@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.Pool;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
@@ -9,6 +10,17 @@ using Random = UnityEngine.Random;
 
 public static class Extensions {
 
+    public static bool FromDominantInputDevice(this PointerEventData eventData) {
+        if (eventData == null) {
+            return true;
+        }
+        const int controllerId = GameData.ControllerNavigation.pointerEventId;
+        if (Game.gameInstance.usingController) {
+            return eventData.pointerId == controllerId;
+        }
+        return eventData.pointerId != controllerId;
+    }
+    
     public static float LinearToDecibel(this float value) {
         const float maxVolume = 0f;
         const float minVolume = -80f;

@@ -32,7 +32,7 @@ public class DemonEyeDescList : MonoBehaviour {
                 ReleaseElementsAugmentDescriptions(curAugmentDescList);
                 continue;
             }
-            
+
             EyeUpgradeSet.Element upgradeElm = eyeUpgradeSet.elements[i];
             int numberOfDifferentAugments = upgradeElm.HasAugments ? upgradeElm.augmentsAndCount.Count : 0;
             

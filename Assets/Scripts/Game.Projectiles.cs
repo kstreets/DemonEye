@@ -48,8 +48,7 @@ public partial class Game {
         projectile.ignoreEntities = default;
     }
     
-    private Projectile SpawnProjectile(
-        EntityPool<Projectile> pool, Vector2 spawnPos, Vector2 velocity, float lifetime, Entity sourceEntity,
+    private Projectile SpawnProjectile(EntityPool<Projectile> pool, Vector2 spawnPos, Vector2 velocity, float lifetime, Entity sourceEntity,
         Quaternion? rotation = default, int? flatDamage = default, float? spawnDelay = default, float? flatCritChance = default, 
         LayerMask? layermask = default, ProjectileTypeFlags typeFlags = ProjectileTypeFlags.None) 
     {
@@ -109,7 +108,7 @@ public partial class Game {
                 projectiles.RemoveAt(i);
                 continue;
             }
-            
+
             Entity entity = entities.lookup[col.gameObject];
                     
             if (!ProjectileIsIgnoringEntity(proj, entity)) {
@@ -129,7 +128,7 @@ public partial class Game {
             }
             
             if (entity is Enemy && ProjectileShouldPassThrough(proj, entity)) continue;
-            
+
             Entity impact = SpawnEntity(entityPools.projectileImpact, proj.position, RandomRotation());
             DestroyEntity(impact, CurrentClipLength(impact.animator));
             

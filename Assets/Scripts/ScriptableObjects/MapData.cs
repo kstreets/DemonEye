@@ -11,6 +11,12 @@ public class MapData : ScriptableObject {
     public RaidSpawnPattern spawning;
     public MapWaterSettings waterSettings;
     public Texture2D minimapTexture;
+    
+    [Header("Additional Info")]
+    public Sprite icon;
+    public Texture2D previewImage;
+    public string difficultyText;
+    public string unlockRequirement;
 
     [Header("Variables")]
     public int altarSoulPrice;

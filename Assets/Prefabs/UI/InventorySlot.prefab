@@ -178,6 +178,7 @@ MonoBehaviour:
   underlayImage: {fileID: 3899002037184488097}
   activeSlotSprite: {fileID: 823751994, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
   inactiveSlotSprite: {fileID: 957642039, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
+  highlightedSlotSprite: {fileID: 458169748, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
   itemUI: {fileID: 6890701791358644999}
   searchingCircle: {fileID: 8713576673893893700}
 --- !u!1 &6645004511953812377

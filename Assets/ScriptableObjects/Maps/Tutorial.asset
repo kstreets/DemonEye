@@ -12,11 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0aa690954e129034abb7319a8a860125, type: 3}
   m_Name: Tutorial
   m_EditorClassIdentifier: Assembly-CSharp::MapData
-  displayName: Tutorial
+  displayName: Outskirts
   sceneReference: Tutorial
   spawning: {fileID: 11400000, guid: a6539f0178f4a554a84cbbaa445e68eb, type: 2}
   waterSettings: {fileID: 11400000, guid: 4ed6bcca488508542895549cf9b79f11, type: 2}
   minimapTexture: {fileID: 2800000, guid: ca99388123d761148b09a1045ec7294b, type: 3}
+  icon: {fileID: -1485084799, guid: f7d550c1f4248d74ab8008b69e6ed1b1, type: 3}
+  previewImage: {fileID: 2800000, guid: 2dd6ecdd4f7c57040a37bfa33189bb33, type: 3}
+  difficultyText: Easy
+  unlockRequirement: 
   altarSoulPrice: 25
   exitPortalsCount: 2
   playerCantBleed: 1

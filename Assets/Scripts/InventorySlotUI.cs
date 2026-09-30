@@ -1,7 +1,8 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class InventorySlotUI : MonoBehaviour {
+public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler  {
 
     public Styles styles;
     public bool disallowItemStacking;
@@ -13,6 +14,7 @@ public class InventorySlotUI : MonoBehaviour {
     public Image underlayImage;
     public Sprite activeSlotSprite;
     public Sprite inactiveSlotSprite;
+    public Sprite highlightedSlotSprite;
     public ItemUI itemUI;
     public GameObject searchingCircle;
     
@@ -32,6 +34,23 @@ public class InventorySlotUI : MonoBehaviour {
         }
     }
     
+    public void OnPointerEnter(PointerEventData eventData) {
+        SetHovered(eventData, true);
+    }
+
+    public void OnPointerExit(PointerEventData eventData) {
+        SetHovered(eventData, false);
+    }
+
+    private void OnDisable() {
+        SetHovered(null, false);
+    }
+
+    private void SetHovered(PointerEventData eventData, bool hovered) {
+        if (eventData != null && !eventData.FromDominantInputDevice()) return;
+        slotImage.sprite = hovered ? highlightedSlotSprite : activeSlotSprite;
+    }
+
     public bool AcceptsItem(Item item) {
         return AcceptsItemType(item.type);
     }
