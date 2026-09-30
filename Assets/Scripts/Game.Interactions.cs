@@ -174,6 +174,8 @@ public partial class Game {
     
     private void OpenLootInventory(LootInventoryOrigin origin) {
         if (LootInventoryIsOpen) return;
+        
+        thisFrame.flags |= GameData.FrameFlags.InventoryOpened;
         curRaid.data.interactions.curLootOrigin = origin;
         
         if (origin == LootInventoryOrigin.Body) {

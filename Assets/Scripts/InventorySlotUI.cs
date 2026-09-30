@@ -18,13 +18,14 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     public ItemUI itemUI;
     public GameObject searchingCircle;
     
-    public bool SlotIsInactive => slotImage.sprite == inactiveSlotSprite;
+    public bool SlotIsInactive => isInactive;
     public bool AcceptsAllTypes => onlyAcceptedItemType == null;
     public bool IsGrayedOut => overlayImage.gameObject.activeInHierarchy;
-    public bool IsUnderlayed => underlayImage.gameObject.activeInHierarchy;
 
     private RectTransform _rectTransform;
-    
+    private bool isHovered;
+    private bool isInactive;
+
     public RectTransform rectTransform {
         get {
             if (!_rectTransform) {
@@ -48,7 +49,17 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     private void SetHovered(PointerEventData eventData, bool hovered) {
         if (eventData != null && !eventData.FromDominantInputDevice()) return;
-        slotImage.sprite = hovered ? highlightedSlotSprite : activeSlotSprite;
+        isHovered = hovered;
+        RefreshSlotSprite();
+    }
+
+    private void RefreshSlotSprite() {
+        if (isHovered) {
+            slotImage.sprite = highlightedSlotSprite;
+        }
+        else {
+            slotImage.sprite = isInactive ? inactiveSlotSprite : activeSlotSprite;
+        }
     }
 
     public bool AcceptsItem(Item item) {
@@ -73,20 +84,24 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     }
 
     public void MakeSlotActive() {
-        slotImage.sprite = activeSlotSprite;     
+        isInactive = false;
+        RefreshSlotSprite();
     }
 
     public void MakeSlotInactive() {
-        slotImage.sprite = inactiveSlotSprite;
+        isInactive = true;
+        RefreshSlotSprite();
     }
 
     public void MakeSlotSearching() {
-        slotImage.sprite = inactiveSlotSprite;
+        isInactive = true;
+        RefreshSlotSprite();
         searchingCircle.SetActive(true);
     }
 
     public void StopSlotSearching() {
-        slotImage.sprite = activeSlotSprite;     
+        isInactive = false;
+        RefreshSlotSprite();
         searchingCircle.SetActive(false);
     }
 

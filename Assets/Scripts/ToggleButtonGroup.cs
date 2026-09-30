@@ -4,6 +4,14 @@ using UnityEngine.Events;
 
 public class ToggleButtonGroup : MonoBehaviour {
 
+    // Which controller buttons switch this group. Primary uses the bumpers, Secondary uses the triggers.
+    public enum NavigationMode {
+        None,
+        Primary,
+        Secondary,
+    }
+
+    public NavigationMode navigationMode;
     public Styles styles;
     public Sprite selectedSprite;
     public Sprite nonSelectedSprite;
@@ -53,7 +61,7 @@ public class ToggleButtonGroup : MonoBehaviour {
             if (index == curIndex) return;
             
             ToggleButton toggle = toggles[index];
-            if (toggle.button.IsInteractable()) {
+            if (toggle.gameObject.activeInHierarchy && toggle.button.IsInteractable()) {
                 toggle.button.onClick.Invoke();
                 return;
             }

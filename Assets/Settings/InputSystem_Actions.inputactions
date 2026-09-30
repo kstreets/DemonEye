@@ -561,7 +561,7 @@
                 {
                     "name": "",
                     "id": "4db45447-48f2-4b9a-bdac-4d7085da17a5",
-                    "path": "<Gamepad>/buttonWest",
+                    "path": "<Gamepad>/buttonNorth",
                     "interactions": "",
                     "processors": "",
                     "groups": ";Gamepad",
@@ -572,7 +572,7 @@
                 {
                     "name": "",
                     "id": "736bc23f-b6f2-4639-8766-ef8747080a6b",
-                    "path": "<Gamepad>/buttonWest",
+                    "path": "<Gamepad>/leftStickPress",
                     "interactions": "",
                     "processors": "",
                     "groups": ";Gamepad",
@@ -583,7 +583,7 @@
                 {
                     "name": "",
                     "id": "d1ddf859-a7ae-4e8d-8ea3-ff318da200ef",
-                    "path": "<Gamepad>/leftTrigger",
+                    "path": "<Gamepad>/buttonNorth",
                     "interactions": "",
                     "processors": "",
                     "groups": ";Gamepad",
@@ -594,7 +594,7 @@
                 {
                     "name": "",
                     "id": "b7e2d289-24fc-4f40-af3d-af7024c5842d",
-                    "path": "<Gamepad>/rightTrigger",
+                    "path": "<Gamepad>/buttonWest",
                     "interactions": "",
                     "processors": "",
                     "groups": ";Gamepad",
@@ -648,6 +648,24 @@
                     "name": "MenuTabRight",
                     "type": "Button",
                     "id": "6dd17c11-6361-4830-8ac3-ceb535fffc27",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "MenuSecondaryTabLeft",
+                    "type": "Button",
+                    "id": "3c9e2f71-5a4b-4d8e-9b16-7f2a0c8d4e51",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "MenuSecondaryTabRight",
+                    "type": "Button",
+                    "id": "8d41b6a2-0e7f-4c39-a5d8-2b9e6f1c7a03",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -740,6 +758,28 @@
                     "processors": "",
                     "groups": ";Gamepad",
                     "action": "MenuTabRight",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e7a3d915-6c2b-4f80-b4e1-9d5c3a7f2b68",
+                    "path": "<Gamepad>/leftTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "MenuSecondaryTabLeft",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1f6b8c4d-2a9e-4735-8e0f-c3d7b5a91e24",
+                    "path": "<Gamepad>/rightTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "MenuSecondaryTabRight",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

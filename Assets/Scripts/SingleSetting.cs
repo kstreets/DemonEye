@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class SingleSetting : MonoBehaviour {
-    
+
     public Image[] breadcrumbs;
     public Sprite unselectedBreadcrumb;
     public Sprite selectedBreadcrumb;
@@ -13,13 +13,22 @@ public class SingleSetting : MonoBehaviour {
     public ButtonFeel leftButton;
     public ButtonFeel rightButton;
     
-    public int appliedIndex;
-    public int curIndex;
-    public int numOfSettings;
+    [NonSerialized] public int appliedIndex;
+    [NonSerialized] public int curIndex;
+    [NonSerialized] public int numOfSettings;
     
     private Action<int> onSettingIndexChanged;
     private Action<int> onApplyCallback;
-    
+
+    public void OnHorizontalNav(bool right) {
+        if (right) {
+            rightButton.TriggerClick();
+        }
+        else {
+            leftButton.TriggerClick();
+        }
+    }
+
     public SingleSetting Init(int startingIndex, int settingsCount) {
         numOfSettings = settingsCount;
         curIndex = startingIndex;

@@ -132,35 +132,30 @@ public partial class Game {
         settings.applyChangesButton.AddListener(ApplySettings);
         
         hideoutTabs.characterButton.AddListener(() => {
-            PlayAudioClip(audio.togglePressClip);
             ToggleHideoutPanels(playerPanel.panel, stashPanel.panel);
             ToggleSlimPlayerPanel(false);
             CancelItemDrag();
         });
         
         hideoutTabs.eyeForgeButton.AddListener(() => {
-            PlayAudioClip(audio.togglePressClip);
             ToggleHideoutPanels(playerPanel.panel, eyeForgePanel.panel, stashPanel.panel);
             ToggleSlimPlayerPanel(true);
             CancelItemDrag();
         });
         
         hideoutTabs.traderButton.AddListener(() => {
-            PlayAudioClip(audio.togglePressClip);
             ToggleHideoutPanels(traderPanel.panel, transactionPanel.panel, stashPanel.panel);
             TriggerTraderShopDialogue(TraderShopDialogueType.Greeting); 
             CancelItemDrag();
         });
         
         hideoutTabs.questsButton.AddListener(() => {
-            PlayAudioClip(audio.togglePressClip);
             ToggleHideoutPanels(questsPanel.panel);
             RefreshQuestDisplays();
             CancelItemDrag();
         });
         
         hideoutTabs.skillsButton.AddListener(() => {
-            PlayAudioClip(audio.togglePressClip);
             ToggleHideoutPanels(skillsPanel.panel.rectTransform, skillsPanel.playerStatsPanel.rectTransform);
             CancelItemDrag();
         });

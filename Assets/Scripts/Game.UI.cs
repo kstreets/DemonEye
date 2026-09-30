@@ -32,7 +32,6 @@ public partial class Game {
         ui.levelUpNotification.Init();
         ui.menuBackButton.gameObject.SetActive(false);
         ui.largeRaidTextTypewriter.gameObject.SetActive(false);
-        settings.toggleGroup.ManualyToggle(settings.audioToggle);
     }
 
     private Sequence mainMenuSequence;
@@ -182,6 +181,7 @@ public partial class Game {
     // Its better just to have these as constants because the canvas layout recalculates in LateUpdate
     private const float playerPanelWidth = 600f;
     private const float slimPlayerPanelWidth = 440f;
+    private bool PlayerInventoryIsSlim => !playerPanel.inventoryParent.gameObject.activeSelf;
 
     private void ToggleSlimPlayerPanel(bool toggle) {
         Vector2 defaultPlayerHalfAnchorPos = new(0f, playerPanel.playerHalfParent.anchoredPosition.y);

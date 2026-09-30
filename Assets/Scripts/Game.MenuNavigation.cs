@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -12,6 +13,14 @@ public partial class Game {
     private bool MenuNavigationNeeded => !InRaid || PlayerInventoryIsOpen || LootInventoryIsOpen;
     
     [NonSerialized] public bool usingController;
+    
+    public class NavPanel {
+        public RectTransform panel;
+        public int priority; // Higher priority panels get selected over more recently used ones
+        public Func<RectTransform> getDefaultSelection; // Used when nothing's been selected in the panel yet
+        public RectTransform rememberedSelection;
+        public bool alwaysCallDefault;
+    }
 
     private void InitMenuNavigation() {
         controllNav.pointerEventData = new(EventSystem.current) { pointerId = ControllerNavigation.pointerEventId };
@@ -20,6 +29,8 @@ public partial class Game {
         input.menuSubmit = InputSystem.actions.FindAction("MenuSubmit");
         input.menuTabLeft = InputSystem.actions.FindAction("MenuTabLeft");
         input.menuTabRight = InputSystem.actions.FindAction("MenuTabRight");
+        input.menuSecondaryTabLeft = InputSystem.actions.FindAction("MenuSecondaryTabLeft");
+        input.menuSecondaryTabRight = InputSystem.actions.FindAction("MenuSecondaryTabRight");
         input.escape.performed += OnEscapePressed;
 
         // Popups and the dragged item follow the pointer, so they shouldn't count as covering up what's under them
@@ -29,13 +40,43 @@ public partial class Game {
             ui.itemDescPopupPickup.transform,
             ui.mechanicDescPopup.transform,
             ui.hintPopup.transform,
-            hideoutTabs.parent,
         };
 
+        // Panels with the same priority that haven't been used yet are picked in the order they're added here
+        {
+            const int selectionPriority = 1;
+            AddNavPanel((RectTransform)mapPanels.confirmationPanel.transform, selectionPriority, () => mapPanels.confirmationPanel.teleportButton.rectTransform);
+            AddNavPanel(mapPanels.mapSelectionPanel.rectTransform, selectionPriority, () => mapPanels.mapSelectionPanel.selectors[0].selectionButton.rectTransform);
+            AddNavPanel(ui.lootInventoryPanel, selectionPriority, () => inventories.lootPtr.slots[0].ui.rectTransform, alwaysCallDefault: true);
+            AddNavPanel(stashPanel.panel, selectionPriority, () => inventories.stash.slots[0].ui.rectTransform);
+        }
+        {
+            const int selectionPriority = 0;
+            AddNavPanel(playerPanel.panel, selectionPriority, () => PlayerInventoryIsSlim ? null : inventories.player.slots[playerEquipmentSize + playerQuickUseSize].ui.rectTransform);
+            AddNavPanel(eyeForgePanel.panel, selectionPriority);
+            AddNavPanel(eyeForgeDetailsPanel.panel, selectionPriority);
+            AddNavPanel(traderPanel.panel, selectionPriority);
+            AddNavPanel(transactionPanel.panel, selectionPriority);
+            AddNavPanel(questsPanel.panel, selectionPriority);
+            AddNavPanel(skillsPanel.panel.rectTransform, selectionPriority);
+        }
+    }
+
+    private void AddNavPanel(RectTransform panel, int priority, Func<RectTransform> getDefaultSelection = null, bool alwaysCallDefault = false) {
+        NavPanel navPanel = new() { 
+            panel = panel, 
+            priority = priority, 
+            getDefaultSelection = getDefaultSelection,
+            alwaysCallDefault = alwaysCallDefault,
+        };
+        controllNav.navPanels.Add(panel, navPanel);
+        InsertIntoRecentPanels(navPanel, false);
     }
 
     private void OnEscapePressed(InputAction.CallbackContext context) {
         CancelItemDrag();
+        ClearControllerSelection();
+        
         if (ConfirmingMapSelection) {
             ShowMapSelectionUI();
             return;
@@ -83,7 +124,13 @@ public partial class Game {
             controllNav.repeatTimer = ControllerNavigation.repeatDelay;
         }
         else if (CanMoveNavigation(navDir)) {
-            MoveControllerSelection(navDir);
+            // Settings use left/right to change their value instead of moving the selection
+            if (navDir.x != 0f && controllNav.selected.TryGetComponent(out SingleSetting setting)) {
+                setting.OnHorizontalNav(navDir.x > 0f);
+            }
+            else {
+                MoveControllerSelection(navDir);
+            }
         }
 
         if (controllNav.selected) {
@@ -95,11 +142,13 @@ public partial class Game {
             UpdateControllerSubmit();
         }
         
-        bool switchedTabs = CheckForHideoutTabSwitching();
-        if (switchedTabs) {
+        var switchedMode = CheckForToggleGroupSwitching();
+        if (switchedMode != ToggleButtonGroup.NavigationMode.None) {
             HideInteractionPopup();
             HideInventoryItemPopup();
-            // Goes back to what was last selected on the new tab, or its default the first time
+        }
+        // We dont clear the selection when doing a secondary toggle switch
+        if (switchedMode == ToggleButtonGroup.NavigationMode.Primary) {
             ClearControllerSelection();
             SelectDefaultNavTarget();
         }
@@ -121,7 +170,8 @@ public partial class Game {
         }
 
         bool joystickDetected = input.menuMove.ReadValue<Vector2>().magnitude > ControllerNavigation.stickDeadzone;
-        bool controllerButtonPressed = input.menuSubmit.WasPressedThisFrame() || input.menuTabLeft.WasPressedThisFrame() || input.menuTabRight.WasPressedThisFrame();
+        bool controllerButtonPressed = input.menuSubmit.WasPressedThisFrame() || input.menuTabLeft.WasPressedThisFrame() || input.menuTabRight.WasPressedThisFrame()
+            || input.menuSecondaryTabLeft.WasPressedThisFrame() || input.menuSecondaryTabRight.WasPressedThisFrame();
         
         bool gamepadUsed = joystickDetected || controllerButtonPressed ;
         if (!gamepadUsed) return false;
@@ -206,28 +256,11 @@ public partial class Game {
     }
 
     private void SelectDefaultNavTarget() {
-        if (TryGetRememberedSelection(out RectTransform remembered)) {
-            SetControllerSelection(remembered);
+        if (TryGetPanelSelection(out RectTransform panelSelection)) {
+            SetControllerSelection(panelSelection);
             return;
         }
-        if (SelectingMap) {
-            SetControllerSelection(mapPanels.mapSelectionPanel.selectors[0].selectionButton.rectTransform);
-            return;
-        }
-        if (ConfirmingMapSelection) {
-            SetControllerSelection(mapPanels.confirmationPanel.teleportButton.rectTransform);
-            return;
-        }
-        if (LootInventoryIsOpen) {
-            SetControllerSelection(inventories.lootPtr.slots[0].ui.rectTransform);
-            return;
-        }
-        if (PlayerInventoryIsOpen) {
-            const int firstNormalSlot = playerEquipmentSize + playerQuickUseSize;
-            SetControllerSelection(inventories.player.slots[firstNormalSlot].ui.rectTransform);
-            return;
-        }
-        
+
         GatherNavCandidates();
 
         RectTransform best = null;
@@ -257,35 +290,54 @@ public partial class Game {
             ExecuteEvents.Execute(controllNav.selected.gameObject, controllNav.pointerEventData, ExecuteEvents.pointerExitHandler);
         }
         controllNav.selected = target;
-        if (TryGetRememberedSelectionKey(out object key)) {
-            controllNav.rememberedSelections[key] = target;
-        }
+        RememberSelection(target);
         ScrollIntoView(target);
         ExecuteEvents.Execute(target.gameObject, controllNav.pointerEventData, ExecuteEvents.pointerEnterHandler);
     }
 
-    private bool TryGetRememberedSelectionKey(out object key) {
-        key = null;
-        if (InHideout) {
-            key = hideoutTabs.toggleGroup.GetSelected();
+    private void RememberSelection(RectTransform target) {
+        // Walk up so the closest panel wins if panels are nested
+        for (Transform parent = target; parent; parent = parent.parent) {
+            if (!controllNav.navPanels.TryGetValue(parent, out NavPanel navPanel)) continue;
+            navPanel.rememberedSelection = target;
+            controllNav.recentPanels.Remove(navPanel);
+            InsertIntoRecentPanels(navPanel, true);
+            return;
         }
-        if (InRaid && PlayerInventoryIsOpen && !LootInventoryIsOpen) {
-            key = inventories.player;
-        }
-        if (SelectingMap) {
-            key = mapPanels.mapSelectionPanel;
-        }
-        return key != null;
     }
 
-    private bool TryGetRememberedSelection(out RectTransform selection) {
+    // Keeps the list sorted by priority, then goes either in front of or behind the panels with the same priority
+    private void InsertIntoRecentPanels(NavPanel navPanel, bool mostRecent) {
+        List<NavPanel> recentPanels = controllNav.recentPanels;
+        int index = 0;
+        while (index < recentPanels.Count) {
+            int otherPriority = recentPanels[index].priority;
+            bool goesBefore = mostRecent ? otherPriority <= navPanel.priority : otherPriority < navPanel.priority;
+            if (goesBefore) break;
+            index++;
+        }
+        recentPanels.Insert(index, navPanel);
+    }
+
+    // Goes to the highest priority panel that's showing, picking the most recently used one when priorities are tied.
+    // Returns where we were in that panel, or its default if we haven't been there yet.
+    private bool TryGetPanelSelection(out RectTransform selection) {
+        foreach (NavPanel navPanel in controllNav.recentPanels) {
+            if (!navPanel.panel || !navPanel.panel.gameObject.activeInHierarchy) continue;
+            
+            // Pooled objects that got deactivated or destroyed objects won't be valid anymore
+            if (!navPanel.alwaysCallDefault && IsValidNavTarget(navPanel.rememberedSelection)) {
+                selection = navPanel.rememberedSelection;
+                return true;
+            }
+
+            RectTransform defaultSelection = navPanel.getDefaultSelection?.Invoke();
+            if (IsValidNavTarget(defaultSelection)) {
+                selection = defaultSelection;
+                return true;
+            }
+        }
         selection = null;
-        if (!TryGetRememberedSelectionKey(out object key)) {
-            return false;
-        }
-        if (controllNav.rememberedSelections.TryGetValue(key, out selection)) {
-            return IsValidNavTarget(selection); // In case it's not active anymore (pooled object) or got destroyed
-        }
         return false;
     }
 
@@ -317,11 +369,37 @@ public partial class Game {
         }
     }
 
-    private bool CheckForHideoutTabSwitching() {
-        if (!InHideout || !hideoutTabs.parent.gameObject.activeInHierarchy) return false;
-        int step = (input.menuTabRight.WasPressedThisFrame() ? 1 : 0) - (input.menuTabLeft.WasPressedThisFrame() ? 1 : 0);
-        hideoutTabs.toggleGroup.Move(step);
-        return step != 0;
+    private ToggleButtonGroup.NavigationMode CheckForToggleGroupSwitching() {
+        bool switchedPrimary = TrySwitchToggleGroup(ToggleButtonGroup.NavigationMode.Primary, input.menuTabLeft, input.menuTabRight);
+        if (switchedPrimary) {
+            return ToggleButtonGroup.NavigationMode.Primary;
+        }
+        bool switchedSecondary = TrySwitchToggleGroup(ToggleButtonGroup.NavigationMode.Secondary, input.menuSecondaryTabLeft, input.menuSecondaryTabRight);
+        if (switchedSecondary) {
+            return ToggleButtonGroup.NavigationMode.Secondary;
+        }
+        return ToggleButtonGroup.NavigationMode.None;
+    }
+
+    private bool TrySwitchToggleGroup(ToggleButtonGroup.NavigationMode mode, InputAction left, InputAction right) {
+        int step = (right.WasPressedThisFrame() ? 1 : 0) - (left.WasPressedThisFrame() ? 1 : 0);
+        if (step == 0) return false;
+
+        ToggleButtonGroup group = GetActiveNavToggleGroup(mode);
+        if (!group) return false;
+
+        group.Move(step);
+        return true;
+    }
+
+    // First group in the list that's on screen with this mode
+    private ToggleButtonGroup GetActiveNavToggleGroup(ToggleButtonGroup.NavigationMode mode) {
+        foreach (ToggleButtonGroup group in ui.navToggleGroups) {
+            if (group && group.navigationMode == mode && group.gameObject.activeInHierarchy) {
+                return group;
+            }
+        }
+        return null;
     }
 
     private void GatherNavCandidates() {
@@ -346,7 +424,11 @@ public partial class Game {
 
     private bool IsValidNavTarget(RectTransform target) {
         if (!target || !target.gameObject.activeInHierarchy) return false;
-        if (target.TryGetComponent(out Selectable selectable) && !selectable.IsInteractable()) return false;
+        
+        if (target.TryGetComponent(out Selectable selectable)) {
+            if (!selectable.IsInteractable()) return false;
+            if (selectable.navigation.mode == Navigation.Mode.None) return false;
+        }
         
         foreach (Transform ignoreRoot in controllNav.ignoredRoots) {
             if (ignoreRoot && target.IsChildOf(ignoreRoot)) {

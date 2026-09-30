@@ -165,6 +165,9 @@ public class GameData {
         
         public RectTransform quickUseHeaderText;
         public RectTransform stashPanelHeaderText;
+
+        // Toggle groups the controller can switch with the bumpers/triggers, based on their NavigationMode
+        public ToggleButtonGroup[] navToggleGroups;
     }
     
     [Serializable]
@@ -409,6 +412,8 @@ public class GameData {
         public InputAction menuSubmit;
         public InputAction menuTabLeft;
         public InputAction menuTabRight;
+        public InputAction menuSecondaryTabLeft;
+        public InputAction menuSecondaryTabRight;
     }
     
     public class EntityPools {
@@ -555,6 +560,7 @@ public class GameData {
         SummonedUpgrade = 1 << 10,
         SoldToTrader    = 1 << 11,
         TookConsumable  = 1 << 12,
+        InventoryOpened = 1 << 13,
     }
     
     public class PerFrameData {
@@ -580,7 +586,9 @@ public class GameData {
         public GameObject submitPressedOn;
         public Transform[] ignoredRoots;
         public PointerEventData pointerEventData;
-        public readonly Dictionary<object, RectTransform> rememberedSelections = new();
+        // Selections are remembered per panel, so switching tabs goes back to where we were in any panel that's still showing
+        public readonly Dictionary<Transform, NavPanel> navPanels = new();
+        public readonly List<NavPanel> recentPanels = new(); // Highest priority first, then most recently used
         public readonly List<RectTransform> possibleSelections = new();
         public readonly Vector3[] navCorners = new Vector3[4];
         public const float stickDeadzone = 0.5f;
@@ -588,5 +596,5 @@ public class GameData {
         public const float repeatInterval = 0.12f;
         public const int pointerEventId = -100;
     }
-    
+
 }

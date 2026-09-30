@@ -42,7 +42,7 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
     }
 
     public void OnPointerEnter(PointerEventData eventData) {
-        if (!eventData.FromDominantInputDevice()) return;
+        // if (!eventData.FromDominantInputDevice()) return;
         
         beingHovered = true;
         if (!highlightedSprite) return;
@@ -59,7 +59,7 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
     }
     
     public void OnPointerExit(PointerEventData eventData) {
-        if (!eventData.FromDominantInputDevice()) return;
+        // if (!eventData.FromDominantInputDevice()) return;
         
         beingHovered = false;
         if (!highlightedSprite) return;
@@ -85,6 +85,11 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
         isDisabled = false;
         image.sprite = unpressedSprite;
         SetMargin(styles.normalButtonTextMargin);
+    }
+    
+    public void TriggerClick() {
+        if (!button.IsInteractable()) return;
+        button.onClick.Invoke();
     }
 
     public void AddListener(Action callback) {

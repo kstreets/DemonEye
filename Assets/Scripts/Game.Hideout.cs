@@ -200,6 +200,9 @@ public partial class Game {
         transactionPanel.inventoryParent.gameObject.SetActive(false);
 
         SetTradingSlot(curTradingInventorySlot, tweenSize: false);
+        if (usingController) {
+            SetControllerSelection(curTradingInventorySlot.ui.rectTransform);
+        }
 
         // Move any selling items back to stash
         foreach (InventorySlot slot in inventories.transaction.slots) {
@@ -213,6 +216,9 @@ public partial class Game {
         transactionState = TransactionState.Selling;
         transactionPanel.inventoryParent.gameObject.SetActive(true);
         curTradingInventorySlot?.ui.ClearSelectionUnderlay();
+        if (usingController) {
+            SelectDefaultNavTarget();
+        }
     }
     
     private void OnSellButtonPressed() {

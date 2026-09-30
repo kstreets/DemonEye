@@ -87,6 +87,7 @@ public partial class Game {
     private int NakedPlayerInventorySize => playerPocketSize + playerQuickUseSize + playerEquipmentSize;
     private bool PlayerInventoryIsOpen => playerPanel.panel.gameObject.activeInHierarchy;
     private bool LootInventoryIsOpen => ui.lootInventoryPanel.gameObject.activeInHierarchy;
+    private bool StashInventoryIsOpen => stashPanel.panel.gameObject.activeInHierarchy;
 
     private void InitInventories(GameState gameState) {
         const int maxBackpackSize = 30;
@@ -237,6 +238,10 @@ public partial class Game {
             return;
         }
 
+        // Opening an inventory can be from an action that also has an inventory action meaning
+        // so to prevent opening an inventory and doing something, we just stop early before doing something
+        if (thisFrame.flags.HasFlag(GameData.FrameFlags.InventoryOpened)) return;
+
         InventoryHoverInfo invHoverInfo = UpdateInventoryHover();
         CheckToMoveItem(invHoverInfo);
 
@@ -252,6 +257,10 @@ public partial class Game {
     
     private void HandleInventoryVisibility() {
         if (!InRaid || !input.inventory.WasPressedThisFrame()) return;
+        
+        // On controller the inventory button also splits stacks, so it only opens the inventory and escape closes it
+        if (usingController && PlayerInventoryIsOpen) return;
+        
         if (PlayerInventoryIsOpen) {
             ClosePlayerInventory(); 
         }
@@ -390,6 +399,8 @@ public partial class Game {
 
     private void CheckToConsumeItem(InventoryHoverInfo invHoverInfo) {
         if (!input.useItem.WasPressedThisFrame()) return;
+        // Consume is on the navigation stick's press, so ignore it while the stick is being pushed in case it was accidental
+        if (usingController && input.menuMove.ReadValue<Vector2>().magnitude > GameData.ControllerNavigation.stickDeadzone) return;
         if (!TryGetItemFromHoverInfo(invHoverInfo, out ItemInstance hoveredItem)) return;
         if (hoveredItem.ItemRef.type != itemTypes.quickUse) return;
         HavePlayerConsumeItem(invHoverInfo.inventory, invHoverInfo.slotIndex);
@@ -577,6 +588,7 @@ public partial class Game {
         Vector2 mousePos = PointerScreenPos;
         for (int i = 0; i < inventory.slots.Length; i++) {
             RectTransform rectTrans = inventory.slots[i].ui.rectTransform;
+            if (!rectTrans.gameObject.activeInHierarchy) continue;
             bool mouseInRect = RectTransformUtility.RectangleContainsScreenPoint(rectTrans, mousePos);
             if (mouseInRect) {
                 return i;
@@ -1199,8 +1211,10 @@ public partial class Game {
     }
 
     private void OpenPlayerInventory() {
+        if (PlayerInventoryIsOpen) return;
+        thisFrame.flags |= GameData.FrameFlags.InventoryOpened;
         playerPanel.panel.gameObject.SetActive(true);
-        Cursor.visible = true;
+        Cursor.visible = !usingController;
     }
 
     private void ClosePlayerInventory() {
