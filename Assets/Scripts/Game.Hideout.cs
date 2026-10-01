@@ -216,11 +216,13 @@ public partial class Game {
         transactionState = TransactionState.Selling;
         transactionPanel.inventoryParent.gameObject.SetActive(true);
         curTradingInventorySlot?.ui.ClearSelectionUnderlay();
-        if (usingController) {
+        
+        // Move the controller pointer over to the stash from the traders inventory
+        if (usingController && lastInventoryHoverInfo.inventory == inventories.trader) {
             SelectDefaultNavTarget();
         }
     }
-    
+
     private void OnSellButtonPressed() {
         if (transactionState == TransactionState.Selling && GetInventoryItemCount(inventories.transaction) <= 0) return;
         int sellPrice = GetInventoryValue(inventories.transaction, InventoryValueType.Sell);

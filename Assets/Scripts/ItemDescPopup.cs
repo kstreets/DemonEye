@@ -124,8 +124,8 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
         }
         
         if (item.type == gameInstance.itemTypes.quickUse && !itemInstance.traderOwned) {
-            descText.text += $"<line-height=150%>\n<sprite=5 color=#{ColorUtility.ToHtmlStringRGBA(styles.inputIconTint)}> " +
-                             $"<size=80%>{ColorText("Right click to consume", styles.inputIconTint)}</size>";
+            string useItemIcon = gameInstance.InputIcon(gameInstance.input.useItem);
+            descText.text += $"<line-height=150%>\n{useItemIcon} {ColorText("to consume", styles.inputIconTint)}</size>";
         }
     }
 
@@ -136,6 +136,7 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
         
         // Keep popup from going offscreen
         {
+            float screenPadding = ItemDescPopup.screenPadding * gameInstance.CanvasScale;
             Rect worldRect = rectTransform.WorldRectIgnoreScale();
             float minY = worldRect.yMin;
             float maxY = worldRect.yMax;

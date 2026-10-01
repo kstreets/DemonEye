@@ -19,7 +19,7 @@ public partial class Game {
     private bool ShowingForgeDetailsPanel => eyeForgeDetailsPanel.panel.gameObject.activeInHierarchy;
     
     private void InitUI() {
-        Cursor.visible = true;
+        Cursor.visible = !usingController;
         Cursor.SetCursor(config.styles.cursorTexture, Vector2.zero, CursorMode.Auto);
         
         CloseSettingsMenuUI();
@@ -160,21 +160,22 @@ public partial class Game {
     }
 
     private void ToggleHideoutPanels(params RectTransform[] panels) {
-        playerPanel.panel.gameObject.SetActive(false);
-        stashPanel.panel.gameObject.SetActive(false);
-        eyeForgePanel.panel.gameObject.SetActive(false);
-        eyeForgeDetailsPanel.panel.gameObject.SetActive(false);
-        ui.lootInventoryPanel.gameObject.SetActive(false);
-        traderPanel.panel.gameObject.SetActive(false);
-        transactionPanel.panel.gameObject.SetActive(false);
-        questsPanel.panel.gameObject.SetActive(false);
-        skillsPanel.panel.gameObject.SetActive(false);
-        skillsPanel.playerStatsPanel.gameObject.SetActive(false);
-        mapPanels.mapSelectionPanel.gameObject.SetActive(false);
-        mapPanels.confirmationPanel.gameObject.SetActive(false);
+        // Panels that stay showing aren't turned off and back on, otherwise their slots and buttons lose their hover highlight
+        SetHideoutPanelActive(playerPanel.panel, panels);
+        SetHideoutPanelActive(stashPanel.panel, panels);
+        SetHideoutPanelActive(eyeForgePanel.panel, panels);
+        SetHideoutPanelActive(eyeForgeDetailsPanel.panel, panels);
+        SetHideoutPanelActive(ui.lootInventoryPanel, panels);
+        SetHideoutPanelActive(traderPanel.panel, panels);
+        SetHideoutPanelActive(transactionPanel.panel, panels);
+        SetHideoutPanelActive(questsPanel.panel, panels);
+        SetHideoutPanelActive(skillsPanel.panel.rectTransform, panels);
+        SetHideoutPanelActive(skillsPanel.playerStatsPanel.rectTransform, panels);
+        SetHideoutPanelActive(mapPanels.mapSelectionPanel.rectTransform, panels);
+        SetHideoutPanelActive((RectTransform)mapPanels.confirmationPanel.transform, panels);
         
-        foreach (RectTransform rect in panels) {
-            rect.gameObject.SetActive(true);
+        void SetHideoutPanelActive(RectTransform panel, RectTransform[] panelsToShow) {
+            panel.gameObject.SetActive(Array.IndexOf(panelsToShow, panel) >= 0);
         }
     }
     
@@ -673,7 +674,7 @@ public partial class Game {
         }
         
         Vector2 hoveredCenter = hoverInfo.hoveringTransform.WorldRect().center;
-        Vector2 popupOffset = new(0f, hoverInfo.hoveringTransform.rect.height * 0.7f);
+        Vector2 popupOffset = new(0f, hoverInfo.hoveringTransform.rect.height * 0.7f * CanvasScale);
         
         if (uiHints.descriptionLookup.TryGetValue(hoverInfo.hoveringTransform, out string desc)) {
             ui.hintPopup.Show(hoveredCenter + popupOffset, desc);
@@ -745,6 +746,9 @@ public partial class Game {
         ui.interactDetails.gameObject.SetActive(false);
     }
     
+    // Multiply canvas units (sizes and offsets authored at 1080p) by this to get screen pixels
+    public float CanvasScale => ui.mainCanvasRectTransform.lossyScale.x;
+
     private void UIOnScreenSizeChanged() {
         ui.mainCanvasScaler.scaleFactor = Screen.height switch {
             >= 2160 => 1.4f,

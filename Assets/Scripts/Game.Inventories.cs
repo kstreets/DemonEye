@@ -232,7 +232,7 @@ public partial class Game {
     private void UpdateInventory() {
         CheckForEquipmentChange();
         HandleInventoryVisibility();
-        
+
         if (NoOpenInventories()) {
             HideInventoryItemPopup();
             return;
@@ -281,10 +281,55 @@ public partial class Game {
         return true;
     }
 
+    private InventoryHoverInfo? suppressedHoverInfo;
+    private int suppressCaptureFrame = -1;
+
+    private void SuppressInventoryPopup() {
+        suppressedHoverInfo = null;
+        suppressCaptureFrame = Time.frameCount + 1;
+        HideInventoryItemPopup();
+    }
+
+    private bool IsInventoryPopupSuppressed(InventoryHoverInfo invHoverInfo) {
+        if (suppressCaptureFrame != -1) {
+            if (Time.frameCount < suppressCaptureFrame) {
+                return true;
+            }
+            suppressCaptureFrame = -1;
+            suppressedHoverInfo = invHoverInfo;
+            return true;
+        }
+
+        if (!suppressedHoverInfo.HasValue) {
+            return false;
+        }
+
+        bool inventoriesMatch = suppressedHoverInfo.Value.inventory == invHoverInfo.inventory;
+        bool slotsMatch = suppressedHoverInfo.Value.slotIndex == invHoverInfo.slotIndex;
+        if (inventoriesMatch && slotsMatch) {
+            return true;
+        }
+
+        // The UI layout rebuilding can make it so we hover start hovering over something different 
+        if (!PlayerMovedPointerThisFrame()) {
+            suppressedHoverInfo = invHoverInfo;
+            return true;
+        }
+
+        // Moved to a different slot so popups are back to normal
+        suppressedHoverInfo = null;
+        return false;
+    }
+
     private void UpdateInventoryItemPopup(InventoryHoverInfo invHoverInfo) {
+        if (IsInventoryPopupSuppressed(invHoverInfo)) {
+            HideInventoryItemPopup();
+            return;
+        }
+
         bool hoveringOverItem = TryGetItemFromHoverInfo(invHoverInfo, out ItemInstance _);
         
-        const float hoverTimeUntilTooltip = 0.32f;
+        const float hoverTimeUntilTooltip = 0.35f;
         bool spentEnoughTimeHovering = invHoverInfo.timeSpentHovering >= hoverTimeUntilTooltip;
         
         if (hoveringOverItem && spentEnoughTimeHovering) {
@@ -304,7 +349,7 @@ public partial class Game {
         Vector2 popupPosition = Vector2.zero;
         Vector2 hoveredSlotCenter = hoveredSlot.ui.rectTransform.WorldRect().center;
         float halfPopupWidth = ui.itemDescPopupInv.rectTransform.rect.width / 2f;
-        Vector2 popupOffset = new(45 + halfPopupWidth, 40);
+        Vector2 popupOffset = new Vector2(45 + halfPopupWidth, 40) * CanvasScale;
         
         if (hoveredSlotCenter.x < ScreenCenter.x) {
             popupPosition = hoveredSlotCenter + popupOffset;
@@ -351,9 +396,14 @@ public partial class Game {
         Inventory hoveredInventory = invHoverInfo.inventory;
         if (hoveredInventory == null) return;
         
-        if (!TryGetItemFromHoverInfo(invHoverInfo, out ItemInstance hoveredItem)) return;
+        if (!TryGetItemFromHoverInfo(invHoverInfo, out ItemInstance _)) return;
         if (NotAllowedToMoveOrPickupItem(invHoverInfo)) return;
         if (ClickedOnEquipedBackpackWithItems(invHoverInfo.inventory, invHoverInfo.slotIndex)) return;
+        
+        // When attempting to move items in stash, make it change to selling
+        if (OnTradingTab && hoveredInventory == inventories.stash && transactionState == TransactionState.Buying) {
+            OnSellTogglePressed();
+        }
 
         MoveItemOption moveOption = MoveItemOption.FullStack;
         Inventory destinationInventory = null;
@@ -613,9 +663,16 @@ public partial class Game {
         // We don't allow trader items to be picked up
         if (hoverInfo.inventory == inventories.trader && !IsDraggingItem) {
             if (TryGetItemFromHoverInfo(hoverInfo, out _)) {
-                SetTradingSlot(hoverInfo.inventory.slots[hoverInfo.slotIndex], tweenSize: true); 
+                SetTradingSlot(hoverInfo.inventory.slots[hoverInfo.slotIndex], tweenSize: true);
+                SuppressInventoryPopup(); // Its annoying to have the popup still show after selection
             }
             return IsDraggingItem;
+        }
+
+        // Selecting something in the stash while buying switches over to selling, so it can be put in the transaction panel.
+        bool selectingStashItem = hoverInfo.inventory == inventories.stash && TryGetItemFromHoverInfo(hoverInfo, out _);
+        if (!IsDraggingItem && OnTradingTab && transactionState == TransactionState.Buying && selectingStashItem) {
+            OnSellTogglePressed();
         }
 
         // If we are putting trader items back, then we also don't want to pick up the items
@@ -766,7 +823,7 @@ public partial class Game {
         Vector2 mousePos = PointerScreenPos;
         if (usingController) {
             // Offset so the dragged item doesn't completely cover the selected slot
-            mousePos += new Vector2(20f, -20f) * ui.mainCanvasRectTransform.lossyScale.x;
+            mousePos += new Vector2(20f, -20f) * CanvasScale;
         }
         ui.dragAndDropItemUI.GetComponent<RectTransform>().position = mousePos;
     }

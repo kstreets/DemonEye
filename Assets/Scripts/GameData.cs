@@ -165,6 +165,7 @@ public class GameData {
         
         public RectTransform quickUseHeaderText;
         public RectTransform stashPanelHeaderText;
+        public TMP_SpriteAsset inputIconSpriteAsset; // Can be left empty, input icons show as text until it's set
 
         // Toggle groups the controller can switch with the bumpers/triggers, based on their NavigationMode
         public ToggleButtonGroup[] navToggleGroups;
@@ -414,6 +415,7 @@ public class GameData {
         public InputAction menuTabRight;
         public InputAction menuSecondaryTabLeft;
         public InputAction menuSecondaryTabRight;
+        public float lastDeviceSwitchTime;
     }
     
     public class EntityPools {
@@ -584,6 +586,7 @@ public class GameData {
         public Vector2 lastNavDir;
         public float repeatTimer;
         public GameObject submitPressedOn;
+        public float lastTimePlayerMovedSelection;
         public Transform[] ignoredRoots;
         public PointerEventData pointerEventData;
         // Selections are remembered per panel, so switching tabs goes back to where we were in any panel that's still showing

@@ -48,16 +48,22 @@ public static class Extensions {
         fitter.SetLayoutHorizontal();
     }
 
+    // In screen pixels for overlay canvases, so the size includes the canvas scale
     public static Rect WorldRect(this RectTransform rectTransform) {
-        Rect rect = rectTransform.rect;
-        Matrix4x4 ltw = rectTransform.localToWorldMatrix;
-        return new (ltw.MultiplyPoint(new(rect.x, 1f, 1f)).x, ltw.MultiplyPoint(new(1f, rect.y, 1f)).y, rect.width, rect.height);
-    } 
-    
+        return WorldRectFromMatrix(rectTransform.rect, rectTransform.localToWorldMatrix);
+    }
+
+    // Ignores the transform's own scale (e.g. while a popup is tweening in) but keeps its parents' scale, like the canvas scale
     public static Rect WorldRectIgnoreScale(this RectTransform rectTransform) {
-        Rect rect = rectTransform.rect;
-        Matrix4x4 ltw = Matrix4x4.TRS(rectTransform.position, rectTransform.rotation, Vector3.one);
-        return new (ltw.MultiplyPoint(new(rect.x, 1f, 1f)).x, ltw.MultiplyPoint(new(1f, rect.y, 1f)).y, rect.width, rect.height);
+        Matrix4x4 local = Matrix4x4.TRS(rectTransform.localPosition, rectTransform.localRotation, Vector3.one);
+        Matrix4x4 ltw = rectTransform.parent ? rectTransform.parent.localToWorldMatrix * local : local;
+        return WorldRectFromMatrix(rectTransform.rect, ltw);
+    }
+
+    private static Rect WorldRectFromMatrix(Rect rect, Matrix4x4 ltw) {
+        Vector3 min = ltw.MultiplyPoint(rect.min);
+        Vector3 max = ltw.MultiplyPoint(rect.max);
+        return Rect.MinMaxRect(min.x, min.y, max.x, max.y);
     }
     
     public static float AspectRatio(this RectTransform rectTransform) {

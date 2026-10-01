@@ -11,9 +11,7 @@ public partial class Game {
     // Where the UI should treat the "cursor" as being. Follows the controller selection when using a controller.
     private Vector2 PointerScreenPos => usingController ? controllNav.pointerPos : Mouse.current.position.ReadValue();
     private bool MenuNavigationNeeded => !InRaid || PlayerInventoryIsOpen || LootInventoryIsOpen;
-    
-    [NonSerialized] public bool usingController;
-    
+
     public class NavPanel {
         public RectTransform panel;
         public int priority; // Higher priority panels get selected over more recently used ones
@@ -58,7 +56,7 @@ public partial class Game {
             AddNavPanel(traderPanel.panel, selectionPriority);
             AddNavPanel(transactionPanel.panel, selectionPriority);
             AddNavPanel(questsPanel.panel, selectionPriority);
-            AddNavPanel(skillsPanel.panel.rectTransform, selectionPriority);
+            AddNavPanel(skillsPanel.panel.rectTransform, selectionPriority, () => skillsPanel.panel.hasteSkillRow.levelUpButton.rectTransform);
         }
     }
 
@@ -91,7 +89,6 @@ public partial class Game {
     }
 
     private void UpdateMenuNavigation() {
-        bool controllerJustActivated = CheckForControllerSwitch();
         if (!usingController) return;
         
         // We do gamepad navigation ourselves so we need to clear Unity's to avoid double presses
@@ -138,47 +135,41 @@ public partial class Game {
             controllNav.hasPointerPos = true;
         }
 
-        if (!controllerJustActivated) {
+        // The press that switched us over to the controller shouldn't also submit
+        if (input.lastDeviceSwitchTime != Time.time) {
             UpdateControllerSubmit();
         }
         
         var switchedMode = CheckForToggleGroupSwitching();
-        if (switchedMode != ToggleButtonGroup.NavigationMode.None) {
-            HideInteractionPopup();
-            HideInventoryItemPopup();
-        }
         // We dont clear the selection when doing a secondary toggle switch
         if (switchedMode == ToggleButtonGroup.NavigationMode.Primary) {
             ClearControllerSelection();
             SelectDefaultNavTarget();
         }
+        if (switchedMode != ToggleButtonGroup.NavigationMode.None) {
+            CancelItemDrag();
+            SuppressInventoryPopup();
+            HideInteractionPopup();
+        }
     }
 
-    // Returns true on the frame we switch over to the controller
-    private bool CheckForControllerSwitch() {
+    // Whether the player moved the pointer this frame.
+    // In order for this method to work reliably, the menu navigation must update before gamestate tick
+    private bool PlayerMovedPointerThisFrame() {
         if (usingController) {
-            Mouse mouse = Mouse.current;
-            bool mouseUsed = mouse != null && (mouse.delta.ReadValue().sqrMagnitude > 4f || mouse.leftButton.wasPressedThisFrame || mouse.rightButton.wasPressedThisFrame);
-            if (!mouseUsed) return false;
-            
-            usingController = false;
+            return controllNav.lastTimePlayerMovedSelection == Time.time;
+        }
+        return Mouse.current != null && Mouse.current.delta.ReadValue() != Vector2.zero;
+    }
+
+    private void MenuNavigationOnInputDeviceChanged() {
+        if (!usingController) {
             ClearControllerSelection();
             controllNav.submitPressedOn = null;
             Cursor.visible = MenuNavigationNeeded;
-            ClearAllHighlights();
-            return false;
         }
-
-        bool joystickDetected = input.menuMove.ReadValue<Vector2>().magnitude > ControllerNavigation.stickDeadzone;
-        bool controllerButtonPressed = input.menuSubmit.WasPressedThisFrame() || input.menuTabLeft.WasPressedThisFrame() || input.menuTabRight.WasPressedThisFrame()
-            || input.menuSecondaryTabLeft.WasPressedThisFrame() || input.menuSecondaryTabRight.WasPressedThisFrame();
-        
-        bool gamepadUsed = joystickDetected || controllerButtonPressed ;
-        if (!gamepadUsed) return false;
-
-        usingController = true;
+        // Whatever was highlighted belongs to the other device
         ClearAllHighlights();
-        return true;
     }
 
     private void ClearAllHighlights() {
@@ -252,6 +243,7 @@ public partial class Game {
 
         if (targetRecTransform) {
             SetControllerSelection(targetRecTransform);
+            controllNav.lastTimePlayerMovedSelection = Time.time;
         }
     }
 
@@ -292,6 +284,9 @@ public partial class Game {
         controllNav.selected = target;
         RememberSelection(target);
         ScrollIntoView(target);
+        // Move the pointer right away, otherwise hover checks before the next navigation update still see the old selection
+        controllNav.pointerPos = GetScreenRect(target).center;
+        controllNav.hasPointerPos = true;
         ExecuteEvents.Execute(target.gameObject, controllNav.pointerEventData, ExecuteEvents.pointerEnterHandler);
     }
 
@@ -392,7 +387,7 @@ public partial class Game {
         return true;
     }
 
-    // First group in the list that's on screen with this mode
+    // First group in the list thats on screen with this mode
     private ToggleButtonGroup GetActiveNavToggleGroup(ToggleButtonGroup.NavigationMode mode) {
         foreach (ToggleButtonGroup group in ui.navToggleGroups) {
             if (group && group.navigationMode == mode && group.gameObject.activeInHierarchy) {

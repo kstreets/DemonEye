@@ -21,6 +21,7 @@ public partial class Game {
         InitEntityPools();
         InitGameStates();
         InitMenuNavigation();
+        InitInputIcons();
         InitHotBar();
         
         InitInventories(gameState);
@@ -134,30 +135,25 @@ public partial class Game {
         hideoutTabs.characterButton.AddListener(() => {
             ToggleHideoutPanels(playerPanel.panel, stashPanel.panel);
             ToggleSlimPlayerPanel(false);
-            CancelItemDrag();
         });
         
         hideoutTabs.eyeForgeButton.AddListener(() => {
             ToggleHideoutPanels(playerPanel.panel, eyeForgePanel.panel, stashPanel.panel);
             ToggleSlimPlayerPanel(true);
-            CancelItemDrag();
         });
         
         hideoutTabs.traderButton.AddListener(() => {
             ToggleHideoutPanels(traderPanel.panel, transactionPanel.panel, stashPanel.panel);
             TriggerTraderShopDialogue(TraderShopDialogueType.Greeting); 
-            CancelItemDrag();
         });
         
         hideoutTabs.questsButton.AddListener(() => {
             ToggleHideoutPanels(questsPanel.panel);
             RefreshQuestDisplays();
-            CancelItemDrag();
         });
         
         hideoutTabs.skillsButton.AddListener(() => {
             ToggleHideoutPanels(skillsPanel.panel.rectTransform, skillsPanel.playerStatsPanel.rectTransform);
-            CancelItemDrag();
         });
 
         SkillLevelUpRow hasteRow = skillsPanel.panel.hasteSkillRow;

@@ -2,6 +2,7 @@ using System;
 using PrimeTween;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 using static GameData;
 using Random = UnityEngine.Random;
 using Vector3 = UnityEngine.Vector3;
@@ -61,12 +62,13 @@ public partial class Game : MonoBehaviour {
     }
     
     private void Update() {
+        UpdateMenuNavigation(); // !
         states.gameStateMachine.Tick();
-        UpdateMenuNavigation();
         DemonEyeTween.Update();
-        UpdateQuests(); // Must be after game state tick, trust me bro
+        UpdateQuests(); // !
         ClearPerFrameData();
         CheckForScreenSizeChange();
+        CheckForInputDeviceChange();
         
 #if UNITY_EDITOR
         if (Mouse.current != null && Mouse.current.middleButton.isPressed) {
@@ -107,7 +109,7 @@ public partial class Game : MonoBehaviour {
     }
 
     private void OnMainMenuStateEnter() {
-        Cursor.visible = true;
+        Cursor.visible = !usingController;
         ShowMainMenuUI();
         PlayMusic(music.mainMenuMusic, MusicOption.Fast);
     }
@@ -118,6 +120,7 @@ public partial class Game : MonoBehaviour {
 
     private void OnHideoutStateEnter() {
         ShowHideoutUI();
+        SuppressInventoryPopup();
         RefreshSkillsPanel();
         UpdateHideoutNotifiers();
         // Make the pentagram default to crafting mode
@@ -149,6 +152,7 @@ public partial class Game : MonoBehaviour {
 
     private void OnMapSelectionEnter() {
         ShowMapSelectionUI();
+        SuppressInventoryPopup();
     }
 
     private void OnMapSelectionExit() {
@@ -500,6 +504,45 @@ public partial class Game : MonoBehaviour {
         SettingsOnScreenSizeChanged();
         UIOnScreenSizeChanged();
         lastScreenSize = ScreenSize;
+    }
+
+    [NonSerialized] public bool usingController;
+
+    // Switches between mouse & keyboard and controller based on whichever was used last
+    private void CheckForInputDeviceChange() {
+        bool switchToController = !usingController && GamepadUsedThisFrame();
+        bool switchToKeyboardMouse = usingController && KeyboardMouseUsedThisFrame();
+        if (!switchToController && !switchToKeyboardMouse) return;
+
+        usingController = switchToController;
+        input.lastDeviceSwitchTime = Time.time;
+        MenuNavigationOnInputDeviceChanged();
+        InputIconsOnInputDeviceChanged();
+    }
+
+    private static bool GamepadUsedThisFrame() {
+        Gamepad gamepad = Gamepad.current;
+        if (gamepad == null) return false;
+
+        const float deadzone = ControllerNavigation.stickDeadzone;
+        if (gamepad.leftStick.ReadValue().magnitude > deadzone || gamepad.rightStick.ReadValue().magnitude > deadzone) {
+            return true;
+        }
+
+        foreach (InputControl control in gamepad.allControls) {
+            // Synthetic buttons are the stick directions, which are handled above with a deadzone
+            if (control is ButtonControl { synthetic: false } button && button.wasPressedThisFrame) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static bool KeyboardMouseUsedThisFrame() {
+        Mouse mouse = Mouse.current;
+        bool mouseUsed = mouse != null && (mouse.delta.ReadValue().sqrMagnitude > 4f || mouse.leftButton.wasPressedThisFrame || mouse.rightButton.wasPressedThisFrame);
+        bool keyboardUsed = Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame;
+        return mouseUsed || keyboardUsed;
     }
 
 }

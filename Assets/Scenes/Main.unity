@@ -14858,7 +14858,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5648879043497698102, guid: 4add96f54f6ffed44b65bd2e53c29d92, type: 3}
       propertyPath: m_text
-      value: '[ESC] Back'
+      value: Back
       objectReference: {fileID: 0}
     - target: {fileID: 5648879043497698102, guid: 4add96f54f6ffed44b65bd2e53c29d92, type: 3}
       propertyPath: m_fontSize
@@ -24007,6 +24007,7 @@ MonoBehaviour:
     damageNumbersParent: {fileID: 764777864}
     quickUseHeaderText: {fileID: 1504622919}
     stashPanelHeaderText: {fileID: 419923851}
+    inputIconSpriteAsset: {fileID: 11400000, guid: dc1bb73ba77b1c1439f3428d579491b5, type: 2}
     navToggleGroups:
     - {fileID: 888674554}
     - {fileID: 1155284420}
