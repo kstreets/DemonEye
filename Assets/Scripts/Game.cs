@@ -22,6 +22,7 @@ public partial class Game : MonoBehaviour {
     public GameData.Camera camera;
     public Curves curves;
     public UI ui;
+    public InputPrompts inputPrompts;
     public PlayerInfo playerInfo;
     public RaidInfo raidInfo;
     public MainMenu mainMenu;
@@ -66,6 +67,7 @@ public partial class Game : MonoBehaviour {
         states.gameStateMachine.Tick();
         DemonEyeTween.Update();
         UpdateQuests(); // !
+        UpdateInputPrompts();
         ClearPerFrameData();
         CheckForScreenSizeChange();
         CheckForInputDeviceChange();

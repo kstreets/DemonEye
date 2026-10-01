@@ -1,18 +1,16 @@
-using System.Collections.Generic;
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public partial class Game {
 
-    // Icon strings for the current input device, cleared when the device changes
-    private readonly Dictionary<InputAction, string> inputIconCache = new();
-    private readonly List<InputPrompt> inputPrompts = new();
-
-    private struct InputPrompt {
+    public class InputPrompt {
         public TextMeshProUGUI text;
-        public InputAction action;
-        public string label;
+        public Func<(InputAction action, string label)> getPrompt;
+        public InputAction shownAction;
+        public string shownLabel;
+        public bool dirty = true;
     }
 
     private void InitInputIcons() {
@@ -22,36 +20,66 @@ public partial class Game {
         }
 
         AddInputPrompt(ui.menuBackButton.text, input.escape);
+        
+        AddInputPrompt(inputPrompts.hideoutSelect_place, input.selectItem);
+        AddInputPrompt(inputPrompts.hideoutQuickMove, input.moveStack);
+        AddInputPrompt(inputPrompts.hideoutSplit_placeSingle, static () => {
+            GameData.Input input = gameInstance.input;
+            if (gameInstance.IsDraggingItem) {
+                return (input.placeSingleItem, "Place Single");
+            }
+            return (input.placeSingleItem, "Split Stack");
+        });
     }
 
     private void InputIconsOnInputDeviceChanged() {
-        inputIconCache.Clear();
-        foreach (InputPrompt prompt in inputPrompts) {
+        inputPrompts.inputIconCache.Clear();
+        foreach (InputPrompt prompt in inputPrompts.inputPrompts) {
+            prompt.dirty = true;
+        }
+    }
+
+    // A prompt that always shows the same action, using the text's current content as the label
+    private void AddInputPrompt(TextMeshProUGUI text, InputAction action) {
+        string label = text.text;
+        AddInputPrompt(text, () => (action, label));
+    }
+
+    // A prompt whose action and label depend on the game's state, e.g. () => IsDraggingItem ? (input.placeSingleItem, "Place One") : (input.splitStack, "Split")
+    private void AddInputPrompt(TextMeshProUGUI text, Func<(InputAction action, string label)> getPrompt) {
+        InputPrompt prompt = new() { text = text, getPrompt = getPrompt };
+        inputPrompts.inputPrompts.Add(prompt);
+        RefreshInputPrompt(prompt);
+    }
+
+    private void UpdateInputPrompts() {
+        foreach (InputPrompt prompt in inputPrompts.inputPrompts) {
+            if (!prompt.text.isActiveAndEnabled) continue;
             RefreshInputPrompt(prompt);
         }
     }
 
-    private void AddInputPrompt(TextMeshProUGUI text, InputAction action) {
-        InputPrompt prompt = new() {
-            text = text,
-            action = action, 
-            label = text.text,
-        };
-        inputPrompts.Add(prompt);
-        RefreshInputPrompt(prompt);
-    }
-
+    // Only rebuilds the text when what it shows changed, since setting TMP text every frame is expensive
     private void RefreshInputPrompt(InputPrompt prompt) {
-        prompt.text.text = $"{InputIcon(prompt.action)} {prompt.label}";
+        (InputAction action, string label) = prompt.getPrompt();
+        if (!prompt.dirty && action == prompt.shownAction && label == prompt.shownLabel) return;
+
+        prompt.dirty = false;
+        prompt.shownAction = action;
+        prompt.shownLabel = label;
+
+        // Also hidden when the action has no button on the current device
+        string icon = action != null ? InputIcon(action) : string.Empty;
+        prompt.text.text = icon == string.Empty ? string.Empty : $"{icon} {label}";
     }
 
     // Rich text for the button bound to this action on the current input device.
     // Icons are looked up by name in the input icon sprite asset, e.g. "gamepad_buttonsouth", "keyboard_e", "mouse_leftbutton".
     // Buttons without an icon yet show their name instead, e.g. [E] or [A].
     public string InputIcon(InputAction action) {
-        if (inputIconCache.TryGetValue(action, out string icon)) return icon;
+        if (inputPrompts.inputIconCache.TryGetValue(action, out string icon)) return icon;
         icon = BuildInputIcon(action);
-        inputIconCache[action] = icon;
+        inputPrompts.inputIconCache[action] = icon;
         return icon;
     }
 

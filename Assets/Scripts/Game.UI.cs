@@ -103,8 +103,9 @@ public partial class Game {
     }
     
     private void ShowHideoutUI() {
-        ToggleHideoutPanels(playerPanel.panel, stashPanel.panel);
+        hideoutTabs.toggleGroup.ManualyToggle(hideoutTabs.characterButton);
         ui.menuBackButton.gameObject.SetActive(true);
+        inputPrompts.hideoutParent.gameObject.SetActive(true);
         playerInfo.coinsCurrencyParent.gameObject.SetActive(true);
         playerInfo.soulsCurrencyParent.gameObject.SetActive(true);
         playerInfo.healthBarParent.gameObject.SetActive(false);
@@ -120,6 +121,7 @@ public partial class Game {
         HideHint();
         ToggleSlimPlayerPanel(false);
         ui.menuBackButton.gameObject.SetActive(false);
+        inputPrompts.hideoutParent.gameObject.SetActive(false);
         playerInfo.parent.gameObject.SetActive(false);
         ui.animatedBgImage.gameObject.SetActive(false);
         hideoutTabs.parent.gameObject.SetActive(false);

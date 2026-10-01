@@ -450,39 +450,6 @@
             "bindings": [
                 {
                     "name": "One Modifier",
-                    "id": "43006daf-c092-4eca-8f38-5049b09d70ba",
-                    "path": "OneModifier",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "SplitStack",
-                    "isComposite": true,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "modifier",
-                    "id": "8653168a-d448-44fc-ba38-cd9ad8107111",
-                    "path": "<Keyboard>/alt",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "SplitStack",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "binding",
-                    "id": "773f1da6-c513-407d-a15c-2ed42e47ff3c",
-                    "path": "<Mouse>/rightButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "SplitStack",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "One Modifier",
                     "id": "42496022-203c-4b67-8330-970a5b242ea0",
                     "path": "OneModifier",
                     "interactions": "",
@@ -528,7 +495,7 @@
                 {
                     "name": "",
                     "id": "c43e5805-5e83-415c-8bd9-bcf6890e58c3",
-                    "path": "<Mouse>/rightButton",
+                    "path": "<Mouse>/middleButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -577,6 +544,17 @@
                     "processors": "",
                     "groups": ";Gamepad",
                     "action": "UseItem",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a2d78f8c-ece5-481b-b5f1-b4137e7f16ed",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "SplitStack",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

@@ -454,6 +454,7 @@ public partial class Game {
         if (!TryGetItemFromHoverInfo(invHoverInfo, out ItemInstance hoveredItem)) return;
         if (hoveredItem.ItemRef.type != itemTypes.quickUse) return;
         HavePlayerConsumeItem(invHoverInfo.inventory, invHoverInfo.slotIndex);
+        SuppressInventoryPopup(); // Annoying to have the popup still there after consuming
     }
 
     private bool TryGetItemFromHoverInfo(InventoryHoverInfo invHoverInfo, out ItemInstance hoveredItemInstance) {

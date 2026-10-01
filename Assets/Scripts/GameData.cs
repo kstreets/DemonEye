@@ -172,6 +172,18 @@ public class GameData {
     }
     
     [Serializable]
+    public class InputPrompts {
+        public GameObject hideoutParent;
+        public TextMeshProUGUI hideoutSelect_place;
+        public TextMeshProUGUI hideoutQuickMove;
+        public TextMeshProUGUI hideoutSplit_placeSingle;
+        
+        // Icon strings for the current input device, cleared when the device changes
+        [NonSerialized] public readonly Dictionary<InputAction, string> inputIconCache = new();
+        [NonSerialized] public readonly List<InputPrompt> inputPrompts = new();
+    }
+    
+    [Serializable]
     public class PlayerInfo {
         public GameObject parent;
         public GameObject healthBarParent;
