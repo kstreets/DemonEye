@@ -27,6 +27,7 @@ public class Styles : ScriptableObject {
     public Color headerTextColor;
     public Color subHeaderTextColor;
     public Color popInTextColor;
+    public Color interactionsTextColor;
     
     public Color coinCurrencyColor;
     public Color soulCurrencyColor;

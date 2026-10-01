@@ -73,7 +73,9 @@ public partial class Game {
 
             if (col.CompareTag(Tags.Altar)) {
                 int soulsPrice = curRaid.map.altarSoulPrice;
-                EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), $"{soulsPrice} Souls");
+                Color soulsTextColor = player.state.soulCurrency >= soulsPrice ? config.styles.soulCurrencyColor : config.styles.outOfStockCountColor;
+                string details = $"Summon Eye Upgrade: <sprite=1>{ColorText(soulsPrice.ToString("N0"), soulsTextColor)}";
+                EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), details);
                 if (input.interact.WasPressedThisFrame() && player.state.soulCurrency >= soulsPrice) {
                     thisFrame.flags |= GameData.FrameFlags.SummonedUpgrade;
                     SummonEyeUpgradeFromAltar(col);

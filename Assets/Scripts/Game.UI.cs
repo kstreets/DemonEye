@@ -105,7 +105,7 @@ public partial class Game {
     private void ShowHideoutUI() {
         hideoutTabs.toggleGroup.ManualyToggle(hideoutTabs.characterButton);
         ui.menuBackButton.gameObject.SetActive(true);
-        inputPrompts.hideoutParent.gameObject.SetActive(true);
+        inputPrompts.hideoutParent.gameObject.SetActive(!InMapSelection);
         playerInfo.coinsCurrencyParent.gameObject.SetActive(true);
         playerInfo.soulsCurrencyParent.gameObject.SetActive(true);
         playerInfo.healthBarParent.gameObject.SetActive(false);
@@ -135,6 +135,13 @@ public partial class Game {
         playerInfo.parent.gameObject.SetActive(true);
         raidInfo.parent.SetActive(true);
         ui.hotBarParent.gameObject.SetActive(true);
+        
+        inputPrompts.inRaidParent.SetActive(true);
+        // Transfer hideout prompts to raid to reduce prompt bindings
+        foreach (Transform invPrompt in inputPrompts.allInventoryPrompts) {
+            invPrompt.parent = inputPrompts.inRaidParent.transform;
+            invPrompt.gameObject.SetActive(false);
+        }
 
         // Initialize minimap for this raid (Tilemap GameObject must be active)
         {
@@ -159,6 +166,12 @@ public partial class Game {
         ui.portalArrow.gameObject.SetActive(false);
         ui.hotBarParent.gameObject.SetActive(false);
         ui.minimap.gameObject.SetActive(false);
+        
+        inputPrompts.inRaidParent.SetActive(false);
+        foreach (Transform invPrompt in inputPrompts.allInventoryPrompts) {
+            invPrompt.parent = inputPrompts.hideoutParent.transform;
+            invPrompt.gameObject.SetActive(true);
+        }
     }
 
     private void ToggleHideoutPanels(params RectTransform[] panels) {
@@ -739,13 +752,14 @@ public partial class Game {
         ui.interactDetails.text = detailsString;
         
         ui.interactPrompt.gameObject.SetActive(true);
-        ui.interactPrompt.text = $"<sprite=5 color=#{ColorUtility.ToHtmlStringRGBA(config.styles.inputIconTint)}>";
+        ui.interactPrompt.text = InputIcon(input.interact);
         ui.interactPrompt.transform.position = camera.main.WorldToScreenPoint(position);
     }
     
     private void DisableInteractionPrompt() {
         ui.interactPrompt.gameObject.SetActive(false);
         ui.interactDetails.gameObject.SetActive(false);
+        ui.interactDetails.color = config.styles.interactionsTextColor;
     }
     
     // Multiply canvas units (sizes and offsets authored at 1080p) by this to get screen pixels

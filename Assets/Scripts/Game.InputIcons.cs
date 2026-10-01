@@ -30,6 +30,8 @@ public partial class Game {
             }
             return (input.placeSingleItem, "Split Stack");
         });
+        
+        AddInputPrompt(inputPrompts.raidInventory, input.inventory);
     }
 
     private void InputIconsOnInputDeviceChanged() {
@@ -53,6 +55,17 @@ public partial class Game {
     }
 
     private void UpdateInputPrompts() {
+        if (InRaid && thisFrame.flags.HasFlag(GameData.FrameFlags.InventoryOpened)) {
+            foreach (Transform invPrompt in inputPrompts.allInventoryPrompts) {
+                invPrompt.gameObject.SetActive(true);
+            }
+        }
+        else if (InRaid && !PlayerInventoryIsOpen) {
+            foreach (Transform invPrompt in inputPrompts.allInventoryPrompts) {
+                invPrompt.gameObject.SetActive(false);
+            }
+        }
+        
         foreach (InputPrompt prompt in inputPrompts.inputPrompts) {
             if (!prompt.text.isActiveAndEnabled) continue;
             RefreshInputPrompt(prompt);
@@ -98,7 +111,7 @@ public partial class Game {
             int firstPart = i + 1;
             if (firstPart >= bindings.Count || !IsBindingForCurrentDevice(bindings[firstPart])) continue;
 
-            string separator = binding.GetNameOfComposite().Contains("Modifier") ? " + " : " / ";
+            string separator = binding.GetNameOfComposite().Contains("Modifier") ? "+" : "/";
             string icon = string.Empty;
             for (int part = firstPart; part < bindings.Count && bindings[part].isPartOfComposite; part++) {
                 if (part > firstPart) {

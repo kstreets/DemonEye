@@ -178,6 +178,11 @@ public class GameData {
         public TextMeshProUGUI hideoutQuickMove;
         public TextMeshProUGUI hideoutSplit_placeSingle;
         
+        public List<Transform> allInventoryPrompts;
+        
+        public GameObject inRaidParent;
+        public TextMeshProUGUI raidInventory;
+        
         // Icon strings for the current input device, cleared when the device changes
         [NonSerialized] public readonly Dictionary<InputAction, string> inputIconCache = new();
         [NonSerialized] public readonly List<InputPrompt> inputPrompts = new();
