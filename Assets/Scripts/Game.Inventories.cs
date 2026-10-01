@@ -408,6 +408,8 @@ public partial class Game {
         MoveItemOption moveOption = MoveItemOption.FullStack;
         Inventory destinationInventory = null;
         
+        SuppressInventoryPopup();
+        
         if (InRaid) {
             if (hoveredInventory == inventories.player && LootInventoryIsOpen) {
                 destinationInventory = inventories.lootPtr;

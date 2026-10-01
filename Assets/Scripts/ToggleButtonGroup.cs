@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -12,6 +13,9 @@ public class ToggleButtonGroup : MonoBehaviour {
     }
 
     public NavigationMode navigationMode;
+    // Optional, show the controller buttons that switch this group. Hidden when using mouse & keyboard.
+    public TextMeshProUGUI leftInputPrompt;
+    public TextMeshProUGUI rightInputPrompt;
     public Styles styles;
     public Sprite selectedSprite;
     public Sprite nonSelectedSprite;
@@ -71,6 +75,11 @@ public class ToggleButtonGroup : MonoBehaviour {
     public void Add(ToggleButton toggle) {
         InitializeToggle(toggle);
         toggles.Add(toggle);
+
+        // New toggles get created as the last child, so keep them before the right input prompt when they share a layout
+        if (rightInputPrompt && rightInputPrompt.transform.parent == toggle.transform.parent) {
+            toggle.transform.SetSiblingIndex(rightInputPrompt.transform.GetSiblingIndex());
+        }
         if (toggles.Count == 1) {
             OnButtonClicked(toggle);
         }

@@ -32,6 +32,27 @@ public partial class Game {
         });
         
         AddInputPrompt(inputPrompts.raidInventory, input.inventory);
+
+        foreach (ToggleButtonGroup group in ui.navToggleGroups) {
+            AddToggleGroupInputPrompts(group);
+        }
+    }
+
+    // Shows the bumpers or triggers on either side of the group depending on its navigation mode, only when using a controller
+    private void AddToggleGroupInputPrompts(ToggleButtonGroup group) {
+        (InputAction left, InputAction right) = group.navigationMode switch {
+            ToggleButtonGroup.NavigationMode.Primary => (input.menuTabLeft, input.menuTabRight),
+            ToggleButtonGroup.NavigationMode.Secondary => (input.menuSecondaryTabLeft, input.menuSecondaryTabRight),
+            _ => (null, null),
+        };
+        if (left == null) return;
+
+        if (group.leftInputPrompt) {
+            AddInputPrompt(group.leftInputPrompt, () => usingController ? (left, string.Empty) : (null, null));
+        }
+        if (group.rightInputPrompt) {
+            AddInputPrompt(group.rightInputPrompt, () => usingController ? (right, string.Empty) : (null, null));
+        }
     }
 
     private void InputIconsOnInputDeviceChanged() {
@@ -83,7 +104,13 @@ public partial class Game {
 
         // Also hidden when the action has no button on the current device
         string icon = action != null ? InputIcon(action) : string.Empty;
-        prompt.text.text = icon == string.Empty ? string.Empty : $"{icon} {label}";
+        if (icon == string.Empty) {
+            prompt.text.text = string.Empty;
+        }
+        else {
+            // Prompts without a label just show the button
+            prompt.text.text = string.IsNullOrEmpty(label) ? icon : $"{icon} {label}";
+        }
     }
 
     // Rich text for the button bound to this action on the current input device.
