@@ -410,7 +410,7 @@ public partial class Game {
     // First group in the list thats on screen with this mode
     private ToggleButtonGroup GetActiveNavToggleGroup(ToggleButtonGroup.NavigationMode mode) {
         foreach (ToggleButtonGroup group in ui.navToggleGroups) {
-            if (group && group.navigationMode == mode && group.gameObject.activeInHierarchy) {
+            if (group && group.navigationMode == mode && group.gameObject.activeInHierarchy && !group.TogglesHidden) {
                 return group;
             }
         }

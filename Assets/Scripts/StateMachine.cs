@@ -17,6 +17,7 @@ public class StateMachine {
     private float lastUpdateTime;
 
     public bool Transitioning => nextStateAfterDelay != null;
+    public bool OnLastState => states.Count > 0 && CurState != null && CurState == states[^1];
     
     public State CreateState(Action update = null, Action fixedUpdate = null, Action lateUpdate = null, 
         Action enter = null, Action exit = null, Action whileExiting = null) 
@@ -50,7 +51,16 @@ public class StateMachine {
         nextStateAfterDelay = null;
         timeWhenCurStateStarted = Time.time;
     }
-
+    
+    public int GetCurrentStateIndex() {
+        if (states.Count <= 0) return -1;
+        return states.IndexOf(CurState); 
+    }
+    
+    public bool NotPassedThisState(State state) {
+        return states.IndexOf(CurState) <= states.IndexOf(state);
+    }
+    
     public enum UpdateMode { Update, FixedUpdate, LateUpdate }
 
     public void Tick(UpdateMode updateMode = UpdateMode.Update) {

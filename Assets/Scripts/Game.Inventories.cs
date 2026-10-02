@@ -129,6 +129,8 @@ public partial class Game {
             InitInventoryItems(gameState.traderInventoryItems, inventories.trader);
             InitInventoryItems(gameState.forgeInventoryItems, inventories.eyeForge);
         }
+        
+        RefreshAllInventoryDisplays(); // Refreshing prevents single frame flickering when showing for first time
     }
     
     private void SetupEyeForgeInventorySlots() {
@@ -1101,7 +1103,7 @@ public partial class Game {
             inventory.slots[i].ui.SetItem(itemInstance.ItemRef, itemInstance.count);
         }
     }
-
+    
     private void RefreshAllInventoryDisplays() {
         foreach (Inventory inventory in inventories.all) {
             RefreshInventoryDisplay(inventory);

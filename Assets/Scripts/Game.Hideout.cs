@@ -322,7 +322,8 @@ public partial class Game {
     private bool ForgeIsOnLevelUp => eyeForgePanel.levelUpParent.activeInHierarchy;
 
     private void UpdateForgeState() {
-        if (!OnEyeForgeTab) return;
+        bool showingForge = eyeForgePanel.panel.gameObject.activeInHierarchy;
+        if (!showingForge) return;
 
         int crucibleItemCount = GetInventoryItemCount(inventories.eyeForge);
         ItemInstance eyeSlotItemInstance = inventories.eyeForge.slots[0].itemInstance;
@@ -363,6 +364,7 @@ public partial class Game {
         }
         
         bool shouldShowPlayerPanel = (forgeMode is ForgeMode.Empty or ForgeMode.PostForgeOrUpgrade) || forgeError is ForgeError.ForgingButJustEye;
+        
         if (shouldShowPlayerPanel) {
             if (!ShowingPlayerPanel) {
                 ToggleHideoutPanels(playerPanel.panel, eyeForgePanel.panel, stashPanel.panel);
@@ -375,7 +377,8 @@ public partial class Game {
     }
     
     private void UpdateForgePanel() {
-        if (!OnEyeForgeTab) return;
+        bool showingForge = eyeForgePanel.panel.gameObject.activeInHierarchy;
+        if (!showingForge) return;
         
         int curPentagramLevel = hideoutState.pentagramLevelIndex + 1;
         eyeForgePanel.panelNumeral.sprite = config.styles.RomanNumeralSprite(curPentagramLevel);

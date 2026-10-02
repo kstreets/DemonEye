@@ -7,6 +7,7 @@ using static GameData;
 public partial class Game {
     
     public class GameState {
+        public int tutorialStateIndex;
         public PersistentFlags persistentFlags;
         
         public HideoutState hideoutState;
@@ -70,6 +71,7 @@ public partial class Game {
         using FileStream stream = File.Open(GetGameStateSavePath(), FileMode.OpenOrCreate); 
         using BinaryWriter binWriter = new(stream);
         
+        SerializeInt(binWriter, tutorial.stateMachine.GetCurrentStateIndex());
         SerializeInt(binWriter, (int)persistentFlags);
         SerializeHideoutState(binWriter, hideoutState);
         SerializePlayerState(binWriter, player);
@@ -108,6 +110,7 @@ public partial class Game {
         using BinaryReader binReader = new(stream);
         
         return new() {
+            tutorialStateIndex = DeserializeInt(binReader),
             persistentFlags = (PersistentFlags)DeserializeInt(binReader),
             hideoutState = DeserializeHideoutState(binReader),
             playerState = DeserializePlayerState(binReader),

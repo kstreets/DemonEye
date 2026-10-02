@@ -48,10 +48,10 @@ public partial class Game {
         if (left == null) return;
 
         if (group.leftInputPrompt) {
-            AddInputPrompt(group.leftInputPrompt, () => UsingControllerControls ? (left, string.Empty) : (null, null));
+            AddInputPrompt(group.leftInputPrompt, () => UsingControllerControls && !group.TogglesHidden ? (left, string.Empty) : (null, null));
         }
         if (group.rightInputPrompt) {
-            AddInputPrompt(group.rightInputPrompt, () => UsingControllerControls ? (right, string.Empty) : (null, null));
+            AddInputPrompt(group.rightInputPrompt, () => UsingControllerControls && !group.TogglesHidden ? (right, string.Empty) : (null, null));
         }
     }
 

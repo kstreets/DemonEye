@@ -17,7 +17,7 @@ public class GameData {
     
     [Serializable]
     public class Config {
-        public StartingItemsConfig startingItems;
+        public ArtificialInventory startingTutorialInventory;
         public Styles styles;
         public EnemyColors enemyColors;
         public GameplayConfig gameplay;
@@ -618,6 +618,15 @@ public class GameData {
         public const float repeatDelay = 0.4f;
         public const float repeatInterval = 0.12f;
         public const int pointerEventId = -100;
+    }
+    
+    public class Tutorial {
+        public StateMachine stateMachine;
+        public State entryState;
+        public State firstCraftingState;
+        public State craftingDemonEyeState;
+        public State equipingDemonEyeState;
+        public State waitingToEnterSlaughterMap;
     }
 
 }

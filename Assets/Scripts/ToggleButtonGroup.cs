@@ -23,6 +23,9 @@ public class ToggleButtonGroup : MonoBehaviour {
     public DynamicClip pressedClip;
     
     private Dictionary<ToggleButton, UnityAction> callbacks = new();
+    private readonly List<ToggleButton> togglesHiddenByGroup = new();
+
+    public bool TogglesHidden { get; private set; }
 
     private void Awake() {
         callbacks.Clear();
@@ -56,6 +59,29 @@ public class ToggleButtonGroup : MonoBehaviour {
         OnButtonClicked(toggle, false);
     }
     
+    // Hides every toggle, so they can't be clicked or switched to with the controller, and hides the group's input prompts.
+    // Which toggle is selected stays the same.
+    public void SetTogglesHidden(bool hidden) {
+        if (hidden == TogglesHidden) return;
+        TogglesHidden = hidden;
+
+        if (hidden) {
+            togglesHiddenByGroup.Clear();
+            foreach (ToggleButton toggle in toggles) {
+                // Toggles already hidden by something else, e.g. unused pooled quest toggles, should stay hidden when showing them again
+                if (!toggle.gameObject.activeSelf) continue;
+                togglesHiddenByGroup.Add(toggle);
+                toggle.gameObject.SetActive(false);
+            }
+            return;
+        }
+
+        foreach (ToggleButton toggle in togglesHiddenByGroup) {
+            toggle.gameObject.SetActive(true);
+        }
+        togglesHiddenByGroup.Clear();
+    }
+
     public void Move(int step) {
         if (toggles.Count == 0) return;
         int curIndex = toggles.IndexOf(GetSelected());
@@ -90,6 +116,7 @@ public class ToggleButtonGroup : MonoBehaviour {
         toggle.button.onClick.RemoveListener(callback);
         callbacks.Remove(toggle);
         toggles.Remove(toggle);
+        togglesHiddenByGroup.Remove(toggle);
         if (toggles.Count == 1) {
             OnButtonClicked(toggles[0]);
         }

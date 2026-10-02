@@ -53,6 +53,7 @@ public partial class Game : MonoBehaviour {
     [NonSerialized] public readonly HotBar hotBar = new();
     [NonSerialized] public readonly PerFrameData thisFrame = new();
     [NonSerialized] public readonly ControllerNavigation controllNav = new();
+    [NonSerialized] public readonly Tutorial tutorial = new();
     
     [NonSerialized] public HideoutState hideoutState;
     [NonSerialized] public PersistentFlags persistentFlags;
@@ -155,6 +156,7 @@ public partial class Game : MonoBehaviour {
     private void OnMapSelectionEnter() {
         ShowMapSelectionUI();
         SuppressInventoryPopup();
+        TutorialOnMapSelectionEnter();
     }
 
     private void OnMapSelectionExit() {
@@ -165,6 +167,7 @@ public partial class Game : MonoBehaviour {
         CheckForHotBarInteractions();
         UpdateInventory();
         RefreshAllInventoryDisplays();
+        TutorialOnMapSelectionUpdate();
     }
 
     private void OnMapSelectionLateUpdate() {

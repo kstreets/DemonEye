@@ -30,6 +30,7 @@ public partial class Game {
         InitMaps(gameState);
         InitQuests(gameState);
         InitHideout(gameState);
+        InitTutorial(gameState);
         
         InitUI();
 

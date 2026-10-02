@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -34,7 +35,11 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
             return _rectTransform;
         }
     }
-    
+
+    private void Awake() {
+        ClearItem(); // Prevent single frame flickering
+    }
+
     public void OnPointerEnter(PointerEventData eventData) {
         SetHovered(eventData, true);
     }

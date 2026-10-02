@@ -22,8 +22,9 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
     public DynamicClip pressedClip;
     public DynamicClip hoveredClip;
 
+    [NonSerialized] public Action buttonListenerCallback;
+    [NonSerialized] public Action overrideButtonListenerCallback;
     private bool beingHovered;
-    private Action buttonListenerCallback;
 
     private void OnDisable() {
         OnPointerExit(null);
@@ -91,11 +92,19 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
         if (!button.IsInteractable()) return;
         button.onClick.Invoke();
     }
-
+    
     public void AddListener(Action callback) {
         buttonListenerCallback -= callback;
         buttonListenerCallback += callback;
         button.onClick.AddListener(OnButtonClicked);
+    }
+    
+    public void AddOverrideListener(Action callback) {
+        overrideButtonListenerCallback = callback;
+    }
+    
+    public void ClearOverrideListener() {
+        overrideButtonListenerCallback = null;
     }
     
     public void KeepPressed() {
@@ -136,6 +145,10 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
     private void OnButtonClicked() {
         if (isDisabled || beingKeptPressed) return;
         Game.gameInstance.PlayAudioClip(pressedClip);
+        if (overrideButtonListenerCallback != null) {
+            overrideButtonListenerCallback();
+            return;
+        }
         buttonListenerCallback?.Invoke();
     }
 
