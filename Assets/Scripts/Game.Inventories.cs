@@ -259,7 +259,7 @@ public partial class Game {
         if (!InRaid || !input.inventory.WasPressedThisFrame()) return;
         
         // On controller the inventory button also splits stacks, so it only opens the inventory and escape closes it
-        if (usingController && PlayerInventoryIsOpen) return;
+        if (UsingControllerControls && PlayerInventoryIsOpen) return;
         
         if (PlayerInventoryIsOpen) {
             ClosePlayerInventory(); 
@@ -452,7 +452,7 @@ public partial class Game {
     private void CheckToConsumeItem(InventoryHoverInfo invHoverInfo) {
         if (!input.useItem.WasPressedThisFrame()) return;
         // Consume is on the navigation stick's press, so ignore it while the stick is being pushed in case it was accidental
-        if (usingController && input.menuMove.ReadValue<Vector2>().magnitude > GameData.ControllerNavigation.stickDeadzone) return;
+        if (UsingControllerControls && input.menuMove.ReadValue<Vector2>().magnitude > GameData.ControllerNavigation.stickDeadzone) return;
         if (!TryGetItemFromHoverInfo(invHoverInfo, out ItemInstance hoveredItem)) return;
         if (hoveredItem.ItemRef.type != itemTypes.quickUse) return;
         HavePlayerConsumeItem(invHoverInfo.inventory, invHoverInfo.slotIndex);

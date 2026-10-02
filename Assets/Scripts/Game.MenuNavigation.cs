@@ -89,7 +89,13 @@ public partial class Game {
     }
 
     private void UpdateMenuNavigation() {
-        if (!usingController) return;
+        if (!usingController) {
+            // Tabs can still be switched with the bumpers/triggers while the Steam Deck's touchpad is controlling the cursor
+            if (UsingControllerControls) {
+                UpdateToggleGroupSwitching();
+            }
+            return;
+        }
         
         // We do gamepad navigation ourselves so we need to clear Unity's to avoid double presses
         if (EventSystem.current && EventSystem.current.currentSelectedGameObject) {
@@ -139,10 +145,14 @@ public partial class Game {
         if (input.lastDeviceSwitchTime != Time.time) {
             UpdateControllerSubmit();
         }
-        
+
+        UpdateToggleGroupSwitching();
+    }
+
+    private void UpdateToggleGroupSwitching() {
         var switchedMode = CheckForToggleGroupSwitching();
-        // We dont clear the selection when doing a secondary toggle switch
-        if (switchedMode == ToggleButtonGroup.NavigationMode.Primary) {
+        // We dont clear the selection when doing a secondary toggle switch, and there's no selection when using the cursor
+        if (switchedMode == ToggleButtonGroup.NavigationMode.Primary && usingController) {
             ClearControllerSelection();
             SelectDefaultNavTarget();
         }

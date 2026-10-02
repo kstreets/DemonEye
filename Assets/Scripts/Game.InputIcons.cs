@@ -48,10 +48,10 @@ public partial class Game {
         if (left == null) return;
 
         if (group.leftInputPrompt) {
-            AddInputPrompt(group.leftInputPrompt, () => usingController ? (left, string.Empty) : (null, null));
+            AddInputPrompt(group.leftInputPrompt, () => UsingControllerControls ? (left, string.Empty) : (null, null));
         }
         if (group.rightInputPrompt) {
-            AddInputPrompt(group.rightInputPrompt, () => usingController ? (right, string.Empty) : (null, null));
+            AddInputPrompt(group.rightInputPrompt, () => UsingControllerControls ? (right, string.Empty) : (null, null));
         }
     }
 
@@ -77,7 +77,7 @@ public partial class Game {
 
     private void UpdateInputPrompts() {
         if (InRaid && thisFrame.flags.HasFlag(GameData.FrameFlags.InventoryOpened)) {
-            if (usingController) { // Hide it on controller because Y splits the stack not closes inventory
+            if (UsingControllerControls) { // Hide it on controller because Y splits the stack not closes inventory
                 inputPrompts.raidInventory.gameObject.SetActive(false);
             }
             foreach (Transform invPrompt in inputPrompts.allInventoryPrompts) {
@@ -160,7 +160,7 @@ public partial class Game {
         string layout = InputControlPath.TryGetDeviceLayout(binding.effectivePath);
         if (string.IsNullOrEmpty(layout)) return false;
 
-        if (usingController) {
+        if (UsingControllerControls) {
             return InputSystem.IsFirstLayoutBasedOnSecond(layout, "Gamepad");
         }
         return InputSystem.IsFirstLayoutBasedOnSecond(layout, "Keyboard") || InputSystem.IsFirstLayoutBasedOnSecond(layout, "Mouse");
@@ -183,7 +183,7 @@ public partial class Game {
         }
 
         // We only show Xbox buttons for controllers
-        string label = usingController ? XboxButtonName(controlPath) ?? displayName : displayName;
+        string label = deviceName == "gamepad" ? XboxButtonName(controlPath) ?? displayName : displayName;
         return $"<color=#{tint}>[{label}]</color>";
     }
 

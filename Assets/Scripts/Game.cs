@@ -508,8 +508,11 @@ public partial class Game : MonoBehaviour {
         lastScreenSize = ScreenSize;
     }
 
-    [NonSerialized] public bool usingController;
+    [NonSerialized] public bool usingController; // Whether the controller selection is used instead of the mouse cursor
     [NonSerialized] public bool onSteamDeck;
+
+    // Whether buttons and prompts work like a controller. On the Steam Deck they always do, even while its touchpad is moving the cursor.
+    public bool UsingControllerControls => usingController || onSteamDeck;
 
     private void InitInputDevice() {
         onSteamDeck = DetectSteamDeck();
@@ -526,8 +529,11 @@ public partial class Game : MonoBehaviour {
 
     // Switches between mouse & keyboard and controller based on whichever was used last
     private void CheckForInputDeviceChange() {
-        bool switchToController = !usingController && GamepadUsedThisFrame();
-        bool switchToKeyboardMouse = usingController && !onSteamDeck && KeyboardMouseUsedThisFrame();
+        // On the Steam Deck buttons can be used along with the touchpad's cursor, so only moving the selection gets rid of the cursor
+        bool gamepadUsed = onSteamDeck ? GamepadNavigatedThisFrame() : GamepadUsedThisFrame();
+        bool switchToController = !usingController && gamepadUsed;
+        // The Steam Deck's touchpads act as a mouse, so they switch to the cursor. It has no keyboard, its buttons are all on the controller.
+        bool switchToKeyboardMouse = usingController && (MouseUsedThisFrame() || (!onSteamDeck && KeyboardUsedThisFrame()));
         if (!switchToController && !switchToKeyboardMouse) return;
 
         usingController = switchToController;
@@ -536,14 +542,21 @@ public partial class Game : MonoBehaviour {
         InputIconsOnInputDeviceChanged();
     }
 
-    private bool GamepadUsedThisFrame() {
+    // Either stick or the d-pad
+    private bool GamepadNavigatedThisFrame() {
         Gamepad gamepad = Gamepad.current;
         if (gamepad == null) return false;
 
         const float deadzone = ControllerNavigation.stickDeadzone;
-        if (gamepad.leftStick.ReadValue().magnitude > deadzone || gamepad.rightStick.ReadValue().magnitude > deadzone) {
-            return true;
-        }
+        return gamepad.leftStick.ReadValue().magnitude > deadzone
+            || gamepad.rightStick.ReadValue().magnitude > deadzone
+            || gamepad.dpad.ReadValue() != Vector2.zero;
+    }
+
+    private bool GamepadUsedThisFrame() {
+        Gamepad gamepad = Gamepad.current;
+        if (gamepad == null) return false;
+        if (GamepadNavigatedThisFrame()) return true;
 
         foreach (InputControl control in gamepad.allControls) {
             // Synthetic buttons are the stick directions, which are handled above with a deadzone
@@ -554,11 +567,13 @@ public partial class Game : MonoBehaviour {
         return false;
     }
 
-    private bool KeyboardMouseUsedThisFrame() {
+    private bool MouseUsedThisFrame() {
         Mouse mouse = Mouse.current;
-        bool mouseUsed = mouse != null && (mouse.delta.ReadValue().sqrMagnitude > 4f || mouse.leftButton.wasPressedThisFrame || mouse.rightButton.wasPressedThisFrame);
-        bool keyboardUsed = Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame;
-        return mouseUsed || keyboardUsed;
+        return mouse != null && (mouse.delta.ReadValue().sqrMagnitude > 4f || mouse.leftButton.wasPressedThisFrame || mouse.rightButton.wasPressedThisFrame);
+    }
+
+    private bool KeyboardUsedThisFrame() {
+        return Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame;
     }
 
 }
