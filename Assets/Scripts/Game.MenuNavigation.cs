@@ -195,8 +195,18 @@ public partial class Game {
         return Mathf.Abs(stick.x) > Mathf.Abs(stick.y) ? new(Mathf.Sign(stick.x), 0f) : new(0f, Mathf.Sign(stick.y));
     }
 
-    // Moves once when the stick is first pushed, then repeats while held
+    // Ignores the stick until it's let go, for when it's already being held as a menu opens
+    private void IgnoreHeldNavigationInput() {
+        if (!usingController) return;
+        controllNav.waitingForNavRelease = true;
+    }
+
     private bool CanMoveNavigation(Vector2 navDir) {
+        if (controllNav.waitingForNavRelease) {
+            if (navDir != Vector2.zero) return false;
+            controllNav.waitingForNavRelease = false;
+        }
+
         if (navDir == Vector2.zero) {
             controllNav.lastNavDir = Vector2.zero;
             return false;

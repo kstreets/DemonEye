@@ -21,7 +21,12 @@ public partial class Game {
     private void InitUI() {
         Cursor.visible = !usingController;
         Cursor.SetCursor(config.styles.cursorTexture, Vector2.zero, CursorMode.Auto);
-        
+
+        // Remember where the currencies go in the player info panel, so they can be put back after being moved for small screens
+        currencyInfoParent = playerInfo.coinsCurrencyParent.transform.parent;
+        coinsCurrencySiblingIndex = playerInfo.coinsCurrencyParent.transform.GetSiblingIndex();
+        soulsCurrencySiblingIndex = playerInfo.soulsCurrencyParent.transform.GetSiblingIndex();
+
         CloseSettingsMenuUI();
         CloseHideoutUI();
         CloseRaidUI();
@@ -88,8 +93,11 @@ public partial class Game {
         ShowHideoutUI();
         hideoutTabs.parent.gameObject.SetActive(false);
         playerInfo.parent.gameObject.SetActive(false);
+        // The player info is hidden here, so keep the currencies in it so they're hidden too
+        SetCurrencyDisplaysInHideout(false);
         ToggleHideoutPanels(playerPanel.panel, mapPanels.mapSelectionPanel.rectTransform);
         mapPanels.mapSelectionPanel.UpdateSelectorStates(config.maps);
+        ui.teleportingIntoRaidHeader.gameObject.SetActive(true);
     }
     
     private void ShowMapConfirmationUI(MapData map) {
@@ -103,6 +111,7 @@ public partial class Game {
     }
     
     private void ShowHideoutUI() {
+        SetCurrencyDisplaysInHideout(true);
         hideoutTabs.toggleGroup.ManualyToggle(hideoutTabs.characterButton);
         ui.menuBackButton.gameObject.SetActive(true);
         inputPrompts.hideoutParent.gameObject.SetActive(!InMapSelection);
@@ -116,6 +125,7 @@ public partial class Game {
     }
 
     private void CloseHideoutUI() {
+        SetCurrencyDisplaysInHideout(false);
         ToggleHideoutPanels();
         HideInventoryItemPopup(); 
         HideHint();
@@ -124,10 +134,12 @@ public partial class Game {
         inputPrompts.hideoutParent.gameObject.SetActive(false);
         playerInfo.parent.gameObject.SetActive(false);
         ui.animatedBgImage.gameObject.SetActive(false);
+        ui.teleportingIntoRaidHeader.gameObject.SetActive(false);
         hideoutTabs.parent.gameObject.SetActive(false);
     }
 
     private void ShowRaidUI() {
+        SetCurrencyDisplaysInHideout(false);
         playerInfo.healthBarParent.gameObject.SetActive(true);
         playerInfo.weightBarParent.gameObject.SetActive(true);
         playerInfo.coinsCurrencyParent.gameObject.SetActive(false);
@@ -770,14 +782,52 @@ public partial class Game {
             >= 2160 => 1.4f,
             >= 1440 => 1.2f,
             >= 1080 => 1f, 
-            >= 800 => 0.93f, 
-            >= 750 => 0.86f,
-            >= 700 => 0.8f,
+            >= 800 => 0.88f, 
+            >= 750 => 0.84f,
+            >= 700 => 0.75f,
             >= 600 => 0.5f,
             >= 500 => 0.35f,
-            _      => 0.2f, 
+            _      => 0.2f,
         };
+        PlaceCurrencyDisplays();
         Canvas.ForceUpdateCanvases();
+    }
+
+    private Transform currencyInfoParent;
+    private int coinsCurrencySiblingIndex;
+    private int soulsCurrencySiblingIndex;
+    private bool currenciesInHideout;
+
+    private void SetCurrencyDisplaysInHideout(bool inHideout) {
+        currenciesInHideout = inHideout;
+        PlaceCurrencyDisplays();
+    }
+
+    private void PlaceCurrencyDisplays() {
+        if (!currencyInfoParent) return; // Not initialized yet
+
+        Transform coins = playerInfo.coinsCurrencyParent.transform;
+        Transform souls = playerInfo.soulsCurrencyParent.transform;
+
+        bool useSmallScreenSpot = currenciesInHideout && ui.mainCanvasScaler.scaleFactor < 0.95f;
+        if (useSmallScreenSpot) {
+            coins.SetParent(ui.currencyForSmallScreensParent, worldPositionStays: false);
+            souls.SetParent(ui.currencyForSmallScreensParent, worldPositionStays: false);
+            return;
+        }
+
+        if (coins.parent == currencyInfoParent) return;
+        coins.SetParent(currencyInfoParent, worldPositionStays: false);
+        souls.SetParent(currencyInfoParent, worldPositionStays: false);
+        // Lowest index first so the first one placed doesn't shift the other's spot
+        if (coinsCurrencySiblingIndex < soulsCurrencySiblingIndex) {
+            coins.SetSiblingIndex(coinsCurrencySiblingIndex);
+            souls.SetSiblingIndex(soulsCurrencySiblingIndex);
+        }
+        else {
+            souls.SetSiblingIndex(soulsCurrencySiblingIndex);
+            coins.SetSiblingIndex(coinsCurrencySiblingIndex);
+        }
     }
     
     public void PlayTypewritterCharacterShowSound() {

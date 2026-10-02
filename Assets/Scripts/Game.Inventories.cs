@@ -518,13 +518,12 @@ public partial class Game {
 
     private void LinkInventoryWithUiSlots(Inventory inventory) {
         InventorySlotUI[] slotUis = inventory.parent.GetComponentsInChildren<InventorySlotUI>(true);
-        foreach (InventorySlotUI slotUi in slotUis) {
-            slotUi.gameObject.SetActive(false);
-        }
-        
-        for (int i = 0; i < inventory.slots.Length; i++) {
+        Assert.IsTrue(slotUis.Length >= inventory.slots.Length, $"Inventory needs {inventory.slots.Length} slot UIs but only has {slotUis.Length}");
+        for (int i = 0; i < slotUis.Length; i++) {
+            bool inUse = i < inventory.slots.Length;
+            slotUis[i].gameObject.SetActive(inUse);
+            if (!inUse) continue;
             inventory.slots[i].ui = slotUis[i];
-            inventory.slots[i].ui.gameObject.SetActive(true);
         }
     }
 
@@ -1273,6 +1272,7 @@ public partial class Game {
     private void OpenPlayerInventory() {
         if (PlayerInventoryIsOpen) return;
         thisFrame.flags |= GameData.FrameFlags.InventoryOpened;
+        IgnoreHeldNavigationInput();
         playerPanel.panel.gameObject.SetActive(true);
         Cursor.visible = !usingController;
     }

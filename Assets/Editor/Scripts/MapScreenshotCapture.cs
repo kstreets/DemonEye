@@ -5,7 +5,7 @@ using UnityEngine.Rendering.Universal;
 
 public static class MapScreenshotCapture {
 
-    private const int imageWidth = 960;
+    private const int imageWidth = 1120;
     private const int imageHeight = 400;
     private const int cameraPixelPerfectUnits = 80;
 

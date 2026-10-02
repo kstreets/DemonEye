@@ -147,6 +147,7 @@ public class GameData {
         public RectTransform settingsParent;
         public RectTransform hotBarParent;
         public RectTransform notificationParent;
+        public RectTransform teleportingIntoRaidHeader;
         public ItemUI dragAndDropItemUI;
         public Image animatedBgImage;
         public Image deathBgImage;
@@ -162,6 +163,7 @@ public class GameData {
         public TextMeshProUGUI interactDetails;
         public RectTransform portalArrow;
         public RectTransform damageNumbersParent;
+        public RectTransform currencyForSmallScreensParent;
         
         public RectTransform quickUseHeaderText;
         public RectTransform stashPanelHeaderText;
@@ -603,6 +605,7 @@ public class GameData {
         public Vector2 lastNavDir;
         public float repeatTimer;
         public GameObject submitPressedOn;
+        public bool waitingForNavRelease; // Stick/d-pad input is ignored until it's let go
         public float lastTimePlayerMovedSelection;
         public Transform[] ignoredRoots;
         public PointerEventData pointerEventData;

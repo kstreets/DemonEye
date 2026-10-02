@@ -509,11 +509,25 @@ public partial class Game : MonoBehaviour {
     }
 
     [NonSerialized] public bool usingController;
+    [NonSerialized] public bool onSteamDeck;
+
+    private void InitInputDevice() {
+        onSteamDeck = DetectSteamDeck();
+        usingController = onSteamDeck;
+    }
+
+    // Steam sets SteamDeck=1 for games running on the Deck, for both Linux builds and Windows builds running through Proton.
+    // The APU names (LCD and OLED models) are a fallback for when the game isn't launched through Steam.
+    private bool DetectSteamDeck() {
+        if (Environment.GetEnvironmentVariable("SteamDeck") == "1") return true;
+        string processor = SystemInfo.processorType;
+        return processor.Contains("AMD Custom APU 0405") || processor.Contains("AMD Custom APU 0932");
+    }
 
     // Switches between mouse & keyboard and controller based on whichever was used last
     private void CheckForInputDeviceChange() {
         bool switchToController = !usingController && GamepadUsedThisFrame();
-        bool switchToKeyboardMouse = usingController && KeyboardMouseUsedThisFrame();
+        bool switchToKeyboardMouse = usingController && !onSteamDeck && KeyboardMouseUsedThisFrame();
         if (!switchToController && !switchToKeyboardMouse) return;
 
         usingController = switchToController;
@@ -522,7 +536,7 @@ public partial class Game : MonoBehaviour {
         InputIconsOnInputDeviceChanged();
     }
 
-    private static bool GamepadUsedThisFrame() {
+    private bool GamepadUsedThisFrame() {
         Gamepad gamepad = Gamepad.current;
         if (gamepad == null) return false;
 
@@ -540,7 +554,7 @@ public partial class Game : MonoBehaviour {
         return false;
     }
 
-    private static bool KeyboardMouseUsedThisFrame() {
+    private bool KeyboardMouseUsedThisFrame() {
         Mouse mouse = Mouse.current;
         bool mouseUsed = mouse != null && (mouse.delta.ReadValue().sqrMagnitude > 4f || mouse.leftButton.wasPressedThisFrame || mouse.rightButton.wasPressedThisFrame);
         bool keyboardUsed = Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame;

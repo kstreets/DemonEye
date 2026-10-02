@@ -87,6 +87,7 @@ public partial class Game {
     
     private void DeinitPlayer() {
         player.bleeding = false;
+        player.velocity = Vector3.zero;
         playerPanel.previewImage.sprite = player.defaultPlayerPreviewSprite;
         if (player.health > 0) { // We only want to restore health if the player isn't dead
             HealPlayer((int)GetAbsoluteStat(PlayerStat.HealingOnRaidExit));
@@ -156,44 +157,58 @@ public partial class Game {
             return;
         }
 
-        if (PlayerInventoryIsOpen) return;
+        if (PlayerInventoryIsOpen) {
+            player.velocity = Vector3.zero;
+            return;
+        }
         
         Vector2 moveInput = input.move.ReadValue<Vector2>();
         Vector2 prevPos = player.position;
         
         float speed = GetPlayerSpeed();
         Vector3 frameVelocity = new Vector3(moveInput.x, moveInput.y, 0f) * speed;
+        
+        const float minMagnitdeNeededToMove = 0.25f;
+        if (moveInput.magnitude <= minMagnitdeNeededToMove) {
+            frameVelocity = Vector3.zero;
+        }
 
         const float acceleration = 18f;
         player.velocity = Vector3.Lerp(player.velocity, frameVelocity, acceleration * Time.deltaTime);
         
         player.position += player.velocity * Time.deltaTime;
         player.curStepDistance += Vector2.Distance(prevPos, player.position);
+        
+        bool noFrameVelocity = frameVelocity.magnitude <= Mathf.Epsilon;
 
-        if (moveInput != Vector2.zero) {
-            player.spriteRenderer.flipX = moveInput.x < 0;
-            player.nextIdleDir = (int)Mathf.Sign(moveInput.x);
+        if (!noFrameVelocity) {
+            Vector2 moveDir = moveInput.normalized;
+            bool movingPredominatelyVertical = Mathf.Abs(moveDir.y) > 0.93f;
+            
+            if (!movingPredominatelyVertical) {
+                player.nextIdleDir = moveDir.x < 0 ? -1 : 1;
+                player.nextIdleAnimHash = PlayerAnimations.idleSide;
+            }
+            else if (moveDir.y > 0) {
+                player.nextIdleAnimHash = PlayerAnimations.idleUp;
+            }
+            else {
+                player.nextIdleAnimHash = PlayerAnimations.idleDown;
+            }
         }
-        else {
-            player.spriteRenderer.flipX = player.nextIdleDir < 0;
-        }
-        
-        bool movingProdominatelyVertical = Mathf.Abs(Vector2.Dot(Vector2.up, moveInput)) > 0.9f;
-        
-        if (moveInput.magnitude > 0.1f && !movingProdominatelyVertical) {
-            player.animator.Play(PlayerAnimations.runSide);
-            player.nextIdleAnimHash = PlayerAnimations.idleSide;
-        }
-        else if (moveInput.y > 0) {
-            player.animator.Play(PlayerAnimations.runUp);
-            player.nextIdleAnimHash = PlayerAnimations.idleUp;
-        }
-        else if (moveInput.y < 0) {
-            player.animator.Play(PlayerAnimations.runDown);
-            player.nextIdleAnimHash = PlayerAnimations.idleDown;
-        }
-        else {
+        player.spriteRenderer.flipX = player.nextIdleDir < 0;
+
+        if (noFrameVelocity) {
             player.animator.Play(player.nextIdleAnimHash);
+        }
+        else if (player.nextIdleAnimHash == PlayerAnimations.idleUp) {
+            player.animator.Play(PlayerAnimations.runUp);
+        }
+        else if (player.nextIdleAnimHash == PlayerAnimations.idleDown) {
+            player.animator.Play(PlayerAnimations.runDown);
+        }
+        else {
+            player.animator.Play(PlayerAnimations.runSide);
         }
         
         bool playerStepped = moveInput != Vector2.zero && player.curStepDistance > 0.18f;

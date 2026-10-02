@@ -77,11 +77,15 @@ public partial class Game {
 
     private void UpdateInputPrompts() {
         if (InRaid && thisFrame.flags.HasFlag(GameData.FrameFlags.InventoryOpened)) {
+            if (usingController) { // Hide it on controller because Y splits the stack not closes inventory
+                inputPrompts.raidInventory.gameObject.SetActive(false);
+            }
             foreach (Transform invPrompt in inputPrompts.allInventoryPrompts) {
                 invPrompt.gameObject.SetActive(true);
             }
         }
         else if (InRaid && !PlayerInventoryIsOpen) {
+            inputPrompts.raidInventory.gameObject.SetActive(true);
             foreach (Transform invPrompt in inputPrompts.allInventoryPrompts) {
                 invPrompt.gameObject.SetActive(false);
             }

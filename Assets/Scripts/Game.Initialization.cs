@@ -12,6 +12,7 @@ public partial class Game {
         camera.defaultPPU = camera.pixelPerfect.assetsPPU;
         
         InitInput();
+        InitInputDevice();
         InitResources();
         InitAudio();
         InitMusic();

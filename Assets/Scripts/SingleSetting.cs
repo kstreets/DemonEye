@@ -80,8 +80,9 @@ public class SingleSetting : MonoBehaviour {
             breadcrumbs[i].gameObject.SetActive(true);
         }
         
+        // More settings than breadcrumbs, so spread them out with the first and last setting on the first and last breadcrumb
         if (numOfSettings > breadcrumbs.Length) {
-            index = Mathf.RoundToInt((curIndex / (float)numOfSettings) * (breadcrumbs.Length - 1));
+            index = Mathf.RoundToInt(index / (float)(numOfSettings - 1) * (breadcrumbs.Length - 1));
         }
         breadcrumbs[index].sprite = selectedBreadcrumb;
     }
