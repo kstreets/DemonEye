@@ -15,6 +15,7 @@ public class StateMachine {
     private State nextStateAfterDelay;
     private float nextStateAtTime;
     private float lastUpdateTime;
+    private bool isPaused;
 
     public bool Transitioning => nextStateAfterDelay != null;
     public bool OnLastState => states.Count > 0 && CurState != null && CurState == states[^1];
@@ -46,6 +47,13 @@ public class StateMachine {
         SetState(state);
         return true;
     }
+    
+    public void SetStateWithoutCallbacks(State state) {
+        PrevState = CurState;
+        CurState = state;
+        nextStateAfterDelay = null;
+        timeWhenCurStateStarted = Time.time;
+    }
 
     public void StopCurrentTransition() {
         nextStateAfterDelay = null;
@@ -57,13 +65,28 @@ public class StateMachine {
         return states.IndexOf(CurState); 
     }
     
+    public State StateFromIndex(int index) {
+        if (states.Count <= 0) return null;
+        return states[index]; 
+    }
+    
     public bool NotPassedThisState(State state) {
         return states.IndexOf(CurState) <= states.IndexOf(state);
+    }
+    
+    public void Pause() {
+        isPaused = true;
+    }
+    
+    public void UnPause() {
+        isPaused = false;
     }
     
     public enum UpdateMode { Update, FixedUpdate, LateUpdate }
 
     public void Tick(UpdateMode updateMode = UpdateMode.Update) {
+        if (isPaused) return;
+        
         bool needsUpdating = Time.time != lastUpdateTime;
         
         if (needsUpdating) {
@@ -90,7 +113,7 @@ public class StateMachine {
                 break;
         }
     }
-
+    
     private void UpdateDelayedState() {
         if (Time.time < nextStateAtTime) {
             CurState.WhileExiting?.Invoke();

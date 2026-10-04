@@ -15,6 +15,7 @@ public partial class Game {
     private bool OnTradingTab => hideoutTabs.toggleGroup.IsSelected(hideoutTabs.traderButton);
     private bool OnQuestsTab => hideoutTabs.toggleGroup.IsSelected(hideoutTabs.questsButton);
     
+    private bool ShowingMainMenu => mainMenu.parent.gameObject.activeInHierarchy;
     private bool ShowingPlayerPanel => playerPanel.panel.gameObject.activeInHierarchy;
     private bool ShowingForgeDetailsPanel => eyeForgeDetailsPanel.panel.gameObject.activeInHierarchy;
     
@@ -37,6 +38,8 @@ public partial class Game {
         ui.levelUpNotification.Init();
         ui.menuBackButton.gameObject.SetActive(false);
         ui.largeRaidTextTypewriter.gameObject.SetActive(false);
+        ui.dialogueTypewriter.gameObject.SetActive(false);
+
     }
 
     private Sequence mainMenuSequence;
@@ -205,7 +208,108 @@ public partial class Game {
             panel.gameObject.SetActive(Array.IndexOf(panelsToShow, panel) >= 0);
         }
     }
-    
+
+    private Sequence FadeOutAndCollapsePanel(RectTransform panel, float fadeTime = 0.2f, float collapseTime = 0.35f) {
+        HorizontalLayoutGroup layout = panel.parent.GetComponentInParent<HorizontalLayoutGroup>();
+        CanvasGroup canvasGroup = panel.GetComponent<CanvasGroup>();
+        LayoutElement layoutElement = panel.GetComponent<LayoutElement>();
+
+        float startWidth = panel.rect.width;
+        float startSpacing = layout.spacing;
+        float origMinWidth = layoutElement.minWidth;
+        float origPreferredWidth = layoutElement.preferredWidth;
+
+        // Stop drags and clicks landing on a panel that's leaving
+        canvasGroup.blocksRaycasts = false;
+        // Otherwise the content's min width stops the panel shrinking
+        layoutElement.minWidth = 0f;
+
+        return Sequence.Create()
+            .Chain(Tween.Alpha(canvasGroup, 0f, fadeTime, Ease.OutQuad))
+            .Chain(Tween.Custom(0f, 1f, collapseTime, ease: Ease.InOutCubic, onValueChange: t => {
+                layoutElement.preferredWidth = Mathf.Lerp(startWidth, 0f, t);
+                // Shrink the gap too, otherwise the remaining panel snaps sideways when this one is deactivated
+                layout.spacing = Mathf.Lerp(startSpacing, 0f, t);
+            }))
+            .ChainCallback(() => {
+                panel.gameObject.SetActive(false);
+                // Restore everything so the panel shows normally next time
+                canvasGroup.alpha = 1f;
+                canvasGroup.blocksRaycasts = true;
+                layoutElement.minWidth = origMinWidth;
+                layoutElement.preferredWidth = origPreferredWidth;
+                layout.spacing = startSpacing;
+            });
+    }
+
+    private Sequence FadeInAndExpandPanel(RectTransform panel, float expandTime = 0.35f, float fadeTime = 0.2f) {
+        HorizontalLayoutGroup layout = panel.parent.GetComponentInParent<HorizontalLayoutGroup>();
+        CanvasGroup canvasGroup = panel.GetComponent<CanvasGroup>();
+        LayoutElement layoutElement = panel.GetComponent<LayoutElement>();
+
+        float endSpacing = layout.spacing;
+        float origMinWidth = layoutElement.minWidth;
+        float origPreferredWidth = layoutElement.preferredWidth;
+
+        canvasGroup.alpha = 0f;
+        // Stop drags and clicks landing on a panel that's still arriving
+        canvasGroup.blocksRaycasts = false;
+        panel.gameObject.SetActive(true);
+        // Measure before overriding the layout element, so this is the width the layout will give the panel once restored
+        float endWidth = LayoutUtility.GetPreferredWidth(panel);
+
+        layoutElement.minWidth = 0f;
+        layoutElement.preferredWidth = 0f;
+        layout.spacing = 0f;
+
+        return Sequence.Create()
+            .Chain(Tween.Custom(0f, 1f, expandTime, ease: Ease.InOutCubic, onValueChange: t => {
+                layoutElement.preferredWidth = Mathf.Lerp(0f, endWidth, t);
+                layout.spacing = Mathf.Lerp(0f, endSpacing, t);
+            }))
+            .Chain(Tween.Alpha(canvasGroup, 1f, fadeTime, Ease.OutQuad))
+            .ChainCallback(() => {
+                canvasGroup.blocksRaycasts = true;
+                layoutElement.minWidth = origMinWidth;
+                layoutElement.preferredWidth = origPreferredWidth;
+                layout.spacing = endSpacing;
+            });
+    }
+
+    private Sequence FadeInHideout(float riseDistance = 40f, float time = 0.4f) {
+        RectTransform hideout = ui.hideoutPanelsParent;
+        LayoutGroup layout = hideout.GetComponent<LayoutGroup>();
+        if (!hideout.TryGetComponent(out CanvasGroup canvasGroup)) {
+            canvasGroup = hideout.gameObject.AddComponent<CanvasGroup>();
+        }
+
+        RectOffset padding = layout.padding;
+        int endTop = padding.top;
+        int endBottom = padding.bottom;
+
+        canvasGroup.alpha = 0f;
+        // Stop drags and clicks landing on the hideout while it's still moving
+        canvasGroup.blocksRaycasts = false;
+        hideout.gameObject.SetActive(true);
+
+        return Sequence.Create()
+            .Group(Tween.Alpha(canvasGroup, 1f, time, Ease.OutQuad))
+            .Group(Tween.Custom(riseDistance, 0f, time, ease: Ease.OutCubic, onValueChange: offset => {
+                // The content is centered, so shift both sides to move it by the full offset without changing the space it gets
+                int pixelOffset = Mathf.RoundToInt(offset);
+                padding.top = endTop + pixelOffset;
+                padding.bottom = endBottom - pixelOffset;
+                // Editing the padding's fields doesn't dirty the layout on its own
+                LayoutRebuilder.MarkLayoutForRebuild(hideout);
+            }))
+            .ChainCallback(() => {
+                canvasGroup.blocksRaycasts = true;
+                padding.top = endTop;
+                padding.bottom = endBottom;
+                LayoutRebuilder.MarkLayoutForRebuild(hideout);
+            });
+    }
+
     // Its better just to have these as constants because the canvas layout recalculates in LateUpdate
     private const float playerPanelWidth = 600f;
     private const float slimPlayerPanelWidth = 440f;

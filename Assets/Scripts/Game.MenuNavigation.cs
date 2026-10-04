@@ -75,6 +75,9 @@ public partial class Game {
         CancelItemDrag();
         ClearControllerSelection();
         
+        // Don't want to be able to back out of tutorial sequence
+        if (InTutorialFirstForge) return;
+        
         if (ConfirmingMapSelection) {
             ShowMapSelectionUI();
             return;

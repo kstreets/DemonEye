@@ -76,6 +76,7 @@ public partial class Game {
     public class Inventory {
         public InventorySlot[] slots;
         public RectTransform parent;
+        public bool isLocked;
     }
     
     public const int playerPocketSize = 10;
@@ -396,7 +397,7 @@ public partial class Game {
         if (!input.moveStack.WasPressedThisFrame()) return;
 
         Inventory hoveredInventory = invHoverInfo.inventory;
-        if (hoveredInventory == null) return;
+        if (hoveredInventory == null || hoveredInventory.isLocked) return;
         
         if (!TryGetItemFromHoverInfo(invHoverInfo, out ItemInstance _)) return;
         if (NotAllowedToMoveOrPickupItem(invHoverInfo)) return;
@@ -659,8 +660,9 @@ public partial class Game {
     private bool UpdateInventoryDragAndDrop(InventoryHoverInfo hoverInfo) {
         bool pickupInputUsed = input.selectItem.WasPressedThisFrame() || input.splitStack.WasPressedThisFrame();
         bool placeInputUsed = input.selectItem.WasPressedThisFrame() || input.placeSingleItem.WasPressedThisFrame();
+        bool inventoryIsLocked = hoverInfo.inventory?.isLocked ?? false;
         
-        if (!pickupInputUsed && !placeInputUsed) {
+        if ((!pickupInputUsed && !placeInputUsed) || inventoryIsLocked) {
             return IsDraggingItem;
         }
 

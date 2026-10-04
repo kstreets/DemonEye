@@ -66,6 +66,7 @@ public partial class Game : MonoBehaviour {
     private void Update() {
         UpdateMenuNavigation(); // !
         states.gameStateMachine.Tick();
+        UpdateTutorial(); // !
         DemonEyeTween.Update();
         UpdateQuests(); // !
         UpdateInputPrompts();
@@ -128,6 +129,7 @@ public partial class Game : MonoBehaviour {
         UpdateHideoutNotifiers();
         // Make the pentagram default to crafting mode
         eyeForgePanel.toggleButtonGroup.ManualyToggle(eyeForgePanel.forgeToggle);
+        TutorialOnHideoutEnter();
     }
 
     private void OnHideoutStateExit() {
@@ -156,7 +158,6 @@ public partial class Game : MonoBehaviour {
     private void OnMapSelectionEnter() {
         ShowMapSelectionUI();
         SuppressInventoryPopup();
-        TutorialOnMapSelectionEnter();
     }
 
     private void OnMapSelectionExit() {
@@ -167,7 +168,6 @@ public partial class Game : MonoBehaviour {
         CheckForHotBarInteractions();
         UpdateInventory();
         RefreshAllInventoryDisplays();
-        TutorialOnMapSelectionUpdate();
     }
 
     private void OnMapSelectionLateUpdate() {

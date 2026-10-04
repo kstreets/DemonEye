@@ -363,6 +363,7 @@ public partial class Game {
             }
         }
         
+        if (InTutorialFirstForge) return;
         bool shouldShowPlayerPanel = (forgeMode is ForgeMode.Empty or ForgeMode.PostForgeOrUpgrade) || forgeError is ForgeError.ForgingButJustEye;
         
         if (shouldShowPlayerPanel) {

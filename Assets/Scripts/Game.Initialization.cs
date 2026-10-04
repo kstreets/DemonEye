@@ -48,6 +48,7 @@ public partial class Game {
     private void InitInput() {
         input.move = InputSystem.actions.FindAction("Move");
         input.interact = InputSystem.actions.FindAction("Interact");
+        input.advanceDialogue = InputSystem.actions.FindAction("AdvanceDialogue");
         input.inventory = InputSystem.actions.FindAction("Inventory");
         input.selectItem = InputSystem.actions.FindAction("SelectItem");
         input.placeSingleItem = InputSystem.actions.FindAction("PlaceSingleItem");
@@ -107,7 +108,12 @@ public partial class Game {
     
     private void InitButtonCallbacks() {
         mainMenu.playButton.AddListener(() => {
-            states.gameStateMachine.SetStateIfNotCurrent(states.mapSelection);
+            if (InTutorialSlaughterMap) {
+                LoadMapAsync(config.maps[0]);
+                return;
+            }
+            State destination = InTutorialFirstForge ? states.hideout : states.mapSelection;
+            states.gameStateMachine.SetStateIfNotCurrent(destination);
         });
         
         mainMenu.hideoutButton.AddListener(() => {

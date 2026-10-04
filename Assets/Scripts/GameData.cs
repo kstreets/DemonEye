@@ -145,9 +145,10 @@ public class GameData {
         public LevelUpNotification levelUpNotification;
         public RectTransform hideoutParent;
         public RectTransform settingsParent;
+        public RectTransform hideoutPanelsParent;
         public RectTransform hotBarParent;
         public RectTransform notificationParent;
-        public RectTransform teleportingIntoRaidHeader;
+        public TextMeshProUGUI teleportingIntoRaidHeader;
         public ItemUI dragAndDropItemUI;
         public Image animatedBgImage;
         public Image deathBgImage;
@@ -156,6 +157,7 @@ public class GameData {
         public TypewriterComponent smallRaidTextTypewriter;
         public TextMeshProUGUI largeRaidText;
         public TypewriterComponent largeRaidTextTypewriter;
+        public TypewriterComponent dialogueTypewriter;
         public RectTransform lootInventoryPanel;
         public RectTransform lootInventoryParent;
         public GameObject lootSearchingText;
@@ -434,6 +436,7 @@ public class GameData {
         public InputAction menuTabRight;
         public InputAction menuSecondaryTabLeft;
         public InputAction menuSecondaryTabRight;
+        public InputAction advanceDialogue;
         public float lastDeviceSwitchTime;
     }
     
@@ -623,10 +626,18 @@ public class GameData {
     public class Tutorial {
         public StateMachine stateMachine;
         public State entryState;
+        public State openingDialogue;
         public State firstCraftingState;
         public State craftingDemonEyeState;
         public State equipingDemonEyeState;
         public State waitingToEnterSlaughterMap;
+        
+        public State inSlaughterMap;
+        public State diedInSlaughterMap;
+        public State firstTraderMeeting;
+        public State completed; // Must stay last, being on the last state is what marks the tutorial as finished
+
+        public readonly Dialogue dialogue = new();
     }
 
 }
