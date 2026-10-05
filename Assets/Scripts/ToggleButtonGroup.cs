@@ -24,8 +24,12 @@ public class ToggleButtonGroup : MonoBehaviour {
     
     private Dictionary<ToggleButton, UnityAction> callbacks = new();
     private readonly List<ToggleButton> togglesHiddenByGroup = new();
+    private readonly List<ToggleButton> togglesLockedByGroup = new();
 
     public bool TogglesHidden { get; private set; }
+    public bool TogglesLocked { get; private set; }
+    // False when the player can't switch toggles at all, e.g. for skipping controller navigation and hiding input prompts
+    public bool TogglesUsable => !TogglesHidden && !TogglesLocked;
 
     private void Awake() {
         callbacks.Clear();
@@ -82,6 +86,33 @@ public class ToggleButtonGroup : MonoBehaviour {
         togglesHiddenByGroup.Clear();
     }
 
+    // Keeps every toggle visible but makes them non-interactable, so they can't be clicked or selected with the controller,
+    // and hides the group's input prompts. Which toggle is selected stays the same.
+    public void SetTogglesLocked(bool locked) {
+        if (locked == TogglesLocked) return;
+        TogglesLocked = locked;
+
+        if (locked) {
+            togglesLockedByGroup.Clear();
+            foreach (ToggleButton toggle in toggles) {
+                LockToggle(toggle);
+            }
+            return;
+        }
+
+        foreach (ToggleButton toggle in togglesLockedByGroup) {
+            toggle.button.interactable = true;
+        }
+        togglesLockedByGroup.Clear();
+    }
+
+    private void LockToggle(ToggleButton toggle) {
+        // Toggles already non-interactable for another reason should stay that way when unlocking
+        if (!toggle.button.interactable) return;
+        togglesLockedByGroup.Add(toggle);
+        toggle.button.interactable = false;
+    }
+
     public void Move(int step) {
         if (toggles.Count == 0) return;
         int curIndex = toggles.IndexOf(GetSelected());
@@ -101,6 +132,9 @@ public class ToggleButtonGroup : MonoBehaviour {
     public void Add(ToggleButton toggle) {
         InitializeToggle(toggle);
         toggles.Add(toggle);
+        if (TogglesLocked) {
+            LockToggle(toggle);
+        }
 
         // New toggles get created as the last child, so keep them before the right input prompt when they share a layout
         if (rightInputPrompt && rightInputPrompt.transform.parent == toggle.transform.parent) {
@@ -117,6 +151,9 @@ public class ToggleButtonGroup : MonoBehaviour {
         callbacks.Remove(toggle);
         toggles.Remove(toggle);
         togglesHiddenByGroup.Remove(toggle);
+        if (togglesLockedByGroup.Remove(toggle)) {
+            toggle.button.interactable = true;
+        }
         if (toggles.Count == 1) {
             OnButtonClicked(toggles[0]);
         }

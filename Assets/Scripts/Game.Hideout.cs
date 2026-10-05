@@ -396,8 +396,14 @@ public partial class Game {
             ButtonFeel forgeButton = eyeForgePanel.forgeButton;
             
             if (forgeMode is ForgeMode.PostForgeOrUpgrade) {
-                forgeButton.text.text = "Continue";
-                forgeButton.SetClickableState(true);
+                if (InTutorialFirstForge) {
+                    forgeButton.text.text = "Forge";
+                    forgeButton.SetClickableState(false);
+                }
+                else {
+                    forgeButton.text.text = "Continue";
+                    forgeButton.SetClickableState(true);
+                }
                 return;
             }
             

@@ -157,7 +157,11 @@ public class GameData {
         public TypewriterComponent smallRaidTextTypewriter;
         public TextMeshProUGUI largeRaidText;
         public TypewriterComponent largeRaidTextTypewriter;
-        public TypewriterComponent dialogueTypewriter;
+        public TypewriterComponent openingDialogueTypewriter;
+        public TypewriterComponent traderTutorialTypewriter;
+        public CanvasGroup traderTutorialDialogueCanvasGroup;
+        public GameObject traderTutorialDialogueBox;
+        public TextMeshProUGUI dialogueBoxPrompt;
         public RectTransform lootInventoryPanel;
         public RectTransform lootInventoryParent;
         public GameObject lootSearchingText;
@@ -217,6 +221,7 @@ public class GameData {
     public class MainMenu {
         public RectTransform parent;
         public RectTransform logo;
+        public GameObject hideoutNotifier;
         public ButtonFeel playButton;
         public ButtonFeel hideoutButton;
         public ButtonFeel settingsButton;
@@ -635,9 +640,17 @@ public class GameData {
         public State inSlaughterMap;
         public State diedInSlaughterMap;
         public State firstTraderMeeting;
+        public State firstHideoutVisit;
+        
+        public State hideoutCharacter; 
+        public State hideoutForge; 
+        public State hideoutTrader; 
+        public State hideoutQuests; 
+        public State hideoutSkills; 
         public State completed; // Must stay last, being on the last state is what marks the tutorial as finished
 
         public readonly Dialogue dialogue = new();
+        public TypewriterComponent dialogueTypewriter;
     }
 
 }

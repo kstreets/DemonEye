@@ -434,7 +434,8 @@ public partial class Game {
                 destinationInventory = inventories.eyeForge;
             }
             else if (hoveredInventory == inventories.eyeForge) {
-                destinationInventory = inventories.stash;
+                // We choose player if there is no eye equiped, if this changes then we need to do something different for tutorial quick move
+                destinationInventory = inventories.player.slots[0].itemInstance == null ? inventories.player : inventories.stash;
             }
         }
         else if (OnTradingTab) {

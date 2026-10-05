@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -13,6 +12,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     public Image rarityFrameImage;
     public Image overlayImage;
     public Image underlayImage;
+    public Image outlineImage;
     public Sprite activeSlotSprite;
     public Sprite inactiveSlotSprite;
     public Sprite highlightedSlotSprite;
@@ -139,6 +139,11 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     
     public void ClearSelectionUnderlay() {
         underlayImage.gameObject.SetActive(false);
+    }
+
+    // Draws an outline around the slot, e.g. to point the player at it during the tutorial
+    public void SetOutlined(bool outlined) {
+        outlineImage.gameObject.SetActive(outlined);
     }
     
     public void ClearItem() {

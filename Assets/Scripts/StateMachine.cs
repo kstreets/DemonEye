@@ -70,6 +70,10 @@ public class StateMachine {
         return states[index]; 
     }
     
+    public bool PassedThisState(State state) {
+        return states.IndexOf(CurState) > states.IndexOf(state);
+    }
+    
     public bool NotPassedThisState(State state) {
         return states.IndexOf(CurState) <= states.IndexOf(state);
     }

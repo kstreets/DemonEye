@@ -152,7 +152,9 @@ public partial class Game {
         
         hideoutTabs.traderButton.AddListener(() => {
             ToggleHideoutPanels(traderPanel.panel, transactionPanel.panel, stashPanel.panel);
-            TriggerTraderShopDialogue(TraderShopDialogueType.Greeting); 
+            if (!InTutorial) { // The trader is already talking to us, don't make it talk over itself
+                TriggerTraderShopDialogue(TraderShopDialogueType.Greeting); 
+            }
         });
         
         hideoutTabs.questsButton.AddListener(() => {

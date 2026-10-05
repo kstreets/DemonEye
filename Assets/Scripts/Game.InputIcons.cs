@@ -20,6 +20,7 @@ public partial class Game {
         }
 
         AddInputPrompt(ui.menuBackButton.text, input.escape);
+        AddInputPrompt(ui.dialogueBoxPrompt, input.advanceDialogue);
         
         AddInputPrompt(inputPrompts.hideoutSelect_place, input.selectItem);
         AddInputPrompt(inputPrompts.hideoutQuickMove, input.moveStack);
@@ -48,10 +49,10 @@ public partial class Game {
         if (left == null) return;
 
         if (group.leftInputPrompt) {
-            AddInputPrompt(group.leftInputPrompt, () => UsingControllerControls && !group.TogglesHidden ? (left, string.Empty) : (null, null));
+            AddInputPrompt(group.leftInputPrompt, () => UsingControllerControls && group.TogglesUsable ? (left, string.Empty) : (null, null));
         }
         if (group.rightInputPrompt) {
-            AddInputPrompt(group.rightInputPrompt, () => UsingControllerControls && !group.TogglesHidden ? (right, string.Empty) : (null, null));
+            AddInputPrompt(group.rightInputPrompt, () => UsingControllerControls && group.TogglesUsable ? (right, string.Empty) : (null, null));
         }
     }
 

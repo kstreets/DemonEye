@@ -71,7 +71,8 @@ public partial class Game {
         using FileStream stream = File.Open(GetGameStateSavePath(), FileMode.OpenOrCreate); 
         using BinaryWriter binWriter = new(stream);
         
-        SerializeInt(binWriter, tutorial.stateMachine.GetCurrentStateIndex());
+        // -1 marks the tutorial as completed
+        SerializeInt(binWriter, InTutorial ? tutorial.stateMachine.GetCurrentStateIndex() : -1);
         SerializeInt(binWriter, (int)persistentFlags);
         SerializeHideoutState(binWriter, hideoutState);
         SerializePlayerState(binWriter, player);

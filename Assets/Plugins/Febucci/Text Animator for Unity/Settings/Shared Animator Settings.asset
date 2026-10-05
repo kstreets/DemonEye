@@ -18,7 +18,8 @@ MonoBehaviour:
     timeScale: 0
     defaultBehaviorTags: []
     defaultAppearanceTags:
-    - incr
+    - ffade
+    - shake
     defaultDisappearanceTags: []
     isAnimatingBehaviors: 1
     isAnimatingAppearances: 1

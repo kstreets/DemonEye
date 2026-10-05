@@ -38,8 +38,9 @@ public partial class Game {
         ui.levelUpNotification.Init();
         ui.menuBackButton.gameObject.SetActive(false);
         ui.largeRaidTextTypewriter.gameObject.SetActive(false);
-        ui.dialogueTypewriter.gameObject.SetActive(false);
-
+        ui.openingDialogueTypewriter.gameObject.SetActive(false);
+        ui.traderTutorialDialogueBox.SetActive(false);
+        mainMenu.hideoutNotifier.SetActive(false);
     }
 
     private Sequence mainMenuSequence;
@@ -71,12 +72,14 @@ public partial class Game {
         ui.hideoutParent.gameObject.SetActive(true);
         ui.animatedBgImage.gameObject.SetActive(true);
         mainMenu.parent.gameObject.SetActive(true);
+        mainMenu.hideoutNotifier.SetActive(InTutorial && tutorial.stateMachine.PassedThisState(tutorial.inSlaughterMap));
         AnimateInMainMenu();
     }
 
     private void CloseMainMenuUI() {
         ui.animatedBgImage.gameObject.SetActive(false);
         mainMenu.parent.gameObject.SetActive(false);
+        mainMenu.hideoutNotifier.SetActive(false);
     }
     
     private void ShowSettingsMenuUI() {
@@ -276,7 +279,7 @@ public partial class Game {
             });
     }
 
-    private Sequence FadeInHideout(float riseDistance = 40f, float time = 0.4f) {
+    private Sequence FadeInHideout(float riseDistance = 60f, float time = 1.4f) {
         RectTransform hideout = ui.hideoutPanelsParent;
         LayoutGroup layout = hideout.GetComponent<LayoutGroup>();
         if (!hideout.TryGetComponent(out CanvasGroup canvasGroup)) {
@@ -308,6 +311,20 @@ public partial class Game {
                 padding.bottom = endBottom;
                 LayoutRebuilder.MarkLayoutForRebuild(hideout);
             });
+    }
+
+    private Tween FadeIn(CanvasGroup canvasGroup, float time = 0.3f, Ease ease = Ease.OutQuad, float startDelay = 0f) {
+        canvasGroup.alpha = 0f;
+        canvasGroup.blocksRaycasts = false;
+        canvasGroup.gameObject.SetActive(true);
+        return Tween.Alpha(canvasGroup, 1f, time, ease, startDelay: startDelay)
+        .OnComplete(canvasGroup, static canvasGroup => canvasGroup.blocksRaycasts = true);
+    }
+
+    private Tween FadeIn(TMP_Text text, float time = 0.3f, Ease ease = Ease.OutQuad, float startDelay = 0f) {
+        text.alpha = 0f;
+        text.gameObject.SetActive(true);
+        return Tween.Alpha(text, 1f, time, ease, startDelay: startDelay);
     }
 
     // Its better just to have these as constants because the canvas layout recalculates in LateUpdate

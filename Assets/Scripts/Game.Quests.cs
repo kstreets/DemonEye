@@ -106,6 +106,8 @@ public partial class Game {
     }
 
     private void UpdateQuests() {
+        if (InTutorial) return;
+        
         foreach (QuestPackage questsActivePkg in quests.activePkgs) {
             Quest quest = questsActivePkg.questNode.curQuest;
             bool wasComplete = QuestIsComplete(quest);

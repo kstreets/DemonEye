@@ -1,3 +1,4 @@
+using System;
 using Febucci.TextAnimatorForUnity;
 using PrimeTween;
 using TMPro;
@@ -8,14 +9,19 @@ public partial class Game {
 
     private bool InTutorial => tutorial.stateMachine != null && !tutorial.stateMachine.OnLastState;
     private bool InTutorialFirstForge => InTutorial && tutorial.stateMachine.NotPassedThisState(tutorial.waitingToEnterSlaughterMap);
-    private bool InTutorialSlaughterMap => !InTutorialFirstForge && tutorial.stateMachine.NotPassedThisState(tutorial.diedInSlaughterMap);
-    private bool InTutorialFirstTraderMeeting => !InTutorialSlaughterMap && tutorial.stateMachine.NotPassedThisState(tutorial.diedInSlaughterMap);
+    private bool InTutorialSlaughterMap => InTutorial && !InTutorialFirstForge && tutorial.stateMachine.NotPassedThisState(tutorial.diedInSlaughterMap);
+    private bool InTutorialFirstTraderMeeting => InTutorial && !InTutorialSlaughterMap && tutorial.stateMachine.NotPassedThisState(tutorial.firstTraderMeeting);
+    private bool InTutorialHideoutTour => InTutorial && !InTutorialFirstTraderMeeting && !tutorial.stateMachine.OnLastState;
 
     private void InitTutorial(GameState gameState) {
         bool compltedTutorial = gameState != null && gameState.tutorialStateIndex == -1;
         if (compltedTutorial) return;
         
+        mainMenu.hideoutButton.SetClickableState(false);
+        tutorial.dialogueTypewriter = ui.openingDialogueTypewriter;
+        
         int restoreHideoutInputPadding = inputPrompts.hideoutParent.GetComponent<HorizontalLayoutGroup>().padding.left;
+        string restoreTeleportingIntoRaidText = ui.teleportingIntoRaidHeader.text;
         
         tutorial.stateMachine = new();
         tutorial.entryState = tutorial.stateMachine.CreateState();
@@ -54,19 +60,27 @@ public partial class Game {
             }
             
             Tween.Delay(itemDelay, () => {
+                ui.teleportingIntoRaidHeader.text = "Craft the Demon Eye";
+                FadeIn(ui.teleportingIntoRaidHeader, 1f);
                 inputPrompts.hideoutParent.gameObject.GetComponent<HorizontalLayoutGroup>().padding.left = 50;
                 inputPrompts.hideoutParent.gameObject.SetActive(true);
             });
         });
         tutorial.craftingDemonEyeState = tutorial.stateMachine.CreateState(enter: () => {
+            ui.teleportingIntoRaidHeader.text = string.Empty;
             inventories.stash.isLocked = true;
             inventories.eyeForge.isLocked = true;
             FadeOutAndCollapsePanel(stashPanel.panel, 1f, 1.2f);
         });
         tutorial.equipingDemonEyeState = tutorial.stateMachine.CreateState(enter: () => {
+            ui.teleportingIntoRaidHeader.text = "Equip the Demon Eye";
+            FadeIn(ui.teleportingIntoRaidHeader, 1f);
             ToggleSlimPlayerPanel(false);
             FadeInAndExpandPanel(playerPanel.panel, 1f, 1.2f)
             .OnComplete(() => inventories.eyeForge.isLocked = false);
+            inventories.player.slots[0].ui.SetOutlined(true);
+        }, exit: () => {
+            inventories.player.slots[0].ui.SetOutlined(false);
         });
         tutorial.waitingToEnterSlaughterMap = tutorial.stateMachine.CreateState(enter: () => {
             inventories.player.isLocked = true;
@@ -74,19 +88,18 @@ public partial class Game {
             FadeOutAndCollapsePanel(eyeForgePanel.panel, 1f, 1.2f);
             
             TextMeshProUGUI headerText = ui.teleportingIntoRaidHeader;
-            string origHeaderText = headerText.text;
             headerText.gameObject.gameObject.SetActive(true);
 
             const int countdownSeconds = 5;
             Sequence countdown = Sequence.Create();
             for (int secondsLeft = countdownSeconds; secondsLeft > 0; secondsLeft--) {
-                string text = $"{origHeaderText} in {secondsLeft}";
+                string text = $"Teleporting into Raid in {secondsLeft}";
                 countdown.ChainCallback(() => headerText.text = text);
                 countdown.Chain(Tween.Scale(headerText.rectTransform, 1.1f, 1f, 1.2f, Ease.OutQuad));
             }
             countdown.ChainCallback(() => {
-                // Map selection uses the same header
-                headerText.text = origHeaderText;
+                Tween.Scale(headerText.rectTransform, 1.1f, 1f, 1.2f, Ease.OutQuad);
+                headerText.text = restoreTeleportingIntoRaidText; // Map selection uses the same header
                 LoadMapAsync(config.maps[0]);
                 SaveGameState();
             });
@@ -100,18 +113,83 @@ public partial class Game {
         });
         tutorial.diedInSlaughterMap = tutorial.stateMachine.CreateState();
         tutorial.firstTraderMeeting = tutorial.stateMachine.CreateState(enter: () => {
+            mainMenuSequence.Complete();
+            ShowMainMenuUI();
+            mainMenu.hideoutButton.SetClickableState(true);
+            
             mainMenuSequence.isPaused = true;
             states.gameStateMachine.Pause();
+            
+            FadeIn(ui.traderTutorialDialogueCanvasGroup, 1f);
+            tutorial.dialogueTypewriter = ui.traderTutorialTypewriter;
+            
             StartDialogue(
-                Line("Well well... you crawled back out of there."),
-                Line("Most don't make it back at all."),
-                Line("Come, let's see what you can afford.")
+                onFinished: () => {
+                    ui.traderTutorialDialogueBox.SetActive(false);
+                    mainMenuSequence.isPaused = false;
+                    states.gameStateMachine.UnPause();
+                },
+                Line("Well... you're not going to get far when your raids look like that one. I think you could benefit from my services..."),
+                Line("I run a business where I help Sinoculus Demons reach ascension."),
+                Line("Here, just come to the Hideout and I'll explain more.")
             );
-        }, exit: () => {
-            mainMenuSequence.isPaused = false;
-            states.gameStateMachine.UnPause();
+            SaveGameState();
         });
-        tutorial.completed = tutorial.stateMachine.CreateState();
+        tutorial.firstHideoutVisit = tutorial.stateMachine.CreateState(enter: () => {
+            mainMenu.hideoutButton.SetClickableState(true);
+            mainMenu.hideoutNotifier.SetActive(true);
+        });
+        tutorial.hideoutCharacter = tutorial.stateMachine.CreateState(enter: () => {
+            ui.traderTutorialDialogueBox.SetActive(true);
+            tutorial.dialogueTypewriter = ui.traderTutorialTypewriter; // Set again in case of restoring from a save
+            hideoutTabs.toggleGroup.SetTogglesHidden(false);
+            hideoutTabs.toggleGroup.SetTogglesLocked(true);
+            StartDialogue(
+                Line("Welcome to the Hideout! I provide all the utilities you could need on your journey to ascension."),
+                Line("Here we have the Inventory tab, a place where you can stash items, heal up, and prepare your body in various ways for raids."),
+                Line("Anything you place in the Stash is safe. So when returning from a raid, make sure to transfer all your items into it."),
+                Line("Ok lets move onto the Crafting tab.")
+            );
+        });
+        tutorial.hideoutForge = tutorial.stateMachine.CreateState(enter: () => {
+            FadeInHideout();
+            hideoutTabs.toggleGroup.ManualyToggle(hideoutTabs.eyeForgeButton);
+            StartDialogue(
+                Line("Here lies the Pentagram where you can forge all the Demon Eyes your little heart desires. Eyeballs and Blood Runes not included.")
+            );
+        });
+        tutorial.hideoutTrader = tutorial.stateMachine.CreateState(enter: () => {
+            FadeInHideout();
+            hideoutTabs.toggleGroup.ManualyToggle(hideoutTabs.traderButton);
+            StartDialogue(
+                Line("My personal favorite tab, Trading. Oh look there I am!"),
+                Line("This is where you can sell and buy items. Most of the items I sell can be found in a raid, but sometimes the RNG isn't in your favor, so that's why I'm around to capitalize."),
+                Line("Now with all these free perks, you might be wondering what the catch is?")
+            );
+        });
+        tutorial.hideoutQuests = tutorial.stateMachine.CreateState(enter: () => {
+            FadeInHideout();
+            hideoutTabs.toggleGroup.ManualyToggle(hideoutTabs.questsButton);
+            StartDialogue(
+                Line("Indentured servitude! In exchange for the Hideout and help along your journey towards ascension, you have to do whatever I say."),
+                Line("This tab is where I post all the things I want you to do. As an incentive for being a good demon, the more quests you complete, the more items I'm willing to sell to you.")
+            );
+        });
+        tutorial.hideoutSkills = tutorial.stateMachine.CreateState(enter: () => {
+            hideoutTabs.toggleGroup.ManualyToggle(hideoutTabs.skillsButton);
+            StartDialogue(
+                Line("Finally, the last tab, Skills. Here you can permanently upgrade your stats by sacrificing the souls of those you killed."),
+                Line("Thats the tour, have fun in your future raids!"),
+                Line("Oh and make sure to check the Quests tab, I already have some postings for you there. Make sure to actually read the contents as they'll teach you how to best survive.")
+            );
+        });
+        tutorial.completed = tutorial.stateMachine.CreateState(enter: () => {
+            hideoutTabs.toggleGroup.SetTogglesLocked(false);
+            ui.traderTutorialDialogueBox.gameObject.SetActive(false);
+            inputPrompts.hideoutParent.gameObject.SetActive(true);
+            ui.menuBackButton.gameObject.SetActive(true);
+            SaveGameState();
+        });
         
         tutorial.entryState.To(tutorial.openingDialogue).When(() => InHideout);
         tutorial.openingDialogue.To(tutorial.firstCraftingState).When(() => tutorial.dialogue.Finished);
@@ -121,22 +199,35 @@ public partial class Game {
         tutorial.waitingToEnterSlaughterMap.To(tutorial.inSlaughterMap).When(() => curRaid.mapLoadingState is MapLoadingState.Loading or MapLoadingState.Loaded);
         tutorial.inSlaughterMap.To(tutorial.diedInSlaughterMap).When(() => player.health <= 0f);
         tutorial.diedInSlaughterMap.To(tutorial.firstTraderMeeting).When(() => ShowingMainMenu);
-        tutorial.firstTraderMeeting.To(tutorial.completed).When(() => tutorial.dialogue.Finished);
+        tutorial.firstTraderMeeting.To(tutorial.firstHideoutVisit).When(() => tutorial.dialogue.Finished).WithDelay(1f);
+        tutorial.firstHideoutVisit.To(tutorial.hideoutCharacter).When(() => InHideout);
+        tutorial.hideoutCharacter.To(tutorial.hideoutForge).When(() => tutorial.dialogue.Finished);
+        tutorial.hideoutForge.To(tutorial.hideoutTrader).When(() => tutorial.dialogue.Finished);
+        tutorial.hideoutTrader.To(tutorial.hideoutQuests).When(() => tutorial.dialogue.Finished);
+        tutorial.hideoutQuests.To(tutorial.hideoutSkills).When(() => tutorial.dialogue.Finished);
+        tutorial.hideoutSkills.To(tutorial.completed).When(() => tutorial.dialogue.Finished);
 
         bool restoringTutorialFromSaveIndex = gameState != null;
         if (restoringTutorialFromSaveIndex) {
             State lastSaveState = tutorial.stateMachine.StateFromIndex(gameState.tutorialStateIndex);
+            // The save right before teleporting into the Slaughter map happens while still waiting to enter it,
+            // so the Demon Eye was already equipped and we restore into the map instead of redoing the first forge
+            if (lastSaveState == tutorial.waitingToEnterSlaughterMap) {
+                lastSaveState = tutorial.inSlaughterMap;
+            }
             tutorial.stateMachine.SetStateWithoutCallbacks(lastSaveState);
-            
+
             if (InTutorialFirstForge) {
                 ClearInventory(inventories.stash);
                 ClearInventory(inventories.eyeForge);
                 ClearInventory(inventories.player);
                 tutorial.stateMachine.SetState(tutorial.entryState);
-            }
-            
-            if (InTutorialSlaughterMap) {
+            } else if (InTutorialSlaughterMap) {
                 player.health = FullPlayerHealth();
+            } else if (InTutorialFirstTraderMeeting) {
+                tutorial.stateMachine.SetStateWithoutCallbacks(tutorial.diedInSlaughterMap);
+            } else if (InTutorialHideoutTour) {
+                tutorial.stateMachine.SetState(tutorial.firstHideoutVisit);
             }
         }
     }
@@ -148,17 +239,27 @@ public partial class Game {
     }
     
     private void TutorialOnHideoutEnter() {
-        if (!InTutorialFirstForge) return;
-        hideoutTabs.toggleGroup.ManualyToggle(hideoutTabs.eyeForgeButton);
-        eyeForgePanel.toggleButtonGroup.ManualyToggle(eyeForgePanel.forgeToggle);
-        playerPanel.panel.gameObject.SetActive(false);
-        stashPanel.panel.gameObject.SetActive(false);
-        eyeForgePanel.panel.gameObject.SetActive(false);
-        ui.menuBackButton.gameObject.SetActive(false);
-        playerInfo.parent.gameObject.SetActive(false);
-        inputPrompts.hideoutParent.gameObject.SetActive(false);
-        hideoutTabs.toggleGroup.SetTogglesHidden(true);
-        eyeForgePanel.toggleButtonGroup.SetTogglesHidden(true);
+        if (!InTutorial) return;
+        
+        if (InTutorialHideoutTour) {
+            inputPrompts.hideoutParent.gameObject.SetActive(false);
+            ui.menuBackButton.gameObject.SetActive(false);
+            FadeInHideout();
+            return;
+        }
+        
+        if (InTutorialFirstForge) {
+            hideoutTabs.toggleGroup.ManualyToggle(hideoutTabs.eyeForgeButton);
+            eyeForgePanel.toggleButtonGroup.ManualyToggle(eyeForgePanel.forgeToggle);
+            playerPanel.panel.gameObject.SetActive(false);
+            stashPanel.panel.gameObject.SetActive(false);
+            eyeForgePanel.panel.gameObject.SetActive(false);
+            ui.menuBackButton.gameObject.SetActive(false);
+            playerInfo.parent.gameObject.SetActive(false);
+            inputPrompts.hideoutParent.gameObject.SetActive(false);
+            hideoutTabs.toggleGroup.SetTogglesHidden(true);
+            eyeForgePanel.toggleButtonGroup.SetTogglesHidden(true);
+        }
     }
 
     // ************************
@@ -175,27 +276,31 @@ public partial class Game {
         public int lineIndex;
         public float fadeOutTime;
         public Tween fadeOutTween;
+        public Action finishedCallback;
         public bool Finished => lines == null;
         public bool FadingOut => fadeOutTween.isAlive;
     }
 
     private static DialogueLine Line(string text, bool unskippable = false) => new() { text = text, unskippable = unskippable };
 
-    private void StartDialogue(params DialogueLine[] lines) => StartDialogue(fadeOutTime: 0f, lines);
+    private void StartDialogue(params DialogueLine[] lines) => StartDialogue(fadeOutTime: 0f, onFinished: null, lines);
+    private void StartDialogue(float fadeOutTime, params DialogueLine[] lines) => StartDialogue(fadeOutTime: fadeOutTime, onFinished: null, lines);
+    private void StartDialogue(Action onFinished, params DialogueLine[] lines) => StartDialogue(fadeOutTime: 0f, onFinished: onFinished, lines);
 
-    private void StartDialogue(float fadeOutTime, params DialogueLine[] lines) {
+    private void StartDialogue(float fadeOutTime, Action onFinished = null, params DialogueLine[] lines) {
         Dialogue dialogue = tutorial.dialogue;
         dialogue.lines = lines;
         dialogue.lineIndex = -1;
+        dialogue.finishedCallback = onFinished;
         dialogue.fadeOutTime = fadeOutTime;
         dialogue.fadeOutTween.Stop();
         DialogueCanvasGroup().alpha = 1f;
-        ui.dialogueTypewriter.gameObject.SetActive(true);
+        tutorial.dialogueTypewriter.gameObject.SetActive(true);
         ShowNextDialogueLine();
     }
 
     private CanvasGroup DialogueCanvasGroup() {
-        GameObject typewriterObject = ui.dialogueTypewriter.gameObject;
+        GameObject typewriterObject = tutorial.dialogueTypewriter.gameObject;
         if (!typewriterObject.TryGetComponent(out CanvasGroup canvasGroup)) {
             canvasGroup = typewriterObject.AddComponent<CanvasGroup>();
         }
@@ -215,13 +320,14 @@ public partial class Game {
             }
             return;
         }
-        ui.dialogueTypewriter.ShowText(dialogue.lines[dialogue.lineIndex].text);
+        tutorial.dialogueTypewriter.ShowText(dialogue.lines[dialogue.lineIndex].text);
     }
 
     private void EndDialogue() {
+        tutorial.dialogue.finishedCallback?.Invoke();
         tutorial.dialogue.lines = null;
-        ui.dialogueTypewriter.ShowText(string.Empty); // This just clears the text
-        ui.dialogueTypewriter.gameObject.SetActive(false);
+        tutorial.dialogueTypewriter.ShowText(string.Empty); // This just clears the text
+        tutorial.dialogueTypewriter.gameObject.SetActive(false);
     }
 
     private void UpdateDialogue() {
@@ -229,7 +335,7 @@ public partial class Game {
         if (dialogue.Finished || dialogue.FadingOut) return;
         if (!input.advanceDialogue.WasPressedThisFrame()) return;
 
-        TypewriterComponent typewriter = ui.dialogueTypewriter;
+        TypewriterComponent typewriter = tutorial.dialogueTypewriter;
         if (typewriter.IsShowingText) {
             if (!dialogue.lines[dialogue.lineIndex].unskippable) {
                 typewriter.SkipTypewriter();

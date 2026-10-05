@@ -75,8 +75,10 @@ public partial class Game {
         CancelItemDrag();
         ClearControllerSelection();
         
-        // Don't want to be able to back out of tutorial sequence
-        if (InTutorialFirstForge) return;
+        // Don't want to be able to back out of tutorial sequence(s)
+        if (!InSettings) {
+            if (InTutorialFirstForge || (InHideout && InTutorial)) return;
+        }
         
         if (ConfirmingMapSelection) {
             ShowMapSelectionUI();
@@ -413,7 +415,7 @@ public partial class Game {
     // First group in the list thats on screen with this mode
     private ToggleButtonGroup GetActiveNavToggleGroup(ToggleButtonGroup.NavigationMode mode) {
         foreach (ToggleButtonGroup group in ui.navToggleGroups) {
-            if (group && group.navigationMode == mode && group.gameObject.activeInHierarchy && !group.TogglesHidden) {
+            if (group && group.navigationMode == mode && group.gameObject.activeInHierarchy && group.TogglesUsable) {
                 return group;
             }
         }
