@@ -136,16 +136,20 @@ public partial class Game {
         if (raidEnterSequence.isAlive) return;
         
         if (player.bleeding && player.bleedLimiter.TimeHasPassed(3.5f)) {
-            const int bleedDamage = 5;
-            player.health -= bleedDamage;
-            SpawnPlayerDamageNumber(bleedDamage);
+            // Bleeding never takes the player below the auto stop threshold, so it can't kill them
+            const int maxBleedDamage = 5;
+            int bleedDamage = Mathf.Min(maxBleedDamage, player.health - AutoBleedStopHealth());
+            if (bleedDamage > 0) {
+                player.health -= bleedDamage;
+                SpawnPlayerDamageNumber(bleedDamage);
 
-            Entity bloodDrop = SpawnEntity(entityPools.bloodDrop, OffsetY(player.position, 0.11f), Quaternion.identity);
-            AddParentEffect(bloodDrop, player, 0.4f);
-            DestroyEntity(bloodDrop, 0.8f);
-            
-            AddFlashHitEffect(player);
-            Tween.PunchScale(playerInfo.bleedDebuffIcon.transform, Vector3.one * 0.8f, 0.25f, 5f);
+                Entity bloodDrop = SpawnEntity(entityPools.bloodDrop, OffsetY(player.position, 0.11f), Quaternion.identity);
+                AddParentEffect(bloodDrop, player, 0.4f);
+                DestroyEntity(bloodDrop, 0.8f);
+
+                AddFlashHitEffect(player);
+                Tween.PunchScale(playerInfo.bleedDebuffIcon.transform, Vector3.one * 0.8f, 0.25f, 5f);
+            }
 
             if (PlayerHealthIsAtAutoBleedStop()) {
                 player.bleeding = false;
@@ -406,7 +410,8 @@ public partial class Game {
                 float healingDuration = gameInstance.InRaid ? item.healingDuration : 0f; // Instant healing while not in raid
                 gameInstance.HealPlayer(item.healingAmount, healingDuration);
             }
-            if (item.bandageAmount > 0) {
+            // Healing bandages can be used while not bleeding, and a bleed can also end on its own during the animation
+            if (item.bandageAmount > 0 && player.bleeding) {
                 player.bleeding = false;
                 gameInstance.thisFrame.flags |= FrameFlags.BleedStopped;
             }
@@ -477,15 +482,16 @@ public partial class Game {
     public enum PlayerDamageType { Normal, Collision }
 
     public void DamagePlayer(int damage, PlayerDamageType damageType, Entity sourceEntity, float chanceToBleed = 0f) {
-        chanceToBleed -= GetAbsoluteStat(PlayerStat.BleedResist); 
-        if (!player.bleeding && !curRaid.map.playerCantBleed && !PlayerHealthIsAtAutoBleedStop() && RollProbability(chanceToBleed)) {
-            player.bleeding = true;
-        }
-        
         bool ignoreCollisionDamage = !player.enemyCollisionDamageLimiter.TimeHasPassed(config.gameplay.repeatCollisionDamageDelay);
         if (damageType == PlayerDamageType.Collision && ignoreCollisionDamage) return;
         
         player.health = Mathf.Clamp(player.health - damage, 0, int.MaxValue);
+        
+        // Rolled after the damage is applied so a hit that takes the player under the auto stop threshold can't start a bleed
+        chanceToBleed -= GetAbsoluteStat(PlayerStat.BleedResist); 
+        if (!player.bleeding && !curRaid.map.playerCantBleed && !PlayerHealthIsAtAutoBleedStop() && RollProbability(chanceToBleed)) {
+            player.bleeding = true;
+        }
         AddFlashHitEffect(player);
         SpawnPlayerDamageNumber(damage);
         
@@ -509,8 +515,12 @@ public partial class Game {
     }
     
     private bool PlayerHealthIsAtAutoBleedStop() {
+        return player.health <= AutoBleedStopHealth();
+    }
+    
+    private int AutoBleedStopHealth() {
         const float percentageOfHealthBleedingStops = 0.10f;
-        return player.health <= FullPlayerHealth() * percentageOfHealthBleedingStops;
+        return Mathf.CeilToInt(FullPlayerHealth() * percentageOfHealthBleedingStops);
     }
     
     private int GetPlayerStatLevel(PlayerStat stat) {

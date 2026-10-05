@@ -784,7 +784,7 @@ public partial class Game {
 
             bool placingSingleItemFromStack = input.placeSingleItem.WasPressedThisFrame();
             if (placingSingleItemFromStack) {
-                InventoryAddResult result = TryAddItemToInventory(hoverInfo.inventory, dragItemInstance.ItemRef, 1, hoverInfo.slotIndex);
+                InventoryAddResult result = TryAddItemToInventory(hoverInfo.inventory, dragItemInstance.ItemRef, 1, hoverInfo.slotIndex, onlyVisibleSlots: true);
 
                 dragItemInstance.count -= result.addedCount;
                 if (dragItemInstance.count <= 0) {
@@ -798,7 +798,7 @@ public partial class Game {
 
             bool placingEntireStack = !placingSingleItemFromStack;
             if (placingEntireStack) {
-                InventoryAddResult result = TryAddItemToInventory(hoverInfo.inventory, dragItemInstance, hoverInfo.slotIndex);
+                InventoryAddResult result = TryAddItemToInventory(hoverInfo.inventory, dragItemInstance, hoverInfo.slotIndex, onlyVisibleSlots: true);
                 if (result.type == InventoryAddResult.ResultType.Success) {
                     EndDragAndDropItem();
                 }
@@ -854,12 +854,14 @@ public partial class Game {
         public int addedCount;
     }
     
-    public InventoryAddResult TryAddItemToInventory(Inventory inventory, Item item, int count, int slotIndex = -1) {
+    public InventoryAddResult TryAddItemToInventory(Inventory inventory, Item item, int count, int slotIndex = -1, bool onlyVisibleSlots = false) {
         ItemInstance newItemInstance = new(item, count);
-        return TryAddItemToInventory(inventory, newItemInstance, slotIndex);
+        return TryAddItemToInventory(inventory, newItemInstance, slotIndex, onlyVisibleSlots);
     }
 
-    public InventoryAddResult TryAddItemToInventory(Inventory inventory, ItemInstance itemInstance, int slotIndex = -1) {
+    // onlyVisibleSlots is for items the player places themselves, so dropping onto a panel without hitting a slot
+    // doesn't put the item into a slot they can't see (e.g. the pockets of the slim player panel)
+    public InventoryAddResult TryAddItemToInventory(Inventory inventory, ItemInstance itemInstance, int slotIndex = -1, bool onlyVisibleSlots = false) {
         InventoryAddResult result = new() { type = InventoryAddResult.ResultType.Failure };
         
         bool allowInfiniteStacking = inventory == inventories.trader;
@@ -872,6 +874,10 @@ public partial class Game {
         }
         else {
             availableSlots.AddRange(inventory.slots[..]);
+        }
+        
+        if (onlyVisibleSlots) {
+            availableSlots.RemoveAll(static slot => !slot.ui.gameObject.activeInHierarchy);
         }
 
         int remainingItemCount = itemInstance.count;

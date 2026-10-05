@@ -37,6 +37,7 @@ public partial class Game {
         
         ui.levelUpNotification.Init();
         ui.menuBackButton.gameObject.SetActive(false);
+        ui.messagePopup.Hide();
         ui.largeRaidTextTypewriter.gameObject.SetActive(false);
         ui.openingDialogueTypewriter.gameObject.SetActive(false);
         ui.traderTutorialDialogueBox.SetActive(false);
@@ -86,6 +87,7 @@ public partial class Game {
         ui.settingsParent.gameObject.SetActive(true);
         ui.menuBackButton.gameObject.SetActive(true);
         ui.animatedBgImage.gameObject.SetActive(true);
+        settings.toggleGroup.ManualyToggle(settings.audioToggle);
     }
     
     private void CloseSettingsMenuUI() {
@@ -313,7 +315,7 @@ public partial class Game {
             });
     }
 
-    private Tween FadeIn(CanvasGroup canvasGroup, float time = 0.3f, Ease ease = Ease.OutQuad, float startDelay = 0f) {
+    public static Tween FadeIn(CanvasGroup canvasGroup, float time = 0.3f, Ease ease = Ease.OutQuad, float startDelay = 0f) {
         canvasGroup.alpha = 0f;
         canvasGroup.blocksRaycasts = false;
         canvasGroup.gameObject.SetActive(true);
@@ -321,7 +323,7 @@ public partial class Game {
         .OnComplete(canvasGroup, static canvasGroup => canvasGroup.blocksRaycasts = true);
     }
 
-    private Tween FadeIn(TMP_Text text, float time = 0.3f, Ease ease = Ease.OutQuad, float startDelay = 0f) {
+    public static Tween FadeIn(TMP_Text text, float time = 0.3f, Ease ease = Ease.OutQuad, float startDelay = 0f) {
         text.alpha = 0f;
         text.gameObject.SetActive(true);
         return Tween.Alpha(text, 1f, time, ease, startDelay: startDelay);

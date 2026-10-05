@@ -112,7 +112,8 @@ public class SingleSetting : MonoBehaviour {
     }
     
     private void TweenArrowButton(RectTransform arrowButton) {
-        Tween.PunchScale(arrowButton, Vector3.one * 0.15f, 0.125f);
+        // Unscaled so it still plays in the pause menu
+        Tween.PunchScale(arrowButton, Vector3.one * 0.15f, 0.125f, useUnscaledTime: true);
     }
     
 }

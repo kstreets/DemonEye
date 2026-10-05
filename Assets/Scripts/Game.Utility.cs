@@ -1,10 +1,17 @@
 using System.Text;
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.InputSystem;
 
 public partial class Game {
 
+    private static void QuitGame() {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
+    }
+    
     private static StringBuilder _stringBuilder = new();
     
     public static StringBuilder GetStringBuilder() {

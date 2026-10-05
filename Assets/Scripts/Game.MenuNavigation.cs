@@ -10,7 +10,7 @@ public partial class Game {
 
     // Where the UI should treat the "cursor" as being. Follows the controller selection when using a controller.
     private Vector2 PointerScreenPos => usingController ? controllNav.pointerPos : Mouse.current.position.ReadValue();
-    private bool MenuNavigationNeeded => !InRaid || PlayerInventoryIsOpen || LootInventoryIsOpen;
+    private bool MenuNavigationNeeded => !InRaid || PlayerInventoryIsOpen || LootInventoryIsOpen || pauseMenu.paused;
 
     public class NavPanel {
         public RectTransform panel;
@@ -42,7 +42,13 @@ public partial class Game {
 
         // Panels with the same priority that haven't been used yet are picked in the order they're added here
         {
+            // Popups sit over everything else. Defaults to no so a stray press doesn't confirm.
+            const int selectionPriority = 2;
+            AddNavPanel(ui.messagePopup.rectTransform, selectionPriority, () => ui.messagePopup.noButton.rectTransform);
+        }
+        {
             const int selectionPriority = 1;
+            AddNavPanel(pauseMenu.panel, selectionPriority, () => pauseMenu.resumeButton.rectTransform);
             AddNavPanel((RectTransform)mapPanels.confirmationPanel.transform, selectionPriority, () => mapPanels.confirmationPanel.teleportButton.rectTransform);
             AddNavPanel(mapPanels.mapSelectionPanel.rectTransform, selectionPriority, () => mapPanels.mapSelectionPanel.selectors[0].selectionButton.rectTransform);
             AddNavPanel(ui.lootInventoryPanel, selectionPriority, () => inventories.lootPtr.slots[0].ui.rectTransform, alwaysCallDefault: true);
@@ -75,6 +81,21 @@ public partial class Game {
         CancelItemDrag();
         ClearControllerSelection();
         
+        if (ui.messagePopup.IsShowing) {
+            ui.messagePopup.Cancel();
+            return;
+        }
+        
+        if (pauseMenu.paused) {
+            if (pauseMenu.showingSettings) {
+                ClosePauseSettings();
+            }
+            else {
+                ResumeRaid();
+            }
+            return;
+        }
+        
         // Don't want to be able to back out of tutorial sequence(s)
         if (!InSettings) {
             if (InTutorialFirstForge || (InHideout && InTutorial)) return;
@@ -90,6 +111,10 @@ public partial class Game {
         if (InRaid && PlayerInventoryIsOpen) {
             ClosePlayerInventory();
             CloseLootInventory();
+        }
+        // Gamepad B only backs out of things, the pause menu is opened with Start on gamepads
+        else if (InRaid && context.control?.device is Keyboard) {
+            PauseRaid();
         }
     }
 
@@ -147,7 +172,7 @@ public partial class Game {
         }
 
         // The press that switched us over to the controller shouldn't also submit
-        if (input.lastDeviceSwitchTime != Time.time) {
+        if (input.lastDeviceSwitchTime != Time.unscaledTime) {
             UpdateControllerSubmit();
         }
 
@@ -172,7 +197,7 @@ public partial class Game {
     // In order for this method to work reliably, the menu navigation must update before gamestate tick
     private bool PlayerMovedPointerThisFrame() {
         if (usingController) {
-            return controllNav.lastTimePlayerMovedSelection == Time.time;
+            return controllNav.lastTimePlayerMovedSelection == Time.unscaledTime;
         }
         return Mouse.current != null && Mouse.current.delta.ReadValue() != Vector2.zero;
     }
@@ -268,7 +293,7 @@ public partial class Game {
 
         if (targetRecTransform) {
             SetControllerSelection(targetRecTransform);
-            controllNav.lastTimePlayerMovedSelection = Time.time;
+            controllNav.lastTimePlayerMovedSelection = Time.unscaledTime;
         }
     }
 

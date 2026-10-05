@@ -98,6 +98,7 @@ public partial class Game {
         }
     }
     
+    // Uses unscaled time so UI sounds still throttle correctly while the game is paused
     private bool ClipShouldNotBePlayed(DynamicClip clip, Vector2 clipPos) {
         var clipRecords = audio.records;
         bool recordsExits = clipRecords.TryGetValue(clip.GetInstanceID(), out List<DynamicClipRecord> records);
@@ -105,7 +106,7 @@ public partial class Game {
         if (recordsExits && clip.maxSimultaneous > 0) {
             int countPlayedThisFrame = 0;
             foreach (DynamicClipRecord record in records) {
-                if (record.timePlayed == Time.time) {
+                if (record.timePlayed == Time.unscaledTime) {
                     countPlayedThisFrame++;
                 }
             }
@@ -119,7 +120,7 @@ public partial class Game {
             List<DynamicClipRecord> newRecords = new(initCapacity);
             
             newRecords.Add(new() {  
-                timePlayed = Time.time, 
+                timePlayed = Time.unscaledTime, 
                 positionPlayed = clipPos, 
             });
             
@@ -129,7 +130,7 @@ public partial class Game {
         
         if (clip.localAreaCooldownTime <= 0f || clip.localAreaDistance <= 0f) {
             records.Add(new() {  
-                timePlayed = Time.time, 
+                timePlayed = Time.unscaledTime, 
                 positionPlayed = clipPos,
             });
             return false;
@@ -140,7 +141,7 @@ public partial class Game {
         
         // Remove any records that have been expired
         for (int i = records.Count - 1; i >= 0; i--) {
-            bool recordHadExpired = Time.time >= records[i].timePlayed + cooldownTime;
+            bool recordHadExpired = Time.unscaledTime >= records[i].timePlayed + cooldownTime;
             if (recordHadExpired) {
                 records.RemoveAt(i);         
             }
@@ -155,7 +156,7 @@ public partial class Game {
         
         // Add a new record since we are going to play the sound
         records.Add(new() {  
-            timePlayed = Time.time, 
+            timePlayed = Time.unscaledTime, 
             positionPlayed = clipPos,
         });
 

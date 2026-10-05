@@ -154,6 +154,7 @@ public class GameData {
         public Image animatedBgImage;
         public Image deathBgImage;
         public ButtonFeel menuBackButton;
+        public MessagePopup messagePopup;
         public TextMeshProUGUI smallRaidText;
         public TypewriterComponent smallRaidTextTypewriter;
         public TextMeshProUGUI largeRaidText;
@@ -228,6 +229,17 @@ public class GameData {
         public ButtonFeel settingsButton;
         public ButtonFeel exitButton;
     } 
+    
+    [Serializable]
+    public class PauseMenu {
+        public RectTransform panel;
+        public ButtonFeel resumeButton;
+        public ButtonFeel settingsButton;
+        public ButtonFeel suicideButton;
+        [NonSerialized] public bool paused;
+        [NonSerialized] public bool showingSettings;
+        [NonSerialized] public readonly List<AudioSource> pausedAudioSources = new();
+    }
     
     [Serializable]
     public class HideoutTabs {
@@ -432,6 +444,7 @@ public class GameData {
         public InputAction moveStack;
         public InputAction splitStack;
         public InputAction escape;
+        public InputAction pause;
         public InputAction quickUse1;
         public InputAction quickUse2;
         public InputAction quickUse3;

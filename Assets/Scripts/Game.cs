@@ -26,6 +26,7 @@ public partial class Game : MonoBehaviour {
     public PlayerInfo playerInfo;
     public RaidInfo raidInfo;
     public MainMenu mainMenu;
+    public PauseMenu pauseMenu;
     public HideoutTabs hideoutTabs;
     public PlayerPanel playerPanel;
     public StashPanel stashPanel;
@@ -63,10 +64,16 @@ public partial class Game : MonoBehaviour {
         InitGame();
     }
     
+    private static readonly int unscaledTimeShaderId = Shader.PropertyToID("_UnscaledTime");
+    
     private void Update() {
         UpdateMenuNavigation(); // !
+        // Animated UI shaders use this instead of the Time node so they keep animating while the game is paused
+        Shader.SetGlobalFloat(unscaledTimeShaderId, Time.unscaledTime);
         states.gameStateMachine.Tick();
-        UpdateTutorial(); // !
+        if (!pauseMenu.paused) {
+            UpdateTutorial(); // !
+        }
         DemonEyeTween.Update();
         UpdateQuests(); // !
         UpdateInputPrompts();
@@ -75,7 +82,10 @@ public partial class Game : MonoBehaviour {
         CheckForInputDeviceChange();
         
 #if UNITY_EDITOR
-        if (Mouse.current != null && Mouse.current.middleButton.isPressed) {
+        if (pauseMenu.paused) {
+            // Pausing owns the time scale
+        }
+        else if (Mouse.current != null && Mouse.current.middleButton.isPressed) {
             Time.timeScale = 4f;
         }
         else {
@@ -182,6 +192,7 @@ public partial class Game : MonoBehaviour {
     }
 
     private void OnRaidStateExit() {
+        ResumeRaid();
         DeinitPlayer();
         ClosePlayerInventory();
         CloseLootInventory();
@@ -540,7 +551,7 @@ public partial class Game : MonoBehaviour {
         if (!switchToController && !switchToKeyboardMouse) return;
 
         usingController = switchToController;
-        input.lastDeviceSwitchTime = Time.time;
+        input.lastDeviceSwitchTime = Time.unscaledTime;
         MenuNavigationOnInputDeviceChanged();
         InputIconsOnInputDeviceChanged();
     }

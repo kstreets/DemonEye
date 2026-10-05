@@ -19,6 +19,7 @@ public partial class Game {
         DemonEyeTween.Init();
         InitDemonEye();
         InitButtonCallbacks();
+        InitPauseMenu();
         InitEntityPools();
         InitGameStates();
         InitMenuNavigation();
@@ -56,6 +57,7 @@ public partial class Game {
         input.moveStack = InputSystem.actions.FindAction("MoveStack");
         input.useItem = InputSystem.actions.FindAction("UseItem");
         input.escape = InputSystem.actions.FindAction("Escape");
+        input.pause = InputSystem.actions.FindAction("Pause");
         input.quickUse1 = InputSystem.actions.FindAction("QuickUse1");
         input.quickUse2 = InputSystem.actions.FindAction("QuickUse2");
         input.quickUse3 = InputSystem.actions.FindAction("QuickUse3");
@@ -122,6 +124,10 @@ public partial class Game {
         
         mainMenu.settingsButton.AddListener(() => {
             states.gameStateMachine.SetStateIfNotCurrent(states.settingsMenu);
+        });
+        
+        mainMenu.exitButton.AddListener(() => {
+            ui.messagePopup.Show("Are you sure you would like to exit?", "Yes", "No", onYes: QuitGame);
         });
         
         settings.displayToggle.AddListener(() => {
