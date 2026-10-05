@@ -36,6 +36,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &2190625185259454234
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -81,6 +82,7 @@ SpriteRenderer:
   m_SortingLayerID: 1394232625
   m_SortingLayer: 3
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_Sprite: {fileID: -734726234388403165, guid: 46c792b052ee9ed44a647719355ecc41, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -90,7 +92,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 1
 --- !u!70 &735685465524599900
 CapsuleCollider2D:
@@ -126,7 +127,7 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.021312976, y: 0.060821008}
+  m_Offset: {x: -0.021312976, y: -0.02}
   m_Size: {x: 0.44469208, y: 0.16296865}
   m_Direction: 1
 --- !u!70 &4262284655644497388
@@ -163,6 +164,6 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.06331632, y: 0.13789031}
+  m_Offset: {x: -0.06331632, y: 0.06}
   m_Size: {x: 0.36839655, y: 0.07202626}
   m_Direction: 1

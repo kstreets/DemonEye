@@ -551,6 +551,7 @@ public class GameData {
     
         public Dictionary<GameObject, InventorySlot[]> bushSlotsLookup = new();
         public Dictionary<GameObject, InventorySlot[]> deadBodySlotsLookup = new();
+        public Dictionary<GameObject, InventorySlot[]> chestSlotsLookup = new();
         
         // Data that gets reset every time a new raid starts
         public struct Data {

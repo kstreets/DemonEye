@@ -27,7 +27,7 @@ Transform:
   m_GameObject: {fileID: 833854435289472312}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.125, z: 0}
+  m_LocalPosition: {x: 0, y: -0.04769993, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -139,7 +139,7 @@ Transform:
   m_GameObject: {fileID: 2041569549935489665}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.0184, z: 0}
+  m_LocalPosition: {x: 0, y: 0.058900073, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -265,7 +265,7 @@ Transform:
   m_GameObject: {fileID: 4891440459980863117}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0.07730007, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5297,8 +5297,8 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.010000005, y: 0.026496738}
-  m_Radius: 0.20649675
+  m_Offset: {x: 0, y: 0.067670494}
+  m_Radius: 0.2476705
 --- !u!114 &6658191472571490109
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5312,7 +5312,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridObstacle
   mode: 0
-  carvingCollider: {fileID: 5064871899784422863}
+  carvingCollider: {fileID: 2582002289586735923}
   cellRadius: 1
   localOffset: {x: 0, y: 0}
 --- !u!114 &3776462933296670690
@@ -5427,7 +5427,7 @@ Transform:
   m_GameObject: {fileID: 6843408873940537367}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0.07730007, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -5452,7 +5452,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2195083369863828940}
   - component: {fileID: 3319017238674998145}
-  - component: {fileID: 5064871899784422863}
+  - component: {fileID: 2582002289586735923}
   m_Layer: 0
   m_Name: PlayerCollider
   m_TagString: Untagged
@@ -5469,7 +5469,7 @@ Transform:
   m_GameObject: {fileID: 6958207693322117433}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0.0773, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5502,7 +5502,7 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
---- !u!58 &5064871899784422863
+--- !u!58 &2582002289586735923
 CircleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5536,8 +5536,8 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.01, y: -0.0499171}
-  m_Radius: 0.13006282
+  m_Offset: {x: 0, y: -0.04}
+  m_Radius: 0.109184146
 --- !u!1 &7148081944798383111
 GameObject:
   m_ObjectHideFlags: 0

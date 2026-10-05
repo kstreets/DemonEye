@@ -97,6 +97,7 @@ public partial class Game {
         // Clear past resource lookups
         curRaid.deadBodySlotsLookup.Clear();
         curRaid.bushSlotsLookup.Clear();
+        curRaid.chestSlotsLookup.Clear();
         
         ResourceSpawn[] resourceSpawns = resourceSpawnParent.GetComponentsInChildren<ResourceSpawn>();
         foreach (ResourceSpawn resourceSpawn in resourceSpawns) { 
@@ -115,6 +116,9 @@ public partial class Game {
                     break;
                 case Tags.Bush:
                     InitBush(resourceEntity); 
+                    break;
+                case Tags.Chest:
+                    InitChest(resourceEntity); 
                     break;
             }
         } 
@@ -166,6 +170,13 @@ public partial class Game {
         int maxBushItemCount = Random.Range(1, 3);
         GetUniqueItemsFromDropPool(dropPools.bushes, maxBushItemCount, ref items);
         curRaid.bushSlotsLookup.Add(entity.gameObject, CreateLootInventoryFromItems(items, dropPools.bushes)); 
+    }
+    
+    private void InitChest(Entity entity) {
+        using var _ = ListPool<Item>.Get(out var items);
+        int maxChestItemCount = Random.Range(1, 2);
+        GetUniqueItemsFromDropPool(dropPools.chests, maxChestItemCount, ref items);
+        curRaid.chestSlotsLookup.Add(entity.gameObject, CreateLootInventoryFromItems(items, dropPools.chests)); 
     }
     
     private void InitMapGrid() {

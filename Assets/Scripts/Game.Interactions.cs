@@ -4,7 +4,6 @@ using PrimeTween;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Pool;
-using Random = UnityEngine.Random;
 
 public partial class Game {
     
@@ -87,11 +86,9 @@ public partial class Game {
             if (col.CompareTag(Tags.Chest)) {
                 EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), "Open Chest");
                 if (input.interact.WasPressedThisFrame()) {
-                    Item dropItem = GetItemFromDropPool(dropPools.chests);
-                    Entity item = SpawnItemAsEntity(dropItem, 1, OffsetY(col.transform.position, 0.1f), Quaternion.identity);
-                    Vector3 endPos = item.position + RotationVector(Random.Range(0f, 360f), 0.18f, 0.25f);
-                    AddBounceEffect(item, endPos, 0.6f);
-                    col.enabled = false;
+                    inventories.lootPtr.slots = curRaid.chestSlotsLookup[col.gameObject];
+                    OpenPlayerInventory();
+                    OpenLootInventory(LootInventoryOrigin.Chest);
                 }
             }
 
@@ -172,7 +169,7 @@ public partial class Game {
     private float DiscoverSlotTime => config.gameplay.discoverSlotTime * GetAbsoluteStat(PlayerStat.LootingSpeed);
     private float DiscoverItemTime => config.gameplay.discoverItemTime * GetAbsoluteStat(PlayerStat.LootingSpeed);
     
-    public enum LootInventoryOrigin { Nothing, Body, Bush }
+    public enum LootInventoryOrigin { Nothing, Body, Bush, Chest }
     
     private void OpenLootInventory(LootInventoryOrigin origin) {
         if (LootInventoryIsOpen) return;
@@ -181,7 +178,7 @@ public partial class Game {
         IgnoreHeldNavigationInput();
         curRaid.data.interactions.curLootOrigin = origin;
         
-        if (origin == LootInventoryOrigin.Body) {
+        if (origin is LootInventoryOrigin.Body or LootInventoryOrigin.Chest) {
             PlayAudioClip(audio.lootingBodyClip, player.position);
         }
         else if (origin == LootInventoryOrigin.Bush) {
@@ -322,6 +319,7 @@ public partial class Game {
             LootInventoryOrigin.Nothing => null,
             LootInventoryOrigin.Body => audio.lootingBodyLoop,
             LootInventoryOrigin.Bush => audio.lootingBushLoop,
+            LootInventoryOrigin.Chest => audio.lootingBodyLoop, // We don't have a looting chest
             _ => throw new ArgumentOutOfRangeException(),
         };
         if (searchingLoop != null) {
