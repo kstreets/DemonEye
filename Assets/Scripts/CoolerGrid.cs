@@ -510,8 +510,10 @@ public class CoolerGrid : MonoBehaviour {
     public void Generate() {
         // Temporarily increase edge radius so our overlap tests detect edge colliders
         EdgeCollider2D[] allEdgeColliders = FindObjectsByType<EdgeCollider2D>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        foreach (EdgeCollider2D edgeCol in allEdgeColliders) {
-            edgeCol.edgeRadius = 0.02f;
+        float[] originalEdgeRadii = new float[allEdgeColliders.Length];
+        for (int i = 0; i < allEdgeColliders.Length; i++) {
+            originalEdgeRadii[i] = allEdgeColliders[i].edgeRadius;
+            allEdgeColliders[i].edgeRadius = Mathf.Max(originalEdgeRadii[i], 0.02f);
         }
         
         const float traversableRatioPerTile = 0.72f;
@@ -534,9 +536,9 @@ public class CoolerGrid : MonoBehaviour {
             }
         }
         
-        // Reset edge radius for edge colliders back to 0
-        foreach (EdgeCollider2D edgeCol in allEdgeColliders) {
-            edgeCol.edgeRadius = 0f;
+        // Restore each edge collider's original radius
+        for (int i = 0; i < allEdgeColliders.Length; i++) {
+            allEdgeColliders[i].edgeRadius = originalEdgeRadii[i];
         }
         
         EditorUtility.SetDirty(this);

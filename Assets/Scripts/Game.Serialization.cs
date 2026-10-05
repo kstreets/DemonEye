@@ -6,7 +6,10 @@ using static GameData;
 
 public partial class Game {
     
+    private const int gameStateSaveVersion = 1;
+
     public class GameState {
+        public int version;
         public int tutorialStateIndex;
         public PersistentFlags persistentFlags;
         
@@ -70,7 +73,9 @@ public partial class Game {
     public void SaveGameState() {
         using FileStream stream = File.Open(GetGameStateSavePath(), FileMode.OpenOrCreate); 
         using BinaryWriter binWriter = new(stream);
-        
+
+        SerializeInt(binWriter, gameStateSaveVersion);
+
         // -1 marks the tutorial as completed
         SerializeInt(binWriter, InTutorial ? tutorial.stateMachine.GetCurrentStateIndex() : -1);
         SerializeInt(binWriter, (int)persistentFlags);
@@ -107,10 +112,11 @@ public partial class Game {
             return null;
         } 
         
-        using FileStream stream = File.Open(savePath, FileMode.Open); 
+        using FileStream stream = File.Open(savePath, FileMode.Open);
         using BinaryReader binReader = new(stream);
-        
+
         return new() {
+            version = DeserializeInt(binReader),
             tutorialStateIndex = DeserializeInt(binReader),
             persistentFlags = (PersistentFlags)DeserializeInt(binReader),
             hideoutState = DeserializeHideoutState(binReader),

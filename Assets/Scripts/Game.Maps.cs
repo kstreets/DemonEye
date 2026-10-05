@@ -13,6 +13,11 @@ public partial class Game {
     private void InitMaps(GameState gameState) {
         List<MapData> maps = config.maps;
         
+        config.tutorialSlaughterMap.state = new() {
+            isUnlocked = false, 
+            bloodMushroomSpawns = new(),
+        };
+        
         if (gameState == null) {
             for (int i = 0; i < maps.Count; i++) {
                 maps[i].state = new() {
@@ -239,6 +244,14 @@ public partial class Game {
             portal.Init();
             portal.gameObject.SetActive(true);
             curRaid.activeExitPortals.Add(portal);
+        }
+        
+        // No extraction from the tutorial map!
+        if (InTutorialSlaughterMap) {
+            foreach (Portal portal in curRaid.activeExitPortals) {
+                portal.gameObject.SetActive(false);
+            }
+            curRaid.activeExitPortals.Clear();
         }
     }
     

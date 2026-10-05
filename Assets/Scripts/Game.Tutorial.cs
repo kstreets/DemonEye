@@ -100,7 +100,7 @@ public partial class Game {
             countdown.ChainCallback(() => {
                 Tween.Scale(headerText.rectTransform, 1.1f, 1f, 1.2f, Ease.OutQuad);
                 headerText.text = restoreTeleportingIntoRaidText; // Map selection uses the same header
-                LoadMapAsync(config.maps[0]);
+                LoadMapAsync(config.tutorialSlaughterMap);
                 SaveGameState();
             });
         });

@@ -109,7 +109,7 @@ public partial class Game {
     private void InitButtonCallbacks() {
         mainMenu.playButton.AddListener(() => {
             if (InTutorialSlaughterMap) {
-                LoadMapAsync(config.maps[0]);
+                LoadMapAsync(config.tutorialSlaughterMap);
                 return;
             }
             State destination = InTutorialFirstForge ? states.hideout : states.mapSelection;

@@ -24,6 +24,7 @@ public class GameData {
         public Trader trader;
         public DemonEyeLevels demonEyeLevels;
         public UpgradePath eyeForgeUpgradePath;
+        public MapData tutorialSlaughterMap;
         public List<MapData> maps;
         public const int demonEyeCoreUpgradeCount = 5;
     }
