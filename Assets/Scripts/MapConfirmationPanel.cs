@@ -36,7 +36,9 @@ public class MapConfirmationPanel : MonoBehaviour {
     
     private void DisplayLootIncrease(float lootIncrease, Item.Rarity rarityType) {
         if (lootIncrease <= 0f) return;
-        reservedInfoLines.PopLast().Show(lootIcon, $"+{lootIncrease:%} {rarityType.ToString()} Item Drops");
+        Color rarityColor = Game.gameInstance.config.styles.GetTextColorForRarity(rarityType);
+        string text = $"+{lootIncrease * 100f:0.#}% {rarityType.ToString()} Item Drops";
+        reservedInfoLines.PopLast().Show(lootIcon, Game.ColorText(text, rarityColor));
     }
     
     private void QueueAllInfoLines() {

@@ -10,12 +10,17 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
     public RectTransform rectTransform;
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI descText;
-    public TextMeshProUGUI metaInfoText;
+    public TextMeshProUGUI priceText;
+    public TextMeshProUGUI maxStackText;
+    public TextMeshProUGUI weightText;
+    public GameObject metaInfoParent;
+    public GameObject consumePromtParent;
+    public TextMeshProUGUI consumePromtText;
     public HorizontalLayoutGroup tagsLayoutGroup;
     public VerticalLayoutGroup bodyLayoutGroup;
-    public ImageTextGroup augmentedTagGroup;
     public ImageTextGroup typeTagGroup;
     public ImageTextGroup rarityTagGroup;
+    public ImageTextGroup augmentedTagGroup;
     public AugmentDescription augmentDesc;
     public DemonEyeDescList demonEyeDesc;
     
@@ -65,10 +70,10 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
             typeTagGroup.textMesh.text = "Quick Use";
         } 
         else if (item.type == gameInstance.itemTypes.eyeUpgrade) {
-            typeTagGroup.textMesh.text = "Eye Upgrade";
+            typeTagGroup.textMesh.text = "Blood Rune";
         }
         else if (item.type == gameInstance.itemTypes.wearableModifier) {
-            typeTagGroup.textMesh.text = "Wearable Modifier";
+            typeTagGroup.textMesh.text = "Trinket";
         }
         else if (item.type == gameInstance.itemTypes.backpack) {
             typeTagGroup.textMesh.text = "Backpack";
@@ -77,17 +82,20 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
             typeTagGroup.gameObject.SetActive(false);
         }
         
-        augmentedTagGroup.gameObject.SetActive(false);
-        if (item.IsAugmented) {
-            augmentedTagGroup.gameObject.SetActive(true);
-            augmentedTagGroup.image.color = itemRarityColor;
-        }
+        augmentedTagGroup.gameObject.SetActive(item.IsAugmented);
+        augmentedTagGroup.image.color = itemRarityColor;
             
         rarityTagGroup.image.color = itemRarityColor;
         rarityTagGroup.textMesh.text = itemRarity.ToString();
     }
 
     private void SetMetaInfo(ItemInstance itemInstance, Item item) {
+        if (itemInstance.traderOwned) {
+            metaInfoParent.gameObject.SetActive(false);
+            consumePromtParent.gameObject.SetActive(false);
+            return;
+        }
+        
         int sellOrBuyPrice = 0;
         if (item.type == gameInstance.itemTypes.demonEye) { 
             sellOrBuyPrice = gameInstance.GetDemonEyeSellPrice(itemInstance);
@@ -97,12 +105,14 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
             sellOrBuyPrice = itemIsOwnedByTrader ? item.buyPrice : item.GetSellPrice() * itemInstance.count;
         }
         
-        string coinText = $"<sprite=0>{ColorText(sellOrBuyPrice.ToString("N0"), styles.coinCurrencyColor)}";
+        priceText.text = $"<sprite=0>{ColorText(sellOrBuyPrice.ToString("N0"), styles.coinCurrencyColor)}";
+        
+        maxStackText.text = $"{itemInstance.count} / {item.MaxStackCount:N0}";
         
         string tintedWeightSprite = $"<sprite=2 color=#{ColorUtility.ToHtmlStringRGBA(styles.underWeightColor)}>";
-        string weightText = tintedWeightSprite + ColorText((item.Weight * itemInstance.count).ToString(), styles.underWeightColor);
+        weightText.text = tintedWeightSprite + ColorText((item.Weight * itemInstance.count).ToString(), styles.underWeightColor);
         
-        metaInfoText.text = coinText + "  " + weightText;
+        consumePromtParent.gameObject.SetActive(item.type == gameInstance.itemTypes.quickUse);
     }
 
     private void SetDescription(ItemInstance itemInstance, Item item) {
@@ -122,11 +132,6 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
             augmentDesc.gameObject.SetActive(true);
             augmentDesc.descTextMesh.text = item.augmentCreatedFrom.GetDescription();
         }
-        
-        if (item.type == gameInstance.itemTypes.quickUse && !itemInstance.traderOwned) {
-            string useItemIcon = gameInstance.InputIcon(gameInstance.input.useItem);
-            descText.text += $"<line-height=150%>\n{useItemIcon} {ColorText("to consume", styles.inputIconTint)}</size>";
-        }
     }
 
     public void SetLayoutVertical() {
@@ -136,7 +141,7 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
         
         // Keep popup from going offscreen
         {
-            float screenPadding = ItemDescPopup.screenPadding * gameInstance.CanvasScale;
+            float screenPadding = ItemDescPopup.screenPadding * (gameInstance?.CanvasScale ?? 1f);
             Rect worldRect = rectTransform.WorldRectIgnoreScale();
             float minY = worldRect.yMin;
             float maxY = worldRect.yMax;

@@ -114,7 +114,12 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         itemUI.SetItem(item, count);
         rarityFrameImage.color = styles.GetSlotColorForRarity(item.GetRarity());
     }
-    
+
+    public void SetItem(Game.ItemInstance itemInstance) {
+        itemUI.SetItem(itemInstance.ItemRef, itemInstance.count);
+        rarityFrameImage.color = styles.GetSlotColorForRarity(itemInstance.GetRarity());
+    }
+
     public void SetPlaceHolderItemImage(Item item) {
         itemUI.SetPlaceholderItem(item);
         rarityFrameImage.color = styles.GetSlotColorForRarity(item.GetRarity());

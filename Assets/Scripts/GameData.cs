@@ -18,6 +18,7 @@ public class GameData {
     [Serializable]
     public class Config {
         public ArtificialInventory startingTutorialInventory;
+        public ArtificialInventory hideoutTourStartingInventory;
         public Styles styles;
         public EnemyColors enemyColors;
         public GameplayConfig gameplay;
@@ -588,6 +589,7 @@ public class GameData {
     public enum PersistentFlags {
         None                   = 0,
         BloodMushroomsUnlocked = 1 << 0,
+        HideoutTourItemsGiven  = 1 << 1,
     }
     
     [Flags] 

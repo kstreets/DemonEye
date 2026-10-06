@@ -116,7 +116,7 @@ public partial class Game {
         ui.itemDescPopupPickup.Show(itemDrop.ItemInstance);
         
         Item dropItemRef = itemDrop.ItemInstance.ItemRef;
-        Color itemColor = config.styles.GetTextColorForRarity(dropItemRef.GetRarity());
+        Color itemColor = config.styles.GetTextColorForRarity(itemDrop.ItemInstance.GetRarity());
         string details = ColorText($"{dropItemRef.displayName} x{itemDrop.ItemInstance.count}", itemColor);
         EnableInteractionPrompt(OffsetY(itemDrop.transform.position, 0.1f), details);
         
@@ -222,7 +222,7 @@ public partial class Game {
             }
             else {
                 ItemInstance itemInstance = inventories.lootPtr.slots[i].itemInstance;
-                slotUI.SetItem(itemInstance.ItemRef, itemInstance.count);
+                slotUI.SetItem(itemInstance);
             }
         }
 
@@ -281,15 +281,16 @@ public partial class Game {
             InventorySlotUI slotUI = lootInventoryPtr.slots[discoverItemIndex].ui;
             slotUI.MakeSlotActive();
             slotUI.StopSlotSearching();
-            slotUI.SetItem(itemRef, itemInstance.count);
-            
+            slotUI.SetItem(itemInstance);
+
             Tween.Scale(slotUI.itemUI.image.rectTransform, Vector3.one * 3.5f, Vector3.one, new TweenSettings(0.2f, Ease.OutBack));
 
+            Item.Rarity itemRarity = itemInstance.GetRarity();
             Entity reveal = gameInstance.SpawnEntityOneShot(gameInstance.entityPools.lootReveal, Vector3.zero, Quaternion.identity, slotUI.rectTransform);
             reveal.trans.localPosition = Vector3.zero;
-            reveal.image.color = gameInstance.config.styles.GetColorForRarity(itemRef.GetRarity());
-            
-            GetRarityVolumeAndPitch(itemRef.GetRarity(), out float rarityVolume, out float rarityPitch);
+            reveal.image.color = gameInstance.config.styles.GetColorForRarity(itemRarity);
+
+            GetRarityVolumeAndPitch(itemRarity, out float rarityVolume, out float rarityPitch);
             gameInstance.PlayAudioClip(gameInstance.audio.rarityRevealClip, player.position, rarityVolume, rarityPitch);
             gameInstance.PlayAudioClip(gameInstance.audio.lootRevealClip, player.position);
             
@@ -396,12 +397,12 @@ public partial class Game {
             itemDrop.summoningAltar = altar;
             altar.summonedItemDrop = itemDrop;
             
-            Vector3 endPos = altar.transform.position.Offset(y: 0.224f);
+            Vector3 endPos = altar.transform.position.Offset(y: 0.25f);
             Tween.Position(item.trans, endPos, 0.12f, Ease.OutBack);
             Tween.Scale(item.trans, 0f, 1f, 0.16f, Ease.OutBack);
             
             Tween.Delay(altar, 0.12f, static (altar) => {
-                Entity reveal = gameInstance.SpawnEntityOneShot(gameInstance.entityPools.eyeUpgradeReveal, altar.transform.position.Offset(y: 0.224f), Quaternion.identity);
+                Entity reveal = gameInstance.SpawnEntityOneShot(gameInstance.entityPools.eyeUpgradeReveal, altar.transform.position.Offset(y: 0.25f), Quaternion.identity);
                 reveal.spriteRenderer.color = gameInstance.config.styles.GetColorForRarity(altar.summoningItem.GetRarity());
                 GetRarityVolumeAndPitch(altar.summoningItem.GetRarity(), out float rarityVolume, out float rarityPitch);
                 gameInstance.PlayAudioClip(gameInstance.audio.rarityRevealClip, player.position, rarityVolume, rarityPitch);

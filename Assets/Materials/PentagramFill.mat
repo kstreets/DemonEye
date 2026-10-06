@@ -71,7 +71,7 @@ Material:
     - _Fill: 0
     - _QueueControl: -1
     - _QueueOffset: 0
-    - _StartRange: 0
+    - _StartRange: -0.01
     - _Stencil: 0
     - _StencilComp: 8
     - _StencilOp: 0

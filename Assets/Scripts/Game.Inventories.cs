@@ -36,6 +36,23 @@ public partial class Game {
             }
         }
         
+        // Demon Eyes all share the same item ref, so their rarity is the average rarity of the eye upgrades forged into them
+        public Item.Rarity GetRarity() {
+            if (!isDemonEye) return ItemRef.GetRarity();
+            if (nestedUuids == null || nestedUuids.Count == 0) return Item.Rarity.Common;
+
+            int raritySum = 0;
+            foreach (int uuid in nestedUuids) {
+                Item upgradeItem = gameInstance.res.lookup[uuid] switch {
+                    Item item => item,
+                    Augment augment => augment.augmentedEyeUpgrade,
+                    _ => null,
+                };
+                raritySum += upgradeItem != null ? (int)upgradeItem.GetRarity() : 0;
+            }
+            return (Item.Rarity)Mathf.RoundToInt(raritySum / (float)nestedUuids.Count);
+        }
+
         public bool IsFullStack => count == ItemRef.MaxStackCount;
         public int DemonEyeLevel => nestedUuids.Count / GameData.Config.demonEyeCoreUpgradeCount;
         
@@ -1109,7 +1126,7 @@ public partial class Game {
         for (int i = 0; i < inventory.slots.Length; i++) {
             ItemInstance itemInstance = inventory.slots[i].itemInstance;
             if (itemInstance == null || itemInstance.notDiscovered) continue;
-            inventory.slots[i].ui.SetItem(itemInstance.ItemRef, itemInstance.count);
+            inventory.slots[i].ui.SetItem(itemInstance);
         }
     }
     

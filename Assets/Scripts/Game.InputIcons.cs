@@ -21,6 +21,8 @@ public partial class Game {
 
         AddInputPrompt(ui.menuBackButton.text, input.escape);
         AddInputPrompt(ui.dialogueBoxPrompt, input.advanceDialogue);
+        AddInputPrompt(ui.itemDescPopupInv.consumePromtText, input.useItem);
+        AddInputPrompt(ui.itemDescPopupPickup.consumePromtText, input.useItem);
         
         AddInputPrompt(inputPrompts.hideoutSelect_place, input.selectItem);
         AddInputPrompt(inputPrompts.hideoutQuickMove, input.moveStack);

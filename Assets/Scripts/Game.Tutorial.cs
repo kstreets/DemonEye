@@ -4,6 +4,7 @@ using PrimeTween;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using static GameData;
 
 public partial class Game {
 
@@ -115,6 +116,8 @@ public partial class Game {
         tutorial.firstTraderMeeting = tutorial.stateMachine.CreateState(enter: () => {
             mainMenuSequence.Complete();
             ShowMainMenuUI();
+            
+            mainMenu.playButton.SetClickableState(false);
             mainMenu.hideoutButton.SetClickableState(true);
             
             mainMenuSequence.isPaused = true;
@@ -138,12 +141,21 @@ public partial class Game {
         tutorial.firstHideoutVisit = tutorial.stateMachine.CreateState(enter: () => {
             mainMenu.hideoutButton.SetClickableState(true);
             mainMenu.hideoutNotifier.SetActive(true);
+            mainMenu.playButton.SetClickableState(false);
         });
         tutorial.hideoutCharacter = tutorial.stateMachine.CreateState(enter: () => {
             ui.traderTutorialDialogueBox.SetActive(true);
             tutorial.dialogueTypewriter = ui.traderTutorialTypewriter; // Set again in case of restoring from a save
             hideoutTabs.toggleGroup.SetTogglesHidden(false);
             hideoutTabs.toggleGroup.SetTogglesLocked(true);
+
+            if (!persistentFlags.HasFlag(PersistentFlags.HideoutTourItemsGiven)) {
+                foreach (ItemWithCount itemWithCount in config.hideoutTourStartingInventory.itemsWithCounts) {
+                    TryAddItemToInventory(inventories.stash, itemWithCount.item, itemWithCount.count);
+                }
+                persistentFlags |= PersistentFlags.HideoutTourItemsGiven;
+            }
+
             StartDialogue(
                 Line("Welcome to the Hideout! I provide all the utilities you could need on your journey to ascension."),
                 Line("Here we have the Inventory tab, a place where you can stash items, heal up, and prepare your body in various ways for raids."),
@@ -163,7 +175,7 @@ public partial class Game {
             hideoutTabs.toggleGroup.ManualyToggle(hideoutTabs.traderButton);
             StartDialogue(
                 Line("My personal favorite tab, Trading. Oh look there I am!"),
-                Line("This is where you can sell and buy items. Most of the items I sell can be found in a raid, but sometimes the RNG isn't in your favor, so that's why I'm around to capitalize."),
+                Line("This is where you can sell and trade items. Most of the items I trade can be found in raid, but sometimes it's better to just get them from me."),
                 Line("Now with all these free perks, you might be wondering what the catch is?")
             );
         });
@@ -171,8 +183,8 @@ public partial class Game {
             FadeInHideout();
             hideoutTabs.toggleGroup.ManualyToggle(hideoutTabs.questsButton);
             StartDialogue(
-                Line("Indentured servitude! In exchange for the Hideout and help along your journey towards ascension, you have to do whatever I say."),
-                Line("This tab is where I post all the things I want you to do. As an incentive for being a good demon, the more quests you complete, the more items I'm willing to sell to you.")
+                Line("Indentured servitude! In exchange for the Hideout and help along your journey towards ascension, you have to do whatever I say. Otherwise known as quests."),
+                Line("This tab is where I post all the things I want you to do. As an incentive for being a good demon, the more quests you complete, the more items I'll stock for you.")
             );
         });
         tutorial.hideoutSkills = tutorial.stateMachine.CreateState(enter: () => {
@@ -180,7 +192,7 @@ public partial class Game {
             StartDialogue(
                 Line("Finally, the last tab, Skills. Here you can permanently upgrade your stats by sacrificing the souls of those you killed."),
                 Line("Thats the tour, have fun in your future raids!"),
-                Line("Oh and make sure to check the Quests tab, I already have some postings for you there. Make sure to actually read the contents as they'll teach you how to best survive.")
+                Line("Oh and make sure to check the Quests tab, I already have some postings for you there. Make sure to read the contents, they are filled with my wisdom.")
             );
         });
         tutorial.completed = tutorial.stateMachine.CreateState(enter: () => {
@@ -188,6 +200,7 @@ public partial class Game {
             ui.traderTutorialDialogueBox.gameObject.SetActive(false);
             inputPrompts.hideoutParent.gameObject.SetActive(true);
             ui.menuBackButton.gameObject.SetActive(true);
+            mainMenu.playButton.SetClickableState(true);
             SaveGameState();
         });
         

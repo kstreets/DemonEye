@@ -468,7 +468,7 @@ public partial class Game {
 
             ItemInstance itemInstance = inventories.player.slots[itemIndex].itemInstance;
             if (itemInstance != null) {
-                hotBar.slotUIs[i].SetItem(itemInstance.ItemRef, itemInstance.count);
+                hotBar.slotUIs[i].SetItem(itemInstance);
             } 
         }
     }

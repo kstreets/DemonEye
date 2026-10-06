@@ -383,6 +383,7 @@ public partial class Game {
         
         int curPentagramLevel = hideoutState.pentagramLevelIndex + 1;
         eyeForgePanel.panelNumeral.sprite = config.styles.RomanNumeralSprite(curPentagramLevel);
+        eyeForgePanel.panelNumeral.enabled = !InTutorialFirstForge;
         
         int curLevelDisplayedInLevelUpTab = (int)char.GetNumericValue(eyeForgePanel.subHeaderTextMesh.text[^1]);
         int nextPentagramLevel = curPentagramLevel + 1;
