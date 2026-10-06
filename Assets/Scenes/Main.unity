@@ -27769,6 +27769,7 @@ MonoBehaviour:
     burnClip: {fileID: 11400000, guid: 51d5f2cac49c7c242952e48493a0d6bf, type: 2}
     deathStingerClip: {fileID: 11400000, guid: a717e3e2684bd9f4aadf37a9aab38af8, type: 2}
     textCharAppearClip: {fileID: 11400000, guid: 502edb7e5ec269f4e90802cc42abcdc8, type: 2}
+    uninterruptibleSources: []
   music:
     masterGroup: {fileID: 24300002, guid: 045edcbc93f71d548a0426204df6ca60, type: 2}
     mainMenuGroup: {fileID: -2699966960544205561, guid: 045edcbc93f71d548a0426204df6ca60, type: 2}

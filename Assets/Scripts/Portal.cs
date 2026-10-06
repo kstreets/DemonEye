@@ -59,7 +59,7 @@ public class Portal : MonoBehaviour {
         Game.gameInstance.PlayAudioClip(crystalHitClip, crystalTrans.position);
         
         // Summoning
-        Game.gameInstance.PlayAudioClip(portalSummoningClip, crystalTrans.position);
+        Game.gameInstance.PlayAudioClip(portalSummoningClip, crystalTrans.position, cannotInterrupt: true);
         
         const float particleRampUpPercentage = 0.8f;
         TweenSettings particleSettings = new() { duration = openDelay * particleRampUpPercentage, ease = Ease.InSine };

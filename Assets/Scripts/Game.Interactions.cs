@@ -25,29 +25,7 @@ public partial class Game {
         foreach (Collider2D col in cols) {
             
             if (col.CompareTag(Tags.Pickup)) {
-                ItemDrop itemDrop = col.GetComponent<ItemDrop>();
-                ui.itemDescPopupPickup.Show(itemDrop.ItemInstance);
-                
-                Item dropItemRef = itemDrop.ItemInstance.ItemRef;
-                Color itemColor = config.styles.GetTextColorForRarity(dropItemRef.GetRarity());
-                string details = ColorText($"{dropItemRef.displayName} x{itemDrop.ItemInstance.count}", itemColor);
-                EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), details);
-                
-                if (input.interact.WasPressedThisFrame()) {
-                    InventoryAddResult result = TryAddItemToInventory(inventories.player, itemDrop.ItemInstance);
-                    if (result.type != InventoryAddResult.ResultType.Failure) {
-                        thisFrame.flags |= GameData.FrameFlags.PickedUpLoot;
-                    }
-                    
-                    if (result.type == InventoryAddResult.ResultType.Success) {
-                        Entity droppedEntity = entities.lookup[itemDrop.gameObject];
-                        PickupDroppedItem(droppedEntity); 
-                        itemDrop.circleCollider.enabled = false;
-                    }
-                    else if (result.type == InventoryAddResult.ResultType.FailureToAddAll) {
-                        itemDrop.ItemInstance.count -= result.addedCount;
-                    }
-                }
+                CheckForItemDropInteraction(col.GetComponent<ItemDrop>());
             }
 
             if (col.CompareTag(Tags.DeadBody)) {
@@ -71,6 +49,15 @@ public partial class Game {
             }
 
             if (col.CompareTag(Tags.Altar)) {
+                Altar altar = col.GetComponent<Altar>();
+                if (altar.used) {
+                    ItemDrop summonedItemDrop = altar.summonedItemDrop;
+                    if (summonedItemDrop != null && !cols.Contains(summonedItemDrop.circleCollider)) {
+                        CheckForItemDropInteraction(summonedItemDrop);
+                    }
+                    continue;
+                }
+                
                 int soulsPrice = curRaid.map.altarSoulPrice;
                 Color soulsTextColor = player.state.soulCurrency >= soulsPrice ? config.styles.soulCurrencyColor : config.styles.outOfStockCountColor;
                 string details = $"Summon Eye Upgrade: <sprite=1>{ColorText(soulsPrice.ToString("N0"), soulsTextColor)}";
@@ -79,7 +66,7 @@ public partial class Game {
                     thisFrame.flags |= GameData.FrameFlags.SummonedUpgrade;
                     SummonEyeUpgradeFromAltar(col);
                     player.state.soulCurrency -= soulsPrice;
-                    col.enabled = false;
+                    altar.used = true;
                 }
             }
             
@@ -125,6 +112,37 @@ public partial class Game {
         }
     }
     
+    private void CheckForItemDropInteraction(ItemDrop itemDrop) {
+        ui.itemDescPopupPickup.Show(itemDrop.ItemInstance);
+        
+        Item dropItemRef = itemDrop.ItemInstance.ItemRef;
+        Color itemColor = config.styles.GetTextColorForRarity(dropItemRef.GetRarity());
+        string details = ColorText($"{dropItemRef.displayName} x{itemDrop.ItemInstance.count}", itemColor);
+        EnableInteractionPrompt(OffsetY(itemDrop.transform.position, 0.1f), details);
+        
+        if (!input.interact.WasPressedThisFrame()) return;
+        
+        InventoryAddResult result = TryAddItemToInventory(inventories.player, itemDrop.ItemInstance);
+        if (result.type != InventoryAddResult.ResultType.Failure) {
+            thisFrame.flags |= GameData.FrameFlags.PickedUpLoot;
+        }
+        
+        if (result.type == InventoryAddResult.ResultType.Success) {
+            Entity droppedEntity = entities.lookup[itemDrop.gameObject];
+            PickupDroppedItem(droppedEntity); 
+            itemDrop.circleCollider.enabled = false;
+            
+            if (itemDrop.summoningAltar != null) {
+                itemDrop.summoningAltar.summonedItemDrop = null;
+                itemDrop.summoningAltar.GetComponent<Collider2D>().enabled = false;
+                itemDrop.summoningAltar = null;
+            }
+        }
+        else if (result.type == InventoryAddResult.ResultType.FailureToAddAll) {
+            itemDrop.ItemInstance.count -= result.addedCount;
+        }
+    }
+    
     private void HideInteractionPopup() {
         ui.itemDescPopupPickup.Hide();
         DisableInteractionPrompt();
@@ -135,16 +153,6 @@ public partial class Game {
         
         droppedEntity.GetEffect(Entity.EffectsIndicies.Bounce).Stop();
         droppedEntity.trans.SetParent(player.trans, true);
-        
-        TweenSettings horizontalSettings = new() {
-            duration = 0.15f,
-            ease = Ease.InQuart,
-        };
-        
-        TweenSettings verticalSettings = new() {
-            duration = 0.09f,
-            ease = Ease.InQuart,
-        };
         
         TweenSettings itemScaleSettings = new() {
             startDelay = 0.03f,
@@ -159,9 +167,16 @@ public partial class Game {
             frequency = 5f,
         };
         
-        Tween.LocalPositionX(droppedEntity.trans, playerPickupTarget.x, horizontalSettings)
-        .Group(Tween.LocalPositionY(droppedEntity.trans, playerPickupTarget.y, verticalSettings))
-        .Group(Tween.Scale(droppedEntity.trans, 0f,itemScaleSettings))
+        // Moves straight towards the player with a small hop on top. Tweening x and y separately only looked right
+        // for items beside or below the player, items above would drop straight down and then slide across.
+        const float hopHeight = 0.05f;
+        Vector3 startLocalPos = droppedEntity.trans.localPosition;
+        Tween.Custom(droppedEntity.trans, 0f, 1f, 0.15f, ease: Ease.InQuad, onValueChange: (trans, t) => {
+            Vector3 pos = Vector3.Lerp(startLocalPos, playerPickupTarget, t);
+            pos.y += Mathf.Sin(t * Mathf.PI) * hopHeight;
+            trans.localPosition = pos;
+        })
+        .Group(Tween.Scale(droppedEntity.trans, 0f, itemScaleSettings))
         .Group(Tween.PunchScale(player.trans, playerScaleSettings))
         .OnComplete(() => DestroyEntity(droppedEntity));
     }
@@ -377,12 +392,16 @@ public partial class Game {
             Entity item = gameInstance.SpawnItemAsEntity(altar.summoningItem, 1, altar.transform.position, Quaternion.identity);
             item.spriteRenderer.sortingOrder = 1;
             
-            Vector3 endPos = altar.transform.position.Offset(y: 0.21f);
+            ItemDrop itemDrop = item.gameObject.GetComponent<ItemDrop>();
+            itemDrop.summoningAltar = altar;
+            altar.summonedItemDrop = itemDrop;
+            
+            Vector3 endPos = altar.transform.position.Offset(y: 0.224f);
             Tween.Position(item.trans, endPos, 0.12f, Ease.OutBack);
             Tween.Scale(item.trans, 0f, 1f, 0.16f, Ease.OutBack);
             
             Tween.Delay(altar, 0.12f, static (altar) => {
-                Entity reveal = gameInstance.SpawnEntityOneShot(gameInstance.entityPools.eyeUpgradeReveal, altar.transform.position.Offset(y: 0.21f), Quaternion.identity);
+                Entity reveal = gameInstance.SpawnEntityOneShot(gameInstance.entityPools.eyeUpgradeReveal, altar.transform.position.Offset(y: 0.224f), Quaternion.identity);
                 reveal.spriteRenderer.color = gameInstance.config.styles.GetColorForRarity(altar.summoningItem.GetRarity());
                 GetRarityVolumeAndPitch(altar.summoningItem.GetRarity(), out float rarityVolume, out float rarityPitch);
                 gameInstance.PlayAudioClip(gameInstance.audio.rarityRevealClip, player.position, rarityVolume, rarityPitch);

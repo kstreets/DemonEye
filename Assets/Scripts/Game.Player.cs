@@ -331,7 +331,7 @@ public partial class Game {
         return dist;
     }
 
-    private Vector3 PlayerEyePos => player.position + new Vector3(0f, 0.13f, 0f);
+    private Vector3 PlayerEyePos => player.position + new Vector3(0f, 0.182f, 0f);
     
     private void ShootProjectile(Vector2 targetPos, float? spawnDelay = default, float? flatCritChance = default) {
         const float maxInaccuracyAngle = 18f;

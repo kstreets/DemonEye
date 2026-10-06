@@ -9,6 +9,8 @@ public class ItemDrop : MonoBehaviour {
     [SerializeField] private Item item;
     
     [NonSerialized] private ItemInstance itemInstance;
+    // Set when summoned from an altar, so the altar can be told when the item is taken
+    [NonSerialized] public Altar summoningAltar;
     
     // If we instantiate a prefab with this component it would not have an item instance.
     // Example, spawning a mushroom on a map
@@ -23,8 +25,10 @@ public class ItemDrop : MonoBehaviour {
         itemInstance = passedItemInstance;
         Item itemRef = passedItemInstance.ItemRef;
         spriteRenderer.sprite = itemRef.dropSprite == null ? itemRef.inventorySprite : itemRef.dropSprite;
+        spriteRenderer.sortingOrder = 0;
         circleCollider.radius = itemRef.pickupRadius;
         circleCollider.enabled = true;
+        summoningAltar = null;
     }
     
 }

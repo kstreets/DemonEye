@@ -382,6 +382,8 @@ public class GameData {
         public Dictionary<int, List<DynamicClipRecord>> records = new(50);
         public Dictionary<AudioSource, int> generationLookup = new();
         public List<AudioClipHandle> loopingSources = new();
+        // Sources playing a cannotInterrupt clip, held out of reservedSources until the clip finishes
+        public List<AudioSource> uninterruptibleSources = new();
         public Queue<AudioSource> reservedSources;
     }
     

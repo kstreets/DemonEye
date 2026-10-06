@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.Assertions;
 using Random = UnityEngine.Random;
 
 public partial class Game {
@@ -32,12 +34,17 @@ public partial class Game {
     
     public AudioClipHandle PlayAudioClip(DynamicClip dynamicClip) => PlayAudioClip(dynamicClip, Vector2.zero);
     
-    public AudioClipHandle PlayAudioClip(DynamicClip dynamicClip, Vector2 position, float volumeScaler = 1f, float pitch = 0f, bool loop = false) {
+    public AudioClipHandle PlayAudioClip(DynamicClip dynamicClip, Vector2 position, float volumeScaler = 1f, float pitch = 0f, bool loop = false, bool cannotInterrupt = false) {
         if (ClipShouldNotBePlayed(dynamicClip, position)) {
             return new();
         }
         
-        AudioSource source = audio.reservedSources.Dequeue();
+        ReclaimFinishedUninterruptibleSources();
+        // Every source is busy with a looping or uninterruptible clip
+        if (!audio.reservedSources.TryDequeue(out AudioSource source)) {
+            return new();
+        }
+        
         int nextGeneration = audio.generationLookup[source] + 1;
         audio.generationLookup[source] = nextGeneration;
 
@@ -47,7 +54,10 @@ public partial class Game {
         };
         
         if (loop) { 
-            audio.loopingSources.Add(handle);    
+            audio.loopingSources.Add(handle);
+        }
+        else if (cannotInterrupt) {
+            audio.uninterruptibleSources.Add(source);
         }
         else {
             audio.reservedSources.Enqueue(source);
@@ -81,12 +91,13 @@ public partial class Game {
         handle.audioSource.Stop();
         audio.generationLookup[handle.audioSource] = curAudioSourceGen + 1;
         
-        // If the clip is non-looping then its already be in the reserved queue
+        // If the clip is non-looping and interruptible then its already be in the reserved queue
         if (!audio.reservedSources.Contains(handle.audioSource)) {
             audio.reservedSources.Enqueue(handle.audioSource);
         }
         
         audio.loopingSources.Remove(handle);
+        audio.uninterruptibleSources.Remove(handle.audioSource);
     }
     
     private void StopAllAudioClips() {
@@ -95,6 +106,24 @@ public partial class Game {
         }
         for (int i = audio.loopingSources.Count - 1; i >= 0; i--) {
             StopAudioClip(audio.loopingSources[i]);
+        }
+        foreach (AudioSource source in audio.uninterruptibleSources) {
+            source.Stop();
+            audio.reservedSources.Enqueue(source);
+        }
+        audio.uninterruptibleSources.Clear();
+    }
+    
+    // Puts sources back into the queue once their uninterruptible clip has finished
+    private void ReclaimFinishedUninterruptibleSources() {
+        // Paused sources aren't playing but haven't finished either
+        if (pauseMenu.paused) return;
+        
+        for (int i = audio.uninterruptibleSources.Count - 1; i >= 0; i--) {
+            AudioSource source = audio.uninterruptibleSources[i];
+            if (source.isPlaying) continue;
+            audio.uninterruptibleSources.RemoveAt(i);
+            audio.reservedSources.Enqueue(source);
         }
     }
     

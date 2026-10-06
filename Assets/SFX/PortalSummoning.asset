@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PortalSummoning
   m_EditorClassIdentifier: 
   clips:
-  - {fileID: 8300000, guid: 83ab7c434d18fd844845f1963b997bc6, type: 3}
+  - {fileID: 8300000, guid: f9eefdea4a8e56e4184f947d9277e27d, type: 3}
   mixerGroup: {fileID: -548910257760128410, guid: 5d1188e598dcb514aa82b03e86c0c627, type: 2}
   rolloffMode: 1
   minDistance: 0.1

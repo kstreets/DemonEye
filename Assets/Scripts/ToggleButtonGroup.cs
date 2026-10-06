@@ -32,8 +32,6 @@ public class ToggleButtonGroup : MonoBehaviour {
     public bool TogglesUsable => !TogglesHidden && !TogglesLocked;
 
     private void Awake() {
-        callbacks.Clear();
-        
         if (toggles.Count <= 0) return;
         
         foreach (ToggleButton toggle in toggles) {
@@ -160,13 +158,17 @@ public class ToggleButtonGroup : MonoBehaviour {
     }
 
     private void InitializeToggle(ToggleButton toggle) {
+        // Toggles added before Awake (e.g. quest toggles created while the panel is inactive) are already set up,
+        // and adding the onClick listener again would make each click play the sound and select twice
+        if (callbacks.ContainsKey(toggle)) return;
+        
         UnityAction callback = () => {
             // Place sound here because we only want it to play when we actually click on it.
             // OnButtonClicked can be manually called without the player pressing the button.
             Game.gameInstance.PlayAudioClip(pressedClip);
             OnButtonClicked(toggle);
         };
-        callbacks.TryAdd(toggle, callback);
+        callbacks.Add(toggle, callback);
         toggle.button.onClick.AddListener(callback);
     }
 

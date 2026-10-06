@@ -12,5 +12,7 @@ public class Altar : MonoBehaviour {
     public Transform soulSwirlSpawnPoint;
     
     [NonSerialized] public Item summoningItem;
+    [NonSerialized] public bool used;
+    [NonSerialized] public ItemDrop summonedItemDrop;
     
 }
