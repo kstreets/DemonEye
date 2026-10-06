@@ -29,6 +29,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/SulfurFields.unity
     guid: 3b59665c7c75ba7488e1a9f72ee30fc1
+  - enabled: 1
+    path: Assets/Scenes/DemoMap.unity
+    guid: fd49db02b1fbd89439e0f799c2235a64
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: a532c4d929d3a764a805933affb91304, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
