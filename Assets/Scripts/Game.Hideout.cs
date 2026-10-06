@@ -398,7 +398,7 @@ public partial class Game {
             
             if (forgeMode is ForgeMode.PostForgeOrUpgrade) {
                 if (InTutorialFirstForge) {
-                    forgeButton.text.text = "Forge";
+                    forgeButton.text.text = "Craft";
                     forgeButton.SetClickableState(false);
                 }
                 else {
@@ -408,7 +408,7 @@ public partial class Game {
                 return;
             }
             
-            forgeButton.text.text = forgeMode is ForgeMode.UpgradingDemonEye ? "Upgrade" : "Forge";
+            forgeButton.text.text = forgeMode is ForgeMode.UpgradingDemonEye ? "Upgrade" : "Craft";
             
             if (forgeMode is ForgeMode.UpgradingDemonEye) {
                 ItemInstance eyeItemInstance = inventories.eyeForge.slots[0].itemInstance;
@@ -551,7 +551,7 @@ public partial class Game {
         
         ButtonFeel forgeButton = eyeForgePanel.forgeButton;
         forgeButton.KeepPressed();
-        forgeButton.text.text = forgeMode is ForgeMode.Forging ? "Forging..." : "Upgrading...";
+        forgeButton.text.text = forgeMode is ForgeMode.Forging ? "Crafting..." : "Upgrading...";
         
         PlayAudioClip(audio.startForgingClip);
         

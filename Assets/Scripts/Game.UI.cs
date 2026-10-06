@@ -717,16 +717,21 @@ public partial class Game {
         AddHint(inventories.player.slots[1], "Backpack Slot");
         AddHint(inventories.player.slots[2], "Trinket Slot");
         
-        const string quickUseDesc = "Consumable items placed here are available on the hotbar during raids";
+        const string quickUseDesc = "Items placed here are available on the hotbar during raids";
         AddHint(inventories.player.slots[3], quickUseDesc);
         AddHint(inventories.player.slots[4], quickUseDesc);
         AddHint(inventories.player.slots[5], quickUseDesc);
         AddHint(inventories.player.slots[6], quickUseDesc);
         AddHint(ui.quickUseHeaderText, quickUseDesc);
         
-        AddHint(inventories.eyeForge.slots[0], "Place an Eyeball or Demon Eye here to create or level up a Demon Eye");
+        AddHintWithCallback(inventories.eyeForge.slots[0], static () => {
+            if (gameInstance.InTutorialFirstForge) {
+                return "Place an Eyeball here to craft a Demon Eye";
+            }
+            return "Place an Eyeball or Demon Eye here to craft or level up a Demon Eye";
+        });
         
-        string eyeUpgradeDesc = $"Place {DisplayNumber(1)} of {DisplayNumber(5)} Eye Upgrades here to create or level up a Demon Eye";
+        string eyeUpgradeDesc = $"Place {DisplayNumber(1)} of {DisplayNumber(5)} Blood Runes here to craft a Demon Eye";
         AddHint(inventories.eyeForge.slots[1],  eyeUpgradeDesc);
         AddHint(inventories.eyeForge.slots[2],  eyeUpgradeDesc);
         AddHint(inventories.eyeForge.slots[3],  eyeUpgradeDesc);
@@ -745,15 +750,15 @@ public partial class Game {
             Inventory eyeForgeInventory = gameInstance.inventories.eyeForge;
             
             if (forgeMode == ForgeMode.Empty) {
-                return "Place an eyeball in the center to start the Demon Eye forging process";
+                return "Place an eyeball in the center to start the Demon Eye crafting process";
             }
             if (forgeError == ForgeError.ForgingButJustEye) {
-                return $"Requires {DisplayNumber(5)} Eye Upgrades to forge a Demon Eye";
+                return $"Requires {DisplayNumber(5)} Blood Runes to craft a Demon Eye";
             }
             if (forgeError == ForgeError.ForgingButMissingUpgrades) {
                 int curEyeUpgradeCount = gameInstance.GetInventoryItemCount(eyeForgeInventory) - 1;
                 int eyeUpgradesStillNeeded = GameData.Config.demonEyeCoreUpgradeCount - curEyeUpgradeCount;
-                return $"Requires {DisplayNumber(eyeUpgradesStillNeeded)} more Eye Upgrades to forge a Demon Eye";
+                return $"Requires {DisplayNumber(eyeUpgradesStillNeeded)} more Blood Runes to craft a Demon Eye";
             }
             if (forgeError == ForgeError.ForgingButWithoutEye) {
                 return "Missing eyeball in the center";
@@ -763,7 +768,7 @@ public partial class Game {
                 return $"Pentagram needs to be level {pentegramLevelRequired} to upgrade this Demon Eye";
             }
             if (forgeError == ForgeError.NeedsToOwnMoreEyeUpgrades) {
-                return "Eye Upgrades requirement have not been met";
+                return "Blood Runes requirement have not been met";
             }
             if (forgeMode == ForgeMode.UpgradingDemonEye) {
                 return "Upgrade Demon Eye";
@@ -786,6 +791,14 @@ public partial class Game {
         Assert.IsFalse(uiHints.descriptionLookup.ContainsKey(rectTransform), "Hint RectTransform has already been added");
         uiHints.hoverableRectTransforms.Add(rectTransform);
         uiHints.descriptionLookup.Add(rectTransform, description);
+    }
+    
+    private void AddHintWithCallback(InventorySlot slot, Func<string> getDescriptionCallback) {
+        RectTransform rectTransform = slot.ui.rectTransform;
+        Assert.IsFalse(uiHints.descriptionLookup.ContainsKey(rectTransform), "Hint RectTransform has already been added");
+        Assert.IsFalse(getDescriptionCallback == null, "Description callback should not be null");
+        uiHints.hoverableInventorySlots.Add(slot);
+        uiHints.descriptionCallbackLookup.Add(rectTransform, getDescriptionCallback);
     }
     
     private void AddHintWithCallback(RectTransform rectTransform, Func<string> getDescriptionCallback) {
