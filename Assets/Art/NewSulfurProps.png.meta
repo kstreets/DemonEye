@@ -232,6 +232,600 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: NewSulfurProps_5
+      rect:
+        serializedVersion: 2
+        x: 329
+        y: 187
+        width: 82
+        height: 86
+      alignment: 9
+      pivot: {x: 0.5, y: 0.26}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2e298b50ea8fca949b2534f10c4dfe6b
+      internalID: -931956967
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSulfurProps_6
+      rect:
+        serializedVersion: 2
+        x: 256
+        y: 192
+        width: 60
+        height: 62
+      alignment: 9
+      pivot: {x: 0.5, y: 0.34}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 739cfb863dbc6c746ba16ca4e27b2ef5
+      internalID: 2099869848
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSulfurProps_7
+      rect:
+        serializedVersion: 2
+        x: 155
+        y: 183
+        width: 78
+        height: 63
+      alignment: 9
+      pivot: {x: 0.5, y: 0.44}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 32782168805370d4a80bb3e3e8514002
+      internalID: -1548076662
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSulfurProps_8
+      rect:
+        serializedVersion: 2
+        x: 18
+        y: 129
+        width: 104
+        height: 49
+      alignment: 9
+      pivot: {x: 0.5, y: 0.41}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1f5fbe888cc480b4fa9c17a9c61768ca
+      internalID: 2063970090
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSulfurProps_9
+      rect:
+        serializedVersion: 2
+        x: 439
+        y: 99
+        width: 70
+        height: 73
+      alignment: 9
+      pivot: {x: 0.5, y: 0.29}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 413f713678292884cbdf88e390ccc4ad
+      internalID: -1011259818
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSulfurProps_10
+      rect:
+        serializedVersion: 2
+        x: 14
+        y: 181
+        width: 63
+        height: 71
+      alignment: 9
+      pivot: {x: 0.5, y: 0.33}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bed11d57717c9ba488b94572efdf81e2
+      internalID: 1494417326
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSulfurProps_11
+      rect:
+        serializedVersion: 2
+        x: 93
+        y: 243
+        width: 22
+        height: 21
+      alignment: 9
+      pivot: {x: 0.5, y: 0.38}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f76b9cb6098586e468a60a8357a8c465
+      internalID: -40614664
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSulfurProps_12
+      rect:
+        serializedVersion: 2
+        x: 127
+        y: 241
+        width: 28
+        height: 22
+      alignment: 9
+      pivot: {x: 0.5, y: 0.46}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 04a9f5b0c9307bc46a62ed64aea7269d
+      internalID: 678002152
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSulfurProps_13
+      rect:
+        serializedVersion: 2
+        x: 95
+        y: 196
+        width: 19
+        height: 20
+      alignment: 9
+      pivot: {x: 0.5, y: 0.4}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b88d89c16078e094c91e15439f591ee0
+      internalID: 1031370668
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSulfurProps_14
+      rect:
+        serializedVersion: 2
+        x: 123
+        y: 200
+        width: 16
+        height: 11
+      alignment: 9
+      pivot: {x: 0.5, y: 0.37}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f3e614bafa74aa24086169acec30678a
+      internalID: -1447586510
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSulfurProps_15
+      rect:
+        serializedVersion: 2
+        x: 13
+        y: 292
+        width: 78
+        height: 28
+      alignment: 9
+      pivot: {x: 0.5, y: 0.54}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7adcb4a5fb5b0a442b918c50bd21d179
+      internalID: 2069291989
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSulfurProps_16
+      rect:
+        serializedVersion: 2
+        x: 100
+        y: 278
+        width: 102
+        height: 46
+      alignment: 9
+      pivot: {x: 0.5, y: 0.52}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3fb7601fed7fe284d9402e2cfd6dc8ac
+      internalID: 1147895959
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSulfurProps_17
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 263
+        width: 94
+        height: 49
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f9ed02a4ffa00a14d811014f46a99c45
+      internalID: 539214809
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSulfurProps_18
+      rect:
+        serializedVersion: 2
+        x: 323
+        y: 281
+        width: 35
+        height: 17
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8a3e8120f9354dd44a9da27f5da2f7cf
+      internalID: -1015391338
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSulfurProps_19
+      rect:
+        serializedVersion: 2
+        x: 31
+        y: 333
+        width: 47
+        height: 63
+      alignment: 9
+      pivot: {x: 0.5, y: 0.18}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c4a9b3c44108f2442b5e6a16dd0ed285
+      internalID: 1837658639
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSulfurProps_20
+      rect:
+        serializedVersion: 2
+        x: 93
+        y: 334
+        width: 39
+        height: 56
+      alignment: 9
+      pivot: {x: 0.5, y: 0.16}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: eb0a20a283baf2b4ca1c2af51fd66918
+      internalID: -1325836461
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSulfurProps_21
+      rect:
+        serializedVersion: 2
+        x: 148
+        y: 337
+        width: 27
+        height: 41
+      alignment: 9
+      pivot: {x: 0.5, y: 0.14}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 31a33f59d6b9c2d40aa366ff899a242a
+      internalID: -889144110
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSulfurProps_22
+      rect:
+        serializedVersion: 2
+        x: 195
+        y: 330
+        width: 67
+        height: 80
+      alignment: 9
+      pivot: {x: 0.5, y: 0.3}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 87f3e5f835b6d0b4eaeb9debb6ee7bb7
+      internalID: -655407482
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSulfurProps_23
+      rect:
+        serializedVersion: 2
+        x: 283
+        y: 379
+        width: 9
+        height: 6
+      alignment: 9
+      pivot: {x: 0.5, y: 0.28}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6cf7c6a3fb5149448b692942af0abe0a
+      internalID: -1033976709
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSulfurProps_24
+      rect:
+        serializedVersion: 2
+        x: 293
+        y: 367
+        width: 13
+        height: 8
+      alignment: 9
+      pivot: {x: 0.5, y: 0.28}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8e91c86da14a03648a9f22cc193fb766
+      internalID: 1868641419
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSulfurProps_25
+      rect:
+        serializedVersion: 2
+        x: 313
+        y: 372
+        width: 10
+        height: 9
+      alignment: 9
+      pivot: {x: 0.5, y: 0.28}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1a3545899844c8c4b8509f0216ab2dff
+      internalID: 1770070834
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSulfurProps_26
+      rect:
+        serializedVersion: 2
+        x: 327
+        y: 371
+        width: 7
+        height: 6
+      alignment: 9
+      pivot: {x: 0.5, y: 0.28}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dd006b310d8b3dd4290027c54e234898
+      internalID: 1169487103
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSulfurProps_27
+      rect:
+        serializedVersion: 2
+        x: 302
+        y: 377
+        width: 10
+        height: 9
+      alignment: 9
+      pivot: {x: 0.5, y: 0.28}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bf5119b63bb58bf42b7bafab8c8ac086
+      internalID: -2141366754
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSulfurProps_28
+      rect:
+        serializedVersion: 2
+        x: 356
+        y: 347
+        width: 36
+        height: 36
+      alignment: 9
+      pivot: {x: 0.5, y: 0.3}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3510a145bf991664ca5609692826d576
+      internalID: -1331823822
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSulfurProps_29
+      rect:
+        serializedVersion: 2
+        x: 406
+        y: 355
+        width: 18
+        height: 19
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e22d8295fb545bc43947b3fb557dd2af
+      internalID: -851472549
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSulfurProps_30
+      rect:
+        serializedVersion: 2
+        x: 109
+        y: 417
+        width: 68
+        height: 38
+      alignment: 9
+      pivot: {x: 0.5, y: 0.37}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: eb652f4297048d341b13463d636703c5
+      internalID: -1423338036
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NewSulfurProps_31
+      rect:
+        serializedVersion: 2
+        x: 15
+        y: 428
+        width: 78
+        height: 72
+      alignment: 9
+      pivot: {x: 0.5, y: 0.18}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ab7097550cf40404fa94d555411f042d
+      internalID: 117558773
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -249,9 +843,36 @@ TextureImporter:
       AttackRune1_0: 637263459462573385
       NewSulfurProps_0: 819617022
       NewSulfurProps_1: -690536047
+      NewSulfurProps_10: 1494417326
+      NewSulfurProps_11: -40614664
+      NewSulfurProps_12: 678002152
+      NewSulfurProps_13: 1031370668
+      NewSulfurProps_14: -1447586510
+      NewSulfurProps_15: 2069291989
+      NewSulfurProps_16: 1147895959
+      NewSulfurProps_17: 539214809
+      NewSulfurProps_18: -1015391338
+      NewSulfurProps_19: 1837658639
       NewSulfurProps_2: 501629350
+      NewSulfurProps_20: -1325836461
+      NewSulfurProps_21: -889144110
+      NewSulfurProps_22: -655407482
+      NewSulfurProps_23: -1033976709
+      NewSulfurProps_24: 1868641419
+      NewSulfurProps_25: 1770070834
+      NewSulfurProps_26: 1169487103
+      NewSulfurProps_27: -2141366754
+      NewSulfurProps_28: -1331823822
+      NewSulfurProps_29: -851472549
       NewSulfurProps_3: 522841250
+      NewSulfurProps_30: -1423338036
+      NewSulfurProps_31: 117558773
       NewSulfurProps_4: 779084914
+      NewSulfurProps_5: -931956967
+      NewSulfurProps_6: 2099869848
+      NewSulfurProps_7: -1548076662
+      NewSulfurProps_8: 2063970090
+      NewSulfurProps_9: -1011259818
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
