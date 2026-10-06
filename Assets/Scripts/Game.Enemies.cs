@@ -525,13 +525,21 @@ public partial class Game {
         
             bool justKilledLastEnemiesInWave = sm.FinishedSpawningThisWave && sm.prevEnemyCount > 0 && curEnemyCount <= 0;
             if (justKilledLastEnemiesInWave) {
-                const float struggleThresholdPercentage = 0.8f;
-                float stuggleThreshold = sm.CurPhase.maxDuration * struggleThresholdPercentage;
-                if (sm.timeInCurPhase >= stuggleThreshold) {
-                    float exceededTime = sm.timeInCurPhase - stuggleThreshold;
-                    float maxPossibleExceededTime = sm.CurPhase.maxDuration * (1f - struggleThresholdPercentage);
-                    float addedTime = Mathf.Lerp(1f, 6f, exceededTime / maxPossibleExceededTime);
-                    sm.startNextWaveDelay += addedTime; 
+                
+                // If a wave's max duration is about the same time as the spawn duration, we can't assume the player struggled
+                // because they would of had none or very little time to kill the last spawned enemies
+                const float struggleEligiblePercentage = 1.2f;
+                bool waveIsStruggleEligible = sm.CurPhase.maxDuration >= (sm.CurPhase.spawnDuration * struggleEligiblePercentage);
+                
+                if (waveIsStruggleEligible) {
+                    const float struggleThresholdPercentage = 0.8f;
+                    float stuggleThreshold = sm.CurPhase.maxDuration * struggleThresholdPercentage;
+                    if (sm.timeInCurPhase >= stuggleThreshold) {
+                        float exceededTime = sm.timeInCurPhase - stuggleThreshold;
+                        float maxPossibleExceededTime = sm.CurPhase.maxDuration * (1f - struggleThresholdPercentage);
+                        float addedTime = Mathf.Lerp(1f, 6f, exceededTime / maxPossibleExceededTime);
+                        sm.startNextWaveDelay += addedTime; 
+                    }
                 }
             }
             sm.prevEnemyCount = curEnemyCount;
@@ -541,26 +549,26 @@ public partial class Game {
                 float prevTime = sm.timeAddedThroughActions;
             
                 if (thisFrame.flags.HasFlag(FrameFlags.SearchingBody)) {
-                    sm.timeAddedThroughActions += 3f;
+                    sm.timeAddedThroughActions += 2f;
                 }
                 if (thisFrame.flags.HasFlag(FrameFlags.SearchingBush)) {
-                    sm.timeAddedThroughActions += 2f;
+                    sm.timeAddedThroughActions += 1f;
                 }
                 if (thisFrame.flags.HasFlag(FrameFlags.SummonedUpgrade)) {
-                    sm.timeAddedThroughActions += 2f;
+                    sm.timeAddedThroughActions += 1f;
                 }
                 if (thisFrame.flags.HasFlag(FrameFlags.TookConsumable)) {
-                    float timeToAdd = Mathf.Lerp(1f, 3f, 1f - CurPlayerHealthPercentage());
+                    float timeToAdd = Mathf.Lerp(1f, 2f, 1f - CurPlayerHealthPercentage());
                     sm.timeAddedThroughActions += timeToAdd;
                 }
                 if (thisFrame.flags.HasFlag(FrameFlags.ShotRock)) {
-                    sm.timeAddedThroughActions += 0.5f;
+                    sm.timeAddedThroughActions += 0.2f;
                 }
             
                 if (thisFrame.flags.HasFlag(FrameFlags.PickedUpLoot)) {
                     int nearbyItems = Physics.OverlapCircle(player.Center, 0.5f, Masks.ItemMask).Count;
                     if (nearbyItems >= 2) {
-                        sm.timeAddedThroughActions += 2f;
+                        sm.timeAddedThroughActions += 1f;
                     }
                 }
             
@@ -576,9 +584,6 @@ public partial class Game {
             
             if (sm.FinishedSpawningThisWave && entities.enemies.Count <= 0) {
                 sm.startNextWaveDelay -= Time.deltaTime;
-                if (sm.startNextWaveDelay <= 0f) {
-                    timeLimitExceeded = true;
-                }
             }
         }
         

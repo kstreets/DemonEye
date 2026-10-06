@@ -96,6 +96,8 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
             return;
         }
         
+        metaInfoParent.gameObject.SetActive(true);
+        
         int sellOrBuyPrice = 0;
         if (item.type == gameInstance.itemTypes.demonEye) { 
             sellOrBuyPrice = gameInstance.GetDemonEyeSellPrice(itemInstance);

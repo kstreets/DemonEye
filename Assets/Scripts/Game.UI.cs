@@ -403,21 +403,40 @@ public partial class Game {
         
         if (curRaid.stateSwitchedThisFrame) {
             if (curRaid.state == RaidState.InitialWaves) {
-                raidInfo.waveText.gameObject.SetActive(true); 
+                waveTextSequence.Stop();
+                raidInfo.waveText.transform.localScale = Vector3.one;
+                raidInfo.waveText.gameObject.SetActive(true);
+                raidInfo.waveText.text = WaveCountText();
+                displayedWaveNumber = spawnManager.CurWaveNumber;
             }
             else if (curRaid.state == RaidState.FinalWave) {
-                raidInfo.waveText.text = "Final Wave";
-                Tween.Scale(raidInfo.waveText.transform, 0f, 1f, 0.5f, Ease.OutBack);
+                AnimateWaveTextChange("Final Wave");
                 AnimateSmallRaidText(ColorText("Final Wave", config.styles.decreaseDescColor));
             }
             else if (curRaid.state == RaidState.PostFinalWave) {
                 raidInfo.waveText.gameObject.SetActive(false);
             }
         }
-        
-        if (raidInfo.waveText.gameObject.activeInHierarchy) {
-            raidInfo.waveText.text = $"Wave {spawnManager.CurWaveNumber}/{spawnManager.TotalWaveCount}";
+
+        if (curRaid.state == RaidState.InitialWaves && displayedWaveNumber != spawnManager.CurWaveNumber) {
+            displayedWaveNumber = spawnManager.CurWaveNumber;
+            AnimateWaveTextChange(WaveCountText());
         }
+    }
+
+    private int displayedWaveNumber;
+    private Sequence waveTextSequence;
+
+    private string WaveCountText() => $"Wave {spawnManager.CurWaveNumber}/{spawnManager.TotalWaveCount}";
+
+    // Grows the wave text, swaps the text at its largest, then shrinks it back down
+    private void AnimateWaveTextChange(string newText) {
+        waveTextSequence.Complete();
+        TextMeshProUGUI waveText = raidInfo.waveText;
+        waveTextSequence = Sequence.Create()
+            .Chain(Tween.Scale(waveText.transform, 1.35f, 0.15f, Ease.OutQuad))
+            .ChainCallback(() => waveText.text = newText)
+            .Chain(Tween.Scale(waveText.transform, 1f, 0.3f, Ease.OutBack));
     }
     
     private void UpdatePlayerPanelUI() {

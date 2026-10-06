@@ -20,9 +20,9 @@ MonoBehaviour:
   - name: Wave 0
     variants:
     - name: Variant 0
-      maxDuration: 42
+      maxDuration: 10
       spawnDuration: 10
-      startNextPhaseEarlyDelay: 10
+      startNextPhaseEarlyDelay: 5
       spawnCellRange: {x: 8, y: 11}
       repositionCellRange: {x: 7, y: 9}
       spawnRateCurve:
@@ -55,9 +55,9 @@ MonoBehaviour:
   - name: Wave 1
     variants:
     - name: Variant 0
-      maxDuration: 45
+      maxDuration: 15
       spawnDuration: 15
-      startNextPhaseEarlyDelay: 10
+      startNextPhaseEarlyDelay: 5
       spawnCellRange: {x: 8, y: 11}
       repositionCellRange: {x: 7, y: 9}
       spawnRateCurve:
@@ -90,9 +90,9 @@ MonoBehaviour:
   - name: Wave 2
     variants:
     - name: Variant 0
-      maxDuration: 42
+      maxDuration: 15
       spawnDuration: 15
-      startNextPhaseEarlyDelay: 10
+      startNextPhaseEarlyDelay: 5
       spawnCellRange: {x: 8, y: 11}
       repositionCellRange: {x: 7, y: 9}
       spawnRateCurve:
@@ -125,9 +125,9 @@ MonoBehaviour:
   - name: Wave 3
     variants:
     - name: Variant 0
-      maxDuration: 50
+      maxDuration: 30
       spawnDuration: 30
-      startNextPhaseEarlyDelay: 10
+      startNextPhaseEarlyDelay: 5
       spawnCellRange: {x: 9, y: 11}
       repositionCellRange: {x: 7, y: 8}
       spawnRateCurve:
@@ -162,9 +162,9 @@ MonoBehaviour:
   - name: Wave 4
     variants:
     - name: Variant 0
-      maxDuration: 58
+      maxDuration: 40
       spawnDuration: 40
-      startNextPhaseEarlyDelay: 10
+      startNextPhaseEarlyDelay: 5
       spawnCellRange: {x: 9, y: 11}
       repositionCellRange: {x: 8, y: 9}
       spawnRateCurve:
@@ -201,7 +201,7 @@ MonoBehaviour:
     - name: Variant 0
       maxDuration: 45
       spawnDuration: 45
-      startNextPhaseEarlyDelay: 10
+      startNextPhaseEarlyDelay: 5
       spawnCellRange: {x: 9, y: 11}
       repositionCellRange: {x: 8, y: 9}
       spawnRateCurve:
