@@ -217,7 +217,7 @@ public partial class Game {
         
         bool playerStepped = moveInput != Vector2.zero && player.curStepDistance > 0.18f;
         if (playerStepped) {
-            Entity runSmokeEntity = SpawnEntity(entityPools.runSmoke, OffsetY(player.position, 0.01f), Quaternion.identity);
+            Entity runSmokeEntity = SpawnEntity(entityPools.runSmoke, OffsetY(player.position, 0.043f), Quaternion.identity);
             DestroyEntity(runSmokeEntity, CurrentClipLength(runSmokeEntity.animator));
             PlayAudioClip(audio.footStepClip, player.position);
             player.curStepDistance = 0f;

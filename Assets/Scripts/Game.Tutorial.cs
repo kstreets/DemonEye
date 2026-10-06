@@ -167,7 +167,7 @@ public partial class Game {
             FadeInHideout();
             hideoutTabs.toggleGroup.ManualyToggle(hideoutTabs.eyeForgeButton);
             StartDialogue(
-                Line("Here lies the Pentagram where you can forge all the Demon Eyes your little heart desires. Eyeballs and Blood Runes not included.")
+                Line("Here lies the Pentagram where you can craft all the Demon Eyes your little heart desires. Eyeballs and Blood Runes not included.")
             );
         });
         tutorial.hideoutTrader = tutorial.stateMachine.CreateState(enter: () => {
@@ -257,6 +257,7 @@ public partial class Game {
         if (InTutorialHideoutTour) {
             inputPrompts.hideoutParent.gameObject.SetActive(false);
             ui.menuBackButton.gameObject.SetActive(false);
+            eyeForgePanel.toggleButtonGroup.SetTogglesHidden(false);
             FadeInHideout();
             return;
         }
