@@ -778,8 +778,10 @@ public partial class Game {
 
             bool swappingItems = false;
             if (TryGetItemFromHoverInfo(hoverInfo, out ItemInstance swapItem)) {
-                bool itemsCanSwap = swapItem != dragItemInstance || (swapItem.IsFullStack || dragItemInstance.IsFullStack);
-                swappingItems = itemsCanSwap && input.selectItem.WasPressedThisFrame();
+                // The same item with room in its stack gets placed onto instead, which tops it up and keeps any leftovers dragging
+                bool stackOntoSwapItem = swapItem.itemOrInstanceUuid == dragItemInstance.itemOrInstanceUuid
+                    && !swapItem.IsFullStack && !hoverInfo.inventory.slots[hoverInfo.slotIndex].ui.disallowItemStacking;
+                swappingItems = !stackOntoSwapItem && input.selectItem.WasPressedThisFrame();
             }
             
             if (swappingItems && IsHoveredItemGrayedOut(hoverInfo)) {
