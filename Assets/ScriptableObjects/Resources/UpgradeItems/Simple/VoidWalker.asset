@@ -29,8 +29,10 @@ MonoBehaviour:
     levelRequired: 2
     stockRange: {x: 1, y: 5}
     barterRequirements:
-    - item: {fileID: 11400000, guid: 67595d8fd1980a14790ab2f5f2a40952, type: 2}
-      count: 5
+    - item: {fileID: 11400000, guid: c300cfd9dba50fc438f83dec791af29b, type: 2}
+      count: 3
+    - item: {fileID: 11400000, guid: 72fd8c3e65ba830449c7e8ecc75c3f1e, type: 2}
+      count: 1
   rarity: 0
   dropOrigins:
   - dropPool: {fileID: 11400000, guid: 447693d567ac32848b6d0306b40001c5, type: 2}

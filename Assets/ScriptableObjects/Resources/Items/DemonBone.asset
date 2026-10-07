@@ -50,4 +50,4 @@ MonoBehaviour:
   itemGroupProps: {fileID: 0}
   maxStackCount: 15
   weight: 6
-  description: A bone from a demon. Traders like to buy this.
+  description: A bone from a demon.

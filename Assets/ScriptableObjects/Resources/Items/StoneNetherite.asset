@@ -47,4 +47,4 @@ MonoBehaviour:
   itemGroupProps: {fileID: 0}
   maxStackCount: 15
   weight: 6
-  description: Contains harmful properties and should be handled with care
+  description: A base material for uncommon blood runes. Cracks under anything stronger.

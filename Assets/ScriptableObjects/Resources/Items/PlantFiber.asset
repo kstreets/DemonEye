@@ -34,10 +34,10 @@ MonoBehaviour:
   dropOrigins:
   - dropPool: {fileID: 11400000, guid: 3c4ecb30986cb144bb8b92852af68d07, type: 2}
     chanceToSpawn: 0.503
-    maxStackCount: 4
+    maxStackCount: 1
   - dropPool: {fileID: 11400000, guid: 403e542a49d6e3d4c834cdb48dce1626, type: 2}
     chanceToSpawn: 1
-    maxStackCount: 8
+    maxStackCount: 1
   modifiesStats: 0
   critChance: 0
   critMultiplier: 0
@@ -45,7 +45,7 @@ MonoBehaviour:
   fireratePercentage: 0
   projectileCount: 0
   rangePercentage: 0
-  itemGroupProps: {fileID: 11400000, guid: 4f50fd0a36a2ac4499f3d9ca7dc28a72, type: 2}
-  maxStackCount: 0
-  weight: 0
-  description: 
+  itemGroupProps: {fileID: 0}
+  maxStackCount: 15
+  weight: 1
+  description: Can be woven together to create bandages.

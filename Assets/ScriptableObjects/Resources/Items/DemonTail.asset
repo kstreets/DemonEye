@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9bc23522601a56f4d89295cf565d360b, type: 3}
-  m_Name: DemonClaw
+  m_Name: DemonTail
   m_EditorClassIdentifier: Assembly-CSharp::Item
-  uuid: 23868539
-  displayName: Demon Claw
-  inventorySprite: {fileID: -562707489, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
-  dropSprite: {fileID: -1243211010, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  uuid: 2065046699
+  displayName: Demon Tail
+  inventorySprite: {fileID: -342016969, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  dropSprite: {fileID: -1169292014, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   pickupRadius: 0.07
   type: {fileID: 0}
   priceCategory: {fileID: 11400000, guid: 1b413ce208f37d445884e80008464342, type: 2}
-  buyPrice: 8
-  sellPrice: 8
+  buyPrice: 0
+  sellPrice: 5
   mapSpawning:
     spawnsOnAll: 1
     firstSpawnMap: {fileID: 0}
@@ -32,13 +32,10 @@ MonoBehaviour:
   rarity: 0
   dropOrigins:
   - dropPool: {fileID: 11400000, guid: 3c4ecb30986cb144bb8b92852af68d07, type: 2}
-    chanceToSpawn: 0.356
+    chanceToSpawn: 0.408
     maxStackCount: 6
-  - dropPool: {fileID: 11400000, guid: 9eeed80dc208fd04986551102c8859ff, type: 2}
-    chanceToSpawn: 0.7
-    maxStackCount: 1
-  - dropPool: {fileID: 11400000, guid: 2f1280ced8a9a0b4eaa9045d5741fb8b, type: 2}
-    chanceToSpawn: 0.7
+  - dropPool: {fileID: 11400000, guid: a50fac0e0c375294296c54b1d6d4450d, type: 2}
+    chanceToSpawn: 0.65
     maxStackCount: 1
   modifiesStats: 0
   critChance: 0
@@ -49,5 +46,5 @@ MonoBehaviour:
   rangePercentage: 0
   itemGroupProps: {fileID: 0}
   maxStackCount: 15
-  weight: 2
-  description: A claw from a demon, known to inflict bleeding.
+  weight: 6
+  description: Once a demon's whip, reaching farther than most attacks. Still twitches.

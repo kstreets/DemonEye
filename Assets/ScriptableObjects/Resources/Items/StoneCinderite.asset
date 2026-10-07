@@ -29,14 +29,8 @@ MonoBehaviour:
     levelRequired: 1
     stockRange: {x: 1, y: 1}
     barterRequirements: []
-  rarity: 0
-  dropOrigins:
-  - dropPool: {fileID: 11400000, guid: 3c4ecb30986cb144bb8b92852af68d07, type: 2}
-    chanceToSpawn: 0.2
-    maxStackCount: 3
-  - dropPool: {fileID: 11400000, guid: 033f356ebabda714cb2141a7d950c759, type: 2}
-    chanceToSpawn: 1
-    maxStackCount: 1
+  rarity: 4
+  dropOrigins: []
   modifiesStats: 0
   critChance: 0
   critMultiplier: 0
@@ -47,4 +41,4 @@ MonoBehaviour:
   itemGroupProps: {fileID: 0}
   maxStackCount: 15
   weight: 6
-  description: A foundational component for eye upgrades
+  description: Great for making explosives.

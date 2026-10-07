@@ -632,14 +632,14 @@ public partial class Game {
         return OffsetY(entity.position, 0.28f);
     }
     
-    private void SpawnTrinketActivationText(string text) {
+    private void SpawnTrinketActivationText(string text, Color? color = null) {
         SpawnTextPopIn(OffsetY(player.position, -0.1f), text);
     }
     
-    private void SpawnTextPopIn(Vector3 spawnPos, string text, Vector3? endPos = default) {
+    private void SpawnTextPopIn(Vector3 spawnPos, string text, Vector3? endPos = default, Color? color = null) {
         Entity textEntity = SpawnEntity(entityPools.damageNumber, spawnPos, Quaternion.identity, ui.damageNumbersParent);
         textEntity.textMesh.text = text; 
-        textEntity.textMesh.color = config.styles.popInTextColor;
+        textEntity.textMesh.color = color ?? config.styles.popInTextColor;
         
         float moveDuration = Random.Range(0.37f, 0.4f);
         const float scaleUpDuration = 0.25f;

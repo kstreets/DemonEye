@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9bc23522601a56f4d89295cf565d360b, type: 3}
-  m_Name: DemonOrgan
+  m_Name: DemonReactor
   m_EditorClassIdentifier: Assembly-CSharp::Item
   uuid: 413746779
-  displayName: Demon Organ
-  inventorySprite: {fileID: 1915861382, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
-  dropSprite: {fileID: -820332081, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  displayName: Demon Reactor
+  inventorySprite: {fileID: -247804193, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  dropSprite: {fileID: 392000710, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   pickupRadius: 0.07
   type: {fileID: 0}
   priceCategory: {fileID: 11400000, guid: 1b413ce208f37d445884e80008464342, type: 2}
@@ -29,20 +29,14 @@ MonoBehaviour:
     levelRequired: 1
     stockRange: {x: 1, y: 1}
     barterRequirements: []
-  rarity: 1
+  rarity: 2
   dropOrigins:
   - dropPool: {fileID: 11400000, guid: 3c4ecb30986cb144bb8b92852af68d07, type: 2}
     chanceToSpawn: 0.1
     maxStackCount: 2
-  - dropPool: {fileID: 11400000, guid: 9eeed80dc208fd04986551102c8859ff, type: 2}
-    chanceToSpawn: 0.45
-    maxStackCount: 1
-  - dropPool: {fileID: 11400000, guid: 2f1280ced8a9a0b4eaa9045d5741fb8b, type: 2}
-    chanceToSpawn: 0.45
-    maxStackCount: 1
-  - dropPool: {fileID: 11400000, guid: a3f73304b268c4a4f84184336a236942, type: 2}
-    chanceToSpawn: 0.45
-    maxStackCount: 1
+  - dropPool: {fileID: 11400000, guid: 4ab42b2953921574eb4a85cf22ab6ff0, type: 2}
+    chanceToSpawn: 0.291
+    maxStackCount: 2
   modifiesStats: 0
   critChance: 0
   critMultiplier: 0
@@ -53,4 +47,4 @@ MonoBehaviour:
   itemGroupProps: {fileID: 0}
   maxStackCount: 15
   weight: 4
-  description: The organ of a demon. Traders like to buy this.
+  description: The catalyst for a demon's self-destruction. Handle carefully.

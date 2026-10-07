@@ -26,6 +26,7 @@ public class TransactionPanel : MonoBehaviour {
     public ButtonFeel barterPurchaseButton;
     public ButtonFeel moneyPurchaseButton;
     public GameObject outOfStockNotifier;
+    public GameObject orDivider;
     
     public void UpdateBuyItem(ItemInstance itemInstance) {
         sellParent.gameObject.SetActive(false);
@@ -35,14 +36,18 @@ public class TransactionPanel : MonoBehaviour {
         resourceRequirementList.HideAll();
         
         if (itemInstance == null) {
+            SetBarterOptionVisible(true);
             barterPurchaseButton.Disable();
             moneyPurchaseButton.Disable();
             return;
         }
-        
+
         Item item = itemInstance.ItemRef;
-        
-        bool canBarter = item.traderSpawning.barterRequirements.Count > 0;
+
+        bool hasBarterRequirements = item.traderSpawning.barterRequirements.Count > 0;
+        SetBarterOptionVisible(hasBarterRequirements);
+
+        bool canBarter = hasBarterRequirements;
         foreach (ItemWithCount barterReq in item.traderSpawning.barterRequirements) {
             Assert.IsNotNull(barterReq.item, $"Null barter item for {item.displayName}. Fix it or remove it.");
             if (gameInstance.GetOwnedCountOfItem(barterReq.item) < barterReq.count) {
@@ -68,6 +73,11 @@ public class TransactionPanel : MonoBehaviour {
 
         string buyPriceString = ColorText(item.buyPrice.ToString("N0"), styles.coinCurrencyColor);
         moneyPurchaseButton.text.text = $"Purchase for <sprite=0>{buyPriceString}";
+    }
+
+    private void SetBarterOptionVisible(bool visible) {
+        barterPurchaseButton.gameObject.SetActive(visible);
+        orDivider.SetActive(visible);
     }
 
     private int prevSellPrice = int.MinValue; // Makes sure to update initially

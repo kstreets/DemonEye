@@ -43,8 +43,9 @@ public class Item : UuidScriptableObject  {
     [ShowIf(nameof(itemGroupProps), null)]
     [SerializeField] private int maxStackCount;
     [SerializeField] [Range(0, 10)] private int weight;
-    [SerializeField] [TextArea] private string description;
     [EndIf]
+    
+    [SerializeField] [TextArea] private string description;
     
     [NonSerialized] public Augment augmentCreatedFrom;
     [NonSerialized] public List<Augment> augmentedVariants;

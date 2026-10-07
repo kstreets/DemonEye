@@ -28,17 +28,15 @@ MonoBehaviour:
   traderSpawning:
     levelRequired: 3
     stockRange: {x: 1, y: 5}
-    barterRequirements:
-    - item: {fileID: 11400000, guid: c300cfd9dba50fc438f83dec791af29b, type: 2}
-      count: 3
-    - item: {fileID: 11400000, guid: 8799857dd3cea574da43da5e99edb7aa, type: 2}
-      count: 3
+    barterRequirements: []
   rarity: 3
   dropOrigins:
   - dropPool: {fileID: 11400000, guid: 447693d567ac32848b6d0306b40001c5, type: 2}
     chanceToSpawn: 0.18
+    maxStackCount: 1
   - dropPool: {fileID: 11400000, guid: ac65e2b20c03fcb43989ec16398ae8cd, type: 2}
     chanceToSpawn: 0.13
+    maxStackCount: 1
   modifiesStats: 1
   critChance: 0
   critMultiplier: 0

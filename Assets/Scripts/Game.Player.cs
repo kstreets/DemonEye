@@ -103,6 +103,9 @@ public partial class Game {
         }
         
         int souls = enemy.data.soulWorthPerKill;
+        if (trinkets.equiped is SoulSuckerTrinket soulSucker) {
+            souls = Mathf.RoundToInt(souls * soulSucker.soulsPerKillMultiplier);
+        }
         player.state.soulCurrency += souls;
         curRaid.data.soulsGained += souls;
         
@@ -225,6 +228,7 @@ public partial class Game {
             if (trinkets.equiped is HealingStepsTrinket healingSteps) {
                 if (++trinkets.data.trackingCount >= healingSteps.stepsPerHeal) {
                     HealPlayer(healingSteps.healing);
+                    SpawnTrinketActivationText($"+{healingSteps.healing:N0}", config.styles.increaseDescColor);
                     trinkets.data.trackingCount = 0;
                 }
             }
