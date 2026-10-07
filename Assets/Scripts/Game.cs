@@ -77,6 +77,7 @@ public partial class Game : MonoBehaviour {
             UpdateTutorial(); // !
         }
         DemonEyeTween.Update();
+        UpdateMenuMusic();
         UpdateQuests(); // !
         UpdateInputPrompts();
         ClearPerFrameData();
@@ -127,7 +128,7 @@ public partial class Game : MonoBehaviour {
     private void OnMainMenuStateEnter() {
         Cursor.visible = !usingController;
         ShowMainMenuUI();
-        PlayMusic(music.mainMenuMusic, MusicOption.Fast);
+        OnMenuMusicEnter();
     }
 
     private void OnMainMenuStateExit() {
@@ -190,6 +191,7 @@ public partial class Game : MonoBehaviour {
     private void OnRaidStateEnter() {
         InitRaid();
         DemonEyeOnRaidEnter();
+        OnMenuMusicExit();
         StopMusic(MusicOption.Smooth);
     }
 

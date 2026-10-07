@@ -1,6 +1,8 @@
 using System;
 using PrimeTween;
 using UnityEngine;
+using UnityEngine.Pool;
+using static GameData;
 
 public partial class Game {
     
@@ -43,14 +45,36 @@ public partial class Game {
             StopMusic(MusicOption.Smooth);
         }
         
+        MusicIntensity intensity = CurWaveMusicIntensity;
+
         bool forceSwitch = loopsDone >= 2 || (loopsDone >= 1 && spawnManager.waveStartedThisFrame);
         if (forceSwitch && PlayingMusic && !MusicIsTransitioning && !FadingMusicOut) {
             music.lastGameplaySong = music.source.clip;
-            TransitionToSong(music.gameplayMusic.GetRandom(exclude: music.lastGameplaySong), MusicOption.Fast);
+            TransitionToSong(PickGameplaySong(intensity, exclude: music.lastGameplaySong), MusicOption.Fast);
         }
-        
+
+        // A new wave can call for a different intensity than the song that's playing
+        if (spawnManager.waveStartedThisFrame) {
+            if (MusicIsTransitioning) {
+                // The transition reads this once it finishes fading out, so we can just swap what it's going to play
+                if (!SongHasIntensity(music.songTransition.song, intensity)) {
+                    music.songTransition.song = PickGameplaySong(intensity, exclude: music.lastGameplaySong);
+                }
+            }
+            else if (FadingMusicOut) {
+                // The last song was fading out between waves. The source still counts as playing until the fade ends,
+                // so nothing else would start music and the whole wave would be silent.
+                music.fadingOutTween.Stop(); // So the transition fades out from the current volume instead of cutting to silence
+                TransitionToSong(PickGameplaySong(intensity, exclude: music.lastGameplaySong), MusicOption.Smooth);
+            }
+            else if (PlayingMusic && !FadingMusicOut && !SongHasIntensity(music.source.clip, intensity)) {
+                music.lastGameplaySong = music.source.clip;
+                TransitionToSong(PickGameplaySong(intensity, exclude: music.lastGameplaySong), MusicOption.Fast);
+            }
+        }
+
         if (spawnManager.waveStartedThisFrame && !PlayingMusic) {
-            PlayMusic(music.gameplayMusic.GetRandom(exclude: music.lastGameplaySong), MusicOption.Smooth);
+            PlayMusic(PickGameplaySong(intensity, exclude: music.lastGameplaySong), MusicOption.Smooth);
         }
         
         const float lowPassTransitionDuration = 0.5f;
@@ -66,7 +90,97 @@ public partial class Game {
         }
     }
     
+    // The menu song takes breaks so it doesn't get repetitive while sitting in the menus
+    private const int menuMinLoopsBeforeBreak = 2;
+    private const int menuMaxLoopsBeforeBreak = 3;
+    private const float menuMinBreakDuration = 60f;
+    private const float menuMaxBreakDuration = 100f;
+
+    // Covers every menu (main menu, hideout, map selection, settings) since the menu song keeps playing between them
+    private void UpdateMenuMusic() {
+        if (!music.menuMusicActive) return;
+        if (MusicIsTransitioning || FadingMusicOut) return;
+
+        if (PlayingMusic) {
+            if (music.source.clip != music.mainMenuMusic) return;
+
+            // Time the fade out to finish right as the last loop ends, instead of fading over the song restarting
+            float fadeDuration = GetMusicFadeSpeed(MusicOption.Smooth);
+            float breakStartTime = music.timeCurSongStarted + music.menuLoopsBeforeBreak * music.source.clip.length - fadeDuration;
+            if (Time.time >= breakStartTime) {
+                StopMusic(MusicOption.Smooth);
+                music.menuBreakEndTime = Time.time + fadeDuration + UnityEngine.Random.Range(menuMinBreakDuration, menuMaxBreakDuration);
+            }
+        }
+        else if (Time.time >= music.menuBreakEndTime) {
+            StartMenuMusic(MusicOption.Smooth);
+        }
+    }
+
+    private void OnMenuMusicEnter() {
+        music.menuMusicActive = true;
+
+        bool onBreak = Time.time < music.menuBreakEndTime;
+        if (onBreak) return;
+
+        bool alreadyPlaying = PlayingMusic && !FadingMusicOut && music.source.clip == music.mainMenuMusic;
+        if (alreadyPlaying) return;
+
+        StartMenuMusic(MusicOption.Fast);
+    }
+
+    private void OnMenuMusicExit() {
+        music.menuMusicActive = false;
+        music.menuBreakEndTime = 0f; // A break shouldn't carry over to the next time we're back in the menus
+    }
+
+    private void StartMenuMusic(MusicOption option) {
+        music.menuLoopsBeforeBreak = UnityEngine.Random.Range(menuMinLoopsBeforeBreak, menuMaxLoopsBeforeBreak + 1);
+        PlayMusic(music.mainMenuMusic, option);
+    }
+
     public enum MusicOption { Hard, Fast, Medium, Smooth }
+
+    // How fast and aggressive a song is
+    public enum MusicIntensity { Low, Medium, High, Insane }
+
+    private MusicIntensity CurWaveMusicIntensity => spawnManager.CurPhasePool?.musicIntensity ?? MusicIntensity.Low;
+
+    private static bool SongHasIntensity(GameplaySong song, MusicIntensity intensity) {
+        if (song.intensities == null || song.intensities.Count <= 0) {
+            return intensity == MusicIntensity.Low;
+        }
+        return song.intensities.Contains(intensity);
+    }
+
+    private bool SongHasIntensity(AudioClip clip, MusicIntensity intensity) {
+        foreach (GameplaySong song in music.gameplaySongs) {
+            if (song.clip == clip) return SongHasIntensity(song, intensity);
+        }
+        return false;
+    }
+
+    private AudioClip PickGameplaySong(MusicIntensity intensity, AudioClip exclude) {
+        using var _ = ListPool<AudioClip>.Get(out var options);
+        foreach (GameplaySong song in music.gameplaySongs) {
+            if (SongHasIntensity(song, intensity)) {
+                options.Add(song.clip);
+            }
+        }
+
+        if (options.Count <= 0) {
+            Debug.LogWarning($"No gameplay songs have {intensity} intensity, picking from all of them instead");
+            foreach (GameplaySong song in music.gameplaySongs) {
+                options.Add(song.clip);
+            }
+        }
+
+        // Only avoid repeating the last song when there's something else to play
+        if (options.Count > 1) {
+            options.Remove(exclude);
+        }
+        return options[UnityEngine.Random.Range(0, options.Count)];
+    }
     
     private void PlayMusic(AudioClip song, MusicOption option) {
         if (PlayingMusic && music.source.clip == song) return;

@@ -395,7 +395,7 @@ public class GameData {
         public AudioMixerGroup mainMenuGroup;
         public AudioMixerGroup gameplayGroup;
         public AudioClip mainMenuMusic;
-        public AudioClip[] gameplayMusic;
+        public List<GameplaySong> gameplaySongs;
         public AudioMixerSnapshot defaultSnapshot;
         public AudioMixerSnapshot lowPassSnapshot;
         
@@ -405,10 +405,19 @@ public class GameData {
         [NonSerialized] public Tween fadingInTween;
         [NonSerialized] public SongTransition songTransition;
         [NonSerialized] public float timeCurSongStarted;
+        [NonSerialized] public bool menuMusicActive;
+        [NonSerialized] public int menuLoopsBeforeBreak;
+        [NonSerialized] public float menuBreakEndTime;
         [NonSerialized] public AudioMixerSnapshot[] gameplayLowpassSnapshots;
         [NonSerialized] public float[] gameplaySnapshotWeights;
     }
     
+    [Serializable]
+    public class GameplaySong {
+        public AudioClip clip;
+        public List<MusicIntensity> intensities; // Waves only play songs that list their intensity. Left empty counts as Low.
+    }
+
     [Serializable]
     public class Settings {
         public AudioMixer gameAudioMixer;

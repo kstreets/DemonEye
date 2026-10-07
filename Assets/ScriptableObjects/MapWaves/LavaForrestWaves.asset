@@ -18,6 +18,7 @@ MonoBehaviour:
   maxEnemyRepositionCount: 8
   phasePools:
   - name: Wave 0
+    musicIntensity: 0
     variants:
     - name: Variant 0
       maxDuration: 40
@@ -55,6 +56,7 @@ MonoBehaviour:
       - enemyCount: 30
         enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
   - name: Wave 1
+    musicIntensity: 1
     variants:
     - name: Variant 0
       maxDuration: 45
@@ -92,6 +94,7 @@ MonoBehaviour:
       - enemyCount: 30
         enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
   - name: Wave 2
+    musicIntensity: 1
     variants:
     - name: Variant 0
       maxDuration: 45
@@ -131,6 +134,7 @@ MonoBehaviour:
       - enemyCount: 60
         enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
   - name: Wave 3
+    musicIntensity: 1
     variants:
     - name: Variant 0
       maxDuration: 45
@@ -170,6 +174,7 @@ MonoBehaviour:
       - enemyCount: 40
         enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
   - name: Wave 4
+    musicIntensity: 1
     variants:
     - name: Variant 0
       maxDuration: 45
@@ -209,6 +214,7 @@ MonoBehaviour:
       - enemyCount: 30
         enemyData: {fileID: 11400000, guid: 8a749b46a2a7d944892efbf025fbe2a1, type: 2}
   - name: Wave 5
+    musicIntensity: 2
     variants:
     - name: Variant 0
       maxDuration: 55
@@ -248,6 +254,7 @@ MonoBehaviour:
       - enemyCount: 45
         enemyData: {fileID: 11400000, guid: 8a749b46a2a7d944892efbf025fbe2a1, type: 2}
   - name: Wave 6
+    musicIntensity: 2
     variants:
     - name: Variant 0
       maxDuration: 50
@@ -289,6 +296,7 @@ MonoBehaviour:
       - enemyCount: 40
         enemyData: {fileID: 11400000, guid: 8a749b46a2a7d944892efbf025fbe2a1, type: 2}
   - name: Wave 7
+    musicIntensity: 3
     variants:
     - name: Variant 0
       maxDuration: 45

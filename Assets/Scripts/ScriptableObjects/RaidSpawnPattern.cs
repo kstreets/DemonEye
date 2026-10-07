@@ -32,6 +32,7 @@ public class RaidSpawnPattern : ScriptableObject {
     public class PhasePool {
         [HideInInspector] 
         public string name;
+        public Game.MusicIntensity musicIntensity;
         public List<Variant> variants = new();
     }
     

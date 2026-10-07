@@ -28153,10 +28153,19 @@ MonoBehaviour:
     mainMenuGroup: {fileID: -2699966960544205561, guid: 045edcbc93f71d548a0426204df6ca60, type: 2}
     gameplayGroup: {fileID: 1623229151062038337, guid: 045edcbc93f71d548a0426204df6ca60, type: 2}
     mainMenuMusic: {fileID: 8300000, guid: 4140643e28b2a8e4aa7c5558ded7186f, type: 3}
-    gameplayMusic:
-    - {fileID: 8300000, guid: 8e62c2e2736bb8c4fbda9eff32cd8c9f, type: 3}
-    - {fileID: 8300000, guid: ef6745e3a3ef53545812a4f0ff0a661b, type: 3}
-    - {fileID: 8300000, guid: e4c280bdbad0df346a63cdc397017410, type: 3}
+    gameplaySongs:
+    - clip: {fileID: 8300000, guid: 2a45b25df95ab09439a710187192805a, type: 3}
+      intensities: 00000000
+    - clip: {fileID: 8300000, guid: a9da1ed3d142a3048ab2b2689b6e5a60, type: 3}
+      intensities: 0000000001000000
+    - clip: {fileID: 8300000, guid: e4c280bdbad0df346a63cdc397017410, type: 3}
+      intensities: 01000000
+    - clip: {fileID: 8300000, guid: ef6745e3a3ef53545812a4f0ff0a661b, type: 3}
+      intensities: 0100000002000000
+    - clip: {fileID: 8300000, guid: 8e62c2e2736bb8c4fbda9eff32cd8c9f, type: 3}
+      intensities: 0100000002000000
+    - clip: {fileID: 8300000, guid: 5443ddb6c7f0fb74e96c002d2cc9836b, type: 3}
+      intensities: 03000000
     defaultSnapshot: {fileID: 24500006, guid: 045edcbc93f71d548a0426204df6ca60, type: 2}
     lowPassSnapshot: {fileID: -7936175638864401536, guid: 045edcbc93f71d548a0426204df6ca60, type: 2}
   settings:
