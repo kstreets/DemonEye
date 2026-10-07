@@ -602,6 +602,8 @@ public class GameData {
         BloodMushroomsUnlocked = 1 << 0,
         HideoutTourItemsGiven  = 1 << 1,
         HasExtracted           = 1 << 2,
+        FirstMapPlayedOnce     = 1 << 3,
+        FirstMapPlayedTwice    = 1 << 4,
     }
     
     [Flags] 

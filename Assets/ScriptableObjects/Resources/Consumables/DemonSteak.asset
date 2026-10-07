@@ -22,7 +22,7 @@ MonoBehaviour:
   buyPrice: 12
   sellPrice: 12
   mapSpawning:
-    spawnsOnAll: 1
+    spawnsOnAll: 0
     firstSpawnMap: {fileID: 0}
     spawnsOnMaps: []
   traderSpawning:

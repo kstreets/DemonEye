@@ -1060,8 +1060,11 @@ public partial class Game {
 
     private void RefreshSkillRow(SkillLevelUpRow skillLevelRow, SkillUpgradePath upgradePath, int playerStatLevel) {
         UpgradeStatResult result = CanUpgradeSkill(upgradePath, playerStatLevel);
-        if (result == UpgradeStatResult.AtMaxLevel) return;
-        
+        if (result == UpgradeStatResult.AtMaxLevel) {
+            skillLevelRow.RefreshAtMaxLevel(upgradePath.MaxLevel);
+            return;
+        }
+
         int soulsRequired = upgradePath.soulsNeededPerLevel[playerStatLevel];
         bool enableButton = result == UpgradeStatResult.Affordable;
         skillLevelRow.Refresh(playerStatLevel, upgradePath.MaxLevel, soulsRequired, enableButton);

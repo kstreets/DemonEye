@@ -460,7 +460,13 @@ public partial class Game {
 
         public readonly List<(float time, EnemyData enemy)> spawnEvents = new();
         public int spawnTimeIndex;
-       
+
+        public bool isNewPlayerRaid; // One of the first two raids on the first map
+        public float extraMaxDuration;
+        public float extraEarlyDelay;
+        public float CurMaxDuration => CurPhase.maxDuration + extraMaxDuration;
+        public float CurEarlyDelay => CurPhase.startNextPhaseEarlyDelay + extraEarlyDelay;
+
         public int CurWaveNumber => Mathf.Clamp(curPhaseIndex + 1, 0, chosenVarientIndices.Count);
         public int TotalWaveCount => chosenVarientIndices.Count;
         public float TotalCompletion => CurWaveNumber / (float)TotalWaveCount;
@@ -486,7 +492,24 @@ public partial class Game {
         spawnManager.timeInCurPhase = 0f;
         spawnManager.startNextWaveDelay = 0f;
         spawnManager.timeAddedThroughActions = 0f;
-        
+
+        // The first couple of raids on the first map give new players more time per wave
+        spawnManager.extraMaxDuration = 0f;
+        spawnManager.extraEarlyDelay = 0f;
+        spawnManager.isNewPlayerRaid = curRaid.map == config.maps[0] && !persistentFlags.HasFlag(PersistentFlags.FirstMapPlayedTwice);
+        if (curRaid.map == config.maps[0]) {
+            if (!persistentFlags.HasFlag(PersistentFlags.FirstMapPlayedOnce)) {
+                spawnManager.extraMaxDuration = config.gameplay.firstRaidExtraMaxTime;
+                spawnManager.extraEarlyDelay = config.gameplay.firstRaidExtraEarlyDelay;
+                persistentFlags |= PersistentFlags.FirstMapPlayedOnce;
+            }
+            else if (!persistentFlags.HasFlag(PersistentFlags.FirstMapPlayedTwice)) {
+                spawnManager.extraMaxDuration = config.gameplay.secondRaidExtraMaxTime;
+                spawnManager.extraEarlyDelay = config.gameplay.secondRaidExtraEarlyDelay;
+                persistentFlags |= PersistentFlags.FirstMapPlayedTwice;
+            }
+        }
+
         spawnManager.chosenVarientIndices.Clear();
         foreach (RaidSpawnPattern.PhasePool pool in pattern.phasePools) {
             int randomVarientIndex = Random.Range(0, pool.variants.Count);
@@ -507,7 +530,7 @@ public partial class Game {
         sm.timeInCurPhase += Time.deltaTime;
         
         bool afterFirstWave = sm.curPhaseIndex >= 0;
-        float waveDuration = afterFirstWave ? sm.CurPhase.maxDuration : sm.spawnPattern.timeBeforeFirstPhase;
+        float waveDuration = afterFirstWave ? sm.CurMaxDuration : sm.spawnPattern.timeBeforeFirstPhase;
         bool timeLimitExceeded = sm.timeInCurPhase >= waveDuration;
         bool justHitTimeLimit = prevTimeInCurPhase < waveDuration && timeLimitExceeded;
         int curEnemyCount = entities.enemies.Count;
@@ -522,7 +545,7 @@ public partial class Game {
                 float remainingOfTotalPercentage = curEnemyCount / (float)totalEnemiesThisWave;
                 float addedTime = Mathf.Lerp(1f, 4f, remainingOfTotalPercentage);
                 // The early delay is only for clearing the wave, which didn't happen, so the buffer replaces it
-                sm.startNextWaveDelay += addedTime - sm.CurPhase.startNextPhaseEarlyDelay;
+                sm.startNextWaveDelay += addedTime - sm.CurEarlyDelay;
             }
         
             bool justKilledLastEnemiesInWave = sm.FinishedSpawningThisWave && sm.prevEnemyCount > 0 && curEnemyCount <= 0;
@@ -531,14 +554,14 @@ public partial class Game {
                 // If a wave's max duration is about the same time as the spawn duration, we can't assume the player struggled
                 // because they would of had none or very little time to kill the last spawned enemies
                 const float struggleEligiblePercentage = 1.2f;
-                bool waveIsStruggleEligible = sm.CurPhase.maxDuration >= (sm.CurPhase.spawnDuration * struggleEligiblePercentage);
+                bool waveIsStruggleEligible = sm.CurMaxDuration >= (sm.CurPhase.spawnDuration * struggleEligiblePercentage);
                 
                 if (waveIsStruggleEligible) {
                     const float struggleThresholdPercentage = 0.8f;
-                    float stuggleThreshold = sm.CurPhase.maxDuration * struggleThresholdPercentage;
+                    float stuggleThreshold = sm.CurMaxDuration * struggleThresholdPercentage;
                     if (sm.timeInCurPhase >= stuggleThreshold) {
                         float exceededTime = sm.timeInCurPhase - stuggleThreshold;
-                        float maxPossibleExceededTime = sm.CurPhase.maxDuration * (1f - struggleThresholdPercentage);
+                        float maxPossibleExceededTime = sm.CurMaxDuration * (1f - struggleThresholdPercentage);
                         float addedTime = Mathf.Lerp(1f, 6f, exceededTime / maxPossibleExceededTime);
                         sm.startNextWaveDelay += addedTime; 
                     }
@@ -597,6 +620,14 @@ public partial class Game {
             sm.curPhaseIndex++;
             sm.waveStartedThisFrame = true;
 
+            // New players can lose track of what's coming while looking through their inventory
+            if (sm.isNewPlayerRaid && (PlayerInventoryIsOpen || LootInventoryIsOpen)) {
+                CancelItemDrag(); // Puts a dragged item back, closing the inventory would otherwise drop it
+                ClosePlayerInventory();
+                CloseLootInventory();
+                HideInventoryItemPopup();
+            }
+
 #if UNITY_EDITOR
             foreach (RaidSpawnPattern.EnemyBatch batch in sm.CurPhase.enemyBatches) {
                 if (batch.enemyCount >= EnemySpawnManager.prefixedSumResolution) {
@@ -607,7 +638,7 @@ public partial class Game {
             
             sm.timeInCurPhase = 0f;
             sm.spawnTimeIndex = 0;
-            sm.startNextWaveDelay = sm.CurPhase.startNextPhaseEarlyDelay;
+            sm.startNextWaveDelay = sm.CurEarlyDelay;
 
             float totalWeight = 0f;
             for (int i = 0; i < EnemySpawnManager.prefixedSumResolution; i++) {

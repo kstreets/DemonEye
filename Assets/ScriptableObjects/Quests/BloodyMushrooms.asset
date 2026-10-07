@@ -14,12 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Quest
   uuid: -1434879377
   title: Mushroom Farming
-  description: 'If you can''t tell I''m a big fan of mushrooms. I''m in need for
-    some blood mushrooms that only grow when the ground is exposed to blood.
-
-    Hence
-    the name. If you make demons bleed and go back to the same spot later, you''ll
-    find some have grown.'
+  description: If you can't tell I'm a big fan of mushrooms. I'm in need for some
+    blood mushrooms that only grow when the ground is exposed to blood. If you make
+    demons bleed and go back to the same spot later, you'll find some have grown.
   traderReputationReward: 100
   objectives:
   - type: 130
@@ -28,7 +25,7 @@ MonoBehaviour:
     targetEnemy: {fileID: 0}
     targetItem: {fileID: 0}
     targetItemType: {fileID: 0}
-    teleportMap: {fileID: 0}
+    targetMap: {fileID: 0}
     keepFetchedItems: 0
   - type: 10
     description: 
@@ -36,5 +33,5 @@ MonoBehaviour:
     targetEnemy: {fileID: 0}
     targetItem: {fileID: 11400000, guid: 997868eef46099c46b2161f48b34d63b, type: 2}
     targetItemType: {fileID: 0}
-    teleportMap: {fileID: 0}
+    targetMap: {fileID: 0}
     keepFetchedItems: 0

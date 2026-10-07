@@ -84,14 +84,14 @@ public partial class Game {
             Portal portal = GetExitPortalFromTransform(col.transform);
             
             if (portal.state == Portal.State.Inactive) {
-                EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Summon Exit Portal");
+                EnableInteractionPrompt(OffsetY(col.transform.position, 0.28f), "Summon Extraction Portal");
                 if (input.interact.IsPressed()) {
                     portal.StartOpenCloseSequence(config.gameplay.portalPostSummonDelay, config.gameplay.portalActiveDuration);
                 }
             }
             
             if (portal.state == Portal.State.Open) {
-                EnableInteractionPrompt(OffsetY(col.transform.position, 0.35f), "Take Exit Portal");
+                EnableInteractionPrompt(OffsetY(col.transform.position, 0.14f), "Take Extraction Portal");
                 if (input.interact.WasPressedThisFrame()) {
                     portal.OnPlayerTook();
                     bool winExit = curRaid.state == RaidState.PostFinalWave;
@@ -102,7 +102,7 @@ public partial class Game {
         }
         
         if (col.CompareTag(Tags.ExpressExitPortal)) {
-            EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Take Exit Portal");
+            EnableInteractionPrompt(OffsetY(col.transform.position, 0.18f), "Take Extraction Portal");
             if (input.interact.WasPressedThisFrame()) {
                 col.transform.GetComponent<SummonedPortal>().Close(activeStateOnComplete: false);
                 bool winExit = curRaid.state == RaidState.PostFinalWave;
@@ -213,8 +213,9 @@ public partial class Game {
         .OnComplete(() => DestroyEntity(droppedEntity));
     }
     
-    private float DiscoverSlotTime => config.gameplay.discoverSlotTime * GetAbsoluteStat(PlayerStat.LootingSpeed);
-    private float DiscoverItemTime => config.gameplay.discoverItemTime * GetAbsoluteStat(PlayerStat.LootingSpeed);
+    // Looting speed goes up as it improves, so it divides the time instead of multiplying it
+    private float DiscoverSlotTime => config.gameplay.discoverSlotTime / GetAbsoluteStat(PlayerStat.LootingSpeed);
+    private float DiscoverItemTime => config.gameplay.discoverItemTime / GetAbsoluteStat(PlayerStat.LootingSpeed);
     
     public enum LootInventoryOrigin { Nothing, Body, Bush, Chest }
     

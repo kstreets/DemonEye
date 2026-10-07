@@ -21,10 +21,10 @@ MonoBehaviour:
     musicIntensity: 0
     variants:
     - name: Variant 0
-      maxDuration: 10
+      maxDuration: 15
       spawnDuration: 10
-      startNextPhaseEarlyDelay: 5
-      spawnCellRange: {x: 8, y: 11}
+      startNextPhaseEarlyDelay: 10
+      spawnCellRange: {x: 8, y: 10}
       repositionCellRange: {x: 7, y: 9}
       spawnRateCurve:
         serializedVersion: 2
@@ -57,10 +57,10 @@ MonoBehaviour:
     musicIntensity: 0
     variants:
     - name: Variant 0
-      maxDuration: 15
+      maxDuration: 20
       spawnDuration: 15
-      startNextPhaseEarlyDelay: 5
-      spawnCellRange: {x: 8, y: 11}
+      startNextPhaseEarlyDelay: 10
+      spawnCellRange: {x: 8, y: 10}
       repositionCellRange: {x: 7, y: 9}
       spawnRateCurve:
         serializedVersion: 2
@@ -93,9 +93,9 @@ MonoBehaviour:
     musicIntensity: 1
     variants:
     - name: Variant 0
-      maxDuration: 15
+      maxDuration: 20
       spawnDuration: 15
-      startNextPhaseEarlyDelay: 5
+      startNextPhaseEarlyDelay: 10
       spawnCellRange: {x: 8, y: 11}
       repositionCellRange: {x: 7, y: 9}
       spawnRateCurve:
@@ -129,7 +129,7 @@ MonoBehaviour:
     musicIntensity: 1
     variants:
     - name: Variant 0
-      maxDuration: 30
+      maxDuration: 36
       spawnDuration: 30
       startNextPhaseEarlyDelay: 10
       spawnCellRange: {x: 9, y: 11}
@@ -167,9 +167,9 @@ MonoBehaviour:
     musicIntensity: 1
     variants:
     - name: Variant 0
-      maxDuration: 40
+      maxDuration: 46
       spawnDuration: 40
-      startNextPhaseEarlyDelay: 5
+      startNextPhaseEarlyDelay: 10
       spawnCellRange: {x: 10, y: 12}
       repositionCellRange: {x: 8, y: 9}
       spawnRateCurve:
@@ -205,9 +205,9 @@ MonoBehaviour:
     musicIntensity: 1
     variants:
     - name: Variant 0
-      maxDuration: 35
+      maxDuration: 44
       spawnDuration: 35
-      startNextPhaseEarlyDelay: 5
+      startNextPhaseEarlyDelay: 10
       spawnCellRange: {x: 10, y: 12}
       repositionCellRange: {x: 8, y: 9}
       spawnRateCurve:
@@ -245,7 +245,7 @@ MonoBehaviour:
     - name: Variant 0
       maxDuration: 35
       spawnDuration: 35
-      startNextPhaseEarlyDelay: 5
+      startNextPhaseEarlyDelay: 10
       spawnCellRange: {x: 11, y: 13}
       repositionCellRange: {x: 8, y: 9}
       spawnRateCurve:

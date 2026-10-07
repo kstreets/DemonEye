@@ -44,3 +44,7 @@ MonoBehaviour:
   projectileCountIncPerLevel: 0.25
   discoverSlotTime: 0.1
   discoverItemTime: 1.2
+  firstRaidExtraMaxTime: 10
+  firstRaidExtraEarlyDelay: 8
+  secondRaidExtraMaxTime: 5
+  secondRaidExtraEarlyDelay: 4

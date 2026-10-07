@@ -218,7 +218,7 @@ public partial class Game {
         HorizontalLayoutGroup layout = panel.parent.GetComponentInParent<HorizontalLayoutGroup>();
         CanvasGroup canvasGroup = panel.GetComponent<CanvasGroup>();
         LayoutElement layoutElement = panel.GetComponent<LayoutElement>();
-
+        
         float startWidth = panel.rect.width;
         float startSpacing = layout.spacing;
         float origMinWidth = layoutElement.minWidth;
@@ -226,6 +226,7 @@ public partial class Game {
 
         // Stop drags and clicks landing on a panel that's leaving
         canvasGroup.blocksRaycasts = false;
+        HidePopupsFromPanel(panel);
         // Otherwise the content's min width stops the panel shrinking
         layoutElement.minWidth = 0f;
 
@@ -245,6 +246,33 @@ public partial class Game {
                 layoutElement.preferredWidth = origPreferredWidth;
                 layout.spacing = startSpacing;
             });
+    }
+
+    // Hides the item and hint popups if they belong to something inside the panel
+    private void HidePopupsFromPanel(RectTransform panel) {
+        InventoryHoverInfo invHover = lastInventoryHoverInfo;
+        if (invHover.inventory != null && invHover.slotIndex >= 0 && invHover.slotIndex < invHover.inventory.slots.Length) {
+            if (invHover.inventory.slots[invHover.slotIndex].ui.rectTransform.IsChildOf(panel)) {
+                HideInventoryItemPopup();
+            }
+        }
+
+        RectTransform hintedTransform = uiHints.lastHintHoverInfo.hoveringTransform;
+        if (hintedTransform && hintedTransform.IsChildOf(panel)) {
+            HideHint();
+            uiHints.lastHintHoverInfo = default; // Restarts the hover delay so it doesn't pop straight back up when the panel returns
+        }
+    }
+
+    // Panels turn off their CanvasGroup's raycasts while fading, so anything inside one shouldn't count as hovered.
+    // Otherwise popups that were just hidden would show again before the panel finishes fading.
+    private static bool InNonInteractableCanvasGroup(Transform trans) {
+        for (Transform cur = trans; cur != null; cur = cur.parent) {
+            if (!cur.TryGetComponent(out CanvasGroup group)) continue;
+            if (!group.blocksRaycasts) return true;
+            if (group.ignoreParentGroups) return false;
+        }
+        return false;
     }
 
     private Sequence FadeInAndExpandPanel(RectTransform panel, float expandTime = 0.35f, float fadeTime = 0.2f) {
@@ -750,12 +778,18 @@ public partial class Game {
             return "Place an Eyeball or Demon Eye here to craft or level up a Demon Eye";
         });
         
-        string eyeUpgradeDesc = $"Place {DisplayNumber(1)} of {DisplayNumber(5)} Blood Runes here to craft a Demon Eye";
-        AddHint(inventories.eyeForge.slots[1],  eyeUpgradeDesc);
-        AddHint(inventories.eyeForge.slots[2],  eyeUpgradeDesc);
-        AddHint(inventories.eyeForge.slots[3],  eyeUpgradeDesc);
-        AddHint(inventories.eyeForge.slots[4],  eyeUpgradeDesc);
-        AddHint(inventories.eyeForge.slots[5],  eyeUpgradeDesc);
+        AddHintWithCallback(inventories.eyeForge.slots[1],  GetForgeSlotHint);
+        AddHintWithCallback(inventories.eyeForge.slots[2],  GetForgeSlotHint);
+        AddHintWithCallback(inventories.eyeForge.slots[3],  GetForgeSlotHint);
+        AddHintWithCallback(inventories.eyeForge.slots[4],  GetForgeSlotHint);
+        AddHintWithCallback(inventories.eyeForge.slots[5],  GetForgeSlotHint);
+        
+        static string GetForgeSlotHint() {
+            if (gameInstance.forgeMode is ForgeMode.UpgradingDemonEye) {
+                return "Blood Rune required for Demon Eye upgrade. Autofills on upgrade.";
+            }
+            return $"Place {DisplayNumber(1)} of {DisplayNumber(5)} Blood Runes here to craft a Demon Eye";
+        }
         
         AddHint(ui.stashPanelHeaderText, "A place to keep all your items safe. Stashed items remain even after dying.");
         
@@ -896,7 +930,8 @@ public partial class Game {
     
     private bool UpdateHintHoverInfoForRectTransform(RectTransform element, Vector2 mousePos, ref HintHoverInfo info) {
         if (!element.gameObject.activeInHierarchy) return false;
-            
+        if (InNonInteractableCanvasGroup(element)) return false;
+
         Vector2 localMousePos = element.InverseTransformPoint(mousePos);
         Bounds localUiBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(element);
         if (!localUiBounds.Contains(localMousePos)) return false;

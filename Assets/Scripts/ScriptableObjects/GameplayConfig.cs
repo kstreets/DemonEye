@@ -47,8 +47,15 @@ public class GameplayConfig : ScriptableObject {
     public float movementSpeedIncPerLevel;
     public float projectileCountIncPerLevel;
 
-    [Header("Searching")] 
+    [Header("Searching")]
     public float discoverSlotTime;
     public float discoverItemTime;
+
+    // Added to every wave's max time and early delay on the first two raids of the first map, so new players aren't rushed
+    [Header("New Player Waves")]
+    public float firstRaidExtraMaxTime = 10f;
+    public float firstRaidExtraEarlyDelay = 5f;
+    public float secondRaidExtraMaxTime = 5f;
+    public float secondRaidExtraEarlyDelay = 2.5f;
 
 }

@@ -27,6 +27,8 @@ public partial class Game {
 
             Portal closestPortal = ClosestInactiveExitPortal();
             if (closestPortal == null) return; // Every portal was already used up
+            
+            gameInstance.spawnManager.startNextWaveDelay += 8;
             gameInstance.PlayExitPortalCutscene(closestPortal);
         });
     }

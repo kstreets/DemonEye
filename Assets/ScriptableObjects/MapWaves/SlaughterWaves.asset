@@ -21,7 +21,7 @@ MonoBehaviour:
     musicIntensity: 1
     variants:
     - name: Variant 0
-      maxDuration: 30
+      maxDuration: 32
       spawnDuration: 22
       startNextPhaseEarlyDelay: 10
       spawnCellRange: {x: 10, y: 12}
@@ -59,7 +59,7 @@ MonoBehaviour:
     musicIntensity: 1
     variants:
     - name: Variant 0
-      maxDuration: 40
+      maxDuration: 42
       spawnDuration: 30
       startNextPhaseEarlyDelay: 10
       spawnCellRange: {x: 10, y: 12}
@@ -99,7 +99,7 @@ MonoBehaviour:
     musicIntensity: 1
     variants:
     - name: Variant 0
-      maxDuration: 40
+      maxDuration: 42
       spawnDuration: 30
       startNextPhaseEarlyDelay: 10
       spawnCellRange: {x: 10, y: 12}
@@ -139,7 +139,7 @@ MonoBehaviour:
     musicIntensity: 1
     variants:
     - name: Variant 0
-      maxDuration: 30
+      maxDuration: 36
       spawnDuration: 30
       startNextPhaseEarlyDelay: 8
       spawnCellRange: {x: 11, y: 13}
@@ -181,7 +181,7 @@ MonoBehaviour:
     musicIntensity: 1
     variants:
     - name: Variant 0
-      maxDuration: 30
+      maxDuration: 32
       spawnDuration: 30
       startNextPhaseEarlyDelay: 8
       spawnCellRange: {x: 11, y: 13}
@@ -223,7 +223,7 @@ MonoBehaviour:
     musicIntensity: 1
     variants:
     - name: Variant 0
-      maxDuration: 30
+      maxDuration: 32
       spawnDuration: 30
       startNextPhaseEarlyDelay: 8
       spawnCellRange: {x: 11, y: 13}
@@ -265,7 +265,7 @@ MonoBehaviour:
     musicIntensity: 1
     variants:
     - name: Variant 0
-      maxDuration: 30
+      maxDuration: 32
       spawnDuration: 30
       startNextPhaseEarlyDelay: 8
       spawnCellRange: {x: 11, y: 13}

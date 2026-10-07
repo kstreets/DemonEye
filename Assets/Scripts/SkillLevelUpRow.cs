@@ -51,6 +51,16 @@ public class SkillLevelUpRow : MonoBehaviour {
             levelProgressDots[i].sprite = filledLevelProgressDotSprite;
         }
     }
+
+    public void RefreshAtMaxLevel(int maxLevel) {
+        levelUpButton.Disable();
+        levelProgressText.text = $"{maxLevel}/{maxLevel}";
+        levelUpCostText.text = "Max";
+
+        for (int i = 0; i < maxLevel; i++) {
+            levelProgressDots[i].sprite = filledLevelProgressDotSprite;
+        }
+    }
     
     private QuestUI.BurnData burnData = new();
     private Tween emberTween;

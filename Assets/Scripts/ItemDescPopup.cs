@@ -24,7 +24,7 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
     public AugmentDescription augmentDesc;
     public DemonEyeDescList demonEyeDesc;
     
-    public const float screenPadding = 25f;
+    public const float screenPadding = 75f;
     
     public bool IsShowing => gameObject.activeInHierarchy;
     
@@ -33,7 +33,7 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
         
         Item item = itemInstance.ItemRef;
         SetName(itemInstance, item);
-        SetTags(item);
+        SetTags(itemInstance, item);
         SetMetaInfo(itemInstance, item);
         SetDescription(itemInstance, item);
         
@@ -59,14 +59,18 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
         nameText.text = item.displayName;
     }
 
-    private void SetTags(Item item) {
-        Item.Rarity itemRarity = item.GetRarity();
+    private void SetTags(ItemInstance itemInstance, Item item) {
+        // The instance's rarity, because a Demon Eye's rarity comes from its blood runes rather than the base item
+        Item.Rarity itemRarity = itemInstance.GetRarity();
         Color itemRarityColor = styles.GetTextColorForRarity(itemRarity);
 
         typeTagGroup.gameObject.SetActive(true);
         typeTagGroup.image.color = itemRarityColor;
         
-        if (item.type == gameInstance.itemTypes.quickUse) {
+        if (item.type == gameInstance.itemTypes.demonEye) {
+            typeTagGroup.textMesh.text = "Demon Eye";
+        } 
+        else if (item.type == gameInstance.itemTypes.quickUse) {
             typeTagGroup.textMesh.text = "Quick Use";
         } 
         else if (item.type == gameInstance.itemTypes.eyeUpgrade) {
@@ -81,7 +85,7 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
         else if (item.type == gameInstance.itemTypes.sellable) {
             typeTagGroup.textMesh.text = "Sellable";
         }
-        else if (item.type == gameInstance.itemTypes.resource) {
+        else if (item.type == gameInstance.itemTypes.resource || item.type == gameInstance.itemTypes.eye) {
             typeTagGroup.textMesh.text = "Resource";
         }
         else {

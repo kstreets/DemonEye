@@ -454,6 +454,9 @@ public partial class Game {
                 // We choose player if there is no eye equiped, if this changes then we need to do something different for tutorial quick move
                 destinationInventory = inventories.player.slots[0].itemInstance == null ? inventories.player : inventories.stash;
             }
+            else if (hoveredInventory == inventories.player) {
+                destinationInventory = inventories.eyeForge;
+            }
         }
         else if (OnTradingTab) {
             if (transactionState == TransactionState.Selling) {
@@ -634,7 +637,8 @@ public partial class Game {
         
         foreach (Inventory inventory in inventories.all) {
             if (!inventory.parent.gameObject.activeInHierarchy) continue;
-            
+            if (InNonInteractableCanvasGroup(inventory.parent)) continue;
+
             Vector2 localMousePos = inventory.parent.InverseTransformPoint(mousePos);
             Bounds localUiBounds = RectTransformUtility.CalculateRelativeRectTransformBounds(inventory.parent);
             if (!localUiBounds.Contains(localMousePos)) continue;
