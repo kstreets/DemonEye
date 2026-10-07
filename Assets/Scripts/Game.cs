@@ -506,7 +506,7 @@ public partial class Game : MonoBehaviour {
         ui.deathBgImage.fillAmount = 1f;
         sequence.Chain(Tween.Alpha(ui.deathBgImage, 0f, 1f, 0.75f, Ease.InOutQuad));
         
-        sequence.Group(Tween.Delay(0.35f, () => AnimateLargeRaidText(ColorText("EARLY EXIT TAKEN", gameInstance.config.styles.increaseDescColor), 3.8f)));
+        sequence.Group(Tween.Delay(0.35f, () => AnimateLargeRaidText(ColorText("SUCCESSFUL EXTRACT", gameInstance.config.styles.increaseDescColor), 3.8f)));
         
         ui.animatedBgImage.gameObject.SetActive(true);
         ui.animatedBgImage.color = new(1f, 1f, 1f, 0f);

@@ -14,12 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Quest
   uuid: -2073902548
   title: First Extract
-  description: 'It helps to bring back the loot you find in a raid. You''ll need
-    to find and activate the exit portal somewhere on the map to return back safely.  '
+  description: The longer you stay in a raid, the more dangerous it becomes. It's
+    best to extract earlier with your loot when things start to get difficult. To
+    extract, find and summon one of the extraction portals on the map. Be careful
+    though, they don't stay open forever.
   traderReputationReward: 100
   objectives:
   - type: 50
-    description: Extract from Tutorial
+    description: Extract Early from Outskirts
     targetValue: 1
     targetEnemy: {fileID: 0}
     targetItem: {fileID: 0}

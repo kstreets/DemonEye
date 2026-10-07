@@ -23,8 +23,8 @@ MonoBehaviour:
   traderReputationReward: 100
   objectives:
   - type: 70
-    description: Stop 3 bleeds using bandages
-    targetValue: 3
+    description: Stop 2 bleeds using bandages
+    targetValue: 2
     targetEnemy: {fileID: 0}
     targetItem: {fileID: 0}
     targetItemType: {fileID: 0}

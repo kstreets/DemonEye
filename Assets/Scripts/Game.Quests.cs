@@ -13,6 +13,7 @@ public partial class Game {
         Teleport               = 30, 
         Sell                   = 40,
         Extract                = 50,
+        ClearingMap            = 55,
         UpgradeSkills          = 60,
         StoppingBleeds         = 70,
         InRaidHealing          = 80,
@@ -31,7 +32,7 @@ public partial class Game {
         public EnemyData targetEnemy;
         public Item targetItem;
         public ItemType targetItemType;
-        public MapData teleportMap;
+        public MapData targetMap;
         public bool keepFetchedItems;
     }
     
@@ -40,7 +41,7 @@ public partial class Game {
             QuestObjectiveTypes.Kill        => $"Kill {obj.targetValue} {obj.targetEnemy.displayName}s",
             QuestObjectiveTypes.FetchByItem => GetFetchDesc(),
             QuestObjectiveTypes.FetchByType => GetFetchDesc(),
-            QuestObjectiveTypes.Teleport    => $"Teleport to {obj.teleportMap?.displayName}",
+            QuestObjectiveTypes.Teleport    => $"Teleport to {obj.targetMap?.displayName}",
             QuestObjectiveTypes.Sell        => $"Sell {obj.targetValue} {obj.targetItem.displayName} to the trader",
             _                               => obj.description,
         };
@@ -145,6 +146,13 @@ public partial class Game {
                 break;
             case QuestObjectiveTypes.Extract: {
                 IncreaseObjectiveFromFlags(quest, obj, FrameFlags.ExitTaken | FrameFlags.EarlyExitTaken);
+                break;
+            }
+            case QuestObjectiveTypes.ClearingMap: {
+                if (curRaid.state == RaidState.PostFinalWave && curRaid.stateSwitchedThisFrame) {
+                    int increase = curRaid.map == obj.targetMap ? 1 : 0;
+                    IncreaseProgressValue(quest, obj, increase);
+                }
                 break;
             }
             case QuestObjectiveTypes.UpgradeSkills: {

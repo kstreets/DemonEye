@@ -14,12 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Quest
   uuid: -995161585
   title: Healing
-  description: 'You''ll probably get your shit pushed in more than a few times fighting
-    demons.
-
-    Its important to bring health potions, bandages, or anything else
-    that can heal you when going into raids. Next time you take damage, use any of
-    these to heal yourself.'
+  description: Its important to bring health potions and bandages into your raids.
+    Next time you take damage, use them to heal yourself.
   traderReputationReward: 100
   objectives:
   - type: 80

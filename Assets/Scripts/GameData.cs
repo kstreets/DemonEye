@@ -610,6 +610,7 @@ public class GameData {
         SoldToTrader    = 1 << 11,
         TookConsumable  = 1 << 12,
         InventoryOpened = 1 << 13,
+        ClearedMap      = 1 << 14,
     }
     
     public class PerFrameData {
