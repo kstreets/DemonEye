@@ -78,6 +78,12 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
         else if (item.type == gameInstance.itemTypes.backpack) {
             typeTagGroup.textMesh.text = "Backpack";
         }
+        else if (item.type == gameInstance.itemTypes.sellable) {
+            typeTagGroup.textMesh.text = "Sellable";
+        }
+        else if (item.type == gameInstance.itemTypes.resource) {
+            typeTagGroup.textMesh.text = "Resource";
+        }
         else {
             typeTagGroup.gameObject.SetActive(false);
         }

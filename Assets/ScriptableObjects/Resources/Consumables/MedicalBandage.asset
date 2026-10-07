@@ -56,6 +56,6 @@ MonoBehaviour:
   weight: 1
   description: 
   animationType: 2
-  healingAmount: 30
+  healingAmount: 45
   bandageAmount: 1
   healingDuration: 6

@@ -83,9 +83,10 @@ public class GameData {
         public ItemType backpack;
         public ItemType eye;
         public ItemType demonEye;
-        public ItemType gem;
         public ItemType eyeUpgrade;
         public ItemType wearableModifier;
+        public ItemType sellable;
+        public ItemType resource;
     }
     
     [Serializable]

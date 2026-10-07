@@ -17,10 +17,10 @@ MonoBehaviour:
   inventorySprite: {fileID: 1951717284, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   dropSprite: {fileID: -1127904995, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   pickupRadius: 0.07
-  type: {fileID: 0}
-  priceCategory: {fileID: 11400000, guid: 1b413ce208f37d445884e80008464342, type: 2}
+  type: {fileID: 11400000, guid: 3aa9d6e5cf74e89469679d25c1a431eb, type: 2}
+  priceCategory: {fileID: 0}
   buyPrice: 0
-  sellPrice: 22
+  sellPrice: 100
   mapSpawning:
     spawnsOnAll: 0
     firstSpawnMap: {fileID: 0}
@@ -33,7 +33,7 @@ MonoBehaviour:
   dropOrigins:
   - dropPool: {fileID: 11400000, guid: b58674038c45b004cb3685c82e51b6d7, type: 2}
     chanceToSpawn: 1
-    maxStackCount: 0
+    maxStackCount: 1
   modifiesStats: 0
   critChance: 0
   critMultiplier: 0

@@ -27580,9 +27580,10 @@ MonoBehaviour:
     backpack: {fileID: 11400000, guid: b4838a3d7e08dae4fbca579b80e09e71, type: 2}
     eye: {fileID: 11400000, guid: 5cca30c9ef87dc746b52b824dea7ceca, type: 2}
     demonEye: {fileID: 11400000, guid: fd77ee936723b1448b554eb40ddbf4f4, type: 2}
-    gem: {fileID: 11400000, guid: 3aa9d6e5cf74e89469679d25c1a431eb, type: 2}
     eyeUpgrade: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
     wearableModifier: {fileID: 11400000, guid: 91804a8de7d984648aff2f6ae72e2331, type: 2}
+    sellable: {fileID: 11400000, guid: 3aa9d6e5cf74e89469679d25c1a431eb, type: 2}
+    resource: {fileID: 0}
   quests:
     graph: {fileID: 7194093555672020370, guid: 8f5c04b849593bf4baec4efb1e04402c, type: 3}
   itemRefs:
@@ -31019,7 +31020,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5126960581999294233, guid: 17ce7c78916d4f449acd8ef141b38a2a, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 38.01
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5126960581999294233, guid: 17ce7c78916d4f449acd8ef141b38a2a, type: 3}
       propertyPath: m_SizeDelta.y
@@ -32554,7 +32555,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2487808539318543220, guid: be008b2b6fd2ac14e948d18f4b39d677, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 38.01
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2487808539318543220, guid: be008b2b6fd2ac14e948d18f4b39d677, type: 3}
       propertyPath: m_SizeDelta.y

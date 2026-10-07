@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RockLootTrinket
   uuid: 520884591
   displayName: Rock Looter
-  inventorySprite: {fileID: 1959194128, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
-  dropSprite: {fileID: 0}
+  inventorySprite: {fileID: 592928478, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  dropSprite: {fileID: -803670731, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   pickupRadius: 0.07
   type: {fileID: 11400000, guid: 91804a8de7d984648aff2f6ae72e2331, type: 2}
   priceCategory: {fileID: 11400000, guid: 494f743dba8aba74393d971bca57c731, type: 2}

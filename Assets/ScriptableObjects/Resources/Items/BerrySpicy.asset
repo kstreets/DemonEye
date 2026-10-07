@@ -20,7 +20,7 @@ MonoBehaviour:
   type: {fileID: 0}
   priceCategory: {fileID: 11400000, guid: 1b413ce208f37d445884e80008464342, type: 2}
   buyPrice: 0
-  sellPrice: 9
+  sellPrice: 0
   mapSpawning:
     spawnsOnAll: 1
     firstSpawnMap: {fileID: 0}

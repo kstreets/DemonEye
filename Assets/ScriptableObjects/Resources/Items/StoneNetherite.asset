@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: StoneNetherite
   m_EditorClassIdentifier: 
   uuid: -1499919210
-  displayName: Netherite
+  displayName: Netherite Stone
   inventorySprite: {fileID: 564901494, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   dropSprite: {fileID: -1528942586, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   pickupRadius: 0.07
@@ -24,7 +24,8 @@ MonoBehaviour:
   mapSpawning:
     spawnsOnAll: 0
     firstSpawnMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
-    spawnsOnMaps: []
+    spawnsOnMaps:
+    - {fileID: 11400000, guid: c8b1482d86ab12448a0c1e705082664b, type: 2}
   traderSpawning:
     levelRequired: 1
     stockRange: {x: 1, y: 1}

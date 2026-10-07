@@ -94,6 +94,21 @@ public partial class Game {
         }
     }
     
+    public void OnExitPortalSummoned(Portal portal) {
+        if (trinkets.equiped is not PortalBlastTrinket portalBlast) return;
+
+        Vector2 portalPos = portal.transform.position;
+        foreach (Enemy enemy in entities.enemies) {
+            if (enemy.health <= 0) continue; // Already dying, death gets handled in UpdateEnemies
+            if (Vector2.Distance(portalPos, enemy.Center) > portalBlast.killRadius) continue;
+            DamageEnemy(enemy, enemy.health, isCriticalStrike: false, useEnemyDamageMultiplier: false);
+        }
+
+        if (!string.IsNullOrEmpty(portalBlast.activationPopUpText)) {
+            SpawnTrinketActivationText(portalBlast.activationPopUpText);
+        }
+    }
+
     private void PlayerOnEnemyDeath(Enemy enemy) {
         if (trinkets.equiped is SpeedBoostTrinket speedBoost) {
             if (++trinkets.data.trackingCount >= speedBoost.killsPerBoost) {
