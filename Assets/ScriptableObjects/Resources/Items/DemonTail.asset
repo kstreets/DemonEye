@@ -22,9 +22,10 @@ MonoBehaviour:
   buyPrice: 0
   sellPrice: 5
   mapSpawning:
-    spawnsOnAll: 1
+    spawnsOnAll: 0
     firstSpawnMap: {fileID: 0}
-    spawnsOnMaps: []
+    spawnsOnMaps:
+    - {fileID: 11400000, guid: c8b1482d86ab12448a0c1e705082664b, type: 2}
   traderSpawning:
     levelRequired: 1
     stockRange: {x: 1, y: 1}
@@ -32,10 +33,10 @@ MonoBehaviour:
   rarity: 0
   dropOrigins:
   - dropPool: {fileID: 11400000, guid: 3c4ecb30986cb144bb8b92852af68d07, type: 2}
-    chanceToSpawn: 0.408
+    chanceToSpawn: 0.453
     maxStackCount: 6
   - dropPool: {fileID: 11400000, guid: a50fac0e0c375294296c54b1d6d4450d, type: 2}
-    chanceToSpawn: 0.65
+    chanceToSpawn: 0.6
     maxStackCount: 1
   modifiesStats: 0
   critChance: 0

@@ -22,7 +22,7 @@ MonoBehaviour:
   buyPrice: 0
   sellPrice: 22
   mapSpawning:
-    spawnsOnAll: 0
+    spawnsOnAll: 1
     firstSpawnMap: {fileID: 0}
     spawnsOnMaps: []
   traderSpawning:
@@ -33,10 +33,10 @@ MonoBehaviour:
   dropOrigins:
   - dropPool: {fileID: 11400000, guid: 3c4ecb30986cb144bb8b92852af68d07, type: 2}
     chanceToSpawn: 0.294
-    maxStackCount: 6
+    maxStackCount: 4
   - dropPool: {fileID: 11400000, guid: 403e542a49d6e3d4c834cdb48dce1626, type: 2}
     chanceToSpawn: 0.505
-    maxStackCount: 6
+    maxStackCount: 2
   modifiesStats: 0
   critChance: 0
   critMultiplier: 0

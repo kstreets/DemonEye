@@ -23,8 +23,9 @@ MonoBehaviour:
   sellPrice: 20
   mapSpawning:
     spawnsOnAll: 0
-    firstSpawnMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
-    spawnsOnMaps: []
+    firstSpawnMap: {fileID: 0}
+    spawnsOnMaps:
+    - {fileID: 11400000, guid: c8b1482d86ab12448a0c1e705082664b, type: 2}
   traderSpawning:
     levelRequired: 1
     stockRange: {x: 1, y: 1}

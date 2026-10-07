@@ -265,6 +265,12 @@ public partial class Game : MonoBehaviour {
     }
     
     private void OnGameOverExit() {
+        // Pooled entities would otherwise come back without physics
+        foreach (Entity entity in entities.all) {
+            if (entity.rigidbody) {
+                entity.rigidbody.simulated = true;
+            }
+        }
         player.health = FullPlayerHealth();
         DeinitRaid();
     }
@@ -391,6 +397,7 @@ public partial class Game : MonoBehaviour {
         foreach (Entity entity in entities.all) {
             if (entity.rigidbody) {
                 entity.rigidbody.linearVelocity = Vector2.zero;
+                entity.rigidbody.simulated = false; // Stops overlapping enemies from pushing each other apart, restored in OnGameOverExit
             }
             if (entity.animator) {
                 entity.animator.enabled = false;
