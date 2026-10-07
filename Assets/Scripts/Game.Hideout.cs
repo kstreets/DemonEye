@@ -130,7 +130,7 @@ public partial class Game {
         
         using var _ = ListPool<Item>.Get(out var items);
         GetUniqueItemsFromDropPool(dropPools.trader, traderInventoryColCount * traderInventoryRowCount, ref items);
-        items = items.OrderBy(x => x.type.name).ThenBy(x => x.GetRarity()).ThenBy(x => x.buyPrice).ToList();
+        items = items.OrderBy(x => TraderTypeOrder(x.type)).ThenBy(x => x.type.name).ThenBy(x => x.GetRarity()).ThenBy(x => x.buyPrice).ToList();
         
         foreach (Item item in items) {
             if (item.traderSpawning.levelRequired > curTraderLevel) continue;
@@ -148,6 +148,18 @@ public partial class Game {
         MarkTraderItemsAsTraderOwned();
     }
     
+    // Any type not listed here gets placed after these, ordered by type name
+    private int TraderTypeOrder(ItemType type) {
+        ItemType[] typeOrder = { itemTypes.quickUse, itemTypes.backpack, itemTypes.wearableModifier, itemTypes.eyeUpgrade };
+        for (int i = 0; i < typeOrder.Length; i++) {
+            if (type == typeOrder[i]) return i;
+            foreach (ItemType derivative in typeOrder[i].derivativeItemTypes) {
+                if (derivative == type) return i;
+            }
+        }
+        return typeOrder.Length;
+    }
+
     private void MarkTraderItemsAsTraderOwned() {
         for (int i = 0; i < inventories.trader.slots.Length; i++) {
             InventorySlot slot = inventories.trader.slots[i];
