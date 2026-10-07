@@ -236,10 +236,10 @@ TextureImporter:
       name: NewSulfurProps_5
       rect:
         serializedVersion: 2
-        x: 329
-        y: 187
-        width: 82
-        height: 86
+        x: 337
+        y: 198
+        width: 65
+        height: 66
       alignment: 9
       pivot: {x: 0.5, y: 0.26}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -280,10 +280,10 @@ TextureImporter:
       name: NewSulfurProps_7
       rect:
         serializedVersion: 2
-        x: 155
-        y: 183
-        width: 78
-        height: 63
+        x: 162
+        y: 189
+        width: 64
+        height: 51
       alignment: 9
       pivot: {x: 0.5, y: 0.44}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -302,10 +302,10 @@ TextureImporter:
       name: NewSulfurProps_8
       rect:
         serializedVersion: 2
-        x: 18
-        y: 129
-        width: 104
-        height: 49
+        x: 42
+        y: 132
+        width: 75
+        height: 44
       alignment: 9
       pivot: {x: 0.5, y: 0.41}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -324,10 +324,10 @@ TextureImporter:
       name: NewSulfurProps_9
       rect:
         serializedVersion: 2
-        x: 439
-        y: 99
-        width: 70
-        height: 73
+        x: 443
+        y: 104
+        width: 59
+        height: 62
       alignment: 9
       pivot: {x: 0.5, y: 0.29}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -346,10 +346,10 @@ TextureImporter:
       name: NewSulfurProps_10
       rect:
         serializedVersion: 2
-        x: 14
-        y: 181
-        width: 63
-        height: 71
+        x: 20
+        y: 190
+        width: 49
+        height: 54
       alignment: 9
       pivot: {x: 0.5, y: 0.33}
       border: {x: 0, y: 0, z: 0, w: 0}
