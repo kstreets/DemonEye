@@ -511,16 +511,18 @@ public partial class Game {
         bool timeLimitExceeded = sm.timeInCurPhase >= waveDuration;
         bool justHitTimeLimit = prevTimeInCurPhase < waveDuration && timeLimitExceeded;
         int curEnemyCount = entities.enemies.Count;
-        
+        bool waveCleared = afterFirstWave && sm.FinishedSpawningThisWave && curEnemyCount <= 0;
+
         if (afterFirstWave) {
             if (justHitTimeLimit && curEnemyCount > 0) {
                 int totalEnemiesThisWave = 0;
                 foreach (RaidSpawnPattern.EnemyBatch batch in sm.CurPhase.enemyBatches) {
                     totalEnemiesThisWave += batch.enemyCount;
                 }
-                float remainingOfTotalPercentage = curEnemyCount / (float)totalEnemiesThisWave; 
+                float remainingOfTotalPercentage = curEnemyCount / (float)totalEnemiesThisWave;
                 float addedTime = Mathf.Lerp(1f, 4f, remainingOfTotalPercentage);
-                sm.startNextWaveDelay += addedTime;
+                // The early delay is only for clearing the wave, which didn't happen, so the buffer replaces it
+                sm.startNextWaveDelay += addedTime - sm.CurPhase.startNextPhaseEarlyDelay;
             }
         
             bool justKilledLastEnemiesInWave = sm.FinishedSpawningThisWave && sm.prevEnemyCount > 0 && curEnemyCount <= 0;
@@ -582,12 +584,14 @@ public partial class Game {
                 sm.startNextWaveDelay += timeAdded;
             }
             
-            if (sm.FinishedSpawningThisWave && entities.enemies.Count <= 0) {
+            // Clearing the wave counts down the early start delay, and hitting the time limit counts down the buffer
+            // for leftover enemies, so the next wave isn't held up by enemies the player hasn't killed
+            if (waveCleared || timeLimitExceeded) {
                 sm.startNextWaveDelay -= Time.deltaTime;
             }
         }
-        
-        bool startNextWave = sm.startNextWaveDelay <= 0f && timeLimitExceeded;
+
+        bool startNextWave = sm.startNextWaveDelay <= 0f && (timeLimitExceeded || waveCleared);
         
         if (startNextWave && !sm.OnLastWave) {
             sm.curPhaseIndex++;
