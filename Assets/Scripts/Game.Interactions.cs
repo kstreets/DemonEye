@@ -22,94 +22,126 @@ public partial class Game {
         Vector2 checkCenter = player.position + new Vector3(0f, 0.05f, 0f);
         List<Collider2D> cols = Physics.OverlapCircle(checkCenter, 0.1f, Masks.ItemMask);
         
-        foreach (Collider2D col in cols) {
-            
-            if (col.CompareTag(Tags.Pickup)) {
-                CheckForItemDropInteraction(col.GetComponent<ItemDrop>());
-            }
+        // Only the closest thing gets interacted with. Otherwise one press would pick up every overlapping item,
+        // or loot a body while the prompt was showing an item.
+        Collider2D col = ClosestInteractable(cols, checkCenter);
+        if (col == null) return;
+        
+        if (col.CompareTag(Tags.Pickup)) {
+            CheckForItemDropInteraction(col.GetComponent<ItemDrop>());
+        }
 
-            if (col.CompareTag(Tags.DeadBody)) {
-                EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), "Search Body");
-                if (input.interact.WasPressedThisFrame()) {
-                    thisFrame.flags |= GameData.FrameFlags.SearchingBody;
-                    inventories.lootPtr.slots = curRaid.deadBodySlotsLookup[col.gameObject];
-                    OpenPlayerInventory();
-                    OpenLootInventory(LootInventoryOrigin.Body);
-                }
+        if (col.CompareTag(Tags.DeadBody)) {
+            EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), "Search Body");
+            if (input.interact.WasPressedThisFrame()) {
+                thisFrame.flags |= GameData.FrameFlags.SearchingBody;
+                inventories.lootPtr.slots = curRaid.deadBodySlotsLookup[col.gameObject];
+                OpenPlayerInventory();
+                OpenLootInventory(LootInventoryOrigin.Body);
             }
-            
-            if (col.CompareTag(Tags.Bush)) {
-                EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), "Search Bush");
-                if (input.interact.WasPressedThisFrame()) {
-                    thisFrame.flags |= GameData.FrameFlags.SearchingBush;
-                    inventories.lootPtr.slots = curRaid.bushSlotsLookup[col.gameObject];
-                    OpenPlayerInventory();
-                    OpenLootInventory(LootInventoryOrigin.Bush);
-                }
+        }
+        
+        if (col.CompareTag(Tags.Bush)) {
+            EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), "Search Bush");
+            if (input.interact.WasPressedThisFrame()) {
+                thisFrame.flags |= GameData.FrameFlags.SearchingBush;
+                inventories.lootPtr.slots = curRaid.bushSlotsLookup[col.gameObject];
+                OpenPlayerInventory();
+                OpenLootInventory(LootInventoryOrigin.Bush);
             }
+        }
 
-            if (col.CompareTag(Tags.Altar)) {
-                Altar altar = col.GetComponent<Altar>();
-                if (altar.used) {
-                    ItemDrop summonedItemDrop = altar.summonedItemDrop;
-                    if (summonedItemDrop != null && !cols.Contains(summonedItemDrop.circleCollider)) {
-                        CheckForItemDropInteraction(summonedItemDrop);
-                    }
-                    continue;
-                }
-                
-                int soulsPrice = curRaid.map.altarSoulPrice;
-                Color soulsTextColor = player.state.soulCurrency >= soulsPrice ? config.styles.soulCurrencyColor : config.styles.outOfStockCountColor;
-                string details = $"Summon Eye Upgrade: <sprite=1>{ColorText(soulsPrice.ToString("N0"), soulsTextColor)}";
-                EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), details);
-                if (input.interact.WasPressedThisFrame() && player.state.soulCurrency >= soulsPrice) {
-                    thisFrame.flags |= GameData.FrameFlags.SummonedUpgrade;
-                    SummonEyeUpgradeFromAltar(col);
-                    player.state.soulCurrency -= soulsPrice;
-                    altar.used = true;
-                }
+        if (col.CompareTag(Tags.Altar)) {
+            Altar altar = col.GetComponent<Altar>();
+            if (altar.used) {
+                // Only chosen when its summoned item is out of reach, so the altar stands in for it
+                CheckForItemDropInteraction(altar.summonedItemDrop);
+                return;
             }
             
-            if (col.CompareTag(Tags.Chest)) {
-                EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), "Open Chest");
-                if (input.interact.WasPressedThisFrame()) {
-                    inventories.lootPtr.slots = curRaid.chestSlotsLookup[col.gameObject];
-                    OpenPlayerInventory();
-                    OpenLootInventory(LootInventoryOrigin.Chest);
-                }
+            int soulsPrice = curRaid.map.altarSoulPrice;
+            Color soulsTextColor = player.state.soulCurrency >= soulsPrice ? config.styles.soulCurrencyColor : config.styles.outOfStockCountColor;
+            string details = $"Summon Eye Upgrade: <sprite=1>{ColorText(soulsPrice.ToString("N0"), soulsTextColor)}";
+            EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), details);
+            if (input.interact.WasPressedThisFrame() && player.state.soulCurrency >= soulsPrice) {
+                thisFrame.flags |= GameData.FrameFlags.SummonedUpgrade;
+                SummonEyeUpgradeFromAltar(col);
+                player.state.soulCurrency -= soulsPrice;
+                altar.used = true;
             }
+        }
+        
+        if (col.CompareTag(Tags.Chest)) {
+            EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), "Open Chest");
+            if (input.interact.WasPressedThisFrame()) {
+                inventories.lootPtr.slots = curRaid.chestSlotsLookup[col.gameObject];
+                OpenPlayerInventory();
+                OpenLootInventory(LootInventoryOrigin.Chest);
+            }
+        }
 
-            if (col.CompareTag(Tags.ExitPortal)) {
-                Portal portal = GetExitPortalFromTransform(col.transform);
-                
-                if (portal.state == Portal.State.Inactive) {
-                    EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Summon Exit Portal");
-                    if (input.interact.IsPressed()) {
-                        portal.StartOpenCloseSequence(config.gameplay.portalPostSummonDelay, config.gameplay.portalActiveDuration);
-                    }
-                }
-                
-                if (portal.state == Portal.State.Open) {
-                    EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Take Exit Portal");
-                    if (input.interact.WasPressedThisFrame()) {
-                        portal.OnPlayerTook();
-                        bool winExit = curRaid.state == RaidState.PostFinalWave;
-                        states.gameStateMachine.SetStateIfNotCurrent(winExit ? states.winExit : states.earlyExit);
-                        thisFrame.flags |= winExit ? GameData.FrameFlags.ExitTaken : GameData.FrameFlags.EarlyExitTaken;
-                    }
+        if (col.CompareTag(Tags.ExitPortal)) {
+            Portal portal = GetExitPortalFromTransform(col.transform);
+            
+            if (portal.state == Portal.State.Inactive) {
+                EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Summon Exit Portal");
+                if (input.interact.IsPressed()) {
+                    portal.StartOpenCloseSequence(config.gameplay.portalPostSummonDelay, config.gameplay.portalActiveDuration);
                 }
             }
             
-            if (col.CompareTag(Tags.ExpressExitPortal)) {
-                EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Take Exit Portal");
+            if (portal.state == Portal.State.Open) {
+                EnableInteractionPrompt(OffsetY(col.transform.position, 0.35f), "Take Exit Portal");
                 if (input.interact.WasPressedThisFrame()) {
-                    col.transform.GetComponent<SummonedPortal>().Close(activeStateOnComplete: false);
+                    portal.OnPlayerTook();
                     bool winExit = curRaid.state == RaidState.PostFinalWave;
                     states.gameStateMachine.SetStateIfNotCurrent(winExit ? states.winExit : states.earlyExit);
                     thisFrame.flags |= winExit ? GameData.FrameFlags.ExitTaken : GameData.FrameFlags.EarlyExitTaken;
                 }
             }
         }
+        
+        if (col.CompareTag(Tags.ExpressExitPortal)) {
+            EnableInteractionPrompt(OffsetY(col.transform.position, 0.21f), "Take Exit Portal");
+            if (input.interact.WasPressedThisFrame()) {
+                col.transform.GetComponent<SummonedPortal>().Close(activeStateOnComplete: false);
+                bool winExit = curRaid.state == RaidState.PostFinalWave;
+                states.gameStateMachine.SetStateIfNotCurrent(winExit ? states.winExit : states.earlyExit);
+                thisFrame.flags |= winExit ? GameData.FrameFlags.ExitTaken : GameData.FrameFlags.EarlyExitTaken;
+            }
+        }
+    }
+
+    private Collider2D ClosestInteractable(List<Collider2D> cols, Vector2 checkCenter) {
+        Collider2D closest = null;
+        float closestSqrDist = float.MaxValue;
+        foreach (Collider2D col in cols) {
+            if (!IsInteractable(col, cols)) continue;
+            float sqrDist = ((Vector2)col.bounds.center - checkCenter).sqrMagnitude;
+            if (sqrDist >= closestSqrDist) continue;
+            closestSqrDist = sqrDist;
+            closest = col;
+        }
+        return closest;
+    }
+    
+    // Things in reach that have nothing to do right now shouldn't block whatever is behind them
+    private bool IsInteractable(Collider2D col, List<Collider2D> cols) {
+        if (col.CompareTag(Tags.Pickup) || col.CompareTag(Tags.DeadBody) || col.CompareTag(Tags.Bush) || 
+            col.CompareTag(Tags.Chest) || col.CompareTag(Tags.ExpressExitPortal)) {
+            return true;
+        }
+        if (col.CompareTag(Tags.Altar)) {
+            Altar altar = col.GetComponent<Altar>();
+            if (!altar.used) return true;
+            ItemDrop summonedItemDrop = altar.summonedItemDrop;
+            return summonedItemDrop != null && !cols.Contains(summonedItemDrop.circleCollider);
+        }
+        if (col.CompareTag(Tags.ExitPortal)) {
+            Portal portal = GetExitPortalFromTransform(col.transform);
+            return portal.state is Portal.State.Inactive or Portal.State.Open;
+        }
+        return false;
     }
     
     private void CheckForItemDropInteraction(ItemDrop itemDrop) {

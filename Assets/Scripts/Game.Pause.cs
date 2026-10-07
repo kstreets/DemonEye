@@ -18,6 +18,7 @@ public partial class Game {
 
     private void OnPausePressed(InputAction.CallbackContext context) {
         if (!InRaid) return;
+        if (cutscene.playing) return; // Unpausing would resume the raid in the middle of the cutscene
 
         if (pauseMenu.paused) {
             ResumeRaid();

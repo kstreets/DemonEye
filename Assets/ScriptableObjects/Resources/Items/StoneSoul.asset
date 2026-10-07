@@ -17,7 +17,7 @@ MonoBehaviour:
   inventorySprite: {fileID: -1594482155, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   dropSprite: {fileID: -1894842987, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   pickupRadius: 0.07
-  type: {fileID: 0}
+  type: {fileID: 11400000, guid: be8b13c0d024a554d943d6ea9f5652a1, type: 2}
   priceCategory: {fileID: 11400000, guid: 1b413ce208f37d445884e80008464342, type: 2}
   buyPrice: 0
   sellPrice: 4

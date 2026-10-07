@@ -20,7 +20,7 @@ MonoBehaviour:
   - name: Wave 0
     variants:
     - name: Variant 0
-      maxDuration: 40
+      maxDuration: 30
       spawnDuration: 22
       startNextPhaseEarlyDelay: 10
       spawnCellRange: {x: 10, y: 12}
@@ -57,7 +57,7 @@ MonoBehaviour:
   - name: Wave 1
     variants:
     - name: Variant 0
-      maxDuration: 45
+      maxDuration: 40
       spawnDuration: 30
       startNextPhaseEarlyDelay: 10
       spawnCellRange: {x: 10, y: 12}
@@ -96,7 +96,7 @@ MonoBehaviour:
   - name: Wave 2
     variants:
     - name: Variant 0
-      maxDuration: 45
+      maxDuration: 40
       spawnDuration: 30
       startNextPhaseEarlyDelay: 10
       spawnCellRange: {x: 10, y: 12}

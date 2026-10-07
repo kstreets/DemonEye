@@ -64,6 +64,8 @@ public partial class Game {
         public static int bandage = Animator.StringToHash("PlayerBandage");
     }
     
+    private const int startingSoulCurrency = 100;
+
     public static Player player => gameInstance.entities.player;
     
     private Player MakePlayer() {
@@ -74,7 +76,8 @@ public partial class Game {
     }
     
     private void InitPlayerState(Player instancedPlayer, GameState gameState) {
-        instancedPlayer.state = gameState?.playerState ?? new();
+        // No save means this is a fresh game, so give the player some starting souls
+        instancedPlayer.state = gameState?.playerState ?? new() { soulCurrency = startingSoulCurrency };
         // We want to make sure that the player health is never <= zero
         int startingHealth = instancedPlayer.state.initHealth;
         instancedPlayer.health = startingHealth <= 0f ? FullPlayerHealth() : startingHealth;

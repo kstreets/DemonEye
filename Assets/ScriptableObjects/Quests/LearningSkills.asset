@@ -19,10 +19,10 @@ MonoBehaviour:
   traderReputationReward: 250
   objectives:
   - type: 60
-    description: Upgrade 3 skills
-    targetValue: 3
+    description: Upgrade 2 skills
+    targetValue: 2
     targetEnemy: {fileID: 0}
     targetItem: {fileID: 0}
     targetItemType: {fileID: 0}
-    teleportMap: {fileID: 0}
+    targetMap: {fileID: 0}
     keepFetchedItems: 0

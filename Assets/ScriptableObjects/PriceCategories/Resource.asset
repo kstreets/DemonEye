@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b4f076cbd333334b939ae36b488efcf, type: 3}
   m_Name: Resource
   m_EditorClassIdentifier: Assembly-CSharp::PriceCategory
-  commonPrice: 250
-  uncommonPrice: 500
-  rarePrice: 800
-  epicPrice: 1200
-  legendaryPrice: 1500
+  commonPrice: 500
+  uncommonPrice: 800
+  rarePrice: 1200
+  epicPrice: 1500
+  legendaryPrice: 2500

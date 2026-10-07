@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: BloodShot
   m_EditorClassIdentifier: Assembly-CSharp::Soulcard
   uuid: -74899936
-  displayName: Blood Shot
+  displayName: Blood Punch
   inventorySprite: {fileID: 1442519032, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   dropSprite: {fileID: 0}
   pickupRadius: 0.07

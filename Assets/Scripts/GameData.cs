@@ -578,6 +578,7 @@ public class GameData {
             public TrinketData trinkets;
             public Limiter reteleportLimitter;
             public int soulsGained;
+            public bool exitPortalCutscenePlayed;
         }
         public Data data;
     } 
@@ -591,6 +592,7 @@ public class GameData {
         None                   = 0,
         BloodMushroomsUnlocked = 1 << 0,
         HideoutTourItemsGiven  = 1 << 1,
+        HasExtracted           = 1 << 2,
     }
     
     [Flags] 
@@ -671,6 +673,12 @@ public class GameData {
 
         public readonly Dialogue dialogue = new();
         public TypewriterComponent dialogueTypewriter;
+    }
+
+    public class Cutscene {
+        public bool playing;
+        public Transform cameraTarget; // The camera follows this while panning so Cinemachine's damping still applies
+        public bool restoreLookahead;
     }
 
 }

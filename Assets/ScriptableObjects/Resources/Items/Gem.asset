@@ -20,7 +20,7 @@ MonoBehaviour:
   type: {fileID: 11400000, guid: 3aa9d6e5cf74e89469679d25c1a431eb, type: 2}
   priceCategory: {fileID: 0}
   buyPrice: 0
-  sellPrice: 1000
+  sellPrice: 1500
   mapSpawning:
     spawnsOnAll: 1
     firstSpawnMap: {fileID: 0}
@@ -36,7 +36,7 @@ MonoBehaviour:
     maxStackCount: 2
   - dropPool: {fileID: 11400000, guid: ac36b359b2819ad4f84ed57cf20ba475, type: 2}
     chanceToSpawn: 0.835
-    maxStackCount: 2
+    maxStackCount: 3
   modifiesStats: 0
   critChance: 0
   critMultiplier: 0

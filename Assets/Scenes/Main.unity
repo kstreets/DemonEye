@@ -31024,7 +31024,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5126960581999294233, guid: 17ce7c78916d4f449acd8ef141b38a2a, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: 38.01
       objectReference: {fileID: 0}
     - target: {fileID: 5126960581999294233, guid: 17ce7c78916d4f449acd8ef141b38a2a, type: 3}
       propertyPath: m_SizeDelta.y
@@ -32559,7 +32559,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2487808539318543220, guid: be008b2b6fd2ac14e948d18f4b39d677, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: 38.01
       objectReference: {fileID: 0}
     - target: {fileID: 2487808539318543220, guid: be008b2b6fd2ac14e948d18f4b39d677, type: 3}
       propertyPath: m_SizeDelta.y
@@ -33740,13 +33740,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 4053821201876920947, guid: ee0c07b700867e0438569b4674ce88df, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 4053821201876920947, guid: ee0c07b700867e0438569b4674ce88df, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ee0c07b700867e0438569b4674ce88df, type: 3}
 --- !u!114 &6683082631902429937 stripped
 MonoBehaviour:

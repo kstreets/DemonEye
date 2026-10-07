@@ -55,6 +55,7 @@ public partial class Game : MonoBehaviour {
     [NonSerialized] public readonly PerFrameData thisFrame = new();
     [NonSerialized] public readonly ControllerNavigation controllNav = new();
     [NonSerialized] public readonly Tutorial tutorial = new();
+    [NonSerialized] public readonly Cutscene cutscene = new();
     
     [NonSerialized] public HideoutState hideoutState;
     [NonSerialized] public PersistentFlags persistentFlags;
@@ -72,6 +73,7 @@ public partial class Game : MonoBehaviour {
         Shader.SetGlobalFloat(unscaledTimeShaderId, Time.unscaledTime);
         states.gameStateMachine.Tick();
         if (!pauseMenu.paused) {
+            UpdateDialogue(); // Outside of the tutorial because cutscenes use dialogue too
             UpdateTutorial(); // !
         }
         DemonEyeTween.Update();
@@ -217,6 +219,7 @@ public partial class Game : MonoBehaviour {
         UpdateEnemies();
         RefreshAllInventoryDisplays();
         UpdateGameplayMusic();
+        CheckForExitPortalCutscene();
     }
 
     private void OnRaidStateFixedUpdate() {
@@ -232,6 +235,7 @@ public partial class Game : MonoBehaviour {
     }
 
     private void OnEarlyExitEnter() {
+        persistentFlags |= PersistentFlags.HasExtracted;
         SaveGameState();
         AnimateEarlyExitSequence(() => states.gameStateMachine.SetStateIfNotCurrent(states.mainMenu));
         StopMusic(MusicOption.Fast); // Needs to be after animation sequence because it stops all tweens
@@ -248,6 +252,7 @@ public partial class Game : MonoBehaviour {
         if (unlockNextMap) {
             maps[nextMapIndex].state.isUnlocked = true;
         }
+        persistentFlags |= PersistentFlags.HasExtracted;
         SaveGameState();
         AnimateGameWinSequence(() => states.gameStateMachine.SetStateIfNotCurrent(states.mainMenu));
     }

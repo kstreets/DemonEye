@@ -247,7 +247,6 @@ public partial class Game {
 
     private void UpdateTutorial() {
         if (!InTutorial) return;
-        UpdateDialogue();
         tutorial.stateMachine.Tick();
     }
     
