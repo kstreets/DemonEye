@@ -19,7 +19,7 @@ MonoBehaviour:
   pickupRadius: 0.07
   type: {fileID: 11400000, guid: b4838a3d7e08dae4fbca579b80e09e71, type: 2}
   priceCategory: {fileID: 0}
-  buyPrice: 6000
+  buyPrice: 1200
   sellPrice: 1000
   mapSpawning:
     spawnsOnAll: 1

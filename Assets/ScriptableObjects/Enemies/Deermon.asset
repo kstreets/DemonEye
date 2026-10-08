@@ -28,11 +28,11 @@ MonoBehaviour:
   sideAttackOffset: {x: 0.175, y: 0.104}
   upAttackOffset: {x: 0, y: 0.167}
   donwAttackOffset: {x: 0, y: 0.05}
-  speed: 0.38
-  health: 26
+  speed: 0.44
+  health: 20
   damage: 16
   collisionDamage: 6
   changeToCauseBleed: 0.15
   soulWorthPerKill: 4
   xpWorthPerKill: 20
-  defaultMass: 13.127501
+  defaultMass: 1.2474997

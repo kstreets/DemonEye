@@ -23,10 +23,10 @@ MonoBehaviour:
   sellPrice: 1600
   mapSpawning:
     spawnsOnAll: 0
-    firstSpawnMap: {fileID: 11400000, guid: aac23282a2cd7784ab5861d2a0508e69, type: 2}
+    firstSpawnMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
     spawnsOnMaps: []
   traderSpawning:
-    levelRequired: 3
+    levelRequired: 10
     stockRange: {x: 1, y: 5}
     barterRequirements:
     - item: {fileID: 11400000, guid: 67595d8fd1980a14790ab2f5f2a40952, type: 2}

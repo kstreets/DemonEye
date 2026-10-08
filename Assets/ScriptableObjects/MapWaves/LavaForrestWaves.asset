@@ -23,7 +23,7 @@ MonoBehaviour:
     - name: Variant 0
       maxDuration: 40
       spawnDuration: 22
-      startNextPhaseEarlyDelay: 10
+      startNextPhaseEarlyDelay: 12
       spawnCellRange: {x: 10, y: 12}
       repositionCellRange: {x: 9, y: 11}
       spawnRateCurve:
@@ -61,7 +61,7 @@ MonoBehaviour:
     - name: Variant 0
       maxDuration: 45
       spawnDuration: 30
-      startNextPhaseEarlyDelay: 10
+      startNextPhaseEarlyDelay: 12
       spawnCellRange: {x: 10, y: 12}
       repositionCellRange: {x: 9, y: 11}
       spawnRateCurve:
@@ -99,7 +99,7 @@ MonoBehaviour:
     - name: Variant 0
       maxDuration: 45
       spawnDuration: 30
-      startNextPhaseEarlyDelay: 10
+      startNextPhaseEarlyDelay: 12
       spawnCellRange: {x: 10, y: 12}
       repositionCellRange: {x: 9, y: 11}
       spawnRateCurve:
@@ -127,19 +127,17 @@ MonoBehaviour:
         m_PostInfinity: 2
         m_RotationOrder: 0
       enemyBatches:
-      - enemyCount: 40
+      - enemyCount: 30
         enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
-      - enemyCount: 40
+      - enemyCount: 50
         enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
-      - enemyCount: 60
-        enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
   - name: Wave 3
     musicIntensity: 1
     variants:
     - name: Variant 0
-      maxDuration: 45
-      spawnDuration: 30
-      startNextPhaseEarlyDelay: 8
+      maxDuration: 46
+      spawnDuration: 34
+      startNextPhaseEarlyDelay: 11
       spawnCellRange: {x: 11, y: 13}
       repositionCellRange: {x: 9, y: 11}
       spawnRateCurve:
@@ -167,19 +165,19 @@ MonoBehaviour:
         m_PostInfinity: 2
         m_RotationOrder: 0
       enemyBatches:
-      - enemyCount: 70
-        enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
-      - enemyCount: 60
+      - enemyCount: 50
         enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
+      - enemyCount: 30
+        enemyData: {fileID: 11400000, guid: 8a749b46a2a7d944892efbf025fbe2a1, type: 2}
       - enemyCount: 40
         enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
   - name: Wave 4
     musicIntensity: 1
     variants:
     - name: Variant 0
-      maxDuration: 45
-      spawnDuration: 30
-      startNextPhaseEarlyDelay: 8
+      maxDuration: 48
+      spawnDuration: 36
+      startNextPhaseEarlyDelay: 11
       spawnCellRange: {x: 12, y: 14}
       repositionCellRange: {x: 9, y: 11}
       spawnRateCurve:
@@ -207,11 +205,9 @@ MonoBehaviour:
         m_PostInfinity: 2
         m_RotationOrder: 0
       enemyBatches:
-      - enemyCount: 60
-        enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
-      - enemyCount: 45
-        enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
-      - enemyCount: 30
+      - enemyCount: 80
+        enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
+      - enemyCount: 50
         enemyData: {fileID: 11400000, guid: 8a749b46a2a7d944892efbf025fbe2a1, type: 2}
   - name: Wave 5
     musicIntensity: 2
@@ -219,7 +215,7 @@ MonoBehaviour:
     - name: Variant 0
       maxDuration: 55
       spawnDuration: 40
-      startNextPhaseEarlyDelay: 8
+      startNextPhaseEarlyDelay: 10
       spawnCellRange: {x: 13, y: 15}
       repositionCellRange: {x: 10, y: 12}
       spawnRateCurve:
@@ -247,10 +243,8 @@ MonoBehaviour:
         m_PostInfinity: 2
         m_RotationOrder: 0
       enemyBatches:
-      - enemyCount: 120
+      - enemyCount: 100
         enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
-      - enemyCount: 60
-        enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
       - enemyCount: 45
         enemyData: {fileID: 11400000, guid: 8a749b46a2a7d944892efbf025fbe2a1, type: 2}
   - name: Wave 6
@@ -259,7 +253,7 @@ MonoBehaviour:
     - name: Variant 0
       maxDuration: 50
       spawnDuration: 35
-      startNextPhaseEarlyDelay: 8
+      startNextPhaseEarlyDelay: 10
       spawnCellRange: {x: 13, y: 15}
       repositionCellRange: {x: 8, y: 12}
       spawnRateCurve:
@@ -287,21 +281,19 @@ MonoBehaviour:
         m_PostInfinity: 2
         m_RotationOrder: 0
       enemyBatches:
-      - enemyCount: 130
-        enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
-      - enemyCount: 20
-        enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
       - enemyCount: 70
-        enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
-      - enemyCount: 40
         enemyData: {fileID: 11400000, guid: 8a749b46a2a7d944892efbf025fbe2a1, type: 2}
+      - enemyCount: 50
+        enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
+      - enemyCount: 30
+        enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
   - name: Wave 7
     musicIntensity: 3
     variants:
     - name: Variant 0
       maxDuration: 45
       spawnDuration: 45
-      startNextPhaseEarlyDelay: 0
+      startNextPhaseEarlyDelay: 10
       spawnCellRange: {x: 14, y: 16}
       repositionCellRange: {x: 10, y: 12}
       spawnRateCurve:
@@ -329,11 +321,9 @@ MonoBehaviour:
         m_PostInfinity: 2
         m_RotationOrder: 0
       enemyBatches:
-      - enemyCount: 80
+      - enemyCount: 100
         enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
       - enemyCount: 40
         enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
-      - enemyCount: 150
-        enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
-      - enemyCount: 60
+      - enemyCount: 70
         enemyData: {fileID: 11400000, guid: 8a749b46a2a7d944892efbf025fbe2a1, type: 2}

@@ -30,7 +30,7 @@ MonoBehaviour:
     stockRange: {x: 1, y: 5}
     barterRequirements:
     - item: {fileID: 11400000, guid: c300cfd9dba50fc438f83dec791af29b, type: 2}
-      count: 3
+      count: 2
     - item: {fileID: 11400000, guid: 72fd8c3e65ba830449c7e8ecc75c3f1e, type: 2}
       count: 1
   rarity: 0

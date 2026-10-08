@@ -96,7 +96,7 @@ public partial class Game {
         public bool isLocked;
     }
     
-    public const int playerPocketSize = 10;
+    public const int playerPocketSize = 12;
     public const int playerQuickUseSize = 4;
     public const int playerEquipmentSize = 3;
     public const int traderInventoryColCount = 6;

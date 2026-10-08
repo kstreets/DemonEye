@@ -44,4 +44,4 @@ MonoBehaviour:
   itemGroupProps: {fileID: 11400000, guid: 4f50fd0a36a2ac4499f3d9ca7dc28a72, type: 2}
   maxStackCount: 0
   weight: 0
-  description: 
+  description: Grows from the blood that was absorbed by the ground.
