@@ -16,9 +16,9 @@ MonoBehaviour:
   sceneReference: DemoMap
   spawning: {fileID: 11400000, guid: c3f7f6d7c8bc62a4993a44c716d126e0, type: 2}
   waterSettings: {fileID: 11400000, guid: 1866c6a4b026e3443ab0d054026b2d00, type: 2}
-  minimapTexture: {fileID: 2800000, guid: 4ce5e6fe4d7a3bf47a9b40584a27cedb, type: 3}
-  icon: {fileID: -2785679004291586991, guid: f7abf30af60c0c74694ca17aac57c22b, type: 3}
-  previewImage: {fileID: 2800000, guid: f31c16a440e5c414fa0b2771fac280b9, type: 3}
+  minimapTexture: {fileID: 2800000, guid: b7c3794944198164b88e407509fa3d1d, type: 3}
+  icon: {fileID: 779084914, guid: fc22346a1d143684bbb07dbf4e628853, type: 3}
+  previewImage: {fileID: 2800000, guid: 2721ae5008caad74fb4afe62b8858ad5, type: 3}
   difficultyText: Medium
   unlockRequirement: Complete Outskirts to unlock
   altarSoulPrice: 100

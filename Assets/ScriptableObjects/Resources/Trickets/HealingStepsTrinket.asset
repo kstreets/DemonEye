@@ -48,6 +48,6 @@ MonoBehaviour:
   maxStackCount: 0
   weight: 0
   description: 
-  healing: 1
+  healing: 2
   stepsPerHeal: 10
   activationPopUpText: 

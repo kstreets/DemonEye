@@ -63,7 +63,7 @@ Material:
     - _NoiseSpeed: 0
     m_Colors:
     - White: {r: 1, g: 1, b: 1, a: 1}
-    - _BaseColor: {r: 0.67295593, g: 0.24035294, b: 0.0740674, a: 1}
+    - _BaseColor: {r: 0.64779866, g: 0.24890089, b: 0.099817894, a: 1}
     - _EdgeColor: {r: 0.7987421, g: 0.3514035, b: 0.067817606, a: 1}
     - _LavaColor: {r: 0.72955966, g: 0.26432124, b: 0.05276683, a: 1}
     - _ScreenOffset: {r: 1, g: 0.79, b: 1, a: 1}
