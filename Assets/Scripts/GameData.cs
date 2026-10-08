@@ -383,6 +383,10 @@ public class GameData {
         public DynamicClip textCharAppearClip;
         public DynamicClip extractionMelody;
         public DynamicClip reflectedShotClip;
+        public DynamicClip overheatBlastClip;
+        public DynamicClip boneShatterClip;
+        public DynamicClip soulVolleyClip;
+        public DynamicClip explosionClip;
         
         public Dictionary<int, List<DynamicClipRecord>> records = new(50);
         public Dictionary<AudioSource, int> generationLookup = new();

@@ -46,8 +46,8 @@ public partial class Game {
                 settings.fullscreenMode.Display(fullScreenNames[nameIndex]);
             })
             .OnApply(i => {
-                Screen.fullScreenMode = GetScreenModeFromIndex(i);
                 settings.curSettingsState.fullScreenIndex = i;
+                ApplyScreenModeAndResolution();
             });
             
             int startingResolutionIndex = FindSettingResolutionIndex(loadedSettings.resolution);
@@ -61,9 +61,8 @@ public partial class Game {
                 settings.resolution.Display($"{screenSize.x} x {screenSize.y}");
             })
             .OnApply(i => {
-                Vector2Int screenSize = allScreenResolutions[i];
-                Screen.SetResolution(screenSize.x, screenSize.y, GetScreenModeFromIndex(settings.fullscreenMode.curIndex));
-                settings.curSettingsState.resolution = screenSize;
+                settings.curSettingsState.resolution = allScreenResolutions[i];
+                ApplyScreenModeAndResolution();
             });
             
             settings.fpsLimit.Init(loadedSettings.fpsLimitIndex, fpsLimits.Length)
@@ -167,6 +166,14 @@ public partial class Game {
         settings.applyChangesButton.SetClickableState(changesToApplyCount > 0);
     }
     
+    // The screen mode and resolution are always set together in one call. Setting Screen.fullScreenMode and then calling
+    // Screen.SetResolution in the same frame can drop the resolution, e.g. switching to windowed and a new size at once did nothing.
+    private void ApplyScreenModeAndResolution() {
+        Vector2Int screenSize = allScreenResolutions[settings.resolution.curIndex];
+        FullScreenMode screenMode = GetScreenModeFromIndex(settings.fullscreenMode.curIndex);
+        Screen.SetResolution(screenSize.x, screenSize.y, screenMode);
+    }
+
     private FullScreenMode GetScreenModeFromIndex(int index) {
         return index == 0 ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed;
     }

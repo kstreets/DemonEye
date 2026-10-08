@@ -48,5 +48,5 @@ MonoBehaviour:
   maxStackCount: 0
   weight: 0
   description: 
-  killRadius: 1
+  killRadius: 0.95
   activationPopUpText: Portal Blast!

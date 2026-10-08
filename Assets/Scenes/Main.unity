@@ -29761,6 +29761,10 @@ MonoBehaviour:
     textCharAppearClip: {fileID: 11400000, guid: 502edb7e5ec269f4e90802cc42abcdc8, type: 2}
     extractionMelody: {fileID: 11400000, guid: 5fe5695cb9534d240bb8bd2116740f5d, type: 2}
     reflectedShotClip: {fileID: 11400000, guid: 6ddbd6784f9c852459149a3011730ce7, type: 2}
+    overheatBlastClip: {fileID: 11400000, guid: fb9fbc22273af4b4099f05ffcc981de9, type: 2}
+    boneShatterClip: {fileID: 11400000, guid: 21b9f66ade4d52544b37b7171709b29f, type: 2}
+    soulVolleyClip: {fileID: 11400000, guid: 4dc2351a37d29d14a8d969c001a3f371, type: 2}
+    explosionClip: {fileID: 11400000, guid: cd8cfe35e31b90046b995fb46bbc6d1e, type: 2}
     uninterruptibleSources: []
   music:
     masterGroup: {fileID: 24300002, guid: 045edcbc93f71d548a0426204df6ca60, type: 2}

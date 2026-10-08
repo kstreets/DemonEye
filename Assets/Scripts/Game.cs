@@ -538,6 +538,8 @@ public partial class Game : MonoBehaviour {
         PlayAudioClip(audio.teleportOutClip, outTeleportFxEntity.position);
         player.gameObject.SetActive(false);
         
+        Tween.Delay(0.15f, () => PlayAudioClip(audio.extractionMelody, Vector2.zero, cannotInterrupt: true));
+        
         Sequence sequence = Sequence.Create();
 
         int initialPPU = camera.pixelPerfect.assetsPPU;
@@ -546,7 +548,6 @@ public partial class Game : MonoBehaviour {
         }));
         
         sequence.ChainDelay(0.25f);
-        sequence.ChainCallback(() => PlayAudioClip(audio.extractionMelody, Vector2.zero, cannotInterrupt: true));
         
         ui.deathBgImage.enabled = true;
         ui.deathBgImage.fillAmount = 1f;

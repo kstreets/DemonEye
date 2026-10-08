@@ -209,6 +209,7 @@ public partial class Game {
             
             projectile.gameObject.SetActive(true);
             gameInstance.entities.soulTrackingProjectiles.Add(projectile);
+            gameInstance.PlayAudioClip(gameInstance.audio.soulVolleyClip, spawnPos);
         });
     }
     

@@ -306,6 +306,8 @@ public partial class Game {
         
         if (demonEye.equiped.blast.TryGetValue(out var blast) && player.consecutiveShotCount > 0 && player.consecutiveShotCount % blast.numshotsUntilOverheat == 0) {
             Vector2 spawnPos = OffsetY(player.position, 0.35f);
+            PlayAudioClip(audio.overheatBlastClip, spawnPos);
+            
             SpawnEntityOneShot(entityPools.blast, spawnPos, Quaternion.identity); 
             List<Collider2D> cols = Physics.OverlapCircle(player.position, blast.radius, Masks.EnemyMask);
             foreach (Collider2D col in cols) {

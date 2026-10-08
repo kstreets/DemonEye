@@ -79,6 +79,7 @@ public partial class Game {
         
         if (eyeInstance.explosion.TryGetValue(out var explosion) && RollProbability(explosion.probability)) {
             Vector2 expSpawnPos = GetExplosionPosition(projectile, enemy);
+            PlayAudioClip(audio.explosionClip, expSpawnPos);
 
             Entity expEntity = SpawnEntity(entityPools.explosion, expSpawnPos, Quaternion.identity); 
             DestroyEntity(expEntity, CurrentClipLength(expEntity.animator));
@@ -104,6 +105,7 @@ public partial class Game {
         }
         
         if (demonEye.equiped.boneShatter.TryGetValue(out var boneShatter) && RollProbability(boneShatter.probability)) {
+            PlayAudioClip(audio.boneShatterClip, enemy.position);
             for (int i = 0; i < boneShatter.shardsCount; i++) {
                 float randomDelay = Random.Range(0f, 0.06f);
                 float randomSpeedScaler = Random.Range(0.4f, 0.6f);

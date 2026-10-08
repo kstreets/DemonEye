@@ -690,7 +690,7 @@ AudioMixerGroupController:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: ReflectedShot
+  m_Name: UpgradeFx
   m_AudioMixer: {fileID: 24100000}
   m_GroupID: 1396bd90160d7c84a807fc9dc72706dc
   m_Children: []
