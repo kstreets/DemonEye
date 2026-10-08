@@ -157,6 +157,10 @@ public partial class Game {
         InventoryAddResult result = TryAddItemToInventory(inventories.player, itemDrop.ItemInstance);
         if (result.type != InventoryAddResult.ResultType.Failure) {
             thisFrame.flags |= GameData.FrameFlags.PickedUpLoot;
+            // The slot's tween plays this when the inventory is showing, but it skips hidden slots, so pickups would be silent
+            if (!PlayerInventoryIsOpen) {
+                PlayAudioClip(audio.itemMoveClip);
+            }
         }
         
         if (result.type == InventoryAddResult.ResultType.Success) {
