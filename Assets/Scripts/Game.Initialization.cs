@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine.Assertions;
 using UnityEngine.InputSystem;
 
@@ -62,6 +63,9 @@ public partial class Game {
         input.quickUse2 = InputSystem.actions.FindAction("QuickUse2");
         input.quickUse3 = InputSystem.actions.FindAction("QuickUse3");
         input.quickUse4 = InputSystem.actions.FindAction("QuickUse4");
+        input.quickUseSelected = InputSystem.actions.FindAction("QuickUseSelected");
+        input.quickUsePrevious = InputSystem.actions.FindAction("QuickUsePrevious");
+        input.quickUseNext = InputSystem.actions.FindAction("QuickUseNext");
     }
 
     private void InitEntityPools() {
@@ -215,6 +219,20 @@ public partial class Game {
         };
         hotBar.slotUIs = ui.hotBarParent.GetComponentsInChildren<InventorySlotUI>();
         Assert.IsTrue(hotBar.slotUIs.Length == playerQuickUseSize, "Make sure to match hot bar inventory UIs count with quick use count");
+        Assert.IsTrue(hotBar.inputPrompts.Count == playerQuickUseSize, "Make sure to match hot bar input prompts count with quick use count");
+
+        // Keyboard has a key per slot, controller only shows the button on the selected slot
+        for (int i = 0; i < hotBar.inputPrompts.Count; i++) {
+            int slotIndex = i;
+            InputAction keyboardAction = hotBar.quickUseActions[i];
+            AddInputPrompt(hotBar.inputPrompts[i], () => {
+                if (!UsingControllerControls) return (keyboardAction, string.Empty);
+                return slotIndex == hotBar.selectedIndex ? (input.quickUseSelected, string.Empty) : (null, null);
+            });
+        }
+        // The bound actions are controller only, so these show nothing on keyboard
+        AddInputPrompt(hotBar.leftShoulderPrompt.GetComponent<TextMeshProUGUI>(), () => (input.quickUsePrevious, string.Empty));
+        AddInputPrompt(hotBar.rightShoulderPrompt.GetComponent<TextMeshProUGUI>(), () => (input.quickUseNext, string.Empty));
     }
     
 }

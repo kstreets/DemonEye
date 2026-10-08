@@ -10,7 +10,7 @@ public partial class Game {
 
     // Where the UI should treat the "cursor" as being. Follows the controller selection when using a controller.
     private Vector2 PointerScreenPos => usingController ? controllNav.pointerPos : Mouse.current.position.ReadValue();
-    private bool MenuNavigationNeeded => !InRaid || PlayerInventoryIsOpen || LootInventoryIsOpen || pauseMenu.paused;
+    private bool MenuNavigationNeeded => !InRaid || PlayerInventoryIsOpen || LootInventoryIsOpen || pauseMenu.paused || ui.messagePopup.IsShowing;
 
     public class NavPanel {
         public RectTransform panel;
@@ -180,6 +180,9 @@ public partial class Game {
     }
 
     private void UpdateToggleGroupSwitching() {
+        // Tabs behind a message popup shouldn't change while it's waiting for an answer
+        if (ui.messagePopup.IsShowing) return;
+
         var switchedMode = CheckForToggleGroupSwitching();
         // We dont clear the selection when doing a secondary toggle switch, and there's no selection when using the cursor
         if (switchedMode == ToggleButtonGroup.NavigationMode.Primary && usingController) {
@@ -469,7 +472,10 @@ public partial class Game {
 
     private bool IsValidNavTarget(RectTransform target) {
         if (!target || !target.gameObject.activeInHierarchy) return false;
-        
+
+        // A message popup needs answering first, so only its own buttons can be selected
+        if (ui.messagePopup.IsShowing && !target.IsChildOf(ui.messagePopup.rectTransform)) return false;
+
         if (target.TryGetComponent(out Selectable selectable)) {
             if (!selectable.IsInteractable()) return false;
             if (selectable.navigation.mode == Navigation.Mode.None) return false;

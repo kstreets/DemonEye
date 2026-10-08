@@ -93,6 +93,43 @@ public partial class Game {
         );
     }
 
+    private void TryShowDemoEndDialogue() {
+        if (!cutscene.showDemoEndOnMainMenu) return;
+        cutscene.showDemoEndOnMainMenu = false;
+
+        // Same as the tutorial's first trader meeting: the menu animation restarts from off screen and holds there,
+        // so only the trader is showing until they're done talking
+        mainMenuSequence.Complete();
+        ShowMainMenuUI();
+        mainMenuSequence.isPaused = true;
+        states.gameStateMachine.Pause();
+        // The buttons are off screen, but controller navigation could still select and press them
+        SetMainMenuButtonsClickable(false);
+
+        tutorial.dialogueTypewriter = ui.traderTutorialTypewriter;
+        ui.traderTutorialDialogueBox.SetActive(true);
+        FadeIn(ui.traderTutorialDialogueCanvasGroup, 1f);
+
+        StartDialogue(
+            onFinished: () => {
+                ui.traderTutorialDialogueBox.SetActive(false);
+                SetMainMenuButtonsClickable(true);
+                mainMenuSequence.isPaused = false;
+                states.gameStateMachine.UnPause();
+            },
+            Line("Well, look at you. You've made it further than most of my clients. Thanks for playing the demo!"),
+            Line("Feel free to keep experimenting with Demon Eye builds. I'll keep taking your money."),
+            Line("And wishlist the game on Steam please! The full game releases November 5th, and my business depends on it.")
+        );
+    }
+
+    private void SetMainMenuButtonsClickable(bool clickable) {
+        mainMenu.playButton.SetClickableState(clickable);
+        mainMenu.hideoutButton.SetClickableState(clickable);
+        mainMenu.settingsButton.SetClickableState(clickable);
+        mainMenu.exitButton.SetClickableState(clickable);
+    }
+
     // Freezes the raid in place so the camera can be moved around
     private void StartCutscene() {
         cutscene.playing = true;

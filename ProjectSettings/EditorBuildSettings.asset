@@ -12,24 +12,6 @@ EditorBuildSettings:
     path: Assets/Scenes/Outskirts.unity
     guid: 4efe7e94f18d0ac49b04d8cb35984b5d
   - enabled: 1
-    path: Assets/Scenes/LavaForrest.unity
-    guid: ae176a417cb123144a7c58e6bc9ee80a
-  - enabled: 1
-    path: Assets/Scenes/Swamp.unity
-    guid: 5fd8c1da36d40be4887828c63cb56905
-  - enabled: 1
-    path: Assets/Scenes/LighthouseExpansion.unity
-    guid: 3f6d3a4d8d8f7a44d899285babe12f86
-  - enabled: 1
-    path: Assets/Scenes/Isles.unity
-    guid: 1b58ed78e0f7d454c8f26fb20a6e47e8
-  - enabled: 1
-    path: Assets/Scenes/Ice.unity
-    guid: 084d3e0c97648504aa5c92b310297d52
-  - enabled: 1
-    path: Assets/Scenes/SulfurFields.unity
-    guid: 3b59665c7c75ba7488e1a9f72ee30fc1
-  - enabled: 1
     path: Assets/Scenes/DemoMap.unity
     guid: fd49db02b1fbd89439e0f799c2235a64
   m_configObjects:

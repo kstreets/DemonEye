@@ -507,6 +507,21 @@ public partial class Game {
         bool ignoreCollisionDamage = !player.enemyCollisionDamageLimiter.TimeHasPassed(config.gameplay.repeatCollisionDamageDelay);
         if (damageType == PlayerDamageType.Collision && ignoreCollisionDamage) return;
         
+        // Thorns makes it so collision damage is ignored and imposed on the enemy
+        if (trinkets.equiped is Thorns thorns && trinkets.data.cooldownDuration.HasPassed() && damageType == PlayerDamageType.Collision) {
+            Entity damageEntity = sourceEntity switch {
+                Enemy enemy     => enemy,
+                Projectile proj => proj.sourceEntity,
+                _               => null,
+            };
+            if (damageEntity != null) {
+                DamageEnemy(damageEntity, damage, isCriticalStrike: false);
+                SpawnTrinketActivationText(thorns.activationPopUpText);
+                trinkets.data.cooldownDuration.Reset(thorns.cooldownTime);
+            }
+            return;
+        }
+        
         player.health = Mathf.Clamp(player.health - damage, 0, int.MaxValue);
         
         // Rolled after the damage is applied so a hit that takes the player under the auto stop threshold can't start a bleed
@@ -517,23 +532,11 @@ public partial class Game {
         AddFlashHitEffect(player);
         SpawnPlayerDamageNumber(damage);
         
-        float damageImpactScale = Mathf.Clamp01(damage / 65f);
+        float damageImpactScale = Mathf.Clamp01(damage / 35f);
         float damageShakeFreq = Mathf.Lerp(6f, 10f, damageImpactScale);
         float damageShakeMag = Mathf.Lerp(0.02f, 0.1f, damageImpactScale);
         camera.cameraShake.Shake(damageShakeFreq, damageShakeMag, 0.6f);
         
-        if (trinkets.equiped is Thorns thorns && trinkets.data.cooldownDuration.HasPassed()) {
-            Entity damageEntity = sourceEntity switch {
-            Enemy enemy => enemy,
-            Projectile proj => proj.sourceEntity, 
-                _ => null,
-            };
-            if (damageEntity != null) {
-                DamageEnemy(damageEntity, damage, isCriticalStrike: false);
-                SpawnTrinketActivationText(thorns.activationPopUpText);
-                trinkets.data.cooldownDuration.Reset(thorns.cooldownTime);
-            }
-        }
     }
     
     private bool PlayerHealthIsAtAutoBleedStop() {

@@ -120,6 +120,16 @@ public partial class Game {
     private void OnMenuMusicEnter() {
         music.menuMusicActive = true;
 
+        // Coming back from a raid gets a moment of quiet before the menu music fades in
+        State prevState = states.gameStateMachine.PrevState;
+        // The first state is entered while the states are still being created, so they can all be null at that point
+        bool returningFromRaid = prevState != null && (prevState == states.gameOver || prevState == states.winExit || prevState == states.earlyExit);
+        if (returningFromRaid) {
+            const float raidExitMusicDelay = 3f;
+            music.menuBreakEndTime = Time.time + raidExitMusicDelay;
+            return;
+        }
+
         bool onBreak = Time.time < music.menuBreakEndTime;
         if (onBreak) return;
 

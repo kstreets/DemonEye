@@ -615,16 +615,21 @@ public partial class Game {
             slot.itemInstance = null;
         }
             
+        InventorySlot eyeSlot = inventories.eyeForge.slots[eyeSlotIndex];
         if (eyeSlotItemInstance.isDemonEye) {
             UpgradeDemonEye(eyeSlotItemInstance, eyeUpgradeItemInstances);
-            inventories.eyeForge.slots[eyeSlotIndex].itemInstance = eyeSlotItemInstance;
+            eyeSlot.itemInstance = eyeSlotItemInstance;
         }
         else {
             string demonEyeName = randomDemonEyeNames.GetRandom();
             ItemInstance newDemonEye = CreateNewDemonEyeItemInstance(demonEyeName, eyeUpgradeItemInstances);
-            inventories.eyeForge.slots[eyeSlotIndex].itemInstance = newDemonEye;
+            eyeSlot.itemInstance = newDemonEye;
         }
-        
+
+        // Shown right away so the reveal pops in the finished eye instead of whatever was there before the next refresh
+        eyeSlot.ui.SetItem(eyeSlot.itemInstance);
+        PlayItemReveal(eyeSlot.ui, eyeSlot.itemInstance, Vector2.zero);
+
         forgeMode = ForgeMode.PostForgeOrUpgrade;
     }
     
@@ -644,12 +649,7 @@ public partial class Game {
 
         InventorySlot[] slots = inventories.eyeForge.slots;
         
-        bool upgradingDemonEye = slots[0].itemInstance.isDemonEye;
-        if (upgradingDemonEye) {
-            slots[0].ui.itemUI.forgeEffect.SetIntoSprite(config.demonEyeLevels.levelSprites[1]);
-        } else {
-            slots[0].ui.itemUI.forgeEffect.SetIntoSprite(config.demonEyeLevels.levelSprites[0]);
-        }
+        slots[0].ui.itemUI.forgeEffect.SetIntoSprite(config.demonEyeLevels.levelSprites[0]);
         slots[0].ui.itemUI.forgeEffect.UseSmoothing(false);
         
         Tween.Custom(this, 0f, 1f, fillDuration, ease: Ease.Linear, onValueChange: (target, val) => {

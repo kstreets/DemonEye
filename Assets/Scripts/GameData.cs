@@ -240,6 +240,7 @@ public class GameData {
         public ButtonFeel suicideButton;
         [NonSerialized] public bool paused;
         [NonSerialized] public bool showingSettings;
+        [NonSerialized] public int resumedOnFrame = -1;
         [NonSerialized] public readonly List<AudioSource> pausedAudioSources = new();
     }
     
@@ -380,6 +381,8 @@ public class GameData {
         public DynamicClip burnClip;
         public DynamicClip deathStingerClip;
         public DynamicClip textCharAppearClip;
+        public DynamicClip extractionMelody;
+        public DynamicClip reflectedShotClip;
         
         public Dictionary<int, List<DynamicClipRecord>> records = new(50);
         public Dictionary<AudioSource, int> generationLookup = new();
@@ -447,6 +450,17 @@ public class GameData {
         [NonSerialized] public SettingsState curSettingsState;
     }
     
+    [Serializable]
+    public class HotBar {
+        [NonSerialized] public List<InputAction> quickUseActions;
+        [NonSerialized] public InventorySlotUI[] slotUIs;
+        [NonSerialized] public int selectedIndex; // The only slot bound on controller, the bumpers move it
+
+        public List<TextMeshProUGUI> inputPrompts;
+        public GameObject leftShoulderPrompt;
+        public GameObject rightShoulderPrompt;
+    }
+    
     public class Input {
         public InputAction move;
         public InputAction interact;
@@ -462,6 +476,9 @@ public class GameData {
         public InputAction quickUse2;
         public InputAction quickUse3;
         public InputAction quickUse4;
+        public InputAction quickUseSelected;
+        public InputAction quickUsePrevious;
+        public InputAction quickUseNext;
         public InputAction menuMove;
         public InputAction menuSubmit;
         public InputAction menuTabLeft;
@@ -541,11 +558,6 @@ public class GameData {
         public List<Inventory> all = new();
     }
     
-    public class HotBar {
-        public List<InputAction> quickUseActions;
-        public InventorySlotUI[] slotUIs;
-    }
-    
     public class DemonEye {
         public DemonEyeInstance equiped;
         public ItemInstance equipedItem;
@@ -604,6 +616,7 @@ public class GameData {
         HasExtracted           = 1 << 2,
         FirstMapPlayedOnce     = 1 << 3,
         FirstMapPlayedTwice    = 1 << 4,
+        DemoEndShown           = 1 << 5,
     }
     
     [Flags] 
@@ -690,6 +703,7 @@ public class GameData {
         public bool playing;
         public Transform cameraTarget; // The camera follows this while panning so Cinemachine's damping still applies
         public bool restoreLookahead;
+        public bool showDemoEndOnMainMenu;
     }
 
 }

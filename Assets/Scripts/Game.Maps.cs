@@ -229,7 +229,7 @@ public partial class Game {
         
         foreach (Transform portalTrans in exitPortalParent) {
             portalTrans.gameObject.SetActive(false);
-            if (Vector2.Distance(player.position, portalTrans.position) > 5) {
+            if (Vector2.Distance(player.position, portalTrans.position) > curRaid.map.minExtractionDist) {
                 possibleExitPortals.Add(portalTrans.GetComponent<Portal>());
             }
         }
@@ -272,7 +272,7 @@ public partial class Game {
         const float chanceToPlant = 0.067f;
         if (!RollProbability(chanceToPlant)) return;
         
-        const float minSpacing = 0.1f;
+        const float minSpacing = 0.25f;
         List<Vector2> spawns = curRaid.map.state.bloodMushroomSpawns;
         foreach (Vector2 spawn in spawns) {
             if (Vector2.SqrMagnitude(spawn - pos) < minSpacing) return;

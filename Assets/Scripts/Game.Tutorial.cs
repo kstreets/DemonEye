@@ -14,10 +14,20 @@ public partial class Game {
     private bool InTutorialFirstTraderMeeting => InTutorial && !InTutorialSlaughterMap && tutorial.stateMachine.NotPassedThisState(tutorial.firstTraderMeeting);
     private bool InTutorialHideoutTour => InTutorial && !InTutorialFirstTraderMeeting && !tutorial.stateMachine.OnLastState;
 
+    // Set from the Gameplay Testing window
+    public const string skipTutorialEditorPrefKey = "DemonEye_SkipTutorial";
+
     private void InitTutorial(GameState gameState) {
         bool compltedTutorial = gameState != null && gameState.tutorialStateIndex == -1;
         if (compltedTutorial) return;
-        
+
+#if UNITY_EDITOR
+        if (UnityEditor.EditorPrefs.GetBool(skipTutorialEditorPrefKey)) {
+            SkipTutorial();
+            return;
+        }
+#endif
+
         mainMenu.hideoutButton.SetClickableState(false);
         tutorial.dialogueTypewriter = ui.openingDialogueTypewriter;
         
@@ -244,6 +254,21 @@ public partial class Game {
             }
         }
     }
+
+#if UNITY_EDITOR
+    // Leaves the game as if the tutorial was just finished. Without a tutorial state machine the game isn't in the tutorial,
+    // so the next save marks it as completed and it won't come back even if skipping is turned off again.
+    private void SkipTutorial() {
+        // Same items the hideout tour hands out, which is everything a player has once the tutorial is done
+        if (!persistentFlags.HasFlag(PersistentFlags.HideoutTourItemsGiven)) {
+            foreach (ItemWithCount itemWithCount in config.hideoutTourStartingInventory.itemsWithCounts) {
+                TryAddItemToInventory(inventories.stash, itemWithCount.item, itemWithCount.count);
+            }
+            persistentFlags |= PersistentFlags.HideoutTourItemsGiven;
+        }
+        Debug.Log("Tutorial skipped from the Gameplay Testing window");
+    }
+#endif
 
     private void UpdateTutorial() {
         if (!InTutorial) return;

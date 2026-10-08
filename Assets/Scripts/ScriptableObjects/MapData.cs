@@ -21,6 +21,7 @@ public class MapData : ScriptableObject {
     [Header("Variables")]
     public int altarSoulPrice;
     public int exitPortalsCount;
+    public float minExtractionDist;
     public bool playerCantBleed;
     
     [Header("Eye Upgrade Drop Chances")]
@@ -36,6 +37,7 @@ public class MapData : ScriptableObject {
 
     public class State {
         public bool isUnlocked;
+        public bool unlockRevealPending; // Unlocked, but the map selection screen hasn't played the unlock burn yet
         public List<Vector2> bloodMushroomSpawns;
     }
     

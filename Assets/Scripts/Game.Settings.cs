@@ -144,8 +144,8 @@ public partial class Game {
             fpsLimitIndex = fpsLimits.Length - 1,
             targetMonitor = 0,
             vsyncEnabled = 0,
-            masterVolumeIndex = 5,
-            musicVolumeIndex = 3,
+            masterVolumeIndex = 6,
+            musicVolumeIndex = 5,
             gameVolumeIndex = 10,
         };
     }

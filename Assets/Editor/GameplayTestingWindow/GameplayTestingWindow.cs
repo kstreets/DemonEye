@@ -25,6 +25,7 @@ public class GameplayTestingWindow : EditorWindow {
     private Button MoneyButton => root.Q<Button>("MoneyBttn");
     private Button SoulsButton => root.Q<Button>("SoulsBttn");
     private SliderInt TraderLevelSlider => root.Q<SliderInt>("TraderLevelSlider");
+    private Toggle SkipTutorialToggle => root.Q<Toggle>("SkipTutorial");
     
     private List<MapData> Maps => FindFirstObjectByType<Game>().config.maps;
 
@@ -47,7 +48,11 @@ public class GameplayTestingWindow : EditorWindow {
         MoneyButton.RegisterCallback<ClickEvent>(OnGiveMoney);
         SoulsButton.RegisterCallback<ClickEvent>(OnGiveSouls);
         TraderLevelSlider.RegisterValueChangedCallback(OnTraderLevelChanged);
-        
+
+        // Kept in EditorPrefs instead of on the window so the game can read it when it starts
+        SkipTutorialToggle.value = EditorPrefs.GetBool(Game.skipTutorialEditorPrefKey);
+        SkipTutorialToggle.RegisterValueChangedCallback(changeEvent => EditorPrefs.SetBool(Game.skipTutorialEditorPrefKey, changeEvent.newValue));
+
         // Restore settings after domain reload
         MapField.value = currentMap;
         HideInactiveToggle.value = hideInactive;

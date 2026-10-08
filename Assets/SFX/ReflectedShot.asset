@@ -10,16 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5e56437f219ae4841ab3b84d57a9f86e, type: 3}
-  m_Name: Burn
+  m_Name: ReflectedShot
   m_EditorClassIdentifier: 
   clips:
-  - {fileID: 8300000, guid: 09c93a25d34e324468d7370fd8beeddc, type: 3}
-  mixerGroup: {fileID: 4810711061571689889, guid: 5d1188e598dcb514aa82b03e86c0c627, type: 2}
+  - {fileID: 8300000, guid: 959b960cae691f84bae519675ff48b27, type: 3}
+  mixerGroup: {fileID: 4814149502756322866, guid: 5d1188e598dcb514aa82b03e86c0c627, type: 2}
   rolloffMode: 1
-  minDistance: 99999
-  maxDistance: 99999
-  minPitch: 1
-  maxPitch: 1
+  minDistance: 2
+  maxDistance: 8
+  minPitch: 0.8
+  maxPitch: 1.2
   maxSimultaneous: 0
   localAreaCooldownTime: 0
   localAreaDistance: 0

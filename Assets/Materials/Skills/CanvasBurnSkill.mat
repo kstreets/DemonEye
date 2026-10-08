@@ -60,6 +60,7 @@ Material:
     - _AlphaClip: 0.5
     - _AspectRatio: 5.923077
     - _ColorMask: 15
+    - _Completion: 0
     - _DetailNoiseScale: 100
     - _DetailStrength: 0.05
     - _DissolveAmount: 0

@@ -23,8 +23,9 @@ MonoBehaviour:
   sellPrice: 2000
   mapSpawning:
     spawnsOnAll: 0
-    firstSpawnMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
-    spawnsOnMaps: []
+    firstSpawnMap: {fileID: 0}
+    spawnsOnMaps:
+    - {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
   traderSpawning:
     levelRequired: 2
     stockRange: {x: 1, y: 5}
@@ -53,6 +54,6 @@ MonoBehaviour:
   weight: 0
   description: 
   relativeMechanicDesc: {fileID: 0}
-  numShotsUntilOverheat: 8
-  damageMulti: 2
+  numShotsUntilOverheat: 12
+  damageMulti: 1.5
   radius: 0.73

@@ -26,7 +26,7 @@ MonoBehaviour:
     firstSpawnMap: {fileID: 0}
     spawnsOnMaps: []
   traderSpawning:
-    levelRequired: 3
+    levelRequired: 2
     stockRange: {x: 3, y: 5}
     barterRequirements:
     - item: {fileID: 11400000, guid: aaaec308c8b098340836b9aba4a3d55a, type: 2}

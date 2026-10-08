@@ -16,7 +16,7 @@ MonoBehaviour:
   title: Learning New Skills
   description: Over time you'll start to have an abunduce of souls, which you can
     use to upgrade your base stats and become less pathetic by default.
-  traderReputationReward: 250
+  traderReputationReward: 100
   objectives:
   - type: 60
     description: Upgrade 2 skills

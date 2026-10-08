@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5e56437f219ae4841ab3b84d57a9f86e, type: 3}
-  m_Name: Burn
+  m_Name: ExtractionMelody
   m_EditorClassIdentifier: 
   clips:
-  - {fileID: 8300000, guid: 09c93a25d34e324468d7370fd8beeddc, type: 3}
-  mixerGroup: {fileID: 4810711061571689889, guid: 5d1188e598dcb514aa82b03e86c0c627, type: 2}
-  rolloffMode: 1
-  minDistance: 99999
-  maxDistance: 99999
+  - {fileID: 8300000, guid: 3b1203f4dcb26ae4f9b48e575c6b6465, type: 3}
+  mixerGroup: {fileID: -3208303385504021192, guid: 5d1188e598dcb514aa82b03e86c0c627, type: 2}
+  rolloffMode: 0
+  minDistance: 999999
+  maxDistance: 999999
   minPitch: 1
   maxPitch: 1
   maxSimultaneous: 0

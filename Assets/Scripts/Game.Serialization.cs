@@ -6,7 +6,8 @@ using static GameData;
 
 public partial class Game {
     
-    private const int gameStateSaveVersion = 1;
+    // 2: Map states save whether their unlock reveal is still pending
+    private const int gameStateSaveVersion = 2;
 
     public class GameState {
         public int version;
@@ -115,8 +116,9 @@ public partial class Game {
         using FileStream stream = File.Open(savePath, FileMode.Open);
         using BinaryReader binReader = new(stream);
 
+        int version = DeserializeInt(binReader);
         return new() {
-            version = DeserializeInt(binReader),
+            version = version,
             tutorialStateIndex = DeserializeInt(binReader),
             persistentFlags = (PersistentFlags)DeserializeInt(binReader),
             hideoutState = DeserializeHideoutState(binReader),
@@ -126,7 +128,7 @@ public partial class Game {
             stashInventoryItems = DeserializeInventory(binReader),
             traderInventoryItems = DeserializeInventory(binReader),
             forgeInventoryItems = DeserializeInventory(binReader),
-            mapStates = DeserializeList(binReader, DeserializeMapState),
+            mapStates = DeserializeList(binReader, reader => DeserializeMapState(reader, version)),
             questStates = DeserializeList(binReader, DeserializeQuestState)
         };
     }
@@ -190,13 +192,19 @@ public partial class Game {
     private void SerializeMapState(BinaryWriter binWriter, MapData.State mapState) {
         binWriter.Write(mapState.isUnlocked);
         SerializeList(binWriter, mapState.bloodMushroomSpawns, SerializeVector2);
+        binWriter.Write(mapState.unlockRevealPending);
     }
 
-    private MapData.State DeserializeMapState(BinaryReader binReader) {
-        return new() {
+    private MapData.State DeserializeMapState(BinaryReader binReader, int saveVersion) {
+        MapData.State state = new() {
             isUnlocked = binReader.ReadBoolean(),
             bloodMushroomSpawns = DeserializeList(binReader, DeserializeVector2)
         };
+        // Older saves don't have this, so their maps just show as unlocked
+        if (saveVersion >= 2) {
+            state.unlockRevealPending = binReader.ReadBoolean();
+        }
+        return state;
     }
     
     private void SerializeQuestState(BinaryWriter binWriter, Quest.State questState) {

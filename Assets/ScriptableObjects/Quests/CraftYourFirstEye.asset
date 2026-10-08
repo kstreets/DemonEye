@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: CraftYourFirstEye
   m_EditorClassIdentifier: Assembly-CSharp::Quest
   uuid: 1760108596
-  title: Forging a Demon Eye
+  title: The Demon Eye
   description: You need to learn how to create Demon Eyes and shove them into your
     eye socket. It will give your attacks all sorts of upgrades depending on the
     combination of blood runes you craft with. Bring a handful of blood runes back
     to the hideout along with a regular ole eye and use the forge to craft a demon
     eye.
-  traderReputationReward: 100
+  traderReputationReward: 250
   objectives:
   - type: 10
     description: 
@@ -27,7 +27,7 @@ MonoBehaviour:
     targetEnemy: {fileID: 0}
     targetItem: {fileID: 11400000, guid: 813a59de02795ad40bfd5fccf7ddc415, type: 2}
     targetItemType: {fileID: 0}
-    teleportMap: {fileID: 0}
+    targetMap: {fileID: 0}
     keepFetchedItems: 1
   - type: 20
     description: 
@@ -35,7 +35,7 @@ MonoBehaviour:
     targetEnemy: {fileID: 0}
     targetItem: {fileID: 0}
     targetItemType: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
-    teleportMap: {fileID: 0}
+    targetMap: {fileID: 0}
     keepFetchedItems: 1
   - type: 120
     description: Equip the Demon Eye
@@ -43,5 +43,5 @@ MonoBehaviour:
     targetEnemy: {fileID: 0}
     targetItem: {fileID: 0}
     targetItemType: {fileID: 0}
-    teleportMap: {fileID: 0}
+    targetMap: {fileID: 0}
     keepFetchedItems: 0

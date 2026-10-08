@@ -104,6 +104,33 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "QuickUseSelected",
+                    "type": "Button",
+                    "id": "853cef26-6add-4034-b570-1fd9b208af83",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "QuickUsePrevious",
+                    "type": "Button",
+                    "id": "3e1c0f3c-6914-4da1-ab41-5679a3006bc9",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "QuickUseNext",
+                    "type": "Button",
+                    "id": "ee69c1e6-79d4-4b3b-8d46-8efd22ed7952",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -412,6 +439,39 @@
                     "processors": "",
                     "groups": "",
                     "action": "QuickUse4",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7517a0ef-7cb5-4191-924b-f915478338d1",
+                    "path": "<Gamepad>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "QuickUseSelected",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ad5555c0-5afd-42e0-ac70-33df0a0ca9f3",
+                    "path": "<Gamepad>/leftShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "QuickUsePrevious",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3423eee8-f6ca-44c8-b6fc-8c91c93e360e",
+                    "path": "<Gamepad>/rightShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "QuickUseNext",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

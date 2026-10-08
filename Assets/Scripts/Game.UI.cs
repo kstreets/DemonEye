@@ -63,6 +63,8 @@ public partial class Game {
         mainMenuSequence.Group(Tween.UIAnchoredPositionY(settingsButton.rectTransform, -halfScreenHeight, settingsButton.rectTransform.anchoredPosition.y, 0.8f, Ease.OutExpo, startDelay: 0.2f));
         mainMenuSequence.Group(Tween.UIAnchoredPositionY(exitButton.rectTransform, -halfScreenHeight, exitButton.rectTransform.anchoredPosition.y, 0.8f, Ease.OutExpo, startDelay: 0.3f));
 
+        // Start everything off screen right away, in case the sequence is paused before it first updates
+        logo.anchoredPosition = new(logo.anchoredPosition.x, halfScreenHeight);
         playButton.rectTransform.anchoredPosition = new(playButton.rectTransform.anchoredPosition.x, -halfScreenHeight);
         hideoutButton.rectTransform.anchoredPosition = new(hideoutButton.rectTransform.anchoredPosition.x, -halfScreenHeight);
         settingsButton.rectTransform.anchoredPosition = new(settingsButton.rectTransform.anchoredPosition.x, -halfScreenHeight);
@@ -512,6 +514,9 @@ public partial class Game {
         for (int i = 0; i < playerQuickUseSize; i++) {
             int itemIndex = i + playerEquipmentSize;
             hotBar.slotUIs[i].ClearItem();
+            // Controller only has the selected slot bound, so it's highlighted. Not while the inventory is open, since the hotbar can't be used then.
+            bool inventoryOpen = PlayerInventoryIsOpen || LootInventoryIsOpen;
+            hotBar.slotUIs[i].SetOutlined(UsingControllerControls && !inventoryOpen && i == hotBar.selectedIndex);
 
             ItemInstance itemInstance = inventories.player.slots[itemIndex].itemInstance;
             if (itemInstance != null) {
@@ -697,24 +702,41 @@ public partial class Game {
             duration = 0.4f,
             ease = Ease.OutBack,
         };
+
+        Sequence.Create()
+            .Chain(
+                Tween.Custom(notification, startWidth, endWidth, inSettings, static (notification, width) => {
+                    notification.gameObject.GetComponent<NotificationUI>().backgroundParent.ResizeWidth(width);
+                })
+            )
+            .ChainDelay(4f)
+            .Chain(AnimateNotificationOut(notification, endWidth));
+    }
+
+    private Sequence AnimateNotificationOut(Entity notification, float fromWidth) {
         TweenSettings outSettings = new() {
             duration = 0.25f,
             ease = Ease.Linear,
         };
-        
-        Sequence seq = Sequence.Create();
-        seq.Chain(
-            Tween.Custom(notification, startWidth, endWidth, inSettings, static (notification, width) => {
-                notification.gameObject.GetComponent<NotificationUI>().backgroundParent.ResizeWidth(width);
-            })
-        )
-        .ChainDelay(4f)
-        .Chain(
-            Tween.Custom(notification, endWidth, startWidth, outSettings, static (notification, width) => {
-                notification.gameObject.GetComponent<NotificationUI>().backgroundParent.ResizeWidth(width);
-            })
-        )
-        .ChainCallback(notification, static (notification) => gameInstance.DestroyEntity(notification));
+
+        return Sequence.Create()
+            .Chain(
+                Tween.Custom(notification, fromWidth, 0f, outSettings, static (notification, width) => {
+                    notification.gameObject.GetComponent<NotificationUI>().backgroundParent.ResizeWidth(width);
+                })
+            )
+            .ChainCallback(notification, static (notification) => gameInstance.DestroyEntity(notification));
+    }
+
+    // Stopping all tweens (like on death) freezes notifications partway through, so they'd never go away on their own
+    private void DismissNotificationsAfterTweensStopped() {
+        foreach (Transform child in ui.notificationParent) {
+            if (!child.gameObject.activeSelf) continue;
+            if (!entities.lookup.TryGetValue(child.gameObject, out Entity notification)) continue;
+            // Shrinks from whatever width it's at, since it might have been stopped partway through animating in
+            float curWidth = child.GetComponent<NotificationUI>().backgroundParent.sizeDelta.x;
+            AnimateNotificationOut(notification, curWidth);
+        }
     }
     
     public static void FitPopupSize(RectTransform popupRect, params Rect[] rects) {

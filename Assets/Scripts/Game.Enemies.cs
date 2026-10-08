@@ -461,7 +461,6 @@ public partial class Game {
         public readonly List<(float time, EnemyData enemy)> spawnEvents = new();
         public int spawnTimeIndex;
 
-        public bool isNewPlayerRaid; // One of the first two raids on the first map
         public float extraMaxDuration;
         public float extraEarlyDelay;
         public float CurMaxDuration => CurPhase.maxDuration + extraMaxDuration;
@@ -496,7 +495,6 @@ public partial class Game {
         // The first couple of raids on the first map give new players more time per wave
         spawnManager.extraMaxDuration = 0f;
         spawnManager.extraEarlyDelay = 0f;
-        spawnManager.isNewPlayerRaid = curRaid.map == config.maps[0] && !persistentFlags.HasFlag(PersistentFlags.FirstMapPlayedTwice);
         if (curRaid.map == config.maps[0]) {
             if (!persistentFlags.HasFlag(PersistentFlags.FirstMapPlayedOnce)) {
                 spawnManager.extraMaxDuration = config.gameplay.firstRaidExtraMaxTime;
@@ -619,14 +617,6 @@ public partial class Game {
         if (startNextWave && !sm.OnLastWave) {
             sm.curPhaseIndex++;
             sm.waveStartedThisFrame = true;
-
-            // New players can lose track of what's coming while looking through their inventory
-            if (sm.isNewPlayerRaid && (PlayerInventoryIsOpen || LootInventoryIsOpen)) {
-                CancelItemDrag(); // Puts a dragged item back, closing the inventory would otherwise drop it
-                ClosePlayerInventory();
-                CloseLootInventory();
-                HideInventoryItemPopup();
-            }
 
 #if UNITY_EDITOR
             foreach (RaidSpawnPattern.EnemyBatch batch in sm.CurPhase.enemyBatches) {

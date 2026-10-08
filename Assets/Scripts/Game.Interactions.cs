@@ -315,18 +315,8 @@ public partial class Game {
             slotUI.MakeSlotActive();
             slotUI.StopSlotSearching();
             slotUI.SetItem(itemInstance);
+            gameInstance.PlayItemReveal(slotUI, itemInstance, player.position);
 
-            Tween.Scale(slotUI.itemUI.image.rectTransform, Vector3.one * 3.5f, Vector3.one, new TweenSettings(0.2f, Ease.OutBack));
-
-            Item.Rarity itemRarity = itemInstance.GetRarity();
-            Entity reveal = gameInstance.SpawnEntityOneShot(gameInstance.entityPools.lootReveal, Vector3.zero, Quaternion.identity, slotUI.rectTransform);
-            reveal.trans.localPosition = Vector3.zero;
-            reveal.image.color = gameInstance.config.styles.GetColorForRarity(itemRarity);
-
-            GetRarityVolumeAndPitch(itemRarity, out float rarityVolume, out float rarityPitch);
-            gameInstance.PlayAudioClip(gameInstance.audio.rarityRevealClip, player.position, rarityVolume, rarityPitch);
-            gameInstance.PlayAudioClip(gameInstance.audio.lootRevealClip, player.position);
-            
             discoverItemIndex++;
             
             if (discoverItemIndex < lootInventoryPtr.slots.Length && lootInventoryPtr.slots[discoverItemIndex].itemInstance != null) {
@@ -339,6 +329,20 @@ public partial class Game {
                 gameInstance.StopSearchingSoundLoop();
             }
         };
+    }
+
+    // The pop, rarity colored flash and sounds for an item being revealed in a slot
+    private void PlayItemReveal(InventorySlotUI slotUI, ItemInstance itemInstance, Vector2 soundPosition) {
+        Tween.Scale(slotUI.itemUI.image.rectTransform, Vector3.one * 3.5f, Vector3.one, new TweenSettings(0.2f, Ease.OutBack));
+
+        Item.Rarity itemRarity = itemInstance.GetRarity();
+        Entity reveal = SpawnEntityOneShot(entityPools.lootReveal, Vector3.zero, Quaternion.identity, slotUI.rectTransform);
+        reveal.trans.localPosition = Vector3.zero;
+        reveal.image.color = config.styles.GetColorForRarity(itemRarity);
+
+        GetRarityVolumeAndPitch(itemRarity, out float rarityVolume, out float rarityPitch);
+        PlayAudioClip(audio.rarityRevealClip, soundPosition, rarityVolume, rarityPitch);
+        PlayAudioClip(audio.lootRevealClip, soundPosition);
     }
 
     private void AnimateSlotSearch(InventorySlotUI slotUI) {
@@ -444,21 +448,42 @@ public partial class Game {
         
     }
     
+    // On controller south also selects items in the inventory and confirms in menus, so it only uses the hotbar while playing.
+    // Resuming from the pause menu is checked too, since pressing resume with south would otherwise also use an item that frame.
+    private bool CanUseControllerHotBar => InRaid && !PlayerInventoryIsOpen && !LootInventoryIsOpen && pauseMenu.resumedOnFrame != Time.frameCount;
+
     private void CheckForHotBarInteractions() {
-        Item itemToConsume = null;
-        int playerInventorySlotIndex = playerEquipmentSize;
-        
-        foreach (InputAction action in hotBar.quickUseActions) {
-            if (action.WasPressedThisFrame()) {
-                itemToConsume = inventories.player.slots[playerInventorySlotIndex].itemInstance?.ItemRef;
+        int quickUseIndex = -1;
+        for (int i = 0; i < hotBar.quickUseActions.Count; i++) {
+            if (hotBar.quickUseActions[i].WasPressedThisFrame()) {
+                quickUseIndex = i;
                 break;
             }
-            playerInventorySlotIndex++;
         }
 
-        if (itemToConsume) {
-            HavePlayerConsumeItem(inventories.player, playerInventorySlotIndex);
+        if (CanUseControllerHotBar) {
+            if (input.quickUsePrevious.WasPressedThisFrame()) {
+                MoveHotBarSelection(-1);
+            }
+            if (input.quickUseNext.WasPressedThisFrame()) {
+                MoveHotBarSelection(1);
+            }
+            if (input.quickUseSelected.WasPressedThisFrame()) {
+                quickUseIndex = hotBar.selectedIndex;
+            }
         }
+
+        if (quickUseIndex == -1) return;
+
+        int playerInventorySlotIndex = playerEquipmentSize + quickUseIndex;
+        if (inventories.player.slots[playerInventorySlotIndex].itemInstance == null) return;
+        HavePlayerConsumeItem(inventories.player, playerInventorySlotIndex);
+    }
+
+    // Wraps around, so going left from the first slot goes to the last
+    private void MoveHotBarSelection(int direction) {
+        int slotCount = hotBar.quickUseActions.Count;
+        hotBar.selectedIndex = (hotBar.selectedIndex + direction + slotCount) % slotCount;
     }
     
 }

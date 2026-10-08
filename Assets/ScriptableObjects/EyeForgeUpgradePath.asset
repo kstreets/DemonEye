@@ -18,23 +18,12 @@ MonoBehaviour:
       count: 10
     - item: {fileID: 11400000, guid: 813a59de02795ad40bfd5fccf7ddc415, type: 2}
       count: 5
-    - item: {fileID: 11400000, guid: 3663bc49c2abaee43b142fa80eb566bd, type: 2}
-      count: 3
-  - requirements:
-    - item: {fileID: 11400000, guid: c300cfd9dba50fc438f83dec791af29b, type: 2}
-      count: 8
-    - item: {fileID: 11400000, guid: 805d2183f2ab0c240b541d95dbd30c42, type: 2}
-      count: 5
-    - item: {fileID: 11400000, guid: 813a59de02795ad40bfd5fccf7ddc415, type: 2}
-      count: 5
     - item: {fileID: 11400000, guid: a83b30b8416c2b547bbc4e293de97bc8, type: 2}
       count: 3
   - requirements:
-    - item: {fileID: 11400000, guid: c300cfd9dba50fc438f83dec791af29b, type: 2}
-      count: 67
-    - item: {fileID: 11400000, guid: 805d2183f2ab0c240b541d95dbd30c42, type: 2}
-      count: 67
-    - item: {fileID: 11400000, guid: 813a59de02795ad40bfd5fccf7ddc415, type: 2}
-      count: 67
-    - item: {fileID: 11400000, guid: a83b30b8416c2b547bbc4e293de97bc8, type: 2}
-      count: 67
+    - item: {fileID: 11400000, guid: 67595d8fd1980a14790ab2f5f2a40952, type: 2}
+      count: 10
+    - item: {fileID: 11400000, guid: e09fbd50ba840464eb5c499181e0fc04, type: 2}
+      count: 5
+    - item: {fileID: 11400000, guid: 72fd8c3e65ba830449c7e8ecc75c3f1e, type: 2}
+      count: 3

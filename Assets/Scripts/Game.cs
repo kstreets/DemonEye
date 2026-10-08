@@ -40,6 +40,7 @@ public partial class Game : MonoBehaviour {
     public Audio audio;
     public Music music;
     public Settings settings;
+    public HotBar hotBar;
     
     [NonSerialized] public readonly GameData.Input input = new();
     [NonSerialized] public readonly EntityPools entityPools = new();
@@ -51,7 +52,6 @@ public partial class Game : MonoBehaviour {
     [NonSerialized] public readonly CurrentGamingSession curSession = new();
     [NonSerialized] public readonly CurrentRaid curRaid = new();
     [NonSerialized] public readonly Inventories inventories = new();
-    [NonSerialized] public readonly HotBar hotBar = new();
     [NonSerialized] public readonly PerFrameData thisFrame = new();
     [NonSerialized] public readonly ControllerNavigation controllNav = new();
     [NonSerialized] public readonly Tutorial tutorial = new();
@@ -129,6 +129,7 @@ public partial class Game : MonoBehaviour {
         Cursor.visible = !usingController;
         ShowMainMenuUI();
         OnMenuMusicEnter();
+        TryShowDemoEndDialogue();
     }
 
     private void OnMainMenuStateExit() {
@@ -171,6 +172,33 @@ public partial class Game : MonoBehaviour {
     private void OnMapSelectionEnter() {
         ShowMapSelectionUI();
         SuppressInventoryPopup();
+        PlayPendingMapUnlockBurns();
+    }
+
+    // Maps unlocked since the last visit burn away their locked look to reveal themselves
+    private void PlayPendingMapUnlockBurns() {
+        MapSelection[] selectors = mapPanels.mapSelectionPanel.selectors;
+        for (int i = 0; i < selectors.Length && i < config.maps.Count; i++) {
+            MapData map = config.maps[i];
+            if (!map.state.unlockRevealPending) continue;
+            map.state.unlockRevealPending = false;
+
+            MapSelection selector = selectors[i];
+            const float delayBeforeBurn = 0.4f; // Gives the player a moment to see the map is still locked
+            const float burnTime = 1.5f;
+            const float revealTime = burnTime * 0.25f; // Same point that a skill upgrades during its burn
+
+            Tween.Delay(delayBeforeBurn, () => {
+                // Left the screen before it started, so just show it unlocked for next time
+                if (!selector.isActiveAndEnabled) {
+                    selector.SetState(map);
+                    return;
+                }
+                selector.Burn(burnTime, curves.skillBurn, curves.skillBurnEmbers);
+                PlayAudioClip(audio.burnClip);
+                Tween.Delay(revealTime, () => selector.SetState(map, fadeIn: true));
+            });
+        }
     }
 
     private void OnMapSelectionExit() {
@@ -253,8 +281,17 @@ public partial class Game : MonoBehaviour {
         bool unlockNextMap = maps.IndexInRange(nextMapIndex) && !maps[nextMapIndex].state.isUnlocked;
         if (unlockNextMap) {
             maps[nextMapIndex].state.isUnlocked = true;
+            maps[nextMapIndex].state.unlockRevealPending = true;
         }
         persistentFlags |= PersistentFlags.HasExtracted;
+
+        // Beating the second map is the end of the demo, the trader thanks the player once they're back in the main menu
+        bool beatSecondMap = maps.Count > 1 && curRaid.map == maps[1];
+        if (beatSecondMap && !persistentFlags.HasFlag(PersistentFlags.DemoEndShown)) {
+            persistentFlags |= PersistentFlags.DemoEndShown;
+            cutscene.showDemoEndOnMainMenu = true;
+        }
+
         SaveGameState();
         AnimateGameWinSequence(() => states.gameStateMachine.SetStateIfNotCurrent(states.mainMenu));
     }
@@ -400,7 +437,8 @@ public partial class Game : MonoBehaviour {
     private void AnimateGameOverSequence(Action onCompleteCallback) {
         Tween.StopAll();
         DemonEyeTween.StopAll();
-        
+        DismissNotificationsAfterTweensStopped();
+
         foreach (Entity entity in entities.all) {
             if (entity.rigidbody) {
                 entity.rigidbody.linearVelocity = Vector2.zero;
@@ -508,6 +546,7 @@ public partial class Game : MonoBehaviour {
         }));
         
         sequence.ChainDelay(0.25f);
+        sequence.ChainCallback(() => PlayAudioClip(audio.extractionMelody, Vector2.zero, cannotInterrupt: true));
         
         ui.deathBgImage.enabled = true;
         ui.deathBgImage.fillAmount = 1f;

@@ -122,6 +122,7 @@ public partial class Game {
                         proj.velocity = reflectedVelocity;
                         proj.rotation = ProjectileRotationFromVelocity(reflectedVelocity);
                         proj.curTimeAlive = 0f;
+                        PlayAudioClip(audio.reflectedShotClip, proj.position);
                         continue;
                     } 
                 }
@@ -190,6 +191,11 @@ public partial class Game {
         projectile.gameObject.SetActive(false);
         
         Delay(projectile, spawnDelay, static (projectile) => {
+            if (!gameInstance.EntityIsValid(projectile.targetEntity)) { // The target can die during the delay.
+                gameInstance.DestroyEntity(projectile);
+                return;
+            }
+            
             Vector2 spawnPos = gameInstance.PlayerEyePos;
             Vector2 dirToTarget = ((Vector2)projectile.targetEntity.Center - spawnPos).normalized; 
             Vector2 initDir = Vector2.Lerp(Vector2.up, dirToTarget, Random.Range(0.3f, 1f));
