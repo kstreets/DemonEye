@@ -25,7 +25,8 @@ public partial class Game {
     }
     
     private void InitSettings(SettingsState loadedSettings) {
-        settings.all = settings.settingsParent.GetComponentsInChildren<SingleSetting>();
+        // Includes inactive ones because only the shown settings tab is active, and the others still need applying and tracking for changes
+        settings.all = settings.settingsParent.GetComponentsInChildren<SingleSetting>(includeInactive: true);
         
         foreach (Resolution resolution in Screen.resolutions) {
             Vector2Int resDim = new(resolution.width, resolution.height);

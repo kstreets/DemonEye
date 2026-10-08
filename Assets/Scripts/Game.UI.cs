@@ -1001,6 +1001,13 @@ public partial class Game {
             >= 500 => 0.35f,
             _      => 0.2f,
         };
+        
+        const float UISpritePixelsPerUnit = 32f;
+        const float UIAuthoredReferencePixelsPerUnit = 96f;
+        float scale = ui.mainCanvasScaler.scaleFactor;
+        float screenPixelsPerArtPixel = Mathf.Max(1f, Mathf.Round(UIAuthoredReferencePixelsPerUnit / UISpritePixelsPerUnit * scale));
+        ui.mainCanvasScaler.referencePixelsPerUnit = UISpritePixelsPerUnit * screenPixelsPerArtPixel / scale;
+        
         PlaceCurrencyDisplays();
         Canvas.ForceUpdateCanvases();
     }
