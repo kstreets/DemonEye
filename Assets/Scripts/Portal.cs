@@ -28,9 +28,6 @@ public class Portal : MonoBehaviour {
     private Sequence openCloseSequence;
     private float particleStartSpeed;
     
-    private static readonly int offsetSizeId = Shader.PropertyToID("_Offset_Size");
-    private static readonly int fillId = Shader.PropertyToID("_Fill");
-    
     public void Init() {
         summonedPortal.Init();
         summonedPortal.gameObject.SetActive(false);
@@ -38,8 +35,8 @@ public class Portal : MonoBehaviour {
         crystalSpriteRenderer.material = new(crystalSpriteRenderer.sharedMaterial);
         crystalExplosion.SetActive(false);
         
-        crystalSpriteRenderer.material.SetFloat(fillId, 0f);
-        crystalSpriteRenderer.material.SetVector(offsetSizeId, crystalSpriteRenderer.sprite.OffsetAndSizeInTexture());
+        crystalSpriteRenderer.material.SetFloat(ShaderIds.fill, 0f);
+        crystalSpriteRenderer.material.SetVector(ShaderIds.offsetSize, crystalSpriteRenderer.sprite.OffsetAndSizeInTexture());
         
         summoningParticles.gameObject.SetActive(false);
         particleStartSpeed = summoningParticles.velocityOverLifetime.radialMultiplier;
@@ -77,7 +74,7 @@ public class Portal : MonoBehaviour {
         
         TweenSettings crystalSettings = new() { duration = openDelay * particleRampUpPercentage, ease = Ease.InCubic };
         Tween.Custom(crystalSpriteRenderer, 0f, 1f, crystalSettings, static (crystalSpriteRenderer, comp) => {
-            crystalSpriteRenderer.material.SetFloat(fillId, comp);
+            crystalSpriteRenderer.material.SetFloat(ShaderIds.fill, comp);
         });
         
         // Open

@@ -10,7 +10,6 @@ public class LevelUpNotification : MonoBehaviour {
     public DynamicClip sfxClip;
     
     private Sequence sequence;
-    private static readonly int completion = Shader.PropertyToID("_Completion");
     
     public void Init() {
         gameObject.SetActive(false);
@@ -20,7 +19,7 @@ public class LevelUpNotification : MonoBehaviour {
         sequence.Complete();
         
         textMesh.text = text;
-        burnEffectImage.material.SetFloat(completion, 0f); 
+        burnEffectImage.material.SetFloat(ShaderIds.completion, 0f); 
         
         sequence = Sequence.Create();
         sequence.ChainDelay(delay);
@@ -29,7 +28,7 @@ public class LevelUpNotification : MonoBehaviour {
             Game.gameInstance.PlayAudioClip(notification.sfxClip);
         });
         sequence.Chain(Tween.Custom(this, 0f, 1f, 2.6f, static (notification, comp) => { 
-            notification.burnEffectImage.material.SetFloat(completion, comp); 
+            notification.burnEffectImage.material.SetFloat(ShaderIds.completion, comp); 
         }));
         sequence.Group(Tween.Alpha(textMesh, 0f, 1f, 1f));
         sequence.Group(Tween.Alpha(textMesh, 1f, 0f, 0.4f, startDelay: 2.2f));

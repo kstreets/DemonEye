@@ -65,12 +65,10 @@ public partial class Game : MonoBehaviour {
         InitGame();
     }
     
-    private static readonly int unscaledTimeShaderId = Shader.PropertyToID("_UnscaledTime");
-    
     private void Update() {
         UpdateMenuNavigation(); // !
         // Animated UI shaders use this instead of the Time node so they keep animating while the game is paused
-        Shader.SetGlobalFloat(unscaledTimeShaderId, Time.unscaledTime);
+        Shader.SetGlobalFloat(ShaderIds.unscaledTime, Time.unscaledTime);
         states.gameStateMachine.Tick();
         if (!pauseMenu.paused) {
             UpdateDialogue(); // Outside of the tutorial because cutscenes use dialogue too
@@ -455,7 +453,7 @@ public partial class Game : MonoBehaviour {
         
         player.GetEffect(EffectsIndicies.HitFlash).Complete();
         player.spriteRenderer.GetPropertyBlock(player.matPropertyBlock);
-        player.matPropertyBlock.SetFloat(damageFlashTintPropertyId, 1f);
+        player.matPropertyBlock.SetFloat(ShaderIds.damageFlashTint, 1f);
         player.spriteRenderer.SetPropertyBlock(player.matPropertyBlock);
         
         ui.deathBgImage.enabled = true;
@@ -472,7 +470,7 @@ public partial class Game : MonoBehaviour {
         
         sequence.Group(Tween.Custom(1f, 0f, 0.5f, val => {
             player.spriteRenderer.GetPropertyBlock(player.matPropertyBlock);
-            player.matPropertyBlock.SetFloat(damageFlashTintPropertyId, val);
+            player.matPropertyBlock.SetFloat(ShaderIds.damageFlashTint, val);
             player.spriteRenderer.SetPropertyBlock(player.matPropertyBlock);
         }, Ease.OutExpo));
         

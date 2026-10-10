@@ -3,7 +3,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
-using PrimeTween;
 using static Game;
 
 public class QuestUI : MonoBehaviour {
@@ -18,15 +17,10 @@ public class QuestUI : MonoBehaviour {
     public Image burnEffectImage;
     public BurnEdgeEmberSpawner emberSpawner;
     
-    private static readonly int completionId = Shader.PropertyToID("_Completion");
-    private static readonly int aspectRatioId = Shader.PropertyToID("_AspectRatio");
-    private static readonly int offsetSizeId = Shader.PropertyToID("_Offset_Size");
-    
+    private UIBurnEffect burnEffect;
+
     public void Init() {
-        burnMask.graphic.material = new(burnMask.graphic.material);
-        burnEffectImage.material = new(burnEffectImage.material);
-        burnMask.graphic.materialForRendering.SetFloat(completionId, 0f);
-        burnEffectImage.material.SetFloat(completionId, 0f);
+        burnEffect = new(burnEffectImage, emberSpawner, burnMask: burnMask);
     }
     
     public void Display(Quest quest) {
@@ -55,46 +49,9 @@ public class QuestUI : MonoBehaviour {
         }
     }
     
-    public class BurnData {
-        public Mask burnMask;
-        public Image burnEffectImage;
-        public Image scortchedImage;
-        public BurnEdgeEmberSpawner emberSpawner;
-        public AnimationCurve edgeCurve;
-        public AnimationCurve particleCurve;
-    }
-    private BurnData burnData = new();
-    
     public void Burn(float duration, AnimationCurve edgeCurve, AnimationCurve particleCurve) {
-        float aspectRatio = rectTransform.AspectRatio();
-        burnMask.graphic.materialForRendering.SetFloat(aspectRatioId, aspectRatio);
-        burnEffectImage.material.SetFloat(aspectRatioId, aspectRatio);
-        emberSpawner.Play();
-        
-        burnData.burnMask = burnMask;
-        burnData.burnEffectImage = burnEffectImage;
-        burnData.edgeCurve = edgeCurve;
-        burnData.emberSpawner = emberSpawner;
-        burnData.particleCurve = particleCurve;
-        
-        Tween.Custom(burnData, 0f, 1f, duration, onValueChange: static (data, comp) => {
-            Material maskMat = data.burnMask.graphic.materialForRendering;
-            Material burnMat = data.burnEffectImage.material;
-            Vector4 offsetAndSize = data.burnEffectImage.OffsetAndSizeInTexture();
-            float edgeComp = data.edgeCurve.Evaluate(comp);
-            
-            maskMat.SetFloat(completionId, edgeComp);
-            burnMat.SetFloat(completionId, edgeComp);
-            maskMat.SetVector(offsetSizeId, offsetAndSize);
-            burnMat.SetVector(offsetSizeId, offsetAndSize);
-            
-            data.emberSpawner.BurnProgress = data.particleCurve.Evaluate(comp);
-        })
-        .OnComplete(burnData, static (data) => {
-            data.burnMask.graphic.materialForRendering.SetFloat(completionId, 0f);
-            data.burnEffectImage.material.SetFloat(completionId, 0f);
-            data.emberSpawner.Stop();
-        });
+        burnEffect.SetAspectRatio(rectTransform.AspectRatio());
+        burnEffect.Burn(duration, edgeCurve, particleCurve);
     }
     
 }

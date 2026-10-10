@@ -739,7 +739,6 @@ public partial class Game {
         }
     }
     
-    private static int completionPropertyId = Shader.PropertyToID("_Completion");
     private Sequence levelUpPentagramSequence;
     
     private void OnLevelUpPentagramPressed() {
@@ -748,10 +747,10 @@ public partial class Game {
         levelUpPentagramSequence.Complete();
         levelUpPentagramSequence = Sequence.Create();
         
-        eyeForgePanel.burnEffectImage.material.SetFloat(completionPropertyId, 0f);
+        eyeForgePanel.burnEffectImage.material.SetFloat(ShaderIds.completion, 0f);
         levelUpPentagramSequence.Group(
             Tween.Custom(eyeForgePanel.burnEffectImage, 0f, 1f, 1.5f, static (image, comp) => {
-                image.material.SetFloat(completionPropertyId, comp);
+                image.material.SetFloat(ShaderIds.completion, comp);
             })
         );
         
@@ -777,18 +776,13 @@ public partial class Game {
         eyeForgePanel.forgingParent.SetActive(false);
     }
     
-    private int fillParamProperty = Shader.PropertyToID("_Fill");
-    
     private void SetPentagramFill(float value) {
-        eyeForgePanel.pentagramFillImage.material.SetFloat(fillParamProperty, value);
+        eyeForgePanel.pentagramFillImage.material.SetFloat(ShaderIds.fill, value);
     }
     
     // ************************
     // Quests 
     // ************************
-    
-    private static int scortchedOpacityId = Shader.PropertyToID("_Opacity");
-    private static int scortchedAspectId = Shader.PropertyToID("_AspectRatio");
     
     public class QuestPackage {
         public QuestGraphRuntime.Node questNode;
@@ -797,7 +791,7 @@ public partial class Game {
     }
     
     private void InitQuestPanel() {
-        questsPanel.scortchedOverlayImage.material.SetFloat(scortchedOpacityId, 0f);
+        questsPanel.scortchedOverlayImage.material.SetFloat(ShaderIds.opacity, 0f);
         
         const int questUiPoolSize = 6;
         for (int i = 0; i < questUiPoolSize; i++) {
@@ -936,11 +930,11 @@ public partial class Game {
 
         // Animate the black scortched overlay
         float aspect = questsPanel.scortchedOverlayImage.rectTransform.AspectRatio();
-        questsPanel.scortchedOverlayImage.material.SetFloat(scortchedAspectId, aspect);
-        questsPanel.scortchedOverlayImage.material.SetFloat(scortchedOpacityId, 1f);
+        questsPanel.scortchedOverlayImage.material.SetFloat(ShaderIds.aspectRatio, aspect);
+        questsPanel.scortchedOverlayImage.material.SetFloat(ShaderIds.opacity, 1f);
         questsPanel.scortchedOverlayImage.rectTransform.SetAsLastSibling();
         Tween.Custom(1f, 0f, scortchFadeTime, startDelay: fadeScortchDelay, onValueChange: static (comp) => {
-            gameInstance.questsPanel.scortchedOverlayImage.material.SetFloat(scortchedOpacityId, comp);
+            gameInstance.questsPanel.scortchedOverlayImage.material.SetFloat(ShaderIds.opacity, comp);
         });
             
         // Burn the quest body

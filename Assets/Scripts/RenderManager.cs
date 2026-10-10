@@ -25,9 +25,6 @@ public static class RenderManager {
     // This will sometimes be null so we don't want render features accessing the pixel perfect camera.
     // Instead we expose value type members that reflect the pixel perfect camera's data or just the sensible defaults.
     private static PixelPerfectCamera pixelPerfectCamera;
-    private static readonly int waterMapShaderProp = Shader.PropertyToID("_WaterMap");
-    private static readonly int waterOcclusionMapShaderProp = Shader.PropertyToID("_WaterOcclusionMap");
-    private static readonly int waterUVScalerShaderProp = Shader.PropertyToID("_WaterUVScaler");
     
     private static RTHandle tilemapRT;
     private static RTHandle waterOcclusionRT;
@@ -109,12 +106,12 @@ public static class RenderManager {
             AllocRenderTexture(ref waterOcclusionRT, curScreenSize.x, offScreenHeight);
             AllocRenderTexture(ref finalOutputRT, curScreenSize.x, curScreenSize.y);
             
-            Shader.SetGlobalTexture(waterMapShaderProp, waterRT);
-            Shader.SetGlobalTexture(waterOcclusionMapShaderProp, waterOcclusionRT);
+            Shader.SetGlobalTexture(ShaderIds.waterMap, waterRT);
+            Shader.SetGlobalTexture(ShaderIds.waterOcclusionMap, waterOcclusionRT);
             
             Vector4 uvShaderScaler = Vector4.one;
             uvShaderScaler.y = 1f - ((offScreenHeight - curScreenSize.y) / (float)offScreenHeight);
-            Shader.SetGlobalVector(waterUVScalerShaderProp, uvShaderScaler);
+            Shader.SetGlobalVector(ShaderIds.waterUVScaler, uvShaderScaler);
         }
         
         offScreenRenderingSize = new(curScreenSize.x, offScreenHeight);

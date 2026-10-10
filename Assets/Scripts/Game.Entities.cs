@@ -220,8 +220,6 @@ public partial class Game {
         Delay(entity, delay, static entity => gameInstance.DestroyEntity(entity));
     }
     
-    private static int damageFlashTintPropertyId = Shader.PropertyToID("_DamageFlashTint");
-    
     private void AddFlashHitEffect(Entity entity) {
         float duration = curves.hitFlash.keys[^1].time;
         
@@ -229,12 +227,12 @@ public partial class Game {
         
         Tween tween = Tween.Custom(entity, 0f, 1f, duration, ease: Ease.Linear, onValueChange: static (entity, val) => {
             entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
-            entity.matPropertyBlock.SetFloat(damageFlashTintPropertyId, gameInstance.curves.hitFlash.Evaluate(val));
+            entity.matPropertyBlock.SetFloat(ShaderIds.damageFlashTint, gameInstance.curves.hitFlash.Evaluate(val));
             entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
         })
         .OnComplete(entity, static entity => {
             entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
-            entity.matPropertyBlock.SetFloat(damageFlashTintPropertyId, 0);
+            entity.matPropertyBlock.SetFloat(ShaderIds.damageFlashTint, 0);
             entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
         });
 
@@ -270,9 +268,6 @@ public partial class Game {
         entity.SetEffect(EffectsIndicies.Petrify, tween);
     }
     
-    private static int hsvColorPropertyId = Shader.PropertyToID("_HSVColor");
-    private static int hsvChannelMaskPropertyId = Shader.PropertyToID("_HSVChannelMask");
-    
     private void ClearHSVColorEffect(Entity entity) {
         SetHSVColorEffect(entity, Vector3.zero);
     }
@@ -284,8 +279,8 @@ public partial class Game {
         channelMask.z = hsvColor.z > Mathf.Epsilon ? 1 : 0;
         
         entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
-        entity.matPropertyBlock.SetVector(hsvColorPropertyId, hsvColor);
-        entity.matPropertyBlock.SetVector(hsvChannelMaskPropertyId, channelMask);
+        entity.matPropertyBlock.SetVector(ShaderIds.hsvColor, hsvColor);
+        entity.matPropertyBlock.SetVector(ShaderIds.hsvChannelMask, channelMask);
         entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
     }
     
@@ -365,26 +360,22 @@ public partial class Game {
     }
     
     
-    private static int dissolvePropertyId = Shader.PropertyToID("_Dissolve");
-    private static int dissolveColorPropertyId = Shader.PropertyToID("_DissolveColor");
-    private static int dissolveAspectRatioPropertyId = Shader.PropertyToID("_AspectRatio");
-    
     private void DissolveAndDestroy(Entity entity, float duration, Color insideColor) {
         if (entity.GetEffect(EffectsIndicies.Dissolve).isAlive) return;
         
         entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
-        entity.matPropertyBlock.SetColor(dissolveColorPropertyId, insideColor);
-        entity.matPropertyBlock.SetFloat(dissolveAspectRatioPropertyId, entity.spriteRenderer.sprite.AspectRatio());
+        entity.matPropertyBlock.SetColor(ShaderIds.dissolveColor, insideColor);
+        entity.matPropertyBlock.SetFloat(ShaderIds.aspectRatio, entity.spriteRenderer.sprite.AspectRatio());
         entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
         
         Tween tween = Tween.Custom(entity, 0f, 1f, duration, static (entity, val) => {
             entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
-            entity.matPropertyBlock.SetFloat(dissolvePropertyId, val);
+            entity.matPropertyBlock.SetFloat(ShaderIds.dissolve, val);
             entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
         })
         .OnComplete(entity, static entity => {
             entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
-            entity.matPropertyBlock.SetFloat(dissolvePropertyId, 0);
+            entity.matPropertyBlock.SetFloat(ShaderIds.dissolve, 0);
             entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
             gameInstance.DestroyEntity(entity);
         });

@@ -16,11 +16,6 @@ public class SummonedPortal : MonoBehaviour {
     private Tween closingTween;
     private bool activeStateAfterClose;
     
-    private static readonly int aspectRatioId = Shader.PropertyToID("_AspectRatio");
-    private static readonly int offsetSizeId = Shader.PropertyToID("_Offset_Size");
-    private static readonly int rotationId = Shader.PropertyToID("_Rotation");
-    private static readonly int fillId = Shader.PropertyToID("_Fill");
-    
     public void Init() {
         spriteRenderer.material = new(spriteRenderer.sharedMaterial);
     }
@@ -31,7 +26,7 @@ public class SummonedPortal : MonoBehaviour {
         
         openingTween = Tween.Custom(this, 0f, 1f, 0.9f, onValueChange: static (portal, comp) => {
             comp = portal.openAnimationCurve.Evaluate(comp);
-            portal.spriteRenderer.material.SetFloat(fillId, comp);
+            portal.spriteRenderer.material.SetFloat(ShaderIds.fill, comp);
         })
         .Group(
             Tween.Custom(this, rotationSpeed * 6f, rotationSpeed, 3f, onValueChange: static (portal, speed) => {
@@ -46,7 +41,7 @@ public class SummonedPortal : MonoBehaviour {
         
         closingTween = Tween.Custom(this, 1f, 0f, 1f, onValueChange: static (portal, comp) => {
             comp = portal.closeAnimationCurve.Evaluate(comp);
-            portal.spriteRenderer.material.SetFloat(fillId, comp);
+            portal.spriteRenderer.material.SetFloat(ShaderIds.fill, comp);
         })
         .OnComplete(this, static (portal) => {
             portal.StopAnimating();
@@ -69,9 +64,9 @@ public class SummonedPortal : MonoBehaviour {
         rotation %= 360f;
         if (!presentLimiter.TimeHasPassed(presentDelay)) return;
         
-        spriteRenderer.sharedMaterial.SetFloat(aspectRatioId, spriteRenderer.sprite.AspectRatio());
-        spriteRenderer.sharedMaterial.SetVector(offsetSizeId, spriteRenderer.sprite.OffsetAndSizeInTexture());
-        spriteRenderer.sharedMaterial.SetFloat(rotationId, rotation);
+        spriteRenderer.sharedMaterial.SetFloat(ShaderIds.aspectRatio, spriteRenderer.sprite.AspectRatio());
+        spriteRenderer.sharedMaterial.SetVector(ShaderIds.offsetSize, spriteRenderer.sprite.OffsetAndSizeInTexture());
+        spriteRenderer.sharedMaterial.SetFloat(ShaderIds.rotation, rotation);
     }
     
 }

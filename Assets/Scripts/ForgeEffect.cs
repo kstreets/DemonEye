@@ -12,13 +12,6 @@ public class ForgeEffect : MonoBehaviour {
     public Texture fillMask;
     public Texture upwardsFillMask;
     
-    private static readonly int activeId = Shader.PropertyToID("_Active");
-    private static readonly int fillId = Shader.PropertyToID("_Fill");
-    private static readonly int offsetSizeId = Shader.PropertyToID("_Offset_Size");
-    private static readonly int intoOffsetSizeId = Shader.PropertyToID("_IntoOffset_Size");
-    private static readonly int fillMaskId = Shader.PropertyToID("_FillMask");
-    private static readonly int useSmoothingId = Shader.PropertyToID("_UseSmoothing");
-    
 #if UNITY_EDITOR
     private void Update() {
         if (Application.isPlaying) return;
@@ -29,7 +22,7 @@ public class ForgeEffect : MonoBehaviour {
             image.material = new(pixelFillMaterial);
         }
         
-        SetMaterialFill(image.material.GetFloat(fillId));
+        SetMaterialFill(image.material.GetFloat(ShaderIds.fill));
     }
 #endif
     
@@ -37,7 +30,7 @@ public class ForgeEffect : MonoBehaviour {
     
     public void Init(FillDirection fillDir) {
         image.material = new(pixelFillMaterial);
-        image.material.SetTexture(fillMaskId, fillDir switch {
+        image.material.SetTexture(ShaderIds.fillMask, fillDir switch {
             FillDirection.None => fillMask,
             FillDirection.Up   => upwardsFillMask,
             _ => throw new ArgumentOutOfRangeException(nameof(fillDir), fillDir, null),
@@ -47,35 +40,35 @@ public class ForgeEffect : MonoBehaviour {
     }
     
     public void SetActive(bool active) {
-        image.material.SetInt(activeId, active ? 1 : 0);
+        image.material.SetInt(ShaderIds.active, active ? 1 : 0);
     }
     
     public void SetMaterialFill(float fill) {
         if (image.sprite == null) {
-            image.material.SetFloat(fillId, fill);
+            image.material.SetFloat(ShaderIds.fill, fill);
             return;
         }
         
         Rect spriteRect = image.sprite.rect;
         Vector2 textureSize = new(image.mainTexture.width, image.mainTexture.height);
-        image.material.SetVector(offsetSizeId, new(spriteRect.x / textureSize.x, spriteRect.y / textureSize.y, spriteRect.width / textureSize.x,  spriteRect.height / textureSize.y));
-        image.material.SetFloat(fillId, fill);
+        image.material.SetVector(ShaderIds.offsetSize, new(spriteRect.x / textureSize.x, spriteRect.y / textureSize.y, spriteRect.width / textureSize.x,  spriteRect.height / textureSize.y));
+        image.material.SetFloat(ShaderIds.fill, fill);
     }
     
     public void SetIntoSprite(Sprite sprite) {
         if (image.sprite == null) {
-            image.material.SetVector(intoOffsetSizeId, Vector4.zero);
+            image.material.SetVector(ShaderIds.intoOffsetSize, Vector4.zero);
             return;
         }
         
         Rect baseRect = image.sprite.rect;
         Rect spriteRect = sprite.textureRect;
         Vector2 textureSize = new(sprite.texture.width, sprite.texture.height);
-        image.material.SetVector(intoOffsetSizeId, new((spriteRect.x - baseRect.x) / textureSize.x, (spriteRect.y - baseRect.y) / textureSize.y, 0f, 0f));
+        image.material.SetVector(ShaderIds.intoOffsetSize, new((spriteRect.x - baseRect.x) / textureSize.x, (spriteRect.y - baseRect.y) / textureSize.y, 0f, 0f));
     }
     
     public void UseSmoothing(bool useSmoothing) {
-        image.material.SetFloat(useSmoothingId, useSmoothing ? 1f : 0f);
+        image.material.SetFloat(ShaderIds.useSmoothing, useSmoothing ? 1f : 0f);
     }
     
 }
