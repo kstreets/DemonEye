@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4e3d94aa93d2d74e9cbcf52d6f804d7, type: 3}
+  m_Name: DoubleCritAugment
+  m_EditorClassIdentifier: Assembly-CSharp::DoubleCritAugment
+  uuid: -577300191
+  derivedFrom: {fileID: 11400000, guid: ba0965bc93d7d704f8f3e330886c9c1d, type: 2}
+  percentChanceOfDerivedToSpawn: 0.45
+  mapSpawning:
+    spawnsOnAll: 0
+    firstSpawnMap: {fileID: 11400000, guid: aac23282a2cd7784ab5861d2a0508e69, type: 2}
+    spawnsOnMaps: []
+  traderSpawning:
+    levelRequired: 10
+    stockRange: {x: 1, y: 1}
+    barterRequirements: []
+  damageMulti: 1.5
+  multiplierDuration: 4

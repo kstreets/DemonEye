@@ -1,0 +1,358 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6be7b725e872d8544a676cc6767aad0a, type: 3}
+  m_Name: SulfurFieldsWaves
+  m_EditorClassIdentifier: 
+  timeBeforeFirstPhase: 25
+  timeBeforePortalSpawns: 15
+  delayBetweenEnemyRepositions: 1
+  maxEnemyRepositionCount: 8
+  phasePools:
+  - name: Wave 0
+    musicIntensity: 0
+    variants:
+    - name: Variant 0
+      maxDuration: 45
+      spawnDuration: 15
+      startNextPhaseEarlyDelay: 5
+      spawnCellRange: {x: 20, y: 28}
+      repositionCellRange: {x: 20, y: 28}
+      spawnRateCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 0
+      enemyBatches:
+      - enemyCount: 30
+        enemyData: {fileID: 11400000, guid: 32cbf20c358e9904cacd9be297ab7e7f, type: 2}
+    - name: Variant 1
+      maxDuration: 45
+      spawnDuration: 15
+      startNextPhaseEarlyDelay: 5
+      spawnCellRange: {x: 20, y: 28}
+      repositionCellRange: {x: 20, y: 28}
+      spawnRateCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 0
+      enemyBatches:
+      - enemyCount: 50
+        enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
+  - name: Wave 1
+    musicIntensity: 0
+    variants:
+    - name: Variant 0
+      maxDuration: 75
+      spawnDuration: 45
+      startNextPhaseEarlyDelay: 5
+      spawnCellRange: {x: 20, y: 28}
+      repositionCellRange: {x: 20, y: 28}
+      spawnRateCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 0
+      enemyBatches:
+      - enemyCount: 60
+        enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
+      - enemyCount: 80
+        enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
+  - name: Wave 2
+    musicIntensity: 0
+    variants:
+    - name: Variant 0
+      maxDuration: 70
+      spawnDuration: 40
+      startNextPhaseEarlyDelay: 0
+      spawnCellRange: {x: 20, y: 28}
+      repositionCellRange: {x: 20, y: 28}
+      spawnRateCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 0
+      enemyBatches:
+      - enemyCount: 120
+        enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
+      - enemyCount: 35
+        enemyData: {fileID: 11400000, guid: 32cbf20c358e9904cacd9be297ab7e7f, type: 2}
+  - name: Wave 3
+    musicIntensity: 0
+    variants:
+    - name: Variant 0
+      maxDuration: 70
+      spawnDuration: 40
+      startNextPhaseEarlyDelay: 8
+      spawnCellRange: {x: 20, y: 28}
+      repositionCellRange: {x: 20, y: 28}
+      spawnRateCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 0
+      enemyBatches:
+      - enemyCount: 90
+        enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
+      - enemyCount: 60
+        enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
+      - enemyCount: 40
+        enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
+  - name: Wave 4
+    musicIntensity: 0
+    variants:
+    - name: Variant 0
+      maxDuration: 60
+      spawnDuration: 30
+      startNextPhaseEarlyDelay: 8
+      spawnCellRange: {x: 20, y: 28}
+      repositionCellRange: {x: 20, y: 28}
+      spawnRateCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 0
+      enemyBatches:
+      - enemyCount: 80
+        enemyData: {fileID: 11400000, guid: 32cbf20c358e9904cacd9be297ab7e7f, type: 2}
+  - name: Wave 5
+    musicIntensity: 0
+    variants:
+    - name: Variant 0
+      maxDuration: 80
+      spawnDuration: 50
+      startNextPhaseEarlyDelay: 8
+      spawnCellRange: {x: 20, y: 28}
+      repositionCellRange: {x: 20, y: 28}
+      spawnRateCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 0
+      enemyBatches:
+      - enemyCount: 100
+        enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
+      - enemyCount: 70
+        enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
+      - enemyCount: 40
+        enemyData: {fileID: 11400000, guid: 32cbf20c358e9904cacd9be297ab7e7f, type: 2}
+  - name: Wave 6
+    musicIntensity: 0
+    variants:
+    - name: Variant 0
+      maxDuration: 70
+      spawnDuration: 45
+      startNextPhaseEarlyDelay: 8
+      spawnCellRange: {x: 20, y: 28}
+      repositionCellRange: {x: 20, y: 28}
+      spawnRateCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 0
+      enemyBatches:
+      - enemyCount: 60
+        enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
+      - enemyCount: 80
+        enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
+  - name: Wave 7
+    musicIntensity: 0
+    variants:
+    - name: Variant 0
+      maxDuration: 60
+      spawnDuration: 60
+      startNextPhaseEarlyDelay: 8
+      spawnCellRange: {x: 20, y: 28}
+      repositionCellRange: {x: 20, y: 28}
+      spawnRateCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 0
+      enemyBatches:
+      - enemyCount: 90
+        enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
+      - enemyCount: 80
+        enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
+      - enemyCount: 160
+        enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}

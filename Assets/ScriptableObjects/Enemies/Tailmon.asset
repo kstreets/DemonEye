@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a5df0d022d54a7488a42b771db86189, type: 3}
+  m_Name: Tailmon
+  m_EditorClassIdentifier: 
+  displayName: Tailmon
+  type: 0
+  enemyPrefab: {fileID: 7814119993517076521, guid: 4b73114a9fc8cf54b8ff78222ba7c93c, type: 3}
+  animatorOverride: {fileID: 22100000, guid: eea5b74bb62af0842893cca5dab41b1f, type: 2}
+  dropPool: {fileID: 11400000, guid: a50fac0e0c375294296c54b1d6d4450d, type: 2}
+  chanceToDropItem: 0.06
+  usesFlowField: 1
+  excludeCollisionLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  attackDistance: 0.25
+  attackDamageDelay: 0.4
+  attackRadius: 0.15
+  sideAttackOffset: {x: 0.172, y: 0.065}
+  upAttackOffset: {x: 0, y: 0.257}
+  donwAttackOffset: {x: 0, y: -0.045}
+  speed: 0.35
+  health: 30
+  damage: 20
+  collisionDamage: 8
+  changeToCauseBleed: 0.15
+  soulWorthPerKill: 4
+  xpWorthPerKill: 20
+  defaultMass: 25.75
