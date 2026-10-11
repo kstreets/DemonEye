@@ -6,7 +6,8 @@ using UnityEditor;
 #endif
 
 // Generates EdgeCollider2Ds that trace the opaque pixels of this tilemap's sprites, so collision follows
-// edge tiles whose visuals are inset from their cell bounds. Output goes on a child object on the Default layer.
+// edge tiles whose visuals are inset from their cell bounds. Sprite renderers under additionalObjects are traced too.
+// Output goes on a child object on the Default layer.
 [RequireComponent(typeof(Tilemap))]
 public class TilemapEdgeColliderGenerator : MonoBehaviour {
 
@@ -20,7 +21,11 @@ public class TilemapEdgeColliderGenerator : MonoBehaviour {
     public int topEdgeOutsetPixels = 8;
     [Tooltip("Pushes the outline sideways (in sprite pixels) on tiles with no tile to their left/right")]
     public int sideEdgeOutsetPixels = 8;
+    [Tooltip("Shifts the outline upward (in sprite pixels) on tiles with no tile below them, so the player can walk further into the cliff face art")]
+    public int bottomEdgeInsetPixels = 0;
     public float edgeRadius = 0.1f;
+    [Tooltip("Every active SpriteRenderer nested under these is traced along with the tiles, so their outlines merge into the same colliders")]
+    public List<GameObject> additionalObjects = new();
 
 #if UNITY_EDITOR
 
@@ -37,28 +42,29 @@ public class TilemapEdgeColliderGenerator : MonoBehaviour {
 
         tilemap.CompressBounds();
         BoundsInt cellBounds = tilemap.cellBounds;
-        if (cellBounds.size.x <= 0 || cellBounds.size.y <= 0) {
-            Debug.LogWarning("Tilemap has no tiles", this);
+        List<MaskSprite> maskSprites = GatherMaskSprites(tilemap, cellBounds);
+        if (maskSprites.Count == 0) {
+            Debug.LogWarning("Tilemap and additional objects have no sprites", this);
             return;
         }
 
-        if (!TryGetPixelsPerUnit(tilemap, cellBounds, out float pixelsPerUnit)) {
-            Debug.LogWarning("Tilemap has no sprites", this);
-            return;
-        }
+        float pixelsPerUnit = GetPixelsPerUnit(maskSprites);
 
-        // Mask pixels are aligned to the cell grid; pad by one cell so oversized sprites and outer outlines fit
+        // Mask pixels are aligned to the cell grid and cover every sprite; pad by one cell so outer outlines and outsets fit
         Vector3 cellSize = tilemap.layoutGrid.cellSize;
         int pixelsPerCellX = Mathf.RoundToInt(cellSize.x * pixelsPerUnit);
         int pixelsPerCellY = Mathf.RoundToInt(cellSize.y * pixelsPerUnit);
         Vector2 pixelSize = new(cellSize.x / pixelsPerCellX, cellSize.y / pixelsPerCellY);
         const int paddingCells = 1;
-        int maskWidth = (cellBounds.size.x + paddingCells * 2) * pixelsPerCellX;
-        int maskHeight = (cellBounds.size.y + paddingCells * 2) * pixelsPerCellY;
-        Vector2 maskOrigin = (Vector2)tilemap.CellToLocal(cellBounds.min) - new Vector2(cellSize.x, cellSize.y) * paddingCells;
+        GetMaskCellRange(tilemap, maskSprites, paddingCells, out Vector2Int maskCellMin, out Vector2Int maskCellSize);
+        int maskWidth = maskCellSize.x * pixelsPerCellX;
+        int maskHeight = maskCellSize.y * pixelsPerCellY;
+        Vector2 maskOrigin = tilemap.CellToLocal((Vector3Int)maskCellMin);
 
-        bool[] mask = BuildMask(tilemap, cellBounds, maskOrigin, pixelSize, maskWidth, maskHeight);
-        OutsetOpenEdges(tilemap, cellBounds, mask, maskWidth, maskHeight, pixelsPerCellX, pixelsPerCellY, paddingCells);
+        bool[] mask = BuildMask(maskSprites, maskOrigin, pixelSize, maskWidth, maskHeight);
+        // Inset before outsetting so the side outsets don't leave a foot sticking down below the shifted bottom edge
+        InsetOpenBottomEdges(tilemap, cellBounds, mask, maskWidth, pixelsPerCellX, pixelsPerCellY, maskCellMin);
+        OutsetOpenEdges(tilemap, cellBounds, mask, maskWidth, maskHeight, pixelsPerCellX, pixelsPerCellY, maskCellMin);
         List<List<Vector2Int>> loops = TraceOutlines(mask, maskWidth, maskHeight);
 
         ClearGenerated();
@@ -99,60 +105,113 @@ public class TilemapEdgeColliderGenerator : MonoBehaviour {
         }
     }
 
-    private bool TryGetPixelsPerUnit(Tilemap tilemap, BoundsInt cellBounds, out float pixelsPerUnit) {
-        pixelsPerUnit = 0f;
+    // A sprite to trace into the mask, from a tile or a sprite renderer
+    private struct MaskSprite {
+        public Sprite sprite;
+        public Matrix4x4 spriteToLocal; // Sprite space (units, pivot at origin) to tilemap local space
+        public float alpha;
+        public Object context;
+    }
+
+    private List<MaskSprite> GatherMaskSprites(Tilemap tilemap, BoundsInt cellBounds) {
+        List<MaskSprite> maskSprites = new();
+
         foreach (Vector3Int cell in cellBounds.allPositionsWithin) {
             Sprite sprite = tilemap.GetSprite(cell);
             if (sprite == null) continue;
+            maskSprites.Add(new() {
+                sprite = sprite,
+                spriteToLocal = Matrix4x4.Translate(tilemap.GetCellCenterLocal(cell)) * tilemap.orientationMatrix * tilemap.GetTransformMatrix(cell),
+                alpha = tilemap.GetColor(cell).a * tilemap.color.a,
+                context = this,
+            });
+        }
 
-            if (pixelsPerUnit == 0f) {
-                pixelsPerUnit = sprite.pixelsPerUnit;
-            } else if (!Mathf.Approximately(pixelsPerUnit, sprite.pixelsPerUnit)) {
-                Debug.LogWarning($"Sprite {sprite.name} has PPU {sprite.pixelsPerUnit}, expected {pixelsPerUnit}. Outline will be sampled at {pixelsPerUnit} PPU", sprite);
-                return true;
+        HashSet<SpriteRenderer> addedRenderers = new(); // Objects in the list can be nested under each other
+        Matrix4x4 worldToTilemapLocal = tilemap.transform.worldToLocalMatrix;
+        foreach (GameObject additionalObject in additionalObjects) {
+            if (additionalObject == null) continue;
+            foreach (SpriteRenderer spriteRenderer in additionalObject.GetComponentsInChildren<SpriteRenderer>()) {
+                if (!spriteRenderer.enabled || spriteRenderer.sprite == null || !addedRenderers.Add(spriteRenderer)) continue;
+                if (spriteRenderer.drawMode != SpriteDrawMode.Simple) {
+                    Debug.LogWarning($"{spriteRenderer.name} uses draw mode {spriteRenderer.drawMode}, it will be traced as if it were Simple", spriteRenderer);
+                }
+
+                Vector3 flip = new(spriteRenderer.flipX ? -1f : 1f, spriteRenderer.flipY ? -1f : 1f, 1f);
+                maskSprites.Add(new() {
+                    sprite = spriteRenderer.sprite,
+                    spriteToLocal = worldToTilemapLocal * spriteRenderer.transform.localToWorldMatrix * Matrix4x4.Scale(flip),
+                    alpha = spriteRenderer.color.a,
+                    context = spriteRenderer,
+                });
             }
         }
-        return pixelsPerUnit > 0f;
+
+        return maskSprites;
     }
 
-    // Rasterizes every tile's sprite alpha into a grid-aligned solid mask by inverse-mapping each mask pixel
-    // into sprite space, so tile flips/rotations are respected
-    private bool[] BuildMask(Tilemap tilemap, BoundsInt cellBounds, Vector2 maskOrigin, Vector2 pixelSize, int maskWidth, int maskHeight) {
+    private static float GetPixelsPerUnit(List<MaskSprite> maskSprites) {
+        float pixelsPerUnit = maskSprites[0].sprite.pixelsPerUnit;
+        foreach (MaskSprite maskSprite in maskSprites) {
+            if (Mathf.Approximately(pixelsPerUnit, maskSprite.sprite.pixelsPerUnit)) continue;
+            Debug.LogWarning($"Sprite {maskSprite.sprite.name} has PPU {maskSprite.sprite.pixelsPerUnit}, expected {pixelsPerUnit}. Outline will be sampled at {pixelsPerUnit} PPU", maskSprite.context);
+            break;
+        }
+        return pixelsPerUnit;
+    }
+
+    private static void GetSpriteLocalBounds(MaskSprite maskSprite, out Vector2 localMin, out Vector2 localMax) {
+        Sprite sprite = maskSprite.sprite;
+        Vector2 spriteMin = -sprite.pivot / sprite.pixelsPerUnit;
+        Vector2 spriteMax = (sprite.rect.size - sprite.pivot) / sprite.pixelsPerUnit;
+        localMin = new(float.MaxValue, float.MaxValue);
+        localMax = new(float.MinValue, float.MinValue);
+        for (int corner = 0; corner < 4; corner++) {
+            Vector2 spriteCorner = new((corner & 1) == 0 ? spriteMin.x : spriteMax.x, (corner & 2) == 0 ? spriteMin.y : spriteMax.y);
+            Vector2 localCorner = maskSprite.spriteToLocal.MultiplyPoint3x4(spriteCorner);
+            localMin = Vector2.Min(localMin, localCorner);
+            localMax = Vector2.Max(localMax, localCorner);
+        }
+    }
+
+    // The range of cells the mask covers, so every sprite fits with padding around it
+    private static void GetMaskCellRange(Tilemap tilemap, List<MaskSprite> maskSprites, int paddingCells, out Vector2Int maskCellMin, out Vector2Int maskCellSize) {
+        Vector2Int min = new(int.MaxValue, int.MaxValue);
+        Vector2Int max = new(int.MinValue, int.MinValue);
+        foreach (MaskSprite maskSprite in maskSprites) {
+            GetSpriteLocalBounds(maskSprite, out Vector2 localMin, out Vector2 localMax);
+            min = Vector2Int.Min(min, (Vector2Int)tilemap.LocalToCell(localMin));
+            max = Vector2Int.Max(max, (Vector2Int)tilemap.LocalToCell(localMax));
+        }
+        maskCellMin = min - Vector2Int.one * paddingCells;
+        maskCellSize = max - min + Vector2Int.one * (1 + paddingCells * 2);
+    }
+
+    // Rasterizes every sprite's alpha into a grid-aligned solid mask by inverse-mapping each mask pixel
+    // into sprite space, so flips/rotations/scales are respected
+    private bool[] BuildMask(List<MaskSprite> maskSprites, Vector2 maskOrigin, Vector2 pixelSize, int maskWidth, int maskHeight) {
         bool[] mask = new bool[maskWidth * maskHeight];
         Dictionary<Texture2D, Color32[]> texturePixelCache = new();
         byte alphaThresholdByte = (byte)Mathf.Clamp(Mathf.CeilToInt(alphaThreshold * 255f), 1, 255);
 
-        foreach (Vector3Int cell in cellBounds.allPositionsWithin) {
-            Sprite sprite = tilemap.GetSprite(cell);
-            if (sprite == null) continue;
+        foreach (MaskSprite maskSprite in maskSprites) {
+            if (maskSprite.alpha < alphaThreshold) continue;
+            byte spriteThreshold = (byte)Mathf.Clamp(Mathf.CeilToInt(alphaThresholdByte / maskSprite.alpha), 1, 255);
 
-            float tileAlpha = tilemap.GetColor(cell).a * tilemap.color.a;
-            if (tileAlpha < alphaThreshold) continue;
-            byte cellThreshold = (byte)Mathf.Clamp(Mathf.CeilToInt(alphaThresholdByte / tileAlpha), 1, 255);
-
+            Sprite sprite = maskSprite.sprite;
             Texture2D texture = sprite.texture;
             if (!texturePixelCache.TryGetValue(texture, out Color32[] texturePixels)) {
                 texturePixels = ReadTexturePixels(texture);
                 texturePixelCache[texture] = texturePixels;
             }
 
-            Matrix4x4 spriteToLocal = Matrix4x4.Translate(tilemap.GetCellCenterLocal(cell)) * tilemap.orientationMatrix * tilemap.GetTransformMatrix(cell);
-            Matrix4x4 localToSprite = spriteToLocal.inverse;
+            Matrix4x4 localToSprite = maskSprite.spriteToLocal.inverse;
             Rect spriteRect = sprite.rect;
             Vector2 pivot = sprite.pivot;
             float ppu = sprite.pixelsPerUnit;
 
             // Bounding box of the transformed sprite in mask pixel coordinates
-            Vector2 spriteMin = -pivot / ppu;
-            Vector2 spriteMax = (spriteRect.size - pivot) / ppu;
-            Vector2 localMin = new(float.MaxValue, float.MaxValue);
-            Vector2 localMax = new(float.MinValue, float.MinValue);
-            for (int corner = 0; corner < 4; corner++) {
-                Vector2 spriteCorner = new((corner & 1) == 0 ? spriteMin.x : spriteMax.x, (corner & 2) == 0 ? spriteMin.y : spriteMax.y);
-                Vector2 localCorner = spriteToLocal.MultiplyPoint3x4(spriteCorner);
-                localMin = Vector2.Min(localMin, localCorner);
-                localMax = Vector2.Max(localMax, localCorner);
-            }
+            GetSpriteLocalBounds(maskSprite, out Vector2 localMin, out Vector2 localMax);
             int minX = Mathf.Max(0, Mathf.FloorToInt((localMin.x - maskOrigin.x) / pixelSize.x));
             int minY = Mathf.Max(0, Mathf.FloorToInt((localMin.y - maskOrigin.y) / pixelSize.y));
             int maxX = Mathf.Min(maskWidth - 1, Mathf.CeilToInt((localMax.x - maskOrigin.x) / pixelSize.x));
@@ -169,7 +228,7 @@ public class TilemapEdgeColliderGenerator : MonoBehaviour {
 
                     int texX = (int)spriteRect.x + (int)spritePos.x;
                     int texY = (int)spriteRect.y + (int)spritePos.y;
-                    if (texturePixels[texY * texture.width + texX].a >= cellThreshold) {
+                    if (texturePixels[texY * texture.width + texX].a >= spriteThreshold) {
                         mask[maskIndex] = true;
                     }
                 }
@@ -179,9 +238,47 @@ public class TilemapEdgeColliderGenerator : MonoBehaviour {
         return mask;
     }
 
+    // For tiles with nothing below them, removes the bottommost solid pixels of each pixel column so the outline sits higher up.
+    // Cliff face art can hang below the tile's cell, so the column's bottom is searched for below the cell too.
+    private void InsetOpenBottomEdges(Tilemap tilemap, BoundsInt cellBounds, bool[] mask, int maskWidth, int pixelsPerCellX, int pixelsPerCellY, Vector2Int maskCellMin) {
+        int inset = Mathf.Max(0, bottomEdgeInsetPixels);
+        if (inset == 0) return;
+
+        // Gather every column's bottom pixel before modifying the mask so the result doesn't depend on processing order
+        List<Vector2Int> columnBottoms = new();
+        foreach (Vector3Int cell in cellBounds.allPositionsWithin) {
+            if (tilemap.GetSprite(cell) == null || tilemap.GetSprite(cell + Vector3Int.down) != null) continue;
+
+            int cellMaskX = (cell.x - maskCellMin.x) * pixelsPerCellX;
+            int cellMaskY = (cell.y - maskCellMin.y) * pixelsPerCellY;
+            int cellTopY = cellMaskY + pixelsPerCellY - 1;
+            int lowestSearchY = Mathf.Max(0, cellMaskY - pixelsPerCellY); // The padding is one cell, so art can't hang further than that
+
+            for (int x = cellMaskX; x < cellMaskX + pixelsPerCellX; x++) {
+                int y = cellMaskY;
+                if (mask[y * maskWidth + x]) {
+                    // Follow the art down past the cell's bottom to where it ends
+                    while (y > lowestSearchY && mask[(y - 1) * maskWidth + x]) y--;
+                } else {
+                    // Art doesn't reach the cell's bottom, find where it starts
+                    while (y < cellTopY && !mask[y * maskWidth + x]) y++;
+                    if (!mask[y * maskWidth + x]) continue;
+                }
+                columnBottoms.Add(new(x, y));
+            }
+        }
+
+        // Stops at the first empty pixel so thin art doesn't get cut through
+        foreach (Vector2Int bottom in columnBottoms) {
+            for (int y = bottom.y; y < bottom.y + inset && mask[y * maskWidth + bottom.x]; y++) {
+                mask[y * maskWidth + bottom.x] = false;
+            }
+        }
+    }
+
     // For tiles with nothing above/left/right of them, extends the outermost solid pixel of each pixel lane toward the open side
-    // so the outline sits further out. Bottom edges are left alone since their cliff face art already keeps the outline far enough out.
-    private void OutsetOpenEdges(Tilemap tilemap, BoundsInt cellBounds, bool[] mask, int maskWidth, int maskHeight, int pixelsPerCellX, int pixelsPerCellY, int paddingCells) {
+    // so the outline sits further out. Bottom edges are handled by InsetOpenBottomEdges instead, since their cliff face art keeps the outline far enough out.
+    private void OutsetOpenEdges(Tilemap tilemap, BoundsInt cellBounds, bool[] mask, int maskWidth, int maskHeight, int pixelsPerCellX, int pixelsPerCellY, Vector2Int maskCellMin) {
         (Vector3Int dir, int outset)[] openSides = {
             (Vector3Int.up, Mathf.Clamp(topEdgeOutsetPixels, 0, pixelsPerCellY)),
             (Vector3Int.left, Mathf.Clamp(sideEdgeOutsetPixels, 0, pixelsPerCellX)),
@@ -201,8 +298,8 @@ public class TilemapEdgeColliderGenerator : MonoBehaviour {
 
         foreach ((Vector3Int cell, int side) in openEdges) {
             (Vector3Int dir, int outset) = openSides[side];
-            int cellMaskX = (cell.x - cellBounds.xMin + paddingCells) * pixelsPerCellX;
-            int cellMaskY = (cell.y - cellBounds.yMin + paddingCells) * pixelsPerCellY;
+            int cellMaskX = (cell.x - maskCellMin.x) * pixelsPerCellX;
+            int cellMaskY = (cell.y - maskCellMin.y) * pixelsPerCellY;
             bool vertical = dir.y != 0;
             int laneCount = vertical ? pixelsPerCellX : pixelsPerCellY;
             int laneLength = vertical ? pixelsPerCellY : pixelsPerCellX;

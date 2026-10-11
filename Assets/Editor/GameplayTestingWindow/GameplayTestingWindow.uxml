@@ -12,6 +12,9 @@
             <ui:Button text="Refresh" name="RefreshBttn"/>
         </ui:VisualElement>
         <ui:VisualElement name="Divider" style="flex-grow: 0; background-color: rgb(42, 42, 42); height: 1px; margin-top: 5px; margin-bottom: 5px;"/>
+        <uie:ObjectField label="Testing Inventory" type="TestingInventory, Assembly-CSharp" name="TestingInventoryField" allow-scene-objects="false" tooltip="Replaces the player inventory with this when the game starts, in play mode and in builds. Clear it to keep the saved inventory"/>
+        <ui:Button text="Re-Equip Testing Inventory" name="EquipTestingInventoryBttn" tooltip="Clears the player inventory, then equips the testing inventory's Demon Eye, backpack, trinket and items. Happens automatically when the game starts"/>
+        <ui:VisualElement name="Divider" style="flex-grow: 0; background-color: rgb(42, 42, 42); height: 1px; margin-top: 5px; margin-bottom: 5px;"/>
         <ui:Button text="Damage Player" name="PlayerDamageBttn"/>
         <ui:Button text="Apply Bleed To Player" name="PlayerBleedBttn"/>
         <ui:Button text="Give Some Money" name="MoneyBttn"/>

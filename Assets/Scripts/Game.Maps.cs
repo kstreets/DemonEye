@@ -35,6 +35,7 @@ public partial class Game {
         
         for (int i = 0; i < maps.Count; i++) {
             maps[i].state = gameState.mapStates[i];
+            maps[i].state.isUnlocked = true; // For trailer only
         }
     }
     
@@ -234,6 +235,13 @@ public partial class Game {
             }
         }
         
+        // Only the portal picked in the Trailer window is active, even if it's close to the player
+        if (TryGetTrailerExitPortal(exitPortalParent, out Portal trailerPortal)) {
+            possibleExitPortals.Clear();
+            possibleExitPortals.Add(trailerPortal);
+            exitPortalsCount = 1;
+        }
+        
         Assert.IsTrue(possibleExitPortals.Count >= exitPortalsCount, 
             $"Not enough portals on map, and or spaced too close together. Expected {exitPortalsCount} got {possibleExitPortals.Count}");
         
@@ -253,6 +261,8 @@ public partial class Game {
             }
             curRaid.activeExitPortals.Clear();
         }
+        
+        ScheduleTrailerExitPortalSummon(exitPortalParent);
     }
     
     private bool SpawnFinalExitPortal() {

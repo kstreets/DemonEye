@@ -15,6 +15,7 @@ public partial class Game {
         InitInput();
         InitInputDevice();
         InitResources();
+        InitTrailer();
         InitAudio();
         InitMusic();
         DemonEyeTween.Init();
@@ -35,6 +36,9 @@ public partial class Game {
         InitTutorial(gameState);
         
         InitUI();
+        
+        // Done last so the tutorial can't clear the player inventory after it's loaded
+        LoadTestingInventoryFromSettings();
 
         bool createInitialSaveFile = gameState == null;
         if (createInitialSaveFile) {

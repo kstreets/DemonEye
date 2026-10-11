@@ -7,7 +7,6 @@ using Unity.Jobs;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.Pool;
 using Random = UnityEngine.Random;
 
 public class CoolerGrid : MonoBehaviour {
@@ -29,6 +28,17 @@ public class CoolerGrid : MonoBehaviour {
     private const int dijkstraDiagonalDist = 10;
 
     private List<GridCell> spawnCells = new(30);
+    private float lastSpawnCellUpdateTime;
+
+    // Occupied positions sorted into square buckets as wide as the search radius, so counting the positions near a cell
+    // only needs to check the 3x3 buckets around it. Positions in bucket b are bucketedPositions[bucketStarts[b]..bucketStarts[b + 1]]
+    private Vector2 bucketOrigin;
+    private float bucketSize;
+    private int bucketsPerSide;
+    private int[] bucketStarts = Array.Empty<int>();
+    private int[] bucketsNextOpenPosIndex = Array.Empty<int>();
+    private Vector2[] bucketedPositions = Array.Empty<Vector2>();
+    
     private Vector2 gridGameObjectPosition;
     private Vector2 predictedPlayerPos;
     
@@ -143,12 +153,12 @@ public class CoolerGrid : MonoBehaviour {
         predictedPlayerPos = Vector2.Lerp(predictedPlayerPos, playerPos + playerVelocity * lookAheadTime, Time.deltaTime * lookAheadSpeed);
     }
 
-    public Vector3 GetSpawnPosition(Vector2 playerPosition, int innerCellRadius, int outerCellRadius, bool predictPlayerPos, List<Vector2> reservedPositions) {
+    public Vector3 GetSpawnPosition(Vector2 playerPosition, int innerCellRadius, int outerCellRadius, bool predictPlayerPos, List<Vector2> occupiedPositions) {
         if (!TryGetCellAtPosition(playerPosition, out GridCell playerCell, out _)) {
             return Vector2.zero;
         }
         
-        UpdateDataForSpawnCells(playerCell, innerCellRadius, outerCellRadius, predictPlayerPos, reservedPositions);
+        UpdateDataForSpawnCells(playerCell, innerCellRadius, outerCellRadius, predictPlayerPos, occupiedPositions);
         spawnCells.Sort(static (x, y) => y.spawnWeight.CompareTo(x.spawnWeight)); // Sort in descending order 
         
         int maxIndex = Mathf.RoundToInt(spawnCells.Count * 0.2f);
@@ -255,89 +265,143 @@ public class CoolerGrid : MonoBehaviour {
         return y * width + x;
     }
 
-    private void UpdateDataForSpawnCells(GridCell playerCell, int innerRadius, int outerRadius, bool predictPlayerPos, List<Vector2> reservedPositions) {
+    private void UpdateDataForSpawnCells(GridCell playerCell, int innerRadius, int outerRadius, bool predictPlayerPos, List<Vector2> occupiedPositions) {
         Assert.IsTrue(innerRadius != outerRadius, $"{nameof(innerRadius)} cannot equal {nameof(outerRadius)}");
         
-        spawnCells.Clear();
+        // Grab all the spawn cells once per frame
+        if (Time.time != lastSpawnCellUpdateTime) {
+            spawnCells.Clear();
 
-        const float maxDistScaler = 1.3f;
-        float maxDistCellCanBeFromPlayer = (outerRadius * maxDistScaler) * cellSize;
+            const float maxDistScaler = 1.3f;
+            float maxDistCellCanBeFromPlayer = (outerRadius * maxDistScaler) * cellSize;
 
-        for (int y = -outerRadius; y <= outerRadius; y++) {
-            for (int x = -outerRadius; x <= outerRadius; x++) {
-                bool isCellWereWorkingOn = x == 0 && y == 0;
-                bool isInsideInnerRadius = Mathf.Abs(x) <= innerRadius && Mathf.Abs(y) <= innerRadius;
-                if (isCellWereWorkingOn || isInsideInnerRadius) continue;
+            for (int y = -outerRadius; y <= outerRadius; y++) {
+                for (int x = -outerRadius; x <= outerRadius; x++) {
+                    bool isCellWereWorkingOn = x == 0 && y == 0;
+                    bool isInsideInnerRadius = Mathf.Abs(x) <= innerRadius && Mathf.Abs(y) <= innerRadius;
+                    if (isCellWereWorkingOn || isInsideInnerRadius) continue;
 
-                Vector2 neighborPos = playerCell.position + new Vector2(x, y) * cellSize;
-                if (!TryGetCellAtPosition(neighborPos, out GridCell neighbor, out int neighborIndex)) continue;
-                if (!neighbor.traversable || neighbor.isObstacleObstructed) continue;
+                    Vector2 neighborPos = playerCell.position + new Vector2(x, y) * cellSize;
+                    if (!TryGetCellAtPosition(neighborPos, out GridCell neighbor, out int neighborIndex)) continue;
+                    if (!neighbor.traversable || neighbor.isObstacleObstructed) continue;
 
-                // Before the first flow field completes, treat every cell as reachable
-                // (distance 0) instead of walking the unreachable path for all of them.
-                int neighborDist = flowFieldReady ? buffers[readBufferIndex].distances[neighborIndex] : 0;
+                    // Before the first flow field completes, treat every cell as reachable
+                    // (distance 0) instead of walking the unreachable path for all of them.
+                    int neighborDist = flowFieldReady ? buffers[readBufferIndex].distances[neighborIndex] : 0;
 
-                // Player is in unreachable position, add anyways so we have something in the list
-                if (neighborDist == int.MaxValue) {
-                    spawnCells.Add(neighbor);
-                    Debug.Log("Player is unreachable");
-                    continue;
-                }
+                    // Player is in unreachable position, add anyways so we have something in the list
+                    if (neighborDist == int.MaxValue) {
+                        spawnCells.Add(neighbor);
+                        continue;
+                    }
 
-                // Convert dijkstra distance into world distance
-                float distFromPlayer = (neighborDist / (float)dijkstraOrthogonalDist) * cellSize;
-                if (distFromPlayer > maxDistCellCanBeFromPlayer) continue;
+                    // Convert dijkstra distance into world distance
+                    float distFromPlayer = (neighborDist / (float)dijkstraOrthogonalDist) * cellSize;
+                    if (distFromPlayer > maxDistCellCanBeFromPlayer) continue;
                     
-                spawnCells.Add(neighbor);
+                    spawnCells.Add(neighbor);
+                }
             }
         }
-
-        ContactFilter2D filter = new() {
-            useLayerMask = true,
-            layerMask = Masks.EnemyMask,
-        };
         
-        using var _ = ListPool<Collider2D>.Get(out var colList);
+        // Assign weights for each spawn cell on every call to account for enemies that spawned earlier this frame
+        {
+            float occupiedTestRadius = cellSize * 10f;
+            // Covers every spawn cell plus the test radius around it, so no position that could be counted gets left out
+            float bucketHalfExtent = (outerRadius + 1) * cellSize + occupiedTestRadius;
+            BuildPositionBuckets(playerCell.position, bucketHalfExtent, occupiedTestRadius, occupiedPositions);
 
-        float distFromCellToPredictedPlayerPos = Vector2.Distance(predictedPlayerPos, playerCell.position);
-        Vector2 dirToPredictedPos = (predictedPlayerPos - playerCell.position).normalized;
-        
-        const float minDistToIncludeDirectionWeight = 0.12f;
-        bool addDirectionalWeight = predictPlayerPos && distFromCellToPredictedPlayerPos > minDistToIncludeDirectionWeight;
-
-        float expandedSizeForEnemyTesting = cellSize * 10f;
-        for (int i = 0; i < spawnCells.Count; i++) {
-            GridCell cell = spawnCells[i];
-            const float enemyWeight = 1f;
-            const float dirWeight = 1.1f;
-
-            int enemyCount = Physics2D.OverlapCircle(cell.position, expandedSizeForEnemyTesting, filter, colList);
-            enemyCount += GetOverlappingPositionsCount(cell.position, expandedSizeForEnemyTesting, reservedPositions);
+            float distFromCellToPredictedPlayerPos = Vector2.Distance(predictedPlayerPos, playerCell.position);
+            Vector2 dirToPredictedPos = (predictedPlayerPos - playerCell.position).normalized;
             
-            float weight = (1f / (enemyCount + 1f)) * enemyWeight;
+            const float minDistToIncludeDirectionWeight = 0.12f;
+            bool addDirectionalWeight = predictPlayerPos && distFromCellToPredictedPlayerPos > minDistToIncludeDirectionWeight;
 
-            if (addDirectionalWeight) {
-                Vector2 dir = (cell.position - playerCell.position).normalized;
-                float dotInRange01 = (Vector2.Dot(dir, dirToPredictedPos) + 1) * 0.5f;
-                float sectorWeight = dotInRange01 switch {
-                    >= 0.75f => 1f,
-                    >= 0.50f => 0.8f,
-                    >= 0.25f => 0.4f,
-                    _ => 0f,
-                };
-                weight += sectorWeight * dirWeight;
+            for (int i = 0; i < spawnCells.Count; i++) {
+                GridCell cell = spawnCells[i];
+                const float enemyWeight = 1f;
+                const float dirWeight = 1.1f;
+
+                int enemyCount = CountBucketedPositionsInRadius(cell.position, occupiedTestRadius);
+                
+                float weight = (1f / (enemyCount + 1f)) * enemyWeight;
+
+                if (addDirectionalWeight) {
+                    Vector2 dir = (cell.position - playerCell.position).normalized;
+                    float dotInRange01 = (Vector2.Dot(dir, dirToPredictedPos) + 1) * 0.5f;
+                    float sectorWeight = dotInRange01 switch {
+                        >= 0.75f => 1f,
+                        >= 0.50f => 0.8f,
+                        >= 0.25f => 0.4f,
+                        _ => 0f,
+                    };
+                    weight += sectorWeight * dirWeight;
+                }
+
+                cell.spawnWeight = weight;
+                spawnCells[i] = cell;
             }
-
-            cell.spawnWeight = weight;
-            spawnCells[i] = cell;
         }
     }
     
-    private int GetOverlappingPositionsCount(Vector2 center, float radius, List<Vector2> positions) {
-        int count = 0;
+    // Positions outside the square of halfExtent around center are dropped, so it needs to cover everything that will be queried
+    private void BuildPositionBuckets(Vector2 center, float halfExtent, float size, List<Vector2> positions) {
+        bucketSize = size;
+        bucketsPerSide = Mathf.CeilToInt(halfExtent * 2f / size);
+        bucketOrigin = center - Vector2.one * halfExtent;
+
+        int sqrBucketsCount = bucketsPerSide * bucketsPerSide;
+        if (bucketStarts.Length < sqrBucketsCount + 1) {
+            bucketStarts = new int[sqrBucketsCount + 1];
+            bucketsNextOpenPosIndex = new int[sqrBucketsCount];
+        }
+        if (bucketedPositions.Length < positions.Count) {
+            bucketedPositions = new Vector2[positions.Count];
+        }
+        Array.Clear(bucketStarts, 0, sqrBucketsCount + 1);
+
+        // Count the positions in each bucket, then turn the counts into each bucket's start offset
         foreach (Vector2 pos in positions) {
-            if (Vector2.SqrMagnitude(pos - center) < radius * radius) {
-                count++;
+            int bucket = GetBucketIndex(pos);
+            if (bucket != -1) {
+                bucketStarts[bucket + 1]++;
+            }
+        }
+
+        for (int i = 0; i < sqrBucketsCount; i++) {
+            bucketStarts[i + 1] += bucketStarts[i];
+            bucketsNextOpenPosIndex[i] = bucketStarts[i];
+        }
+        foreach (Vector2 pos in positions) {
+            int bucket = GetBucketIndex(pos);
+            if (bucket != -1) {
+                bucketedPositions[bucketsNextOpenPosIndex[bucket]++] = pos;
+            }
+        }
+    }
+
+    private int GetBucketIndex(Vector2 position) {
+        int x = Mathf.FloorToInt((position.x - bucketOrigin.x) / bucketSize);
+        int y = Mathf.FloorToInt((position.y - bucketOrigin.y) / bucketSize);
+        if (x < 0 || y < 0 || x >= bucketsPerSide || y >= bucketsPerSide) return -1;
+        return y * bucketsPerSide + x;
+    }
+
+    // Radius can't be bigger than the bucket size, otherwise positions outside the 3x3 buckets could be in range
+    private int CountBucketedPositionsInRadius(Vector2 center, float radius) {
+        int centerX = Mathf.FloorToInt((center.x - bucketOrigin.x) / bucketSize);
+        int centerY = Mathf.FloorToInt((center.y - bucketOrigin.y) / bucketSize);
+        float sqrRadius = radius * radius;
+
+        int count = 0;
+        for (int y = Mathf.Max(0, centerY - 1); y <= Mathf.Min(bucketsPerSide - 1, centerY + 1); y++) {
+            for (int x = Mathf.Max(0, centerX - 1); x <= Mathf.Min(bucketsPerSide - 1, centerX + 1); x++) {
+                int bucket = y * bucketsPerSide + x;
+                for (int i = bucketStarts[bucket]; i < bucketStarts[bucket + 1]; i++) {
+                    if ((bucketedPositions[i] - center).sqrMagnitude < sqrRadius) {
+                        count++;
+                    }
+                }
             }
         }
         return count;
@@ -516,7 +580,7 @@ public class CoolerGrid : MonoBehaviour {
             allEdgeColliders[i].edgeRadius = Mathf.Max(originalEdgeRadii[i], 0.02f);
         }
         
-        const float traversableRatioPerTile = 0.72f;
+        const float traversableRatioPerTile = 0.8f;
         Vector2 traversableTestBoxSize = new Vector2(cellSize, cellSize) * traversableRatioPerTile;
 
         precomputedCells = new();

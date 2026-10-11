@@ -393,7 +393,7 @@ public partial class Game {
             (Enemy enemy, float distFromPlayer) = reteleportCandidates[i];
             Vector2Int repositionCellRange = spawnManager.CurPhase.repositionCellRange;
             Vector2 spawnPos = curRaid.mapInstance.grid.GetSpawnPosition(
-                player.position, repositionCellRange.x, repositionCellRange.y, predictPlayerPos: true, curRaid.teleportingInPositions
+                player.position, repositionCellRange.x, repositionCellRange.y, predictPlayerPos: true, GatherEnemyPositions()
             );
             
             if (Vector2.Distance(spawnPos, player.position) < distFromPlayer) {
@@ -670,12 +670,13 @@ public partial class Game {
         const float batchTime = 1f;
         if (!spawnLimiterForEnemyBatching.TimeHasPassed(batchTime) || sm.spawnEvents.Count <= 0) return;
         
+        List<Vector2> enemyPositions = GatherEnemyPositions();
+        
         while (sm.spawnEvents.IndexInRange(sm.spawnTimeIndex) && sm.spawnEvents[sm.spawnTimeIndex].time <= sm.timeInCurPhase) {
             Vector2Int spawnCellRange = sm.CurPhase.spawnCellRange;
             
-            Vector2 randomSpawnPos = curRaid.mapInstance.grid.GetSpawnPosition(
-                player.position, spawnCellRange.x, spawnCellRange.y, predictPlayerPos: false, curRaid.teleportingInPositions
-            );
+            Vector2 randomSpawnPos = curRaid.mapInstance.grid.GetSpawnPosition(player.position, spawnCellRange.x, spawnCellRange.y, false, enemyPositions);
+            enemyPositions.Add(randomSpawnPos);
 
             EnemyData enemyToSpawn = sm.spawnEvents[sm.spawnTimeIndex].enemy;
             Enemy enemy = SpawnEntity<Enemy>(enemyToSpawn.enemyPrefab, randomSpawnPos, Quaternion.identity);
@@ -686,6 +687,19 @@ public partial class Game {
             sm.spawnTimeIndex++;
             sm.spawnedThisFrame = true;
         }
+    }
+    
+    private readonly List<Vector2> _gatheredEnemyPositions = new();
+
+    private List<Vector2> GatherEnemyPositions() {
+        _gatheredEnemyPositions.Clear();
+        foreach (Enemy enemy in entities.enemies) {
+            // Teleporting enemies are inactive and already in teleportingInPositions, dead ones have their collider disabled
+            if (!enemy.gameObject.activeInHierarchy || !enemy.collider.enabled) continue;
+            _gatheredEnemyPositions.Add(enemy.position);
+        }
+        _gatheredEnemyPositions.AddRange(curRaid.teleportingInPositions);
+        return _gatheredEnemyPositions;
     }
     
 }

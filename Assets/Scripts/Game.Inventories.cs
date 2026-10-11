@@ -1317,4 +1317,51 @@ public partial class Game {
         EndDragAndDropItem();
     }
     
+    // Set from the Gameplay Testing window
+    private void LoadTestingInventoryFromSettings() {
+        GameplayTestingSettings testingSettings = Resources.Load<GameplayTestingSettings>(GameplayTestingSettings.resourcesPath);
+        if (testingSettings == null || testingSettings.testingInventory == null) return;
+        
+        LoadTestingInventoryOntoPlayer(testingSettings.testingInventory);
+    }
+    
+    public void LoadTestingInventoryOntoPlayer(TestingInventory testingInventory) {
+        ClearInventory(inventories.player);
+
+        if (testingInventory.HasDemonEye) {
+            List<ItemInstance> eyeUpgradeItemInstances = new();
+            foreach (UuidScriptableObject eyeUpgrade in testingInventory.demonEyeUpgrades) {
+                if (eyeUpgrade == null) continue;
+                eyeUpgradeItemInstances.Add(new(eyeUpgrade));
+            }
+
+            if (eyeUpgradeItemInstances.Count != GameData.Config.demonEyeCoreUpgradeCount) {
+                Debug.LogWarning($"Testing inventory Demon Eye has {eyeUpgradeItemInstances.Count}/{GameData.Config.demonEyeCoreUpgradeCount} eye upgrades", testingInventory);
+            }
+
+            ItemInstance demonEyeItemInstance = CreateNewDemonEyeItemInstance(randomDemonEyeNames.GetRandom(), eyeUpgradeItemInstances);
+            TryAddItemToInventory(inventories.player, demonEyeItemInstance, 0);
+        }
+        if (testingInventory.backpack != null) {
+            TryAddItemToInventory(inventories.player, testingInventory.backpack, 1, 1);
+        }
+        if (testingInventory.trinket != null) {
+            TryAddItemToInventory(inventories.player, testingInventory.trinket, 1, 2);
+        }
+
+        // Equipping the backpack resizes the player inventory, which needs to happen before adding the items so they have room
+        CheckForEquipmentChange();
+
+        foreach (TestingInventory.TestItemInstance testItem in testingInventory.items) {
+            if (testItem.item == null) continue;
+            InventoryAddResult result = TryAddItemToInventory(inventories.player, testItem.item, testItem.count);
+            if (result.type != InventoryAddResult.ResultType.Success) {
+                Debug.LogWarning($"Only added {result.addedCount}/{testItem.count} of {testItem.item.name} to the player inventory", testingInventory);
+            }
+        }
+
+        RefreshInventoryDisplay(inventories.player);
+    }
+
+    
 }

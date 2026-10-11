@@ -34,6 +34,7 @@ public partial class Game {
         pauseMenu.paused = true;
 
         states.gameStateMachine.Pause();
+        tutorial.stateMachine?.Pause();
         Time.timeScale = 0f;
 
         CancelItemDrag();
@@ -77,6 +78,7 @@ public partial class Game {
         pauseMenu.resumedOnFrame = Time.frameCount;
         Time.timeScale = 1f;
         states.gameStateMachine.UnPause();
+        tutorial.stateMachine?.UnPause();
 
         ClearControllerSelection();
         Cursor.visible = false;

@@ -20,6 +20,8 @@ public class GameplayTestingWindow : EditorWindow {
     private VisualElement ItemPoolContainer => root.Q<VisualElement>("ItemPool");
     private Button RefreshButton => root.Q<Button>("RefreshBttn");
     private Button CreateEyeButton => root.Q<Button>("CreateEyeBttn");
+    private ObjectField TestingInventoryField => root.Q<ObjectField>("TestingInventoryField");
+    private Button EquipTestingInventoryButton => root.Q<Button>("EquipTestingInventoryBttn");
     private Button PlayerDamageButton => root.Q<Button>("PlayerDamageBttn");
     private Button PlayerBleedButton => root.Q<Button>("PlayerBleedBttn");
     private Button MoneyButton => root.Q<Button>("MoneyBttn");
@@ -43,6 +45,7 @@ public class GameplayTestingWindow : EditorWindow {
         HideInactiveToggle.RegisterCallback<ChangeEvent<bool>>(OnHideInactiveToggled);
         RefreshButton.RegisterCallback<ClickEvent>(OnRefreshClicked);
         CreateEyeButton.RegisterCallback<ClickEvent>(OnCreateEyeClicked);
+        EquipTestingInventoryButton.RegisterCallback<ClickEvent>(OnEquipTestingInventory);
         PlayerDamageButton.RegisterCallback<ClickEvent>(OnDamagePlayer);
         PlayerBleedButton.RegisterCallback<ClickEvent>(OnMakePlayerBleed);
         MoneyButton.RegisterCallback<ClickEvent>(OnGiveMoney);
@@ -52,6 +55,9 @@ public class GameplayTestingWindow : EditorWindow {
         // Kept in EditorPrefs instead of on the window so the game can read it when it starts
         SkipTutorialToggle.value = EditorPrefs.GetBool(Game.skipTutorialEditorPrefKey);
         SkipTutorialToggle.RegisterValueChangedCallback(changeEvent => EditorPrefs.SetBool(Game.skipTutorialEditorPrefKey, changeEvent.newValue));
+        
+        TestingInventoryField.value = LoadOrCreateTestingSettings().testingInventory;
+        TestingInventoryField.RegisterValueChangedCallback(OnTestingInventoryChanged);
 
         // Restore settings after domain reload
         MapField.value = currentMap;
@@ -225,6 +231,38 @@ public class GameplayTestingWindow : EditorWindow {
         clonedWaves.timeBeforeFirstPhase = 5f;
         clonedWaves.phasePools.RemoveRange(0, startWaveIndex);
         return clonedWaves;
+    }
+    
+    private TestingInventory SelectedTestingInventory => TestingInventoryField.value as TestingInventory;
+    
+    // Kept in an asset instead of on the window so it's included in builds
+    private static GameplayTestingSettings LoadOrCreateTestingSettings() {
+        const string settingsAssetPath = "Assets/Resources/" + GameplayTestingSettings.resourcesPath + ".asset";
+        GameplayTestingSettings testingSettings = AssetDatabase.LoadAssetAtPath<GameplayTestingSettings>(settingsAssetPath);
+        if (testingSettings != null) return testingSettings;
+        
+        testingSettings = CreateInstance<GameplayTestingSettings>();
+        AssetDatabase.CreateAsset(testingSettings, settingsAssetPath);
+        AssetDatabase.SaveAssets();
+        return testingSettings;
+    }
+    
+    private void OnTestingInventoryChanged(ChangeEvent<Object> changeEvent) {
+        GameplayTestingSettings testingSettings = LoadOrCreateTestingSettings();
+        Undo.RecordObject(testingSettings, "Change Testing Inventory");
+        testingSettings.testingInventory = SelectedTestingInventory;
+        EditorUtility.SetDirty(testingSettings);
+        AssetDatabase.SaveAssetIfDirty(testingSettings);
+        
+        // Entering play mode loads it automatically, so only need to load it manually when assigned mid play
+        if (Application.isPlaying && SelectedTestingInventory != null) {
+            Game.gameInstance.LoadTestingInventoryOntoPlayer(SelectedTestingInventory);
+        }
+    }
+    
+    private void OnEquipTestingInventory(ClickEvent e) {
+        if (!Application.isPlaying || SelectedTestingInventory == null) return;
+        Game.gameInstance.LoadTestingInventoryOntoPlayer(SelectedTestingInventory);
     }
     
     private void OnDamagePlayer(ClickEvent e) {

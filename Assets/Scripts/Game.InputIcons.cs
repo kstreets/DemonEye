@@ -14,7 +14,6 @@ public partial class Game {
     }
 
     private void InitInputIcons() {
-        // Lets TMP find the sprite asset by name in <sprite="..."> tags without it having to be in a Resources folder
         if (ui.inputIconSpriteAsset) {
             MaterialReferenceManager.AddSpriteAsset(ui.inputIconSpriteAsset);
         }

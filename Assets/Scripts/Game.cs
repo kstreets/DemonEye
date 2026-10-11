@@ -70,10 +70,8 @@ public partial class Game : MonoBehaviour {
         // Animated UI shaders use this instead of the Time node so they keep animating while the game is paused
         Shader.SetGlobalFloat(ShaderIds.unscaledTime, Time.unscaledTime);
         states.gameStateMachine.Tick();
-        if (!pauseMenu.paused) {
-            UpdateDialogue(); // Outside of the tutorial because cutscenes use dialogue too
-            UpdateTutorial(); // !
-        }
+        UpdateTutorial(); // !
+        UpdateDialogue();
         DemonEyeTween.Update();
         UpdateMenuMusic();
         UpdateQuests(); // !
@@ -232,6 +230,7 @@ public partial class Game : MonoBehaviour {
         CloseRaidUI();
         StopAllAudioClips();
         TraderOnExitRaid();
+        DestroyAllProjectiles();
     }
 
     private void OnRaidStateUpdate() {
@@ -550,13 +549,17 @@ public partial class Game : MonoBehaviour {
         ui.deathBgImage.enabled = true;
         ui.deathBgImage.fillAmount = 1f;
         sequence.Chain(Tween.Alpha(ui.deathBgImage, 0f, 1f, 0.75f, Ease.InOutQuad));
-        
-        sequence.Group(Tween.Delay(0.35f, () => AnimateLargeRaidText(ColorText("SUCCESSFUL EXTRACT", gameInstance.config.styles.increaseDescColor), 3.8f)));
-        
-        ui.animatedBgImage.gameObject.SetActive(true);
-        ui.animatedBgImage.color = new(1f, 1f, 1f, 0f);
-        sequence.Group(Tween.Alpha(ui.animatedBgImage, 0f, 1f, 1f, Ease.InCubic, startDelay: 0.1f));
-        sequence.ChainDelay(1.6f);
+
+        // This is just for the trailer footage
+        {
+            // sequence.Group(Tween.Delay(0.35f, () => AnimateLargeRaidText(ColorText("SUCCESSFUL EXTRACT", gameInstance.config.styles.increaseDescColor), 3.8f)));
+            //
+            // ui.animatedBgImage.gameObject.SetActive(true);
+            // ui.animatedBgImage.color = new(1f, 1f, 1f, 0f);
+            // sequence.Group(Tween.Alpha(ui.animatedBgImage, 0f, 1f, 1f, Ease.InCubic, startDelay: 0.1f));
+            // sequence.ChainDelay(1.6f);
+            sequence.ChainDelay(2f);
+        }
 
         sequence.OnComplete(() => {
             player.gameObject.SetActive(true);

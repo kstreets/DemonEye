@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: 
   type: 2
-  enemyPrefab: {fileID: 7814119993517076521, guid: 1858a054640053244b9e501228b481d5, type: 3}
+  enemyPrefab: {fileID: 7814119993517076521, guid: 7f185c8b0ae05a54bb72cc2dd4a812d4, type: 3}
   animatorOverride: {fileID: 22100000, guid: be54a215789aaea43a7649a1a98c558d, type: 2}
   dropPool: {fileID: 11400000, guid: 4ab42b2953921574eb4a85cf22ab6ff0, type: 2}
   chanceToDropItem: 0.05
