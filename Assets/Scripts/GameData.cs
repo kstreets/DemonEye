@@ -140,6 +140,7 @@ public class GameData {
     public class UI {
         public RectTransform mainCanvasRectTransform;
         public CanvasScaler mainCanvasScaler;
+        public InteractionPrompt interactionPrompt;
         public Minimap minimap;
         public ItemDescPopup itemDescPopupInv;
         public ItemDescPopup itemDescPopupPickup;
@@ -169,7 +170,6 @@ public class GameData {
         public RectTransform lootInventoryPanel;
         public RectTransform lootInventoryParent;
         public GameObject lootSearchingText;
-        public TextMeshProUGUI interactPrompt;
         public TextMeshProUGUI interactDetails;
         public RectTransform portalArrow;
         public RectTransform damageNumbersParent;

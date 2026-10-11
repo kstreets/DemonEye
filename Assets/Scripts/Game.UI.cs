@@ -181,7 +181,7 @@ public partial class Game {
     private void CloseRaidUI() {
         HideInventoryItemPopup(); 
         HideHint();
-        ui.interactPrompt.gameObject.SetActive(false);
+        ui.interactionPrompt.gameObject.SetActive(false);
         ui.interactDetails.gameObject.SetActive(false);
         playerInfo.parent.gameObject.SetActive(false);
         raidInfo.parent.SetActive(false);
@@ -971,17 +971,17 @@ public partial class Game {
         return true;
     }
 
-    private void EnableInteractionPrompt(Vector3 position, string detailsString) {
+    private void EnableInteractionPrompt(Vector3 position, string shortInteractString, string detailsString) {
         ui.interactDetails.gameObject.SetActive(true);
         ui.interactDetails.text = detailsString;
         
-        ui.interactPrompt.gameObject.SetActive(true);
-        ui.interactPrompt.text = InputIcon(input.interact);
-        ui.interactPrompt.transform.position = camera.main.WorldToScreenPoint(position);
+        ui.interactionPrompt.gameObject.SetActive(true);
+        ui.interactionPrompt.Show(InputIcon(input.interact), shortInteractString);
+        ui.interactionPrompt.transform.position = camera.main.WorldToScreenPoint(position);
     }
     
     private void DisableInteractionPrompt() {
-        ui.interactPrompt.gameObject.SetActive(false);
+        ui.interactionPrompt.gameObject.SetActive(false);
         ui.interactDetails.gameObject.SetActive(false);
         ui.interactDetails.color = config.styles.interactionsTextColor;
     }

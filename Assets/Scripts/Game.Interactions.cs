@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using PrimeTween;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.Pool;
 
 public partial class Game {
@@ -32,7 +31,7 @@ public partial class Game {
         }
 
         if (col.CompareTag(Tags.DeadBody)) {
-            EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), "Search Body");
+            EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), string.Empty, "Search Body");
             if (input.interact.WasPressedThisFrame()) {
                 thisFrame.flags |= GameData.FrameFlags.SearchingBody;
                 inventories.lootPtr.slots = curRaid.deadBodySlotsLookup[col.gameObject];
@@ -42,7 +41,7 @@ public partial class Game {
         }
         
         if (col.CompareTag(Tags.Bush)) {
-            EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), "Search Bush");
+            EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), string.Empty, "Search Bush");
             if (input.interact.WasPressedThisFrame()) {
                 thisFrame.flags |= GameData.FrameFlags.SearchingBush;
                 inventories.lootPtr.slots = curRaid.bushSlotsLookup[col.gameObject];
@@ -61,8 +60,9 @@ public partial class Game {
             
             int soulsPrice = curRaid.map.altarSoulPrice;
             Color soulsTextColor = player.state.soulCurrency >= soulsPrice ? config.styles.soulCurrencyColor : config.styles.outOfStockCountColor;
-            string details = $"Summon Eye Upgrade: <sprite=1>{ColorText(soulsPrice.ToString("N0"), soulsTextColor)}";
-            EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), details);
+            string soulCostString = $"<sprite=1>{ColorText(soulsPrice.ToString("N0"), soulsTextColor)}";
+            string details = "Summon Blood Rune: " + soulCostString;
+            EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), soulCostString, details);
             if (input.interact.WasPressedThisFrame() && player.state.soulCurrency >= soulsPrice) {
                 thisFrame.flags |= GameData.FrameFlags.SummonedUpgrade;
                 SummonEyeUpgradeFromAltar(col);
@@ -72,7 +72,7 @@ public partial class Game {
         }
         
         if (col.CompareTag(Tags.Chest)) {
-            EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), "Open Chest");
+            EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), string.Empty, "Open Chest");
             if (input.interact.WasPressedThisFrame()) {
                 inventories.lootPtr.slots = curRaid.chestSlotsLookup[col.gameObject];
                 OpenPlayerInventory();
@@ -84,14 +84,14 @@ public partial class Game {
             Portal portal = GetExitPortalFromTransform(col.transform);
             
             if (portal.state == Portal.State.Inactive) {
-                EnableInteractionPrompt(OffsetY(col.transform.position, 0.28f), "Summon Extraction Portal");
+                EnableInteractionPrompt(OffsetY(col.transform.position, 0.15f), "Summon", "Summon Extraction Portal");
                 if (input.interact.IsPressed()) {
                     portal.StartOpenCloseSequence(config.gameplay.portalPostSummonDelay, config.gameplay.portalActiveDuration);
                 }
             }
             
             if (portal.state == Portal.State.Open) {
-                EnableInteractionPrompt(OffsetY(col.transform.position, 0.14f), "Take Extraction Portal");
+                EnableInteractionPrompt(OffsetY(col.transform.position, 0.15f), "Use", "Use Extraction Portal");
                 if (input.interact.WasPressedThisFrame()) {
                     portal.OnPlayerTook();
                     bool winExit = curRaid.state == RaidState.PostFinalWave;
@@ -102,7 +102,7 @@ public partial class Game {
         }
         
         if (col.CompareTag(Tags.ExpressExitPortal)) {
-            EnableInteractionPrompt(OffsetY(col.transform.position, 0.18f), "Take Extraction Portal");
+            EnableInteractionPrompt(OffsetY(col.transform.position, 0.15f), "Use", "Use Extraction Portal");
             if (input.interact.WasPressedThisFrame()) {
                 col.transform.GetComponent<SummonedPortal>().Close(activeStateOnComplete: false);
                 bool winExit = curRaid.state == RaidState.PostFinalWave;
@@ -150,7 +150,7 @@ public partial class Game {
         Item dropItemRef = itemDrop.ItemInstance.ItemRef;
         Color itemColor = config.styles.GetTextColorForRarity(itemDrop.ItemInstance.GetRarity());
         string details = ColorText($"{dropItemRef.displayName} x{itemDrop.ItemInstance.count}", itemColor);
-        EnableInteractionPrompt(OffsetY(itemDrop.transform.position, 0.1f), details);
+        EnableInteractionPrompt(OffsetY(itemDrop.transform.position, 0.1f), string.Empty, details);
         
         if (!input.interact.WasPressedThisFrame()) return;
         
