@@ -146,7 +146,27 @@ public partial class Game {
             }
         }
     }
-
+    
+    private void DestroyAllProjectiles() {
+        List<Projectile> projectiles = entities.projectiles;
+        for (int i = projectiles.Count - 1; i >= 0; i--) {
+            DestroyProjectile(projectiles[i]);
+            projectiles.RemoveAt(i);
+        }
+        
+        List<Projectile> soulTrackingProjectiles = entities.soulTrackingProjectiles;
+        for (int i = soulTrackingProjectiles.Count - 1; i >= 0; i--) {
+            DestroyProjectile(soulTrackingProjectiles[i]);
+            soulTrackingProjectiles.RemoveAt(i);
+        }
+    }
+    
+    private void DestroyProjectile(Projectile projectile) {
+        const float despawnTime = 0.2f;
+        Tween.Scale(projectile.trans, 0f, despawnTime, Ease.InOutBounce);
+        DestroyEntity(projectile, despawnTime);
+    }
+    
     private bool ProjectileShouldPassThrough(Projectile proj, Entity entity) {
         if (ProjectileIsIgnoringEntity(proj, entity)) {
             return true;
@@ -225,7 +245,7 @@ public partial class Game {
             }
             
             if (Vector2.Distance(proj.position, proj.targetEntity.position) < 0.035f) {
-                DestroyEntity(proj); 
+                DestroyProjectile(proj);
                 entities.soulTrackingProjectiles.RemoveAt(i);
                 DamageEnemy(proj.targetEntity, proj.flatDamage.Value, isCriticalStrike: false);
                 continue;

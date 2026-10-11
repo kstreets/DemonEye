@@ -234,6 +234,7 @@ public partial class Game : MonoBehaviour {
         CloseRaidUI();
         StopAllAudioClips();
         TraderOnExitRaid();
+        DestroyAllProjectiles();
     }
 
     private void OnRaidStateUpdate() {
