@@ -30,7 +30,7 @@ public partial class Game {
         public bool isConsumingItem => consumption.tween.isAlive;
         
         public HealingOverTime healing;
-        public bool isHealingOverTime => healing.tween.isAlive;
+        public bool isHealingOverTime => health > 0 && healing.tween.isAlive;
 
         public Sprite defaultPlayerPreviewSprite;
         public PlayerState state;
