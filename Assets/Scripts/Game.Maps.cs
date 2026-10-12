@@ -272,8 +272,12 @@ public partial class Game {
         const float chanceToPlant = 0.067f;
         if (!RollProbability(chanceToPlant)) return;
         
-        const float minSpacing = 0.25f;
         List<Vector2> spawns = curRaid.map.state.bloodMushroomSpawns;
+        
+        const int maxBloodMushrooms = 30;
+        if (spawns.Count >= maxBloodMushrooms) return;
+        
+        const float minSpacing = 0.26f;
         foreach (Vector2 spawn in spawns) {
             if (Vector2.SqrMagnitude(spawn - pos) < minSpacing) return;
         }

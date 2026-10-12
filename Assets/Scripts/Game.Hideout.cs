@@ -256,6 +256,7 @@ public partial class Game {
             ClearItemsAsTraderOwned(inventories.stash);
             TriggerTraderShopDialogue(TraderShopDialogueType.Purchase);
             PlayAudioClip(audio.purchaseClip);
+            thisFrame.data.purchasedItem = curTradingItem;
         }
     }
     
@@ -270,6 +271,7 @@ public partial class Game {
         ReduceTradingItemStock();
         TriggerTraderShopDialogue(TraderShopDialogueType.Purchase);
         PlayAudioClip(audio.purchaseClip);
+        thisFrame.data.purchasedItem = curTradingItem;
     }
     
     private void UpdateTransactionUI() {

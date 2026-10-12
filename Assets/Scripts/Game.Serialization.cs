@@ -23,7 +23,7 @@ public partial class Game {
         public List<ItemInstance> traderInventoryItems;
         public List<ItemInstance> forgeInventoryItems;
         
-        public List<MapData.State> mapStates; 
+        public List<MapData.State> mapStates;
         public List<Quest.State> questStates; 
     }
     

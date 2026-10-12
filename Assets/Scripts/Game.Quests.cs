@@ -49,9 +49,9 @@ public partial class Game {
         string GetFetchDesc() {
             string displayName = obj.type == QuestObjectiveTypes.FetchByItem ? obj.targetItem.displayName : obj.targetItemType.displayName;
             if (obj.targetValue == 1) {
-                return displayName.StartsWithVowel() ? $"Return with an {displayName}" : $"Return with a {displayName}";
+                return displayName.StartsWithVowel() ? $"Obtain an {displayName}" : $"Obtain a {displayName}";
             }
-            return $"Return with {obj.targetValue} {displayName}s";
+            return $"Obtain {obj.targetValue} {displayName}s";
         }
     }
 
@@ -218,11 +218,19 @@ public partial class Game {
     private void UpdateObjectiveFetchItem(Quest quest, ObjectiveData obj) {
         int itemCount = obj.keepFetchedItems ? GetItemCountInInventory(inventories.player, obj.targetItem) : GetOwnedCountOfItem(obj.targetItem);
         UpdateObjectiveFetch(quest, obj, itemCount);
+        if (thisFrame.data.purchasedItem != null) {
+            int purchaseCount = thisFrame.data.purchasedItem.uuid == obj.targetItem.uuid ? 1 : 0;
+            IncreaseProgressValue(quest, obj, purchaseCount);
+        }
     }
     
     private void UpdateObjectiveFetchType(Quest quest, ObjectiveData obj) {
         int itemCount = obj.keepFetchedItems ? GetItemCountInInventory(inventories.player, obj.targetItemType) : GetOwnedCountOfItem(obj.targetItemType);
         UpdateObjectiveFetch(quest, obj, itemCount);
+        if (thisFrame.data.purchasedItem != null) {
+            int purchaseCount = thisFrame.data.purchasedItem.type == obj.targetItemType ? 1 : 0;
+            IncreaseProgressValue(quest, obj, purchaseCount);
+        }
     }
     
     private void UpdateObjectiveFetch(Quest quest, ObjectiveData obj, int itemCount) {

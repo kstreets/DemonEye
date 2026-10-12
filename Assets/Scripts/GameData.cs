@@ -140,6 +140,7 @@ public class GameData {
     public class UI {
         public RectTransform mainCanvasRectTransform;
         public CanvasScaler mainCanvasScaler;
+        public InteractionPrompt interactionPrompt;
         public Minimap minimap;
         public ItemDescPopup itemDescPopupInv;
         public ItemDescPopup itemDescPopupPickup;
@@ -169,7 +170,6 @@ public class GameData {
         public RectTransform lootInventoryPanel;
         public RectTransform lootInventoryParent;
         public GameObject lootSearchingText;
-        public TextMeshProUGUI interactPrompt;
         public TextMeshProUGUI interactDetails;
         public RectTransform portalArrow;
         public RectTransform damageNumbersParent;
@@ -625,21 +625,21 @@ public class GameData {
     
     [Flags] 
     public enum FrameFlags {
-        None            = 0,
-        EarlyExitTaken  = 1 << 0,
-        ExitTaken       = 1 << 1,
-        SkillUpgraded   = 1 << 2,
-        BleedStopped    = 1 << 3,
-        PostInitRaid    = 1 << 4,
-        DemonEyeChanged = 1 << 5,
-        SearchingBody   = 1 << 6,
-        SearchingBush   = 1 << 7,
-        PickedUpLoot    = 1 << 8,
-        ShotRock        = 1 << 9,
-        SummonedUpgrade = 1 << 10,
-        SoldToTrader    = 1 << 11,
-        TookConsumable  = 1 << 12,
-        InventoryOpened = 1 << 13,
+        None             = 0,
+        EarlyExitTaken   = 1 << 0,
+        ExitTaken        = 1 << 1,
+        SkillUpgraded    = 1 << 2,
+        BleedStopped     = 1 << 3,
+        PostInitRaid     = 1 << 4,
+        DemonEyeChanged  = 1 << 5,
+        SearchingBody    = 1 << 6,
+        SearchingBush    = 1 << 7,
+        PickedUpLoot     = 1 << 8,
+        ShotRock         = 1 << 9,
+        SummonedUpgrade  = 1 << 10,
+        SoldToTrader     = 1 << 11,
+        TookConsumable   = 1 << 12,
+        InventoryOpened  = 1 << 13,
     }
     
     public class PerFrameData {
@@ -651,6 +651,7 @@ public class GameData {
             public int healing;
             public int enemyBloodDropped;
             public ItemInstance foundSearchItem;
+            public Item purchasedItem;
         }
         public Data data;
     }
