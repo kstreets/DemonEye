@@ -208,8 +208,8 @@ public class GameData {
         public GameObject soulsCurrencyParent;
         public GameObject coinsCurrencyParent;
         public GameObject bleedDebuffIcon;
-        public Image healthBarFillImage;
-        public Image weightBarFillImage;
+        public IconBar healthBar;
+        public IconBar weightBar;
         public TextMeshProUGUI soulsCurrencyText;
         public TextMeshProUGUI coinCurrencyText;
         public RectTransform damageNumberSpawnPos;

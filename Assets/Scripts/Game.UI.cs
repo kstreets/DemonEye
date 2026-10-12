@@ -416,19 +416,21 @@ public partial class Game {
     private void UpdateInRaidUI() {
         ui.minimap.UpdateMinimap(player.position);
         
-        playerInfo.healthBarFillImage.fillAmount = CurPlayerHealthPercentage();
+        playerInfo.healthBar.fillImage.fillAmount = CurPlayerHealthPercentage();
+        playerInfo.healthBar.bgFillImage.gameObject.SetActive(player.isHealingOverTime);
+        if (player.isHealingOverTime) playerInfo.healthBar.bgFillImage.fillAmount = HealingToHealthPercentage();
         playerInfo.bleedDebuffIcon.gameObject.SetActive(player.bleeding);
         
         GetEncumberingWeightRange(out int startingEncumberingWeight, out _);
         int inventoryWeight = GetInventoryWeight(inventories.player);
-        playerInfo.weightBarFillImage.fillAmount = Mathf.Clamp01(inventoryWeight / (float)startingEncumberingWeight);
+        playerInfo.weightBar.fillImage.fillAmount = Mathf.Clamp01(inventoryWeight / (float)startingEncumberingWeight);
         
         float overweightComp = GetOverweightCompletion();
         if (overweightComp > 0f) {
-            playerInfo.weightBarFillImage.color = Color.Lerp(config.styles.startingOverWeightColor, config.styles.endingOverWeightColor, overweightComp);
+            playerInfo.weightBar.fillImage.color = Color.Lerp(config.styles.startingOverWeightColor, config.styles.endingOverWeightColor, overweightComp);
         }
         else {
-            playerInfo.weightBarFillImage.color = config.styles.underWeightColor;
+            playerInfo.weightBar.fillImage.color = config.styles.underWeightColor;
         }
         
         if (curRaid.stateSwitchedThisFrame) {
@@ -562,7 +564,7 @@ public partial class Game {
     private enum DamageColor { Normal, Crit, Blood, Hemorrhage, Poison }
 
     private void SpawnPlayerDamageNumber(int damage) {
-        var healthBar = playerInfo.healthBarFillImage;
+        var healthBar = playerInfo.healthBar.fillImage;
         var healthBarRect = healthBar.rectTransform;
         Vector3 spawnPosAlongHealthBar = healthBarRect.position.Offset(x: healthBarRect.rect.width * healthBar.fillAmount);
         

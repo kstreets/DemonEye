@@ -644,6 +644,7 @@ public partial class Game {
 
     private int FullPlayerHealth() => 100 + (int)GetPlayerStatAdjustment(PlayerStat.Health);
     private float CurPlayerHealthPercentage() => player.health / (float)FullPlayerHealth();
+    private float HealingToHealthPercentage() => (player.health + (player.healing.targetHealing - player.healing.healingGiven)) / (float)FullPlayerHealth();
 
     private float GetPlayerSpeed() {
         float playerSpeed = config.gameplay.baseSpeed * GetAbsoluteStat(PlayerStat.MovementSpeedPercentage);
