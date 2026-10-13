@@ -331,7 +331,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 298877176}
+  - {fileID: 1085816040}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -720,7 +720,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 298877176}
+  - {fileID: 1085816040}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1466,7 +1466,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 298877176}
+  - {fileID: 1085816040}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1578,7 +1578,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 298877176}
+  - {fileID: 1085816040}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1828,8 +1828,8 @@ EdgeCollider2D:
   m_Offset: {x: 0, y: 0}
   m_EdgeRadius: 0.1
   m_Points:
-  - {x: -6.3567133, y: -1.4989119}
-  - {x: -6.678205, y: -1.4993591}
+  - {x: -6.358164, y: -1.4938353}
+  - {x: -6.6930156, y: -1.494916}
   - {x: -6.6882057, y: -1.1701263}
   - {x: -6.6788597, y: -0.78999984}
   - {x: -6.3582053, y: -0.3886912}
@@ -1859,8 +1859,8 @@ EdgeCollider2D:
   - {x: -5.51, y: -1.1400003}
   - {x: -5.5200005, y: -1.2799997}
   - {x: -5.61563, y: -1.3942027}
-  - {x: -5.784038, y: -1.5015876}
-  - {x: -6.360605, y: -1.4968958}
+  - {x: -5.7876644, y: -1.4950607}
+  - {x: -6.362086, y: -1.4894904}
   m_AdjacentStartPoint: {x: 0, y: 0}
   m_AdjacentEndPoint: {x: 0, y: 0}
   m_UseAdjacentStartPoint: 0
@@ -2070,8 +2070,8 @@ EdgeCollider2D:
   - {x: -6.9900007, y: -2.8599997}
   - {x: -7.028, y: -2.6995664}
   - {x: -6.9881005, y: -2.2375865}
-  - {x: -6.969239, y: -2.0292387}
-  - {x: -5.78375, y: -2.0334136}
+  - {x: -6.9764996, y: -2.0319614}
+  - {x: -5.781935, y: -2.0315983}
   - {x: -5.5311265, y: -2.305342}
   - {x: -5.527594, y: -2.7596247}
   - {x: -5.2800007, y: -3.0299997}
@@ -2664,7 +2664,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 298877176}
+  - {fileID: 1085816040}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3247,7 +3247,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 298877176}
+  - {fileID: 1085816040}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3414,60 +3414,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 883ea5228fef9db43900a81a9421deeb, type: 3}
---- !u!21 &298877176
-Material:
-  serializedVersion: 8
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: Shader Graphs/OutlineShader
-  m_Shader: {fileID: -6465566751694194690, guid: 6e58b502c0aea8a4abecc63899a3c8fb, type: 3}
-  m_Parent: {fileID: 0}
-  m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
-  m_InvalidKeywords: []
-  m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
-  disabledShaderPasses: []
-  m_LockedProperties: 
-  m_SavedProperties:
-    serializedVersion: 3
-    m_TexEnvs:
-    - _MainTex:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - unity_Lightmaps:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - unity_LightmapsInd:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - unity_ShadowMasks:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    m_Ints: []
-    m_Floats:
-    - _ColorMask: 15
-    - _Stencil: 0
-    - _StencilComp: 8
-    - _StencilOp: 0
-    - _StencilReadMask: 255
-    - _StencilWriteMask: 255
-    - _UIMaskSoftnessX: 1
-    - _UIMaskSoftnessY: 1
-    m_Colors:
-    - _ClipRect: {r: 0, g: 0, b: 0, a: 0}
-    - _Color: {r: 1, g: 0.4980392, b: 0.3137255, a: 1}
-  m_BuildTextureStacks: []
-  m_AllowLocking: 1
 --- !u!1001 &311387466
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3980,7 +3926,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 298877176}
+  - {fileID: 1085816040}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4087,7 +4033,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 298877176}
+  - {fileID: 1085816040}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4649,7 +4595,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 298877176}
+  - {fileID: 1085816040}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5080,7 +5026,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 298877176}
+  - {fileID: 1085816040}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -39156,7 +39102,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 298877176}
+  - {fileID: 1085816040}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -39721,7 +39667,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 298877176}
+  - {fileID: 1085816040}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -40462,7 +40408,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 298877176}
+  - {fileID: 1085816040}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -40903,7 +40849,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 298877176}
+  - {fileID: 1085816040}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -41072,7 +41018,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 298877176}
+  - {fileID: 1085816040}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -42362,6 +42308,60 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 043a2d00d037f62478c9c4d436e9ab0e, type: 3}
+--- !u!21 &1085816040
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Shader Graphs/OutlineShader
+  m_Shader: {fileID: -6465566751694194690, guid: 6e58b502c0aea8a4abecc63899a3c8fb, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _ColorMask: 15
+    - _Stencil: 0
+    - _StencilComp: 8
+    - _StencilOp: 0
+    - _StencilReadMask: 255
+    - _StencilWriteMask: 255
+    - _UIMaskSoftnessX: 1
+    - _UIMaskSoftnessY: 1
+    m_Colors:
+    - _ClipRect: {r: 0, g: 0, b: 0, a: 0}
+    - _Color: {r: 1, g: 0.4980392, b: 0.3137255, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
 --- !u!4 &1086339192 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7709393774155282530, guid: 4460dddd785024243b699e3b97d5980f, type: 3}
@@ -42747,7 +42747,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 298877176}
+  - {fileID: 1085816040}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -43064,7 +43064,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 298877176}
+  - {fileID: 1085816040}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -43562,7 +43562,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 298877176}
+  - {fileID: 1085816040}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -44617,7 +44617,7 @@ MonoBehaviour:
   - position: {x: 0.5600014, y: -12.4}
     traversable: 1
   - position: {x: 0.7200012, y: -12.4}
-    traversable: 0
+    traversable: 1
   - position: {x: 0.88000107, y: -12.4}
     traversable: 0
   - position: {x: 1.0400009, y: -12.4}
@@ -46133,7 +46133,7 @@ MonoBehaviour:
   - position: {x: -1.3599997, y: -11.599999}
     traversable: 0
   - position: {x: -1.1999989, y: -11.599999}
-    traversable: 0
+    traversable: 1
   - position: {x: -1.039999, y: -11.599999}
     traversable: 1
   - position: {x: -0.87999916, y: -11.599999}
@@ -47023,7 +47023,7 @@ MonoBehaviour:
   - position: {x: -4.079999, y: -11.119999}
     traversable: 0
   - position: {x: -3.9199991, y: -11.119999}
-    traversable: 0
+    traversable: 1
   - position: {x: -3.7599993, y: -11.119999}
     traversable: 1
   - position: {x: -3.5999994, y: -11.119999}
@@ -47629,7 +47629,7 @@ MonoBehaviour:
   - position: {x: -4.879999, y: -10.799999}
     traversable: 0
   - position: {x: -4.7199993, y: -10.799999}
-    traversable: 0
+    traversable: 1
   - position: {x: -4.5599995, y: -10.799999}
     traversable: 0
   - position: {x: -4.3999996, y: -10.799999}
@@ -47683,7 +47683,7 @@ MonoBehaviour:
   - position: {x: -0.55999947, y: -10.799999}
     traversable: 0
   - position: {x: -0.39999962, y: -10.799999}
-    traversable: 0
+    traversable: 1
   - position: {x: -0.23999977, y: -10.799999}
     traversable: 1
   - position: {x: -0.07999992, y: -10.799999}
@@ -47937,7 +47937,7 @@ MonoBehaviour:
   - position: {x: -4.879999, y: -10.639999}
     traversable: 0
   - position: {x: -4.7199993, y: -10.639999}
-    traversable: 0
+    traversable: 1
   - position: {x: -4.5599995, y: -10.639999}
     traversable: 0
   - position: {x: -4.3999996, y: -10.639999}
@@ -49439,7 +49439,7 @@ MonoBehaviour:
   - position: {x: -7.919999, y: -9.839999}
     traversable: 0
   - position: {x: -7.7599993, y: -9.839999}
-    traversable: 0
+    traversable: 1
   - position: {x: -7.5999994, y: -9.839999}
     traversable: 1
   - position: {x: -7.4399986, y: -9.839999}
@@ -49625,7 +49625,7 @@ MonoBehaviour:
   - position: {x: 6.960001, y: -9.839999}
     traversable: 1
   - position: {x: 7.120001, y: -9.839999}
-    traversable: 0
+    traversable: 1
   - position: {x: 7.2800007, y: -9.839999}
     traversable: 0
   - position: {x: -17.199999, y: -9.679999}
@@ -52039,7 +52039,7 @@ MonoBehaviour:
   - position: {x: 2.960001, y: -8.559999}
     traversable: 0
   - position: {x: 3.1200008, y: -8.559999}
-    traversable: 0
+    traversable: 1
   - position: {x: 3.2800007, y: -8.559999}
     traversable: 1
   - position: {x: 3.4400005, y: -8.559999}
@@ -52573,7 +52573,7 @@ MonoBehaviour:
   - position: {x: -3.5999994, y: -8.24}
     traversable: 1
   - position: {x: -3.4399996, y: -8.24}
-    traversable: 0
+    traversable: 1
   - position: {x: -3.2799988, y: -8.24}
     traversable: 0
   - position: {x: -3.119999, y: -8.24}
@@ -52875,7 +52875,7 @@ MonoBehaviour:
   - position: {x: -4.079999, y: -8.08}
     traversable: 1
   - position: {x: -3.9199991, y: -8.08}
-    traversable: 0
+    traversable: 1
   - position: {x: -3.7599993, y: -8.08}
     traversable: 0
   - position: {x: -3.5999994, y: -8.08}
@@ -53171,7 +53171,7 @@ MonoBehaviour:
   - position: {x: -5.039999, y: -7.9199996}
     traversable: 0
   - position: {x: -4.879999, y: -7.9199996}
-    traversable: 0
+    traversable: 1
   - position: {x: -4.7199993, y: -7.9199996}
     traversable: 1
   - position: {x: -4.5599995, y: -7.9199996}
@@ -53275,7 +53275,7 @@ MonoBehaviour:
   - position: {x: 3.2800007, y: -7.9199996}
     traversable: 0
   - position: {x: 3.4400005, y: -7.9199996}
-    traversable: 0
+    traversable: 1
   - position: {x: 3.6000004, y: -7.9199996}
     traversable: 1
   - position: {x: 3.7600002, y: -7.9199996}
@@ -53459,7 +53459,7 @@ MonoBehaviour:
   - position: {x: -6.6399994, y: -7.7599993}
     traversable: 1
   - position: {x: -6.4799995, y: -7.7599993}
-    traversable: 0
+    traversable: 1
   - position: {x: -6.3199987, y: -7.7599993}
     traversable: 0
   - position: {x: -6.159999, y: -7.7599993}
@@ -54187,7 +54187,7 @@ MonoBehaviour:
   - position: {x: 2.3200016, y: -7.4399996}
     traversable: 1
   - position: {x: 2.4800014, y: -7.4399996}
-    traversable: 0
+    traversable: 1
   - position: {x: 2.6400013, y: -7.4399996}
     traversable: 0
   - position: {x: 2.8000011, y: -7.4399996}
@@ -54377,7 +54377,7 @@ MonoBehaviour:
   - position: {x: -7.119999, y: -7.2799993}
     traversable: 1
   - position: {x: -6.959999, y: -7.2799993}
-    traversable: 0
+    traversable: 1
   - position: {x: -6.799999, y: -7.2799993}
     traversable: 0
   - position: {x: -6.6399994, y: -7.2799993}
@@ -54443,7 +54443,7 @@ MonoBehaviour:
   - position: {x: -1.8399992, y: -7.2799993}
     traversable: 0
   - position: {x: -1.6799994, y: -7.2799993}
-    traversable: 0
+    traversable: 1
   - position: {x: -1.5199995, y: -7.2799993}
     traversable: 1
   - position: {x: -1.3599997, y: -7.2799993}
@@ -54509,7 +54509,7 @@ MonoBehaviour:
   - position: {x: 3.4400005, y: -7.2799993}
     traversable: 0
   - position: {x: 3.6000004, y: -7.2799993}
-    traversable: 0
+    traversable: 1
   - position: {x: 3.7600002, y: -7.2799993}
     traversable: 1
   - position: {x: 3.92, y: -7.2799993}
@@ -54959,7 +54959,7 @@ MonoBehaviour:
   - position: {x: -9.839999, y: -6.9599996}
     traversable: 1
   - position: {x: -9.679998, y: -6.9599996}
-    traversable: 0
+    traversable: 1
   - position: {x: -9.519999, y: -6.9599996}
     traversable: 0
   - position: {x: -9.359999, y: -6.9599996}
@@ -55131,7 +55131,7 @@ MonoBehaviour:
   - position: {x: 3.92, y: -6.9599996}
     traversable: 0
   - position: {x: 4.08, y: -6.9599996}
-    traversable: 0
+    traversable: 1
   - position: {x: 4.24, y: -6.9599996}
     traversable: 1
   - position: {x: 4.4000015, y: -6.9599996}
@@ -55755,7 +55755,7 @@ MonoBehaviour:
   - position: {x: 4.5600014, y: -6.6399994}
     traversable: 0
   - position: {x: 4.720001, y: -6.6399994}
-    traversable: 0
+    traversable: 1
   - position: {x: 4.880001, y: -6.6399994}
     traversable: 1
   - position: {x: 5.040001, y: -6.6399994}
@@ -55989,7 +55989,7 @@ MonoBehaviour:
   - position: {x: -1.3599997, y: -6.4799995}
     traversable: 0
   - position: {x: -1.1999989, y: -6.4799995}
-    traversable: 0
+    traversable: 1
   - position: {x: -1.039999, y: -6.4799995}
     traversable: 1
   - position: {x: -0.87999916, y: -6.4799995}
@@ -56113,7 +56113,7 @@ MonoBehaviour:
   - position: {x: -16.079998, y: -6.3199997}
     traversable: 0
   - position: {x: -15.919999, y: -6.3199997}
-    traversable: 0
+    traversable: 1
   - position: {x: -15.759999, y: -6.3199997}
     traversable: 0
   - position: {x: -15.599998, y: -6.3199997}
@@ -56421,7 +56421,7 @@ MonoBehaviour:
   - position: {x: -16.079998, y: -6.1599994}
     traversable: 0
   - position: {x: -15.919999, y: -6.1599994}
-    traversable: 0
+    traversable: 1
   - position: {x: -15.759999, y: -6.1599994}
     traversable: 0
   - position: {x: -15.599998, y: -6.1599994}
@@ -56801,7 +56801,7 @@ MonoBehaviour:
   - position: {x: -10.32, y: -5.9999995}
     traversable: 1
   - position: {x: -10.159999, y: -5.9999995}
-    traversable: 0
+    traversable: 1
   - position: {x: -9.999999, y: -5.9999995}
     traversable: 0
   - position: {x: -9.839999, y: -5.9999995}
@@ -57515,7 +57515,7 @@ MonoBehaviour:
   - position: {x: -2.4799995, y: -5.6799994}
     traversable: 1
   - position: {x: -2.3199987, y: -5.6799994}
-    traversable: 0
+    traversable: 1
   - position: {x: -2.159999, y: -5.6799994}
     traversable: 1
   - position: {x: -1.999999, y: -5.6799994}
@@ -59075,7 +59075,7 @@ MonoBehaviour:
   - position: {x: -0.87999916, y: -4.8799996}
     traversable: 0
   - position: {x: -0.7199993, y: -4.8799996}
-    traversable: 0
+    traversable: 1
   - position: {x: -0.55999947, y: -4.8799996}
     traversable: 1
   - position: {x: -0.39999962, y: -4.8799996}
@@ -59267,7 +59267,7 @@ MonoBehaviour:
   - position: {x: -10.159999, y: -4.7199993}
     traversable: 0
   - position: {x: -9.999999, y: -4.7199993}
-    traversable: 0
+    traversable: 1
   - position: {x: -9.839999, y: -4.7199993}
     traversable: 1
   - position: {x: -9.679998, y: -4.7199993}
@@ -59435,9 +59435,9 @@ MonoBehaviour:
   - position: {x: 3.2800007, y: -4.7199993}
     traversable: 1
   - position: {x: 3.4400005, y: -4.7199993}
-    traversable: 0
+    traversable: 1
   - position: {x: 3.6000004, y: -4.7199993}
-    traversable: 0
+    traversable: 1
   - position: {x: 3.7600002, y: -4.7199993}
     traversable: 1
   - position: {x: 3.92, y: -4.7199993}
@@ -59637,7 +59637,7 @@ MonoBehaviour:
   - position: {x: -5.199999, y: -4.5599995}
     traversable: 1
   - position: {x: -5.039999, y: -4.5599995}
-    traversable: 0
+    traversable: 1
   - position: {x: -4.879999, y: -4.5599995}
     traversable: 0
   - position: {x: -4.7199993, y: -4.5599995}
@@ -59955,7 +59955,7 @@ MonoBehaviour:
   - position: {x: -4.3999996, y: -4.3999996}
     traversable: 0
   - position: {x: -4.239999, y: -4.3999996}
-    traversable: 0
+    traversable: 1
   - position: {x: -4.079999, y: -4.3999996}
     traversable: 1
   - position: {x: -3.9199991, y: -4.3999996}
@@ -59971,7 +59971,7 @@ MonoBehaviour:
   - position: {x: -3.119999, y: -4.3999996}
     traversable: 0
   - position: {x: -2.959999, y: -4.3999996}
-    traversable: 0
+    traversable: 1
   - position: {x: -2.7999992, y: -4.3999996}
     traversable: 1
   - position: {x: -2.6399994, y: -4.3999996}
@@ -60341,9 +60341,9 @@ MonoBehaviour:
   - position: {x: 1.8400002, y: -4.24}
     traversable: 1
   - position: {x: 2, y: -4.24}
-    traversable: 0
+    traversable: 1
   - position: {x: 2.1599998, y: -4.24}
-    traversable: 0
+    traversable: 1
   - position: {x: 2.3200016, y: -4.24}
     traversable: 1
   - position: {x: 2.4800014, y: -4.24}
@@ -60473,17 +60473,17 @@ MonoBehaviour:
   - position: {x: -12.239999, y: -4.08}
     traversable: 1
   - position: {x: -12.079999, y: -4.08}
-    traversable: 0
+    traversable: 1
   - position: {x: -11.919999, y: -4.08}
-    traversable: 0
+    traversable: 1
   - position: {x: -11.759998, y: -4.08}
-    traversable: 0
+    traversable: 1
   - position: {x: -11.599998, y: -4.08}
-    traversable: 0
+    traversable: 1
   - position: {x: -11.439999, y: -4.08}
-    traversable: 0
+    traversable: 1
   - position: {x: -11.279999, y: -4.08}
-    traversable: 0
+    traversable: 1
   - position: {x: -11.119999, y: -4.08}
     traversable: 1
   - position: {x: -10.959999, y: -4.08}
@@ -60781,17 +60781,17 @@ MonoBehaviour:
   - position: {x: -12.239999, y: -3.9199991}
     traversable: 1
   - position: {x: -12.079999, y: -3.9199991}
-    traversable: 0
+    traversable: 1
   - position: {x: -11.919999, y: -3.9199991}
-    traversable: 0
+    traversable: 1
   - position: {x: -11.759998, y: -3.9199991}
-    traversable: 0
+    traversable: 1
   - position: {x: -11.599998, y: -3.9199991}
-    traversable: 0
+    traversable: 1
   - position: {x: -11.439999, y: -3.9199991}
-    traversable: 0
+    traversable: 1
   - position: {x: -11.279999, y: -3.9199991}
-    traversable: 0
+    traversable: 1
   - position: {x: -11.119999, y: -3.9199991}
     traversable: 1
   - position: {x: -10.959999, y: -3.9199991}
@@ -60829,7 +60829,7 @@ MonoBehaviour:
   - position: {x: -8.399999, y: -3.9199991}
     traversable: 0
   - position: {x: -8.239999, y: -3.9199991}
-    traversable: 0
+    traversable: 1
   - position: {x: -8.079999, y: -3.9199991}
     traversable: 1
   - position: {x: -7.919999, y: -3.9199991}
@@ -61035,7 +61035,7 @@ MonoBehaviour:
   - position: {x: -16.56, y: -3.7599993}
     traversable: 0
   - position: {x: -16.4, y: -3.7599993}
-    traversable: 0
+    traversable: 1
   - position: {x: -16.24, y: -3.7599993}
     traversable: 1
   - position: {x: -16.079998, y: -3.7599993}
@@ -61125,7 +61125,7 @@ MonoBehaviour:
   - position: {x: -9.359999, y: -3.7599993}
     traversable: 0
   - position: {x: -9.199999, y: -3.7599993}
-    traversable: 0
+    traversable: 1
   - position: {x: -9.039999, y: -3.7599993}
     traversable: 0
   - position: {x: -8.879999, y: -3.7599993}
@@ -61349,7 +61349,7 @@ MonoBehaviour:
   - position: {x: -16.079998, y: -3.5999994}
     traversable: 0
   - position: {x: -15.919999, y: -3.5999994}
-    traversable: 0
+    traversable: 1
   - position: {x: -15.759999, y: -3.5999994}
     traversable: 1
   - position: {x: -15.599998, y: -3.5999994}
@@ -61467,7 +61467,7 @@ MonoBehaviour:
   - position: {x: -6.6399994, y: -3.5999994}
     traversable: 1
   - position: {x: -6.4799995, y: -3.5999994}
-    traversable: 0
+    traversable: 1
   - position: {x: -6.3199987, y: -3.5999994}
     traversable: 0
   - position: {x: -6.159999, y: -3.5999994}
@@ -62425,7 +62425,7 @@ MonoBehaviour:
   - position: {x: -3.9199991, y: -3.12}
     traversable: 1
   - position: {x: -3.7599993, y: -3.12}
-    traversable: 0
+    traversable: 1
   - position: {x: -3.5999994, y: -3.12}
     traversable: 0
   - position: {x: -3.4399996, y: -3.12}
@@ -64783,7 +64783,7 @@ MonoBehaviour:
   - position: {x: -12.4, y: -1.8399992}
     traversable: 0
   - position: {x: -12.239999, y: -1.8399992}
-    traversable: 0
+    traversable: 1
   - position: {x: -12.079999, y: -1.8399992}
     traversable: 1
   - position: {x: -11.919999, y: -1.8399992}
@@ -64815,7 +64815,7 @@ MonoBehaviour:
   - position: {x: -9.839999, y: -1.8399992}
     traversable: 0
   - position: {x: -9.679998, y: -1.8399992}
-    traversable: 0
+    traversable: 1
   - position: {x: -9.519999, y: -1.8399992}
     traversable: 1
   - position: {x: -9.359999, y: -1.8399992}
@@ -64853,17 +64853,17 @@ MonoBehaviour:
   - position: {x: -6.799999, y: -1.8399992}
     traversable: 1
   - position: {x: -6.6399994, y: -1.8399992}
-    traversable: 0
+    traversable: 1
   - position: {x: -6.4799995, y: -1.8399992}
-    traversable: 0
+    traversable: 1
   - position: {x: -6.3199987, y: -1.8399992}
-    traversable: 0
+    traversable: 1
   - position: {x: -6.159999, y: -1.8399992}
-    traversable: 0
+    traversable: 1
   - position: {x: -5.999999, y: -1.8399992}
-    traversable: 0
+    traversable: 1
   - position: {x: -5.839999, y: -1.8399992}
-    traversable: 0
+    traversable: 1
   - position: {x: -5.6799994, y: -1.8399992}
     traversable: 1
   - position: {x: -5.5199995, y: -1.8399992}
@@ -65161,17 +65161,17 @@ MonoBehaviour:
   - position: {x: -6.799999, y: -1.6799994}
     traversable: 1
   - position: {x: -6.6399994, y: -1.6799994}
-    traversable: 0
+    traversable: 1
   - position: {x: -6.4799995, y: -1.6799994}
-    traversable: 0
+    traversable: 1
   - position: {x: -6.3199987, y: -1.6799994}
-    traversable: 0
+    traversable: 1
   - position: {x: -6.159999, y: -1.6799994}
-    traversable: 0
+    traversable: 1
   - position: {x: -5.999999, y: -1.6799994}
-    traversable: 0
+    traversable: 1
   - position: {x: -5.839999, y: -1.6799994}
-    traversable: 0
+    traversable: 1
   - position: {x: -5.6799994, y: -1.6799994}
     traversable: 1
   - position: {x: -5.5199995, y: -1.6799994}
@@ -66323,7 +66323,7 @@ MonoBehaviour:
   - position: {x: -12.4, y: -1.04}
     traversable: 1
   - position: {x: -12.239999, y: -1.04}
-    traversable: 0
+    traversable: 1
   - position: {x: -12.079999, y: -1.04}
     traversable: 0
   - position: {x: -11.919999, y: -1.04}
@@ -67815,7 +67815,7 @@ MonoBehaviour:
   - position: {x: -16.24, y: -0.23999977}
     traversable: 0
   - position: {x: -16.079998, y: -0.23999977}
-    traversable: 0
+    traversable: 1
   - position: {x: -15.919999, y: -0.23999977}
     traversable: 1
   - position: {x: -15.759999, y: -0.23999977}
@@ -68679,7 +68679,7 @@ MonoBehaviour:
   - position: {x: 3.6000004, y: 0.07999992}
     traversable: 0
   - position: {x: 3.7600002, y: 0.07999992}
-    traversable: 0
+    traversable: 1
   - position: {x: 3.92, y: 0.07999992}
     traversable: 0
   - position: {x: 4.08, y: 0.07999992}
@@ -68987,7 +68987,7 @@ MonoBehaviour:
   - position: {x: 3.6000004, y: 0.24000072}
     traversable: 0
   - position: {x: 3.7600002, y: 0.24000072}
-    traversable: 0
+    traversable: 1
   - position: {x: 3.92, y: 0.24000072}
     traversable: 0
   - position: {x: 4.08, y: 0.24000072}
@@ -69857,7 +69857,7 @@ MonoBehaviour:
   - position: {x: -0.7199993, y: 0.72000027}
     traversable: 1
   - position: {x: -0.55999947, y: 0.72000027}
-    traversable: 0
+    traversable: 1
   - position: {x: -0.39999962, y: 0.72000027}
     traversable: 0
   - position: {x: -0.23999977, y: 0.72000027}
@@ -70295,7 +70295,7 @@ MonoBehaviour:
   - position: {x: -14.959999, y: 1.04}
     traversable: 0
   - position: {x: -14.799999, y: 1.04}
-    traversable: 0
+    traversable: 1
   - position: {x: -14.639999, y: 1.04}
     traversable: 1
   - position: {x: -14.479999, y: 1.04}
@@ -70981,7 +70981,7 @@ MonoBehaviour:
   - position: {x: -9.359999, y: 1.3600006}
     traversable: 0
   - position: {x: -9.199999, y: 1.3600006}
-    traversable: 0
+    traversable: 1
   - position: {x: -9.039999, y: 1.3600006}
     traversable: 1
   - position: {x: -8.879999, y: 1.3600006}
@@ -71271,7 +71271,7 @@ MonoBehaviour:
   - position: {x: -10.799999, y: 1.5200005}
     traversable: 0
   - position: {x: -10.639999, y: 1.5200005}
-    traversable: 0
+    traversable: 1
   - position: {x: -10.48, y: 1.5200005}
     traversable: 1
   - position: {x: -10.32, y: 1.5200005}
@@ -71931,7 +71931,7 @@ MonoBehaviour:
   - position: {x: -7.279999, y: 1.8400002}
     traversable: 1
   - position: {x: -7.119999, y: 1.8400002}
-    traversable: 0
+    traversable: 1
   - position: {x: -6.959999, y: 1.8400002}
     traversable: 0
   - position: {x: -6.799999, y: 1.8400002}
@@ -71941,7 +71941,7 @@ MonoBehaviour:
   - position: {x: -6.4799995, y: 1.8400002}
     traversable: 0
   - position: {x: -6.3199987, y: 1.8400002}
-    traversable: 0
+    traversable: 1
   - position: {x: -6.159999, y: 1.8400002}
     traversable: 1
   - position: {x: -5.999999, y: 1.8400002}
@@ -72791,7 +72791,7 @@ MonoBehaviour:
   - position: {x: -12.4, y: 2.3200006}
     traversable: 0
   - position: {x: -12.239999, y: 2.3200006}
-    traversable: 0
+    traversable: 1
   - position: {x: -12.079999, y: 2.3200006}
     traversable: 1
   - position: {x: -11.919999, y: 2.3200006}
@@ -73529,7 +73529,7 @@ MonoBehaviour:
   - position: {x: -2.6399994, y: 2.6400003}
     traversable: 1
   - position: {x: -2.4799995, y: 2.6400003}
-    traversable: 0
+    traversable: 1
   - position: {x: -2.3199987, y: 2.6400003}
     traversable: 0
   - position: {x: -2.159999, y: 2.6400003}
@@ -73539,7 +73539,7 @@ MonoBehaviour:
   - position: {x: -1.8399992, y: 2.6400003}
     traversable: 0
   - position: {x: -1.6799994, y: 2.6400003}
-    traversable: 0
+    traversable: 1
   - position: {x: -1.5199995, y: 2.6400003}
     traversable: 1
   - position: {x: -1.3599997, y: 2.6400003}
@@ -73629,7 +73629,7 @@ MonoBehaviour:
   - position: {x: 5.3600006, y: 2.6400003}
     traversable: 1
   - position: {x: 5.5200005, y: 2.6400003}
-    traversable: 0
+    traversable: 1
   - position: {x: 5.6800003, y: 2.6400003}
     traversable: 0
   - position: {x: 5.84, y: 2.6400003}
@@ -73823,7 +73823,7 @@ MonoBehaviour:
   - position: {x: -3.7599993, y: 2.8000002}
     traversable: 1
   - position: {x: -3.5999994, y: 2.8000002}
-    traversable: 0
+    traversable: 1
   - position: {x: -3.4399996, y: 2.8000002}
     traversable: 1
   - position: {x: -3.2799988, y: 2.8000002}
@@ -74651,7 +74651,7 @@ MonoBehaviour:
   - position: {x: -11.439999, y: 3.2800007}
     traversable: 0
   - position: {x: -11.279999, y: 3.2800007}
-    traversable: 0
+    traversable: 1
   - position: {x: -11.119999, y: 3.2800007}
     traversable: 1
   - position: {x: -10.959999, y: 3.2800007}
@@ -74783,7 +74783,7 @@ MonoBehaviour:
   - position: {x: -0.87999916, y: 3.2800007}
     traversable: 0
   - position: {x: -0.7199993, y: 3.2800007}
-    traversable: 0
+    traversable: 1
   - position: {x: -0.55999947, y: 3.2800007}
     traversable: 1
   - position: {x: -0.39999962, y: 3.2800007}
@@ -77044,7 +77044,7 @@ MonoBehaviour:
   height: 108
   cellSize: 0.16
   sourcePosForTesting: {fileID: 0}
-  drawGizmos: 0
+  drawGizmos: 1
   showFlowField: 0
 --- !u!4 &1315907622
 Transform:
@@ -78089,7 +78089,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 298877176}
+  - {fileID: 1085816040}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -79048,7 +79048,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 298877176}
+  - {fileID: 1085816040}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -79623,7 +79623,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 298877176}
+  - {fileID: 1085816040}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -80473,7 +80473,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 298877176}
+  - {fileID: 1085816040}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -80637,7 +80637,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 298877176}
+  - {fileID: 1085816040}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

@@ -572,15 +572,9 @@ public class CoolerGrid : MonoBehaviour {
 
     [VInspector.Button("Generate")]
     public void Generate() {
-        // Temporarily increase edge radius so our overlap tests detect edge colliders
-        EdgeCollider2D[] allEdgeColliders = FindObjectsByType<EdgeCollider2D>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        float[] originalEdgeRadii = new float[allEdgeColliders.Length];
-        for (int i = 0; i < allEdgeColliders.Length; i++) {
-            originalEdgeRadii[i] = allEdgeColliders[i].edgeRadius;
-            allEdgeColliders[i].edgeRadius = Mathf.Max(originalEdgeRadii[i], 0.02f);
-        }
+        Physics2D.SyncTransforms();
         
-        const float traversableRatioPerTile = 0.8f;
+        const float traversableRatioPerTile = 0.7f;
         Vector2 traversableTestBoxSize = new Vector2(cellSize, cellSize) * traversableRatioPerTile;
 
         precomputedCells = new();
@@ -599,12 +593,26 @@ public class CoolerGrid : MonoBehaviour {
                 });
             }
         }
-        
-        // Restore each edge collider's original radius
-        for (int i = 0; i < allEdgeColliders.Length; i++) {
-            allEdgeColliders[i].edgeRadius = originalEdgeRadii[i];
+
+        // Saftey check for rogue cells due to the smaller overlap testing size needed
+        // Isolated traversable cells (no traversable neighbor) get marked as not traversable
+        for (int i = 0; i < precomputedCells.Count; i++) {
+            if (!precomputedCells[i].traversable) continue;
+
+            bool hasTraversableNeighbor = false;
+            for (int n = 0; n < 9; n++) {
+                int neighborIndex = GetNeighborIndex(width, height, i, n);
+                if (neighborIndex != -1 && precomputedCells[neighborIndex].traversable) {
+                    hasTraversableNeighbor = true;
+                    break;
+                }
+            }
+
+            if (!hasTraversableNeighbor) {
+                precomputedCells[i].traversable = false;
+            }
         }
-        
+
         EditorUtility.SetDirty(this);
     }
 
