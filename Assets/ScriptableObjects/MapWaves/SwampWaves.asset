@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6be7b725e872d8544a676cc6767aad0a, type: 3}
   m_Name: SwampWaves
   m_EditorClassIdentifier: 
-  timeBeforeFirstPhase: 5
+  timeBeforeFirstPhase: 3
   timeBeforePortalSpawns: 15
   delayBetweenEnemyRepositions: 1
   maxEnemyRepositionCount: 8
@@ -21,10 +21,10 @@ MonoBehaviour:
     musicIntensity: 0
     variants:
     - name: Variant 0
-      maxDuration: 20
-      spawnDuration: 20
+      maxDuration: 18
+      spawnDuration: 18
       startNextPhaseEarlyDelay: 0
-      spawnCellRange: {x: 20, y: 28}
+      spawnCellRange: {x: 16, y: 20}
       repositionCellRange: {x: 20, y: 28}
       spawnRateCurve:
         serializedVersion: 2
@@ -51,7 +51,7 @@ MonoBehaviour:
         m_PostInfinity: 2
         m_RotationOrder: 0
       enemyBatches:
-      - enemyCount: 80
+      - enemyCount: 100
         enemyData: {fileID: 11400000, guid: ef0d2561419bd0d428b2045b0e0836d4, type: 2}
-      - enemyCount: 50
+      - enemyCount: 130
         enemyData: {fileID: 11400000, guid: 8a749b46a2a7d944892efbf025fbe2a1, type: 2}

@@ -70,6 +70,7 @@ public partial class Game : MonoBehaviour {
         // Animated UI shaders use this instead of the Time node so they keep animating while the game is paused
         Shader.SetGlobalFloat(ShaderIds.unscaledTime, Time.unscaledTime);
         states.gameStateMachine.Tick();
+        UpdatePositionalVolumes();
         UpdateTutorial(); // !
         UpdateDialogue();
         DemonEyeTween.Update();
@@ -79,6 +80,17 @@ public partial class Game : MonoBehaviour {
         ClearPerFrameData();
         CheckForScreenSizeChange();
         CheckForInputDeviceChange();
+        
+        // This is just for trailer put it back in the editor scope
+        if (Keyboard.current.slashKey.wasPressedThisFrame) {
+            for (int i = entities.enemies.Count - 1; i >= 0; i--) {
+                DestroyEntity(entities.enemies[i]);
+                entities.enemies.RemoveAt(i);
+            }
+            spawnManager.spawnTimeIndex = int.MaxValue;
+            spawnManager.timeInCurPhase = 9999999f;
+            spawnManager.startNextWaveDelay = 0f;
+        }
         
 #if UNITY_EDITOR
         if (pauseMenu.paused) {
@@ -91,15 +103,6 @@ public partial class Game : MonoBehaviour {
             Time.timeScale = 1f;
         }
         
-        if (Keyboard.current.slashKey.wasPressedThisFrame) {
-            for (int i = entities.enemies.Count - 1; i >= 0; i--) {
-                DestroyEntity(entities.enemies[i]);
-                entities.enemies.RemoveAt(i);
-            }
-            spawnManager.spawnTimeIndex = int.MaxValue;
-            spawnManager.timeInCurPhase = 9999999f;
-            spawnManager.startNextWaveDelay = 0f;
-        }
 #endif
     }
     
@@ -263,6 +266,7 @@ public partial class Game : MonoBehaviour {
 
     private void OnEarlyExitEnter() {
         persistentFlags |= PersistentFlags.HasExtracted;
+        persistentFlags |= PersistentFlags.ShowStashTransferButton;
         SaveGameState();
         AnimateEarlyExitSequence(() => states.gameStateMachine.SetStateIfNotCurrent(states.mainMenu));
         StopMusic(MusicOption.Fast); // Needs to be after animation sequence because it stops all tweens
@@ -280,7 +284,9 @@ public partial class Game : MonoBehaviour {
             maps[nextMapIndex].state.isUnlocked = true;
             maps[nextMapIndex].state.unlockRevealPending = true;
         }
+        
         persistentFlags |= PersistentFlags.HasExtracted;
+        persistentFlags |= PersistentFlags.ShowStashTransferButton;
 
         // Beating the second map is the end of the demo, the trader thanks the player once they're back in the main menu
         bool beatSecondMap = maps.Count > 1 && curRaid.map == maps[1];

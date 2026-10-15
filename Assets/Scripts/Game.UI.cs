@@ -135,8 +135,11 @@ public partial class Game {
         playerInfo.parent.gameObject.SetActive(true);
         ui.animatedBgImage.gameObject.SetActive(true);
         hideoutTabs.parent.gameObject.SetActive(true);
+        if (persistentFlags.HasFlag(GameData.PersistentFlags.ShowStashTransferButton)) {
+            playerPanel.transferToStashButton.transform.parent.gameObject.SetActive(true);
+        }
     }
-
+    
     private void CloseHideoutUI() {
         SetCurrencyDisplaysInHideout(false);
         ToggleHideoutPanels();
@@ -149,6 +152,7 @@ public partial class Game {
         ui.animatedBgImage.gameObject.SetActive(false);
         ui.teleportingIntoRaidHeader.gameObject.SetActive(false);
         hideoutTabs.parent.gameObject.SetActive(false);
+        playerPanel.transferToStashButton.transform.parent.gameObject.SetActive(false);
     }
 
     private void ShowRaidUI() {
@@ -482,6 +486,14 @@ public partial class Game {
         int inventoryWeight = GetInventoryWeight(inventories.player);
         GetEncumberingWeightRange(out int startEncumberingWeight, out _);
         playerPanel.weightText.text = $"<color=#98C5CC>{inventoryWeight}</color><size=22>/{startEncumberingWeight}";
+        
+        if (InHideout) { // If we move all items manually to the stash then we need to hide the transfer button
+            int pocketItemCount = GetInventoryItemCountInRange(inventories.player, playerPocketRange);
+            if (pocketItemCount == 0 && persistentFlags.HasFlag(GameData.PersistentFlags.ShowStashTransferButton)) {
+                persistentFlags &= ~GameData.PersistentFlags.ShowStashTransferButton;
+                playerPanel.transferToStashButton.transform.parent.gameObject.SetActive(false); 
+            }
+        }
         
         Color boostedColor = config.styles.increaseDescColor;
         EquipedStatsPanel equipedStatsPanel = playerPanel.equipedStatsPanel;

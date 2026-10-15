@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0fbcf94adaf235e40bd8b90da49eb8f7, type: 3}
   m_Name: GameplayTestingSettings
   m_EditorClassIdentifier: Assembly-CSharp::GameplayTestingSettings
-  testingInventory: {fileID: 11400000, guid: 0d1411587578e6245b6df2c7e7625f43, type: 2}
+  testingInventory: {fileID: 0}

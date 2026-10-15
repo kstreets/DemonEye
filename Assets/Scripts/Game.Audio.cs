@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.Assertions;
 using Random = UnityEngine.Random;
 
 public partial class Game {
@@ -20,7 +18,17 @@ public partial class Game {
         public override bool Equals(object obj) => obj is AudioClipHandle other && Equals(other);
         public override int GetHashCode() => HashCode.Combine(audioSource, generation);
     }
-    
+
+    public struct PositionalVolume {
+        public AudioClipHandle handle;
+        public Vector2 position;
+        public float maxDistance;
+        public float volumeScaler;
+        // Unscaled time the clip should be done by. isPlaying alone can't tell when it's finished, since
+        // it's false while a non-preloaded clip is still loading
+        public float endTime;
+    }
+
     private void InitAudio() {
         const int numberOfSources = 25;
         audio.reservedSources = new(numberOfSources);
@@ -63,22 +71,53 @@ public partial class Game {
             audio.reservedSources.Enqueue(source);
         }
 
-        float distFromPlayer = Vector2.Distance(player.position, position);
-        float volumeLerp = distFromPlayer / dynamicClip.maxDistance;
-        float volume = Mathf.Lerp(1f, 0f, volumeLerp) * volumeScaler;
-        
         source.transform.position = position;
         source.rolloffMode = dynamicClip.rolloffMode;
         source.clip = dynamicClip.clips[Random.Range(0, dynamicClip.clips.Length)];
         source.outputAudioMixerGroup = dynamicClip.mixerGroup;
-        source.volume = volume;
+        source.volume = GetDistanceVolume(position, dynamicClip.maxDistance, volumeScaler);
         source.pitch = pitch == 0f ? Random.Range(dynamicClip.minPitch, dynamicClip.maxPitch) : pitch;
         source.minDistance = dynamicClip.minDistance;
         source.maxDistance = dynamicClip.maxDistance;
         source.loop = loop;
         source.Play();
-        
+
+        // Keeps the volume following the player, otherwise a clip that starts out of range stays silent even after they walk up to it
+        float playbackDuration = source.clip.length / Mathf.Max(Mathf.Abs(source.pitch), 0.01f);
+        audio.positionalVolumes.Add(new() {
+            handle = handle,
+            position = position,
+            maxDistance = dynamicClip.maxDistance,
+            volumeScaler = volumeScaler,
+            endTime = loop ? float.PositiveInfinity : Time.unscaledTime + playbackDuration,
+        });
+
         return handle;
+    }
+
+    private float GetDistanceVolume(Vector2 position, float maxDistance, float volumeScaler) {
+        float distFromPlayer = Vector2.Distance(player.position, position);
+        float volumeLerp = distFromPlayer / maxDistance;
+        return Mathf.Lerp(1f, 0f, volumeLerp) * volumeScaler;
+    }
+
+    private void UpdatePositionalVolumes() {
+        // Paused sources aren't playing but haven't finished either
+        if (pauseMenu.paused) return;
+
+        for (int i = audio.positionalVolumes.Count - 1; i >= 0; i--) {
+            PositionalVolume positional = audio.positionalVolumes[i];
+            AudioSource source = positional.handle.audioSource;
+
+            bool sourceWasReused = audio.generationLookup[source] != positional.handle.generation;
+            bool clipFinished = !source.isPlaying && Time.unscaledTime >= positional.endTime;
+            if (sourceWasReused || clipFinished) {
+                audio.positionalVolumes.RemoveAt(i);
+                continue;
+            }
+
+            source.volume = GetDistanceVolume(positional.position, positional.maxDistance, positional.volumeScaler);
+        }
     }
     
     private void StopAudioClip(AudioClipHandle handle) {
@@ -112,6 +151,7 @@ public partial class Game {
             audio.reservedSources.Enqueue(source);
         }
         audio.uninterruptibleSources.Clear();
+        audio.positionalVolumes.Clear();
     }
     
     // Puts sources back into the queue once their uninterruptible clip has finished

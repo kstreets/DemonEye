@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be8fcd3f2b02a184c999b8d09be226d3, type: 3}
+  m_Name: ExplodyInventory
+  m_EditorClassIdentifier: 
+  demonEyeUpgrades:
+  - {fileID: 11400000, guid: 3505426df7dc8164caf246c28362eb53, type: 2}
+  - {fileID: 11400000, guid: 5208da11a0273eb40938911e8a5feefc, type: 2}
+  - {fileID: 11400000, guid: 397aeb580ff1a8546a185c24e5d667f2, type: 2}
+  - {fileID: 11400000, guid: b1b3e21dc77ecd142825d6501ddef4a6, type: 2}
+  - {fileID: 11400000, guid: 5208da11a0273eb40938911e8a5feefc, type: 2}
+  backpack: {fileID: 0}
+  trinket: {fileID: 11400000, guid: 02b630014f197cf49b8983f961cc9762, type: 2}
+  items: []

@@ -323,11 +323,11 @@ MonoBehaviour:
       enemyBatches:
       - enemyCount: 100
         enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
-      - enemyCount: 40
+      - enemyCount: 80
         enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
-      - enemyCount: 70
-        enemyData: {fileID: 11400000, guid: 8a749b46a2a7d944892efbf025fbe2a1, type: 2}
-      - enemyCount: 60
+      - enemyCount: 50
+        enemyData: {fileID: 11400000, guid: 279414ac67a0fa94e8cccc1b91783ca3, type: 2}
+      - enemyCount: 120
         enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
   - name: Wave 8
     musicIntensity: 2

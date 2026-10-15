@@ -264,6 +264,7 @@ public class GameData {
         public RectTransform pocketParent;
         public RectTransform quickUseParent;
         public RectTransform inventoryParent;
+        public ButtonFeel transferToStashButton;
         public TextMeshProUGUI healthText;
         public TextMeshProUGUI weightText;
         public Image previewImage;
@@ -617,13 +618,14 @@ public class GameData {
     
     [Flags]
     public enum PersistentFlags {
-        None                   = 0,
-        BloodMushroomsUnlocked = 1 << 0,
-        HideoutTourItemsGiven  = 1 << 1,
-        HasExtracted           = 1 << 2,
-        FirstMapPlayedOnce     = 1 << 3,
-        FirstMapPlayedTwice    = 1 << 4,
-        DemoEndShown           = 1 << 5,
+        None                     = 0,
+        BloodMushroomsUnlocked   = 1 << 0,
+        HideoutTourItemsGiven    = 1 << 1,
+        HasExtracted             = 1 << 2,
+        FirstMapPlayedOnce       = 1 << 3,
+        FirstMapPlayedTwice      = 1 << 4,
+        DemoEndShown             = 1 << 5,
+        ShowStashTransferButton  = 1 << 6,
     }
     
     [Flags] 

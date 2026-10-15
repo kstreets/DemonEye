@@ -16,9 +16,10 @@ MonoBehaviour:
   - {fileID: 8300000, guid: ba0e121e96aead742a25f4566f8d8a16, type: 3}
   mixerGroup: {fileID: -2303880761268983241, guid: 5d1188e598dcb514aa82b03e86c0c627, type: 2}
   rolloffMode: 1
-  minDistance: 0
+  minDistance: 0.1
   maxDistance: 3.2
   minPitch: 0.9
   maxPitch: 1.1
+  maxSimultaneous: 0
   localAreaCooldownTime: 0.1
   localAreaDistance: 1

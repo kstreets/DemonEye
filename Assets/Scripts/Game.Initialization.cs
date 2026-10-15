@@ -202,6 +202,15 @@ public partial class Game {
         transactionPanel.transaction.sellButton.AddListener(OnSellButtonPressed);
         transactionPanel.transaction.moneyPurchaseButton.AddListener(OnMoneyPurchaseButtonPressed);
         transactionPanel.transaction.barterPurchaseButton.AddListener(OnBarterPurchaseButtonPressed);
+        
+        playerPanel.transferToStashButton.AddListener(() => {
+            playerPanel.transferToStashButton.KeepPressed();
+            TransferPlayerInventoryToStash(() => {
+                persistentFlags &= ~GameData.PersistentFlags.ShowStashTransferButton;
+                playerPanel.transferToStashButton.StopKeepPressed();
+                playerPanel.transferToStashButton.transform.parent.gameObject.SetActive(false);
+            });
+        });
 
         for (int i = 0; i < mapPanels.mapSelectionPanel.selectors.Length; i++) {
             ButtonFeel mapSelectionButton = mapPanels.mapSelectionPanel.selectors[i].selectionButton;

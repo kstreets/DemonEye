@@ -20,6 +20,10 @@ PrefabInstance:
       propertyPath: highlightedSprite
       value: 
       objectReference: {fileID: 275925045, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
+    - target: {fileID: 3874865120119824866, guid: 1388258b3e69b7b488ca8e5df5d1d8c5, type: 3}
+      propertyPath: nonHighlightedPressedSprite
+      value: 
+      objectReference: {fileID: 184015, guid: 04b67aa2fd8d4cf41863822ab53af6df, type: 3}
     - target: {fileID: 4425501928664159082, guid: 1388258b3e69b7b488ca8e5df5d1d8c5, type: 3}
       propertyPath: m_Sprite
       value: 

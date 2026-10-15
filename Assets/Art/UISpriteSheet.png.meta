@@ -2366,6 +2366,28 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: UISpriteSheet_80
+      rect:
+        serializedVersion: 2
+        x: 468
+        y: 272
+        width: 36
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 3, y: 4, z: 3, w: 4}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: da6c2145bb8dbd445be19a73cb0c8cd5
+      internalID: 184015
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -2489,6 +2511,7 @@ TextureImporter:
       UISpriteSheet_78: -319936501
       UISpriteSheet_79: 1778208498
       UISpriteSheet_8: 2031374853
+      UISpriteSheet_80: 184015
       UISpriteSheet_9: 1832339534
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0

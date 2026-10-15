@@ -102,6 +102,8 @@ public partial class Game {
     public const int traderInventoryColCount = 6;
     public const int traderInventoryRowCount = 5;
     
+    public Range playerPocketRange => new (playerEquipmentSize + playerQuickUseSize)..;
+    
     private int NakedPlayerInventorySize => playerPocketSize + playerQuickUseSize + playerEquipmentSize;
     private bool PlayerInventoryIsOpen => playerPanel.panel.gameObject.activeInHierarchy;
     private bool LootInventoryIsOpen => ui.lootInventoryPanel.gameObject.activeInHierarchy;
@@ -1023,6 +1025,40 @@ public partial class Game {
         }
     }
     
+    private Sequence transferToStashSequence;
+
+    // Moves each pocket/backpack item over to the stash one at a time, starting slow and speeding up
+    private void TransferPlayerInventoryToStash(Action onComplete = null) {
+        if (transferToStashSequence.isAlive) return;
+        CancelItemDrag();
+
+        int itemCount = GetInventoryItemCountInRange(inventories.player, playerPocketRange);
+        if (itemCount == 0) return;
+
+        const float firstItemGap = 0.1f;
+        const float lastItemGap = 0.03f;
+
+        transferToStashSequence = Sequence.Create();
+        float itemDelay = 0f;
+        int itemIndex = 0;
+
+        (int offset, int length) = playerPocketRange.GetOffsetAndLength(inventories.player.slots.Length);
+        for (int i = offset; i < offset + length; i++) {
+            if (inventories.player.slots[i].itemInstance == null) continue;
+
+            int slotIndex = i;
+            transferToStashSequence.Group(Tween.Delay(itemDelay, () => {
+                MoveItemBetweenInventories(inventories.player, inventories.stash, slotIndex, MoveItemOption.FullStack);
+            }));
+
+            float comp = itemCount > 1 ? itemIndex / (float)(itemCount - 1) : 0f;
+            itemDelay += Mathf.Lerp(firstItemGap, lastItemGap, comp * comp); // Ease-in so the gaps shrink faster towards the end
+            itemIndex++;
+        }
+        
+        transferToStashSequence.OnComplete(() => onComplete?.Invoke());
+    }
+    
     private void ClearInventory(Inventory inventory) {
         for (int i = 0; i < inventory.slots.Length; i++) {
             RemoveItemFromInventory(inventory, i);
@@ -1174,6 +1210,16 @@ public partial class Game {
         int count = 0;
         foreach (InventorySlot slot in inventory.slots) {
             if (slot.itemInstance == null) continue;
+            count++;
+        }
+        return count;
+    }
+    
+    public int GetInventoryItemCountInRange(Inventory inventory, Range range) {
+        int count = 0;
+        (int offset, int length) = range.GetOffsetAndLength(inventory.slots.Length);
+        for (int i = offset; i < offset + length; i++) {
+            if (inventory.slots[i].itemInstance == null) continue;
             count++;
         }
         return count;
