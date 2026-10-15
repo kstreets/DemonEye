@@ -178,9 +178,10 @@ public class GameData {
         public RectTransform quickUseHeaderText;
         public RectTransform stashPanelHeaderText;
         public TMP_SpriteAsset inputIconSpriteAsset; // Can be left empty, input icons show as text until it's set
-
-        // Toggle groups the controller can switch with the bumpers/triggers, based on their NavigationMode
-        public ToggleButtonGroup[] navToggleGroups;
+        public ToggleButtonGroup[] navToggleGroups; // Toggle groups the controller can switch with the bumpers/triggers, based on their NavigationMode
+        
+        [NonSerialized] public ScreenScalingMaintainer[] screenScalingMaintainers;
+        [NonSerialized] public float damageNumberFontSize; // Store to prevent scaling issues when other things borrow damage numbers (player healthbar damage)
     }
     
     [Serializable]
@@ -393,6 +394,8 @@ public class GameData {
         public List<AudioClipHandle> loopingSources = new();
         // Sources playing a cannotInterrupt clip, held out of reservedSources until the clip finishes
         public List<AudioSource> uninterruptibleSources = new();
+        // Playing clips whose volume is re-applied every frame from the player's distance to them
+        public List<PositionalVolume> positionalVolumes = new();
         public Queue<AudioSource> reservedSources;
     }
     

@@ -27,7 +27,7 @@ public partial class Game {
         currencyInfoParent = playerInfo.coinsCurrencyParent.transform.parent;
         coinsCurrencySiblingIndex = playerInfo.coinsCurrencyParent.transform.GetSiblingIndex();
         soulsCurrencySiblingIndex = playerInfo.soulsCurrencyParent.transform.GetSiblingIndex();
-
+        
         CloseSettingsMenuUI();
         CloseHideoutUI();
         CloseRaidUI();
@@ -42,6 +42,9 @@ public partial class Game {
         ui.openingDialogueTypewriter.gameObject.SetActive(false);
         ui.traderTutorialDialogueBox.SetActive(false);
         mainMenu.hideoutNotifier.SetActive(false);
+        
+        ui.screenScalingMaintainers = ui.mainCanvasRectTransform.GetComponentsInChildren<ScreenScalingMaintainer>(includeInactive: true);
+        ui.damageNumberFontSize = prefabs.damageNumber.GetComponent<TextMeshProUGUI>().fontSize;
     }
 
     private Sequence mainMenuSequence;
@@ -674,6 +677,7 @@ public partial class Game {
     private void SpawnTextPopIn(Vector3 spawnPos, string text, Vector3? endPos = default, Color? color = null) {
         Entity textEntity = SpawnEntity(entityPools.damageNumber, spawnPos, Quaternion.identity, ui.damageNumbersParent);
         textEntity.textMesh.text = text; 
+        textEntity.textMesh.fontSize = ui.damageNumberFontSize;
         textEntity.textMesh.color = color ?? config.styles.popInTextColor;
         
         float moveDuration = Random.Range(0.37f, 0.4f);
@@ -1003,6 +1007,10 @@ public partial class Game {
             >= 500 => 0.35f,
             _      => 0.2f,
         };
+        
+        foreach (ScreenScalingMaintainer maintainer in ui.screenScalingMaintainers) {
+            maintainer.OnScreenSizeChanged();
+        }
         
         const float UISpritePixelsPerUnit = 32f;
         const float UIAuthoredReferencePixelsPerUnit = 96f;
