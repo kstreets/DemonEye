@@ -416,7 +416,7 @@ public partial class Game {
         Inventory hoveredInventory = invHoverInfo.inventory;
         if (hoveredInventory == null || hoveredInventory.isLocked) return;
         
-        if (!TryGetItemFromHoverInfo(invHoverInfo, out ItemInstance _)) return;
+        if (!TryGetItemFromHoverInfo(invHoverInfo, out ItemInstance hoverdItemInstance)) return;
         if (NotAllowedToMoveOrPickupItem(invHoverInfo)) return;
         if (ClickedOnEquipedBackpackWithItems(invHoverInfo.inventory, invHoverInfo.slotIndex)) return;
         
@@ -451,8 +451,16 @@ public partial class Game {
                 destinationInventory = inventories.eyeForge;
             }
             else if (hoveredInventory == inventories.eyeForge) {
-                // We choose player if there is no eye equiped, if this changes then we need to do something different for tutorial quick move
-                destinationInventory = inventories.player.slots[0].itemInstance == null ? inventories.player : inventories.stash;
+                if (hoverdItemInstance.isDemonEye) { // We choose player if there is no eye equiped
+                    // Note: This also allows the tutorial quick move to work
+                    destinationInventory = inventories.player.slots[0].itemInstance == null ? inventories.player : inventories.stash;
+                    if (destinationInventory == inventories.player) {
+                        TweenItemMove(inventories.player.slots[0].ui.itemUI, force: true);
+                    }
+                }
+                else {
+                    destinationInventory = inventories.stash;
+                }
             }
             else if (hoveredInventory == inventories.player) {
                 destinationInventory = inventories.eyeForge;
@@ -966,8 +974,8 @@ public partial class Game {
         return result;
     }
     
-    private void TweenItemMove(ItemUI itemUI) {
-        if (!itemUI.gameObject.activeInHierarchy) return;
+    private void TweenItemMove(ItemUI itemUI, bool force = false) {
+        if (!force && !itemUI.gameObject.activeInHierarchy) return;
         Tween.PunchScale(itemUI.rectTransform, Vector3.one * 0.15f, 0.135f);
         PlayAudioClip(audio.itemMoveClip);
     }

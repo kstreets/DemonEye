@@ -6,8 +6,7 @@ using static GameData;
 
 public partial class Game {
     
-    // 2: Map states save whether their unlock reveal is still pending
-    private const int gameStateSaveVersion = 2;
+    private const int gameStateSaveVersion = 1;
 
     public class GameState {
         public int version;
@@ -23,8 +22,8 @@ public partial class Game {
         public List<ItemInstance> traderInventoryItems;
         public List<ItemInstance> forgeInventoryItems;
         
-        public List<MapData.State> mapStates; 
-        public List<Quest.State> questStates; 
+        public List<MapData.State> mapStates;
+        public List<Quest.State> questStates;
     }
     
     public string GetSettingsSavePath() {
@@ -128,8 +127,8 @@ public partial class Game {
             stashInventoryItems = DeserializeInventory(binReader),
             traderInventoryItems = DeserializeInventory(binReader),
             forgeInventoryItems = DeserializeInventory(binReader),
-            mapStates = DeserializeList(binReader, reader => DeserializeMapState(reader, version)),
-            questStates = DeserializeList(binReader, DeserializeQuestState)
+            mapStates = DeserializeList(binReader, DeserializeMapState),
+            questStates = DeserializeList(binReader, DeserializeQuestState),
         };
     }
     
@@ -195,15 +194,12 @@ public partial class Game {
         binWriter.Write(mapState.unlockRevealPending);
     }
 
-    private MapData.State DeserializeMapState(BinaryReader binReader, int saveVersion) {
+    private MapData.State DeserializeMapState(BinaryReader binReader) {
         MapData.State state = new() {
             isUnlocked = binReader.ReadBoolean(),
-            bloodMushroomSpawns = DeserializeList(binReader, DeserializeVector2)
+            unlockRevealPending = binReader.ReadBoolean(),
+            bloodMushroomSpawns = DeserializeList(binReader, DeserializeVector2),
         };
-        // Older saves don't have this, so their maps just show as unlocked
-        if (saveVersion >= 2) {
-            state.unlockRevealPending = binReader.ReadBoolean();
-        }
         return state;
     }
     
