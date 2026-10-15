@@ -154,18 +154,26 @@ public partial class Game {
         
         settings.applyChangesButton.AddListener(ApplySettings);
         
+        // Quick version of the hideout fade, played every time a tab is switched to (including when entering the hideout)
+        const float tabFadeRiseDistance = 7f;
+        const float tabFadeTime = 0.18f;
+        const float tabStartingAlpha = 0.5f;
+        
         hideoutTabs.characterButton.AddListener(() => {
             ToggleHideoutPanels(playerPanel.panel, stashPanel.panel);
+            FadeInHideout(tabFadeRiseDistance, tabFadeTime, tabStartingAlpha);
             ToggleSlimPlayerPanel(false);
         });
         
         hideoutTabs.eyeForgeButton.AddListener(() => {
             ToggleHideoutPanels(playerPanel.panel, eyeForgePanel.panel, stashPanel.panel);
+            FadeInHideout(tabFadeRiseDistance, tabFadeTime, tabStartingAlpha);
             ToggleSlimPlayerPanel(true);
         });
         
         hideoutTabs.traderButton.AddListener(() => {
             ToggleHideoutPanels(traderPanel.panel, transactionPanel.panel, stashPanel.panel);
+            FadeInHideout(tabFadeRiseDistance, tabFadeTime, tabStartingAlpha);
             if (!InTutorial) { // The trader is already talking to us, don't make it talk over itself
                 TriggerTraderShopDialogue(TraderShopDialogueType.Greeting); 
             }
@@ -173,11 +181,13 @@ public partial class Game {
         
         hideoutTabs.questsButton.AddListener(() => {
             ToggleHideoutPanels(questsPanel.panel);
+            FadeInHideout(tabFadeRiseDistance, tabFadeTime, tabStartingAlpha);
             RefreshQuestDisplays();
         });
         
         hideoutTabs.skillsButton.AddListener(() => {
             ToggleHideoutPanels(skillsPanel.panel.rectTransform, skillsPanel.playerStatsPanel.rectTransform);
+            FadeInHideout(tabFadeRiseDistance, tabFadeTime, tabStartingAlpha);
         });
 
         SkillLevelUpRow hasteRow = skillsPanel.panel.hasteSkillRow;

@@ -318,7 +318,17 @@ public partial class Game {
             });
     }
 
-    private Sequence FadeInHideout(float riseDistance = 60f, float time = 1.4f) {
+    private Sequence hideoutFadeSequence;
+
+    private Sequence FadeInHideout(float riseDistance = 60f, float time = 1.4f, float startingAlpha = 0f) {
+        if (hideoutFadeSequence.isAlive) {
+            // A quick tab switch fade shouldn't cut short a longer one that's still playing, like the tutorial's
+            float remainingTime = hideoutFadeSequence.durationTotal - hideoutFadeSequence.elapsedTimeTotal;
+            if (remainingTime > time) return hideoutFadeSequence;
+            // Finish it so the padding is back at rest, otherwise we'd capture a mid rise padding as the end values
+            hideoutFadeSequence.Complete();
+        }
+
         RectTransform hideout = ui.hideoutPanelsParent;
         LayoutGroup layout = hideout.GetComponent<LayoutGroup>();
         if (!hideout.TryGetComponent(out CanvasGroup canvasGroup)) {
@@ -329,12 +339,12 @@ public partial class Game {
         int endTop = padding.top;
         int endBottom = padding.bottom;
 
-        canvasGroup.alpha = 0f;
+        canvasGroup.alpha = startingAlpha;
         // Stop drags and clicks landing on the hideout while it's still moving
         canvasGroup.blocksRaycasts = false;
         hideout.gameObject.SetActive(true);
 
-        return Sequence.Create()
+        return hideoutFadeSequence = Sequence.Create()
             .Group(Tween.Alpha(canvasGroup, 1f, time, Ease.OutQuad))
             .Group(Tween.Custom(riseDistance, 0f, time, ease: Ease.OutCubic, onValueChange: offset => {
                 // The content is centered, so shift both sides to move it by the full offset without changing the space it gets
@@ -352,16 +362,16 @@ public partial class Game {
             });
     }
 
-    public static Tween FadeIn(CanvasGroup canvasGroup, float time = 0.3f, Ease ease = Ease.OutQuad, float startDelay = 0f) {
-        canvasGroup.alpha = 0f;
+    public static Tween FadeIn(CanvasGroup canvasGroup, float time = 0.3f, Ease ease = Ease.OutQuad, float startDelay = 0f, float startAlpha = 0f) {
+        canvasGroup.alpha = startAlpha;
         canvasGroup.blocksRaycasts = false;
         canvasGroup.gameObject.SetActive(true);
         return Tween.Alpha(canvasGroup, 1f, time, ease, startDelay: startDelay)
         .OnComplete(canvasGroup, static canvasGroup => canvasGroup.blocksRaycasts = true);
     }
 
-    public static Tween FadeIn(TMP_Text text, float time = 0.3f, Ease ease = Ease.OutQuad, float startDelay = 0f) {
-        text.alpha = 0f;
+    public static Tween FadeIn(TMP_Text text, float time = 0.3f, Ease ease = Ease.OutQuad, float startDelay = 0f, float startAlpha = 0f) {
+        text.alpha = startAlpha;
         text.gameObject.SetActive(true);
         return Tween.Alpha(text, 1f, time, ease, startDelay: startDelay);
     }
