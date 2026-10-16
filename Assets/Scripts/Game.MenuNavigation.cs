@@ -102,7 +102,7 @@ public partial class Game {
         }
         
         if (ConfirmingMapSelection) {
-            ShowMapSelectionUI();
+            ReturnToMapSelection();
             return;
         }
         if (InMapSelection || InHideout || InSettings) {

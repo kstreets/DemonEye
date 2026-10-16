@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using PrimeTween;
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.InputSystem;
 using UnityEngine.Pool;
+using Debug = UnityEngine.Debug;
 
 public partial class Game {
     
@@ -24,7 +24,7 @@ public partial class Game {
         public Item ItemRef {
             get {
                 if (gameInstance.demonEye.instanceFromItemId.ContainsKey(itemOrInstanceUuid)) {
-                    return gameInstance.itemRefs.demonEye;
+                    return gameInstance.config.demonEyeLevels.items[DemonEyeLevel - 1];
                 }
                 
                 UuidScriptableObject uuidObject = gameInstance.res.lookup[itemOrInstanceUuid];

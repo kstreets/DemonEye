@@ -3048,6 +3048,28 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: FXSheet_119
+      rect:
+        serializedVersion: 2
+        x: 480
+        y: 494
+        width: 160
+        height: 94
+      alignment: 9
+      pivot: {x: 0.5, y: 0.85}
+      border: {x: 81, y: 39, z: 78, w: 54}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 74928914c205a65478b09b9516854c04
+      internalID: -1233167823
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []

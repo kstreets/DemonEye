@@ -316,7 +316,6 @@ public partial class Game {
         "Cronically Dry",
         "Photon Toucher",
         "Maidenless Voyager",
-        "Graphics Processing Unit",
         "Feller of Demons",
         "Focused Fighter",
         "Gaze of Hell",

@@ -12471,7 +12471,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8442199821400874121, guid: 4add96f54f6ffed44b65bd2e53c29d92, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 8442199821400874121, guid: 4add96f54f6ffed44b65bd2e53c29d92, type: 3}
       propertyPath: m_AnchorMax.y
@@ -12479,7 +12479,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8442199821400874121, guid: 4add96f54f6ffed44b65bd2e53c29d92, type: 3}
       propertyPath: m_AnchorMin.x
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 8442199821400874121, guid: 4add96f54f6ffed44b65bd2e53c29d92, type: 3}
       propertyPath: m_AnchorMin.y
@@ -12527,7 +12527,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8442199821400874121, guid: 4add96f54f6ffed44b65bd2e53c29d92, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 274.5
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 8442199821400874121, guid: 4add96f54f6ffed44b65bd2e53c29d92, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -12544,6 +12544,10 @@ PrefabInstance:
     - target: {fileID: 8920526038049917428, guid: 4add96f54f6ffed44b65bd2e53c29d92, type: 3}
       propertyPath: m_Name
       value: TransferAllButton
+      objectReference: {fileID: 0}
+    - target: {fileID: 8920526038049917428, guid: 4add96f54f6ffed44b65bd2e53c29d92, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -21162,11 +21166,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 306cc8c2b49d7114eaa3623786fc2126, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!225 &1614600942 stripped
-CanvasGroup:
-  m_CorrespondingSourceObject: {fileID: 2707015346706732293, guid: 0580ab26c15d8bc47b3d901fe38e1fea, type: 3}
-  m_PrefabInstance: {fileID: 379440717607006940}
-  m_PrefabAsset: {fileID: 0}
 --- !u!114 &1632819809 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2704842776591933030, guid: 59a977dbeb4b18348a945ff1c328f346, type: 3}
@@ -26929,7 +26928,6 @@ MonoBehaviour:
   quests:
     graph: {fileID: 7194093555672020370, guid: 8f5c04b849593bf4baec4efb1e04402c, type: 3}
   itemRefs:
-    demonEye: {fileID: 11400000, guid: 69e3a2fe6ea20814e8199b4a7f6979ff, type: 2}
     bloodMushroom: {fileID: 11400000, guid: 997868eef46099c46b2161f48b34d63b, type: 2}
   skillUpgradePaths:
     haste: {fileID: 11400000, guid: 9b4b23beb415ea942a94e6d0d55348f1, type: 2}
@@ -27391,7 +27389,6 @@ MonoBehaviour:
     skillsButton: {fileID: 1089992287}
   playerPanel:
     panel: {fileID: 30304875}
-    canvasGroup: {fileID: 1614600942}
     panelLayoutElement: {fileID: 1614600941}
     playerHalfParent: {fileID: 3382420355647663348}
     pocketParent: {fileID: 2490639301138263891}

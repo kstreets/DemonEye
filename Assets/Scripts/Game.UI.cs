@@ -113,6 +113,11 @@ public partial class Game {
         ui.teleportingIntoRaidHeader.gameObject.SetActive(true);
     }
     
+    private void ReturnToMapSelection() {
+        ToggleHideoutPanels(playerPanel.panel, mapPanels.mapSelectionPanel.rectTransform);
+        mapPanels.mapSelectionPanel.UpdateSelectorStates(config.maps);
+    }
+    
     private void ShowMapConfirmationUI(MapData map) {
         mapPanels.mapSelectionPanel.gameObject.SetActive(false);
         mapPanels.confirmationPanel.gameObject.SetActive(true);
@@ -136,7 +141,7 @@ public partial class Game {
         ui.animatedBgImage.gameObject.SetActive(true);
         hideoutTabs.parent.gameObject.SetActive(true);
         if (persistentFlags.HasFlag(GameData.PersistentFlags.ShowStashTransferButton)) {
-            playerPanel.transferToStashButton.transform.parent.gameObject.SetActive(true);
+            playerPanel.transferToStashButton.gameObject.SetActive(true);
         }
     }
     
@@ -152,7 +157,7 @@ public partial class Game {
         ui.animatedBgImage.gameObject.SetActive(false);
         ui.teleportingIntoRaidHeader.gameObject.SetActive(false);
         hideoutTabs.parent.gameObject.SetActive(false);
-        playerPanel.transferToStashButton.transform.parent.gameObject.SetActive(false);
+        playerPanel.transferToStashButton.gameObject.SetActive(false);
     }
 
     private void ShowRaidUI() {
@@ -501,7 +506,7 @@ public partial class Game {
             int pocketItemCount = GetInventoryItemCountInRange(inventories.player, playerPocketRange);
             if (pocketItemCount == 0 && persistentFlags.HasFlag(GameData.PersistentFlags.ShowStashTransferButton)) {
                 persistentFlags &= ~GameData.PersistentFlags.ShowStashTransferButton;
-                playerPanel.transferToStashButton.transform.parent.gameObject.SetActive(false); 
+                playerPanel.transferToStashButton.gameObject.SetActive(false); 
             }
         }
         
@@ -861,6 +866,9 @@ public partial class Game {
             if (forgeError == ForgeError.ForgingButMissingUpgrades) {
                 int curEyeUpgradeCount = gameInstance.GetInventoryItemCount(eyeForgeInventory) - 1;
                 int eyeUpgradesStillNeeded = GameData.Config.demonEyeCoreUpgradeCount - curEyeUpgradeCount;
+                if (eyeUpgradesStillNeeded == 1) {
+                    return $"Requires {DisplayNumber(1)} more Blood Rune to craft a Demon Eye";
+                }
                 return $"Requires {DisplayNumber(eyeUpgradesStillNeeded)} more Blood Runes to craft a Demon Eye";
             }
             if (forgeError == ForgeError.ForgingButWithoutEye) {
@@ -871,7 +879,7 @@ public partial class Game {
                 return $"Pentagram needs to be level {pentegramLevelRequired} to upgrade this Demon Eye";
             }
             if (forgeError == ForgeError.NeedsToOwnMoreEyeUpgrades) {
-                return "Blood Runes requirement have not been met";
+                return "Blood Rune requirements have not been met";
             }
             if (forgeMode == ForgeMode.UpgradingDemonEye) {
                 return "Upgrade Demon Eye";

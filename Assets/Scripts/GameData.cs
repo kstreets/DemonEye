@@ -100,7 +100,6 @@ public class GameData {
     
     [Serializable]
     public class ItemRefs {
-        public Item demonEye;
         public Item bloodMushroom;
     }
     
@@ -259,7 +258,6 @@ public class GameData {
     [Serializable]
     public class PlayerPanel {
         public RectTransform panel;
-        public CanvasGroup canvasGroup;
         public LayoutElement panelLayoutElement;
         public RectTransform playerHalfParent;
         public RectTransform pocketParent;

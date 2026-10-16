@@ -605,7 +605,7 @@ public partial class Game {
         PlayAudioClip(audio.startForgingClip);
         
         if (forgeMode is ForgeMode.Forging) {
-            DoEyeForgeAnimation(OnEyeForgeAnimationFinished);
+            PlayEyeForgeAnimation(OnEyeForgeAnimationFinished);
             return;
         }
         
@@ -627,7 +627,7 @@ public partial class Game {
         
         const float startForgeDelay = 0.2f;
         float totalStartForgeDelay = startForgeDelay + ((upgrades.Count * perUpgradeFillDelay));
-        Tween.Delay(totalStartForgeDelay, static () => gameInstance.DoEyeForgeAnimation(gameInstance.OnEyeForgeAnimationFinished));
+        Tween.Delay(totalStartForgeDelay, static () => gameInstance.PlayEyeForgeAnimation(gameInstance.OnEyeForgeAnimationFinished));
     }
     
     private void OnEyeForgeAnimationFinished() {
@@ -673,7 +673,7 @@ public partial class Game {
     private Sequence eyeForgeSequence;
     private bool PlayingForgeAnimation => eyeForgeSequence.isAlive || eyeForgePanel.forgeButton.beingKeptPressed;
     
-    private void DoEyeForgeAnimation(Action onAnimationEndCallback) {
+    private void PlayEyeForgeAnimation(Action onAnimationEndCallback) {
         PlayAudioClip(audio.forgingClip);
         
         const float fillDuration = 5.5f;
@@ -686,7 +686,9 @@ public partial class Game {
 
         InventorySlot[] slots = inventories.eyeForge.slots;
         
-        slots[0].ui.itemUI.forgeEffect.SetIntoSprite(config.demonEyeLevels.levelSprites[0]);
+        ItemInstance eyeInstance = inventories.eyeForge.slots[0].itemInstance;
+        int demonEyeSpriteIndex = eyeInstance.isDemonEye ? eyeInstance.DemonEyeLevel : 0;
+        slots[0].ui.itemUI.forgeEffect.SetIntoSprite(config.demonEyeLevels.items[demonEyeSpriteIndex].inventorySprite);
         slots[0].ui.itemUI.forgeEffect.UseSmoothing(false);
         
         Tween.Custom(this, 0f, 1f, fillDuration, ease: Ease.Linear, onValueChange: (target, val) => {

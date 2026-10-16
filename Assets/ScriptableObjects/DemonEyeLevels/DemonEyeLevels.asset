@@ -12,10 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6198c9a8da3a103489140d12e86da981, type: 3}
   m_Name: DemonEyeLevels
   m_EditorClassIdentifier: Assembly-CSharp::DemonEyeLevels
-  prefixedLevels: 0000000020030000d0070000
-  levelSprites:
-  - {fileID: -1083478326, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
-  - {fileID: 1806977299, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
-  - {fileID: -822337333, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
-  levels:
-    prefixedLevels: 0000000020030000d0070000
+  items:
+  - {fileID: 11400000, guid: 69e3a2fe6ea20814e8199b4a7f6979ff, type: 2}
+  - {fileID: 11400000, guid: 6b4e9acde7ebc1b4ca97eabeed8656fe, type: 2}
+  - {fileID: 11400000, guid: c7871fb854c97064891dd80ae8b3af9e, type: 2}

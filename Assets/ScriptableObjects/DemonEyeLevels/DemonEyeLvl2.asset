@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9bc23522601a56f4d89295cf565d360b, type: 3}
-  m_Name: DemonEye
+  m_Name: DemonEyeLvl2
   m_EditorClassIdentifier: Assembly-CSharp::Item
-  uuid: -698570393
+  uuid: 849320642
   displayName: Demon Eye
-  inventorySprite: {fileID: -1083478326, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  inventorySprite: {fileID: 1806977299, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   dropSprite: {fileID: 2092274605, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   pickupRadius: 0.07
   type: {fileID: 11400000, guid: fd77ee936723b1448b554eb40ddbf4f4, type: 2}

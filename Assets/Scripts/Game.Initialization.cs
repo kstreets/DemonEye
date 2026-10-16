@@ -218,7 +218,7 @@ public partial class Game {
             TransferPlayerInventoryToStash(() => {
                 persistentFlags &= ~GameData.PersistentFlags.ShowStashTransferButton;
                 playerPanel.transferToStashButton.StopKeepPressed();
-                playerPanel.transferToStashButton.transform.parent.gameObject.SetActive(false);
+                playerPanel.transferToStashButton.gameObject.SetActive(false);
             });
         });
 
