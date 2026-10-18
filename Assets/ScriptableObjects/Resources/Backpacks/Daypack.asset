@@ -49,4 +49,4 @@ MonoBehaviour:
   maxStackCount: 1
   weight: 3
   description: 
-  additionalStorageSlots: 6
+  additionalStorageSlots: 4

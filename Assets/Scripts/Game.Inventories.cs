@@ -351,7 +351,7 @@ public partial class Game {
 
         bool hoveringOverItem = TryGetItemFromHoverInfo(invHoverInfo, out ItemInstance _);
         
-        const float hoverTimeUntilTooltip = 0.35f;
+        const float hoverTimeUntilTooltip = 0.75f; // used to be 0.35 before trailer work
         bool spentEnoughTimeHovering = invHoverInfo.timeSpentHovering >= hoverTimeUntilTooltip;
         
         if (hoveringOverItem && spentEnoughTimeHovering) {
@@ -1371,12 +1371,19 @@ public partial class Game {
         EndDragAndDropItem();
     }
     
-    // Set from the Gameplay Testing window
+    // Set from the Gameplay Testing window. Holds the asset GUID of the testing inventory
+    public const string testingInventoryEditorPrefKey = "DemonEye_TestingInventory";
+
     private void LoadTestingInventoryFromSettings() {
-        GameplayTestingSettings testingSettings = Resources.Load<GameplayTestingSettings>(GameplayTestingSettings.resourcesPath);
-        if (testingSettings == null || testingSettings.testingInventory == null) return;
-        
-        LoadTestingInventoryOntoPlayer(testingSettings.testingInventory);
+#if UNITY_EDITOR
+        string guid = UnityEditor.EditorPrefs.GetString(testingInventoryEditorPrefKey);
+        if (string.IsNullOrEmpty(guid)) return;
+
+        string assetPath = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
+        TestingInventory testingInventory = UnityEditor.AssetDatabase.LoadAssetAtPath<TestingInventory>(assetPath);
+        if (testingInventory == null) return;
+        LoadTestingInventoryOntoPlayer(testingInventory);
+#endif
     }
     
     public void LoadTestingInventoryOntoPlayer(TestingInventory testingInventory) {

@@ -15,7 +15,6 @@ public partial class Game {
         InitInput();
         InitInputDevice();
         InitResources();
-        InitTrailer();
         InitAudio();
         InitMusic();
         DemonEyeTween.Init();

@@ -599,16 +599,16 @@ public class CoolerGrid : MonoBehaviour {
         for (int i = 0; i < precomputedCells.Count; i++) {
             if (!precomputedCells[i].traversable) continue;
 
-            bool hasTraversableNeighbor = false;
+            bool traversableNeighbor = false;
             for (int n = 0; n < 9; n++) {
                 int neighborIndex = GetNeighborIndex(width, height, i, n);
                 if (neighborIndex != -1 && precomputedCells[neighborIndex].traversable) {
-                    hasTraversableNeighbor = true;
+                    traversableNeighbor = true;
                     break;
                 }
             }
 
-            if (!hasTraversableNeighbor) {
+            if (!traversableNeighbor) {
                 precomputedCells[i].traversable = false;
             }
         }

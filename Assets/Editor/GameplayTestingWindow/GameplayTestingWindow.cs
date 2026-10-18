@@ -56,7 +56,7 @@ public class GameplayTestingWindow : EditorWindow {
         SkipTutorialToggle.value = EditorPrefs.GetBool(Game.skipTutorialEditorPrefKey);
         SkipTutorialToggle.RegisterValueChangedCallback(changeEvent => EditorPrefs.SetBool(Game.skipTutorialEditorPrefKey, changeEvent.newValue));
         
-        TestingInventoryField.value = LoadOrCreateTestingSettings().testingInventory;
+        TestingInventoryField.value = LoadTestingInventoryFromEditorPrefs();
         TestingInventoryField.RegisterValueChangedCallback(OnTestingInventoryChanged);
 
         // Restore settings after domain reload
@@ -235,25 +235,22 @@ public class GameplayTestingWindow : EditorWindow {
     
     private TestingInventory SelectedTestingInventory => TestingInventoryField.value as TestingInventory;
     
-    // Kept in an asset instead of on the window so it's included in builds
-    private static GameplayTestingSettings LoadOrCreateTestingSettings() {
-        const string settingsAssetPath = "Assets/Resources/" + GameplayTestingSettings.resourcesPath + ".asset";
-        GameplayTestingSettings testingSettings = AssetDatabase.LoadAssetAtPath<GameplayTestingSettings>(settingsAssetPath);
-        if (testingSettings != null) return testingSettings;
-        
-        testingSettings = CreateInstance<GameplayTestingSettings>();
-        AssetDatabase.CreateAsset(testingSettings, settingsAssetPath);
-        AssetDatabase.SaveAssets();
-        return testingSettings;
+    // Kept in EditorPrefs instead of on the window so the game can read it when it starts
+    private static TestingInventory LoadTestingInventoryFromEditorPrefs() {
+        string guid = EditorPrefs.GetString(Game.testingInventoryEditorPrefKey);
+        if (string.IsNullOrEmpty(guid)) return null;
+        return AssetDatabase.LoadAssetAtPath<TestingInventory>(AssetDatabase.GUIDToAssetPath(guid));
     }
-    
+
     private void OnTestingInventoryChanged(ChangeEvent<Object> changeEvent) {
-        GameplayTestingSettings testingSettings = LoadOrCreateTestingSettings();
-        Undo.RecordObject(testingSettings, "Change Testing Inventory");
-        testingSettings.testingInventory = SelectedTestingInventory;
-        EditorUtility.SetDirty(testingSettings);
-        AssetDatabase.SaveAssetIfDirty(testingSettings);
-        
+        if (SelectedTestingInventory == null) {
+            EditorPrefs.DeleteKey(Game.testingInventoryEditorPrefKey);
+        }
+        else {
+            string guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(SelectedTestingInventory));
+            EditorPrefs.SetString(Game.testingInventoryEditorPrefKey, guid);
+        }
+
         // Entering play mode loads it automatically, so only need to load it manually when assigned mid play
         if (Application.isPlaying && SelectedTestingInventory != null) {
             Game.gameInstance.LoadTestingInventoryOntoPlayer(SelectedTestingInventory);

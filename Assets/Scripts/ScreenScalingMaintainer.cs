@@ -9,8 +9,8 @@ public class ScreenScalingMaintainer : MonoBehaviour {
     private Vector2 defaultAnchorPos;
     private RectTransform rectTransform => transform as RectTransform;
     
-    public void OnScreenSizeChanged() {
-        float scaler = Screen.height / 1080f;
+    public void OnScreenSizeChanged(float canvasScaleFactor) {
+        float scaler = (Screen.height / 1080f) / canvasScaleFactor;
         rectTransform.anchoredPosition = defaultAnchorPos * scaler;
     }
     

@@ -1039,7 +1039,7 @@ public partial class Game {
         };
         
         foreach (ScreenScalingMaintainer maintainer in ui.screenScalingMaintainers) {
-            maintainer.OnScreenSizeChanged();
+            maintainer.OnScreenSizeChanged(ui.mainCanvasScaler.scaleFactor);
         }
         
         const float UISpritePixelsPerUnit = 32f;

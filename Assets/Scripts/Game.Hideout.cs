@@ -5,6 +5,7 @@ using PrimeTween;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Pool;
+using UnityEngine.UI;
 using static GameData;
 using Random = UnityEngine.Random;
 
@@ -242,6 +243,18 @@ public partial class Game {
         ClearInventory(inventories.transaction);
         PlayAudioClip(audio.cashRegisterClip);
         thisFrame.flags |= FrameFlags.SoldToTrader;
+
+        { // For Trailer
+            traderDialogueTween.Stop();
+            traderPanel.shopTextTypewriter.gameObject.SetActive(false);
+            traderDialogueTween = Tween.Delay(0.1f, () => {
+                var typewriter = gameInstance.traderPanel.shopTextTypewriter;
+                string dialogue = traderGreetings.GetRandom(prevTraderDialogue);
+                prevTraderDialogue = dialogue;
+                typewriter.ShowText("{ffade}{shake}" + "Are you finished with those quests yet?");
+                typewriter.gameObject.SetActive(true);
+            });
+        }
     }
     
     private void OnMoneyPurchaseButtonPressed() {
@@ -585,7 +598,7 @@ public partial class Game {
     
     private void OnForgeButtonPressed() {
         if (PlayingForgeAnimation) return;
-        
+
         HideHint();
         
         if (forgeMode is ForgeMode.PostForgeOrUpgrade) {

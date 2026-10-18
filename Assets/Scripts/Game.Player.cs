@@ -10,8 +10,6 @@ using Random = UnityEngine.Random;
 public partial class Game {
     
     public class Player : Entity {
-        public bool cantAttackForTrailer;
-        
         public CapsuleCollider2D hurtCollider;
         public Vector3 velocity;
         
@@ -92,7 +90,6 @@ public partial class Game {
     
     private void DeinitPlayer() {
         player.bleeding = false;
-        player.cantAttackForTrailer = false;
         player.velocity = Vector3.zero;
         playerPanel.previewImage.sprite = player.defaultPlayerPreviewSprite;
         if (player.health > 0) { // We only want to restore health if the player isn't dead
@@ -101,7 +98,6 @@ public partial class Game {
     }
     
     public void PlayerOnExitPortalSummoned(Portal portal) {
-        player.cantAttackForTrailer = true;
         if (trinkets.equiped is not PortalBlastTrinket portalBlast) return;
 
         Vector2 portalPos = portal.transform.position;
@@ -257,7 +253,7 @@ public partial class Game {
         }
         
         bool canShoot = player.attackLimiter.TimeHasPassed(GetFirerateDelay());
-        if (!canShoot || player.cantAttackForTrailer) return;
+        if (!canShoot) return;
         
         float projCount = GetAbsoluteStat(PlayerStat.ProjectileCount);
         int targetCount = Mathf.FloorToInt(projCount);
