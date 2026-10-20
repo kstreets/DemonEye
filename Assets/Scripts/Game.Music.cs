@@ -25,6 +25,10 @@ public partial class Game {
     }
     
     private void UpdateGameplayMusic() {
+        if (curRaid.mapInstance.isBossMap) {
+            return;
+        }
+        
         if (curRaid.state == RaidState.PostFinalWave) {
             if (curRaid.stateSwitchedThisFrame) {
                 StopMusic(MusicOption.Smooth);

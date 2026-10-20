@@ -484,6 +484,8 @@ public partial class Game {
     [NonSerialized] private EnemySpawnManager spawnManager = new();
     
     private void InitSpawnManager(RaidSpawnPattern pattern) {
+        if (curRaid.mapInstance.isBossMap) return;
+        
         spawnManager.spawnEvents.Clear();
         spawnManager.spawnedThisFrame = false;
         spawnManager.spawnPattern = pattern;
@@ -518,6 +520,8 @@ public partial class Game {
     private Limiter spawnLimiterForEnemyBatching;
     
     private void UpdateSpawnManager() {
+        if (curRaid.mapInstance.isBossMap) return;
+        
         EnemySpawnManager sm = spawnManager;
         sm.spawnedThisFrame = false;
         sm.waveStartedThisFrame = false;

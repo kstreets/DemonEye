@@ -359,6 +359,8 @@ public partial class Game : MonoBehaviour {
     }
     
     private void UpdateRaidState() {
+        if (curRaid.mapInstance.isBossMap) return;
+        
         RaidState prevState = curRaid.state;
         
         if (spawnManager.BeforeLastWave) {

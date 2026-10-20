@@ -100,6 +100,8 @@ public partial class Game {
     }
 
     private void SpawnMapResources(Transform resourceSpawnParent) {
+        if (curRaid.mapInstance.isBossMap) return;
+        
         // Clear past resource lookups
         curRaid.deadBodySlotsLookup.Clear();
         curRaid.bushSlotsLookup.Clear();
@@ -223,6 +225,7 @@ public partial class Game {
     }
     
     private void SpawnInitialExitPortals(Transform exitPortalParent, int exitPortalsCount) {
+        if (curRaid.mapInstance.isBossMap) return;
         Assert.IsTrue(exitPortalsCount > 0, $"{nameof(exitPortalsCount)} needs to be 1 or more");
         
         curRaid.activeExitPortals.Clear();
@@ -268,6 +271,7 @@ public partial class Game {
     }
     
     private void PlantBloodMushroom(Vector2 pos) {
+        if (curRaid.mapInstance.isBossMap) return;
         if (!persistentFlags.HasFlag(PersistentFlags.BloodMushroomsUnlocked)) return;
         
         const float chanceToPlant = 0.067f;

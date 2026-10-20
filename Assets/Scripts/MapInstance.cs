@@ -10,5 +10,6 @@ public class MapInstance : MonoBehaviour {
     public Transform exitPortalsParent;
     public TilemapRenderer mainTilemapRenderer;
     public CoolerGrid grid;
+    public bool isBossMap;
 
 }

@@ -15,7 +15,7 @@ MonoBehaviour:
   displayName: Sulfur Fields
   sceneReference: DemoMap
   spawning: {fileID: 11400000, guid: c3f7f6d7c8bc62a4993a44c716d126e0, type: 2}
-  waterSettings: {fileID: 11400000, guid: 1866c6a4b026e3443ab0d054026b2d00, type: 2}
+  waterSettings: {fileID: 11400000, guid: 4ed6bcca488508542895549cf9b79f11, type: 2}
   minimapTexture: {fileID: 2800000, guid: b7c3794944198164b88e407509fa3d1d, type: 3}
   icon: {fileID: 779084914, guid: fc22346a1d143684bbb07dbf4e628853, type: 3}
   previewImage: {fileID: 2800000, guid: 2721ae5008caad74fb4afe62b8858ad5, type: 3}
