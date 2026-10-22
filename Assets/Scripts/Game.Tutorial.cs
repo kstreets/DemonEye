@@ -1,5 +1,3 @@
-using System;
-using Febucci.TextAnimatorForUnity;
 using PrimeTween;
 using TMPro;
 using UnityEngine;
@@ -87,8 +85,8 @@ public partial class Game {
             ui.teleportingIntoRaidHeader.text = "Equip the Demon Eye";
             FadeIn(ui.teleportingIntoRaidHeader, 1f);
             ToggleSlimPlayerPanel(false);
-            FadeInAndExpandPanel(playerPanel.panel, 1f, 1.2f)
-            .OnComplete(() => inventories.eyeForge.isLocked = false);
+            FadeInAndExpandPanel(playerPanel.panel, 1f, 1.2f);
+            Tween.Delay(0.9f, () => inventories.eyeForge.isLocked = false);
             inventories.player.slots[0].ui.SetOutlined(true);
         }, exit: () => {
             inventories.player.slots[0].ui.SetOutlined(false);
@@ -152,20 +150,19 @@ public partial class Game {
             mainMenu.hideoutButton.SetClickableState(true);
             mainMenu.hideoutNotifier.SetActive(true);
             mainMenu.playButton.SetClickableState(false);
-        });
-        tutorial.hideoutCharacter = tutorial.stateMachine.CreateState(enter: () => {
-            ui.traderTutorialDialogueBox.SetActive(true);
-            tutorial.dialogueTypewriter = ui.traderTutorialTypewriter; // Set again in case of restoring from a save
-            hideoutTabs.toggleGroup.SetTogglesHidden(false);
-            hideoutTabs.toggleGroup.SetTogglesLocked(true);
-
+            // Give starting items here so they don't make a sound when they are added to stash    
             if (!persistentFlags.HasFlag(PersistentFlags.HideoutTourItemsGiven)) {
                 foreach (ItemWithCount itemWithCount in config.hideoutTourStartingInventory.itemsWithCounts) {
                     TryAddItemToInventory(inventories.stash, itemWithCount.item, itemWithCount.count);
                 }
                 persistentFlags |= PersistentFlags.HideoutTourItemsGiven;
             }
-
+        });
+        tutorial.hideoutCharacter = tutorial.stateMachine.CreateState(enter: () => {
+            ui.traderTutorialDialogueBox.SetActive(true);
+            tutorial.dialogueTypewriter = ui.traderTutorialTypewriter; // Set again in case of restoring from a save
+            hideoutTabs.toggleGroup.SetTogglesHidden(false);
+            hideoutTabs.toggleGroup.SetTogglesLocked(true);
             StartDialogue(
                 Line("Welcome to the Hideout! I provide all the utilities you could need on your journey to ascension."),
                 Line("Here we have the Inventory tab, a place where you can stash items, heal up, and prepare your body in various ways for raids."),

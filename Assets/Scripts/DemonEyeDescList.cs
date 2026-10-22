@@ -19,6 +19,7 @@ public class DemonEyeDescList : MonoBehaviour {
     private EyeUpgrade[] shownUpgrades;
     private int[] shownUpgradeCounts;
     private bool[] slidingOut; // Still showing a removed upgrade while it slides away, so it can't be given a new one yet
+    private bool triggerReAnimation;
 
     private const float SlideInDelayPerElement = 0.06f;
 
@@ -35,21 +36,17 @@ public class DemonEyeDescList : MonoBehaviour {
         const int preCachingSize = 10;
         augmentDescObjectPool = new(OnCreateAugmentDescription, OnGetAugmentDescription, OnReleaseAugmentDescription, defaultCapacity: preCachingSize);
         augmentDescObjectPool.CreateObjects(preCachingSize);
+        
+        HideAllElements();
     }
-
-    private bool resetPending;
 
     private void OnDisable() {
-        // Everything counts as new when shown again, rather than comparing against whatever was showing ages ago.
-        // Can't hide them here, Unity doesn't allow changing the hierarchy while it's in the middle of deactivating it.
-        resetPending = true;
+        triggerReAnimation = true;
     }
 
-    // animateChanges slides in new upgrades, slides out removed ones, and punches the scale of ones whose count went up.
-    // Without it everything just appears and disappears.
     public void UpdateDisplay(EyeUpgradeSet eyeUpgradeSet, bool showCountsAsIncrease, bool animateChanges = false) {
-        if (resetPending) {
-            resetPending = false;
+        if (triggerReAnimation) {
+            triggerReAnimation = false;
             HideAllElements();
         }
 

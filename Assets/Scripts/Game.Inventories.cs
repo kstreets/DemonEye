@@ -351,7 +351,7 @@ public partial class Game {
 
         bool hoveringOverItem = TryGetItemFromHoverInfo(invHoverInfo, out ItemInstance _);
         
-        const float hoverTimeUntilTooltip = 0.75f; // used to be 0.35 before trailer work
+        const float hoverTimeUntilTooltip = 0.35f;
         bool spentEnoughTimeHovering = invHoverInfo.timeSpentHovering >= hoverTimeUntilTooltip;
         
         if (hoveringOverItem && spentEnoughTimeHovering) {

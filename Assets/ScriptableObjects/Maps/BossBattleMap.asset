@@ -19,8 +19,8 @@ MonoBehaviour:
   minimapTexture: {fileID: 2800000, guid: b7c3794944198164b88e407509fa3d1d, type: 3}
   icon: {fileID: 779084914, guid: fc22346a1d143684bbb07dbf4e628853, type: 3}
   previewImage: {fileID: 2800000, guid: 2721ae5008caad74fb4afe62b8858ad5, type: 3}
-  difficultyText: Medium
-  unlockRequirement: Complete Outskirts to unlock
+  difficultyText: Hard
+  unlockRequirement: Complete Swamp to unlock
   altarSoulPrice: 100
   exitPortalsCount: 2
   minExtractionDist: 7.5
