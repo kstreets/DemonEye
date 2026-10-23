@@ -1,4 +1,5 @@
 using TMPro;
+using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.InputSystem;
 
@@ -10,7 +11,11 @@ public partial class Game {
 
         GameState gameState = LoadGameState();
         persistentFlags = gameState?.persistentFlags ?? default;
+        
         camera.defaultPPU = camera.pixelPerfect.assetsPPU;
+        if (ScreenIsSmall) { // On Steamdeck lets zoom the camera in a bit more
+            camera.defaultPPU = Mathf.RoundToInt(camera.defaultPPU * 1.3f);    
+        }
         
         InitInput();
         InitInputDevice();

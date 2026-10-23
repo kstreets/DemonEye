@@ -23,11 +23,6 @@ public partial class Game {
         Cursor.visible = !usingController;
         Cursor.SetCursor(config.styles.cursorTexture, Vector2.zero, CursorMode.Auto);
 
-        // Remember where the currencies go in the player info panel, so they can be put back after being moved for small screens
-        currencyInfoParent = playerInfo.coinsCurrencyParent.transform.parent;
-        coinsCurrencySiblingIndex = playerInfo.coinsCurrencyParent.transform.GetSiblingIndex();
-        soulsCurrencySiblingIndex = playerInfo.soulsCurrencyParent.transform.GetSiblingIndex();
-        
         CloseSettingsMenuUI();
         CloseHideoutUI();
         CloseRaidUI();
@@ -107,7 +102,7 @@ public partial class Game {
         hideoutTabs.parent.gameObject.SetActive(false);
         playerInfo.parent.gameObject.SetActive(false);
         // The player info is hidden here, so keep the currencies in it so they're hidden too
-        SetCurrencyDisplaysInHideout(false);
+        CheckToMoveCurrencyDisplays();
         ToggleHideoutPanels(playerPanel.panel, mapPanels.mapSelectionPanel.rectTransform);
         mapPanels.mapSelectionPanel.UpdateSelectorStates(config.maps);
         ui.teleportingIntoRaidHeader.gameObject.SetActive(true);
@@ -129,7 +124,7 @@ public partial class Game {
     }
     
     private void ShowHideoutUI() {
-        SetCurrencyDisplaysInHideout(true);
+        CheckToMoveCurrencyDisplays();
         hideoutTabs.toggleGroup.ManualyToggle(hideoutTabs.characterButton);
         ui.menuBackButton.gameObject.SetActive(true);
         inputPrompts.hideoutParent.gameObject.SetActive(!InMapSelection);
@@ -146,7 +141,7 @@ public partial class Game {
     }
     
     private void CloseHideoutUI() {
-        SetCurrencyDisplaysInHideout(false);
+        CheckToMoveCurrencyDisplays();
         ToggleHideoutPanels();
         HideInventoryItemPopup(); 
         HideHint();
@@ -161,7 +156,8 @@ public partial class Game {
     }
 
     private void ShowRaidUI() {
-        SetCurrencyDisplaysInHideout(false);
+        CheckToMoveCurrencyDisplays();
+        UpdateRaidInventoryPanelHeights();
         playerInfo.healthBarParent.gameObject.SetActive(true);
         playerInfo.weightBarParent.gameObject.SetActive(true);
         playerInfo.coinsCurrencyParent.gameObject.SetActive(false);
@@ -171,9 +167,8 @@ public partial class Game {
         ui.hotBarParent.gameObject.SetActive(true);
         
         inputPrompts.inRaidParent.SetActive(true);
-        // Transfer hideout prompts to raid to reduce prompt bindings
         foreach (Transform invPrompt in inputPrompts.allInventoryPrompts) {
-            invPrompt.parent = inputPrompts.inRaidParent.transform;
+            invPrompt.SetParent(inputPrompts.inRaidParent.transform, false);
             invPrompt.gameObject.SetActive(false);
         }
 
@@ -191,6 +186,7 @@ public partial class Game {
     }
 
     private void CloseRaidUI() {
+        UpdateRaidInventoryPanelHeights();
         HideInventoryItemPopup(); 
         HideHint();
         ui.interactionPrompt.gameObject.SetActive(false);
@@ -203,7 +199,7 @@ public partial class Game {
         
         inputPrompts.inRaidParent.SetActive(false);
         foreach (Transform invPrompt in inputPrompts.allInventoryPrompts) {
-            invPrompt.parent = inputPrompts.hideoutParent.transform;
+            invPrompt.SetParent(inputPrompts.hideoutParent.transform, false);
             invPrompt.gameObject.SetActive(true);
         }
     }
@@ -1024,13 +1020,14 @@ public partial class Game {
     
     // Multiply canvas units (sizes and offsets authored at 1080p) by this to get screen pixels
     public float CanvasScale => ui.mainCanvasRectTransform.lossyScale.x;
+    public bool ScreenIsSmall => Screen.height <= 1000;
 
     private void UIOnScreenSizeChanged() {
         ui.mainCanvasScaler.scaleFactor = Screen.height switch {
             >= 2160 => 1.4f,
             >= 1440 => 1.2f,
             >= 1080 => 1f, 
-            >= 800 => 0.88f, 
+            >= 800 => 0.93f,
             >= 750 => 0.84f,
             >= 700 => 0.75f,
             >= 600 => 0.5f,
@@ -1047,46 +1044,66 @@ public partial class Game {
         float scale = ui.mainCanvasScaler.scaleFactor;
         float screenPixelsPerArtPixel = Mathf.Max(1f, Mathf.Round(UIAuthoredReferencePixelsPerUnit / UISpritePixelsPerUnit * scale));
         ui.mainCanvasScaler.referencePixelsPerUnit = UISpritePixelsPerUnit * screenPixelsPerArtPixel / scale;
+
+        // Update hideout margins for smaller screens
+        {
+            float margin = ScreenIsSmall ? 15f : 25f;
+            hideoutTabs.parent.anchoredPosition = new(hideoutTabs.parent.anchoredPosition.x, -margin);
+            ui.menuBackButton.rectTransform.anchoredPosition = new(ui.menuBackButton.rectTransform.anchoredPosition.x, margin);
+            inputPrompts.hideoutParent.anchoredPosition = new(inputPrompts.hideoutParent.anchoredPosition.x, margin);
+            
+            float hideoutPanelSpacing = ScreenIsSmall ? 15f : 30f;
+            ui.hideoutPanelsParent.GetComponent<HorizontalLayoutGroup>().spacing = hideoutPanelSpacing;
+        }
         
-        PlaceCurrencyDisplays();
+        // Update in raid margins for smaller screens
+        {
+            float verticalMargin = ScreenIsSmall ? 15f : 25f;
+            float horizontalMargin = ScreenIsSmall ? 15f : 50f;
+            ((RectTransform)playerInfo.parent.transform).anchoredPosition = new(horizontalMargin, -verticalMargin);
+            ((RectTransform)raidInfo.parent.transform).anchoredPosition = new(-horizontalMargin, -verticalMargin);
+            
+            float scaler = ScreenIsSmall ? 0.85f : 1f;
+            playerInfo.parent.transform.localScale = Vector3.one * scaler;
+            raidInfo.parent.transform.localScale = Vector3.one * scaler;
+        }
+        
+        CheckToMoveCurrencyDisplays();
         Canvas.ForceUpdateCanvases();
     }
 
-    private Transform currencyInfoParent;
-    private int coinsCurrencySiblingIndex;
-    private int soulsCurrencySiblingIndex;
-    private bool currenciesInHideout;
-
-    private void SetCurrencyDisplaysInHideout(bool inHideout) {
-        currenciesInHideout = inHideout;
-        PlaceCurrencyDisplays();
-    }
-
-    private void PlaceCurrencyDisplays() {
-        if (!currencyInfoParent) return; // Not initialized yet
-
+    private void CheckToMoveCurrencyDisplays() {
         Transform coins = playerInfo.coinsCurrencyParent.transform;
         Transform souls = playerInfo.soulsCurrencyParent.transform;
 
-        bool useSmallScreenSpot = currenciesInHideout && ui.mainCanvasScaler.scaleFactor < 0.95f;
-        if (useSmallScreenSpot) {
+        bool useSmallScreenSpot = InHideout && ScreenIsSmall;
+        if (useSmallScreenSpot && coins.parent != ui.currencyForSmallScreensParent) {
             coins.SetParent(ui.currencyForSmallScreensParent, worldPositionStays: false);
             souls.SetParent(ui.currencyForSmallScreensParent, worldPositionStays: false);
             return;
         }
-
-        if (coins.parent == currencyInfoParent) return;
-        coins.SetParent(currencyInfoParent, worldPositionStays: false);
-        souls.SetParent(currencyInfoParent, worldPositionStays: false);
-        // Lowest index first so the first one placed doesn't shift the other's spot
-        if (coinsCurrencySiblingIndex < soulsCurrencySiblingIndex) {
-            coins.SetSiblingIndex(coinsCurrencySiblingIndex);
-            souls.SetSiblingIndex(soulsCurrencySiblingIndex);
+        
+        Transform currencyInfoParent = playerInfo.parent.transform;
+        if (coins.parent != currencyInfoParent) {
+            coins.SetParent(currencyInfoParent, worldPositionStays: false);
+            souls.SetParent(currencyInfoParent, worldPositionStays: false);
+            coins.SetSiblingIndex(2);
+            souls.SetSiblingIndex(3);
         }
-        else {
-            souls.SetSiblingIndex(soulsCurrencySiblingIndex);
-            coins.SetSiblingIndex(coinsCurrencySiblingIndex);
-        }
+    }
+    
+    private float? _restoreInventoryPanelHeight;
+    
+    // We need to shorten the player and loot inventories for steamdeck, otherwise they overlap with the hotbar
+    private void UpdateRaidInventoryPanelHeights() {
+        _restoreInventoryPanelHeight ??= playerPanel.panelLayoutElement.preferredHeight;
+        if (InRaid && ScreenIsSmall) {
+            playerPanel.panelLayoutElement.preferredHeight = 625;
+            ui.lootInventoryLayoutElement.preferredHeight = 625;
+            return;
+        } 
+        playerPanel.panelLayoutElement.preferredHeight = _restoreInventoryPanelHeight.Value;
+        ui.lootInventoryLayoutElement.preferredHeight = _restoreInventoryPanelHeight.Value;
     }
     
     public void PlayTypewritterCharacterShowSound() {

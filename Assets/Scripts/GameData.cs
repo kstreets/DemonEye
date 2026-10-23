@@ -167,6 +167,7 @@ public class GameData {
         public GameObject traderTutorialDialogueBox;
         public TextMeshProUGUI dialogueBoxPrompt;
         public RectTransform lootInventoryPanel;
+        public LayoutElement lootInventoryLayoutElement;
         public RectTransform lootInventoryParent;
         public GameObject lootSearchingText;
         public TextMeshProUGUI interactDetails;
@@ -185,7 +186,7 @@ public class GameData {
     
     [Serializable]
     public class InputPrompts {
-        public GameObject hideoutParent;
+        public RectTransform hideoutParent;
         public TextMeshProUGUI hideoutSelect_place;
         public TextMeshProUGUI hideoutQuickMove;
         public TextMeshProUGUI hideoutSplit_placeSingle;

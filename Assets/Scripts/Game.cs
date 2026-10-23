@@ -406,10 +406,12 @@ public partial class Game : MonoBehaviour {
     // Animation Sequences
     // *******************************
     
+    private int ZoomedInCameraPPU => Mathf.RoundToInt(camera.defaultPPU * 1.6f);
+    
     private Sequence raidEnterSequence;
     
     private void AnimateRaidEnterSequence() {
-        camera.pixelPerfect.assetsPPU = 80;
+        camera.pixelPerfect.assetsPPU = ZoomedInCameraPPU;
             
         raidEnterSequence = Sequence.Create();
             
@@ -482,7 +484,7 @@ public partial class Game : MonoBehaviour {
         
         int initialPPU = camera.pixelPerfect.assetsPPU;
         
-        sequence.Group(Tween.Custom(camera.pixelPerfect.assetsPPU, 80, 0.8f, val => {
+        sequence.Group(Tween.Custom(camera.pixelPerfect.assetsPPU, ZoomedInCameraPPU, 0.8f, val => {
             camera.pixelPerfect.assetsPPU = (int)val;
         }, Ease.InOutQuad));
 
@@ -514,7 +516,7 @@ public partial class Game : MonoBehaviour {
         Sequence sequence = Sequence.Create();
 
         int initialPPU = camera.pixelPerfect.assetsPPU;
-        sequence.Chain(Tween.Custom(camera.pixelPerfect.assetsPPU, 80, 0.5f, ease: Ease.InOutQuad, onValueChange: val => {
+        sequence.Chain(Tween.Custom(camera.pixelPerfect.assetsPPU, ZoomedInCameraPPU, 0.5f, ease: Ease.InOutQuad, onValueChange: val => {
             camera.pixelPerfect.assetsPPU = (int)val;
         }));
         
@@ -547,7 +549,7 @@ public partial class Game : MonoBehaviour {
         Sequence sequence = Sequence.Create();
 
         int initialPPU = camera.pixelPerfect.assetsPPU;
-        sequence.Chain(Tween.Custom(camera.pixelPerfect.assetsPPU, 80, 0.5f, ease: Ease.InOutQuad, onValueChange: val => {
+        sequence.Chain(Tween.Custom(camera.pixelPerfect.assetsPPU, ZoomedInCameraPPU, 0.5f, ease: Ease.InOutQuad, onValueChange: val => {
             camera.pixelPerfect.assetsPPU = (int)val;
         }));
         
