@@ -4,6 +4,7 @@ using PrimeTween;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.TextCore;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
@@ -1044,6 +1045,14 @@ public partial class Game {
         float scale = ui.mainCanvasScaler.scaleFactor;
         float screenPixelsPerArtPixel = Mathf.Max(1f, Mathf.Round(UIAuthoredReferencePixelsPerUnit / UISpritePixelsPerUnit * scale));
         ui.mainCanvasScaler.referencePixelsPerUnit = UISpritePixelsPerUnit * screenPixelsPerArtPixel / scale;
+
+        // Update global text size for smaller screens
+        {
+            FaceInfo faceInfo = ui.mainFontAsset.faceInfo;
+            faceInfo.scale = ScreenIsSmall ? 1.15f : 1f;
+            ui.mainFontAsset.faceInfo = faceInfo;
+            TMPro_EventManager.ON_FONT_PROPERTY_CHANGED(true, ui.mainFontAsset); // Tell text using this font to rebuild
+        }
 
         // Update hideout margins for smaller screens
         {

@@ -5,8 +5,7 @@ using static Game;
 [CreateAssetMenu(fileName = "EyeUpgrade", menuName = "Scriptable Objects/EyeUpgrade")]
 public class EyeUpgrade : Item, IEyeUpgrade  {
 
-    public MechanicDesc relativeMechanicDesc;
-    
+    public Sprite placeholderSprite;
     public MapSpawning MapSpawning => mapSpawning;
     public UuidScriptableObject UuidObject => this;
     public Sprite InventorySprite => inventorySprite;

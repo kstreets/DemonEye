@@ -18,7 +18,7 @@ public class GameData {
     [Serializable]
     public class Config {
         public ArtificialInventory startingTutorialInventory;
-        public ArtificialInventory hideoutTourStartingInventory;
+        public ArtificialInventory starterStashInventory;
         public Styles styles;
         public EnemyColors enemyColors;
         public GameplayConfig gameplay;
@@ -137,6 +137,7 @@ public class GameData {
     
     [Serializable] 
     public class UI {
+        public TMP_FontAsset mainFontAsset;
         public RectTransform mainCanvasRectTransform;
         public CanvasScaler mainCanvasScaler;
         public InteractionPrompt interactionPrompt;
@@ -280,7 +281,7 @@ public class GameData {
     [Serializable]
     public class EyeForgePanel {
         public RectTransform panel;
-        public Image panelNumeral;
+        public TextMeshProUGUI panelTitle;
         public ToggleButtonGroup toggleButtonGroup;
         public ToggleButton forgeToggle;
         public ToggleButton levelUpToggle;
@@ -299,6 +300,7 @@ public class GameData {
         public GameObject maxLevelReachedNotifier;
         
         [NonSerialized] public Sequence animatingInUpgradesSequence;
+        [NonSerialized] public int showingPentagramLevel;
     }
     
     [Serializable]
@@ -441,9 +443,11 @@ public class GameData {
         public ToggleButtonGroup toggleGroup;
         public ToggleButton audioToggle;
         public ToggleButton displayToggle;
+        public ToggleButton gameToggle;
         
         public RectTransform audioParent;
         public RectTransform displayParent;
+        public RectTransform gameParent;
         
         public SingleSetting fullscreenMode;
         public SingleSetting resolution;
@@ -455,6 +459,12 @@ public class GameData {
         public SingleSetting masterVolume;
         public SingleSetting musicVolume;
         public SingleSetting gameVolume;
+        
+        public SingleSetting cameraShake;
+        public SingleSetting cameraDistance;
+        public SingleSetting showHoverHints;
+        public SingleSetting itemPopupDelay;
+        public SingleSetting uncMode;
         
         [NonSerialized] public SingleSetting[] all;
         [NonSerialized] public SettingsState curSettingsState;
@@ -622,7 +632,7 @@ public class GameData {
     public enum PersistentFlags {
         None                     = 0,
         BloodMushroomsUnlocked   = 1 << 0,
-        HideoutTourItemsGiven    = 1 << 1,
+        StarterStashItemsGiven   = 1 << 1,
         HasExtracted             = 1 << 2,
         FirstMapPlayedOnce       = 1 << 3,
         FirstMapPlayedTwice      = 1 << 4,

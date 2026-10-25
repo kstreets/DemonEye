@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: Trader
   m_EditorClassIdentifier: Assembly-CSharp::Trader
   levels:
-    prefixedLevels: 00000000c80000005802000084030000dc050000
+    prefixedLevels: 0000000058020000dc050000fc080000b80b0000

@@ -395,6 +395,12 @@ public partial class Game {
         
         forgeModeChangedThisFrame = prevForgeMode != forgeMode;
         
+        if (forgeModeChangedThisFrame) { // Clear the strict slot accepting from any previous upgrade session 
+            foreach (InventorySlot slot in inventories.eyeForge.slots[1..]) {
+                slot.ui.onlyAcceptedItem = null;
+            }
+        }
+        
         if (InTutorialFirstForge) return;
         bool shouldShowPlayerPanel = (forgeMode is ForgeMode.Empty or ForgeMode.PostForgeOrUpgrade) || forgeError is ForgeError.ForgingButJustEye;
         
@@ -414,13 +420,10 @@ public partial class Game {
         if (!showingForge) return;
         
         int curPentagramLevel = hideoutState.pentagramLevelIndex + 1;
-        eyeForgePanel.panelNumeral.sprite = config.styles.RomanNumeralSprite(curPentagramLevel);
-        eyeForgePanel.panelNumeral.enabled = !InTutorialFirstForge;
-        
-        int curLevelDisplayedInLevelUpTab = (int)char.GetNumericValue(eyeForgePanel.subHeaderTextMesh.text[^1]);
-        int nextPentagramLevel = curPentagramLevel + 1;
-        if (nextPentagramLevel != curLevelDisplayedInLevelUpTab) {
-            eyeForgePanel.subHeaderTextMesh.text = $"Unlocks Demon Eye Level {nextPentagramLevel}";
+        if (eyeForgePanel.showingPentagramLevel != curPentagramLevel && !InTutorialFirstForge) {
+            eyeForgePanel.panelTitle.text = $"Pentagram {ColorSprite(GetTextMeshRomanNumeralIndex(curPentagramLevel), config.styles.textColor)}";
+            eyeForgePanel.subHeaderTextMesh.text = $"Unlocks Demon Eye Level {curPentagramLevel + 1}";
+            eyeForgePanel.showingPentagramLevel = curPentagramLevel;
         }
         
         eyeForgePanel.forgeHintTextMesh.text = string.Empty;
@@ -457,12 +460,14 @@ public partial class Game {
                 // We want to remove any previously placed eye upgrades because the upgrade placehoder items will hide them.
                 // Note we try to move the items to the Stash, but if not enough space, then the Player inventory, but if they are full then
                 // we just do nothing because we don't have a safe way of moving the item, should probably dynamically add a slot in the case but eh.
-                for (int i = 1; i < inventories.eyeForge.slots.Length; i++) {
-                    if (inventories.eyeForge.slots[i].itemInstance != null) {
-                        MoveItemBetweenInventories(inventories.eyeForge, inventories.stash, i, MoveItemOption.FullStack);
-                    }
-                    if (inventories.eyeForge.slots[i].itemInstance != null) {
-                        MoveItemBetweenInventories(inventories.eyeForge, inventories.player, i, MoveItemOption.FullStack);
+                if (forgeModeChangedThisFrame) {
+                    for (int i = 1; i < inventories.eyeForge.slots.Length; i++) {
+                        if (inventories.eyeForge.slots[i].itemInstance != null) {
+                            MoveItemBetweenInventories(inventories.eyeForge, inventories.stash, i, MoveItemOption.FullStack);
+                        }
+                        if (inventories.eyeForge.slots[i].itemInstance != null) {
+                            MoveItemBetweenInventories(inventories.eyeForge, inventories.player, i, MoveItemOption.FullStack);
+                        }
                     }
                 }
                 
@@ -477,9 +482,15 @@ public partial class Game {
                 
                 for (int i = 0; i < upgrades.Count; i++) {
                     InventorySlot slot = inventories.eyeForge.slots[i + 1];
+                    
+                    bool alreadyPlacedUpgradeForThisSlot = slot.itemInstance != null;
+                    if (alreadyPlacedUpgradeForThisSlot) continue;
+                    
                     EyeUpgrade upgrade = upgrades[i];
-                    slot.ui.SetPlaceHolderItemImage(upgrade);
-                    slot.ui.itemUI.UpdateOwnedVsRequiredCount(GetOwnedCountOfItem(upgrade), upgradeCountLookup[upgrade]);
+                    int ownedCount = GetOwnedCountOfItem(upgrade, useLooseAugmentMatching: true);
+                    slot.ui.SetPlaceHolderItemImage(upgrade.placeholderSprite);
+                    slot.ui.onlyAcceptedItem = upgrade;
+                    slot.ui.itemUI.UpdateOwnedVsRequiredCount(ownedCount, upgradeCountLookup[upgrade]);
                 }
                 
                 if (forgeModeChangedThisFrame) { // Animate in the eye upgrades needed when changed to this mode
@@ -511,8 +522,7 @@ public partial class Game {
                 canForge = EverySlotHasAnItem(inventories.eyeForge);
             }
             if (forgeMode == ForgeMode.UpgradingDemonEye) {
-                ItemInstance eyeItemInstance = inventories.eyeForge.slots[0].itemInstance;
-                canForge = forgeError != ForgeError.PentagramLevelTooLow && OwnsEyeUpgradesRequiredToUpgradeDemonEye(eyeItemInstance);
+                canForge = forgeError != ForgeError.PentagramLevelTooLow && EverySlotHasAnItem(inventories.eyeForge);
             }
             
             if (canForge && forgeButton.isDisabled) {
@@ -574,16 +584,21 @@ public partial class Game {
         using var _ = ListPool<int>.Get(out var uuids);
         
         if (forgeMode == ForgeMode.UpgradingDemonEye) {
-            int nextUpgradeCount = (eyeSlotItemInstance.DemonEyeLevel + 1) * Config.demonEyeCoreUpgradeCount;
-            for (int i = 0; i < nextUpgradeCount; i++) {
+            int curUpgradeCount = eyeSlotItemInstance.DemonEyeLevel * Config.demonEyeCoreUpgradeCount;
+            for (int i = 0; i < curUpgradeCount; i++) {
                 int index = i % Config.demonEyeCoreUpgradeCount;
                 uuids.Add(eyeSlotItemInstance.nestedUuids[index]);
+            }
+            
+            foreach (InventorySlot slot in inventories.eyeForge.slots[1..]) {
+                if (slot.itemInstance == null) continue;
+                uuids.Add(slot.itemInstance.itemOrInstanceUuid);
             }
         }
         
         if (forgeMode == ForgeMode.Forging) {
-            foreach (InventorySlot slot in inventories.eyeForge.slots) {
-                if (slot.itemInstance == null || slot.itemInstance.ItemRef.type != itemTypes.eyeUpgrade) continue;
+            foreach (InventorySlot slot in inventories.eyeForge.slots[1..]) {
+                if (slot.itemInstance == null) continue;
                 uuids.Add(slot.itemInstance.itemOrInstanceUuid);
             }
         }
@@ -617,30 +632,30 @@ public partial class Game {
         
         PlayAudioClip(audio.startForgingClip);
         
-        if (forgeMode is ForgeMode.Forging) {
+        // if (forgeMode is ForgeMode.Forging) {
             PlayEyeForgeAnimation(OnEyeForgeAnimationFinished);
-            return;
-        }
+            // return;
+        // }
         
-        using var _ = ListPool<EyeUpgrade>.Get(out var upgrades);
-        GetDemonEyeCoreUpgrades(eyeItemInstance, ref upgrades);
-        
-        const float startFillingUpgradesDelay = 0.2f;
-        const float perUpgradeFillDelay = 0.08f;
-        for (int i = 0; i < upgrades.Count; i++) {
-            inventories.eyeForge.slots[i + 1].ui.ClearItem();
-            Tween.Delay(upgrades[i], startFillingUpgradesDelay + (i * perUpgradeFillDelay), static (eyeUpgrade) => {
-                gameInstance.ReduceOwnedCountOfItem(eyeUpgrade);
-                Inventory eyeForgeInventory = gameInstance.inventories.eyeForge;
-                InventorySlot slot = FindFirstEmptyInventorySlot(eyeForgeInventory);
-                slot.itemInstance = new(eyeUpgrade);
-                gameInstance.TweenItemMove(slot.ui.itemUI);
-            });
-        }
-        
-        const float startForgeDelay = 0.2f;
-        float totalStartForgeDelay = startForgeDelay + ((upgrades.Count * perUpgradeFillDelay));
-        Tween.Delay(totalStartForgeDelay, static () => gameInstance.PlayEyeForgeAnimation(gameInstance.OnEyeForgeAnimationFinished));
+        // using var _ = ListPool<EyeUpgrade>.Get(out var upgrades);
+        // GetDemonEyeCoreUpgrades(eyeItemInstance, ref upgrades);
+        //
+        // const float startFillingUpgradesDelay = 0.2f;
+        // const float perUpgradeFillDelay = 0.08f;
+        // for (int i = 0; i < upgrades.Count; i++) {
+        //     inventories.eyeForge.slots[i + 1].ui.ClearItem();
+        //     Tween.Delay(upgrades[i], startFillingUpgradesDelay + (i * perUpgradeFillDelay), static (eyeUpgrade) => {
+        //         gameInstance.ReduceOwnedCountOfItem(eyeUpgrade);
+        //         Inventory eyeForgeInventory = gameInstance.inventories.eyeForge;
+        //         InventorySlot slot = FindFirstEmptyInventorySlot(eyeForgeInventory);
+        //         slot.itemInstance = new(eyeUpgrade);
+        //         gameInstance.TweenItemMove(slot.ui.itemUI);
+        //     });
+        // }
+        //
+        // const float startForgeDelay = 0.2f;
+        // float totalStartForgeDelay = startForgeDelay + ((upgrades.Count * perUpgradeFillDelay));
+        // Tween.Delay(totalStartForgeDelay, static () => gameInstance.PlayEyeForgeAnimation(gameInstance.OnEyeForgeAnimationFinished));
     }
     
     private void OnEyeForgeAnimationFinished() {

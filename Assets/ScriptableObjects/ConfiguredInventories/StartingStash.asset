@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb58136b5f76e47408d402428fad0ee1, type: 3}
   m_Name: StartingStash
   m_EditorClassIdentifier: Assembly-CSharp::StartingItemsConfig
+  coinCurrency: 2500
   itemsWithCounts:
   - item: {fileID: 11400000, guid: ef83f059863694948af3d40fde5daca5, type: 2}
     count: 5

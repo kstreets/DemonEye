@@ -26,6 +26,7 @@ public class Styles : ScriptableObject {
     public Color itemCountColor;
     public Color headerTextColor;
     public Color subHeaderTextColor;
+    public Color textColor;
     public Color popInTextColor;
     public Color interactionsTextColor;
     

@@ -27,8 +27,8 @@ public class ItemUI : MonoBehaviour {
         forgeEffect?.SetActive(true);
     }
     
-    public void SetPlaceholderItem(Item data) {
-        image.sprite = data.inventorySprite;
+    public void SetPlaceholderItemSprite(Sprite sprite) {
+        image.sprite = sprite;
         image.enabled = true;
         countText.gameObject.SetActive(false);
         image.color = Color.white;

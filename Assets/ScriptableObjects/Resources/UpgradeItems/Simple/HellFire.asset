@@ -52,4 +52,4 @@ MonoBehaviour:
   maxStackCount: 0
   weight: 0
   description: 
-  relativeMechanicDesc: {fileID: 0}
+  placeholderSprite: {fileID: 2040465651, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}

@@ -381,26 +381,6 @@ public partial class Game {
         }
             
         ui.itemDescPopupInv.Show(hoveredSlot.itemInstance, popupPosition);
-        
-        // Add mechanic desctiption if necessary
-        if (hoveredSlot.itemInstance.ItemRef.type == itemTypes.eyeUpgrade) {
-            EyeUpgrade eyeUpgrade = (EyeUpgrade)hoveredSlot.itemInstance.ItemRef;
-            if (eyeUpgrade.relativeMechanicDesc) {
-                ui.mechanicDescPopup.gameObject.SetActive(true);
-                ui.mechanicDescPopup.nameText.text = eyeUpgrade.relativeMechanicDesc.displayName;
-                ui.mechanicDescPopup.descText.text = eyeUpgrade.relativeMechanicDesc.description;
-                ui.mechanicDescPopup.transform.position = ui.itemDescPopupInv.rectTransform.WorldRect().min;
-                
-                ui.mechanicDescPopup.nameFitter.ForceRecalculate();
-                ui.mechanicDescPopup.descFitter.ForceRecalculate();
-                FitPopupSize(
-                    ui.mechanicDescPopup.rectTransform,
-                    ui.mechanicDescPopup.nameText.rectTransform.rect, 
-                    ui.mechanicDescPopup.descText.rectTransform.rect
-                );
-                TweenPopUp(ui.mechanicDescPopup.rectTransform);
-            } 
-        }
     }
 
     private void HideInventoryItemPopup() {
@@ -759,9 +739,9 @@ public partial class Game {
             bool droppingItemInHideout = hoverInfo.inventory == null && InHideout;
             bool tryingToPlaceItemToSellWhileBuying = hoverInfo.inventory == inventories.transaction && transactionState == TransactionState.Buying;
             bool tryingToPlaceInTraderInventory = hoverInfo.inventory == inventories.trader;
-            bool tryingToPlaceWhileUpgradingDemonEye = hoverInfo.inventory == inventories.eyeForge && forgeMode == ForgeMode.UpgradingDemonEye;
+            // bool tryingToPlaceWhileUpgradingDemonEye = hoverInfo.inventory == inventories.eyeForge && forgeMode == ForgeMode.UpgradingDemonEye;
             
-            if (droppingItemInHideout || tryingToPlaceItemToSellWhileBuying || tryingToPlaceInTraderInventory || tryingToPlaceWhileUpgradingDemonEye) {
+            if (droppingItemInHideout || tryingToPlaceItemToSellWhileBuying || tryingToPlaceInTraderInventory) { //|| tryingToPlaceWhileUpgradingDemonEye) {
                 TryAddItemToInventory(startDragInfo.inventory, dragItemInstance, startDragInfo.slotIndex);
                 EndDragAndDropItem();
                 return IsDraggingItem;
@@ -989,7 +969,7 @@ public partial class Game {
         if (itemInstance == null || itemInstance.notDiscovered) return;
         
         // If we are upgrading a demon eye we don't want to 'manually' be able to add any eye upgrades, as it would get confusing 
-        if (toInventory == inventories.eyeForge && forgeMode is ForgeMode.UpgradingDemonEye) return;
+        // if (toInventory == inventories.eyeForge && forgeMode is ForgeMode.UpgradingDemonEye) return;
         
         int specificSlotToMoveTo = -1;
         if (fromInventory == inventories.transaction && toInventory == inventories.trader) {
@@ -1270,13 +1250,25 @@ public partial class Game {
         return false;
     }
 
-    public int GetOwnedCountOfItem(Item item) {
+    public int GetOwnedCountOfItem(Item item, bool useLooseAugmentMatching = false) {
         int itemCount = 0;
         itemCount += GetItemCountInInventory(inventories.stash, item);
         itemCount += GetItemCountInInventory(inventories.player, item);
-        if (IsDraggingItem && dragItemInstance.ItemRef == item) {
-            itemCount += dragItemInstance.count;
+        
+        if (useLooseAugmentMatching && item.IsAugmented) {
+            itemCount += GetItemCountInInventory(inventories.stash, item.augmentCreatedFrom.derivedFrom);
+            itemCount += GetItemCountInInventory(inventories.player, item.augmentCreatedFrom.derivedFrom);
         }
+        
+        if (IsDraggingItem) {
+            if (useLooseAugmentMatching) {
+                itemCount += item.SharesSameBaseItemWith(dragItemInstance.ItemRef) ? dragItemInstance.count : 0;
+            }
+            else {
+                itemCount += dragItemInstance.ItemRef == item ? dragItemInstance.count : 0;
+            }
+        }
+        
         return itemCount;
     }
     

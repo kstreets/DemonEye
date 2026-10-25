@@ -7,6 +7,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     public Styles styles;
     public bool disallowItemStacking;
     public ItemType onlyAcceptedItemType;
+    public Item onlyAcceptedItem;
     public bool acceptDerivativeTypes = true;
     public Image slotImage;
     public Image rarityFrameImage;
@@ -68,6 +69,9 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     }
 
     public bool AcceptsItem(Item item) {
+        if (onlyAcceptedItem != null) {
+            return onlyAcceptedItem.SharesSameBaseItemWith(item);
+        }
         return AcceptsItemType(item.type);
     }
     
@@ -120,9 +124,8 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         rarityFrameImage.color = styles.GetSlotColorForRarity(itemInstance.GetRarity());
     }
 
-    public void SetPlaceHolderItemImage(Item item) {
-        itemUI.SetPlaceholderItem(item);
-        rarityFrameImage.color = styles.GetSlotColorForRarity(item.GetRarity());
+    public void SetPlaceHolderItemImage(Sprite sprite) {
+        itemUI.SetPlaceholderItemSprite(sprite);
     }
     
     public void ToggleOutOfStock() {

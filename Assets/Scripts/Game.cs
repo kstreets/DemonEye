@@ -101,7 +101,6 @@ public partial class Game : MonoBehaviour {
             spawnManager.timeInCurPhase = 9999999f;
             spawnManager.startNextWaveDelay = 0f;
         }
-        
 #endif
     }
     

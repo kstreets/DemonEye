@@ -110,6 +110,14 @@ public class Item : UuidScriptableObject  {
         return false;
     }
     
+    public bool SharesSameBaseItemWith(Item otherItem) {
+        int otherUuid = otherItem.IsAugmented ? otherItem.augmentCreatedFrom.derivedFrom.uuid : otherItem.uuid;
+        if (IsAugmented) {
+            return augmentCreatedFrom.derivedFrom.uuid == otherUuid;
+        }
+        return uuid == otherUuid;        
+    }
+    
     public virtual string GetDescription(int stackCount = 1) {
         string desc = string.Empty;
         

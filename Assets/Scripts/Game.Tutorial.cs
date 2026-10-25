@@ -150,13 +150,7 @@ public partial class Game {
             mainMenu.hideoutButton.SetClickableState(true);
             mainMenu.hideoutNotifier.SetActive(true);
             mainMenu.playButton.SetClickableState(false);
-            // Give starting items here so they don't make a sound when they are added to stash    
-            if (!persistentFlags.HasFlag(PersistentFlags.HideoutTourItemsGiven)) {
-                foreach (ItemWithCount itemWithCount in config.hideoutTourStartingInventory.itemsWithCounts) {
-                    TryAddItemToInventory(inventories.stash, itemWithCount.item, itemWithCount.count);
-                }
-                persistentFlags |= PersistentFlags.HideoutTourItemsGiven;
-            }
+            GiveStarterStashItems(); // Give starting items here so they don't make a sound when they are added to stash
         });
         tutorial.hideoutCharacter = tutorial.stateMachine.CreateState(enter: () => {
             ui.traderTutorialDialogueBox.SetActive(true);
@@ -253,18 +247,20 @@ public partial class Game {
     }
 
 #if UNITY_EDITOR
-    // Leaves the game as if the tutorial was just finished. Without a tutorial state machine the game isn't in the tutorial,
-    // so the next save marks it as completed and it won't come back even if skipping is turned off again.
     private void SkipTutorial() {
-        // Same items the hideout tour hands out, which is everything a player has once the tutorial is done
-        if (!persistentFlags.HasFlag(PersistentFlags.HideoutTourItemsGiven)) {
-            foreach (ItemWithCount itemWithCount in config.hideoutTourStartingInventory.itemsWithCounts) {
-                TryAddItemToInventory(inventories.stash, itemWithCount.item, itemWithCount.count);
-            }
-            persistentFlags |= PersistentFlags.HideoutTourItemsGiven;
-        }
+        GiveStarterStashItems();
     }
 #endif
+    
+    private void GiveStarterStashItems() {
+        if (persistentFlags.HasFlag(PersistentFlags.StarterStashItemsGiven)) return;
+        
+        player.state.coinCurrency = config.starterStashInventory.coinCurrency;
+        foreach (ItemWithCount itemWithCount in config.starterStashInventory.itemsWithCounts) {
+            TryAddItemToInventory(inventories.stash, itemWithCount.item, itemWithCount.count);
+        }
+        persistentFlags |= PersistentFlags.StarterStashItemsGiven;
+    }
 
     private void UpdateTutorial() {
         if (!InTutorial) return;

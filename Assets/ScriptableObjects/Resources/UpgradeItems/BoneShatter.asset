@@ -52,7 +52,7 @@ MonoBehaviour:
   maxStackCount: 0
   weight: 0
   description: 
-  relativeMechanicDesc: {fileID: 0}
+  placeholderSprite: {fileID: 0}
   probability: 0.4
   shardsCount: 4
   perShardDamageMulti: 0.35

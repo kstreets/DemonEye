@@ -35,7 +35,6 @@ public partial class Game {
         
         for (int i = 0; i < maps.Count; i++) {
             maps[i].state = gameState.mapStates[i];
-            maps[i].state.isUnlocked = true; // For trailer only
         }
     }
     

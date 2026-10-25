@@ -145,11 +145,19 @@ public partial class Game {
         settings.displayToggle.AddListener(() => {
             settings.displayParent.gameObject.SetActive(true);
             settings.audioParent.gameObject.SetActive(false);
+            settings.gameParent.gameObject.SetActive(false);
         });
         
         settings.audioToggle.AddListener(() => {
             settings.displayParent.gameObject.SetActive(false);
             settings.audioParent.gameObject.SetActive(true);
+            settings.gameParent.gameObject.SetActive(false);
+        });
+        
+        settings.gameToggle.AddListener(() => {
+            settings.displayParent.gameObject.SetActive(false);
+            settings.audioParent.gameObject.SetActive(false);
+            settings.gameParent.gameObject.SetActive(true);
         });
         
         ui.menuBackButton.AddListener(() => {

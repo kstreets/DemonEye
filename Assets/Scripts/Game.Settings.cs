@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.TextCore;
 
 public partial class Game {
     
@@ -117,6 +119,15 @@ public partial class Game {
                 settings.gameVolume.Display(linearVolume.ToString("0%"));
                 settings.curSettingsState.gameVolumeIndex = i;
             });
+        }
+
+        // Game Settings
+        {
+            settings.cameraShake.Init(1, 2).OnChange(i => settings.cameraShake.Display(i == 0 ? "Off" : "On"));
+            settings.cameraDistance.Init(0, 3).OnChange(i => settings.cameraDistance.Display("Normal"));
+            settings.showHoverHints.Init(1, 2).OnChange(i => settings.showHoverHints.Display(i == 0 ? "Off" : "On"));
+            settings.itemPopupDelay.Init(0, 3).OnChange(i => settings.itemPopupDelay.Display("Normal"));
+            settings.uncMode.Init(0, 2).OnChange(i => settings.uncMode.Display(i == 0 ? "Off" : "On"));
         }
         
         ApplySettings();
