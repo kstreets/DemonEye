@@ -28,7 +28,6 @@ public partial class Game {
         }
     }
 
-    // Stops the raid from ticking and freezes time so physics, tweens, animations and Time.time based timers all hold still
     private void PauseRaid() {
         if (pauseMenu.paused) return;
         pauseMenu.paused = true;
@@ -84,7 +83,6 @@ public partial class Game {
         Cursor.visible = false;
     }
 
-    // Settings is normally its own game state, but switching states would end the raid, so it's shown over the raid instead
     private void ShowPauseSettings() {
         pauseMenu.showingSettings = true;
         pauseMenu.panel.gameObject.SetActive(false);

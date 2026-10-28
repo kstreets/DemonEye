@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Styles
   m_EditorClassIdentifier: Assembly-CSharp::Styles
   cursorTexture: {fileID: 2800000, guid: e964ea07ccccc4347b7db62376d0a8a8, type: 3}
+  crosshairCursorTexture: {fileID: 2800000, guid: 0b2577a810fe4ff8aa81385b205c8f3e, type: 3}
   quickUsePlaceholderSprite: {fileID: 691824137, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   eyeUpgradePlaceholderSprite: {fileID: 203191926, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   simpleEyePlaceholderSprite: {fileID: 198821079, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}

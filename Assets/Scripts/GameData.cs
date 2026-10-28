@@ -49,6 +49,8 @@ public class GameData {
         public GameObject baseProjectile;
         public GameObject boneShatterProjectile;
         public GameObject soulProjectile;
+        public GameObject firebossProjectile;
+        public GameObject meteor;
         public GameObject bloodDrop;
         public GameObject poisonDebuff;
         public GameObject explosion;
@@ -75,6 +77,7 @@ public class GameData {
         public GameObject bloodBubble;
         public GameObject eyeUpgradeReveal;
         public GameObject altarSoulSwirl;
+        public GameObject attackCircle;
     }
     
     [Serializable]
@@ -499,6 +502,7 @@ public class GameData {
         public InputAction quickUseSelected;
         public InputAction quickUsePrevious;
         public InputAction quickUseNext;
+        public InputAction teleport;
         public InputAction menuMove;
         public InputAction menuSubmit;
         public InputAction menuTabLeft;
@@ -515,8 +519,10 @@ public class GameData {
         public EntityPool<Projectile> projectile;
         public EntityPool<Projectile> boneShatterProjectile;
         public EntityPool<Projectile> gooProjectile;
+        public EntityPool<Projectile> fireBossProjectile;
         public EntityPool<Projectile> piercingShotProjectile;
         public EntityPool<Projectile> soulProjectile;
+        public EntityPool<Entity> meteor;
         public EntityPool<Entity> poisonDebuff;
         public EntityPool<Entity> explosion;
         public EntityPool<Entity> projectileImpact;
@@ -535,6 +541,7 @@ public class GameData {
         public EntityPool<Entity> bloodBubble;
         public EntityPool<Entity> eyeUpgradeReveal;
         public EntityPool<Entity> altarSoulSwirl;
+        public EntityPool<Entity> attackCircle;
     }
     
     public class States {

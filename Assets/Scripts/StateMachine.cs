@@ -90,7 +90,7 @@ public class StateMachine {
 
     public void Tick(UpdateMode updateMode = UpdateMode.Update) {
         if (isPaused) return;
-        
+
         bool needsUpdating = Time.time != lastUpdateTime;
         
         if (needsUpdating) {

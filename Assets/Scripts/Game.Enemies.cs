@@ -26,6 +26,7 @@ public partial class Game {
         public int curRunningSumFrameCount;
         public float averageDistFromPlayerTime;
         public float lastTeleportTime;
+        public float curDistFromPlayer;
         public bool notProgressingTowardsPlayer;
         public Collider2D enemySpacerCollider;
         public EnemyData data;
@@ -37,6 +38,10 @@ public partial class Game {
         public OptionalRef<PoisonEyeUpgrade.InstanceData> poison;
         public OptionalRef<SlowEyeUpgrade.InstanceData> slow;
         public OptionalRef<KnockBackAugment.InstanceData> knockBack;
+    }
+    
+    public class FireBoss : Enemy {
+        public Limiter attackLimitter;
     }
     
     public static void ClearEnemyDebuffs(Enemy enemy) {
@@ -92,9 +97,9 @@ public partial class Game {
             
             if (!enemy.gameObject.activeInHierarchy) continue;
             
-            float distFromPlayer = Vector2.Distance(player.Center, enemy.Center);
+            enemy.curDistFromPlayer = Vector2.Distance(player.Center, enemy.Center);
             enemy.curRunningSumFrameCount++;
-            enemy.curRunningSumDistFromPlayer += distFromPlayer;
+            enemy.curRunningSumDistFromPlayer += enemy.curDistFromPlayer;
             
             enemy.averageDistFromPlayerTime += Time.deltaTime;
             if (enemy.averageDistFromPlayerTime > 1f) {
@@ -111,69 +116,39 @@ public partial class Game {
                 enemy.curRunningSumDistFromPlayer = 0f;
                 enemy.curRunningSumFrameCount = 0;
             }
-            
-            bool playingAttackAnimation = EnemyPlayingAttackAnimation(enemy);
-            Vector2 dirToPlayer = (player.position - enemy.position).normalized;
 
-            if (!playingAttackAnimation) {
-                if (enemy.animator.Playing(walkSideAnim)) {
-                    enemy.graphicalDir = enemy.spriteRenderer.flipX ? Vector2.left : Vector2.right;
-                }
-                else if (enemy.animator.Playing(walkUpAnim)) {
-                    enemy.graphicalDir = Vector2.up;
-                }
-                else {
-                    enemy.graphicalDir = Vector2.down;
-                }
-            }
-
-            bool canStartAttack = !playingAttackAnimation;
-            bool withinAttackDist = distFromPlayer < enemy.data.attackDistance;
-            bool facingPlayer = Vector2.Dot(enemy.graphicalDir, dirToPlayer) >= 0.5f;
-            
-            if (canStartAttack && withinAttackDist && facingPlayer) {
-                switch (CardinalDirFromVector(enemy.graphicalDir)) {
-                    case CardinalDir.Right:
-                    case CardinalDir.Left:
-                        enemy.animator.Play(attackSideAnim);
-                        break;
-                    case CardinalDir.Up:
-                        enemy.animator.Play(attackUpAnim);
-                        break;
-                    case CardinalDir.Down:
-                        enemy.animator.Play(attackDownAnim);
-                        break;
-                }
-                Delay(enemy, enemy.data.attackDamageDelay, static (enemy) => {
-                    // Its possible the enemy died while waiting to apply the damage 
-                    if (enemy.health <= 0) return;
-                    PerformEnemyAttack(enemy); 
-                });
+            switch (enemy.data.type) {
+                case EnemyData.EnemyType.FireBoss:
+                    FireBossLogic(enemy);
+                    break;
+                default:
+                    BasicEnemyLogic(enemy);
+                    break;
             }
             
             if (enemy.bleed.HasValue) {
                 ref var bleed = ref enemy.bleed.GetValue();
                 if (Time.time - bleed.lastBleedTime > bleed.bleedInterval) {
-                    
+                
                     float bleedDamageMultiplier = bleed.damageMultiplier;
                     DamageColor bleedDamageColor = DamageColor.Blood;
-                    
+                
                     if (enemy.hemorrhage.HasValue) {
                         bleedDamageMultiplier *= enemy.hemorrhage.GetValue().bleedDamageMulti;
                         enemy.hemorrhage.ClearValue(); // One time use
                         bleedDamageColor = DamageColor.Hemorrhage;
                     }
-                    
+                
                     int bleedDamage = Mathf.RoundToInt(GetBaseDamage() * bleedDamageMultiplier);
                     SpawnDamageNumber(EnemyDamageNumberSpawnPos(enemy), bleedDamage, bleedDamageColor);
-                    
+                
                     enemy.health -= bleedDamage;
                     bleed.lastBleedTime = Time.time;
 
                     Entity bloodDrop = SpawnEntity(entityPools.bloodDrop, OffsetY(enemy.position, 0.015f), Quaternion.identity);
                     AddParentEffect(bloodDrop, enemy, 0.4f);
                     DestroyEntity(bloodDrop, 0.8f);
-                    
+                
                     PlantBloodMushroom(enemy.position);
                     thisFrame.data.enemyBloodDropped++;
                 }
@@ -181,11 +156,11 @@ public partial class Game {
 
             if (enemy.health <= 0) {
                 Enemy deadEnemy = enemies[i];
-                
+            
                 // It looks better if the enemies keep some momentum when dying
                 deadEnemy.rigidbody.linearVelocity *= 0.3f;
                 deadEnemy.collider.enabled = false;
-                
+            
                 const float deathDelay = 0.03f;
                 Delay(deadEnemy, deathDelay, static (deadEnemy) => {
                     Game game = gameInstance;
@@ -193,7 +168,7 @@ public partial class Game {
                     game.PlayAudioClip(game.audio.bloodBurstClip, deadEnemy.position);
                     game.OnEnemyDeath(deadEnemy);
                 });
-                
+            
                 DissolveAndDestroy(deadEnemy, 0.6f, config.enemyColors.enemyDissolveBloodColor);
                 enemies.RemoveAt(i);
             }
@@ -219,6 +194,78 @@ public partial class Game {
 
             Enemy collidedWithEnemy = entities.lookup[closestColToPlayer.gameObject] as Enemy;
             DamagePlayer(collidedWithEnemy.data.collisionDamage, PlayerDamageType.Collision, collidedWithEnemy);
+        }
+    }
+    
+    private void BasicEnemyLogic(Enemy enemy) {
+        bool playingAttackAnimation = EnemyPlayingAttackAnimation(enemy);
+        Vector2 dirToPlayer = (player.position - enemy.position).normalized;
+
+        if (!playingAttackAnimation) {
+            if (enemy.animator.Playing(walkSideAnim)) {
+                enemy.graphicalDir = enemy.spriteRenderer.flipX ? Vector2.left : Vector2.right;
+            }
+            else if (enemy.animator.Playing(walkUpAnim)) {
+                enemy.graphicalDir = Vector2.up;
+            }
+            else {
+                enemy.graphicalDir = Vector2.down;
+            }
+        }
+
+        bool canStartAttack = !playingAttackAnimation;
+        bool withinAttackDist = enemy.curDistFromPlayer < enemy.data.attackDistance;
+        bool facingPlayer = Vector2.Dot(enemy.graphicalDir, dirToPlayer) >= 0.5f;
+            
+        if (canStartAttack && withinAttackDist && facingPlayer) {
+            switch (CardinalDirFromVector(enemy.graphicalDir)) {
+                case CardinalDir.Right:
+                case CardinalDir.Left:
+                    enemy.animator.Play(attackSideAnim);
+                    break;
+                case CardinalDir.Up:
+                    enemy.animator.Play(attackUpAnim);
+                    break;
+                case CardinalDir.Down:
+                    enemy.animator.Play(attackDownAnim);
+                    break;
+            }
+            Delay(enemy, enemy.data.attackDamageDelay, static (enemy) => {
+                // Its possible the enemy died while waiting to apply the damage 
+                if (enemy.health <= 0) return;
+                PerformEnemyAttack(enemy); 
+            });
+        }
+    }
+    
+    private void FireBossLogic(Enemy enemy) {
+        if (enemy is not FireBoss fireBoss) return;
+        
+        bool canAttack = fireBoss.attackLimitter.TimeHasPassed(2f);
+        if (canAttack) {
+            Vector3 spawnPos = gameInstance.OffsetY(enemy.position, 0.2f);
+            const float projectileSpeed = 1.5f;
+            if (TryGetPlayerInterceptPoint(spawnPos, projectileSpeed, out Vector2 aimPoint)) {
+                const float lifetime = 5f;
+                Vector2 velocity = (aimPoint - (Vector2)spawnPos).normalized * projectileSpeed;
+                SpawnProjectile(entityPools.fireBossProjectile, spawnPos, velocity, lifetime, enemy, flatDamage: enemy.data.damage, layermask: Masks.PlayerHurtMask);
+                
+                
+                const float meteorTravelTime = 0.8f;
+                Vector2 meteorSpawnPos = new(aimPoint.x, aimPoint.y + 2);
+                
+                Entity attackCircleEntity = SpawnEntity(entityPools.attackCircle, aimPoint, Quaternion.identity);
+                attackCircleEntity.attackCircle.Animate(0.2f, meteorTravelTime * 0.85f);
+                
+                Entity meteorEntity = SpawnEntity(entityPools.meteor, meteorSpawnPos, Quaternion.identity);
+                Tween.Custom(0f, 1f, meteorTravelTime, (comp) => {
+                    meteorEntity.position = Vector2.Lerp(meteorSpawnPos, aimPoint, comp);    
+                }, Ease.InQuad)
+                .OnComplete(() => {
+                    DestroyEntity(attackCircleEntity);
+                    DestroyEntity(meteorEntity);
+                });
+            }
         }
     }
     
@@ -461,6 +508,11 @@ public partial class Game {
         public readonly List<(float time, EnemyData enemy)> spawnEvents = new();
         public int spawnTimeIndex;
 
+        // Set once trash starts spawning alongside the boss after the last wave, the spawn events then belong to it instead of the current wave
+        public RaidSpawnPattern.Variant bossTrashVariant;
+        public bool BossTrashActive => bossTrashVariant != null;
+        public RaidSpawnPattern.Variant SpawningVariant => bossTrashVariant ?? CurPhase;
+
         public float extraMaxDuration;
         public float extraEarlyDelay;
         public float CurMaxDuration => CurPhase.maxDuration + extraMaxDuration;
@@ -487,6 +539,7 @@ public partial class Game {
         if (curRaid.mapInstance.isBossMap) return;
         
         spawnManager.spawnEvents.Clear();
+        spawnManager.bossTrashVariant = null;
         spawnManager.spawnedThisFrame = false;
         spawnManager.spawnPattern = pattern;
         spawnManager.curPhaseIndex = -1;
@@ -518,19 +571,29 @@ public partial class Game {
     }
     
     private Limiter spawnLimiterForEnemyBatching;
-    
+
     private void UpdateSpawnManager() {
         if (curRaid.mapInstance.isBossMap) return;
-        
+
         EnemySpawnManager sm = spawnManager;
         sm.spawnedThisFrame = false;
         sm.waveStartedThisFrame = false;
-        
-        if (sm.FinishedSpawningForRaid) return;
-        
+
         float prevTimeInCurPhase = sm.timeInCurPhase;
         sm.timeInCurPhase += Time.deltaTime;
-        
+
+        bool lastWaveSpawned = sm.OnLastWave && (sm.FinishedSpawningThisWave || sm.BossTrashActive);
+        if (lastWaveSpawned) {
+            UpdateBossTrashSpawning(sm);
+        }
+        else {
+            UpdateWaveProgression(sm, prevTimeInCurPhase);
+        }
+
+        SpawnDueEnemies(sm);
+    }
+
+    private void UpdateWaveProgression(EnemySpawnManager sm, float prevTimeInCurPhase) {
         bool afterFirstWave = sm.curPhaseIndex >= 0;
         float waveDuration = afterFirstWave ? sm.CurMaxDuration : sm.spawnPattern.timeBeforeFirstPhase;
         bool timeLimitExceeded = sm.timeInCurPhase >= waveDuration;
@@ -539,6 +602,7 @@ public partial class Game {
         bool waveCleared = afterFirstWave && sm.FinishedSpawningThisWave && curEnemyCount <= 0;
 
         if (afterFirstWave) {
+            // Hitting the time limit with enemies still alive gives a buffer before the next wave, scaled by how much of the wave is left
             if (justHitTimeLimit && curEnemyCount > 0) {
                 int totalEnemiesThisWave = 0;
                 foreach (RaidSpawnPattern.EnemyBatch batch in sm.CurPhase.enemyBatches) {
@@ -549,66 +613,69 @@ public partial class Game {
                 // The early delay is only for clearing the wave, which didn't happen, so the buffer replaces it
                 sm.startNextWaveDelay += addedTime - sm.CurEarlyDelay;
             }
-        
+
             bool justKilledLastEnemiesInWave = sm.FinishedSpawningThisWave && sm.prevEnemyCount > 0 && curEnemyCount <= 0;
             if (justKilledLastEnemiesInWave) {
-                
                 // If a wave's max duration is about the same time as the spawn duration, we can't assume the player struggled
                 // because they would of had none or very little time to kill the last spawned enemies
                 const float struggleEligiblePercentage = 1.2f;
                 bool waveIsStruggleEligible = sm.CurMaxDuration >= (sm.CurPhase.spawnDuration * struggleEligiblePercentage);
-                
-                if (waveIsStruggleEligible) {
+                if (!waveIsStruggleEligible) { }
+                else {
                     const float struggleThresholdPercentage = 0.8f;
                     float stuggleThreshold = sm.CurMaxDuration * struggleThresholdPercentage;
-                    if (sm.timeInCurPhase >= stuggleThreshold) {
+                    if (sm.timeInCurPhase < stuggleThreshold) { }
+                    else {
                         float exceededTime = sm.timeInCurPhase - stuggleThreshold;
                         float maxPossibleExceededTime = sm.CurMaxDuration * (1f - struggleThresholdPercentage);
                         float addedTime = Mathf.Lerp(1f, 6f, exceededTime / maxPossibleExceededTime);
-                        sm.startNextWaveDelay += addedTime; 
+                        sm.startNextWaveDelay += addedTime;
                     }
                 }
             }
             sm.prevEnemyCount = curEnemyCount;
-            
-            const float maxTimeCanAddThroughActions = 13f;
-            if (sm.FinishedSpawningThisWave && sm.timeAddedThroughActions < maxTimeCanAddThroughActions) {
-                float prevTime = sm.timeAddedThroughActions;
-            
-                if (thisFrame.flags.HasFlag(FrameFlags.SearchingBody)) {
-                    sm.timeAddedThroughActions += 2f;
-                }
-                if (thisFrame.flags.HasFlag(FrameFlags.SearchingBush)) {
-                    sm.timeAddedThroughActions += 1f;
-                }
-                if (thisFrame.flags.HasFlag(FrameFlags.SummonedUpgrade)) {
-                    sm.timeAddedThroughActions += 1f;
-                }
-                if (thisFrame.flags.HasFlag(FrameFlags.TookConsumable)) {
-                    float timeToAdd = Mathf.Lerp(1f, 2f, 1f - CurPlayerHealthPercentage());
-                    sm.timeAddedThroughActions += timeToAdd;
-                }
-                if (thisFrame.flags.HasFlag(FrameFlags.ShotRock)) {
-                    sm.timeAddedThroughActions += 0.2f;
-                }
-            
-                if (thisFrame.flags.HasFlag(FrameFlags.PickedUpLoot)) {
-                    int nearbyItems = Physics.OverlapCircle(player.Center, 0.5f, Masks.ItemMask).Count;
-                    if (nearbyItems >= 2) {
+
+            if (sm.FinishedSpawningThisWave) {
+                const float maxTimeCanAddThroughActions = 13f;
+                if (sm.timeAddedThroughActions >= maxTimeCanAddThroughActions) { }
+                else {
+                    float prevTime = sm.timeAddedThroughActions;
+
+                    if (thisFrame.flags.HasFlag(FrameFlags.SearchingBody)) {
+                        sm.timeAddedThroughActions += 2f;
+                    }
+                    if (thisFrame.flags.HasFlag(FrameFlags.SearchingBush)) {
                         sm.timeAddedThroughActions += 1f;
                     }
+                    if (thisFrame.flags.HasFlag(FrameFlags.SummonedUpgrade)) {
+                        sm.timeAddedThroughActions += 1f;
+                    }
+                    if (thisFrame.flags.HasFlag(FrameFlags.TookConsumable)) {
+                        float timeToAdd = Mathf.Lerp(1f, 2f, 1f - CurPlayerHealthPercentage());
+                        sm.timeAddedThroughActions += timeToAdd;
+                    }
+                    if (thisFrame.flags.HasFlag(FrameFlags.ShotRock)) {
+                        sm.timeAddedThroughActions += 0.2f;
+                    }
+
+                    if (thisFrame.flags.HasFlag(FrameFlags.PickedUpLoot)) {
+                        int nearbyItems = Physics.OverlapCircle(player.Center, 0.5f, Masks.ItemMask).Count;
+                        if (nearbyItems >= 2) {
+                            sm.timeAddedThroughActions += 1f;
+                        }
+                    }
+
+                    // If the player is looking at their inventory or reading an item popup we give them some extra time
+                    if ((PlayerInventoryIsOpen && !LootInventoryIsOpen) || ui.itemDescPopupPickup.IsShowing) {
+                        sm.timeAddedThroughActions += Time.deltaTime + Mathf.Epsilon;
+                    }
+
+                    sm.timeAddedThroughActions = Mathf.Clamp(sm.timeAddedThroughActions, 0f, maxTimeCanAddThroughActions);
+                    float timeAdded = sm.timeAddedThroughActions - prevTime;
+                    sm.startNextWaveDelay += timeAdded;
                 }
-            
-                // If the player is looking at their inventory or reading an item popup we give them some extra time
-                if ((PlayerInventoryIsOpen && !LootInventoryIsOpen) || ui.itemDescPopupPickup.IsShowing) {
-                    sm.timeAddedThroughActions += Time.deltaTime + Mathf.Epsilon;
-                }
-            
-                sm.timeAddedThroughActions = Mathf.Clamp(sm.timeAddedThroughActions, 0f, maxTimeCanAddThroughActions);
-                float timeAdded = sm.timeAddedThroughActions - prevTime;
-                sm.startNextWaveDelay += timeAdded;
             }
-            
+
             // Clearing the wave counts down the early start delay, and hitting the time limit counts down the buffer
             // for leftover enemies, so the next wave isn't held up by enemies the player hasn't killed
             if (waveCleared || timeLimitExceeded) {
@@ -617,68 +684,115 @@ public partial class Game {
         }
 
         bool startNextWave = sm.startNextWaveDelay <= 0f && (timeLimitExceeded || waveCleared);
-        
         if (startNextWave && !sm.OnLastWave) {
             sm.curPhaseIndex++;
             sm.waveStartedThisFrame = true;
-
-#if UNITY_EDITOR
-            foreach (RaidSpawnPattern.EnemyBatch batch in sm.CurPhase.enemyBatches) {
-                if (batch.enemyCount >= EnemySpawnManager.prefixedSumResolution) {
-                    Debug.LogError($"Wave cannot have more enemies than {nameof(EnemySpawnManager.prefixedSumResolution)}");
-                }
-            }
-#endif
-            
-            sm.timeInCurPhase = 0f;
-            sm.spawnTimeIndex = 0;
             sm.startNextWaveDelay = sm.CurEarlyDelay;
-
-            float totalWeight = 0f;
-            for (int i = 0; i < EnemySpawnManager.prefixedSumResolution; i++) {
-                float sliceIndex = i / (float)(EnemySpawnManager.prefixedSumResolution - 1);
-                float weight = Mathf.Clamp01(sm.CurPhase.spawnRateCurve.Evaluate(sliceIndex));
-                totalWeight += weight;
-                sm.prefixedSums[i] = totalWeight;
+            if (sm.OnLastWave) {
+                SpawnRaidBoss(sm);
             }
-
-            // Build spawntimes for this next wave
-            {
-                sm.spawnEvents.Clear();
-                
-                foreach (RaidSpawnPattern.EnemyBatch waveUnit in sm.CurPhase.enemyBatches) {
-                    int enemySpawnCount = waveUnit.enemyCount;
-                    for (int i = 0; i < enemySpawnCount; i++) {
-                        float targetWeight = (i / (float)(enemySpawnCount - 1)) * totalWeight;
-
-                        // Find the corresponding time using linear search
-                        int weightIndex = 0;
-                        while (weightIndex < EnemySpawnManager.prefixedSumResolution && sm.prefixedSums[weightIndex] < targetWeight) {
-                            weightIndex++;
-                        }
-
-                        float normalizedTime = weightIndex / (float)(EnemySpawnManager.prefixedSumResolution - 1);
-                        sm.spawnEvents.Add((normalizedTime * sm.CurPhase.spawnDuration, waveUnit.enemyData));
-                    }
-                }
-                
-                // Due to the way we add elements we need to sort by time so its chronologically ordered 
-                sm.spawnEvents.Sort(static (x, y) => x.time.CompareTo(y.time));
-            }
-            
-            spawnLimiterForEnemyBatching.MakeCurrent();
+            BeginSpawningVariant(sm, sm.CurPhase);
         }
-        
-        if (sm.CurPhase == null) return;
+    }
+
+    private void SpawnRaidBoss(EnemySpawnManager sm) {
+        Vector2Int spawnCellRange = sm.CurPhase.spawnCellRange;
+        Vector2 randomSpawnPos = curRaid.mapInstance.grid.GetSpawnPosition(player.position, spawnCellRange.x, spawnCellRange.y, false, GatherEnemyPositions());
+
+        EnemyData bossEnemy = sm.spawnPattern.raidBoss;
+        Enemy enemy = bossEnemy.type switch {
+            EnemyData.EnemyType.FireBoss => SpawnEntity<FireBoss>(bossEnemy.enemyPrefab, randomSpawnPos, Quaternion.identity),
+            _ => throw new ArgumentOutOfRangeException(),
+        };
+
+        OnEnemySpawned(enemy, bossEnemy);
+        entities.enemies.Add(enemy);
+        TeleportEnemy(enemy, randomSpawnPos, TeleportType.Spawn);
+    }
+
+    private void UpdateBossTrashSpawning(EnemySpawnManager sm) {
+        if (!RaidBossIsAlive(sm)) {
+            if (sm.BossTrashActive) {
+                sm.bossTrashVariant = null;
+                sm.spawnEvents.Clear();
+                sm.spawnTimeIndex = 0;
+            }
+            return;
+        }
+
+        if (!sm.FinishedSpawningThisWave) return;
+        if (entities.enemies.Count > sm.spawnPattern.maxEnemiesForBossTrash) return;
+
+        List<RaidSpawnPattern.Variant> trashVariants = sm.spawnPattern.bossTrashPool?.variants;
+        if (trashVariants == null || trashVariants.Count <= 0) return;
+
+        sm.bossTrashVariant = trashVariants[Random.Range(0, trashVariants.Count)];
+        BeginSpawningVariant(sm, sm.bossTrashVariant);
+    }
+
+    private bool RaidBossIsAlive(EnemySpawnManager sm) {
+        foreach (Enemy enemy in entities.enemies) {
+            if (enemy.data == sm.spawnPattern.raidBoss && enemy.health > 0) return true;
+        }
+        return false;
+    }
+
+    // Lays out when each of the variant's enemies spawn across its spawn duration, following its spawn rate curve
+    private void BeginSpawningVariant(EnemySpawnManager sm, RaidSpawnPattern.Variant variant) {
+#if UNITY_EDITOR
+        foreach (RaidSpawnPattern.EnemyBatch batch in variant.enemyBatches) {
+            if (batch.enemyCount >= EnemySpawnManager.prefixedSumResolution) {
+                Debug.LogError($"Wave cannot have more enemies than {nameof(EnemySpawnManager.prefixedSumResolution)}");
+            }
+        }
+#endif
+
+        sm.timeInCurPhase = 0f;
+        sm.spawnTimeIndex = 0;
+
+        float totalWeight = 0f;
+        for (int i = 0; i < EnemySpawnManager.prefixedSumResolution; i++) {
+            float sliceIndex = i / (float)(EnemySpawnManager.prefixedSumResolution - 1);
+            float weight = Mathf.Clamp01(variant.spawnRateCurve.Evaluate(sliceIndex));
+            totalWeight += weight;
+            sm.prefixedSums[i] = totalWeight;
+        }
+
+        sm.spawnEvents.Clear();
+        foreach (RaidSpawnPattern.EnemyBatch batch in variant.enemyBatches) {
+            int enemySpawnCount = batch.enemyCount;
+            for (int i = 0; i < enemySpawnCount; i++) {
+                float targetWeight = (i / (float)(enemySpawnCount - 1)) * totalWeight;
+
+                // Find the corresponding time using linear search
+                int weightIndex = 0;
+                while (weightIndex < EnemySpawnManager.prefixedSumResolution && sm.prefixedSums[weightIndex] < targetWeight) {
+                    weightIndex++;
+                }
+
+                float normalizedTime = weightIndex / (float)(EnemySpawnManager.prefixedSumResolution - 1);
+                sm.spawnEvents.Add((normalizedTime * variant.spawnDuration, batch.enemyData));
+            }
+        }
+
+        // Due to the way we add elements we need to sort by time so its chronologically ordered
+        sm.spawnEvents.Sort(static (x, y) => x.time.CompareTo(y.time));
+
+        spawnLimiterForEnemyBatching.MakeCurrent();
+    }
+
+    private void SpawnDueEnemies(EnemySpawnManager sm) {
+        RaidSpawnPattern.Variant variant = sm.SpawningVariant;
+        if (variant == null) return;
 
         const float batchTime = 1f;
         if (!spawnLimiterForEnemyBatching.TimeHasPassed(batchTime) || sm.spawnEvents.Count <= 0) return;
-        
+
         List<Vector2> enemyPositions = GatherEnemyPositions();
-        
+
         while (sm.spawnEvents.IndexInRange(sm.spawnTimeIndex) && sm.spawnEvents[sm.spawnTimeIndex].time <= sm.timeInCurPhase) {
-            Vector2Int spawnCellRange = sm.CurPhase.spawnCellRange;
-            
+            Vector2Int spawnCellRange = variant.spawnCellRange;
+
             Vector2 randomSpawnPos = curRaid.mapInstance.grid.GetSpawnPosition(player.position, spawnCellRange.x, spawnCellRange.y, false, enemyPositions);
             enemyPositions.Add(randomSpawnPos);
 
@@ -686,13 +800,13 @@ public partial class Game {
             Enemy enemy = SpawnEntity<Enemy>(enemyToSpawn.enemyPrefab, randomSpawnPos, Quaternion.identity);
             OnEnemySpawned(enemy, enemyToSpawn);
             entities.enemies.Add(enemy);
-            
+
             TeleportEnemy(enemy, randomSpawnPos, TeleportType.Spawn);
             sm.spawnTimeIndex++;
             sm.spawnedThisFrame = true;
         }
     }
-    
+
     private readonly List<Vector2> _gatheredEnemyPositions = new();
 
     private List<Vector2> GatherEnemyPositions() {
@@ -705,5 +819,4 @@ public partial class Game {
         _gatheredEnemyPositions.AddRange(curRaid.teleportingInPositions);
         return _gatheredEnemyPositions;
     }
-    
 }

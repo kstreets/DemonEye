@@ -10,6 +10,8 @@ public class GameplayConfig : ScriptableObject {
     public float rangeInSeconds;
     public float accuracy;
     public float projectileSpeed;
+    // 0 shoots straight in the cardinal direction, 1 shoots exactly where the mouse/stick is pointing
+    [Range(0f, 1f)] public float aimAssistBias = 0.3f;
 
     [Header("Crit")]
     public float defaultCritChance;
@@ -18,7 +20,21 @@ public class GameplayConfig : ScriptableObject {
     [Header("Player")]
     public float baseSpeed;
     public float repeatCollisionDamageDelay;
-    
+
+    [Header("Teleport")]
+    public float teleportDistance = 0.4f;
+    public float teleportHiddenDuration = 0.08f;
+    public float teleportInvulnerabilityDuration = 0.3f;
+    public float teleportBaseCooldown = 0.8f;
+    public float teleportMaxCooldown = 1.5f;
+    public float teleportCooldownIncreasePerRapidUse = 0.25f;
+    public float teleportRapidUseWindow = 0.3f;
+    // After teleporting, holding roughly the same direction slides the player, tapering from the start speed down to normal run speed
+    public float teleportSlideDuration = 0.42f;
+    public float teleportSlideStartSpeedMulti = 1.5f;
+    // How far the move input can be from the teleport direction (in degrees) and still count as the same general direction
+    public float teleportSlideMaxAngle = 45f;
+
     [Header("Portal")]
     public float portalSummonTime;
     public float portalPostSummonDelay;

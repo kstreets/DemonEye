@@ -74,6 +74,7 @@ public partial class Game {
         input.quickUseSelected = InputSystem.actions.FindAction("QuickUseSelected");
         input.quickUsePrevious = InputSystem.actions.FindAction("QuickUsePrevious");
         input.quickUseNext = InputSystem.actions.FindAction("QuickUseNext");
+        input.teleport = InputSystem.actions.FindAction("Teleport");
     }
 
     private void InitEntityPools() {
@@ -82,8 +83,10 @@ public partial class Game {
         entityPools.projectile = CreateEntityPool<Projectile>(prefabs.baseProjectile, 20, OnSpawnProjectile);
         entityPools.boneShatterProjectile = CreateEntityPool<Projectile>(prefabs.boneShatterProjectile, 20, OnSpawnProjectile);
         entityPools.gooProjectile = CreateEntityPool<Projectile>(prefabs.gooProjectile, 20, OnSpawnProjectile);
+        entityPools.fireBossProjectile = CreateEntityPool<Projectile>(prefabs.firebossProjectile, 5, OnSpawnProjectile);
         entityPools.piercingShotProjectile = CreateEntityPool<Projectile>(prefabs.piercingProjectile, 20, OnSpawnProjectile);
         entityPools.soulProjectile = CreateEntityPool<Projectile>(prefabs.soulProjectile, 40, OnSpawnProjectile);
+        entityPools.meteor = CreateEntityPool<Entity>(prefabs.meteor, 2, null);
         entityPools.poisonDebuff = CreateEntityPool<Entity>(prefabs.poisonDebuff, 10, null);
         entityPools.explosion = CreateEntityPool<Entity>(prefabs.explosion, 5, null);
         entityPools.projectileImpact = CreateEntityPool<Entity>(prefabs.projectileImpact, 20, null);
@@ -102,6 +105,7 @@ public partial class Game {
         entityPools.bloodBubble = CreateEntityPool<Entity>(prefabs.bloodBubble, 10, null);
         entityPools.eyeUpgradeReveal = CreateEntityPool<Entity>(prefabs.eyeUpgradeReveal, 1, null);
         entityPools.altarSoulSwirl = CreateEntityPool<Entity>(prefabs.altarSoulSwirl, 1, null);
+        entityPools.attackCircle = CreateEntityPool<Entity>(prefabs.attackCircle, 10, null);
     }
 
     private void InitGameStates() {

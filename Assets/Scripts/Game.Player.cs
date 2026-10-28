@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using PrimeTween;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.InputSystem;
 using UnityEngine.Pool;
 using static GameData;
 using Random = UnityEngine.Random;
@@ -12,6 +13,7 @@ public partial class Game {
     public class Player : Entity {
         public CapsuleCollider2D hurtCollider;
         public Vector3 velocity;
+        public Vector3 predictedVelocity;
         
         public int nextIdleAnimHash;
         public int nextIdleDir;
@@ -25,7 +27,17 @@ public partial class Game {
         public float lastShotTime;
         public int consecutiveShotCount;
         public float curStepDistance;
-        
+
+        public EscalatingCooldown teleportCooldown;
+        public bool isTeleporting;
+        public float teleportEndTime;
+        public Vector2 teleportDestination;
+        public Vector2 teleportDir;
+        public float invulnerableUntil;
+
+        public bool isSliding;
+        public float slideStartTime;
+
         public ItemConsumption consumption;
         public bool isConsumingItem => consumption.tween.isAlive;
         
@@ -62,6 +74,9 @@ public partial class Game {
         public static int drink = Animator.StringToHash("PlayerDrink");
         public static int eat = Animator.StringToHash("PlayerEat");
         public static int bandage = Animator.StringToHash("PlayerBandage");
+        public static int slideSide = Animator.StringToHash("PlayerSlideSide");
+        public static int slideDown = Animator.StringToHash("PlayerSlideDown");
+        public static int slideUp = Animator.StringToHash("PlayerSlideUp");
     }
     
     private const int startingSoulCurrency = 100;
@@ -72,6 +87,12 @@ public partial class Game {
         Player newPlayer = SpawnEntity<Player>(prefabs.player, Vector3.zero, Quaternion.identity, null, EntityLifetime.Global);
         newPlayer.hurtCollider = newPlayer.gameObject.GetComponentInChildren<CapsuleCollider2D>();
         newPlayer.defaultPlayerPreviewSprite = playerPanel.previewImage.sprite;
+        newPlayer.teleportCooldown = new(
+            config.gameplay.teleportBaseCooldown,
+            config.gameplay.teleportMaxCooldown,
+            config.gameplay.teleportCooldownIncreasePerRapidUse,
+            config.gameplay.teleportRapidUseWindow
+        );
         return newPlayer;
     }
     
@@ -91,6 +112,12 @@ public partial class Game {
     private void DeinitPlayer() {
         player.bleeding = false;
         player.velocity = Vector3.zero;
+        // The raid can end mid teleport, so the player needs to be made visible and hittable again
+        SetPlayerTeleportHidden(false);
+        player.isTeleporting = false;
+        player.isSliding = false;
+        player.invulnerableUntil = 0f;
+        player.teleportCooldown.Reset();
         playerPanel.previewImage.sprite = player.defaultPlayerPreviewSprite;
         if (player.health > 0) { // We only want to restore health if the player isn't dead
             HealPlayer((int)GetAbsoluteStat(PlayerStat.HealingOnRaidExit));
@@ -176,7 +203,13 @@ public partial class Game {
                 player.bleeding = false;
             }
         }
-        
+
+        // The player can't move or shoot while hidden mid teleport
+        if (player.isTeleporting) {
+            if (Time.time < player.teleportEndTime) return;
+            FinishTeleport();
+        }
+
         if (player.isConsumingItem) {
             player.nextIdleAnimHash = PlayerAnimations.idleDown;
             return;
@@ -189,7 +222,12 @@ public partial class Game {
         
         Vector2 moveInput = input.move.ReadValue<Vector2>();
         Vector2 prevPos = player.position;
-        
+
+        if (input.teleport.WasPressedThisFrame() && player.teleportCooldown.TryUse()) {
+            StartTeleport(moveInput);
+            return;
+        }
+
         float speed = GetPlayerSpeed();
         Vector3 frameVelocity = new Vector3(moveInput.x, moveInput.y, 0f) * speed;
         
@@ -198,11 +236,27 @@ public partial class Game {
             frameVelocity = Vector3.zero;
         }
 
-        const float acceleration = 18f;
-        player.velocity = Vector3.Lerp(player.velocity, frameVelocity, acceleration * Time.deltaTime);
+        bool sliding = UpdateSlide(moveInput);
+        if (sliding) {
+            float slideComp = (Time.time - player.slideStartTime) / config.gameplay.teleportSlideDuration;
+            float slideSpeed = speed * Mathf.Lerp(config.gameplay.teleportSlideStartSpeedMulti, 1f, slideComp);
+            player.velocity = player.teleportDir * slideSpeed;
+        }
+        else {
+            const float acceleration = 18f;
+            player.velocity = Vector3.Lerp(player.velocity, frameVelocity, acceleration * Time.deltaTime);
+        }
         
         player.position += player.velocity * Time.deltaTime;
         player.curStepDistance += Vector2.Distance(prevPos, player.position);
+
+        // Update player's smooth velocity for velocity prediction
+        {
+            const float predictionSmoothingTime = 0.25f; // Controls how fast we react to velocity changes (0.05 is fast, 0.3 is slow)
+            float smoothingComp = 1f - Mathf.Exp(-Time.deltaTime / predictionSmoothingTime); // Makes lerp completion stable at low framerates
+            Vector2 actualFrameVelocity = ((Vector2)player.position - prevPos) / Time.deltaTime;
+            player.predictedVelocity = Vector2.Lerp(player.predictedVelocity, actualFrameVelocity, smoothingComp);
+        }
         
         bool noFrameVelocity = frameVelocity.magnitude <= Mathf.Epsilon;
 
@@ -223,7 +277,19 @@ public partial class Game {
         }
         player.spriteRenderer.flipX = player.nextIdleDir < 0;
 
-        if (noFrameVelocity) {
+        if (sliding) {
+            if (Mathf.Abs(player.teleportDir.x) > 0.1f) {
+                player.spriteRenderer.flipX = player.teleportDir.x < 0;
+                player.animator.Play(PlayerAnimations.slideSide);
+            }
+            else if (player.teleportDir.y > 0) {
+                player.animator.Play(PlayerAnimations.slideUp);
+            }
+            else {
+                player.animator.Play(PlayerAnimations.slideDown);
+            }
+        }
+        else if (noFrameVelocity) {
             player.animator.Play(player.nextIdleAnimHash);
         }
         else if (player.nextIdleAnimHash == PlayerAnimations.idleUp) {
@@ -236,7 +302,7 @@ public partial class Game {
             player.animator.Play(PlayerAnimations.runSide);
         }
         
-        bool playerStepped = moveInput != Vector2.zero && player.curStepDistance > 0.18f;
+        bool playerStepped = !sliding && moveInput != Vector2.zero && player.curStepDistance > 0.18f;
         if (playerStepped) {
             Entity runSmokeEntity = SpawnEntity(entityPools.runSmoke, OffsetY(player.position, 0.043f), Quaternion.identity);
             DestroyEntity(runSmokeEntity, CurrentClipLength(runSmokeEntity.animator));
@@ -252,48 +318,24 @@ public partial class Game {
             }
         }
         
+        if (!TryGetShootDirection(out Vector2 shootDir)) return;
+
         bool canShoot = player.attackLimiter.TimeHasPassed(GetFirerateDelay());
         if (!canShoot) return;
-        
-        float projCount = GetAbsoluteStat(PlayerStat.ProjectileCount);
-        int targetCount = Mathf.FloorToInt(projCount);
-        float extraProjChance = projCount % 1;
-        if (RollProbability(extraProjChance)) {
-            targetCount++;
+
+        Vector3 attackTarget = (Vector2)PlayerEyePos + shootDir;
+
+        PlayAudioClip(audio.shootClip, player.position);
+        ShootProjectile(attackTarget);
+        if (trinkets.equiped is CauterizingWoundsTrinket cauterizingWounds) {
+            if (player.bleeding && RollProbability(cauterizingWounds.chancePerShotToStopBleeding)) {
+                player.bleeding = false;
+                SpawnTrinketActivationText(cauterizingWounds.activationText);
+            }
         }
 
-        using var _ = ListPool<Vector3>.Get(out var attackTargets);
-        GetAttackTargets(targetCount, ref attackTargets);
-        if (attackTargets.Count <= 0) return;
-        
-        PlayAudioClip(audio.shootClip, player.position);
-        for (int i = 0; i < attackTargets.Count; i++) {
-            Vector3 attackTarget = attackTargets[i];
-            
-            bool isPrimaryShot = i == 0;
-            if (isPrimaryShot) {
-                ShootProjectile(attackTarget);
-                if (trinkets.equiped is CauterizingWoundsTrinket cauterizingWounds) {
-                    if (player.bleeding && RollProbability(cauterizingWounds.chancePerShotToStopBleeding)) {
-                        player.bleeding = false;
-                        SpawnTrinketActivationText(cauterizingWounds.activationText);
-                    }
-                }
-            }
-            
-            bool isAdditionalShot = i > 0;
-            if (isAdditionalShot) {
-                if (demonEye.equiped.multiProjectileCritAugment.TryGetValue(out var multiProjCrit)) {
-                    ShootProjectile(attackTarget, flatCritChance: multiProjCrit.probability);
-                }
-                else {
-                    ShootProjectile(attackTarget);
-                }
-            }
-
-            if (demonEye.equiped.doubleTapAugment.TryGetValue(out var doubleTap) && RollProbability(doubleTap.probability)) { 
-                ShootProjectile(attackTarget, spawnDelay: doubleTap.delayBetweenShots);
-            }
+        if (demonEye.equiped.doubleTapAugment.TryGetValue(out var doubleTap) && RollProbability(doubleTap.probability)) {
+            ShootProjectile(attackTarget, spawnDelay: doubleTap.delayBetweenShots);
         }
 
         float consecutiveShotDelay = config.gameplay.attackDelay * 1.5f;
@@ -320,6 +362,135 @@ public partial class Game {
         player.lastShotTime = Time.time;
     }
     
+    private void StartTeleport(Vector2 moveInput) {
+        Vector2 dir;
+        if (moveInput.magnitude > 0.25f) {
+            dir = moveInput.normalized;
+        }
+        else if (player.nextIdleAnimHash == PlayerAnimations.idleUp) {
+            dir = Vector2.up;
+        }
+        else if (player.nextIdleAnimHash == PlayerAnimations.idleDown) {
+            dir = Vector2.down;
+        }
+        else {
+            dir = new(player.nextIdleDir < 0 ? -1f : 1f, 0f);
+        }
+
+        player.teleportDir = dir;
+        player.teleportDestination = GetTeleportDestination(dir);
+        player.isTeleporting = true;
+        player.isSliding = false;
+        player.teleportEndTime = Time.time + config.gameplay.teleportHiddenDuration;
+        player.invulnerableUntil = player.teleportEndTime + config.gameplay.teleportInvulnerabilityDuration;
+        player.velocity = Vector3.zero;
+        SetPlayerTeleportHidden(true);
+        
+        Entity outTeleportFxEntity = SpawnEntity(entityPools.teleportOut, player.position, Quaternion.identity);
+        DestroyEntity(outTeleportFxEntity, CurrentClipLength(outTeleportFxEntity.animator));
+        PlayAudioClip(audio.teleportOutClip, outTeleportFxEntity.position);
+        
+        camera.cameraShake.Shake(7f, 0.05f, 0.35f);
+    }
+
+    private void FinishTeleport() {
+        player.position = new(player.teleportDestination.x, player.teleportDestination.y, player.position.z);
+        player.isTeleporting = false;
+        SetPlayerTeleportHidden(false);
+
+        Entity outTeleportFxEntity = SpawnEntity(entityPools.teleportOut, player.position, Quaternion.identity);
+        DestroyEntity(outTeleportFxEntity, CurrentClipLength(outTeleportFxEntity.animator));
+        PlayAudioClip(audio.teleportOutClip, outTeleportFxEntity.position);
+
+        // Still holding towards where they teleported carries the teleport's momentum into a slide, letting go means no slide
+        if (MoveInputInTeleportDirection(input.move.ReadValue<Vector2>())) {
+            player.isSliding = true;
+            player.slideStartTime = Time.time;
+        }
+    }
+
+    private bool UpdateSlide(Vector2 moveInput) {
+        if (!player.isSliding) return false;
+
+        bool slideFinished = Time.time - player.slideStartTime >= config.gameplay.teleportSlideDuration;
+        if (slideFinished || !MoveInputInTeleportDirection(moveInput)) {
+            player.isSliding = false;
+        }
+        return player.isSliding;
+    }
+
+    // Analog input is never exactly the teleport direction, so anything within the max angle counts as the same general direction
+    private bool MoveInputInTeleportDirection(Vector2 moveInput) {
+        if (moveInput.magnitude <= 0.25f) return false;
+        return Vector2.Angle(moveInput, player.teleportDir) <= config.gameplay.teleportSlideMaxAngle;
+    }
+
+    private void SetPlayerTeleportHidden(bool hidden) {
+        player.spriteRenderer.enabled = !hidden;
+        player.hurtCollider.enabled = !hidden;
+    }
+
+    // Casts the player's body collider along the teleport so they stop short of walls and obstacles instead of ending up inside them.
+    // Enemies are ignored so the player can teleport through them.
+    private Vector2 GetTeleportDestination(Vector2 dir) {
+        float distance = config.gameplay.teleportDistance;
+
+        int blockingLayers = Physics2D.GetLayerCollisionMask(player.gameObject.layer) & ~(int)Masks.EnemyMask;
+        if (player.rigidbody) {
+            blockingLayers &= ~(int)player.rigidbody.excludeLayers;
+        }
+        ContactFilter2D filter = new() { useTriggers = false };
+        filter.SetLayerMask(blockingLayers);
+
+        using var _ = ListPool<RaycastHit2D>.Get(out var hits);
+        player.collider.Cast(dir, filter, hits, distance);
+        foreach (RaycastHit2D hit in hits) {
+            distance = Mathf.Min(distance, hit.distance);
+        }
+
+        return (Vector2)player.position + dir * distance;
+    }
+
+    private bool TryGetShootDirection(out Vector2 shootDir) {
+        shootDir = Vector2.zero;
+
+        if (usingController) {
+            Gamepad gamepad = Gamepad.current;
+            if (gamepad == null) return false;
+
+            Vector2 aim = gamepad.rightStick.ReadValue();
+            if (aim.magnitude <= ControllerNavigation.stickDeadzone) return false;
+
+            shootDir = AimAssistedDirection(aim);
+            return true;
+        }
+
+        Mouse mouse = Mouse.current;
+        if (mouse == null || !mouse.leftButton.isPressed) return false;
+
+        Vector2 mouseWorldPos = camera.main.ScreenToWorldPoint(mouse.position.ReadValue());
+        Vector2 toMouse = mouseWorldPos - (Vector2)PlayerEyePos;
+        if (toMouse.sqrMagnitude <= Mathf.Epsilon) return false;
+
+        shootDir = AimAssistedDirection(toMouse);
+        return true;
+    }
+
+    // Shots go in one of the 4 cardinal directions, but get bent slightly towards where the player is actually aiming.
+    // Since the aim is always within 45 degrees of its cardinal direction, the bend is at most 45 * aimAssistBias degrees.
+    private Vector2 AimAssistedDirection(Vector2 aim) {
+        Vector2 cardinal = SnapToCardinal(aim);
+        float angleToAim = Vector2.SignedAngle(cardinal, aim);
+        return Quaternion.AngleAxis(angleToAim * config.gameplay.aimAssistBias, Vector3.forward) * cardinal;
+    }
+
+    // The quadrants are split along the diagonals
+    private static Vector2 SnapToCardinal(Vector2 dir) {
+        bool horizontal = Mathf.Abs(dir.x) >= Mathf.Abs(dir.y);
+        return horizontal ? new(Mathf.Sign(dir.x), 0f) : new(0f, Mathf.Sign(dir.y));
+    }
+
+    // Unused while the game is in twin-stick mode, kept for the old auto aim
     private void GetAttackTargets(int targetCount, ref List<Vector3> targets) {
         float overlapDist = GetProjectileRangeDistance();
         List<Collider2D> cols = Physics.OverlapCircle(player.position, overlapDist, Masks.TargetableEnemyMask);
@@ -506,6 +677,9 @@ public partial class Game {
     public enum PlayerDamageType { Normal, Collision }
 
     public void DamagePlayer(int damage, PlayerDamageType damageType, Entity sourceEntity, float chanceToBleed = 0f) {
+        // Teleporting gives a short window of invulnerability. Enemy collisions use their own overlap check rather than the hurt collider, so this also covers them
+        if (Time.time < player.invulnerableUntil) return;
+
         bool ignoreCollisionDamage = !player.enemyCollisionDamageLimiter.TimeHasPassed(config.gameplay.repeatCollisionDamageDelay);
         if (damageType == PlayerDamageType.Collision && ignoreCollisionDamage) return;
         
@@ -693,6 +867,40 @@ public partial class Game {
         float maxOverweightAmount = (float)endingEncumberingWeight - startingEncumberingWeight;
         float overweightComp = curOverweightAmount / maxOverweightAmount;
         return Mathf.Clamp01(overweightComp);
+    }
+    
+    public bool TryGetPlayerInterceptPoint(Vector2 shooterPos, float projectileSpeed, out Vector2 aimPoint, float leadFactor = 1f) {
+        Vector2 targetPos = player.hurtCollider.bounds.center;
+        Vector2 velocity = player.predictedVelocity * leadFactor;
+        Vector2 delta = targetPos - shooterPos;
+
+        float a = Vector2.Dot(velocity, velocity) - projectileSpeed * projectileSpeed;
+        float b = 2f * Vector2.Dot(delta, velocity);
+        float c = Vector2.Dot(delta, delta);
+
+        float time;
+        if (Mathf.Abs(a) < 0.0001f) {
+            time = -c / b; // Player and projectile have the same speed, so the equation is linear
+        }
+        else {
+            float disc = b * b - 4f * a * c;
+            if (disc < 0f) {
+                aimPoint = targetPos; 
+                return false;
+            }
+            float sqrt = Mathf.Sqrt(disc);
+            float t1 = (-b - sqrt) / (2f * a);
+            float t2 = (-b + sqrt) / (2f * a);
+            time = Mathf.Min(t1, t2) > 0f ? Mathf.Min(t1, t2) : Mathf.Max(t1, t2);
+        }
+
+        if (time <= 0f) {
+            aimPoint = targetPos; 
+            return false;
+        }
+        
+        aimPoint = targetPos + velocity * time; // This is a simple fallback
+        return true;
     }
     
 }

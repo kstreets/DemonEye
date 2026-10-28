@@ -66,21 +66,28 @@ public partial class Game : MonoBehaviour {
     }
     
     private void Update() {
+        // The same frame we unpause on still has deltaTime set to 0, which can cause NANs when we divide by deltaTime
+        // so we just skip this frame to prevent any bugs from happening
+        if (!pauseMenu.paused && Time.deltaTime == 0f) {
+            Debug.Log("skipped");
+            return;
+        }
+        
+        Shader.SetGlobalFloat(ShaderIds.unscaledTime, Time.unscaledTime); // Keep animating shaders while the game is paused
         UpdateMenuNavigation(); // !
-        // Animated UI shaders use this instead of the Time node so they keep animating while the game is paused
-        Shader.SetGlobalFloat(ShaderIds.unscaledTime, Time.unscaledTime);
         states.gameStateMachine.Tick();
-        UpdatePositionalVolumes();
         UpdateTutorial(); // !
         UpdateDialogue();
         DemonEyeTween.Update();
+        UpdatePositionalVolumes();
         UpdateMenuMusic();
         UpdateQuests(); // !
         UpdateInputPrompts();
         ClearPerFrameData();
         CheckForScreenSizeChange();
         CheckForInputDeviceChange();
-        
+        UpdateCursorStyle();
+
 #if UNITY_EDITOR
         if (pauseMenu.paused) {
             // Pausing owns the time scale
@@ -564,7 +571,6 @@ public partial class Game : MonoBehaviour {
         ui.animatedBgImage.color = new(1f, 1f, 1f, 0f);
         sequence.Group(Tween.Alpha(ui.animatedBgImage, 0f, 1f, 1f, Ease.InCubic, startDelay: 0.1f));
         sequence.ChainDelay(1.6f);
-        sequence.ChainDelay(2f);
 
         sequence.OnComplete(() => {
             player.gameObject.SetActive(true);

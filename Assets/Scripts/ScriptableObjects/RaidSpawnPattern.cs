@@ -41,6 +41,9 @@ public class RaidSpawnPattern : ScriptableObject {
     public float delayBetweenEnemyRepositions;
     public int maxEnemyRepositionCount;
     public List<PhasePool> phasePools;
+    public EnemyData raidBoss;
+    public int maxEnemiesForBossTrash = 10;
+    public PhasePool bossTrashPool;
     
 #if UNITY_EDITOR
     

@@ -70,6 +70,7 @@ Material:
     - _Border: 0.04
     - _BorderHarshness: 1.035
     - _Comp: 1
+    - _Completion: 1
     - _EnableExternalAlpha: 0
     - _Perspective: 2
     - _PixelDensity: 61

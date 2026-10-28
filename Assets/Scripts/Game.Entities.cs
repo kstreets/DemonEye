@@ -54,6 +54,7 @@ public partial class Game {
         public Image image;
         public Animator animator;
         public TextMeshProUGUI textMesh;
+        public AttackCircle attackCircle;
         public EntityLifetime lifetime;
         
         public readonly MaterialPropertyBlock matPropertyBlock = new();
@@ -147,6 +148,7 @@ public partial class Game {
             image = objInstance.TryGetComponent(out Image image) ? image : null,
             animator = objInstance.TryGetComponent(out Animator anim) ? anim : null,
             textMesh = objInstance.TryGetComponent(out TextMeshProUGUI text) ? text : null,
+            attackCircle = objInstance.TryGetComponent(out AttackCircle attackCircle) ? attackCircle : null,
             lifetime = lifetime,
         };
         return newEntity;

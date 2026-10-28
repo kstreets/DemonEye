@@ -12,16 +12,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7732623a1f1a6254ba2ec8c8a889843a, type: 3}
   m_Name: GameplayConfig
   m_EditorClassIdentifier: Assembly-CSharp::GameplayConfig
-  attackDelay: 0.3
+  attackDelay: 0.23
   cappedMinAttackDelay: 0.1
   damage: 8
-  rangeInSeconds: 0.5
+  rangeInSeconds: 0.7
   accuracy: 0.7
-  projectileSpeed: 2
+  projectileSpeed: 2.5
   defaultCritChance: 0.15
   defaultCritMulti: 1.5
   baseSpeed: 0.52
   repeatCollisionDamageDelay: 1
+  teleportDistance: 0.5
+  teleportHiddenDuration: 0.08
+  teleportInvulnerabilityDuration: 0.3
+  teleportBaseCooldown: 1
+  teleportMaxCooldown: 2
+  teleportCooldownIncreasePerRapidUse: 0.25
+  teleportRapidUseWindow: 0.3
+  teleportSlideDuration: 0.45
+  teleportSlideStartSpeedMulti: 1.7
+  teleportSlideMaxAngle: 45
   portalSummonTime: 2.5
   portalPostSummonDelay: 8
   portalActiveDuration: 25

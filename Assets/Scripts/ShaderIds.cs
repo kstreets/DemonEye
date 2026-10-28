@@ -18,6 +18,7 @@ public static class ShaderIds {
     public static readonly int opacity = Shader.PropertyToID("_Opacity");
     public static readonly int rotation = Shader.PropertyToID("_Rotation");
     public static readonly int useSmoothing = Shader.PropertyToID("_UseSmoothing");
+    public static readonly int pixelDensity = Shader.PropertyToID("_PixelDensity");
 
     // Globals
     public static readonly int unscaledTime = Shader.PropertyToID("_UnscaledTime");

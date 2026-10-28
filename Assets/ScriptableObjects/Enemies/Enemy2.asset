@@ -29,7 +29,7 @@ MonoBehaviour:
   upAttackOffset: {x: 0, y: 0.203}
   donwAttackOffset: {x: 0, y: -0.018}
   speed: 0.4
-  health: 18
+  health: 15
   damage: 14
   collisionDamage: 5
   changeToCauseBleed: 0.15

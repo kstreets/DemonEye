@@ -1752,6 +1752,32 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
@@ -12272,12 +12298,12 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FireProjectiles_478
+      name: Fireball_0
       rect:
         serializedVersion: 2
         x: 256
         y: 144
-        width: 16
+        width: 32
         height: 16
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -12294,34 +12320,12 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FireProjectiles_479
-      rect:
-        serializedVersion: 2
-        x: 272
-        y: 144
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 0ca1883b6cdf1574d82cd71677bf97f0
-      internalID: -2087566320
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: FireProjectiles_480
+      name: Fireball_1
       rect:
         serializedVersion: 2
         x: 288
         y: 144
-        width: 16
+        width: 32
         height: 16
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -12338,34 +12342,12 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FireProjectiles_481
-      rect:
-        serializedVersion: 2
-        x: 304
-        y: 144
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 722643c151df79e49a376ea4e6b904bf
-      internalID: -211060515
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: FireProjectiles_482
+      name: Fireball_2
       rect:
         serializedVersion: 2
         x: 320
         y: 144
-        width: 16
+        width: 32
         height: 16
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -12382,56 +12364,12 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FireProjectiles_483
-      rect:
-        serializedVersion: 2
-        x: 336
-        y: 144
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 34b7c074976fd3d4a8662179c3d3c936
-      internalID: 1954274592
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: FireProjectiles_484
+      name: Fireball_3
       rect:
         serializedVersion: 2
         x: 352
         y: 144
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 37aa661b2a6db4b4f8882576e6bd900f
-      internalID: 813426440
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: FireProjectiles_485
-      rect:
-        serializedVersion: 2
-        x: 368
-        y: 144
-        width: 16
+        width: 32
         height: 16
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -19056,7 +18994,7 @@ TextureImporter:
         width: 16
         height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -19504,15 +19442,11 @@ TextureImporter:
       FireProjectiles_475: -1732195879
       FireProjectiles_476: 1514064879
       FireProjectiles_477: -1365716734
-      FireProjectiles_478: -877891451
       FireProjectiles_479: -2087566320
       FireProjectiles_48: 479860722
-      FireProjectiles_480: 1030566711
       FireProjectiles_481: -211060515
-      FireProjectiles_482: -2108703879
       FireProjectiles_483: 1954274592
       FireProjectiles_484: 813426440
-      FireProjectiles_485: 1867896100
       FireProjectiles_486: 654726131
       FireProjectiles_487: -621186677
       FireProjectiles_488: 1811828669
@@ -19870,6 +19804,10 @@ TextureImporter:
       FireProjectiles_97: 1824401420
       FireProjectiles_98: 1822080100
       FireProjectiles_99: -206080080
+      Fireball_0: -877891451
+      Fireball_1: 1030566711
+      Fireball_2: -2108703879
+      Fireball_3: 1867896100
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
