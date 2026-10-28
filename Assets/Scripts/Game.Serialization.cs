@@ -197,8 +197,8 @@ public partial class Game {
     private MapData.State DeserializeMapState(BinaryReader binReader) {
         MapData.State state = new() {
             isUnlocked = binReader.ReadBoolean(),
-            unlockRevealPending = binReader.ReadBoolean(),
             bloodMushroomSpawns = DeserializeList(binReader, DeserializeVector2),
+            unlockRevealPending = binReader.ReadBoolean(),
         };
         return state;
     }

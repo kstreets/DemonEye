@@ -40,10 +40,6 @@ public partial class Game {
         public OptionalRef<KnockBackAugment.InstanceData> knockBack;
     }
     
-    public class FireBoss : Enemy {
-        public Limiter attackLimitter;
-    }
-    
     public static void ClearEnemyDebuffs(Enemy enemy) {
         enemy.bleed.ClearValue();
         enemy.poison.ClearValue();
@@ -238,37 +234,163 @@ public partial class Game {
         }
     }
     
+    
+    public class FireBoss : Enemy {
+        public enum AttackTypes { Fireball, Meteor, DoubleFireball, MutliMeteor, Count }
+        public AttackBrain<AttackTypes> attackBrain;
+        
+        public const float minAttackDelay = 0.65f;
+        public const float maxAttackDelay = 1.75f;
+        public Tween attackDelay;
+        
+        public const int fireballDamage = 10;
+        public const float fireballSpeed = 1.5f;
+        public const float fireballLifetime = 5f; 
+        public Vector2 fireBallSpawnPos => position.Offset(y: 0.2f);
+        
+        public const float meteorTravelTime = 0.8f;
+        public const float meteorRadius = 0.2f;
+        public const float meteorScatterRadiusPerMeteor = 0.3f;
+        public const float delayBetweenMeteors = 0.12f;
+        public const int multiMeteorCount = 4;
+    }
+    
+    private Enemy InitFireBoss(EnemyData data, Vector2 spawnPos) { 
+        FireBoss fireBoss = SpawnEntity<FireBoss>(data.enemyPrefab, spawnPos, Quaternion.identity);
+        fireBoss.attackDelay = Tween.Delay(FireBoss.minAttackDelay, FireBoss.maxAttackDelay);
+        
+        fireBoss.attackBrain = new((int)FireBoss.AttackTypes.Count);
+        fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.Fireball, level: 0, defaultProb: 0.5f, repeatedProbDecay: 0.5f);
+        fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.Meteor, level: 0, defaultProb: 0.5f, repeatedProbDecay: 0.5f);
+        fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.DoubleFireball, level: 1, defaultProb: 0.5f, repeatedProbDecay: 0.1f);
+        fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.MutliMeteor, level: 1, defaultProb: 0.5f, repeatedProbDecay: 0.1f);
+        
+        return fireBoss;
+    }
+    
     private void FireBossLogic(Enemy enemy) {
         if (enemy is not FireBoss fireBoss) return;
         
-        bool canAttack = fireBoss.attackLimitter.TimeHasPassed(2f);
-        if (canAttack) {
-            Vector3 spawnPos = gameInstance.OffsetY(enemy.position, 0.2f);
-            const float projectileSpeed = 1.5f;
-            if (TryGetPlayerInterceptPoint(spawnPos, projectileSpeed, out Vector2 aimPoint)) {
-                const float lifetime = 5f;
-                Vector2 velocity = (aimPoint - (Vector2)spawnPos).normalized * projectileSpeed;
-                SpawnProjectile(entityPools.fireBossProjectile, spawnPos, velocity, lifetime, enemy, flatDamage: enemy.data.damage, layermask: Masks.PlayerHurtMask);
-                
-                
-                const float meteorTravelTime = 0.8f;
-                Vector2 meteorSpawnPos = new(aimPoint.x, aimPoint.y + 2);
-                
-                Entity attackCircleEntity = SpawnEntity(entityPools.attackCircle, aimPoint, Quaternion.identity);
-                attackCircleEntity.attackCircle.Animate(0.2f, meteorTravelTime * 0.85f);
-                
-                Entity meteorEntity = SpawnEntity(entityPools.meteor, meteorSpawnPos, Quaternion.identity);
-                Tween.Custom(0f, 1f, meteorTravelTime, (comp) => {
-                    meteorEntity.position = Vector2.Lerp(meteorSpawnPos, aimPoint, comp);    
-                }, Ease.InQuad)
-                .OnComplete(() => {
-                    DestroyEntity(attackCircleEntity);
-                    DestroyEntity(meteorEntity);
-                });
+        bool canAtttack = !fireBoss.attackDelay.isAlive;
+        if (!canAtttack) return;
+        
+        fireBoss.attackDelay = Tween.Delay(FireBoss.minAttackDelay, FireBoss.maxAttackDelay);
+        int attackLevel = (fireBoss.health / (float)fireBoss.data.health) > 0.5f ? 0 : 1;
+        
+        switch(fireBoss.attackBrain.ChooseAttack(attackLevel)) {
+            case FireBoss.AttackTypes.Fireball:
+                ShootFireball();
+                break;
+            case FireBoss.AttackTypes.Meteor:
+                RainMeteors(1);
+                break;
+            case FireBoss.AttackTypes.DoubleFireball:
+                Debug.Log("Double Fireball");
+                break;
+            case FireBoss.AttackTypes.MutliMeteor:
+                RainMeteors(FireBoss.multiMeteorCount);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+        
+        // ------------------------------
+        // Nested Methods
+        // ------------------------------
+        
+        void ShootFireball() {
+            Vector2 spawnPos = fireBoss.fireBallSpawnPos;
+            if (!TryGetPlayerInterceptPoint(spawnPos, FireBoss.fireballSpeed, out Vector2 aimPoint)) return;
+            Vector2 velocity = (aimPoint - spawnPos).normalized * FireBoss.fireballSpeed;
+            SpawnProjectile(entityPools.fireBossProjectile, spawnPos, velocity, FireBoss.fireballLifetime, fireBoss, flatDamage: FireBoss.fireballDamage, layermask: Masks.PlayerHurtMask);
+        }
+        
+        void RainMeteors(int meteorCount) {
+            const float predictionTime = FireBoss.meteorTravelTime * 0.85f;
+            Vector2 centeralAimPoint = PredictedPlayerPosition(predictionTime);
+            centeralAimPoint = ClampAttackToMap(player.position, centeralAimPoint, FireBoss.meteorRadius);
+
+            // One meteor always goes on the player, the rest get scattered around it
+            using var _ = ListPool<Vector2>.Get(out var meteorPositions);
+            meteorPositions.Add(centeralAimPoint);
+
+            // Grows with the count so the meteors are spread at a similar density no matter how many there are
+            float scatterRadius = FireBoss.meteorScatterRadiusPerMeteor * Mathf.Sqrt(meteorCount);
+            ScatterPositions(ref meteorPositions, meteorCount - 1, centeralAimPoint, scatterRadius, FireBoss.meteorRadius);
+
+            // The one on the player drops first, tied to the boss so the remaining meteors are cancelled if it dies mid rain
+            for (int i = 0; i < meteorPositions.Count; i++) {
+                Vector2 meteorPos = meteorPositions[i];
+                Delay(fireBoss, i * FireBoss.delayBetweenMeteors, _ => SpawnSingleMeteor(meteorPos, predictionTime));
             }
+        }
+        
+        void SpawnSingleMeteor(Vector2 targetPos, float warningTime) {
+            Vector2 meteorSpawnPos = new(targetPos.x, targetPos.y + 2);
+            Entity attackCircleEntity = SpawnEntity(entityPools.attackCircle, targetPos, Quaternion.identity);
+            attackCircleEntity.attackCircle.Animate(FireBoss.meteorRadius, warningTime);
+            
+            Entity meteorEntity = SpawnEntity(entityPools.meteor, meteorSpawnPos, Quaternion.identity);
+            Tween.Custom(0f, 1f, FireBoss.meteorTravelTime, ease: Ease.InQuad, onValueChange: (comp) => {
+                meteorEntity.position = Vector2.Lerp(meteorSpawnPos, targetPos, comp);    
+            })
+            .OnComplete(() => {
+                DestroyEntity(attackCircleEntity);
+                DestroyEntity(meteorEntity);
+            });
         }
     }
     
+    // Adds up to count random positions within scatterRadius of center, each a circle of the given radius that stays inside the map
+    // and doesn't overlap any other position in the list (including ones already in it). A position that can't find a free spot
+    // within the attempts is skipped, so fewer than count can get added
+    private void ScatterPositions(ref List<Vector2> positions, int count, Vector2 center, float scatterRadius, float radius, int maxAttemptsPerPosition = 10) {
+        float minSqrDist = (radius * 2f) * (radius * 2f);
+
+        for (int i = 0; i < count; i++) {
+            for (int attempt = 0; attempt < maxAttemptsPerPosition; attempt++) {
+                Vector2 candidate = center + Random.insideUnitCircle * scatterRadius;
+                candidate = ClampAttackToMap(center, candidate, radius);
+
+                bool overlapsPlacedPos = false;
+                foreach (Vector2 placedPos in positions) {
+                    if ((placedPos - candidate).sqrMagnitude < minSqrDist) {
+                        overlapsPlacedPos = true;
+                        break;
+                    }
+                }
+                if (overlapsPlacedPos) continue;
+
+                positions.Add(candidate);
+                break;
+            }
+        }
+    }
+
+    private Vector2 ClampAttackToMap(Vector2 origin, Vector2 targetPos, float radius) {
+        Vector2 toTarget = targetPos - origin;
+        float dist = toTarget.magnitude;
+        if (dist > Mathf.Epsilon) {
+            RaycastHit2D hit = Physics2D.Raycast(origin, toTarget / dist, dist, Masks.StaticLevelMask);
+            if (hit) {
+                targetPos = hit.point + hit.normal * radius;
+            }
+        }
+
+        // The target can still be close enough to an edge for the circle to overlap it (no hit, or the offset ran into a corner), push it out
+        Collider2D edge = Physics2D.OverlapCircle(targetPos, radius, Masks.StaticLevelMask);
+        if (edge != null) {
+            Vector2 closestPoint = edge.ClosestPoint(targetPos);
+            Vector2 awayFromEdge = targetPos - closestPoint;
+            float distFromEdge = awayFromEdge.magnitude;
+            if (distFromEdge > Mathf.Epsilon) {
+                targetPos = closestPoint + (awayFromEdge / distFromEdge) * radius;
+            }
+        }
+
+        return targetPos;
+    }
+
     private void FixedUpdateEnemies() {
         List<Enemy> enemies = entities.enemies;
         foreach (Enemy enemy in enemies) {
@@ -701,7 +823,7 @@ public partial class Game {
 
         EnemyData bossEnemy = sm.spawnPattern.raidBoss;
         Enemy enemy = bossEnemy.type switch {
-            EnemyData.EnemyType.FireBoss => SpawnEntity<FireBoss>(bossEnemy.enemyPrefab, randomSpawnPos, Quaternion.identity),
+            EnemyData.EnemyType.FireBoss => InitFireBoss(bossEnemy, randomSpawnPos),
             _ => throw new ArgumentOutOfRangeException(),
         };
 

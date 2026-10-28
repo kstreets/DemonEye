@@ -69,7 +69,7 @@ public class CoolerGrid : MonoBehaviour {
     }
     
     // Much faster to read/write because of memory locality
-    private GridCell[] gridCells; 
+    private GridCell[] gridCells;
 
     public void Init() {
         gridGameObjectPosition = transform.position;

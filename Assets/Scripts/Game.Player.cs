@@ -869,6 +869,12 @@ public partial class Game {
         return Mathf.Clamp01(overweightComp);
     }
     
+    public Vector2 PredictedPlayerPosition(float leadTimeInSeconds) {
+        Vector2 targetPos = player.hurtCollider.bounds.center;
+        Vector2 velocity = player.predictedVelocity * leadTimeInSeconds;
+        return targetPos + velocity;
+    }
+    
     public bool TryGetPlayerInterceptPoint(Vector2 shooterPos, float projectileSpeed, out Vector2 aimPoint, float leadFactor = 1f) {
         Vector2 targetPos = player.hurtCollider.bounds.center;
         Vector2 velocity = player.predictedVelocity * leadFactor;

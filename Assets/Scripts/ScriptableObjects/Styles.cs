@@ -5,7 +5,8 @@ using UnityEngine.Assertions;
 public class Styles : ScriptableObject {
     
     public Texture2D cursorTexture;
-    public Texture2D crosshairCursorTexture;
+    public Texture2D openEyeCrosshair;
+    public Texture2D closedEyeCrosshair;
     public Sprite quickUsePlaceholderSprite;
     public Sprite eyeUpgradePlaceholderSprite;
     public Sprite simpleEyePlaceholderSprite;

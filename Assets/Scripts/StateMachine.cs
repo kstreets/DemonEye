@@ -23,7 +23,16 @@ public class StateMachine {
     public State CreateState(Action update = null, Action fixedUpdate = null, Action lateUpdate = null, 
         Action enter = null, Action exit = null, Action whileExiting = null) 
     {
-        State newState = new(update, fixedUpdate, lateUpdate, enter, exit, whileExiting);
+        return AddState(new State(update, fixedUpdate, lateUpdate, enter, exit, whileExiting));
+    }
+
+    public State<T> CreateState<T>(T target, Action<T> update = null, Action<T> fixedUpdate = null, Action<T> lateUpdate = null,
+        Action<T> enter = null, Action<T> exit = null, Action<T> whileExiting = null)
+    {
+        return AddState(new State<T>(target, update, fixedUpdate, lateUpdate, enter, exit, whileExiting));
+    }
+
+    private TState AddState<TState>(TState newState) where TState : State {
         if (states.Count == 0) {
             SetStateImmediate(newState);
         }
@@ -107,20 +116,20 @@ public class StateMachine {
         
         switch (updateMode) {
             case UpdateMode.Update:
-                CurState.OnStateUpdateAction?.Invoke();
+                CurState.InvokeUpdate();
                 break;
             case UpdateMode.FixedUpdate:
-                CurState.OnStateFixedUpdateAction?.Invoke();
+                CurState.InvokeFixedUpdate();
                 break;
             case UpdateMode.LateUpdate:
-                CurState.OnStateLateUpdateAction?.Invoke();
+                CurState.InvokeLateUpdate();
                 break;
         }
     }
     
     private void UpdateDelayedState() {
         if (Time.time < nextStateAtTime) {
-            CurState.WhileExiting?.Invoke();
+            CurState.InvokeWhileExiting();
             return;
         }
         SetStateImmediate(nextStateAfterDelay);
@@ -140,8 +149,8 @@ public class StateMachine {
         PrevState = CurState;
         CurState = state;
         nextStateAfterDelay = null;
-        PrevState?.OnStateExitAction?.Invoke();
-        CurState.OnStateEnterAction?.Invoke();
+        PrevState?.InvokeExit();
+        CurState.InvokeEnter();
         timeWhenCurStateStarted = Time.time;
     }
 

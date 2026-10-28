@@ -45,13 +45,13 @@ public partial class Game {
         ui.damageNumberFontSize = prefabs.damageNumber.GetComponent<TextMeshProUGUI>().fontSize;
     }
 
-    // The crosshair is shown while playing a raid, any menu (inventory, pause, popups, hideout...) uses the normal cursor
     private void UpdateCursorStyle() {
         bool inRaidGameplay = InRaid && !MenuNavigationNeeded;
-        Texture2D crosshair = config.styles.crosshairCursorTexture;
+        
+        bool showClosedEyeCrosshair = Time.time - player.lastShotTime <= 0.035f;
+        Texture2D crosshair = showClosedEyeCrosshair ? config.styles.closedEyeCrosshair : config.styles.openEyeCrosshair;
+        
         SetCursorTexture(inRaidGameplay && crosshair ? crosshair : config.styles.cursorTexture);
-
-        // The cursor stays visible while attacking because the shooting direction comes from where it is relative to the player
         if (inRaidGameplay) {
             Cursor.visible = !usingController;
         }
@@ -60,9 +60,8 @@ public partial class Game {
     private void SetCursorTexture(Texture2D texture) {
         if (texture == shownCursorTexture) return;
         shownCursorTexture = texture;
-
         // The normal cursor points from its top left corner, the crosshair from its center
-        Vector2 hotspot = texture == config.styles.cursorTexture ? Vector2.zero : new Vector2(texture.width / 2, texture.height / 2);
+        Vector2 hotspot = texture == config.styles.cursorTexture ? Vector2.zero : new(texture.width / 2f, texture.height / 2f);
         Cursor.SetCursor(texture, hotspot, CursorMode.Auto);
     }
 
