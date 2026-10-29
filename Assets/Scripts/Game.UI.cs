@@ -823,6 +823,31 @@ public partial class Game {
         Tween.Scale(popupRectTransform, Vector3.one * 0.75f, Vector3.one, settings);
     }
     
+    // Maps unlocked since the last visit burn away their locked look to reveal themselves
+    private void PlayPendingMapUnlockBurns() {
+        MapSelection[] selectors = mapPanels.mapSelectionPanel.selectors;
+        for (int i = 0; i < selectors.Length && i < config.maps.Count; i++) {
+            MapData map = config.maps[i];
+            if (!map.state.unlockRevealPending) continue;
+            map.state.unlockRevealPending = false;
+
+            MapSelection selector = selectors[i];
+            const float delayBeforeBurn = 0.4f; // Gives the player a moment to see the map is still locked
+            const float burnTime = 1.5f;
+            const float revealTime = burnTime * 0.25f; // Same point that a skill upgrades during its burn
+
+            Tween.Delay(delayBeforeBurn, () => {
+                // Left the screen before it started, so just show it unlocked for next time
+                if (!selector.isActiveAndEnabled) {
+                    selector.SetState(map);
+                    return;
+                }
+                selector.Burn(burnTime, curves.skillBurn, curves.skillBurnEmbers);
+                PlayAudioClip(audio.burnClip);
+                Tween.Delay(revealTime, () => selector.SetState(map, fadeIn: true));
+            });
+        }
+    }
     
     public class UIHints {
         public readonly List<RectTransform> hoverableRectTransforms = new();

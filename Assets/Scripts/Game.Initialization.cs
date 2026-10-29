@@ -17,6 +17,8 @@ public partial class Game {
             camera.defaultPPU = Mathf.RoundToInt(camera.defaultPPU * 1.3f);    
         }
         
+        SetDeathWipe(1f, 1f); // Start fully covered, the raid enter sequence fades it out
+
         InitInput();
         InitInputDevice();
         InitResources();

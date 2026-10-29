@@ -5,9 +5,9 @@ using static GameData;
 public partial class Game {
 
     public class CameraLookahead {
-        public const float maxDistance = 1.2f; // World units, the view is only ~3 units tall
-        public const float mouseRange = 1.2f; // Cursor distance from the player that gives the full offset
-        public const float smoothingTime = 2.2f;
+        public const float maxDistance = 0.17f; // World units, the view is only ~3 units tall
+        public const float mouseRange = 0.2f; // Cursor distance from the player that gives the full offset
+        public const float smoothingTime = 1.3f;
         public Vector2 velocity;
         public Tween fadeOutTween;
     }

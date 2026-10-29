@@ -175,32 +175,6 @@ public partial class Game : MonoBehaviour {
         PlayPendingMapUnlockBurns();
     }
 
-    // Maps unlocked since the last visit burn away their locked look to reveal themselves
-    private void PlayPendingMapUnlockBurns() {
-        MapSelection[] selectors = mapPanels.mapSelectionPanel.selectors;
-        for (int i = 0; i < selectors.Length && i < config.maps.Count; i++) {
-            MapData map = config.maps[i];
-            if (!map.state.unlockRevealPending) continue;
-            map.state.unlockRevealPending = false;
-
-            MapSelection selector = selectors[i];
-            const float delayBeforeBurn = 0.4f; // Gives the player a moment to see the map is still locked
-            const float burnTime = 1.5f;
-            const float revealTime = burnTime * 0.25f; // Same point that a skill upgrades during its burn
-
-            Tween.Delay(delayBeforeBurn, () => {
-                // Left the screen before it started, so just show it unlocked for next time
-                if (!selector.isActiveAndEnabled) {
-                    selector.SetState(map);
-                    return;
-                }
-                selector.Burn(burnTime, curves.skillBurn, curves.skillBurnEmbers);
-                PlayAudioClip(audio.burnClip);
-                Tween.Delay(revealTime, () => selector.SetState(map, fadeIn: true));
-            });
-        }
-    }
-
     private void OnMapSelectionExit() {
         CloseMapSelectionUI();
     }
@@ -225,7 +199,6 @@ public partial class Game : MonoBehaviour {
 
     private void OnRaidStateExit() {
         ResumeRaid();
-        ResetAimLookAhead();
         DeinitPlayer();
         ClosePlayerInventory();
         CloseLootInventory();
@@ -336,7 +309,7 @@ public partial class Game : MonoBehaviour {
         
         Cursor.visible = false;
 
-        ui.deathBgImage.enabled = false;
+        SetDeathWipe(0f, 0f);
         curRaid.mapInstance.gameObject.SetActive(true);
 
         int randomSpawnIndex = Random.Range(0, curRaid.mapInstance.spawnPositionsParent.childCount);
@@ -412,7 +385,7 @@ public partial class Game : MonoBehaviour {
     // *******************************
     
     private int ZoomedInCameraPPU => Mathf.RoundToInt(camera.defaultPPU * 1.6f);
-    
+
     private Sequence raidEnterSequence;
     
     private void AnimateRaidEnterSequence() {
@@ -420,9 +393,8 @@ public partial class Game : MonoBehaviour {
             
         raidEnterSequence = Sequence.Create();
             
-        ui.deathBgImage.enabled = true;
-        ui.deathBgImage.fillAmount = 1f;
-        raidEnterSequence.Chain(Tween.Alpha(ui.deathBgImage, 1f, 0f, 0.5f, Ease.InCubic));
+        SetDeathWipe(1f, 1f);
+        raidEnterSequence.Chain(TweenDeathWipeAlpha(1f, 0f, 0.5f, Ease.InCubic));
             
         raidEnterSequence.ChainDelay(0.25f);
 
@@ -449,6 +421,7 @@ public partial class Game : MonoBehaviour {
         Tween.StopAll();
         DemonEyeTween.StopAll();
         DismissNotificationsAfterTweensStopped();
+        FadeoutAimLookAhead();
 
         foreach (Entity entity in entities.all) {
             if (entity.rigidbody) {
@@ -461,7 +434,7 @@ public partial class Game : MonoBehaviour {
         }
         
         // We want the player to be infront of the UI, so we move it to the UI layer temporarily
-        player.gameObject.layer = LayerMask.NameToLayer("UI");
+        player.gameObject.layer = LayerMask.NameToLayer("DeathWipe");
         player.spriteRenderer.sortingLayerName = "DeathWipe";
         
         player.GetEffect(EffectsIndicies.HitFlash).Complete();
@@ -469,13 +442,11 @@ public partial class Game : MonoBehaviour {
         player.matPropertyBlock.SetFloat(ShaderIds.damageFlashTint, 1f);
         player.spriteRenderer.SetPropertyBlock(player.matPropertyBlock);
         
-        ui.deathBgImage.enabled = true;
-        ui.deathBgImage.fillAmount = 0f;
-        ui.deathBgImage.color = ui.deathBgImage.color.Alpha(1f);
+        SetDeathWipe(0f, 1f);
 
         Sequence sequence = Sequence.Create();
         sequence.ChainDelay(0.25f);
-        sequence.Chain(Tween.UIFillAmount(ui.deathBgImage, 1f, 1f, Ease.InOutQuad));
+        sequence.Chain(TweenDeathWipeFill(0f, 1f, 1f, Ease.InOutQuad));
         sequence.ChainCallback(() => {
             player.animator.enabled = true;
             player.animator.Play(PlayerAnimations.death);
@@ -527,10 +498,9 @@ public partial class Game : MonoBehaviour {
         
         sequence.ChainDelay(0.15f);
         
-        ui.deathBgImage.enabled = true;
-        ui.deathBgImage.fillAmount = 1f;
-        sequence.Chain(Tween.Alpha(ui.deathBgImage, 0f, 1f, 0.75f, Ease.InOutQuad));
-        
+        SetDeathWipe(1f, 0f);
+        sequence.Chain(TweenDeathWipeAlpha(0f, 1f, 0.75f, Ease.InOutQuad));
+
         ui.animatedBgImage.gameObject.SetActive(true);
         ui.animatedBgImage.color = new(1f, 1f, 1f, 0f);
         sequence.Group(Tween.Alpha(ui.animatedBgImage, 0f, 1f, 1f, Ease.InCubic, startDelay: 0.1f));
@@ -560,9 +530,8 @@ public partial class Game : MonoBehaviour {
         
         sequence.ChainDelay(0.25f);
         
-        ui.deathBgImage.enabled = true;
-        ui.deathBgImage.fillAmount = 1f;
-        sequence.Chain(Tween.Alpha(ui.deathBgImage, 0f, 1f, 0.75f, Ease.InOutQuad));
+        SetDeathWipe(1f, 0f);
+        sequence.Chain(TweenDeathWipeAlpha(0f, 1f, 0.75f, Ease.InOutQuad));
 
         sequence.Group(Tween.Delay(0.35f, () => AnimateLargeRaidText(ColorText("SUCCESSFUL EXTRACT", gameInstance.config.styles.increaseDescColor), 3.8f)));
         
@@ -576,6 +545,19 @@ public partial class Game : MonoBehaviour {
             camera.pixelPerfect.assetsPPU = initialPPU;
             onCompleteCallback?.Invoke();
         });
+    }
+    
+    private void SetDeathWipe(float fill, float alpha) {
+        Shader.SetGlobalFloat(ShaderIds.deathWipeFill, fill);
+        Shader.SetGlobalFloat(ShaderIds.deathWipeAlpha, alpha);
+    }
+
+    private Tween TweenDeathWipeFill(float startValue, float endValue, float duration, Ease ease) {
+        return Tween.Custom(startValue, endValue, duration, val => Shader.SetGlobalFloat(ShaderIds.deathWipeFill, val), ease);
+    }
+
+    private Tween TweenDeathWipeAlpha(float startValue, float endValue, float duration, Ease ease) {
+        return Tween.Custom(startValue, endValue, duration, val => Shader.SetGlobalFloat(ShaderIds.deathWipeAlpha, val), ease);
     }
     
     private Vector2Int lastScreenSize;

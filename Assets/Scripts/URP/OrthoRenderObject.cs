@@ -42,7 +42,9 @@ public class OrthoRenderFeature : ScriptableRendererFeature {
         private List<ShaderTagId> m_ShaderTagIdList = new();
         private RenderStateBlock m_RenderStateBlock;
 
-        public OrthoRenderObject(RenderPassEvent renderPassEvent, string[] shaderTags, RenderQueueType renderQueueType, int layerMask, bool clearRenderTarget, RenderManager.Texture texture) {
+        public OrthoRenderObject(RenderPassEvent renderPassEvent, string[] shaderTags, RenderQueueType renderQueueType, int layerMask, 
+            bool clearRenderTarget, RenderManager.Texture texture) 
+        {
             this.renderPassEvent = renderPassEvent;
             this.renderQueueType = renderQueueType;
             this.overrideMaterial = null;
@@ -102,12 +104,22 @@ public class OrthoRenderFeature : ScriptableRendererFeature {
             
             using var builder = renderGraph.AddRasterRenderPass<PassData>(passName, out var passData, profilingSampler);
             
-            RTHandle renderTextureHandle = RenderManager.GetRenderTexture(texture);
-            TextureHandle targetColorTexture = renderGraph.ImportTexture(renderTextureHandle);
-            builder.SetRenderAttachment(targetColorTexture, 0, AccessFlags.Write);
+            TextureHandle targetColorTexture;
+            if (texture == RenderManager.Texture.UrpColorTexture) {
+                UniversalResourceData resourceData = frameData.Get<UniversalResourceData>();
+                targetColorTexture = resourceData.activeColorTexture;
+                passData.viewportHeight = Screen.height;
+            }
+            else {
+                RTHandle renderTextureHandle = RenderManager.GetRenderTexture(texture);
+                targetColorTexture = renderGraph.ImportTexture(renderTextureHandle);
+                passData.viewportHeight = renderTextureHandle.referenceSize.y;
+            }
+
+            // ReadWrite keeps what's already in the target (e.g. the final blit) when we aren't clearing it
+            builder.SetRenderAttachment(targetColorTexture, 0, clearRenderTarget ? AccessFlags.Write : AccessFlags.ReadWrite);
 
             passData.color = targetColorTexture;
-            passData.viewportHeight = renderTextureHandle.referenceSize.y;
             passData.clearRenderTarget = clearRenderTarget;
             passData.cameraData = cameraData;
                 

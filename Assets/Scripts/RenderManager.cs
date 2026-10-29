@@ -39,7 +39,7 @@ public static class RenderManager {
     }
 #endif
 
-    public enum Texture { Tilemap, WaterOcclusion, Scene, Water, Final }
+    public enum Texture { Tilemap, WaterOcclusion, Scene, Water, Final, UrpColorTexture, }
     
     public static RTHandle GetRenderTexture(Texture type) {
         return type switch {

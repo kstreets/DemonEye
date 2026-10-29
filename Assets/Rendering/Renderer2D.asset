@@ -52,7 +52,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b00045f12942b46c698459096c89274e, type: 3}
-  m_Name: FullScreenPassRendererFeature
+  m_Name: Environment
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.FullScreenPassRendererFeature
   m_Active: 1
   injectionPoint: 600
@@ -62,7 +62,7 @@ MonoBehaviour:
   passIndex: 0
   bindDepthStencilAttachment: 0
   m_Version: 1
---- !u!114 &-4507422184291056610
+--- !u!114 &-4738983429996795854
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -71,18 +71,33 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 312d735f16edfc44fbfb5b2edfdaa7e3, type: 3}
-  m_Name: UI Pass
-  m_EditorClassIdentifier: Assembly-CSharp::OrthoRenderFeature
+  m_Script: {fileID: 11500000, guid: b1f576a98280f5e4a95a6c73092cf7f3, type: 3}
+  m_Name: Death Wipe Pass
+  m_EditorClassIdentifier: Assembly-CSharp::DeathWipeFeature
   m_Active: 1
   renderPassEvent: 450
-  shaderTags: []
-  renderQueueType: 1
-  layerMask:
-    serializedVersion: 2
-    m_Bits: 32
-  clearRenderTarget: 0
+  material: {fileID: 2100000, guid: 9ad0acdf892ce0d469426bbfce43e2ed, type: 2}
   texture: 2
+--- !u!114 &-4533305390848633526
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b00045f12942b46c698459096c89274e, type: 3}
+  m_Name: Death Wipe
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::FullScreenPassRendererFeature_OldGUID
+  m_Active: 1
+  injectionPoint: 600
+  fetchColorBuffer: 0
+  requirements: 0
+  passMaterial: {fileID: 2100000, guid: 9ad0acdf892ce0d469426bbfce43e2ed, type: 2}
+  passIndex: 0
+  bindDepthStencilAttachment: 0
+  m_Version: 1
 --- !u!114 &-4075944505059195486
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -164,10 +179,11 @@ MonoBehaviour:
   - {fileID: 7261136505038537400}
   - {fileID: -1077250143126679424}
   - {fileID: -8688184042810852600}
-  - {fileID: -4507422184291056610}
   - {fileID: -4075944505059195486}
   - {fileID: -6886932707976143003}
-  m_RendererFeatureMap: 38cb56a4faaaaff2bb989c044ea23882b88271202ebdc4648010b2ccb3d60cf108bb0a21a55e6d871ec49d9c676b72c1a2c5bd6311566fc7651f10cd30b36ca0
+  - {fileID: -4533305390848633526}
+  - {fileID: 2744203516463684404}
+  m_RendererFeatureMap: 38cb56a4faaaaff2bb989c044ea23882b88271202ebdc4648010b2ccb3d60cf108bb0a21a55e6d87a2c5bd6311566fc7651f10cd30b36ca04a951af8c37616c1341b320e8f5e1526
   m_UseNativeRenderPass: 0
   m_LayerMask:
     serializedVersion: 2
@@ -198,6 +214,27 @@ MonoBehaviour:
   m_PostProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   m_DefaultMaterialType: 1
   m_DefaultCustomMaterial: {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+--- !u!114 &2744203516463684404
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 312d735f16edfc44fbfb5b2edfdaa7e3, type: 3}
+  m_Name: OrthoRenderFeature
+  m_EditorClassIdentifier: Assembly-CSharp::OrthoRenderFeature
+  m_Active: 1
+  renderPassEvent: 600
+  shaderTags: []
+  renderQueueType: 1
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 32768
+  clearRenderTarget: 0
+  texture: 5
 --- !u!114 &7261136505038537400
 MonoBehaviour:
   m_ObjectHideFlags: 0

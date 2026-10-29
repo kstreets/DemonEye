@@ -17,7 +17,6 @@ public class CameraShake : CinemachineExtension {
     }
     
     private List<ShakeData> activeShakes = new(5);
-    private Vector2 appliedOffset;
 
     public void Shake(float jitter, float magnitude, float duration) {
         ShakeData shake = new() {
@@ -48,6 +47,7 @@ public class CameraShake : CinemachineExtension {
     protected override void PostPipelineStageCallback(CinemachineVirtualCameraBase vcam, CinemachineCore.Stage stage, ref CameraState state, float deltaTime) {
         if (stage != CinemachineCore.Stage.Finalize) return;
         if (activeShakes.Count == 0) return;
+        if (vcam.Follow == null) return; // The offset would build up without the composer moving the camera
         
         Vector3 combinedOffset = Vector3.zero;
         
@@ -74,10 +74,7 @@ public class CameraShake : CinemachineExtension {
             activeShakes[i] = shake;
         }
         
-        Vector3 origin = vcam.State.RawPosition - (Vector3)appliedOffset;
-        vcam.ForceCameraPosition(origin + combinedOffset, Quaternion.identity);
-        
-        appliedOffset = combinedOffset;
+        state.RawPosition += combinedOffset;
     }
     
     private float CalculateFalloffScale(Vector2 sourcePosition, float falloffStartRange, float falloffDistance, Falloff falloff) {

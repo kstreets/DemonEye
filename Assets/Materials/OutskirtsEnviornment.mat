@@ -54,10 +54,15 @@ Material:
     m_Ints: []
     m_Floats:
     - _EnableExternalAlpha: 0
-    - _Opacity: 0.02
+    - _NoiseScale: 8
+    - _NoiseStrength: 1
+    - _Opacity: 0.07
+    - _ParallaxStrength: 0.2
     - _ZWrite: 0
     m_Colors:
     - _Color: {r: 0.7924528, g: 0.438608, b: 0.31149867, a: 1}
+    - _NoiseColor: {r: 0.33960277, g: 0.3442873, b: 0.48427665, a: 1}
+    - _NoiseSpeed: {r: 0.05, g: 0.02, b: 0, a: 0}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

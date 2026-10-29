@@ -21,6 +21,8 @@ public static class ShaderIds {
     public static readonly int pixelDensity = Shader.PropertyToID("_PixelDensity");
 
     // Globals
+    public static readonly int deathWipeAlpha = Shader.PropertyToID("_DeathWipeAlpha");
+    public static readonly int deathWipeFill = Shader.PropertyToID("_DeathWipeFill");
     public static readonly int unscaledTime = Shader.PropertyToID("_UnscaledTime");
     public static readonly int waterMap = Shader.PropertyToID("_WaterMap");
     public static readonly int waterOcclusionMap = Shader.PropertyToID("_WaterOcclusionMap");

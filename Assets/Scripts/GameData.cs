@@ -161,7 +161,6 @@ public class GameData {
         public TextMeshProUGUI teleportingIntoRaidHeader;
         public ItemUI dragAndDropItemUI;
         public Image animatedBgImage;
-        public Image deathBgImage;
         public ButtonFeel menuBackButton;
         public MessagePopup messagePopup;
         public TextMeshProUGUI smallRaidText;
