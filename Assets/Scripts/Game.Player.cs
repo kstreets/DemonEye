@@ -317,9 +317,18 @@ public partial class Game {
                 }
             }
         }
-        
-        if (!TryGetShootDirection(out Vector2 shootDir)) return;
 
+        bool wantsToShoot = false;
+        Vector2 shootDir = Vector2.zero;
+        if (!usingController) {
+            wantsToShoot = Mouse.current?.leftButton.isPressed ?? false;
+            TryGetAimVector(out shootDir);
+        }
+        else {
+            wantsToShoot = TryGetAimVector(out shootDir);
+        }
+        if (!wantsToShoot) return;
+        
         bool canShoot = player.attackLimiter.TimeHasPassed(GetFirerateDelay());
         if (!canShoot) return;
 
@@ -390,7 +399,7 @@ public partial class Game {
         DestroyEntity(outTeleportFxEntity, CurrentClipLength(outTeleportFxEntity.animator));
         PlayAudioClip(audio.teleportOutClip, outTeleportFxEntity.position);
         
-        camera.cameraShake.Shake(7f, 0.05f, 0.35f);
+        camera.cameraShake.Shake(4.5f, 0.21f, 0.35f);
     }
 
     private void FinishTeleport() {
@@ -451,79 +460,37 @@ public partial class Game {
         return (Vector2)player.position + dir * distance;
     }
 
-    private bool TryGetShootDirection(out Vector2 shootDir) {
-        shootDir = Vector2.zero;
+    private bool TryGetAimVector(out Vector2 aim) {
+        aim = Vector2.zero;
 
         if (usingController) {
             Gamepad gamepad = Gamepad.current;
-            if (gamepad == null) return false;
+            if (gamepad == null) {
+                return false;
+            }
 
-            Vector2 aim = gamepad.rightStick.ReadValue();
-            if (aim.magnitude <= ControllerNavigation.stickDeadzone) return false;
+            Vector2 stick = gamepad.rightStick.ReadValue();
+            if (stick.magnitude <= ControllerNavigation.stickDeadzone) {
+                return false;
+            }
 
-            shootDir = AimAssistedDirection(aim);
+            aim = stick;
             return true;
         }
 
         Mouse mouse = Mouse.current;
-        if (mouse == null || !mouse.leftButton.isPressed) return false;
+        if (mouse == null) {
+            return false;
+        }
 
         Vector2 mouseWorldPos = camera.main.ScreenToWorldPoint(mouse.position.ReadValue());
         Vector2 toMouse = mouseWorldPos - (Vector2)PlayerEyePos;
-        if (toMouse.sqrMagnitude <= Mathf.Epsilon) return false;
+        if (toMouse.sqrMagnitude <= Mathf.Epsilon) {
+            return false;
+        }
 
-        shootDir = AimAssistedDirection(toMouse);
+        aim = toMouse;
         return true;
-    }
-
-    // Shots go in one of the 4 cardinal directions, but get bent slightly towards where the player is actually aiming.
-    // Since the aim is always within 45 degrees of its cardinal direction, the bend is at most 45 * aimAssistBias degrees.
-    private Vector2 AimAssistedDirection(Vector2 aim) {
-        Vector2 cardinal = SnapToCardinal(aim);
-        float angleToAim = Vector2.SignedAngle(cardinal, aim);
-        return Quaternion.AngleAxis(angleToAim * config.gameplay.aimAssistBias, Vector3.forward) * cardinal;
-    }
-
-    // The quadrants are split along the diagonals
-    private static Vector2 SnapToCardinal(Vector2 dir) {
-        bool horizontal = Mathf.Abs(dir.x) >= Mathf.Abs(dir.y);
-        return horizontal ? new(Mathf.Sign(dir.x), 0f) : new(0f, Mathf.Sign(dir.y));
-    }
-
-    // Unused while the game is in twin-stick mode, kept for the old auto aim
-    private void GetAttackTargets(int targetCount, ref List<Vector3> targets) {
-        float overlapDist = GetProjectileRangeDistance();
-        List<Collider2D> cols = Physics.OverlapCircle(player.position, overlapDist, Masks.TargetableEnemyMask);
-        
-        if (cols.Count <= 0) {
-            cols = Physics.OverlapCircle(player.position, overlapDist, Masks.MineableMask);
-        }
-        
-        cols.Sort(static (a, b) => {
-            float aScore = GetTargetScore(a);
-            float bScore = GetTargetScore(b);
-            return aScore.CompareTo(bScore);
-        });
-
-        int count = Mathf.Min(targetCount, cols.Count);
-        targets.Clear();
-        for (int i = 0; i < count; i++) {
-            targets.Add(entities.lookup[cols[i].gameObject].Center);
-        }
-    }
-
-    private static float GetTargetScore(Collider2D col) {
-        Entity entity = gameInstance.entities.lookup[col.gameObject];
-        float dist = Vector2.Distance(col.transform.position, player.position);
-
-        if (entity is Enemy enemy) {
-            const float distWeight = 1f;
-            const float healthWeight = -0.003f;
-            float bleedingWeight = enemy.bleed.HasValue ? 0.2f : 0f;
-            return (dist * distWeight) + (enemy.health * healthWeight) + bleedingWeight;
-        }
-        
-        return dist;
     }
 
     private Vector3 PlayerEyePos => player.position + new Vector3(0f, 0.182f, 0f);

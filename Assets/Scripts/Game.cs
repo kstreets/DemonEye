@@ -225,6 +225,7 @@ public partial class Game : MonoBehaviour {
 
     private void OnRaidStateExit() {
         ResumeRaid();
+        ResetAimLookAhead();
         DeinitPlayer();
         ClosePlayerInventory();
         CloseLootInventory();
@@ -245,6 +246,7 @@ public partial class Game : MonoBehaviour {
         CheckForHotBarInteractions();
         UpdateInventory();
         UpdatePlayer();
+        UpdateAimLookAhead();
         UpdateProjectiles();
         UpdateSpawnManager();
         UpdateEnemies();
@@ -346,6 +348,7 @@ public partial class Game : MonoBehaviour {
         Vector3 cameraWarpTarget = new(player.position.x, player.position.y, camera.cinemachine.transform.position.z);
         camera.cinemachine.ForceCameraPosition(cameraWarpTarget, Quaternion.identity);
         camera.cinemachine.Follow = player.trans;
+        ResetAimLookAhead();
         
         ShowRaidUI();
         InitMapGrid();

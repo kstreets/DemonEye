@@ -118,9 +118,12 @@ public class GameData {
     public class Camera {
         public UnityEngine.Camera main;
         public CameraShake cameraShake;
+        public CameraAimOffset aimOffset;
         public CinemachineCamera cinemachine;
         public PixelPerfectCamera pixelPerfect;
+        
         [NonSerialized] public int defaultPPU;
+        [NonSerialized] public CameraLookahead lookAhead = new();
     }
     
     [Serializable]

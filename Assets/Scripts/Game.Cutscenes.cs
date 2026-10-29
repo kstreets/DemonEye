@@ -141,6 +141,7 @@ public partial class Game {
         HideInventoryItemPopup();
         HideInteractionPopup();
         HideHint();
+        FadeoutAimLookAhead();
 
         player.velocity = Vector3.zero;
         player.animator.Play(player.nextIdleAnimHash);
@@ -156,7 +157,7 @@ public partial class Game {
             cutscene.cameraTarget = new GameObject("CutsceneCameraTarget").transform;
         }
 
-        // Lookahead aims ahead of a moving target, which makes the camera overshoot wherever a pan stops
+        // Cinemachine lookahead aims ahead of a moving target, which makes the camera overshoot wherever a pan stops
         if (camera.cinemachine.TryGetComponent(out CinemachinePositionComposer composer)) {
             cutscene.restoreLookahead = composer.Lookahead.Enabled;
             composer.Lookahead.Enabled = false;
