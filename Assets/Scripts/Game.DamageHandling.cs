@@ -25,6 +25,8 @@ public partial class Game {
         AddFlashHitEffect(enemy);
         SpawnDamageNumber(EnemyDamageNumberSpawnPos(enemy), damage, isCriticalStrike ? DamageColor.Crit : DamageColor.Normal);
         Tween.PunchScale(enemy.trans, Vector3.one * 0.15f, 0.1f, 15f);
+
+        StampBlood(enemy.position.Offset(y: -0.01f));
     }
     
     private void HandleDamage(Projectile projectile, Entity entity) {

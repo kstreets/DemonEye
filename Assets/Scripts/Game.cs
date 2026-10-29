@@ -20,6 +20,7 @@ public partial class Game : MonoBehaviour {
     public ItemRefs itemRefs;
     public SkillUpgradePaths skillUpgradePaths;
     public GameData.Camera camera;
+    public Blood blood;
     public Curves curves;
     public UI ui;
     public InputPrompts inputPrompts;
@@ -233,6 +234,7 @@ public partial class Game : MonoBehaviour {
     }
 
     private void OnRaidStateLateUpdate() {
+        FlushBloodStamps();
         UpdateInRaidUI();
         UpdatePlayerPanelUI();
         UpdateHotBarUI();
@@ -325,6 +327,7 @@ public partial class Game : MonoBehaviour {
         
         ShowRaidUI();
         InitMapGrid();
+        InitRaidBlood();
         CreateDropPoolsForMap(curRaid.map);
         InitSpawnManager(curRaid.map.spawning);
         SpawnMapResources(curRaid.mapInstance.resourceParent);
@@ -375,6 +378,7 @@ public partial class Game : MonoBehaviour {
         entities.projectiles.Clear();
         entities.soulTrackingProjectiles.Clear();
         DeinitMapGrid();
+        DeinitRaidBlood();
         DestroyEntities(EntityLifetime.Level);
         UnloadCurrentMapAsync();
     }

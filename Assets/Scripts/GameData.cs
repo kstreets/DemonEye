@@ -125,7 +125,22 @@ public class GameData {
         [NonSerialized] public int defaultPPU;
         [NonSerialized] public CameraLookahead lookAhead = new();
     }
-    
+
+    [Serializable]
+    public class Blood {
+        public SpriteRenderer overlay;
+        public Material stampMaterial;
+        public Sprite[] splatterMasks;
+        public int texelsPerUnit = 48;
+
+        [NonSerialized] public RenderTexture mask;
+        [NonSerialized] public Rect maskWorldRect;
+        [NonSerialized] public Mesh stampQuad;
+        [NonSerialized] public UnityEngine.Rendering.CommandBuffer cmd;
+        [NonSerialized] public MaterialPropertyBlock materialProperyBlock;
+        [NonSerialized] public readonly List<BloodStamp> pendingStamps = new();
+    }
+
     [Serializable]
     public class Curves {
         public AnimationCurve hitFlash;

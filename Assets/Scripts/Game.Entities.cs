@@ -383,7 +383,7 @@ public partial class Game {
         });
         entity.SetEffect(EffectsIndicies.Dissolve, tween);
     }
-    
+
     private Tween Delay<T>(T entity, float delay, Action<T> callback) where T: Entity {
         if (delay <= 0f) {
             callback?.Invoke(entity);

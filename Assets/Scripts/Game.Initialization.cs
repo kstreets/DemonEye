@@ -29,6 +29,7 @@ public partial class Game {
         InitButtonCallbacks();
         InitPauseMenu();
         InitEntityPools();
+        InitBlood();
         InitGameStates();
         InitMenuNavigation();
         InitInputIcons();

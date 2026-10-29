@@ -13,6 +13,8 @@ public static class ShaderIds {
     public static readonly int fillMask = Shader.PropertyToID("_FillMask");
     public static readonly int hsvChannelMask = Shader.PropertyToID("_HSVChannelMask");
     public static readonly int hsvColor = Shader.PropertyToID("_HSVColor");
+    public static readonly int mainTex = Shader.PropertyToID("_MainTex");
+    public static readonly int mainTexST = Shader.PropertyToID("_MainTex_ST");
     public static readonly int intoOffsetSize = Shader.PropertyToID("_IntoOffset_Size");
     public static readonly int offsetSize = Shader.PropertyToID("_Offset_Size");
     public static readonly int opacity = Shader.PropertyToID("_Opacity");
@@ -21,6 +23,8 @@ public static class ShaderIds {
     public static readonly int pixelDensity = Shader.PropertyToID("_PixelDensity");
 
     // Globals
+    public static readonly int bloodMask = Shader.PropertyToID("_BloodMask");
+    public static readonly int bloodMaskRect = Shader.PropertyToID("_BloodMaskRect");
     public static readonly int deathWipeAlpha = Shader.PropertyToID("_DeathWipeAlpha");
     public static readonly int deathWipeFill = Shader.PropertyToID("_DeathWipeFill");
     public static readonly int unscaledTime = Shader.PropertyToID("_UnscaledTime");
