@@ -97,7 +97,7 @@ public partial class Game {
             proj.trans.position += (Vector3)proj.velocity * Time.deltaTime;
             proj.distTraveled += proj.velocity.magnitude * Time.deltaTime;
             
-            Collider2D col = Physics2D.OverlapCircle(proj.trans.position, projectileRadius, proj.layerMask);
+            Collider2D col = proj.damageShape ? proj.damageShape.OverlapFirst(proj.layerMask) : Physics2D.OverlapCircle(proj.trans.position, projectileRadius, proj.layerMask);
             if (!col) continue;
             
             // Hack for identifying if the projectile hit the player 

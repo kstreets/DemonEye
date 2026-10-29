@@ -109,6 +109,7 @@ public partial class Game {
         entityPools.eyeUpgradeReveal = CreateEntityPool<Entity>(prefabs.eyeUpgradeReveal, 1, null);
         entityPools.altarSoulSwirl = CreateEntityPool<Entity>(prefabs.altarSoulSwirl, 1, null);
         entityPools.attackCircle = CreateEntityPool<Entity>(prefabs.attackCircle, 10, null);
+        entityPools.meteorExplosion = CreateEntityPool<Entity>(prefabs.meteorExplosion, 4, null);
     }
 
     private void InitGameStates() {

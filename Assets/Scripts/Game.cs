@@ -65,7 +65,11 @@ public partial class Game : MonoBehaviour {
         gameInstance = this;
         InitGame();
     }
-    
+
+    private void OnApplicationQuit() {
+        SetDeathWipe(0f, 0f);
+    }
+
     private void Update() {
         // The same frame we unpause on still has deltaTime set to 0, which can cause NANs when we divide by deltaTime
         // so we just skip this frame to prevent any bugs from happening

@@ -29281,6 +29281,7 @@ MonoBehaviour:
     eyeUpgradeReveal: {fileID: 4553326254823822022, guid: c5302836b68aa364fa728950c016dee4, type: 3}
     altarSoulSwirl: {fileID: 6295211181386641826, guid: a89d850501e56204d86cca7cd50f8059, type: 3}
     attackCircle: {fileID: 72175377791882661, guid: e325eefd871c83b49ac41dca8b374953, type: 3}
+    meteorExplosion: {fileID: 6612703808539729084, guid: 7a60a42df23f2c246aaf1c1c4f58f13c, type: 3}
   itemTypes:
     quickUse: {fileID: 11400000, guid: 229fbe8e9203e95499f73ff3b9ecfb68, type: 2}
     backpack: {fileID: 11400000, guid: b4838a3d7e08dae4fbca579b80e09e71, type: 2}

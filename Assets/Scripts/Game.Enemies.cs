@@ -248,7 +248,8 @@ public partial class Game {
         public const float fireballLifetime = 5f; 
         public Vector2 fireBallSpawnPos => position.Offset(y: 0.2f);
         
-        public const float meteorTravelTime = 0.8f;
+        public const int meteorDamage = 15;
+        public const float meteorTravelTime = 0.6f;
         public const float meteorRadius = 0.2f;
         public const float meteorScatterRadiusPerMeteor = 0.3f;
         public const float delayBetweenMeteors = 0.12f;
@@ -335,15 +336,14 @@ public partial class Game {
                 meteorEntity.position = Vector2.Lerp(meteorSpawnPos, targetPos, comp);    
             })
             .OnComplete(() => {
+                Entity explosion = SpawnEntityOneShot(entityPools.meteorExplosion, targetPos, Quaternion.identity);
+                DealShapeDamage(explosion, FireBoss.meteorDamage);
                 DestroyEntity(attackCircleEntity);
                 DestroyEntity(meteorEntity);
             });
         }
     }
     
-    // Adds up to count random positions within scatterRadius of center, each a circle of the given radius that stays inside the map
-    // and doesn't overlap any other position in the list (including ones already in it). A position that can't find a free spot
-    // within the attempts is skipped, so fewer than count can get added
     private void ScatterPositions(ref List<Vector2> positions, int count, Vector2 center, float scatterRadius, float radius, int maxAttemptsPerPosition = 10) {
         float minSqrDist = (radius * 2f) * (radius * 2f);
 

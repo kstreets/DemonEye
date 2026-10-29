@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using PrimeTween;
 using UnityEngine;
+using UnityEngine.Assertions;
+using UnityEngine.Pool;
 
 public partial class Game {
     
@@ -29,13 +31,69 @@ public partial class Game {
         StampBlood(enemy.position.Offset(y: -0.01f));
     }
     
+    private void DealShapeDamage(Entity entity, int damage) {
+        Assert.IsNotNull(entity.damageShape, "Cannot deal shape damage because there is no DamageShape");
+        entity.delayedDamage = damage;
+        Delay(entity, DamageFrameDelay(entity), static entity => gameInstance.ApplyShapeDamage(entity));
+    }
+    
+    private float DamageFrameDelay(Entity entity) {
+        int frame = entity.damageShape.damageFrame;
+        if (frame <= 0 || !entity.animator) {
+            return 0f;
+        }
+        
+        using var _ = ListPool<AnimatorClipInfo>.Get(out List<AnimatorClipInfo> clipInfos);
+        entity.animator.GetCurrentAnimatorClipInfo(0, clipInfos);
+        
+        // Pooled entities are rebound while inactive so the animator may not have evaluated its first state yet
+        if (clipInfos.Count == 0) {
+            entity.animator.Update(0f);
+            entity.animator.GetCurrentAnimatorClipInfo(0, clipInfos);
+        }
+        
+        Assert.IsTrue(clipInfos.Count > 0, "Cannot wait for a damage frame because the animator has no clip playing");
+        if (clipInfos.Count == 0) return 0f;
+        
+        return frame / (clipInfos[0].clip.frameRate * entity.animator.speed);
+    }
+    
+    private void ApplyShapeDamage(Entity entity) {
+        DamageShape damageShape = entity.damageShape;
+        int damage = entity.delayedDamage;
+        entity.delayedDamage = 0;
+        
+        List<Collider2D> cols = damageShape.Overlap(damageShape.TargetMask);
+        
+        bool damagedPlayer = false;
+        foreach (Collider2D col in cols) {
+            int colliderLayerMask = 1 << col.gameObject.layer;
+            
+            if ((Masks.PlayerHurtMask & colliderLayerMask) != 0) {
+                if (damagedPlayer) continue;
+                DamagePlayer(damage, PlayerDamageType.Normal, entity);
+                damagedPlayer = true;
+                continue;
+            }
+            
+            if (!entities.lookup.TryGetValue(col.gameObject, out Entity hitEntity)) continue;
+            
+            if (hitEntity is Enemy) {
+                DamageEnemy(hitEntity, damage, isCriticalStrike: false);
+            }
+            else if ((Masks.MineableMask & colliderLayerMask) != 0) {
+                HandleDamageRock(hitEntity);
+            }
+        }
+    }
+    
     private void HandleDamage(Projectile projectile, Entity entity) {
         if (entity == null) return;
         if (entity.gameObject.CompareTag(Tags.Enemy)) {
             HandleDamageEnemy(projectile, entity);
         }
         else {
-            HandleDamageRock(projectile, entity);
+            HandleDamageRock(entity);
             thisFrame.flags |= GameData.FrameFlags.ShotRock;
         }
     }
@@ -122,7 +180,7 @@ public partial class Game {
         }
     }
     
-    private void HandleDamageRock(Projectile projectile, Entity entity) {
+    private void HandleDamageRock(Entity entity) {
         entity.health -= config.gameplay.damage;
 
         PlayAudioClip(audio.stoneHitClip, entity.position);

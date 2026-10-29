@@ -399,7 +399,7 @@ public partial class Game {
         DestroyEntity(outTeleportFxEntity, CurrentClipLength(outTeleportFxEntity.animator));
         PlayAudioClip(audio.teleportOutClip, outTeleportFxEntity.position);
         
-        camera.cameraShake.Shake(4.5f, 0.21f, 0.35f);
+        camera.cameraShake.Shake(4.5f, 0.15f, 0.5f);
     }
 
     private void FinishTeleport() {

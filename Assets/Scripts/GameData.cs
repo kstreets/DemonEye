@@ -78,6 +78,7 @@ public class GameData {
         public GameObject eyeUpgradeReveal;
         public GameObject altarSoulSwirl;
         public GameObject attackCircle;
+        public GameObject meteorExplosion;
     }
     
     [Serializable]
@@ -559,6 +560,7 @@ public class GameData {
         public EntityPool<Entity> eyeUpgradeReveal;
         public EntityPool<Entity> altarSoulSwirl;
         public EntityPool<Entity> attackCircle;
+        public EntityPool<Entity> meteorExplosion;
     }
     
     public class States {

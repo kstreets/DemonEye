@@ -55,6 +55,8 @@ public partial class Game {
         public Animator animator;
         public TextMeshProUGUI textMesh;
         public AttackCircle attackCircle;
+        public DamageShape damageShape;
+        public SpawnOffset spawnOffset;
         public EntityLifetime lifetime;
         
         public readonly MaterialPropertyBlock matPropertyBlock = new();
@@ -114,6 +116,7 @@ public partial class Game {
     private T SpawnEntity<T>(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level) where T : Entity, new() {
         GameObject obj = Instantiate(prefab, position, rotation, parent);
         T entity = InitializeEntity<T>(obj, lifetime);
+        ApplySpawnOffset(entity, position, rotation);
         ResetEntity(entity);
         RegisterEntity(entity);
         return entity;
@@ -126,6 +129,7 @@ public partial class Game {
             entity.lifetime = lifetime;
             entity.trans.SetPositionAndRotation(position, rotation);
             entity.trans.SetParent(parent, true);
+            ApplySpawnOffset(entity, position, rotation);
             ResetEntity(entity);
             RegisterEntity(entity);
         }
@@ -139,6 +143,11 @@ public partial class Game {
         return entity;
     }
     
+    private void ApplySpawnOffset(Entity entity, Vector3 position, Quaternion rotation) {
+        if (!entity.spawnOffset) return;
+        entity.position = entity.spawnOffset.Apply(position, rotation);
+    }
+    
     private T InitializeEntity<T>(GameObject objInstance, EntityLifetime lifetime) where T : Entity, new() {
         T newEntity = new() {
             trans = objInstance.transform,
@@ -149,6 +158,8 @@ public partial class Game {
             animator = objInstance.TryGetComponent(out Animator anim) ? anim : null,
             textMesh = objInstance.TryGetComponent(out TextMeshProUGUI text) ? text : null,
             attackCircle = objInstance.TryGetComponent(out AttackCircle attackCircle) ? attackCircle : null,
+            damageShape = objInstance.TryGetComponent(out DamageShape damageShape) ? damageShape : null,
+            spawnOffset = objInstance.TryGetComponent(out SpawnOffset spawnOffset) ? spawnOffset : null,
             lifetime = lifetime,
         };
         return newEntity;

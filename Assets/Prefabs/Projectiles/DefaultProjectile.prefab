@@ -11,6 +11,8 @@ GameObject:
   - component: {fileID: 1550580897799236635}
   - component: {fileID: 7281755501067690498}
   - component: {fileID: 2136356181609967079}
+  - component: {fileID: 283610211246950998}
+  - component: {fileID: 5322245904402581138}
   m_Layer: 0
   m_Name: DefaultProjectile
   m_TagString: Untagged
@@ -57,6 +59,7 @@ Animator:
   m_WriteDefaultValuesOnDisable: 0
 --- !u!212 &2136356181609967079
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -102,6 +105,7 @@ SpriteRenderer:
   m_SortingLayerID: 1394232625
   m_SortingLayer: 3
   m_SortingOrder: 1
+  m_MaskInteraction: 0
   m_Sprite: {fileID: -1469156576, guid: 86fe82712ae145242aa4771121f95cc2, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -111,5 +115,37 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 1
+--- !u!114 &283610211246950998
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2758590605051147821}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72f54cf66d299e544a6d2e8285d2ff68, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DamageShape
+  shape: 0
+  offset: {x: 0.02, y: -0.005}
+  radius: 0.03
+  size: {x: 0.2, y: 0.2}
+  capsuleDirection: 0
+  targets: 2
+  damageFrame: 0
+--- !u!114 &5322245904402581138
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2758590605051147821}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 92f2a9cf88013024c822f92c44dedf95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpawnOffset
+  offset: {x: -0.015, y: 0.005}
+  rotateWithEntity: 1
