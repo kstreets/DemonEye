@@ -54,11 +54,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b00045f12942b46c698459096c89274e, type: 3}
   m_Name: Environment
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.FullScreenPassRendererFeature
-  m_Active: 1
+  m_Active: 0
   injectionPoint: 600
   fetchColorBuffer: 0
   requirements: 0
-  passMaterial: {fileID: 2100000, guid: b0495faaf9b6dd94c9a8ddadf3daea33, type: 2}
+  passMaterial: {fileID: 0}
   passIndex: 0
   bindDepthStencilAttachment: 0
   m_Version: 1
@@ -183,7 +183,8 @@ MonoBehaviour:
   - {fileID: -6886932707976143003}
   - {fileID: -4533305390848633526}
   - {fileID: 2744203516463684404}
-  m_RendererFeatureMap: 38cb56a4faaaaff2bb989c044ea23882b88271202ebdc4648010b2ccb3d60cf108bb0a21a55e6d87a2c5bd6311566fc7651f10cd30b36ca04a951af8c37616c1341b320e8f5e1526
+  - {fileID: 4120660535431540174}
+  m_RendererFeatureMap: 38cb56a4faaaaff2bb989c044ea23882b88271202ebdc4648010b2ccb3d60cf108bb0a21a55e6d87a2c5bd6311566fc7651f10cd30b36ca04a951af8c37616c1341b320e8f5e1526ce2d5ebeec862f39
   m_UseNativeRenderPass: 0
   m_LayerMask:
     serializedVersion: 2
@@ -235,6 +236,48 @@ MonoBehaviour:
     m_Bits: 32768
   clearRenderTarget: 0
   texture: 5
+--- !u!114 &4120660535431540174
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b3d386ba5cd94485973aee1479b272e, type: 3}
+  m_Name: UIPass
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.RenderObjects
+  m_Active: 1
+  settings:
+    passTag: UIPass
+    Event: 600
+    filterSettings:
+      RenderQueueType: 1
+      LayerMask:
+        serializedVersion: 2
+        m_Bits: 32
+      PassNames: []
+    overrideMaterial: {fileID: 0}
+    overrideMaterialPassIndex: 0
+    overrideShader: {fileID: 0}
+    overrideShaderPassIndex: 0
+    overrideMode: 1
+    overrideDepthState: 0
+    depthCompareFunction: 4
+    enableWrite: 1
+    stencilSettings:
+      overrideStencilState: 0
+      stencilReference: 0
+      stencilCompareFunction: 8
+      passOperation: 0
+      failOperation: 0
+      zFailOperation: 0
+    cameraSettings:
+      overrideCamera: 0
+      restoreCamera: 1
+      offset: {x: 0, y: 0, z: 0, w: 0}
+      cameraFieldOfView: 60
 --- !u!114 &7261136505038537400
 MonoBehaviour:
   m_ObjectHideFlags: 0

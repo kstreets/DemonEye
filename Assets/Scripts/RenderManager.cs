@@ -31,6 +31,9 @@ public static class RenderManager {
     private static RTHandle sceneRT;
     private static RTHandle waterRT;
     private static RTHandle finalOutputRT;
+
+    private static ScriptableRendererData renderer;
+    private static FullScreenPassRendererFeature environmentFullscreenPass;
     
 #if UNITY_EDITOR
     static RenderManager() {
@@ -52,12 +55,24 @@ public static class RenderManager {
         };
     }
     
+    public static void SetFullscreenEnvironmentMaterial(Material mat) {
+        environmentFullscreenPass ??= GetRenderFeature<FullScreenPassRendererFeature>("Environment");
+        if (environmentFullscreenPass == null) return;
+        
+        environmentFullscreenPass.SetActive(mat != null);
+        environmentFullscreenPass.passMaterial = mat;
+        renderer.SetDirty();
+    }
+    
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void Initialize() {
         offScreenRenderingSize = Vector2Int.zero;
         pixelsPerUnit = 48;
         fixedPixelsPerUnit = 48;
         referenceResolution = 180;
+        renderer = null;
+        environmentFullscreenPass = null;
+        SetFullscreenEnvironmentMaterial(null);
         RenderPipelineManager.beginCameraRendering -= OnBeginRendering;
         RenderPipelineManager.beginCameraRendering += OnBeginRendering;
     }
@@ -145,6 +160,25 @@ public static class RenderManager {
         #else
             return new(Screen.width, Screen.height);
         #endif
+    }
+    
+    private static ScriptableRendererData GetRenderer(int index = 0) {
+        if (GraphicsSettings.currentRenderPipeline is not UniversalRenderPipelineAsset urpAsset) return null;
+        ReadOnlySpan<ScriptableRendererData> list = urpAsset.rendererDataList;
+        return index < list.Length ? list[index] : null;
+    }
+
+    private static T GetRenderFeature<T>(string name) where T : ScriptableRendererFeature {
+        renderer ??= GetRenderer();
+        if (renderer == null) {
+            return null;
+        }
+        foreach (var feature in renderer.rendererFeatures) {
+            if (feature is T typed && feature.name == name) {
+                return typed;
+            }
+        }
+        return null;
     }
     
 }

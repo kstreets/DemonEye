@@ -11,6 +11,7 @@ public class MapData : ScriptableObject {
     public RaidSpawnPattern spawning;
     public MapWaterSettings waterSettings;
     public Texture2D minimapTexture;
+    public Material environmentMaterial;
     
     [Header("Additional Info")]
     public Sprite icon;

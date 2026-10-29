@@ -332,7 +332,6 @@ public partial class Game : MonoBehaviour {
         AnimateRaidEnterSequence();
         PlayAudioClip(audio.ambientClip, Vector2.zero, loop: true);
         
-        WaterFeature.waterSettings = curRaid.map.waterSettings;
         thisFrame.flags |= FrameFlags.PostInitRaid;
     }
     

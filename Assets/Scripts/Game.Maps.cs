@@ -70,6 +70,9 @@ public partial class Game {
                 break;
             }
             
+            WaterFeature.waterSettings = curRaid.map.waterSettings;
+            RenderManager.SetFullscreenEnvironmentMaterial(mapData.environmentMaterial);
+            
             states.gameStateMachine.SetStateIfNotCurrent(states.raid);
         }
     }
@@ -95,6 +98,9 @@ public partial class Game {
                 yield return null;
             }
             curRaid.mapLoadingState = MapLoadingState.Unloaded;
+            
+            WaterFeature.waterSettings = null;
+            RenderManager.SetFullscreenEnvironmentMaterial(null);
         }
     }
 

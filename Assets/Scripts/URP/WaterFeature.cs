@@ -12,7 +12,7 @@ public class WaterFeature : ScriptableRendererFeature {
     private static WaterPass waterPass;
     
     public override void Create() {
-        waterSettings = new();
+        waterSettings ??= new();
         waterPass = new(computeShader) { renderPassEvent = renderPassEvent };
     }
 
