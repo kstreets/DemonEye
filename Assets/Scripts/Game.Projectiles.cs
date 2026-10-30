@@ -216,7 +216,7 @@ public partial class Game {
                 return;
             }
             
-            Vector2 spawnPos = gameInstance.PlayerEyePos;
+            Vector2 spawnPos = gameInstance.GetPlayerEyePos();
             Vector2 dirToTarget = ((Vector2)projectile.targetEntity.Center - spawnPos).normalized; 
             Vector2 initDir = Vector2.Lerp(Vector2.up, dirToTarget, Random.Range(0.3f, 1f));
             Quaternion projectileRotation = Quaternion.AngleAxis(Vector2.SignedAngle(Vector2.right, initDir), Vector3.forward);

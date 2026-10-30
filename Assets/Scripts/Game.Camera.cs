@@ -17,7 +17,7 @@ public partial class Game {
         if (overridingSequenceOccuring && !MenuNavigationNeeded) return;
         
         Vector2 target = Vector2.zero;
-        if (TryGetAimVector(out Vector2 aim)) {
+        if (TryGetAimDirection(out Vector2 aim)) {
             float strength = usingController ? Mathf.InverseLerp(ControllerNavigation.stickDeadzone, 1f, aim.magnitude) : Mathf.Clamp01(aim.magnitude / CameraLookahead.mouseRange);
             target = aim.normalized * (strength * CameraLookahead.maxDistance);
         }

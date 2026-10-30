@@ -231,8 +231,8 @@ public partial class Game {
         float speed = GetPlayerSpeed();
         Vector3 frameVelocity = new Vector3(moveInput.x, moveInput.y, 0f) * speed;
         
-        const float minMagnitdeNeededToMove = 0.25f;
-        if (moveInput.magnitude <= minMagnitdeNeededToMove) {
+        const float minMagnitudeNeededToMove = 0.25f;
+        if (moveInput.magnitude <= minMagnitudeNeededToMove) {
             frameVelocity = Vector3.zero;
         }
 
@@ -258,9 +258,10 @@ public partial class Game {
             player.predictedVelocity = Vector2.Lerp(player.predictedVelocity, actualFrameVelocity, smoothingComp);
         }
         
-        bool noFrameVelocity = frameVelocity.magnitude <= Mathf.Epsilon;
+        bool hasVelocity = player.velocity.magnitude > 0.001f;
+        bool hasFrameVelocity = frameVelocity.magnitude > Mathf.Epsilon;
 
-        if (!noFrameVelocity) {
+        if (hasFrameVelocity) {
             Vector2 moveDir = moveInput.normalized;
             bool movingPredominatelyVertical = Mathf.Abs(moveDir.y) > 0.93f;
             
@@ -289,7 +290,7 @@ public partial class Game {
                 player.animator.Play(PlayerAnimations.slideDown);
             }
         }
-        else if (noFrameVelocity) {
+        else if (!hasFrameVelocity) {
             player.animator.Play(player.nextIdleAnimHash);
         }
         else if (player.nextIdleAnimHash == PlayerAnimations.idleUp) {
@@ -317,25 +318,35 @@ public partial class Game {
                 }
             }
         }
-
-        bool wantsToShoot = false;
-        Vector2 shootDir = Vector2.zero;
-        if (!usingController) {
-            wantsToShoot = Mouse.current?.leftButton.isPressed ?? false;
-            TryGetAimVector(out shootDir);
+        
+        bool wantsToShoot = TryGetAimDirection(out Vector2 aimDir);
+        wantsToShoot = !usingController && (Mouse.current?.leftButton.isPressed ?? false);
+        
+        bool setNextIdleToFaceAimingDirection = !hasVelocity;
+        if (setNextIdleToFaceAimingDirection) {
+            switch (CardinalDirFromVector(aimDir)) {
+                case CardinalDir.Right:
+                case CardinalDir.Left:
+                    player.nextIdleAnimHash = PlayerAnimations.idleSide;
+                    player.nextIdleDir = aimDir.x < 0f ? -1 : 1;
+                    break;
+                case CardinalDir.Up:
+                    player.nextIdleAnimHash = PlayerAnimations.idleUp;
+                    break;
+                case CardinalDir.Down:
+                    player.nextIdleAnimHash = PlayerAnimations.idleDown;
+                    break;
+            }
         }
-        else {
-            wantsToShoot = TryGetAimVector(out shootDir);
-        }
-        if (!wantsToShoot) return;
         
         bool canShoot = player.attackLimiter.TimeHasPassed(GetFirerateDelay());
-        if (!canShoot) return;
-
-        Vector3 attackTarget = (Vector2)PlayerEyePos + shootDir;
-
+        if (!wantsToShoot || !canShoot) return;
+        
+        aimDir = AddInaccuracy(aimDir);
         PlayAudioClip(audio.shootClip, player.position);
-        ShootProjectile(attackTarget);
+        ShootProjectile(aimDir);
+        SpawnEntityOneShot(entityPools.muzzleFlash, GetPlayerEyePos(), ProjectileRotationFromVelocity(aimDir), player.trans);
+        
         if (trinkets.equiped is CauterizingWoundsTrinket cauterizingWounds) {
             if (player.bleeding && RollProbability(cauterizingWounds.chancePerShotToStopBleeding)) {
                 player.bleeding = false;
@@ -344,7 +355,7 @@ public partial class Game {
         }
 
         if (demonEye.equiped.doubleTapAugment.TryGetValue(out var doubleTap) && RollProbability(doubleTap.probability)) {
-            ShootProjectile(attackTarget, spawnDelay: doubleTap.delayBetweenShots);
+            ShootProjectile(aimDir, spawnDelay: doubleTap.delayBetweenShots);
         }
 
         float consecutiveShotDelay = config.gameplay.attackDelay * 1.5f;
@@ -460,7 +471,7 @@ public partial class Game {
         return (Vector2)player.position + dir * distance;
     }
 
-    private bool TryGetAimVector(out Vector2 aim) {
+    private bool TryGetAimDirection(out Vector2 aim) {
         aim = Vector2.zero;
 
         if (usingController) {
@@ -474,7 +485,7 @@ public partial class Game {
                 return false;
             }
 
-            aim = stick;
+            aim = stick.normalized;
             return true;
         }
 
@@ -484,32 +495,67 @@ public partial class Game {
         }
 
         Vector2 mouseWorldPos = camera.main.ScreenToWorldPoint(mouse.position.ReadValue());
-        Vector2 toMouse = mouseWorldPos - (Vector2)PlayerEyePos;
+        Vector2 toMouse = mouseWorldPos - (Vector2)GetPlayerEyePos();
         if (toMouse.sqrMagnitude <= Mathf.Epsilon) {
             return false;
         }
 
-        aim = toMouse;
+        aim = toMouse.normalized;
         return true;
     }
 
-    private Vector3 PlayerEyePos => player.position + new Vector3(0f, 0.182f, 0f);
-    
-    private void ShootProjectile(Vector2 targetPos, float? spawnDelay = default, float? flatCritChance = default) {
+    private Vector3 GetPlayerEyePos() {
+        bool isMoving = player.velocity.magnitude > 0.1f;
+        Vector2 eyeOffset = Vector2.zero;
+        
+        bool goingOrFacingUp = player.nextIdleAnimHash == PlayerAnimations.idleUp;
+        if (goingOrFacingUp) {
+            eyeOffset = isMoving ? new(0.0065f, 0.186f) : new(0.0065f, 0.1938f);
+        }
+        
+        bool goingOrFacingDown = player.nextIdleAnimHash == PlayerAnimations.idleDown;
+        if (goingOrFacingDown) {
+            eyeOffset = isMoving ? new(0.0065f, 0.1718f) : new(0.0065f, 0.1819f);
+        }
+        
+        bool goingOrFacingSideways = player.nextIdleAnimHash == PlayerAnimations.idleSide;
+        if (goingOrFacingSideways) {
+            eyeOffset = isMoving ? new(0.0264f, 0.172f) : new(0.0062f, 0.1818f);
+            eyeOffset.x *= player.nextIdleDir < 0 ? -1f : 1f;
+        }
+        
+        if (player.isSliding) {
+            if (goingOrFacingSideways) {
+                eyeOffset = new(0.0163f, 0.1218f);
+                eyeOffset.x *= player.nextIdleDir < 0 ? -1f : 1f;
+            }
+            else if (goingOrFacingUp) {
+                eyeOffset = new(0.0064f, 0.1324f);
+            }
+            else {
+                eyeOffset = new(0.0064f, 0.112f);
+            }
+        }
+        
+        return player.position + (Vector3)eyeOffset;
+    }
+
+    private Vector2 AddInaccuracy(Vector2 shootDir) {
         const float maxInaccuracyAngle = 18f;
         float maxAccuracyAngle = maxInaccuracyAngle * (1f - config.gameplay.accuracy);
         float accuracyAngle = Random.Range(-maxAccuracyAngle, maxAccuracyAngle);
-
+        return Quaternion.AngleAxis(accuracyAngle, Vector3.forward) * shootDir;
+    }
+    
+    private void ShootProjectile(Vector2 shootDir, float? spawnDelay = default, float? flatCritChance = default) {
         float projectileSpeed = config.gameplay.projectileSpeed;
-        Vector2 dir = (targetPos - (Vector2)PlayerEyePos).normalized;
-        dir = Quaternion.AngleAxis(accuracyAngle, Vector3.forward) * dir;
-        Vector2 velocity = dir * projectileSpeed; 
+        Vector2 velocity = shootDir.normalized * projectileSpeed; 
         
         if (demonEye.equiped.reflectingShot.TryGetValue(out var reflecting) && RollProbability(reflecting.probability)) {
-            _SpawnProjectile(PlayerEyePos, velocity, entityPools.projectile, ProjectileTypeFlags.ReflectedShot);
+            _SpawnProjectile(GetPlayerEyePos(), velocity, entityPools.projectile, ProjectileTypeFlags.ReflectedShot);
         }
         else {
-            _SpawnProjectile(PlayerEyePos, velocity, entityPools.projectile);
+            _SpawnProjectile(GetPlayerEyePos(), velocity, entityPools.projectile);
         }
         
         // Helper method just to forward the passed in parameters
