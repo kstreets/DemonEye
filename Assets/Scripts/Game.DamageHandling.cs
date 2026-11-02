@@ -31,9 +31,10 @@ public partial class Game {
         StampBlood(enemy.position.Offset(y: -0.01f));
     }
     
-    private void DealShapeDamage(Entity entity, int damage) {
+    private void DealShapeDamage(Entity entity, int damage, LayerMask mask) {
         Assert.IsNotNull(entity.damageShape, "Cannot deal shape damage because there is no DamageShape");
         entity.delayedDamage = damage;
+        entity.delayedDamageLayerMask = mask;
         Delay(entity, DamageFrameDelay(entity), static entity => gameInstance.ApplyShapeDamage(entity));
     }
     
@@ -61,9 +62,12 @@ public partial class Game {
     private void ApplyShapeDamage(Entity entity) {
         DamageShape damageShape = entity.damageShape;
         int damage = entity.delayedDamage;
-        entity.delayedDamage = 0;
+        LayerMask mask = entity.delayedDamageLayerMask;
         
-        List<Collider2D> cols = damageShape.Overlap(damageShape.TargetMask);
+        entity.delayedDamage = 0;
+        entity.delayedDamageLayerMask = 0;
+        
+        List<Collider2D> cols = damageShape.Overlap(mask);
         
         bool damagedPlayer = false;
         foreach (Collider2D col in cols) {

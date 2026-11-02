@@ -4,7 +4,6 @@ using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Pool;
-using Random = UnityEngine.Random;
 
 public partial class Game {
     
@@ -17,12 +16,11 @@ public partial class Game {
     
     public void CreateDropPoolsForMap(MapData map) { 
         foreach (DropPool dropPool in res.mapSpecificDropPools) {
-            dropPool.items.Clear();
-            dropPool.lastDroppedItem = null;
+            dropPool.Reset();
         }
         
         foreach (Item item in res.items) {
-            if (!ItamCanSpawnOnMap(item, map)) continue;
+            if (!ItemCanSpawnOnMap(item, map)) continue;
             RegisterItemToDropPools(item, res.mapSpecificDropPools);
         }
     }
@@ -31,7 +29,7 @@ public partial class Game {
         foreach (DropPool dropPool in dropPools) {
             foreach (DropOrigin dropOrigin in item.dropOrigins) {
                 if (dropPool != dropOrigin.dropPool) continue;
-                dropPool.items.Add(item);
+                dropPool.AddItem(item);
             }
         }
     }
@@ -40,113 +38,75 @@ public partial class Game {
     
     public Item GetItemFromDropPool(DropPool dropPool, [CanBeNull] MapData map) {
         Assert.IsNotNull(dropPool, "Droppool cannot be null");
-        Assert.IsFalse(dropPool.items.Count == 0, $"No items in drop pool, use {nameof(DropPool.HasItems)} before calling");
+        Assert.IsFalse(dropPool.itemRarityTable.Count == 0, $"No items in drop pool, use {nameof(DropPool.HasItems)} before calling");
         
-        const int smallPoolThreshold = 4;
-        bool useShufflePickMethod = dropPool.items.Count <= smallPoolThreshold;
-        // Item rolledItem = useShufflePickMethod ? PerformShufflePick(dropPool, map) : PerformWeightedPick(dropPool, map);
-        Item rolledItem = PerformWeightedPick(dropPool, map);
-        
-        dropPool.lastDroppedItem = rolledItem;
-        rolledItem = RollForAugmentedVersion(rolledItem, dropPool, map);
-        return rolledItem;
-    }
-    
-    private Item PerformShufflePick(DropPool dropPool, [CanBeNull] MapData map) {
-        using var _ = ListPool<float>.Get(out var dropChances);
-        GetTotalDropChances(dropPool, ref dropChances, map);
-        
-        dropPool.items.Shuffle();
-        
-        for (int i = 0; i < dropPool.items.Count; i++) {
-            float dropChance = dropChances[i];
-            if (RollProbability(dropChance)) {
-                return dropPool.items[i];
+        // Start rolling from highest rarity down to lowest
+        for (int i = Item.rarityCount - 1; i >= 0; i--) {
+            Item.Rarity curRarity = (Item.Rarity)i;
+            float rarityRoll = GetDropChanceOfRarity(curRarity, map); 
+            if (RollProbability(rarityRoll)) {
+                if (dropPool.TryGetItemOfRarity(curRarity, out Item item)) {
+                    return item;
+                }
             }
-        }
+        } 
         
-        return dropPool.items[^1];
+        return null;
     }
     
-    private Item PerformWeightedPick(DropPool dropPool, [CanBeNull] MapData map) {
-        using var _ = ListPool<float>.Get(out var dropChances);
-        float roll = Random.value * GetTotalDropChances(dropPool, ref dropChances, map);
-        float dropThreshold = 0f;
-        
-        for (int i = 0; i < dropPool.items.Count; i++) {
-            float dropChance = dropChances[i];
-            dropThreshold += dropChance;
-            if (roll < dropThreshold) {
-                return dropPool.items[i];    
-            }
-        }
-        
-        return dropPool.items[^1];
-    }
-    
-    private void GetUniqueItemsFromDropPool(DropPool dropPool, int maxCount, ref List<Item> items) {
-        Assert.IsFalse(dropPool.items.Count == 0, $"No items in drop pool, use {nameof(DropPool.HasItems)} before calling");
+    private void GetUniqueItemsFromDropPool(DropPool dropPool, int maxCount, ref List<Item> items) => GetUniqueItemsFromDropPool(dropPool, maxCount, ref items, curRaid.map);
 
-        using var _ = ListPool<Item>.Get(out var tempDropPoolItems);
-        foreach (Item item in dropPool.items) {
-            tempDropPoolItems.Add(item);
-        }
-        
-        var restoreList = dropPool.items;
-        dropPool.items = tempDropPoolItems;
-        
-        int selectCount = Mathf.Min(maxCount, dropPool.items.Count);
-        for (int i = 0; i < selectCount; i++) {
-            Item itemDrop = GetItemFromDropPool(dropPool);
-            items.Add(itemDrop);
-            dropPool.items.Remove(itemDrop);
-        }
-        
-        dropPool.items = restoreList;
-    }
-    
-    private Item RollForAugmentedVersion(Item item, DropPool dropPool, [CanBeNull] MapData map) {
-        if (!item.HasAugmentedVariants) {
-            return item;
-        }
-        
-        List<Augment> augments = item.augmentedVariants;
-        augments.Shuffle();
-        
-        foreach (Augment augment in augments) {
-            if (map != null && !ItamCanSpawnOnMap(augment.augmentedEyeUpgrade, map)) continue;
-            
-            float augmentingChance = GetDropChanceOfItem(augment.augmentedEyeUpgrade, dropPool, map);
-            if (RollProbability(augmentingChance)) {
-                return augment.augmentedEyeUpgrade;
+    public void GetUniqueItemsFromDropPool(DropPool dropPool, int maxCount, ref List<Item> items, [CanBeNull] MapData map) {
+        Assert.IsNotNull(dropPool, "Droppool cannot be null");
+        Assert.IsFalse(dropPool.itemRarityTable.Count == 0, $"No items in drop pool, use {nameof(DropPool.HasItems)} before calling");
+
+        // Copy of each rarity's items that haven't been picked yet, items already in the list count as picked
+        using var _ = ListPool<List<Item>>.Get(out var remainingByRarity);
+        for (int i = 0; i < Item.rarityCount; i++) {
+            List<Item> remaining = ListPool<Item>.Get();
+            foreach (Item item in dropPool.itemRarityTable[i]) {
+                if (!items.Contains(item)) {
+                    remaining.Add(item);
+                }
             }
+            remainingByRarity.Add(remaining);
         }
 
-        return item;
-    }
-    
-    private float GetTotalDropChances(DropPool dropPool, ref List<float> dropChances, [CanBeNull] MapData map) {
-        float total = 0f;
-        foreach (Item item in dropPool.items) {
-            float dropChance = GetDropChanceOfItem(item, dropPool, map);
-
-            bool itemIsRepeat = dropPool.lastDroppedItem == item; 
-            if (dropPool.reduceDuplicates && itemIsRepeat) {
-                const float defaultPercentReduction = 0.25f;
-                dropChance *= defaultPercentReduction;
+        for (int pickCount = 0; pickCount < maxCount; pickCount++) {
+            // Same cascade as a single drop, from highest rarity down to lowest, but rarities that have run out
+            // of items are skipped so they can't eat the roll and it falls back to the lowest one that still has items
+            int chosenRarity = -1;
+            for (int i = Item.rarityCount - 1; i >= 0; i--) {
+                if (remainingByRarity[i].Count == 0) continue;
+                
+                chosenRarity = i;
+                float rarityRoll = GetDropChanceOfRarity((Item.Rarity)i, map);
+                if (RollProbability(rarityRoll)) break;
             }
-            
-            dropChances.Add(dropChance);
-            total += dropChance;
+
+            // Every item in the pool has been picked
+            if (chosenRarity == -1) break;
+
+            List<Item> rarityItems = remainingByRarity[chosenRarity];
+            int pickedIndex = UnityEngine.Random.Range(0, rarityItems.Count);
+            items.Add(rarityItems[pickedIndex]);
+
+            // Swap remove since the order doesn't matter
+            rarityItems[pickedIndex] = rarityItems[^1];
+            rarityItems.RemoveAt(rarityItems.Count - 1);
         }
-        return total;
+
+        foreach (List<Item> remaining in remainingByRarity) {
+            ListPool<Item>.Release(remaining);
+        }
     }
     
-    private float GetDropChanceOfItem(Item item, DropPool dropPool, [CanBeNull] MapData map) {
+    private float GetDropChanceOfItem(Item item, [CanBeNull] MapData map) => GetDropChanceOfRarity(item.GetRarity(), map);
+    
+    private float GetDropChanceOfRarity(Item.Rarity rarity, [CanBeNull] MapData map) {
         float addChanceToSpawn = 0f;
-        
         if (map != null) {
-            addChanceToSpawn = item.GetRarity() switch {
+            addChanceToSpawn = rarity switch {
                 Item.Rarity.Common    => map.commonLootRarityIncrease,
                 Item.Rarity.Uncommon  => map.uncommonLootRarityIncrease,
                 Item.Rarity.Rare      => map.rareLootRarityIncrease,
@@ -155,20 +115,10 @@ public partial class Game {
                 _                     => throw new ArgumentOutOfRangeException(),
             };
         }
-
-        DropOrigin dropOrigin = GetItemDropOrigin(item, dropPool);
-        return Mathf.Clamp01(dropOrigin.chanceToSpawn + addChanceToSpawn);
+        return Mathf.Clamp01(Item.RollValueOfRarity(rarity) + addChanceToSpawn);
     }
     
-    private DropOrigin GetItemDropOrigin(Item item, DropPool dropPool) {
-        foreach (DropOrigin dropOrigin in item.dropOrigins) {
-            if (dropPool != dropOrigin.dropPool) continue;
-            return dropOrigin;
-        }
-        return null;
-    }
-    
-    private bool ItamCanSpawnOnMap(Item item, MapData map) {
+    private bool ItemCanSpawnOnMap(Item item, MapData map) {
         Assert.IsNotNull(map);
         if (item.mapSpawning.spawnsOnAll) return true;
         if (MapIsEqualOrGreater(map, item.mapSpawning.firstSpawnMap)) return true;

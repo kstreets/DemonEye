@@ -14652,15 +14652,15 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FireProjectiles_589
+      name: SmallFireBall_0
       rect:
         serializedVersion: 2
         x: 0
         y: 80
         width: 16
         height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.4}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -14674,15 +14674,15 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FireProjectiles_590
+      name: SmallFireBall_1
       rect:
         serializedVersion: 2
         x: 16
         y: 80
         width: 16
         height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.4}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -14696,15 +14696,15 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FireProjectiles_591
+      name: SmallFireBall_2
       rect:
         serializedVersion: 2
         x: 32
         y: 80
         width: 16
         height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.4}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -14718,15 +14718,15 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FireProjectiles_592
+      name: SmallFireBall_3
       rect:
         serializedVersion: 2
         x: 48
         y: 80
         width: 16
         height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.4}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -14740,15 +14740,15 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: FireProjectiles_593
+      name: SmallFireBall_4
       rect:
         serializedVersion: 2
         x: 64
         y: 80
         width: 16
         height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 9
+      pivot: {x: 0.5, y: 0.4}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -19561,12 +19561,7 @@ TextureImporter:
       FireProjectiles_586: -1167981984
       FireProjectiles_587: -1456233043
       FireProjectiles_588: -269960730
-      FireProjectiles_589: -1334977098
       FireProjectiles_59: -76326615
-      FireProjectiles_590: 853692812
-      FireProjectiles_591: -162017066
-      FireProjectiles_592: 1665508793
-      FireProjectiles_593: -1695046311
       FireProjectiles_594: -947579565
       FireProjectiles_595: -427010721
       FireProjectiles_596: 72286809
@@ -19808,6 +19803,11 @@ TextureImporter:
       Fireball_1: 1030566711
       Fireball_2: -2108703879
       Fireball_3: 1867896100
+      SmallFireBall_0: -1334977098
+      SmallFireBall_1: 853692812
+      SmallFireBall_2: -162017066
+      SmallFireBall_3: 1665508793
+      SmallFireBall_4: -1695046311
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

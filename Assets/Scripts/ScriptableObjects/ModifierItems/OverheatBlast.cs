@@ -31,7 +31,7 @@ public class OverheatBlast : EyeUpgrade {
     }
 
     private float GetDamageMultiplier(int stackCount) {
-        return TaperFloat(damageMulti, stackCount, 0.5f);
+        return TaperFloat(damageMulti, stackCount, 0.25f);
     }
     
 }

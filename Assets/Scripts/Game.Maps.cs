@@ -214,7 +214,8 @@ public partial class Game {
         Vector2 curPlayerGridPos = grid.GetCellPosition(player.position);
         bool playerMovedCells = curPlayerGridPos != curRaid.lastPlayerGridPos;
         if (playerMovedCells) {
-            grid.ScheduleFlowFieldCalculation(player.position);
+            Vector2 predictedPlayerPos = ClampPositionToMap(player.position, PredictedPlayerPosition(1f), player.Radius);
+            grid.ScheduleFlowFieldCalculation(predictedPlayerPos);
             curRaid.lastPlayerGridPos = curPlayerGridPos;
         }
     }
@@ -288,6 +289,31 @@ public partial class Game {
             if (Vector2.SqrMagnitude(spawn - pos) < minSpacing) return;
         }
         spawns.Add(pos);
+    }
+    
+    private Vector2 ClampPositionToMap(Vector2 origin, Vector2 target, float bufferRadius) {
+        Vector2 velocity = target - origin;
+        Vector2 dir = velocity.normalized;
+        float dist = velocity.magnitude;
+        
+        Vector2 targetPos = origin;
+        RaycastHit2D hit = Physics2D.Raycast(origin, dir, dist, Masks.StaticLevelMask);
+        if (hit) {
+             targetPos = hit.point + hit.normal * bufferRadius;
+        }
+        
+        // We could still be overlapping, especially if the position is in a corner of the map
+        Collider2D edge = Physics2D.OverlapCircle(targetPos, bufferRadius, Masks.StaticLevelMask);
+        if (edge != null) {
+            Vector2 closestPoint = edge.ClosestPoint(targetPos);
+            Vector2 awayFromEdge = targetPos - closestPoint;
+            float distFromEdge = awayFromEdge.magnitude;
+            if (distFromEdge > Mathf.Epsilon) {
+                targetPos = closestPoint + (awayFromEdge / distFromEdge) * bufferRadius;
+            }
+        }
+        
+        return targetPos;
     }
 
 }

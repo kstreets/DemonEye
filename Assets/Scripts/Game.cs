@@ -26,6 +26,7 @@ public partial class Game : MonoBehaviour {
     public InputPrompts inputPrompts;
     public PlayerInfo playerInfo;
     public RaidInfo raidInfo;
+    public BossBar bossBar;
     public MainMenu mainMenu;
     public PauseMenu pauseMenu;
     public HideoutTabs hideoutTabs;
@@ -57,6 +58,7 @@ public partial class Game : MonoBehaviour {
     [NonSerialized] public readonly ControllerNavigation controllNav = new();
     [NonSerialized] public readonly Tutorial tutorial = new();
     [NonSerialized] public readonly Cutscene cutscene = new();
+
     
     [NonSerialized] public HideoutState hideoutState;
     [NonSerialized] public PersistentFlags persistentFlags;
@@ -379,6 +381,8 @@ public partial class Game : MonoBehaviour {
     
     private void DeinitRaid() {
         entities.enemies.Clear();
+        ClearRangedAttackManager();
+        entities.boss = null;
         entities.projectiles.Clear();
         entities.soulTrackingProjectiles.Clear();
         DeinitMapGrid();

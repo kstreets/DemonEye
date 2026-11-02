@@ -23,7 +23,7 @@ MonoBehaviour:
   sellPrice: 400
   mapSpawning:
     spawnsOnAll: 0
-    firstSpawnMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
+    firstSpawnMap: {fileID: 11400000, guid: d7b529e6df27011469e20f807c6050c8, type: 2}
     spawnsOnMaps: []
   traderSpawning:
     levelRequired: 2
@@ -55,4 +55,4 @@ MonoBehaviour:
   maxStackCount: 0
   weight: 0
   description: 
-  relativeMechanicDesc: {fileID: 0}
+  placeholderSprite: {fileID: 0}

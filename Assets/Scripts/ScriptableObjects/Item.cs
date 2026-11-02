@@ -56,6 +56,7 @@ public class Item : UuidScriptableObject  {
     public int Weight => itemGroupProps ? itemGroupProps.weight : weight;
     public int MaxStackCount => itemGroupProps ? itemGroupProps.maxStackCount : maxStackCount;
     
+    public const int rarityCount = 5;
     public enum Rarity { Common, Uncommon, Rare, Epic, Legendary }
 
     public Rarity GetRarity() {
@@ -72,6 +73,17 @@ public class Item : UuidScriptableObject  {
         if (maxRarity <= 0.35f) return Rarity.Rare;
         if (maxRarity <= 0.50f) return Rarity.Uncommon;
         return Rarity.Common;
+    }
+    
+    public static float RollValueOfRarity(Rarity rarity) {
+        return rarity switch {
+            Rarity.Common => 1f,
+            Rarity.Uncommon => 0.50f,
+            Rarity.Rare => 0.35f,
+            Rarity.Epic => 0.20f,
+            Rarity.Legendary => 0.08f,
+            _ => throw new ArgumentOutOfRangeException(nameof(rarity), rarity, null)
+        };
     }
 
     public float GetSpawnChanceForDropPool(DropPool dropPool) {

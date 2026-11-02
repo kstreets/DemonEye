@@ -27,7 +27,7 @@ public partial class Game {
         DropPool[] dropPoolSOs = Resources.LoadAll<DropPool>(string.Empty);
         
         foreach (DropPool dropPool in dropPoolSOs) {
-            dropPool.items = new();
+            dropPool.Init();
             res.dropPools.Add(dropPool);
             if (dropPool.isMapSpecific) {
                 res.mapSpecificDropPools.Add(dropPool);

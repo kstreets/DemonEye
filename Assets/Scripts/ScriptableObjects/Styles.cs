@@ -62,6 +62,7 @@ public class Styles : ScriptableObject {
     public Color decreaseDescColor;
     public Color timeDescColor;
     public Color secondaryGreenColor;
+    public Color inRaidRedColor;
     
     public Sprite[] romanNumerals;
 

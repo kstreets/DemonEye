@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1966277615598465817}
   - component: {fileID: 3663103814753538832}
   m_Layer: 11
-  m_Name: EnemyCollisionSpacer
+  m_Name: WorldCollider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

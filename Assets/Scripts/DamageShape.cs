@@ -27,16 +27,6 @@ public class DamageShape : MonoBehaviour {
 
     public Vector2 Center => transform.TransformPoint(offset);
     
-    public LayerMask TargetMask {
-        get {
-            int mask = 0;
-            if (targets.HasFlag(DamageTargets.Player))     mask |= Masks.PlayerHurtMask;
-            if (targets.HasFlag(DamageTargets.Enemies))    mask |= Masks.EnemyMask;
-            if (targets.HasFlag(DamageTargets.Damageable)) mask |= Masks.DamagableMask;
-            return mask;
-        }
-    }
-
     public List<Collider2D> Overlap(LayerMask mask) {
         Vector2 scale = LossyScale2D();
         float angle = transform.eulerAngles.z;

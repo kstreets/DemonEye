@@ -17,7 +17,7 @@ MonoBehaviour:
   percentChanceOfDerivedToSpawn: 0.68
   mapSpawning:
     spawnsOnAll: 0
-    firstSpawnMap: {fileID: 0}
+    firstSpawnMap: {fileID: 11400000, guid: d7b529e6df27011469e20f807c6050c8, type: 2}
     spawnsOnMaps: []
   traderSpawning:
     levelRequired: 10

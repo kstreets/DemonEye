@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6be7b725e872d8544a676cc6767aad0a, type: 3}
-  m_Name: TutorialWaves
+  m_Name: OutskirtWaves
   m_EditorClassIdentifier: 
   timeBeforeFirstPhase: 22
   timeBeforePortalSpawns: 12
@@ -273,48 +273,13 @@ MonoBehaviour:
         m_PostInfinity: 2
         m_RotationOrder: 0
       enemyBatches:
-      - enemyCount: 55
-        enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
       - enemyCount: 40
+        enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
+      - enemyCount: 30
         enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
-  raidBoss: {fileID: 11400000, guid: eb8efa5281fc3a5449138b200351962b, type: 2}
+  raidBoss: {fileID: 0}
   maxEnemiesForBossTrash: 10
   bossTrashPool:
     name: 
     musicIntensity: 3
-    variants:
-    - name: 
-      maxDuration: 15
-      spawnDuration: 15
-      startNextPhaseEarlyDelay: 0
-      spawnCellRange: {x: 11, y: 16}
-      repositionCellRange: {x: 0, y: 0}
-      spawnRateCurve:
-        serializedVersion: 2
-        m_Curve:
-        - serializedVersion: 3
-          time: 0
-          value: 1
-          inSlope: 0
-          outSlope: 0
-          tangentMode: 34
-          weightedMode: 0
-          inWeight: 0
-          outWeight: 0
-        - serializedVersion: 3
-          time: 1
-          value: 1
-          inSlope: 0
-          outSlope: 0
-          tangentMode: 34
-          weightedMode: 0
-          inWeight: 0
-          outWeight: 0
-        m_PreInfinity: 2
-        m_PostInfinity: 2
-        m_RotationOrder: 0
-      enemyBatches:
-      - enemyCount: 10
-        enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
-      - enemyCount: 8
-        enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
+    variants: []

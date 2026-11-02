@@ -231,7 +231,7 @@ public partial class Game {
             float stackTaperRate = Mathf.Pow(1 - x, 3.5f); // Curve where higher possible stacks means higher value on [0, 1]
             stackTaperRate = Mathf.Clamp(stackTaperRate, minStackTaperRate, maxStackTaperRate);
             
-            float taperingChance = Mathf.Lerp(GetDropChanceOfItem(item, dropPool, curRaid.map), 0f, stackTaperRate);
+            float taperingChance = Mathf.Lerp(GetDropChanceOfItem(item, curRaid.map), 0f, stackTaperRate);
             while (stackCount < maxStackCount && RollProbability(taperingChance)) {
                 stackCount++;
                 taperingChance = Mathf.Lerp(taperingChance, 0f, stackTaperRate);
@@ -609,6 +609,9 @@ public partial class Game {
                 Assert.IsTrue(curTrinketItemInstance.ItemRef is Trinket);
                 Trinket trinket = curTrinketItemInstance.ItemRef as Trinket;
                 OnEquipTrinket(trinket);
+            }
+            else {
+                OnEquipTrinket(null);
             }
         }
     }

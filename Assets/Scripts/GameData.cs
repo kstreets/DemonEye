@@ -55,6 +55,7 @@ public class GameData {
         public GameObject poisonDebuff;
         public GameObject explosion;
         public GameObject gooProjectile;
+        public GameObject smallFireballProjectile;
         public GameObject piercingProjectile;
         public GameObject projectileImpact;
         public GameObject teleportIn;
@@ -243,6 +244,13 @@ public class GameData {
     public class RaidInfo {
         public GameObject parent;
         public TextMeshProUGUI waveText;
+    }
+    
+    [Serializable]
+    public class BossBar {
+        public GameObject parent;
+        public Image fillImage;
+        public TextMeshProUGUI nameTextMesh;
     }
     
     [Serializable]
@@ -538,6 +546,7 @@ public class GameData {
         public EntityPool<Projectile> projectile;
         public EntityPool<Projectile> boneShatterProjectile;
         public EntityPool<Projectile> gooProjectile;
+        public EntityPool<Projectile> smallFireballProjectile;
         public EntityPool<Projectile> fireBossProjectile;
         public EntityPool<Projectile> piercingShotProjectile;
         public EntityPool<Projectile> soulProjectile;
@@ -582,6 +591,7 @@ public class GameData {
         public List<Projectile> projectiles = new();
         public List<Projectile> soulTrackingProjectiles = new();
         public List<Enemy> enemies = new();
+        public Enemy boss;
         public Dictionary<GameObject, Entity> lookup = new();
         public Player player;
     }

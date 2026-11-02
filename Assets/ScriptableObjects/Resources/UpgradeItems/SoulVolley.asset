@@ -23,9 +23,8 @@ MonoBehaviour:
   sellPrice: 0
   mapSpawning:
     spawnsOnAll: 0
-    firstSpawnMap: {fileID: 0}
-    spawnsOnMaps:
-    - {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
+    firstSpawnMap: {fileID: 11400000, guid: aac23282a2cd7784ab5861d2a0508e69, type: 2}
+    spawnsOnMaps: []
   traderSpawning:
     levelRequired: 2
     stockRange: {x: 1, y: 2}
@@ -49,7 +48,7 @@ MonoBehaviour:
   maxStackCount: 0
   weight: 0
   description: 
-  relativeMechanicDesc: {fileID: 0}
+  placeholderSprite: {fileID: 0}
   styles: {fileID: 11400000, guid: f4b4ae74a1e122340bf1d9d4fa5ab586, type: 2}
   volleyCount: 8
   soulsNeededPerVolley: 15

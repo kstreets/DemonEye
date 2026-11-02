@@ -27,12 +27,16 @@ public partial class Game {
         public float averageDistFromPlayerTime;
         public float lastTeleportTime;
         public float curDistFromPlayer;
-        public bool notProgressingTowardsPlayer;
         public Collider2D enemySpacerCollider;
+        public Vector2 separationOffset;
+        public float fixedRandomSeparationAngle;
+        public Vector2 separationVel;
         public EnemyData data;
         public Vector2 moveDir;
         public Vector2 graphicalDir;
         public Limiter changeDirLimiter;
+        public Tween attackDelayTween;
+        public bool queuedForRangedAttack;
         public OptionalRef<BleedEyeUpgrade.InstanceData> bleed;
         public OptionalRef<HemorrhageAugment.InstanceData> hemorrhage;
         public OptionalRef<PoisonEyeUpgrade.InstanceData> poison;
@@ -54,11 +58,17 @@ public partial class Game {
         enemy.animator.runtimeAnimatorController = data.animatorOverride;
         enemy.enemySpacerCollider = enemy.trans.GetChild(0).GetComponent<Collider2D>();
         enemy.enemySpacerCollider.excludeLayers = data.excludeCollisionLayers;
+        CircleCollider2D spacerCircle = (CircleCollider2D)enemy.enemySpacerCollider;
+        enemy.separationOffset = spacerCircle.transform.TransformPoint(spacerCircle.offset) - enemy.trans.position;
+        enemy.fixedRandomSeparationAngle = Random.Range(0f, 360f);
+        enemy.separationVel = Vector2.zero;
         enemy.flowFieldAcc = Random.Range(2.5f, 3.5f);
         enemy.rigidbody.mass = data.defaultMass;
         enemy.collider.enabled = true;
+        enemy.attackDelayTween = Tween.Delay(data.projectileCooldownTime);
+        enemy.queuedForRangedAttack = false;
     }
-    
+
     private void OnEnemyDeath(Enemy deadEnemy) {
         Assert.IsNotNull(deadEnemy.data.dropPool, "Enemy needs to have a drop pool");
         
@@ -82,10 +92,10 @@ public partial class Game {
         List<Enemy> enemies = entities.enemies;
         if (enemies.Count <= 0) return;
         
-        bool reteleportWithThisSpawn = !spawnManager.FinishedSpawningThisWave && spawnManager.spawnedThisFrame;
-        bool reteleportWithoutSpawn = spawnManager.FinishedSpawningThisWave && curRaid.data.reteleportLimitter.TimeHasPassed(1f);
-        if (reteleportWithThisSpawn || reteleportWithoutSpawn) {
-            // ReteleportEnemies();
+        RaidSpawnPattern.Variant reteleportVariant = spawnManager.SpawningVariant;
+        if (reteleportVariant != null && reteleportVariant.reteleportCount > 0 &&
+            curRaid.data.reteleportLimitter.TimeHasPassed(reteleportVariant.reteleportInterval)) {
+            ReteleportEnemies(reteleportVariant);
         }
         
         for (int i = enemies.Count - 1; i >= 0; i--) {
@@ -100,14 +110,6 @@ public partial class Game {
             enemy.averageDistFromPlayerTime += Time.deltaTime;
             if (enemy.averageDistFromPlayerTime > 1f) {
                 enemy.averageDistFromPlayerTime = 0f;
-
-                if (enemy.prevAverageDistFromPlayer != 0f) {
-                    float curAverage = enemy.curRunningSumDistFromPlayer / enemy.curRunningSumFrameCount;
-                    bool furtherAway = curAverage >= enemy.prevAverageDistFromPlayer;
-                    bool aboutTheSameAway = Mathf.Abs(curAverage - enemy.prevAverageDistFromPlayer) < 0.01f;
-                    enemy.notProgressingTowardsPlayer = furtherAway || aboutTheSameAway;
-                }
-                
                 enemy.prevAverageDistFromPlayer = enemy.curRunningSumDistFromPlayer / enemy.curRunningSumFrameCount;
                 enemy.curRunningSumDistFromPlayer = 0f;
                 enemy.curRunningSumFrameCount = 0;
@@ -116,6 +118,9 @@ public partial class Game {
             switch (enemy.data.type) {
                 case EnemyData.EnemyType.FireBoss:
                     FireBossLogic(enemy);
+                    break;
+                case EnemyData.EnemyType.FireBender:
+                    RangedLogic(enemy);
                     break;
                 default:
                     BasicEnemyLogic(enemy);
@@ -152,6 +157,12 @@ public partial class Game {
 
             if (enemy.health <= 0) {
                 Enemy deadEnemy = enemies[i];
+                if (deadEnemy == entities.boss) {
+                    entities.boss = null;
+                    foreach (Enemy otherEnemy in enemies) {
+                        otherEnemy.health = 0;
+                    }
+                }
             
                 // It looks better if the enemies keep some momentum when dying
                 deadEnemy.rigidbody.linearVelocity *= 0.3f;
@@ -169,7 +180,9 @@ public partial class Game {
                 enemies.RemoveAt(i);
             }
         }
-        
+
+        UpdateRangedAttackManager();
+
         Vector2 hurtColliderCenter = (Vector2)player.position + player.hurtCollider.offset;
         List<Collider2D> overlapedEnemiesWithPlayer = Physics.OverlapCapsule(hurtColliderCenter, player.hurtCollider, Masks.EnemyMask);
         bool someEnemyOverlapsPlayer = overlapedEnemiesWithPlayer.Count > 0;
@@ -190,6 +203,66 @@ public partial class Game {
 
             Enemy collidedWithEnemy = entities.lookup[closestColToPlayer.gameObject] as Enemy;
             DamagePlayer(collidedWithEnemy.data.collisionDamage, PlayerDamageType.Collision, collidedWithEnemy);
+        }
+    }
+    
+    public class RangedAttackManager {
+        public const float minTimeBetweenAttacks = 1.5f;
+        public const float maxTimeBetweenAttacks = 3f;
+        public float nextAttackAllowedTime;
+        public readonly List<Enemy> queuedEnemies = new();
+    }
+    
+    private RangedAttackManager rangedAttackManager = new();
+
+    private void ClearRangedAttackManager() {
+        foreach (Enemy enemy in rangedAttackManager.queuedEnemies) {
+            enemy.queuedForRangedAttack = false;
+        }
+        rangedAttackManager.queuedEnemies.Clear();
+        rangedAttackManager.nextAttackAllowedTime = 0f;
+    }
+
+    private void RangedLogic(Enemy enemy) {
+        if (enemy.attackDelayTween.isAlive || enemy.queuedForRangedAttack) return;
+        enemy.queuedForRangedAttack = true;
+        rangedAttackManager.queuedEnemies.Add(enemy);
+    }
+
+    private void UpdateRangedAttackManager() {
+        RangedAttackManager rm = rangedAttackManager;
+        rm.queuedEnemies.RemoveAll(static enemy => enemy.health <= 0);
+
+        if (Time.time < rm.nextAttackAllowedTime) return;
+
+        for (int i = 0; i < rm.queuedEnemies.Count; i++) {
+            Enemy enemy = rm.queuedEnemies[i];
+
+            // Teleporting enemies keep their place in line until they're back
+            if (!enemy.gameObject.activeInHierarchy) continue;
+            if (!TryPerformRangedAttack(enemy)) continue;
+
+            enemy.queuedForRangedAttack = false;
+            enemy.attackDelayTween = Tween.Delay(enemy.data.projectileCooldownTime);
+            rm.queuedEnemies.RemoveAt(i);
+            rm.nextAttackAllowedTime = Time.time + Random.Range(RangedAttackManager.minTimeBetweenAttacks, RangedAttackManager.maxTimeBetweenAttacks);
+            return;
+        }
+    }
+
+    private bool TryPerformRangedAttack(Enemy enemy) {
+        switch (enemy.data.type) {
+            case EnemyData.EnemyType.FireBender: {
+                Vector2 spawnPos = enemy.position.Offset(y: 0.2f);
+                if (!TryGetPlayerInterceptPoint(spawnPos, FireBoss.fireballSpeed, out Vector2 aimPoint)) return false;
+
+                EnemyData data = enemy.data;
+                Vector2 velocity = (aimPoint - spawnPos).normalized * FireBoss.fireballSpeed;
+                SpawnProjectile(entityPools.smallFireballProjectile, spawnPos, velocity, data.projectileLifetime, enemy, flatDamage: data.damage, layermask: Masks.PlayerHurtMask);
+                return true;
+            }
+            default:
+                return false;
         }
     }
     
@@ -229,7 +302,7 @@ public partial class Game {
             Delay(enemy, enemy.data.attackDamageDelay, static (enemy) => {
                 // Its possible the enemy died while waiting to apply the damage 
                 if (enemy.health <= 0) return;
-                PerformEnemyAttack(enemy); 
+                gameInstance.PerformEnemyAttack(enemy); 
             });
         }
     }
@@ -286,7 +359,8 @@ public partial class Game {
                 RainMeteors(1);
                 break;
             case FireBoss.AttackTypes.DoubleFireball:
-                Debug.Log("Double Fireball");
+                ShootFireball();
+                Tween.Delay(0.2f, ShootFireball);
                 break;
             case FireBoss.AttackTypes.MutliMeteor:
                 RainMeteors(FireBoss.multiMeteorCount);
@@ -309,7 +383,7 @@ public partial class Game {
         void RainMeteors(int meteorCount) {
             const float predictionTime = FireBoss.meteorTravelTime * 0.85f;
             Vector2 centeralAimPoint = PredictedPlayerPosition(predictionTime);
-            centeralAimPoint = ClampAttackToMap(player.position, centeralAimPoint, FireBoss.meteorRadius);
+            centeralAimPoint = ClampPositionToMap(player.position, centeralAimPoint, FireBoss.meteorRadius);
 
             // One meteor always goes on the player, the rest get scattered around it
             using var _ = ListPool<Vector2>.Get(out var meteorPositions);
@@ -337,7 +411,7 @@ public partial class Game {
             })
             .OnComplete(() => {
                 Entity explosion = SpawnEntityOneShot(entityPools.meteorExplosion, targetPos, Quaternion.identity);
-                DealShapeDamage(explosion, FireBoss.meteorDamage);
+                DealShapeDamage(explosion, FireBoss.meteorDamage, Masks.PlayerHurtMask);
                 DestroyEntity(attackCircleEntity);
                 DestroyEntity(meteorEntity);
             });
@@ -350,7 +424,7 @@ public partial class Game {
         for (int i = 0; i < count; i++) {
             for (int attempt = 0; attempt < maxAttemptsPerPosition; attempt++) {
                 Vector2 candidate = center + Random.insideUnitCircle * scatterRadius;
-                candidate = ClampAttackToMap(center, candidate, radius);
+                candidate = ClampPositionToMap(center, candidate, radius);
 
                 bool overlapsPlacedPos = false;
                 foreach (Vector2 placedPos in positions) {
@@ -367,32 +441,122 @@ public partial class Game {
         }
     }
 
-    private Vector2 ClampAttackToMap(Vector2 origin, Vector2 targetPos, float radius) {
-        Vector2 toTarget = targetPos - origin;
-        float dist = toTarget.magnitude;
-        if (dist > Mathf.Epsilon) {
-            RaycastHit2D hit = Physics2D.Raycast(origin, toTarget / dist, dist, Masks.StaticLevelMask);
-            if (hit) {
-                targetPos = hit.point + hit.normal * radius;
-            }
+    private struct SeparationAgent {
+        public Enemy enemy;
+        public Vector2 center;
+        public float radius;
+        public float mass;
+        public int layer;
+        public int nextEnemyInSameCellIndex;
+    }
+
+    private SeparationAgent[] separationAgents = new SeparationAgent[500];
+    private readonly Dictionary<long, int> firstAgentIndexInSeparationCell = new();
+
+    private void UpdateEnemySeparation(List<Enemy> enemies) {
+        GameplayConfig gameplay = config.gameplay;
+
+        if (separationAgents.Length < enemies.Count) {
+            separationAgents = new SeparationAgent[Mathf.NextPowerOfTwo(enemies.Count)];
         }
 
-        // The target can still be close enough to an edge for the circle to overlap it (no hit, or the offset ran into a corner), push it out
-        Collider2D edge = Physics2D.OverlapCircle(targetPos, radius, Masks.StaticLevelMask);
-        if (edge != null) {
-            Vector2 closestPoint = edge.ClosestPoint(targetPos);
-            Vector2 awayFromEdge = targetPos - closestPoint;
-            float distFromEdge = awayFromEdge.magnitude;
-            if (distFromEdge > Mathf.Epsilon) {
-                targetPos = closestPoint + (awayFromEdge / distFromEdge) * radius;
-            }
+        int agentCount = 0;
+        float maxRadius = 0f;
+        foreach (Enemy enemy in enemies) {
+            if (!enemy.gameObject.activeInHierarchy || !enemy.collider.enabled) continue;
+
+            float radius = enemy.data.separationRadius * gameplay.separationRadiusScale;
+            maxRadius = Mathf.Max(maxRadius, radius);
+
+            bool holdsGround = enemy.slow.HasValue || EnemyPlayingAttackAnimation(enemy);
+
+            separationAgents[agentCount++] = new() {
+                enemy = enemy,
+                center = enemy.rigidbody.position + enemy.separationOffset,
+                radius = radius,
+                mass = holdsGround ? enemySlowedMass : enemy.rigidbody.mass,
+                layer = enemy.data.separationLayer,
+            };
+        }
+        if (agentCount <= 0 || maxRadius <= 0f) return;
+
+        // Cells are as wide as the largest possible contact distance, so only the surrounding 3x3 cells need checking
+        float cellSize = maxRadius * 2f;
+        
+        // Build a linked list of enemies for each cell
+        firstAgentIndexInSeparationCell.Clear();
+        for (int i = 0; i < agentCount; i++) {
+            ref SeparationAgent agent = ref separationAgents[i];
+            int cellX = Mathf.FloorToInt(agent.center.x / cellSize);
+            int cellY = Mathf.FloorToInt(agent.center.y / cellSize);
+            long key = CellKeyForCellPos(cellX, cellY);
+            agent.nextEnemyInSameCellIndex = firstAgentIndexInSeparationCell.GetValueOrDefault(key, -1);
+            firstAgentIndexInSeparationCell[key] = i;
         }
 
-        return targetPos;
+        float smoothing = 1f - Mathf.Exp(-gameplay.separationSmoothing * Time.fixedDeltaTime);
+        for (int i = 0; i < agentCount; i++) {
+            ref SeparationAgent curAgent = ref separationAgents[i];
+            int cellX = Mathf.FloorToInt(curAgent.center.x / cellSize);
+            int cellY = Mathf.FloorToInt(curAgent.center.y / cellSize);
+
+            Vector2 push = Vector2.zero;
+            for (int y = -1; y <= 1; y++) {
+                for (int x = -1; x <= 1; x++) {
+                    
+                    long cellKey = CellKeyForCellPos(cellX + x, cellY + y);
+                    if (!firstAgentIndexInSeparationCell.TryGetValue(cellKey, out int otherAgentIndex)) continue;
+                    
+                    while (otherAgentIndex != -1) {
+                        
+                        // Enemies only separate from others on the same separation layer
+                        bool sameAgent = otherAgentIndex == i;
+                        bool differentLayer = separationAgents[otherAgentIndex].layer != curAgent.layer;
+                        if (sameAgent || differentLayer) {
+                            otherAgentIndex = separationAgents[otherAgentIndex].nextEnemyInSameCellIndex;
+                            continue;
+                        }
+                        
+                        ref SeparationAgent otherAgent = ref separationAgents[otherAgentIndex];
+
+                        float minSafeDist = curAgent.radius + otherAgent.radius;
+                        Vector2 delta = curAgent.center - otherAgent.center;
+                        float distBetweenAgents = delta.magnitude;
+                        
+                        if (distBetweenAgents < minSafeDist) {
+                            Vector2 dir = delta.normalized;
+                            
+                            bool agentsOccupySamePos = distBetweenAgents <= 1e-5f;
+                            if (agentsOccupySamePos) { 
+                                // Each enemy has a consistent separation angle so there's no confusion on how to stop overlapping
+                                Vector2 curDir = RotationVector(curAgent.enemy.fixedRandomSeparationAngle);
+                                Vector2 otherDir = RotationVector(otherAgent.enemy.fixedRandomSeparationAngle);
+                                dir = (curDir - otherDir).normalized;
+                            }
+                            
+                            float overlap = 1f - (distBetweenAgents / minSafeDist);
+                            float overlapStrength = overlap * overlap; // Squared so closer agents push harder and further push softer
+                            float massScaler = (otherAgent.mass * 2f) / (curAgent.mass + otherAgent.mass);
+                            push += dir * (overlapStrength * massScaler);
+                        } 
+                        
+                        otherAgentIndex = separationAgents[otherAgentIndex].nextEnemyInSameCellIndex;
+                    }
+                }
+            }
+
+            Vector2 targetVel = Vector2.ClampMagnitude(push * gameplay.separationStrength, gameplay.maxSeparationSpeed);
+            curAgent.enemy.separationVel = Vector2.Lerp(curAgent.enemy.separationVel, targetVel, smoothing);
+        }
+        
+        static long CellKeyForCellPos(int x, int y) {
+            return ((long)x << 32) | (uint)y;
+        }
     }
 
     private void FixedUpdateEnemies() {
         List<Enemy> enemies = entities.enemies;
+        UpdateEnemySeparation(enemies);
         foreach (Enemy enemy in enemies) {
             bool isAttacking = EnemyPlayingAttackAnimation(enemy);
             MoveEnemy(enemy, isAttacking);
@@ -442,13 +606,34 @@ public partial class Game {
         Vector3 targetDir = Vector3.zero;
         if (enemy.data.usesFlowField) {
             targetDir = curRaid.mapInstance.grid.GetFlowFieldDirection(enemy.position);
+            
+            // Since flow field is using predicted player position, close enemies might move away from the player.
+            // If thats the case then we just make them move directly to the player.
+            Vector2 dirToPlayer = (player.position - enemy.position).normalized;
+            if (Vector2.Dot(targetDir, dirToPlayer) < 0f) {
+                targetDir = dirToPlayer;
+            }
         }
         if (targetDir == Vector3.zero) {
             targetDir = (player.position - enemy.position).normalized;
         }
             
         enemy.moveDir = Vector3.Lerp(enemy.moveDir, targetDir, enemy.flowFieldAcc * Time.fixedDeltaTime);
-        enemy.rigidbody.linearVelocity = enemy.moveDir * speed;
+        Vector2 goalVel = enemy.moveDir * speed;
+
+        // When the crowd is pushing back, stop walking into it so packed enemies settle instead of shaking.
+        // Only the part of the movement heading into the crowd is removed, so they still slide around it.
+        float separationSpeed = enemy.separationVel.magnitude;
+        if (separationSpeed > 1e-4f) {
+            Vector2 separationDir = enemy.separationVel / separationSpeed;
+            float intoCrowd = Vector2.Dot(goalVel, separationDir);
+            if (intoCrowd < 0f) {
+                float blocked = Mathf.Clamp01(separationSpeed / config.gameplay.maxSeparationSpeed);
+                goalVel -= separationDir * (intoCrowd * blocked);
+            }
+        }
+
+        enemy.rigidbody.linearVelocity = goalVel + enemy.separationVel;
     }
     
     private void OrientEnemy(Enemy enemy, bool isAttacking) {
@@ -474,15 +659,15 @@ public partial class Game {
         }
     }
     
-    private static void PerformEnemyAttack(Enemy enemy) {
+    private void PerformEnemyAttack(Enemy enemy) {
         if (enemy.data.type == EnemyData.EnemyType.Boomon) {
-            const int projectileCount = 3;
+            const int projectileCount = 8;
             const float angleDeltaPerDrop = 360f /  projectileCount;
             const float randomRangePerDrop = angleDeltaPerDrop * 0.25f;
 
             for (int i = 0; i <  projectileCount; i++) {
                 float randomAngle = (angleDeltaPerDrop * i) + Random.Range(-randomRangePerDrop, randomRangePerDrop);
-                Vector3 velocity = RotationVector(randomAngle) * 0.62f;
+                Vector3 velocity = RotationVector(randomAngle) * 0.7f;
                 Vector3 position = gameInstance.OffsetY(enemy.position, 0.2f);
                 const float lifetime = 2f;
                 gameInstance.SpawnProjectile(
@@ -527,25 +712,24 @@ public partial class Game {
         }
     }
     
-    private void ReteleportEnemies() {
+    private void ReteleportEnemies(RaidSpawnPattern.Variant variant) {
         List<Enemy> enemies = entities.enemies;
         using var _ = ListPool<(Enemy, float)>.Get(out var reteleportCandidates);
-        
+
         foreach (Enemy enemy in enemies) {
-            if (Time.time - enemy.lastTeleportTime < 2f) continue;
+            if (!enemy.gameObject.activeInHierarchy || enemy == entities.boss) continue;
             
-            float distFromPlayer = Vector2.Distance(player.Center, enemy.Center);
-            bool farFromPlayer = distFromPlayer > 1.1f;
-            if (farFromPlayer && enemy.notProgressingTowardsPlayer) {
+            const float enemyTeleportCooldown = 2f;
+            if (Time.time - enemy.lastTeleportTime < enemyTeleportCooldown) continue;
+
+            if (EnemyIsOffscreen(enemy)) {
+                float distFromPlayer = Vector2.Distance(player.Center, enemy.Center);
                 reteleportCandidates.Add((enemy, distFromPlayer));
             }
         }
-        
-        int minCountNeeded = Mathf.Max(1, Mathf.RoundToInt(enemies.Count * 0.15f));
-        if (reteleportCandidates.Count < minCountNeeded) {
-            return;
-        }
-        
+
+        if (reteleportCandidates.Count <= 0) return;
+
         // Teleport top N by how long they've been waiting to reteleport
         reteleportCandidates.Sort(static (a, b) => {
             Enemy enemyA = a.Item1;
@@ -553,14 +737,11 @@ public partial class Game {
             return enemyA.lastTeleportTime.CompareTo(enemyB.lastTeleportTime);
         });
 
-        int maxTeleportCount = curRaid.map.spawning.maxEnemyRepositionCount;
-        int teleportCount = Mathf.Min(reteleportCandidates.Count, maxTeleportCount);
-        
+        int teleportCount = Mathf.Min(reteleportCandidates.Count, variant.reteleportCount);
+
         for (int i = 0; i < teleportCount; i++) {
-            if (spawnManager.CurPhase == null) continue;
-            
             (Enemy enemy, float distFromPlayer) = reteleportCandidates[i];
-            Vector2Int repositionCellRange = spawnManager.CurPhase.repositionCellRange;
+            Vector2Int repositionCellRange = variant.repositionCellRange;
             Vector2 spawnPos = curRaid.mapInstance.grid.GetSpawnPosition(
                 player.position, repositionCellRange.x, repositionCellRange.y, predictPlayerPos: true, GatherEnemyPositions()
             );
@@ -569,6 +750,19 @@ public partial class Game {
                 TeleportEnemy(enemy, spawnPos, TeleportType.Reposition);
             }
         }
+    }
+
+    private bool EnemyIsOffscreen(Enemy enemy) {
+        // Small margin so enemies right at the edge of the screen don't vanish while partially visible
+        const float margin = 0.05f;
+        // The width is forced to 16:9 based on the screen height, otherwise enemies on wide screens would rarely count as offscreen
+        const float forcedAspect = 16f / 9f;
+        Vector3 viewportPos = camera.main.WorldToViewportPoint(enemy.Center);
+        // Horizontal distance from the center of the screen in units of screen height
+        float xFromCenter = Mathf.Abs(viewportPos.x - 0.5f) * camera.main.aspect;
+        bool offscreenX = xFromCenter > (forcedAspect * 0.5f) + margin;
+        bool offscreenY = viewportPos.y < -margin || viewportPos.y > 1f + margin;
+        return offscreenX || offscreenY;
     }
 
     private bool EnemyPlayingAttackAnimation(Enemy enemy) {
@@ -818,6 +1012,8 @@ public partial class Game {
     }
 
     private void SpawnRaidBoss(EnemySpawnManager sm) {
+        if (sm.spawnPattern.raidBoss == null) return;
+        
         Vector2Int spawnCellRange = sm.CurPhase.spawnCellRange;
         Vector2 randomSpawnPos = curRaid.mapInstance.grid.GetSpawnPosition(player.position, spawnCellRange.x, spawnCellRange.y, false, GatherEnemyPositions());
 
@@ -829,11 +1025,12 @@ public partial class Game {
 
         OnEnemySpawned(enemy, bossEnemy);
         entities.enemies.Add(enemy);
+        entities.boss = enemy;
         TeleportEnemy(enemy, randomSpawnPos, TeleportType.Spawn);
     }
 
     private void UpdateBossTrashSpawning(EnemySpawnManager sm) {
-        if (!RaidBossIsAlive(sm)) {
+        if (!RaidBossIsAlive()) {
             if (sm.BossTrashActive) {
                 sm.bossTrashVariant = null;
                 sm.spawnEvents.Clear();
@@ -852,11 +1049,8 @@ public partial class Game {
         BeginSpawningVariant(sm, sm.bossTrashVariant);
     }
 
-    private bool RaidBossIsAlive(EnemySpawnManager sm) {
-        foreach (Enemy enemy in entities.enemies) {
-            if (enemy.data == sm.spawnPattern.raidBoss && enemy.health > 0) return true;
-        }
-        return false;
+    private bool RaidBossIsAlive() {
+        return entities.boss != null && entities.boss.health > 0;
     }
 
     // Lays out when each of the variant's enemies spawn across its spawn duration, following its spawn rate curve

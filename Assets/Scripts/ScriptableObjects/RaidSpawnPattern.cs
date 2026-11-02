@@ -23,7 +23,9 @@ public class RaidSpawnPattern : ScriptableObject {
         [MinMaxSlider(0, 40)]
         public Vector2Int spawnCellRange; 
         [MinMaxSlider(0, 40)]
-        public Vector2Int repositionCellRange; 
+        public Vector2Int repositionCellRange;
+        public int reteleportCount = 2;
+        public float reteleportInterval = 1f;
         public AnimationCurve spawnRateCurve;
         public List<EnemyBatch> enemyBatches;
     }
@@ -38,8 +40,6 @@ public class RaidSpawnPattern : ScriptableObject {
     
     public float timeBeforeFirstPhase;
     public float timeBeforePortalSpawns;
-    public float delayBetweenEnemyRepositions;
-    public int maxEnemyRepositionCount;
     public List<PhasePool> phasePools;
     public EnemyData raidBoss;
     public int maxEnemiesForBossTrash = 10;

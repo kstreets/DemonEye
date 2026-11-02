@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a5df0d022d54a7488a42b771db86189, type: 3}
+  m_Name: FireBender
+  m_EditorClassIdentifier: 
+  displayName: Fire Bender
+  type: 5
+  enemyPrefab: {fileID: 7814119993517076521, guid: 11b75244595701148a2d26a092449123, type: 3}
+  animatorOverride: {fileID: 0}
+  dropPool: {fileID: 11400000, guid: 9eeed80dc208fd04986551102c8859ff, type: 2}
+  chanceToDropItem: 0.07
+  usesFlowField: 1
+  separationRadius: 0.08
+  separationLayer: 0
+  excludeCollisionLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  attackDistance: 1
+  attackDamageDelay: 0
+  attackRadius: 0
+  sideAttackOffset: {x: 0.157, y: 0.081}
+  upAttackOffset: {x: 0, y: 0.16}
+  donwAttackOffset: {x: 0, y: 0.004}
+  projectileSpeed: 0.38
+  projectileLifetime: 2
+  projectileCooldownTime: 3
+  speed: 0.4
+  health: 15
+  damage: 10
+  collisionDamage: 2
+  changeToCauseBleed: 0.1
+  soulWorthPerKill: 1
+  xpWorthPerKill: 5
+  defaultMass: 11.022728

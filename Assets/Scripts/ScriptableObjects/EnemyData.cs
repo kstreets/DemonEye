@@ -5,7 +5,7 @@ using VInspector;
 [CreateAssetMenu(fileName = "EnemyData", menuName = "Scriptable Objects/EnemyData")]
 public class EnemyData : ScriptableObject {
 
-    public enum EnemyType { Normal, Doughmon, Boomon, Meatbalon, FireBoss, }
+    public enum EnemyType { Normal, Doughmon, Boomon, Meatbalon, FireBoss, FireBender }
 
     public string displayName;
     public EnemyType type;
@@ -18,6 +18,8 @@ public class EnemyData : ScriptableObject {
     
     [Header("Movement")]
     public bool usesFlowField;
+    public float separationRadius;
+    public int separationLayer;
     public LayerMask excludeCollisionLayers;
     
     [Header("Attack")]
@@ -27,6 +29,11 @@ public class EnemyData : ScriptableObject {
     public Vector2 sideAttackOffset;
     public Vector2 upAttackOffset;
     public Vector2 donwAttackOffset;
+    
+    [Header("Projectiles")]
+    public float projectileSpeed;
+    public float projectileLifetime;
+    public float projectileCooldownTime;
     
     [Header("Stats")]
     public float speed;

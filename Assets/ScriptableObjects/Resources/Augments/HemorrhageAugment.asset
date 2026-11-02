@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HemorrhageAugment
   uuid: 987972151
   derivedFrom: {fileID: 11400000, guid: 879589b7002a56d4791affd28d5fb199, type: 2}
-  percentChanceOfDerivedToSpawn: 0.99
+  percentChanceOfDerivedToSpawn: 0.813
   mapSpawning:
     spawnsOnAll: 0
-    firstSpawnMap: {fileID: 0}
+    firstSpawnMap: {fileID: 11400000, guid: d7b529e6df27011469e20f807c6050c8, type: 2}
     spawnsOnMaps: []
   traderSpawning:
     levelRequired: 2

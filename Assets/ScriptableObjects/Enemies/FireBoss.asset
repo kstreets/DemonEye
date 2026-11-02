@@ -19,6 +19,8 @@ MonoBehaviour:
   dropPool: {fileID: 11400000, guid: a50fac0e0c375294296c54b1d6d4450d, type: 2}
   chanceToDropItem: 0.06
   usesFlowField: 1
+  separationRadius: 0.16
+  separationLayer: 0
   excludeCollisionLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -28,11 +30,14 @@ MonoBehaviour:
   sideAttackOffset: {x: 0.172, y: 0.065}
   upAttackOffset: {x: 0, y: 0.257}
   donwAttackOffset: {x: 0, y: -0.045}
+  projectileSpeed: 0
+  projectileLifetime: 0
+  projectileCooldownTime: 0
   speed: 0.33
-  health: 800
+  health: 1200
   damage: 10
   collisionDamage: 8
   changeToCauseBleed: 0.15
   soulWorthPerKill: 100
   xpWorthPerKill: 20
-  defaultMass: 36.639988
+  defaultMass: 41.0909

@@ -18,7 +18,8 @@ MonoBehaviour:
   rangeInSeconds: 0.7
   accuracy: 0.7
   projectileSpeed: 2.5
-  defaultCritChance: 0.15
+  aimAssistBias: 0.3
+  defaultCritChance: 0.05
   defaultCritMulti: 1.5
   baseSpeed: 0.52
   repeatCollisionDamageDelay: 1

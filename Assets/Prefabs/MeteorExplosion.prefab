@@ -134,8 +134,7 @@ MonoBehaviour:
   size: {x: 1, y: 1}
   capsuleDirection: 1
   targets: 1
-  damage: 10
-  damageFrame: 2
+  damageFrame: 1
 --- !u!114 &3252378479911979465
 MonoBehaviour:
   m_ObjectHideFlags: 0

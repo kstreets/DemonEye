@@ -187,6 +187,7 @@ public partial class Game {
         playerInfo.soulsCurrencyParent.gameObject.SetActive(true);
         playerInfo.parent.gameObject.SetActive(true);
         raidInfo.parent.SetActive(true);
+        bossBar.parent.SetActive(false);
         ui.hotBarParent.gameObject.SetActive(true);
         
         inputPrompts.inRaidParent.SetActive(true);
@@ -216,6 +217,7 @@ public partial class Game {
         ui.interactDetails.gameObject.SetActive(false);
         playerInfo.parent.gameObject.SetActive(false);
         raidInfo.parent.SetActive(false);
+        bossBar.parent.SetActive(false);
         ui.portalArrow.gameObject.SetActive(false);
         ui.hotBarParent.gameObject.SetActive(false);
         ui.minimap.gameObject.SetActive(false);
@@ -462,6 +464,13 @@ public partial class Game {
         if (player.isHealingOverTime) playerInfo.healthBar.bgFillImage.fillAmount = HealingToHealthPercentage();
         playerInfo.bleedDebuffIcon.gameObject.SetActive(player.bleeding);
         
+        Enemy boss = entities.boss;
+        bossBar.parent.SetActive(boss != null);
+        if (boss != null) {
+            bossBar.nameTextMesh.text = boss.data.displayName;
+            bossBar.fillImage.fillAmount = Mathf.Clamp01(boss.health / (float)boss.data.health);
+        }
+        
         GetEncumberingWeightRange(out int startingEncumberingWeight, out _);
         int inventoryWeight = GetInventoryWeight(inventories.player);
         playerInfo.weightBar.fillImage.fillAmount = Mathf.Clamp01(inventoryWeight / (float)startingEncumberingWeight);
@@ -484,7 +493,7 @@ public partial class Game {
             }
             else if (curRaid.state == RaidState.FinalWave) {
                 AnimateWaveTextChange("Final Wave");
-                AnimateSmallRaidText(ColorText("Final Wave", config.styles.decreaseDescColor));
+                AnimateSmallRaidText(ColorText("Final Wave", config.styles.inRaidRedColor));
             }
             else if (curRaid.state == RaidState.PostFinalWave) {
                 raidInfo.waveText.gameObject.SetActive(false);

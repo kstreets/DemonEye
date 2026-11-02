@@ -125,6 +125,13 @@ public static class Extensions {
         }
     }
     
+    public static T GetRandom<T>(this List<T> list) {
+        if (list == null || list.Count == 0) {
+            return default;
+        }
+        return list[Random.Range(0, list.Count)];
+    }
+    
     public static void CopyTo<T>(this List<T> list, List<T> dest) {
         if (list == null) return;
         dest = new(list.Count);

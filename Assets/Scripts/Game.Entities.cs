@@ -67,6 +67,7 @@ public partial class Game {
         public int gridObstacleRadius;
 
         public int delayedDamage;
+        public LayerMask delayedDamageLayerMask;
         public bool delayedDamageIsCrit;
         
         public PoisonedEffect poisonedEffect;
@@ -90,6 +91,7 @@ public partial class Game {
         public RectTransform rectTransform => trans as RectTransform;
 
         public Vector3 Center => collider.bounds.center;
+        public float Radius => collider.bounds.extents.x;
         public GameObject gameObject => trans.gameObject;
         public Tween GetEffect(EffectsIndicies effectIndex) => tweenEffects[(int)effectIndex];
         public void SetEffect(EffectsIndicies effectIndex, Tween tween) => tweenEffects[(int)effectIndex] = tween;

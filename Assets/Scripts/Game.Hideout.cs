@@ -130,7 +130,7 @@ public partial class Game {
         };
         
         using var _ = ListPool<Item>.Get(out var items);
-        GetUniqueItemsFromDropPool(dropPools.trader, traderInventoryColCount * traderInventoryRowCount, ref items);
+        GetUniqueItemsFromDropPool(dropPools.trader, traderInventoryColCount * traderInventoryRowCount, ref items, null);
         items = items.OrderBy(x => TraderTypeOrder(x.type)).ThenBy(x => x.type.name).ThenBy(x => x.GetRarity()).ThenBy(x => x.buyPrice).ToList();
         
         foreach (Item item in items) {

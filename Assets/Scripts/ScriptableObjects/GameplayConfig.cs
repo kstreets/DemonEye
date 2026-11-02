@@ -35,6 +35,14 @@ public class GameplayConfig : ScriptableObject {
     // How far the move input can be from the teleport direction (in degrees) and still count as the same general direction
     public float teleportSlideMaxAngle = 45f;
 
+    [Header("Enemy Separation")]
+    // Scales the spacer collider radii, values above 1 keep a small gap between enemies
+    public float separationRadiusScale = 1.15f;
+    public float separationStrength = 3f;
+    public float maxSeparationSpeed = 0.6f;
+    // How fast the separation velocity catches up to its target, lower is smoother but lets enemies overlap longer
+    public float separationSmoothing = 12f;
+
     [Header("Portal")]
     public float portalSummonTime;
     public float portalPostSummonDelay;

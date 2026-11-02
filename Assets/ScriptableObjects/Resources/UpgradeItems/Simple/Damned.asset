@@ -23,7 +23,7 @@ MonoBehaviour:
   sellPrice: 400
   mapSpawning:
     spawnsOnAll: 0
-    firstSpawnMap: {fileID: 11400000, guid: ecd73ca61e356df46872369930568042, type: 2}
+    firstSpawnMap: {fileID: 11400000, guid: d7b529e6df27011469e20f807c6050c8, type: 2}
     spawnsOnMaps: []
   traderSpawning:
     levelRequired: 2
@@ -33,17 +33,17 @@ MonoBehaviour:
       count: 2
     - item: {fileID: 11400000, guid: 2c75159ac94451141afd08e0b7ac86a3, type: 2}
       count: 2
-  rarity: 0
+  rarity: 1
   dropOrigins:
   - dropPool: {fileID: 11400000, guid: 447693d567ac32848b6d0306b40001c5, type: 2}
-    chanceToSpawn: 0.55
+    chanceToSpawn: 0.433
     maxStackCount: 1
   - dropPool: {fileID: 11400000, guid: ac65e2b20c03fcb43989ec16398ae8cd, type: 2}
     chanceToSpawn: 0.288
     maxStackCount: 1
   modifiesStats: 1
-  critChance: 0.3
-  critMultiplier: 0.5
+  critChance: 0.1
+  critMultiplier: 0.25
   damageMultiplier: 0
   fireratePercentage: 0
   projectileCount: 0
@@ -52,4 +52,4 @@ MonoBehaviour:
   maxStackCount: 0
   weight: 0
   description: 
-  relativeMechanicDesc: {fileID: 0}
+  placeholderSprite: {fileID: 0}

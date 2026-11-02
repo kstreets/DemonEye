@@ -81,7 +81,7 @@ Material:
     m_Colors:
     - White: {r: 1, g: 1, b: 1, a: 1}
     - _BorderColor: {r: 1, g: 0.3405501, b: 0.3050313, a: 1}
-    - _Color: {r: 0.8113208, g: 0.22196501, b: 0.22196501, a: 1}
+    - _Color: {r: 0.69803923, g: 0.2784314, b: 0.2784314, a: 1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

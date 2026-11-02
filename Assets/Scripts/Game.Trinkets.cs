@@ -1,3 +1,5 @@
+using JetBrains.Annotations;
+
 public partial class Game {
     
     public struct TrinketData {
@@ -6,7 +8,7 @@ public partial class Game {
         public int trackingCount;
     }
     
-    private void OnEquipTrinket(Trinket trinket) {
+    private void OnEquipTrinket([CanBeNull] Trinket trinket) {
         trinkets.data.Reset();
         trinkets.equiped = trinket;
     }

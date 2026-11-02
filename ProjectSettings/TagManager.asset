@@ -26,7 +26,7 @@ TagManager:
   - Item
   - Mineable
   - Portal
-  - EnemySpacer
+  - EnemyWorldCollider
   - PlayerHurtBox
   - EnemyAttack
   - EnemyNonTarget
