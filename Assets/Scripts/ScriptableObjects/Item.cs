@@ -22,9 +22,7 @@ public class Item : UuidScriptableObject  {
     public MapSpawning mapSpawning;
     public TraderSpawning traderSpawning;
 
-#if UNITY_EDITOR
-    [ReadOnly] [SerializeField] private Rarity rarity;
-#endif
+    public Rarity rarity;
     public List<DropOrigin> dropOrigins;
     
     public bool modifiesStats;
@@ -59,36 +57,17 @@ public class Item : UuidScriptableObject  {
     public const int rarityCount = 5;
     public enum Rarity { Common, Uncommon, Rare, Epic, Legendary }
 
-    public Rarity GetRarity() {
-        float maxRarity = 0f;
-        foreach (DropOrigin origin in dropOrigins) {
-            maxRarity = Mathf.Max(maxRarity, origin.chanceToSpawn);
-        }
-        return GetRarity(maxRarity);
-    }
-    
-    public static Rarity GetRarity(float maxRarity) {
-        if (maxRarity <= 0.08f) return Rarity.Legendary;
-        if (maxRarity <= 0.20f) return Rarity.Epic;
-        if (maxRarity <= 0.35f) return Rarity.Rare;
-        if (maxRarity <= 0.50f) return Rarity.Uncommon;
-        return Rarity.Common;
-    }
-    
+    public Rarity GetRarity() => rarity;
+
     public static float RollValueOfRarity(Rarity rarity) {
         return rarity switch {
             Rarity.Common => 1f,
-            Rarity.Uncommon => 0.50f,
-            Rarity.Rare => 0.35f,
-            Rarity.Epic => 0.20f,
-            Rarity.Legendary => 0.08f,
+            Rarity.Uncommon => 0.43f,
+            Rarity.Rare => 0.17f,
+            Rarity.Epic => 0.10f,
+            Rarity.Legendary => 0.02f,
             _ => throw new ArgumentOutOfRangeException(nameof(rarity), rarity, null)
         };
-    }
-
-    public float GetSpawnChanceForDropPool(DropPool dropPool) {
-        DropOrigin origin = GetDropOrigin(dropPool);
-        return origin?.chanceToSpawn ?? 0f;
     }
 
     public DropOrigin GetDropOrigin(DropPool dropPool) {
@@ -176,7 +155,6 @@ public class Item : UuidScriptableObject  {
 #if UNITY_EDITOR
     
     private void OnValidate() {
-        rarity = GetRarity();
         dropOrigins.Sort((a, b) => string.Compare(a.dropPool?.name, b.dropPool?.name, StringComparison.Ordinal));
         
         bool updatedMaxStackCount = false;

@@ -36,10 +36,8 @@ MonoBehaviour:
   rarity: 0
   dropOrigins:
   - dropPool: {fileID: 11400000, guid: 447693d567ac32848b6d0306b40001c5, type: 2}
-    chanceToSpawn: 0.651
     maxStackCount: 1
   - dropPool: {fileID: 11400000, guid: ac65e2b20c03fcb43989ec16398ae8cd, type: 2}
-    chanceToSpawn: 0.506
     maxStackCount: 1
   modifiesStats: 0
   critChance: 0
@@ -52,6 +50,6 @@ MonoBehaviour:
   maxStackCount: 3
   weight: 0
   description: 
-  relativeMechanicDesc: {fileID: 0}
+  placeholderSprite: {fileID: 0}
   damageMulti: 0.15
   bleedInterval: 0.5

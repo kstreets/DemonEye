@@ -10,7 +10,6 @@ public partial class Game {
     [Serializable]
     public class DropOrigin {
         public DropPool dropPool;
-        public float chanceToSpawn;
         public int maxStackCount;
     }
     
@@ -20,8 +19,16 @@ public partial class Game {
         }
         
         foreach (Item item in res.items) {
-            if (!ItemCanSpawnOnMap(item, map)) continue;
-            RegisterItemToDropPools(item, res.mapSpecificDropPools);
+            if (ItemCanSpawnOnMap(item, map)) {
+                RegisterItemToDropPools(item, res.mapSpecificDropPools);
+            }
+            
+            if (item.HasAugmentedVariants) {
+                foreach (Augment augment in item.augmentedVariants) {
+                    if (!ItemCanSpawnOnMap(augment.augmentedEyeUpgrade, map)) continue;
+                    RegisterItemToDropPools(augment.augmentedEyeUpgrade, res.mapSpecificDropPools);
+                }
+            }
         }
     }
     

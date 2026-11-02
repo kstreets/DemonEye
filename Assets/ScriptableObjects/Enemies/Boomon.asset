@@ -33,11 +33,11 @@ MonoBehaviour:
   projectileSpeed: 0
   projectileLifetime: 0
   projectileCooldownTime: 0
-  speed: 0.45
+  speed: 0.46
   health: 18
   damage: 10
   collisionDamage: 2
   changeToCauseBleed: 0.15
   soulWorthPerKill: 1
   xpWorthPerKill: 5
-  defaultMass: 1.8181837
+  defaultMass: 3.5344017

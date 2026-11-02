@@ -29,10 +29,9 @@ MonoBehaviour:
     levelRequired: 1
     stockRange: {x: 4, y: 8}
     barterRequirements: []
-  rarity: 2
+  rarity: 1
   dropOrigins:
   - dropPool: {fileID: 11400000, guid: 3c4ecb30986cb144bb8b92852af68d07, type: 2}
-    chanceToSpawn: 0.209
     maxStackCount: 1
   modifiesStats: 0
   critChance: 0

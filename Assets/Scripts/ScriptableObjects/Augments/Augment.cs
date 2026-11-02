@@ -7,8 +7,11 @@ using static Game;
 public class Augment : UuidScriptableObject, IEyeUpgrade {
 
     public EyeUpgrade derivedFrom;
-    [Range(0f, 0.99f)] public float percentChanceOfDerivedToSpawn;
+    public Item.Rarity rarity;
     
+    [Range(0f, 3f)]
+    public float additionalBuyPricePercentage;
+
     public MapSpawning mapSpawning;
     public TraderSpawning traderSpawning;
     
@@ -28,13 +31,9 @@ public class Augment : UuidScriptableObject, IEyeUpgrade {
         augmentedEyeUpgrade.uuid = uuid;
         augmentedEyeUpgrade.mapSpawning = mapSpawning;
         augmentedEyeUpgrade.traderSpawning = traderSpawning;
-        
-        float priceMultiplier = 1f - percentChanceOfDerivedToSpawn;
-        augmentedEyeUpgrade.buyPrice += Mathf.RoundToInt(augmentedEyeUpgrade.buyPrice * priceMultiplier);
-        
-        foreach (DropOrigin origin in augmentedEyeUpgrade.dropOrigins) {
-            origin.chanceToSpawn *= percentChanceOfDerivedToSpawn;
-        }
+        augmentedEyeUpgrade.rarity = rarity;
+
+        augmentedEyeUpgrade.buyPrice += Mathf.RoundToInt(augmentedEyeUpgrade.buyPrice * additionalBuyPricePercentage);
     }
     
     public virtual void AddInstanceToEnemy(Enemy enemy, int stackCount) { }

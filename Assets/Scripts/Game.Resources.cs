@@ -38,6 +38,11 @@ public partial class Game {
         
         foreach (Item item in res.items) {
             RegisterItemToDropPools(item, res.globalDropPools);
+            if (item.HasAugmentedVariants) {
+                foreach (Augment augment in item.augmentedVariants) {
+                    RegisterItemToDropPools(augment.augmentedEyeUpgrade, res.globalDropPools);
+                }
+            }
         }
     }
     

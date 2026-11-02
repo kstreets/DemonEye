@@ -28,7 +28,12 @@ public class CoolerGrid : MonoBehaviour {
     private const int dijkstraDiagonalDist = 10;
 
     private List<GridCell> spawnCells = new(30);
-    private float lastSpawnCellUpdateTime;
+    
+    // The spawn cells only get regathered when one of these changes, so spawning a batch in one frame reuses them
+    private int lastSpawnCellUpdateFrame = -1;
+    private int lastSpawnCellPlayerIndex = -1;
+    private int lastSpawnCellInnerRadius = -1;
+    private int lastSpawnCellOuterRadius = -1;
 
     // Occupied positions sorted into square buckets as wide as the search radius, so counting the positions near a cell
     // only needs to check the 3x3 buckets around it. Positions in bucket b are bucketedPositions[bucketStarts[b]..bucketStarts[b + 1]]
@@ -154,11 +159,18 @@ public class CoolerGrid : MonoBehaviour {
     }
 
     public Vector3 GetSpawnPosition(Vector2 playerPosition, int innerCellRadius, int outerCellRadius, bool predictPlayerPos, List<Vector2> occupiedPositions) {
-        if (!TryGetCellAtPosition(playerPosition, out GridCell playerCell, out _)) {
+        if (!TryGetCellAtPosition(playerPosition, out GridCell playerCell, out int playerIndex)) {
             return Vector2.zero;
         }
-        
-        UpdateDataForSpawnCells(playerCell, innerCellRadius, outerCellRadius, predictPlayerPos, occupiedPositions);
+
+        UpdateDataForSpawnCells(playerCell, playerIndex, innerCellRadius, outerCellRadius, predictPlayerPos, occupiedPositions);
+
+        // Only happens when no cell in the ring is walkable, so just spawn at the ring's distance in a random direction
+        if (spawnCells.Count <= 0) {
+            Vector2 randomDir = Random.insideUnitCircle.normalized;
+            return playerCell.position + randomDir * (outerCellRadius * cellSize);
+        }
+
         spawnCells.Sort(static (x, y) => y.spawnWeight.CompareTo(x.spawnWeight)); // Sort in descending order 
         
         int maxIndex = Mathf.RoundToInt(spawnCells.Count * 0.2f);
@@ -265,42 +277,23 @@ public class CoolerGrid : MonoBehaviour {
         return y * width + x;
     }
 
-    private void UpdateDataForSpawnCells(GridCell playerCell, int innerRadius, int outerRadius, bool predictPlayerPos, List<Vector2> occupiedPositions) {
+    private void UpdateDataForSpawnCells(GridCell playerCell, int playerIndex, int innerRadius, int outerRadius, bool predictPlayerPos, List<Vector2> occupiedPositions) {
         Assert.IsTrue(innerRadius != outerRadius, $"{nameof(innerRadius)} cannot equal {nameof(outerRadius)}");
-        
-        // Grab all the spawn cells once per frame
-        if (Time.time != lastSpawnCellUpdateTime) {
-            spawnCells.Clear();
 
-            const float maxDistScaler = 1.3f;
-            float maxDistCellCanBeFromPlayer = (outerRadius * maxDistScaler) * cellSize;
+        bool sameRingAsLastCall = Time.frameCount == lastSpawnCellUpdateFrame && playerIndex == lastSpawnCellPlayerIndex &&
+                                  innerRadius == lastSpawnCellInnerRadius && outerRadius == lastSpawnCellOuterRadius;
+        if (!sameRingAsLastCall) {
+            lastSpawnCellUpdateFrame = Time.frameCount;
+            lastSpawnCellPlayerIndex = playerIndex;
+            lastSpawnCellInnerRadius = innerRadius;
+            lastSpawnCellOuterRadius = outerRadius;
 
-            for (int y = -outerRadius; y <= outerRadius; y++) {
-                for (int x = -outerRadius; x <= outerRadius; x++) {
-                    bool isCellWereWorkingOn = x == 0 && y == 0;
-                    bool isInsideInnerRadius = Mathf.Abs(x) <= innerRadius && Mathf.Abs(y) <= innerRadius;
-                    if (isCellWereWorkingOn || isInsideInnerRadius) continue;
+            GatherSpawnCells(playerCell, innerRadius, outerRadius, useFlowFieldDist: true);
 
-                    Vector2 neighborPos = playerCell.position + new Vector2(x, y) * cellSize;
-                    if (!TryGetCellAtPosition(neighborPos, out GridCell neighbor, out int neighborIndex)) continue;
-                    if (!neighbor.traversable || neighbor.isObstacleObstructed) continue;
-
-                    // Before the first flow field completes, treat every cell as reachable
-                    // (distance 0) instead of walking the unreachable path for all of them.
-                    int neighborDist = flowFieldReady ? buffers[readBufferIndex].distances[neighborIndex] : 0;
-
-                    // Player is in unreachable position, add anyways so we have something in the list
-                    if (neighborDist == int.MaxValue) {
-                        spawnCells.Add(neighbor);
-                        continue;
-                    }
-
-                    // Convert dijkstra distance into world distance
-                    float distFromPlayer = (neighborDist / (float)dijkstraOrthogonalDist) * cellSize;
-                    if (distFromPlayer > maxDistCellCanBeFromPlayer) continue;
-                    
-                    spawnCells.Add(neighbor);
-                }
+            // Flow field distances are measured from the predicted player position, not the player, so when that's far
+            // away (running, teleporting, other side of a wall) every cell in the ring can get filtered out
+            if (spawnCells.Count <= 0) {
+                GatherSpawnCells(playerCell, innerRadius, outerRadius, useFlowFieldDist: false);
             }
         }
         
@@ -344,6 +337,40 @@ public class CoolerGrid : MonoBehaviour {
         }
     }
     
+    private void GatherSpawnCells(GridCell playerCell, int innerRadius, int outerRadius, bool useFlowFieldDist) {
+        spawnCells.Clear();
+
+        const float maxDistScaler = 1.3f;
+        float maxDistCellCanBeFromPlayer = (outerRadius * maxDistScaler) * cellSize;
+
+        for (int y = -outerRadius; y <= outerRadius; y++) {
+            for (int x = -outerRadius; x <= outerRadius; x++) {
+                bool isCellWereWorkingOn = x == 0 && y == 0;
+                bool isInsideInnerRadius = Mathf.Abs(x) <= innerRadius && Mathf.Abs(y) <= innerRadius;
+                if (isCellWereWorkingOn || isInsideInnerRadius) continue;
+
+                Vector2 neighborPos = playerCell.position + new Vector2(x, y) * cellSize;
+                if (!TryGetCellAtPosition(neighborPos, out GridCell neighbor, out int neighborIndex)) continue;
+                if (!neighbor.traversable || neighbor.isObstacleObstructed) continue;
+
+                if (!useFlowFieldDist) {
+                    spawnCells.Add(neighbor);
+                    continue;
+                }
+
+                // Before the first flow field completes, treat every cell as reachable
+                // (distance 0) instead of walking the unreachable path for all of them.
+                int neighborDist = flowFieldReady ? buffers[readBufferIndex].distances[neighborIndex] : 0;
+
+                // Convert dijkstra distance into world distance
+                float distFromPlayer = (neighborDist / (float)dijkstraOrthogonalDist) * cellSize;
+                if (distFromPlayer > maxDistCellCanBeFromPlayer) continue;
+
+                spawnCells.Add(neighbor);
+            }
+        }
+    }
+
     // Positions outside the square of halfExtent around center are dropped, so it needs to cover everything that will be queried
     private void BuildPositionBuckets(Vector2 center, float halfExtent, float size, List<Vector2> positions) {
         bucketSize = size;

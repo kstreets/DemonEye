@@ -35,10 +35,9 @@ MonoBehaviour:
       count: 6
     - item: {fileID: 11400000, guid: 2a3cebfcb3703a947bc288664b40b8cc, type: 2}
       count: 5
-  rarity: 2
+  rarity: 1
   dropOrigins:
   - dropPool: {fileID: 11400000, guid: ac65e2b20c03fcb43989ec16398ae8cd, type: 2}
-    chanceToSpawn: 0.325
     maxStackCount: 1
   modifiesStats: 0
   critChance: 0

@@ -15,6 +15,7 @@ MonoBehaviour:
   uuid: -1505730100
   derivedFrom: {fileID: 11400000, guid: 5208da11a0273eb40938911e8a5feefc, type: 2}
   percentChanceOfDerivedToSpawn: 0.68
+  rarity: 0
   mapSpawning:
     spawnsOnAll: 0
     firstSpawnMap: {fileID: 11400000, guid: d7b529e6df27011469e20f807c6050c8, type: 2}
