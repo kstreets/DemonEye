@@ -15,7 +15,7 @@ MonoBehaviour:
   attackDelay: 0.23
   cappedMinAttackDelay: 0.1
   damage: 8
-  rangeInSeconds: 0.7
+  rangeInSeconds: 0.6
   accuracy: 0.7
   projectileSpeed: 2.5
   aimAssistBias: 0.3
@@ -33,6 +33,10 @@ MonoBehaviour:
   teleportSlideDuration: 0.45
   teleportSlideStartSpeedMulti: 1.7
   teleportSlideMaxAngle: 45
+  separationRadiusScale: 1.15
+  separationStrength: 3
+  maxSeparationSpeed: 0.6
+  separationSmoothing: 12
   portalSummonTime: 2.5
   portalPostSummonDelay: 8
   portalActiveDuration: 25
@@ -53,6 +57,12 @@ MonoBehaviour:
   lootingSpeedIncPerLevel: 0.05
   movementSpeedIncPerLevel: 0.01
   projectileCountIncPerLevel: 0.25
+  minCritChance: 0.01
+  minCritMulti: 1
+  minDamageMulti: 0.1
+  minFireratePercentage: 0.1
+  minProjectileCount: 1
+  minRangePercentage: 0.2
   discoverSlotTime: 0.1
   discoverItemTime: 1.2
   firstRaidExtraMaxTime: 10

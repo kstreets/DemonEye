@@ -71,6 +71,15 @@ public class GameplayConfig : ScriptableObject {
     public float movementSpeedIncPerLevel;
     public float projectileCountIncPerLevel;
 
+    [Header("Stat Minimums")]
+    // The lowest a stat can go after every item's adjustment is added up
+    public float minCritChance = 0f;
+    public float minCritMulti = 1f;
+    public float minDamageMulti = 0.1f;
+    public float minFireratePercentage = 0.2f;
+    public float minProjectileCount = 1f;
+    public float minRangePercentage = 0.2f;
+
     [Header("Searching")]
     public float discoverSlotTime;
     public float discoverItemTime;

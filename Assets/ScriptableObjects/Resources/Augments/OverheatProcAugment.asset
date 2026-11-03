@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dea1d2c20ab0ed941a2b547fd69581bb, type: 3}
+  m_Name: OverheatProcAugment
+  m_EditorClassIdentifier: Assembly-CSharp::OverheatProcAugment
+  uuid: -332110803
+  derivedFrom: {fileID: 11400000, guid: b1b3e21dc77ecd142825d6501ddef4a6, type: 2}
+  rarity: 2
+  additionalBuyPricePercentage: 1.69
+  mapSpawning:
+    spawnsOnAll: 0
+    firstSpawnMap: {fileID: 11400000, guid: d7b529e6df27011469e20f807c6050c8, type: 2}
+    spawnsOnMaps: []
+  traderSpawning:
+    levelRequired: 3
+    stockRange: {x: 1, y: 2}
+    barterRequirements: []
+  probability: 0.1

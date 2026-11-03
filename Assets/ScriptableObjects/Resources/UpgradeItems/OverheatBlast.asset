@@ -33,7 +33,7 @@ MonoBehaviour:
       count: 2
     - item: {fileID: 11400000, guid: 64f3cd8510d1bad44909a5d30fdf8aaf, type: 2}
       count: 5
-  rarity: 0
+  rarity: 1
   dropOrigins:
   - dropPool: {fileID: 11400000, guid: 447693d567ac32848b6d0306b40001c5, type: 2}
     maxStackCount: 1
@@ -52,5 +52,5 @@ MonoBehaviour:
   description: 
   placeholderSprite: {fileID: 0}
   numShotsUntilOverheat: 12
-  damageMulti: 1
+  damageMulti: 1.2
   radius: 0.73

@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DistanceDamageAugment
   uuid: -247024783
   derivedFrom: {fileID: 11400000, guid: 39bde04b92cb89449b8a0451d4916433, type: 2}
-  percentChanceOfDerivedToSpawn: 0.512
-  rarity: 1
+  rarity: 2
+  additionalBuyPricePercentage: 2.04
   mapSpawning:
     spawnsOnAll: 0
     firstSpawnMap: {fileID: 11400000, guid: d7b529e6df27011469e20f807c6050c8, type: 2}

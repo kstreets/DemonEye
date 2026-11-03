@@ -39,7 +39,7 @@ MonoBehaviour:
     maxStackCount: 1
   - dropPool: {fileID: 11400000, guid: ac65e2b20c03fcb43989ec16398ae8cd, type: 2}
     maxStackCount: 1
-  modifiesStats: 1
+  modifiesStats: 0
   critChance: 0
   critMultiplier: 0
   damageMultiplier: 0
@@ -53,6 +53,5 @@ MonoBehaviour:
   placeholderSprite: {fileID: 0}
   probability: 0.2
   radius: 0.3
-  duration: 5
   damageMulti: 2
-  minHealthPercentForMulti: 0.3
+  minHealthPercentForMulti: 0.35

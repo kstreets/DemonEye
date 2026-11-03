@@ -12,6 +12,7 @@ public class Augment : UuidScriptableObject, IEyeUpgrade {
     [Range(0f, 3f)]
     public float additionalBuyPricePercentage;
 
+    [Header("Spawning")]
     public MapSpawning mapSpawning;
     public TraderSpawning traderSpawning;
     

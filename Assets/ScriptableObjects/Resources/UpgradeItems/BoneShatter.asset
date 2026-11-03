@@ -51,7 +51,7 @@ MonoBehaviour:
   weight: 0
   description: 
   placeholderSprite: {fileID: 0}
-  probability: 0.4
-  shardsCount: 4
+  probability: 0.2
+  shardsCount: 6
   perShardDamageMulti: 0.35
   projectileLifetime: 0.5

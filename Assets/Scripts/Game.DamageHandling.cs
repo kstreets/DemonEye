@@ -163,23 +163,30 @@ public partial class Game {
             foreach (Collider2D col in cols) {
                 if (entityLookup[col.gameObject] is Enemy poisonEnemy) {
                     poisonEnemy.poison = poison;
-                    AddPoisonedEffect(poisonEnemy, poison.duration);
+                    AddPoisonedEffect(poisonEnemy);
                 }
             }
         }
         
-        if (demonEye.equiped.boneShatter.TryGetValue(out var boneShatter) && RollProbability(boneShatter.probability)) {
-            PlayAudioClip(audio.boneShatterClip, enemy.position);
-            for (int i = 0; i < boneShatter.shardsCount; i++) {
-                float randomDelay = Random.Range(0f, 0.06f);
-                float randomSpeedScaler = Random.Range(0.4f, 0.6f);
-                Vector2 boneShatterVelocity = RandomizeVectorAngle(projectile.velocity * randomSpeedScaler, 65f);
-                int boneDamage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(enemy) * boneShatter.perShardDamageMulti);
-                Projectile boneShatterProj = SpawnProjectile(
-                    entityPools.boneShatterProjectile, enemy.position, boneShatterVelocity, boneShatter.lifeTime, player,
-                    rotation: RandomRotation(), spawnDelay: randomDelay, flatDamage: boneDamage
-                );
-                ProjectileMarkEntityToIgnore(boneShatterProj, enemy);
+        if (demonEye.equiped.boneShatter.TryGetValue(out var boneShatter)) {
+            float boneShatterProb = boneShatter.probability;
+            if (demonEye.equiped.brittleBonesAugment.TryGetValue(out var brittleBones) && enemy.poison.HasValue) {
+                boneShatterProb += brittleBones.probability;
+            }
+            
+            if (RollProbability(boneShatterProb)) {
+                PlayAudioClip(audio.boneShatterClip, enemy.position);
+                for (int i = 0; i < boneShatter.shardsCount; i++) {
+                    float randomDelay = Random.Range(0f, 0.06f);
+                    float randomSpeedScaler = Random.Range(0.4f, 0.6f);
+                    Vector2 boneShatterVelocity = RandomizeVectorAngle(projectile.velocity * randomSpeedScaler, 65f);
+                    int boneDamage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(enemy) * boneShatter.perShardDamageMulti);
+                    Projectile boneShatterProj = SpawnProjectile(
+                        entityPools.boneShatterProjectile, enemy.position, boneShatterVelocity, boneShatter.lifeTime, player,
+                        rotation: RandomRotation(), spawnDelay: randomDelay, flatDamage: boneDamage
+                    );
+                    ProjectileMarkEntityToIgnore(boneShatterProj, enemy);
+                }
             }
         }
     }

@@ -23,7 +23,7 @@ MonoBehaviour:
   sellPrice: 400
   mapSpawning:
     spawnsOnAll: 0
-    firstSpawnMap: {fileID: 11400000, guid: d7b529e6df27011469e20f807c6050c8, type: 2}
+    firstSpawnMap: {fileID: 11400000, guid: a084d4e7745af28498dbdbe8ced97dd5, type: 2}
     spawnsOnMaps: []
   traderSpawning:
     levelRequired: 2
@@ -40,7 +40,7 @@ MonoBehaviour:
   - dropPool: {fileID: 11400000, guid: ac65e2b20c03fcb43989ec16398ae8cd, type: 2}
     maxStackCount: 1
   modifiesStats: 1
-  critChance: 0.1
+  critChance: 0.05
   critMultiplier: 0.25
   damageMultiplier: 0
   fireratePercentage: 0

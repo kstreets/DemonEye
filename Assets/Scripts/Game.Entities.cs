@@ -258,7 +258,7 @@ public partial class Game {
         public Entity poisonDebuffEntity;
     }
     
-    public void AddPoisonedEffect(Entity entity, float duration) {
+    public void AddPoisonedEffect(Entity entity) {
         if (!entity.GetEffect(EffectsIndicies.Poisoned).isAlive) {
             Entity poisonDebuff = SpawnEntity(entityPools.poisonDebuff, OffsetY(entity.position, -0.01f), Quaternion.identity, entity.trans);
             entity.poisonedEffect = new() {
@@ -269,7 +269,7 @@ public partial class Game {
         entity.GetEffect(EffectsIndicies.Poisoned).Stop();
         
         SetHSVColorEffect(entity, config.enemyColors.poisonHSV);
-        Tween tween = Delay(entity, duration, static entity => {
+        Tween tween = Delay(entity, int.MaxValue, static entity => {
             gameInstance.ClearHSVColorEffect(entity);
             gameInstance.DestroyEntity(entity.poisonedEffect.poisonDebuffEntity);
         });

@@ -14,15 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DoubleCritAugment
   uuid: -577300191
   derivedFrom: {fileID: 11400000, guid: ba0965bc93d7d704f8f3e330886c9c1d, type: 2}
-  percentChanceOfDerivedToSpawn: 0.45
   rarity: 1
+  additionalBuyPricePercentage: 1.83
   mapSpawning:
     spawnsOnAll: 0
-    firstSpawnMap: {fileID: 11400000, guid: aac23282a2cd7784ab5861d2a0508e69, type: 2}
+    firstSpawnMap: {fileID: 11400000, guid: d7b529e6df27011469e20f807c6050c8, type: 2}
     spawnsOnMaps: []
   traderSpawning:
     levelRequired: 10
     stockRange: {x: 1, y: 1}
     barterRequirements: []
   damageMulti: 1.5
-  multiplierDuration: 4
+  multiplierDuration: 2.5

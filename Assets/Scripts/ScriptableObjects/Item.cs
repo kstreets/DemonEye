@@ -27,12 +27,12 @@ public class Item : UuidScriptableObject  {
     
     public bool modifiesStats;
     [ShowIf(nameof(modifiesStats))]
-    [SerializeField] private float critChance;
-    [SerializeField] private float critMultiplier;
-    [SerializeField] private float damageMultiplier;
-    [SerializeField] private float fireratePercentage;
-    [SerializeField] private float projectileCount;
-    [SerializeField] private float rangePercentage;
+    [SerializeField] protected float critChance;
+    [SerializeField] protected float critMultiplier;
+    [SerializeField] protected float damageMultiplier;
+    [SerializeField] protected float fireratePercentage;
+    [SerializeField] protected float projectileCount;
+    [SerializeField] protected float rangePercentage;
     [EndIf]
     
     [Space]
@@ -62,10 +62,10 @@ public class Item : UuidScriptableObject  {
     public static float RollValueOfRarity(Rarity rarity) {
         return rarity switch {
             Rarity.Common => 1f,
-            Rarity.Uncommon => 0.43f,
-            Rarity.Rare => 0.17f,
-            Rarity.Epic => 0.10f,
-            Rarity.Legendary => 0.02f,
+            Rarity.Uncommon => 0.3f,
+            Rarity.Rare => 0.08f,
+            Rarity.Epic => 0.04f,
+            Rarity.Legendary => 0.01f,
             _ => throw new ArgumentOutOfRangeException(nameof(rarity), rarity, null)
         };
     }
@@ -141,12 +141,12 @@ public class Item : UuidScriptableObject  {
         return !string.IsNullOrEmpty(desc) ? desc : "Item is missing description";
     }
     
-    public float GetCritChance(int stackCount) => critChance * stackCount;
-    public float GetCritMultiplier(int stackCount) => critMultiplier * stackCount;
-    public float GetDamageMultiplier(int stackCount) => damageMultiplier * stackCount;
-    public float GetFireratePercentage(int stackCount) => fireratePercentage * stackCount;
-    public float GetProjectileCount(int stackCount) => projectileCount * stackCount;
-    public float GetRangePercentage(int stackCount) => rangePercentage * stackCount;
+    public virtual float GetCritChance(int stackCount) => critChance * stackCount;
+    public virtual float GetCritMultiplier(int stackCount) => critMultiplier * stackCount;
+    public virtual float GetDamageMultiplier(int stackCount) => damageMultiplier * stackCount;
+    public virtual float GetFireratePercentage(int stackCount) => fireratePercentage * stackCount;
+    public virtual float GetProjectileCount(int stackCount) => projectileCount * stackCount;
+    public virtual float GetRangePercentage(int stackCount) => rangePercentage * stackCount;
 
     protected virtual string GetUpgradeDescription(int stackCount) {
         return string.Empty;

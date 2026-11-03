@@ -344,7 +344,7 @@ public partial class Game {
         
         aimDir = AddInaccuracy(aimDir);
         PlayAudioClip(audio.shootClip, player.position);
-        ShootProjectile(aimDir);
+        ShootProjectile(aimDir, isMainProjectile: true);
         SpawnEntityOneShot(entityPools.muzzleFlash, GetPlayerEyePos(), ProjectileRotationFromVelocity(aimDir), player.trans);
         
         if (trinkets.equiped is CauterizingWoundsTrinket cauterizingWounds) {
@@ -354,8 +354,12 @@ public partial class Game {
             }
         }
 
+        if (demonEye.equiped.scatterShot.TryGetValue(out var scatterShot) && RollProbability(scatterShot.probability)) {
+            ShootScatterProjectiles(aimDir, scatterShot);
+        }
+
         if (demonEye.equiped.doubleTapAugment.TryGetValue(out var doubleTap) && RollProbability(doubleTap.probability)) {
-            ShootProjectile(aimDir, spawnDelay: doubleTap.delayBetweenShots);
+            ShootProjectile(aimDir, isMainProjectile: false, spawnDelay: doubleTap.delayBetweenShots);
         }
 
         float consecutiveShotDelay = config.gameplay.attackDelay * 1.5f;
@@ -367,16 +371,7 @@ public partial class Game {
         }
         
         if (demonEye.equiped.blast.TryGetValue(out var blast) && player.consecutiveShotCount > 0 && player.consecutiveShotCount % blast.numshotsUntilOverheat == 0) {
-            Vector2 spawnPos = OffsetY(player.position, 0.35f);
-            PlayAudioClip(audio.overheatBlastClip, spawnPos);
-            
-            SpawnEntityOneShot(entityPools.blast, spawnPos, Quaternion.identity); 
-            List<Collider2D> cols = Physics.OverlapCircle(player.position, blast.radius, Masks.EnemyMask);
-            foreach (Collider2D col in cols) {
-                Enemy enemy = entities.lookup[col.gameObject] as Enemy;
-                int damage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(enemy) * blast.damageMulti);
-                DamageEnemyAfterDelay(enemy, damage, false, 0.15f);
-            }
+            TriggerOverheatBlast(blast);
         }
             
         player.lastShotTime = Time.time;
@@ -547,9 +542,19 @@ public partial class Game {
         return Quaternion.AngleAxis(accuracyAngle, Vector3.forward) * shootDir;
     }
     
-    private void ShootProjectile(Vector2 shootDir, float? spawnDelay = default, float? flatCritChance = default) {
+    private void ShootProjectile(Vector2 shootDir, bool isMainProjectile, float? spawnDelay = default) {
         float projectileSpeed = config.gameplay.projectileSpeed;
         Vector2 velocity = shootDir.normalized * projectileSpeed; 
+        
+        float? flatCritChance = default;
+        if (!isMainProjectile) {
+            if (demonEye.equiped.multiProjectileCritAugment.TryGetValue(out var multiProjCrit)) {
+                flatCritChance = multiProjCrit.probability;
+            }
+            if (demonEye.equiped.overheatProcAugment.TryGetValue(out var overheatProc) && demonEye.equiped.blast.TryGetValue(out var blast) && RollProbability(overheatProc.probability)) {
+                TriggerOverheatBlast(blast);
+            }
+        }
         
         if (demonEye.equiped.reflectingShot.TryGetValue(out var reflecting) && RollProbability(reflecting.probability)) {
             _SpawnProjectile(GetPlayerEyePos(), velocity, entityPools.projectile, ProjectileTypeFlags.ReflectedShot);
@@ -562,6 +567,30 @@ public partial class Game {
         void _SpawnProjectile(Vector2 pos, Vector2 vel, EntityPool<Projectile> pool, ProjectileTypeFlags flgs = ProjectileTypeFlags.None) {
             float lifeTime = GetProjectileRangeInSeconds();
             SpawnProjectile(pool, pos, vel, lifeTime, player, typeFlags: flgs, spawnDelay: spawnDelay, flatCritChance: flatCritChance);
+        }
+    }
+    
+    private void ShootScatterProjectiles(Vector2 aimDir, ScatterShotEyeUpgrade.InstanceData scatterShot) {
+        int pairCount = (scatterShot.extraProjectileCount + 1) / 2;
+        float angleStep = scatterShot.spreadAngle * 0.5f / Mathf.Max(pairCount, 1);
+        for (int i = 0; i < scatterShot.extraProjectileCount; i++) {
+            float side = i % 2 == 0 ? 1f : -1f;
+            float angle = side * (i / 2 + 1) * angleStep;
+            Vector2 dir = Quaternion.AngleAxis(angle, Vector3.forward) * aimDir;
+            ShootProjectile(dir, isMainProjectile: false);
+        }
+    }
+    
+    private void TriggerOverheatBlast(OverheatBlast.InstanceData blast) {
+        Vector2 spawnPos = OffsetY(player.position, 0.35f);
+        PlayAudioClip(audio.overheatBlastClip, spawnPos);
+        
+        SpawnEntityOneShot(entityPools.blast, spawnPos, Quaternion.identity); 
+        List<Collider2D> cols = Physics.OverlapCircle(player.position, blast.radius, Masks.EnemyMask);
+        foreach (Collider2D col in cols) {
+            Enemy enemy = entities.lookup[col.gameObject] as Enemy;
+            int damage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(enemy) * blast.damageMulti);
+            DamageEnemyAfterDelay(enemy, damage, false, 0.15f);
         }
     }
     
@@ -760,7 +789,20 @@ public partial class Game {
     }
     
     private float GetAbsoluteStat(PlayerStat stat) {
-        return GetPlayerStat(stat) + GetEquipmentStatAdjustment(stat);
+        float absoluteStat = GetPlayerStat(stat) + GetEquipmentStatAdjustment(stat);
+        return Mathf.Max(absoluteStat, GetMinimumStat(stat));
+    }
+    
+    private float GetMinimumStat(PlayerStat stat) {
+        return stat switch {
+            PlayerStat.CritChance         => config.gameplay.minCritChance,
+            PlayerStat.CritMulti          => config.gameplay.minCritMulti,
+            PlayerStat.DamageMulti        => config.gameplay.minDamageMulti,
+            PlayerStat.FireratePercentage => config.gameplay.minFireratePercentage,
+            PlayerStat.ProjectileCount    => config.gameplay.minProjectileCount,
+            PlayerStat.RangePercentage    => config.gameplay.minRangePercentage,
+            _                             => float.MinValue,
+        };
     }
     
     private float GetPlayerStat(PlayerStat stat) {

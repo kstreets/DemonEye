@@ -19,8 +19,8 @@ public class BoneShatterEyeUpgrade : EyeUpgrade {
     public override void AddInstanceToEye(DemonEyeInstance eyeInstance, int stackCount) {
         eyeInstance.boneShatter = new() {
             shardsCount = shardsCount,
-            probability = probability,
-            perShardDamageMulti = perShardDamageMulti,
+            probability = GetProbability(stackCount),
+            perShardDamageMulti = GetDamage(stackCount),
             lifeTime = projectileLifetime,
         };
     }
@@ -35,7 +35,7 @@ public class BoneShatterEyeUpgrade : EyeUpgrade {
     }
     
     private float GetProbability(int stackCount) {
-        return TaperFloat(probability, stackCount, 0.4f);
+        return TaperFloat(probability, stackCount, 0.15f);
     }
     
 }
