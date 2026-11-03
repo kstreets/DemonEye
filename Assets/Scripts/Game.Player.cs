@@ -445,18 +445,41 @@ public partial class Game {
         player.hurtCollider.enabled = !hidden;
     }
 
-    // Casts the player's body collider along the teleport so they stop short of walls and obstacles instead of ending up inside them.
-    // Enemies are ignored so the player can teleport through them.
     private Vector2 GetTeleportDestination(Vector2 dir) {
+        ContactFilter2D filter = new() {
+            useTriggers = false, 
+            layerMask = Physics2D.GetLayerCollisionMask(player.gameObject.layer),
+            useLayerMask = true,
+        };
+        
         float distance = config.gameplay.teleportDistance;
-
-        int blockingLayers = Physics2D.GetLayerCollisionMask(player.gameObject.layer) & ~(int)Masks.EnemyMask;
-        if (player.rigidbody) {
-            blockingLayers &= ~(int)player.rigidbody.excludeLayers;
+        
+        Vector2 unobstructedEndPos = (Vector2)player.position + dir * distance;
+        if (!Physics.ColliderCheck(player.collider, unobstructedEndPos, filter)) {
+            return unobstructedEndPos;
         }
-        ContactFilter2D filter = new() { useTriggers = false };
-        filter.SetLayerMask(blockingLayers);
 
+        // Check if we are trying to teleport across colliders and give some grace for it
+        {
+            Vector2 perp = new(-dir.y, dir.x);
+            Span<Vector2> testingOffsets = stackalloc Vector2[] {
+                dir, perp, -perp, -dir,
+                (-dir + perp).normalized, (-dir - perp).normalized,
+                (dir + perp).normalized, (dir - perp).normalized,
+            };
+
+            int steps = Mathf.Max(1, config.gameplay.teleportGraceSteps);
+            for (int step = 1; step <= steps; step++) {
+                float offsetDist = (config.gameplay.teleportGraceRadius * step) / steps;
+                foreach (Vector2 offset in testingOffsets) {
+                    Vector2 candidate = unobstructedEndPos + (offset * offsetDist);
+                    if (!Physics.ColliderCheck(player.collider, candidate, filter)) {
+                        return candidate;
+                    }
+                }
+            }
+        }
+        
         using var _ = ListPool<RaycastHit2D>.Get(out var hits);
         player.collider.Cast(dir, filter, hits, distance);
         foreach (RaycastHit2D hit in hits) {

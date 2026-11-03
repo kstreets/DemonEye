@@ -23,6 +23,9 @@ public class GameplayConfig : ScriptableObject {
 
     [Header("Teleport")]
     public float teleportDistance = 0.4f;
+    // When the teleport's end position is blocked, free spots up to this far from it are tried before cutting the teleport short
+    public float teleportGraceRadius = 0.12f;
+    public int teleportGraceSteps = 4;
     public float teleportHiddenDuration = 0.08f;
     public float teleportInvulnerabilityDuration = 0.3f;
     public float teleportBaseCooldown = 0.8f;

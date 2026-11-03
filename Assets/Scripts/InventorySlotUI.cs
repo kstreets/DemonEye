@@ -82,7 +82,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         if (type == onlyAcceptedItemType) {
             return true;
         }
-        if (acceptDerivativeTypes) {
+        if (acceptDerivativeTypes && onlyAcceptedItemType.derivativeItemTypes != null) {
             foreach (ItemType derivative in onlyAcceptedItemType.derivativeItemTypes) {
                 if (derivative == type) {
                     return true;

@@ -24,6 +24,8 @@ MonoBehaviour:
   baseSpeed: 0.52
   repeatCollisionDamageDelay: 1
   teleportDistance: 0.5
+  teleportGraceRadius: 0.28
+  teleportGraceSteps: 4
   teleportHiddenDuration: 0.08
   teleportInvulnerabilityDuration: 0.3
   teleportBaseCooldown: 1

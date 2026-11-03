@@ -63,4 +63,10 @@ public static class Physics {
         return _overlapResults;
     }
     
+    public static bool ColliderCheck(Collider2D collider, Vector2 position, ContactFilter2D contactFilter) {
+        int resultCount = collider.Overlap(position, 0f, contactFilter, _overlapResults);
+        _overlapResults.Clear();
+        return resultCount > 0;
+    }
+    
 }
