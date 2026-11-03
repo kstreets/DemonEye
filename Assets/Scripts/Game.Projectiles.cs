@@ -18,6 +18,7 @@ public partial class Game {
         public ProjectileTypeFlags typeFlags;
         public int? flatDamage;
         public float? flatCritChance;
+        public float? damageMultiplier;
         public float lifeTimeDuration;
         public float curTimeAlive;
         public float distTraveled;
@@ -34,6 +35,7 @@ public partial class Game {
         projectile.typeFlags = ProjectileTypeFlags.None;
         projectile.flatDamage = default;
         projectile.flatCritChance = default;
+        projectile.damageMultiplier = default;
         projectile.lifeTimeDuration = default;
         projectile.curTimeAlive = default;
         projectile.distTraveled = default;
@@ -49,8 +51,8 @@ public partial class Game {
     }
     
     private Projectile SpawnProjectile(EntityPool<Projectile> pool, Vector2 spawnPos, Vector2 velocity, float lifetime, Entity sourceEntity,
-        Quaternion? rotation = default, int? flatDamage = default, float? spawnDelay = default, float? flatCritChance = default, 
-        LayerMask? layermask = default, ProjectileTypeFlags typeFlags = ProjectileTypeFlags.None) 
+        Quaternion? rotation = default, float? damageMulti = default, int? flatDamage = default, float? spawnDelay = default, 
+        float? flatCritChance = default, LayerMask? layermask = default, ProjectileTypeFlags typeFlags = ProjectileTypeFlags.None) 
     {
         Quaternion projectileRotation = rotation ?? ProjectileRotationFromVelocity(velocity);
         Projectile projectile = SpawnEntity(pool, spawnPos, projectileRotation);
@@ -60,6 +62,7 @@ public partial class Game {
         projectile.sourceEntity = sourceEntity;
         projectile.lifeTimeDuration = lifetime;
         projectile.flatDamage = flatDamage;
+        projectile.damageMultiplier = damageMulti;
         projectile.flatCritChance = flatCritChance;
         projectile.layerMask = layermask ?? Masks.DamagableMask;
         projectile.typeFlags = typeFlags;

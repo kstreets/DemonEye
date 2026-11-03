@@ -19,9 +19,9 @@ MonoBehaviour:
     musicIntensity: 0
     variants:
     - name: Variant 0
-      maxDuration: 45
+      maxDuration: 52
       spawnDuration: 15
-      startNextPhaseEarlyDelay: 5
+      startNextPhaseEarlyDelay: 12
       spawnCellRange: {x: 20, y: 28}
       repositionCellRange: {x: 20, y: 28}
       reteleportCount: 8
@@ -56,9 +56,9 @@ MonoBehaviour:
       - enemyCount: 30
         enemyData: {fileID: 11400000, guid: 53c3cf128195d3c44872f0d25801891a, type: 2}
     - name: Variant 1
-      maxDuration: 45
+      maxDuration: 52
       spawnDuration: 15
-      startNextPhaseEarlyDelay: 5
+      startNextPhaseEarlyDelay: 12
       spawnCellRange: {x: 20, y: 28}
       repositionCellRange: {x: 20, y: 28}
       reteleportCount: 8
@@ -88,15 +88,15 @@ MonoBehaviour:
         m_PostInfinity: 2
         m_RotationOrder: 0
       enemyBatches:
-      - enemyCount: 50
+      - enemyCount: 40
         enemyData: {fileID: 11400000, guid: 274f3f5fababc7740b7a02cd693022a6, type: 2}
   - name: Wave 1
     musicIntensity: 0
     variants:
     - name: Variant 0
-      maxDuration: 75
+      maxDuration: 83
       spawnDuration: 45
-      startNextPhaseEarlyDelay: 5
+      startNextPhaseEarlyDelay: 12
       spawnCellRange: {x: 20, y: 28}
       repositionCellRange: {x: 20, y: 28}
       reteleportCount: 10
@@ -126,17 +126,17 @@ MonoBehaviour:
         m_PostInfinity: 2
         m_RotationOrder: 0
       enemyBatches:
-      - enemyCount: 60
+      - enemyCount: 50
         enemyData: {fileID: 11400000, guid: 274f3f5fababc7740b7a02cd693022a6, type: 2}
-      - enemyCount: 80
+      - enemyCount: 70
         enemyData: {fileID: 11400000, guid: 53c3cf128195d3c44872f0d25801891a, type: 2}
   - name: Wave 2
     musicIntensity: 0
     variants:
     - name: Variant 0
-      maxDuration: 70
+      maxDuration: 76
       spawnDuration: 40
-      startNextPhaseEarlyDelay: 0
+      startNextPhaseEarlyDelay: 12
       spawnCellRange: {x: 20, y: 28}
       repositionCellRange: {x: 20, y: 28}
       reteleportCount: 14
@@ -166,17 +166,17 @@ MonoBehaviour:
         m_PostInfinity: 2
         m_RotationOrder: 0
       enemyBatches:
-      - enemyCount: 120
+      - enemyCount: 100
         enemyData: {fileID: 11400000, guid: 53c3cf128195d3c44872f0d25801891a, type: 2}
-      - enemyCount: 35
+      - enemyCount: 25
         enemyData: {fileID: 11400000, guid: 32cbf20c358e9904cacd9be297ab7e7f, type: 2}
   - name: Wave 3
     musicIntensity: 0
     variants:
     - name: Variant 0
-      maxDuration: 70
+      maxDuration: 75
       spawnDuration: 40
-      startNextPhaseEarlyDelay: 8
+      startNextPhaseEarlyDelay: 10
       spawnCellRange: {x: 20, y: 28}
       repositionCellRange: {x: 20, y: 28}
       reteleportCount: 15
@@ -206,9 +206,9 @@ MonoBehaviour:
         m_PostInfinity: 2
         m_RotationOrder: 0
       enemyBatches:
-      - enemyCount: 90
+      - enemyCount: 80
         enemyData: {fileID: 11400000, guid: 53c3cf128195d3c44872f0d25801891a, type: 2}
-      - enemyCount: 60
+      - enemyCount: 50
         enemyData: {fileID: 11400000, guid: 274f3f5fababc7740b7a02cd693022a6, type: 2}
       - enemyCount: 40
         enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
@@ -216,9 +216,9 @@ MonoBehaviour:
     musicIntensity: 0
     variants:
     - name: Variant 0
-      maxDuration: 60
+      maxDuration: 63
       spawnDuration: 30
-      startNextPhaseEarlyDelay: 8
+      startNextPhaseEarlyDelay: 10
       spawnCellRange: {x: 20, y: 28}
       repositionCellRange: {x: 20, y: 28}
       reteleportCount: 10
@@ -258,9 +258,9 @@ MonoBehaviour:
     musicIntensity: 0
     variants:
     - name: Variant 0
-      maxDuration: 80
+      maxDuration: 84
       spawnDuration: 50
-      startNextPhaseEarlyDelay: 8
+      startNextPhaseEarlyDelay: 10
       spawnCellRange: {x: 20, y: 28}
       repositionCellRange: {x: 20, y: 28}
       reteleportCount: 15
@@ -300,9 +300,9 @@ MonoBehaviour:
     musicIntensity: 0
     variants:
     - name: Variant 0
-      maxDuration: 70
+      maxDuration: 80
       spawnDuration: 45
-      startNextPhaseEarlyDelay: 8
+      startNextPhaseEarlyDelay: 10
       spawnCellRange: {x: 20, y: 28}
       repositionCellRange: {x: 20, y: 28}
       reteleportCount: 15
@@ -340,9 +340,9 @@ MonoBehaviour:
     musicIntensity: 0
     variants:
     - name: Variant 0
-      maxDuration: 60
+      maxDuration: 68
       spawnDuration: 60
-      startNextPhaseEarlyDelay: 8
+      startNextPhaseEarlyDelay: 10
       spawnCellRange: {x: 20, y: 28}
       repositionCellRange: {x: 20, y: 28}
       reteleportCount: 18

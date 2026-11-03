@@ -97,7 +97,7 @@ public partial class Game {
             HandleDamageEnemy(projectile, entity);
         }
         else {
-            HandleDamageRock(entity);
+            HandleDamageRock(entity, projectile.damageMultiplier ?? 1f);
             thisFrame.flags |= GameData.FrameFlags.ShotRock;
         }
     }
@@ -191,8 +191,9 @@ public partial class Game {
         }
     }
     
-    private void HandleDamageRock(Entity entity) {
-        entity.health -= config.gameplay.damage;
+    private void HandleDamageRock(Entity entity, float damageMulti = 1f) {
+        int damage = Mathf.RoundToInt(config.gameplay.damage * damageMulti);
+        entity.health -= damage;
 
         PlayAudioClip(audio.stoneHitClip, entity.position);
         
@@ -241,11 +242,12 @@ public partial class Game {
     }
 
     private int GetProjectileDamage(Projectile proj, Enemy enemy, bool isCriticalHit) {
-        DemonEyeInstance eyeInstance = proj.eyeInstanceSpawnedFrom;
         float damageMultiplier = GetDamageMultiplierOnEnemy(enemy);
         
         // Phase 1 - Multiplications to damage multiplier (Anything with a description of '1.5x Damage' or '0.65x Damage')
         {
+            damageMultiplier *= proj.damageMultiplier ?? 1f;
+            
             if (isCriticalHit) {
                 damageMultiplier *= GetAbsoluteStat(PlayerStat.CritMulti);
             }

@@ -29,7 +29,7 @@ MonoBehaviour:
     levelRequired: 2
     stockRange: {x: 1, y: 2}
     barterRequirements: []
-  rarity: 1
+  rarity: 2
   dropOrigins:
   - dropPool: {fileID: 11400000, guid: 447693d567ac32848b6d0306b40001c5, type: 2}
     maxStackCount: 2

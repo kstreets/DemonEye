@@ -542,7 +542,7 @@ public partial class Game {
         return Quaternion.AngleAxis(accuracyAngle, Vector3.forward) * shootDir;
     }
     
-    private void ShootProjectile(Vector2 shootDir, bool isMainProjectile, float? spawnDelay = default) {
+    private void ShootProjectile(Vector2 shootDir, bool isMainProjectile, float damageMulti = 1f, float? spawnDelay = default) {
         float projectileSpeed = config.gameplay.projectileSpeed;
         Vector2 velocity = shootDir.normalized * projectileSpeed; 
         
@@ -551,8 +551,10 @@ public partial class Game {
             if (demonEye.equiped.multiProjectileCritAugment.TryGetValue(out var multiProjCrit)) {
                 flatCritChance = multiProjCrit.probability;
             }
-            if (demonEye.equiped.overheatProcAugment.TryGetValue(out var overheatProc) && demonEye.equiped.blast.TryGetValue(out var blast) && RollProbability(overheatProc.probability)) {
-                TriggerOverheatBlast(blast);
+            if (demonEye.equiped.overheatProcAugment.TryGetValue(out var overheatProc) && demonEye.equiped.blast.TryGetValue(out var blast)) {
+                if (RollProbability(overheatProc.probability)) {
+                    TriggerOverheatBlast(blast);
+                }
             }
         }
         
@@ -566,7 +568,7 @@ public partial class Game {
         // Helper method just to forward the passed in parameters
         void _SpawnProjectile(Vector2 pos, Vector2 vel, EntityPool<Projectile> pool, ProjectileTypeFlags flgs = ProjectileTypeFlags.None) {
             float lifeTime = GetProjectileRangeInSeconds();
-            SpawnProjectile(pool, pos, vel, lifeTime, player, typeFlags: flgs, spawnDelay: spawnDelay, flatCritChance: flatCritChance);
+            SpawnProjectile(pool, pos, vel, lifeTime, player, typeFlags: flgs, damageMulti: damageMulti, spawnDelay: spawnDelay, flatCritChance: flatCritChance);
         }
     }
     
@@ -575,9 +577,9 @@ public partial class Game {
         float angleStep = scatterShot.spreadAngle * 0.5f / Mathf.Max(pairCount, 1);
         for (int i = 0; i < scatterShot.extraProjectileCount; i++) {
             float side = i % 2 == 0 ? 1f : -1f;
-            float angle = side * (i / 2 + 1) * angleStep;
+            float angle = side * (i / 2f + 1) * angleStep;
             Vector2 dir = Quaternion.AngleAxis(angle, Vector3.forward) * aimDir;
-            ShootProjectile(dir, isMainProjectile: false);
+            ShootProjectile(dir, isMainProjectile: false, damageMulti: scatterShot.splitDamageMultiplier);
         }
     }
     
