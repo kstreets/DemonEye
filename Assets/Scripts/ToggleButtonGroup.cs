@@ -12,8 +12,8 @@ public class ToggleButtonGroup : MonoBehaviour {
     }
 
     public NavigationMode navigationMode;
-    public TextMeshProUGUI leftInputPrompt;
-    public TextMeshProUGUI rightInputPrompt;
+    public GameObject leftInputPrompt;
+    public GameObject rightInputPrompt;
     public Styles styles;
     public Sprite selectedSprite;
     public Sprite nonSelectedSprite;

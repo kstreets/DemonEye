@@ -4,7 +4,6 @@ using UnityEngine.InputSystem;
 public partial class Game {
 
     private void InitPauseMenu() {
-        input.pause.performed += OnPausePressed;
         pauseMenu.resumeButton.AddListener(ResumeRaid);
         pauseMenu.settingsButton.AddListener(ShowPauseSettings);
         pauseMenu.suicideButton.AddListener(() => {
@@ -16,7 +15,7 @@ public partial class Game {
         pauseMenu.panel.gameObject.SetActive(false);
     }
 
-    private void OnPausePressed(InputAction.CallbackContext context) {
+    private void OnPausePressed() {
         if (!InRaid) return;
         if (cutscene.playing) return; // Unpausing would resume the raid in the middle of the cutscene
 
@@ -56,7 +55,7 @@ public partial class Game {
         pauseMenu.panel.gameObject.SetActive(true);
         IgnoreHeldNavigationInput();
         ClearControllerSelection();
-        Cursor.visible = !usingController;
+        Cursor.visible = ShowCursorInMenus();
     }
 
     private void ResumeRaid() {

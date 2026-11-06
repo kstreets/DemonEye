@@ -27,7 +27,7 @@ MonoBehaviour:
   teleportGraceRadius: 0.28
   teleportGraceSteps: 4
   teleportHiddenDuration: 0.08
-  teleportInvulnerabilityDuration: 0.3
+  teleportInvulnerabilityDuration: 0.08
   teleportBaseCooldown: 1
   teleportMaxCooldown: 2
   teleportCooldownIncreasePerRapidUse: 0.25
@@ -44,6 +44,7 @@ MonoBehaviour:
   portalActiveDuration: 25
   distancePerUnit: 0.32
   raidsPerTraderRestock: 3
+  projectileGravity: 4.8
   defaultStartingEncumberingWeight: 140
   maxEncumberedWeight: 190
   maxEncumberedSpeedReduction: 0.2

@@ -32,7 +32,7 @@ public partial class Game {
 
         if (col.CompareTag(Tags.DeadBody)) {
             EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), string.Empty, "Search Body");
-            if (input.interact.WasPressedThisFrame()) {
+            if (inputs.interact.WasPressedThisFrame()) {
                 thisFrame.flags |= GameData.FrameFlags.SearchingBody;
                 inventories.lootPtr.slots = curRaid.deadBodySlotsLookup[col.gameObject];
                 OpenPlayerInventory();
@@ -42,7 +42,7 @@ public partial class Game {
         
         if (col.CompareTag(Tags.Bush)) {
             EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), string.Empty, "Search Bush");
-            if (input.interact.WasPressedThisFrame()) {
+            if (inputs.interact.WasPressedThisFrame()) {
                 thisFrame.flags |= GameData.FrameFlags.SearchingBush;
                 inventories.lootPtr.slots = curRaid.bushSlotsLookup[col.gameObject];
                 OpenPlayerInventory();
@@ -63,7 +63,7 @@ public partial class Game {
             string soulCostString = $"<sprite=1>{ColorText(soulsPrice.ToString("N0"), soulsTextColor)}";
             string details = "Summon Blood Rune: " + soulCostString;
             EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), soulCostString, details);
-            if (input.interact.WasPressedThisFrame() && player.state.soulCurrency >= soulsPrice) {
+            if (inputs.interact.WasPressedThisFrame() && player.state.soulCurrency >= soulsPrice) {
                 thisFrame.flags |= GameData.FrameFlags.SummonedUpgrade;
                 SummonEyeUpgradeFromAltar(col);
                 player.state.soulCurrency -= soulsPrice;
@@ -73,7 +73,7 @@ public partial class Game {
         
         if (col.CompareTag(Tags.Chest)) {
             EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), string.Empty, "Open Chest");
-            if (input.interact.WasPressedThisFrame()) {
+            if (inputs.interact.WasPressedThisFrame()) {
                 inventories.lootPtr.slots = curRaid.chestSlotsLookup[col.gameObject];
                 OpenPlayerInventory();
                 OpenLootInventory(LootInventoryOrigin.Chest);
@@ -85,14 +85,14 @@ public partial class Game {
             
             if (portal.state == Portal.State.Inactive) {
                 EnableInteractionPrompt(OffsetY(col.transform.position, 0.15f), "Summon", "Summon Extraction Portal");
-                if (input.interact.IsPressed()) {
+                if (inputs.interact.IsPressed()) {
                     portal.StartOpenCloseSequence(config.gameplay.portalPostSummonDelay, config.gameplay.portalActiveDuration);
                 }
             }
             
             if (portal.state == Portal.State.Open) {
                 EnableInteractionPrompt(OffsetY(col.transform.position, 0.15f), "Use", "Use Extraction Portal");
-                if (input.interact.WasPressedThisFrame()) {
+                if (inputs.interact.WasPressedThisFrame()) {
                     portal.OnPlayerTook();
                     bool winExit = curRaid.state == RaidState.PostFinalWave;
                     states.gameStateMachine.SetStateIfNotCurrent(winExit ? states.winExit : states.earlyExit);
@@ -103,7 +103,7 @@ public partial class Game {
         
         if (col.CompareTag(Tags.ExpressExitPortal)) {
             EnableInteractionPrompt(OffsetY(col.transform.position, 0.15f), "Use", "Use Extraction Portal");
-            if (input.interact.WasPressedThisFrame()) {
+            if (inputs.interact.WasPressedThisFrame()) {
                 col.transform.GetComponent<SummonedPortal>().Close(activeStateOnComplete: false);
                 bool winExit = curRaid.state == RaidState.PostFinalWave;
                 states.gameStateMachine.SetStateIfNotCurrent(winExit ? states.winExit : states.earlyExit);
@@ -152,7 +152,7 @@ public partial class Game {
         string details = ColorText($"{dropItemRef.displayName} x{itemDrop.ItemInstance.count}", itemColor);
         EnableInteractionPrompt(OffsetY(itemDrop.transform.position, 0.1f), string.Empty, details);
         
-        if (!input.interact.WasPressedThisFrame()) return;
+        if (!inputs.interact.WasPressedThisFrame()) return;
         
         InventoryAddResult result = TryAddItemToInventory(inventories.player, itemDrop.ItemInstance);
         if (result.type != InventoryAddResult.ResultType.Failure) {
@@ -466,13 +466,13 @@ public partial class Game {
         }
 
         if (CanUseControllerHotBar) {
-            if (input.quickUsePrevious.WasPressedThisFrame()) {
+            if (inputs.quickUsePrevious.WasPressedThisFrame()) {
                 MoveHotBarSelection(-1);
             }
-            if (input.quickUseNext.WasPressedThisFrame()) {
+            if (inputs.quickUseNext.WasPressedThisFrame()) {
                 MoveHotBarSelection(1);
             }
-            if (input.quickUseSelected.WasPressedThisFrame()) {
+            if (inputs.quickUseSelected.WasPressedThisFrame()) {
                 quickUseIndex = hotBar.selectedIndex;
             }
         }

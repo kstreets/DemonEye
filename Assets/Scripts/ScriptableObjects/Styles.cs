@@ -34,7 +34,6 @@ public class Styles : ScriptableObject {
     
     public Color coinCurrencyColor;
     public Color soulCurrencyColor;
-    public Color inputIconTint;
 
     public Color underWeightColor;
     public Color startingOverWeightColor;

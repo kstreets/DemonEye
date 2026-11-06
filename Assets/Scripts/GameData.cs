@@ -7,9 +7,9 @@ using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
+using Steamworks;
 using static Game;
 
 [Serializable]
@@ -55,6 +55,8 @@ public class GameData {
         public GameObject poisonDebuff;
         public GameObject explosion;
         public GameObject gooProjectile;
+        public GameObject poisonPool;
+        public GameObject poisonCloud;
         public GameObject smallFireballProjectile;
         public GameObject piercingProjectile;
         public GameObject projectileImpact;
@@ -189,7 +191,6 @@ public class GameData {
         public TypewriterComponent traderTutorialTypewriter;
         public CanvasGroup traderTutorialDialogueCanvasGroup;
         public GameObject traderTutorialDialogueBox;
-        public TextMeshProUGUI dialogueBoxPrompt;
         public RectTransform lootInventoryPanel;
         public LayoutElement lootInventoryLayoutElement;
         public RectTransform lootInventoryParent;
@@ -201,7 +202,6 @@ public class GameData {
         
         public RectTransform quickUseHeaderText;
         public RectTransform stashPanelHeaderText;
-        public TMP_SpriteAsset inputIconSpriteAsset; // Can be left empty, input icons show as text until it's set
         public ToggleButtonGroup[] navToggleGroups; // Toggle groups the controller can switch with the bumpers/triggers, based on their NavigationMode
         
         [NonSerialized] public ScreenScalingMaintainer[] screenScalingMaintainers;
@@ -211,18 +211,15 @@ public class GameData {
     [Serializable]
     public class InputPrompts {
         public RectTransform hideoutParent;
-        public TextMeshProUGUI hideoutSelect_place;
-        public TextMeshProUGUI hideoutQuickMove;
-        public TextMeshProUGUI hideoutSplit_placeSingle;
-        
         public List<Transform> allInventoryPrompts;
-        
         public GameObject inRaidParent;
-        public TextMeshProUGUI raidInventory;
+        public GameObject raidInventory;
         
-        // Icon strings for the current input device, cleared when the device changes
-        [NonSerialized] public readonly Dictionary<InputAction, string> inputIconCache = new();
-        [NonSerialized] public readonly List<InputPrompt> inputPrompts = new();
+        public InputPrompt inventorySelect;
+        public InputPrompt inventoryQuickMove;
+        public InputPrompt inventorySplitStack;
+        
+        public List<InputPrompt> allBoundPrompts = new();
     }
     
     [Serializable]
@@ -502,42 +499,53 @@ public class GameData {
     
     [Serializable]
     public class HotBar {
-        [NonSerialized] public List<InputAction> quickUseActions;
+        [NonSerialized] public List<GameAction> quickUseActions;
         [NonSerialized] public InventorySlotUI[] slotUIs;
         [NonSerialized] public int selectedIndex; // The only slot bound on controller, the bumpers move it
 
-        public List<TextMeshProUGUI> inputPrompts;
         public GameObject leftShoulderPrompt;
         public GameObject rightShoulderPrompt;
     }
     
-    public class Input {
-        public InputAction move;
-        public InputAction interact;
-        public InputAction inventory;
-        public InputAction selectItem;
-        public InputAction placeSingleItem;
-        public InputAction useItem;
-        public InputAction moveStack;
-        public InputAction splitStack;
-        public InputAction escape;
-        public InputAction pause;
-        public InputAction quickUse1;
-        public InputAction quickUse2;
-        public InputAction quickUse3;
-        public InputAction quickUse4;
-        public InputAction quickUseSelected;
-        public InputAction quickUsePrevious;
-        public InputAction quickUseNext;
-        public InputAction teleport;
-        public InputAction menuMove;
-        public InputAction menuSubmit;
-        public InputAction menuTabLeft;
-        public InputAction menuTabRight;
-        public InputAction menuSecondaryTabLeft;
-        public InputAction menuSecondaryTabRight;
-        public InputAction advanceDialogue;
+    public class Inputs {
+        public GameAction aim;
+        public GameAction move;
+        public GameAction interact;
+        public GameAction inventory;
+        public GameAction selectItem;
+        public GameAction placeSingleItem;
+        public GameAction useItem;
+        public GameAction moveStack;
+        public GameAction splitStack;
+        public GameAction escape;
+        public GameAction pause;
+        public GameAction quickUse1;
+        public GameAction quickUse2;
+        public GameAction quickUse3;
+        public GameAction quickUse4;
+        public GameAction quickUseSelected;
+        public GameAction quickUsePrevious;
+        public GameAction quickUseNext;
+        public GameAction teleport;
+        public GameAction menuMove;
+        public GameAction menuSubmit;
+        public GameAction menuTabLeft;
+        public GameAction menuTabRight;
+        public GameAction menuSecondaryTabLeft;
+        public GameAction menuSecondaryTabRight;
+        public GameAction advanceDialogue;
+        
+        public readonly List<GameAction> all = new();
+        
+        public enum Device { KeyboardMouse, Controller, }
+        public Device device;
         public float lastDeviceSwitchTime;
+        
+        public bool usingSteamInput;
+        public InputActionSetHandle_t steamActionSet;
+        public readonly InputHandle_t[] steamControllers = new InputHandle_t[Constants.STEAM_INPUT_MAX_COUNT];
+        public InputHandle_t activeSteamController;
+        public bool unityGamepadsDisabled;
     }
     
     public class EntityPools {
@@ -553,6 +561,8 @@ public class GameData {
         public EntityPool<Entity> meteor;
         public EntityPool<Entity> poisonDebuff;
         public EntityPool<Entity> explosion;
+        public EntityPool<Hazard> poisonPool;
+        public EntityPool<Entity> poisonCloud;
         public EntityPool<Entity> projectileImpact;
         public EntityPool<Entity> teleportIn;
         public EntityPool<Entity> teleportOut;
@@ -590,6 +600,7 @@ public class GameData {
         public List<Entity> all = new();
         public List<Projectile> projectiles = new();
         public List<Projectile> soulTrackingProjectiles = new();
+        public List<Hazard> hazards = new();
         public List<Enemy> enemies = new();
         public Enemy boss;
         public Dictionary<GameObject, Entity> lookup = new();

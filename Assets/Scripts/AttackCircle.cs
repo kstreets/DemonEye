@@ -15,7 +15,7 @@ public class AttackCircle : MonoBehaviour {
         defaultPixelDensity = spriteRenderer.material.GetFloat(ShaderIds.pixelDensity);
     }
     
-    public void Animate(float radius, float animateInTime) {
+    public void Animate(float radius, float animateInTime, float startDelay = 0f) {
         Assert.IsTrue(radius > Mathf.Epsilon, "Radius needs to be greater than or equal to 0.");
         
         float scale = radius / defaultRadius;
@@ -24,8 +24,15 @@ public class AttackCircle : MonoBehaviour {
         float pixelDensity = defaultPixelDensity * scale;
         spriteRenderer.material.SetFloat(ShaderIds.pixelDensity, pixelDensity);
         
+        if (startDelay > 0f) {
+            gameObject.SetActive(false);
+        }
+        
         tween.Stop();
-        tween = Tween.Custom(this, 0f, 1f, animateInTime, static (attackCircle, comp) => {
+        tween = Tween.Custom(this, 0f, 1f, animateInTime, startDelay: startDelay, onValueChange: static (attackCircle, comp) => {
+            if (!attackCircle.gameObject.activeInHierarchy) {
+                attackCircle.gameObject.SetActive(true);
+            }
             attackCircle.spriteRenderer.material.SetFloat(ShaderIds.completion, comp);
         });
     }

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,14 +5,6 @@ public class DamageShape : MonoBehaviour {
 
     public enum ShapeType { Circle, Box, Capsule }
     
-    [Flags]
-    public enum DamageTargets {
-        None       = 0,
-        Player     = 1 << 0,
-        Enemies    = 1 << 1,
-        Damageable = 1 << 2, // Enemies and mineables
-    }
-
     [Header("Shape")]
     public ShapeType shape = ShapeType.Circle;
     public Vector2 offset;
@@ -22,7 +13,6 @@ public class DamageShape : MonoBehaviour {
     public CapsuleDirection2D capsuleDirection = CapsuleDirection2D.Vertical;
 
     [Header("Damage")]
-    public DamageTargets targets = DamageTargets.Enemies;
     public int damageFrame;
 
     public Vector2 Center => transform.TransformPoint(offset);

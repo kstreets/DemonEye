@@ -15,7 +15,6 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
     public TextMeshProUGUI weightText;
     public GameObject metaInfoParent;
     public GameObject consumePromtParent;
-    public TextMeshProUGUI consumePromtText;
     public HorizontalLayoutGroup tagsLayoutGroup;
     public VerticalLayoutGroup bodyLayoutGroup;
     public ImageTextGroup typeTagGroup;

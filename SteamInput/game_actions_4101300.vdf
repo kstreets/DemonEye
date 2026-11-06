@@ -1,0 +1,90 @@
+"In Game Actions"
+{
+	"actions"
+	{
+		"Gameplay"
+		{
+			"title"		"#Set_Gameplay"
+			"StickPadGyro"
+			{
+				"Move"
+				{
+					"title"			"#Action_Move"
+					"input_mode"	"joystick_move"
+				}
+				"Aim"
+				{
+					"title"			"#Action_Aim"
+					"input_mode"	"joystick_move"
+				}
+				"MenuMove"
+				{
+					"title"			"#Action_MenuMove"
+					"input_mode"	"joystick_move"
+				}
+			}
+			"AnalogTrigger"
+			{
+			}
+			"Button"
+			{
+				"Interact"				"#Action_Interact"
+				"Inventory"				"#Action_Inventory"
+				"Escape"				"#Action_Escape"
+				"Pause"					"#Action_Pause"
+				"Teleport"				"#Action_Teleport"
+				"QuickUse1"				"#Action_QuickUse1"
+				"QuickUse2"				"#Action_QuickUse2"
+				"QuickUse3"				"#Action_QuickUse3"
+				"QuickUse4"				"#Action_QuickUse4"
+				"QuickUseSelected"		"#Action_QuickUseSelected"
+				"QuickUsePrevious"		"#Action_QuickUsePrevious"
+				"QuickUseNext"			"#Action_QuickUseNext"
+				"SelectItem"			"#Action_SelectItem"
+				"PlaceSingleItem"		"#Action_PlaceSingleItem"
+				"SplitStack"			"#Action_SplitStack"
+				"MoveStack"				"#Action_MoveStack"
+				"UseItem"				"#Action_UseItem"
+				"MenuSubmit"			"#Action_MenuSubmit"
+				"MenuTabLeft"			"#Action_MenuTabLeft"
+				"MenuTabRight"			"#Action_MenuTabRight"
+				"MenuSecondaryTabLeft"	"#Action_MenuSecondaryTabLeft"
+				"MenuSecondaryTabRight"	"#Action_MenuSecondaryTabRight"
+				"AdvanceDialogue"		"#Action_AdvanceDialogue"
+			}
+		}
+	}
+	"localization"
+	{
+		"english"
+		{
+			"Set_Gameplay"					"Gameplay"
+			"Action_Move"					"Move"
+			"Action_Aim"					"Aim"
+			"Action_MenuMove"				"Menu Navigate"
+			"Action_Interact"				"Interact"
+			"Action_Inventory"				"Inventory"
+			"Action_Escape"					"Back"
+			"Action_Pause"					"Pause"
+			"Action_Teleport"				"Teleport"
+			"Action_QuickUse1"				"Quick Use 1"
+			"Action_QuickUse2"				"Quick Use 2"
+			"Action_QuickUse3"				"Quick Use 3"
+			"Action_QuickUse4"				"Quick Use 4"
+			"Action_QuickUseSelected"		"Use Selected Quick Item"
+			"Action_QuickUsePrevious"		"Previous Quick Item"
+			"Action_QuickUseNext"			"Next Quick Item"
+			"Action_SelectItem"				"Select Item"
+			"Action_PlaceSingleItem"		"Place Single Item"
+			"Action_SplitStack"				"Split Stack"
+			"Action_MoveStack"				"Quick Move Stack"
+			"Action_UseItem"				"Use Item"
+			"Action_MenuSubmit"				"Menu Confirm"
+			"Action_MenuTabLeft"			"Previous Tab"
+			"Action_MenuTabRight"			"Next Tab"
+			"Action_MenuSecondaryTabLeft"	"Previous Sub-Tab"
+			"Action_MenuSecondaryTabRight"	"Next Sub-Tab"
+			"Action_AdvanceDialogue"		"Advance Dialogue"
+		}
+	}
+}

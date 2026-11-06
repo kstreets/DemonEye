@@ -278,10 +278,10 @@ public partial class Game {
     }
     
     private void HandleInventoryVisibility() {
-        if (!InRaid || !input.inventory.WasPressedThisFrame()) return;
+        if (!InRaid || !inputs.inventory.WasPressedThisFrame()) return;
         
         // On controller the inventory button also splits stacks, so it only opens the inventory and escape closes it
-        if (UsingControllerControls && PlayerInventoryIsOpen) return;
+        if (UsingController && PlayerInventoryIsOpen) return;
         
         if (PlayerInventoryIsOpen) {
             ClosePlayerInventory(); 
@@ -393,7 +393,7 @@ public partial class Game {
     }
     
     private void CheckToMoveItem(InventoryHoverInfo invHoverInfo) {
-        if (!input.moveStack.WasPressedThisFrame()) return;
+        if (!inputs.moveStack.WasPressedThisFrame()) return;
 
         Inventory hoveredInventory = invHoverInfo.inventory;
         if (hoveredInventory == null || hoveredInventory.isLocked) return;
@@ -464,9 +464,9 @@ public partial class Game {
     }
 
     private void CheckToConsumeItem(InventoryHoverInfo invHoverInfo) {
-        if (!input.useItem.WasPressedThisFrame()) return;
+        if (!inputs.useItem.WasPressedThisFrame()) return;
         // Consume is on the navigation stick's press, so ignore it while the stick is being pushed in case it was accidental
-        if (UsingControllerControls && input.menuMove.ReadValue<Vector2>().magnitude > GameData.ControllerNavigation.stickDeadzone) return;
+        if (UsingController && inputs.menuMove.ReadVector2().magnitude > GameData.ControllerNavigation.stickDeadzone) return;
         if (!TryGetItemFromHoverInfo(invHoverInfo, out ItemInstance hoveredItem)) return;
         if (hoveredItem.ItemRef.type != itemTypes.quickUse) return;
         HavePlayerConsumeItem(invHoverInfo.inventory, invHoverInfo.slotIndex);
@@ -673,8 +673,8 @@ public partial class Game {
     private bool IsDraggingItem => dragItemInstance != null;
 
     private bool UpdateInventoryDragAndDrop(InventoryHoverInfo hoverInfo) {
-        bool pickupInputUsed = input.selectItem.WasPressedThisFrame() || input.splitStack.WasPressedThisFrame();
-        bool placeInputUsed = input.selectItem.WasPressedThisFrame() || input.placeSingleItem.WasPressedThisFrame();
+        bool pickupInputUsed = inputs.selectItem.WasPressedThisFrame() || inputs.splitStack.WasPressedThisFrame();
+        bool placeInputUsed = inputs.selectItem.WasPressedThisFrame() || inputs.placeSingleItem.WasPressedThisFrame();
         bool inventoryIsLocked = hoverInfo.inventory?.isLocked ?? false;
         
         if ((!pickupInputUsed && !placeInputUsed) || inventoryIsLocked) {
@@ -716,7 +716,7 @@ public partial class Game {
                 return IsDraggingItem;
             }
 
-            bool splittingStack = input.splitStack.WasPressedThisFrame() && item.count > 1;
+            bool splittingStack = inputs.splitStack.WasPressedThisFrame() && item.count > 1;
             if (splittingStack) {
                 int firstHalf = item.count / 2;
                 int secondHalf = item.count - firstHalf;
@@ -752,7 +752,7 @@ public partial class Game {
 
             bool droppingItemInRaid = hoverInfo.inventory == null && InRaid;
             if (droppingItemInRaid) {
-                bool droppingEntireStack = input.selectItem.WasPressedThisFrame();
+                bool droppingEntireStack = inputs.selectItem.WasPressedThisFrame();
                 if (droppingEntireStack) {
                     DropItemFromInventory(dragItemInstance);
                     dragItemInstance.count = 0;
@@ -774,7 +774,7 @@ public partial class Game {
                 // The same item with room in its stack gets placed onto instead, which tops it up and keeps any leftovers dragging
                 bool stackOntoSwapItem = swapItem.itemOrInstanceUuid == dragItemInstance.itemOrInstanceUuid
                     && !swapItem.IsFullStack && !hoverInfo.inventory.slots[hoverInfo.slotIndex].ui.disallowItemStacking;
-                swappingItems = !stackOntoSwapItem && input.selectItem.WasPressedThisFrame();
+                swappingItems = !stackOntoSwapItem && inputs.selectItem.WasPressedThisFrame();
             }
             
             if (swappingItems && IsHoveredItemGrayedOut(hoverInfo)) {
@@ -798,7 +798,7 @@ public partial class Game {
                 return IsDraggingItem;
             }
 
-            bool placingSingleItemFromStack = input.placeSingleItem.WasPressedThisFrame();
+            bool placingSingleItemFromStack = inputs.placeSingleItem.WasPressedThisFrame();
             if (placingSingleItemFromStack) {
                 InventoryAddResult result = TryAddItemToInventory(hoverInfo.inventory, dragItemInstance.ItemRef, 1, hoverInfo.slotIndex, onlyVisibleSlots: true);
 
@@ -844,7 +844,7 @@ public partial class Game {
     private void UpdateDragAndDropItemToCursor() {
         if (dragItemInstance == null) return;
         Vector2 mousePos = PointerScreenPos;
-        if (usingController) {
+        if (UsingController) {
             // Offset so the dragged item doesn't completely cover the selected slot
             mousePos += new Vector2(20f, -20f) * CanvasScale;
         }
@@ -1357,7 +1357,7 @@ public partial class Game {
         thisFrame.flags |= GameData.FrameFlags.InventoryOpened;
         IgnoreHeldNavigationInput();
         playerPanel.panel.gameObject.SetActive(true);
-        Cursor.visible = !usingController;
+        Cursor.visible = ShowCursorInMenus();
     }
 
     private void ClosePlayerInventory() {

@@ -54,6 +54,7 @@ public class GameplayConfig : ScriptableObject {
     [Header("Misc")]
     public float distancePerUnit;
     public int raidsPerTraderRestock;
+    public float projectileGravity;
 
     [Header("Encumberment")]
     public int defaultStartingEncumberingWeight;

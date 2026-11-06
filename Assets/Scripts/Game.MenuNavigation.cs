@@ -9,7 +9,7 @@ using static GameData;
 public partial class Game {
 
     // Where the UI should treat the "cursor" as being. Follows the controller selection when using a controller.
-    private Vector2 PointerScreenPos => usingController ? controllNav.pointerPos : Mouse.current.position.ReadValue();
+    private Vector2 PointerScreenPos => UsingController ? controllNav.pointerPos : Mouse.current.position.ReadValue();
     private bool MenuNavigationNeeded => !InRaid || PlayerInventoryIsOpen || LootInventoryIsOpen || pauseMenu.paused || ui.messagePopup.IsShowing;
 
     public class NavPanel {
@@ -23,13 +23,6 @@ public partial class Game {
     private void InitMenuNavigation() {
         controllNav.pointerEventData = new(EventSystem.current) { pointerId = ControllerNavigation.pointerEventId };
         
-        input.menuMove = InputSystem.actions.FindAction("MenuMove");
-        input.menuSubmit = InputSystem.actions.FindAction("MenuSubmit");
-        input.menuTabLeft = InputSystem.actions.FindAction("MenuTabLeft");
-        input.menuTabRight = InputSystem.actions.FindAction("MenuTabRight");
-        input.menuSecondaryTabLeft = InputSystem.actions.FindAction("MenuSecondaryTabLeft");
-        input.menuSecondaryTabRight = InputSystem.actions.FindAction("MenuSecondaryTabRight");
-        input.escape.performed += OnEscapePressed;
 
         // Popups and the dragged item follow the pointer, so they shouldn't count as covering up what's under them
         controllNav.ignoredRoots = new[] {
@@ -77,7 +70,7 @@ public partial class Game {
         InsertIntoRecentPanels(navPanel, false);
     }
 
-    private void OnEscapePressed(InputAction.CallbackContext context) {
+    private void OnEscapePressed(bool fromKeyboard = false) {
         CancelItemDrag();
         ClearControllerSelection();
         
@@ -113,15 +106,14 @@ public partial class Game {
             CloseLootInventory();
         }
         // Gamepad B only backs out of things, the pause menu is opened with Start on gamepads
-        else if (InRaid && context.control?.device is Keyboard) {
+        else if (InRaid && fromKeyboard) {
             PauseRaid();
         }
     }
 
     private void UpdateMenuNavigation() {
-        if (!usingController) {
-            // Tabs can still be switched with the bumpers/triggers while the Steam Deck's touchpad is controlling the cursor
-            if (UsingControllerControls) {
+        if (!UsingController) {
+            if (OnSteamDeck) {
                 UpdateToggleGroupSwitching();
             }
             return;
@@ -172,7 +164,7 @@ public partial class Game {
         }
 
         // The press that switched us over to the controller shouldn't also submit
-        if (input.lastDeviceSwitchTime != Time.unscaledTime) {
+        if (inputs.lastDeviceSwitchTime != Time.unscaledTime) {
             UpdateControllerSubmit();
         }
 
@@ -185,7 +177,7 @@ public partial class Game {
 
         var switchedMode = CheckForToggleGroupSwitching();
         // We dont clear the selection when doing a secondary toggle switch, and there's no selection when using the cursor
-        if (switchedMode == ToggleButtonGroup.NavigationMode.Primary && usingController) {
+        if (switchedMode == ToggleButtonGroup.NavigationMode.Primary && UsingController) {
             ClearControllerSelection();
             SelectDefaultNavTarget();
         }
@@ -199,14 +191,14 @@ public partial class Game {
     // Whether the player moved the pointer this frame.
     // In order for this method to work reliably, the menu navigation must update before gamestate tick
     private bool PlayerMovedPointerThisFrame() {
-        if (usingController) {
+        if (UsingController) {
             return controllNav.lastTimePlayerMovedSelection == Time.unscaledTime;
         }
         return Mouse.current != null && Mouse.current.delta.ReadValue() != Vector2.zero;
     }
 
     private void MenuNavigationOnInputDeviceChanged() {
-        if (!usingController) {
+        if (!UsingController) {
             ClearControllerSelection();
             controllNav.submitPressedOn = null;
             Cursor.visible = MenuNavigationNeeded;
@@ -233,14 +225,14 @@ public partial class Game {
     }
 
     private Vector2 ReadNavDirection() {
-        Vector2 stick = input.menuMove.ReadValue<Vector2>();
+        Vector2 stick = inputs.menuMove.ReadVector2();
         if (stick.magnitude < ControllerNavigation.stickDeadzone) return Vector2.zero;
         return Mathf.Abs(stick.x) > Mathf.Abs(stick.y) ? new(Mathf.Sign(stick.x), 0f) : new(0f, Mathf.Sign(stick.y));
     }
 
     // Ignores the stick until it's let go, for when it's already being held as a menu opens
     private void IgnoreHeldNavigationInput() {
-        if (!usingController) return;
+        if (!UsingController) return;
         controllNav.waitingForNavRelease = true;
     }
 
@@ -397,7 +389,7 @@ public partial class Game {
 
     // Simulates a mouse click on buttons. Inventory slots don't need this since the inventory actions have gamepad bindings.
     private void UpdateControllerSubmit() {
-        if (input.menuSubmit.WasReleasedThisFrame() && controllNav.submitPressedOn) {
+        if (inputs.menuSubmit.WasReleasedThisFrame() && controllNav.submitPressedOn) {
             GameObject pressed = controllNav.submitPressedOn;
             controllNav.submitPressedOn = null;
             ExecuteEvents.Execute(pressed, controllNav.pointerEventData, ExecuteEvents.pointerUpHandler);
@@ -406,7 +398,7 @@ public partial class Game {
             }
         }
 
-        if (!input.menuSubmit.WasPressedThisFrame()) return;
+        if (!inputs.menuSubmit.WasPressedThisFrame()) return;
         if (!controllNav.selected || !controllNav.selected.TryGetComponent(out Selectable _)) return;
 
         controllNav.submitPressedOn = controllNav.selected.gameObject;
@@ -418,18 +410,18 @@ public partial class Game {
     }
 
     private ToggleButtonGroup.NavigationMode CheckForToggleGroupSwitching() {
-        bool switchedPrimary = TrySwitchToggleGroup(ToggleButtonGroup.NavigationMode.Primary, input.menuTabLeft, input.menuTabRight);
+        bool switchedPrimary = TrySwitchToggleGroup(ToggleButtonGroup.NavigationMode.Primary, inputs.menuTabLeft, inputs.menuTabRight);
         if (switchedPrimary) {
             return ToggleButtonGroup.NavigationMode.Primary;
         }
-        bool switchedSecondary = TrySwitchToggleGroup(ToggleButtonGroup.NavigationMode.Secondary, input.menuSecondaryTabLeft, input.menuSecondaryTabRight);
+        bool switchedSecondary = TrySwitchToggleGroup(ToggleButtonGroup.NavigationMode.Secondary, inputs.menuSecondaryTabLeft, inputs.menuSecondaryTabRight);
         if (switchedSecondary) {
             return ToggleButtonGroup.NavigationMode.Secondary;
         }
         return ToggleButtonGroup.NavigationMode.None;
     }
 
-    private bool TrySwitchToggleGroup(ToggleButtonGroup.NavigationMode mode, InputAction left, InputAction right) {
+    private bool TrySwitchToggleGroup(ToggleButtonGroup.NavigationMode mode, GameAction left, GameAction right) {
         int step = (right.WasPressedThisFrame() ? 1 : 0) - (left.WasPressedThisFrame() ? 1 : 0);
         if (step == 0) return false;
 

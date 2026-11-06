@@ -18,7 +18,7 @@ public partial class Game {
         
         Vector2 target = Vector2.zero;
         if (TryGetAimDirection(out Vector2 aim)) {
-            float strength = usingController ? Mathf.InverseLerp(ControllerNavigation.stickDeadzone, 1f, aim.magnitude) : Mathf.Clamp01(aim.magnitude / CameraLookahead.mouseRange);
+            float strength = UsingController ? Mathf.InverseLerp(ControllerNavigation.stickDeadzone, 1f, aim.magnitude) : Mathf.Clamp01(aim.magnitude / CameraLookahead.mouseRange);
             target = aim.normalized * (strength * CameraLookahead.maxDistance);
         }
         camera.aimOffset.offset = Vector2.SmoothDamp(camera.aimOffset.offset, target, ref camera.lookAhead.velocity, CameraLookahead.smoothingTime);

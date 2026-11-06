@@ -2,7 +2,6 @@ using System;
 using PrimeTween;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Controls;
 using static GameData;
 using Random = UnityEngine.Random;
 using Vector3 = UnityEngine.Vector3;
@@ -44,7 +43,7 @@ public partial class Game : MonoBehaviour {
     public Settings settings;
     public HotBar hotBar;
     
-    [NonSerialized] public readonly GameData.Input input = new();
+    [NonSerialized] public readonly Inputs inputs = new();
     [NonSerialized] public readonly EntityPools entityPools = new();
     [NonSerialized] public readonly States states = new();
     [NonSerialized] public readonly Entities entities = new();
@@ -70,9 +69,14 @@ public partial class Game : MonoBehaviour {
 
     private void OnApplicationQuit() {
         SetDeathWipe(0f, 0f);
+        ShutdownInput(); // Before the platform, since Steam Input has to shut down before Steam
+        ShutdownPlatform();
     }
 
     private void Update() {
+        UpdatePlatform();
+        UpdateInput();
+
         // The same frame we unpause on still has deltaTime set to 0, which can cause NANs when we divide by deltaTime
         // so we just skip this frame to prevent any bugs from happening
         if (!pauseMenu.paused && Time.deltaTime == 0f) return;
@@ -89,7 +93,6 @@ public partial class Game : MonoBehaviour {
         UpdateInputPrompts();
         ClearPerFrameData();
         CheckForScreenSizeChange();
-        CheckForInputDeviceChange();
         UpdateCursorStyle();
 
 #if UNITY_EDITOR
@@ -133,7 +136,7 @@ public partial class Game : MonoBehaviour {
     }
 
     private void OnMainMenuStateEnter() {
-        Cursor.visible = !usingController;
+        Cursor.visible = ShowCursorInMenus();
         ShowMainMenuUI();
         OnMenuMusicEnter();
         TryShowDemoEndDialogue();
@@ -216,6 +219,7 @@ public partial class Game : MonoBehaviour {
         StopAllAudioClips();
         TraderOnExitRaid();
         DestroyAllProjectiles();
+        DestroyAllHazards();
     }
 
     private void OnRaidStateUpdate() {
@@ -228,6 +232,7 @@ public partial class Game : MonoBehaviour {
         UpdatePlayer();
         UpdateAimLookAhead();
         UpdateProjectiles();
+        UpdateHazards();
         UpdateSpawnManager();
         UpdateEnemies();
         RefreshAllInventoryDisplays();
@@ -302,6 +307,7 @@ public partial class Game : MonoBehaviour {
                 entity.rigidbody.simulated = true;
             }
         }
+        RemovePoisonedEffect(player); // Kept through the death animation, removed before the level entities are destroyed
         player.health = FullPlayerHealth();
         DeinitRaid();
     }
@@ -385,6 +391,7 @@ public partial class Game : MonoBehaviour {
         entities.boss = null;
         entities.projectiles.Clear();
         entities.soulTrackingProjectiles.Clear();
+        entities.hazards.Clear();
         DeinitMapGrid();
         DeinitRaidBlood();
         DestroyEntities(EntityLifetime.Level);
@@ -447,7 +454,7 @@ public partial class Game : MonoBehaviour {
         // We want the player to be infront of the UI, so we move it to the UI layer temporarily
         player.gameObject.layer = LayerMask.NameToLayer("DeathWipe");
         player.spriteRenderer.sortingLayerName = "DeathWipe";
-        
+
         player.GetEffect(EffectsIndicies.HitFlash).Complete();
         player.spriteRenderer.GetPropertyBlock(player.matPropertyBlock);
         player.matPropertyBlock.SetFloat(ShaderIds.damageFlashTint, 1f);
@@ -578,74 +585,6 @@ public partial class Game : MonoBehaviour {
         SettingsOnScreenSizeChanged();
         UIOnScreenSizeChanged();
         lastScreenSize = ScreenSize;
-    }
-
-    [NonSerialized] public bool usingController; // Whether the controller selection is used instead of the mouse cursor
-    [NonSerialized] public bool onSteamDeck;
-
-    // Whether buttons and prompts work like a controller. On the Steam Deck they always do, even while its touchpad is moving the cursor.
-    public bool UsingControllerControls => usingController || onSteamDeck;
-
-    private void InitInputDevice() {
-        onSteamDeck = DetectSteamDeck();
-        usingController = onSteamDeck;
-    }
-
-    // Steam sets SteamDeck=1 for games running on the Deck, for both Linux builds and Windows builds running through Proton.
-    // The APU names (LCD and OLED models) are a fallback for when the game isn't launched through Steam.
-    private bool DetectSteamDeck() {
-        if (Environment.GetEnvironmentVariable("SteamDeck") == "1") return true;
-        string processor = SystemInfo.processorType;
-        return processor.Contains("AMD Custom APU 0405") || processor.Contains("AMD Custom APU 0932");
-    }
-
-    // Switches between mouse & keyboard and controller based on whichever was used last
-    private void CheckForInputDeviceChange() {
-        // On the Steam Deck buttons can be used along with the touchpad's cursor, so only moving the selection gets rid of the cursor
-        bool gamepadUsed = onSteamDeck ? GamepadNavigatedThisFrame() : GamepadUsedThisFrame();
-        bool switchToController = !usingController && gamepadUsed;
-        // The Steam Deck's touchpads act as a mouse, so they switch to the cursor. It has no keyboard, its buttons are all on the controller.
-        bool switchToKeyboardMouse = usingController && (MouseUsedThisFrame() || (!onSteamDeck && KeyboardUsedThisFrame()));
-        if (!switchToController && !switchToKeyboardMouse) return;
-
-        usingController = switchToController;
-        input.lastDeviceSwitchTime = Time.unscaledTime;
-        MenuNavigationOnInputDeviceChanged();
-        InputIconsOnInputDeviceChanged();
-    }
-
-    // Either stick or the d-pad
-    private bool GamepadNavigatedThisFrame() {
-        Gamepad gamepad = Gamepad.current;
-        if (gamepad == null) return false;
-
-        const float deadzone = ControllerNavigation.stickDeadzone;
-        return gamepad.leftStick.ReadValue().magnitude > deadzone
-            || gamepad.rightStick.ReadValue().magnitude > deadzone
-            || gamepad.dpad.ReadValue() != Vector2.zero;
-    }
-
-    private bool GamepadUsedThisFrame() {
-        Gamepad gamepad = Gamepad.current;
-        if (gamepad == null) return false;
-        if (GamepadNavigatedThisFrame()) return true;
-
-        foreach (InputControl control in gamepad.allControls) {
-            // Synthetic buttons are the stick directions, which are handled above with a deadzone
-            if (control is ButtonControl { synthetic: false } button && button.wasPressedThisFrame) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private bool MouseUsedThisFrame() {
-        Mouse mouse = Mouse.current;
-        return mouse != null && (mouse.delta.ReadValue().sqrMagnitude > 4f || mouse.leftButton.wasPressedThisFrame || mouse.rightButton.wasPressedThisFrame);
-    }
-
-    private bool KeyboardUsedThisFrame() {
-        return Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame;
     }
 
 }

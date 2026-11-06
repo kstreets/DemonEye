@@ -12,17 +12,22 @@ public class AttackBrain<T> where T : Enum {
     private float[] curAttackProbs;
     private float[] defaultAttackProbs;
     private float[] repeatedProbDecays;
-    
+    private float[] cooldowns;
+    private float[] lastChosenTimes;
+
     private List<int> startingLevelPointers = new();
     private int curLevelLength;
-    
+
     public AttackBrain(int attackCount) {
         curAttackProbs = new float[attackCount];
         defaultAttackProbs = new float[attackCount];
         repeatedProbDecays = new float[attackCount];
+        cooldowns = new float[attackCount];
+        lastChosenTimes = new float[attackCount];
+        Array.Fill(lastChosenTimes, Mathf.NegativeInfinity);
     }
-    
-    public void AddAttack(T attackType, int level, float defaultProb, float repeatedProbDecay) {
+
+    public void AddAttack(T attackType, int level, float defaultProb, float repeatedProbDecay, float cooldown = 0f) {
         Assert.IsTrue(level <= startingLevelPointers.Count, "Levels need to added in order and cannot be skipped");
         
         bool movedToNextLevel = !startingLevelPointers.IndexInRange(level);
@@ -37,9 +42,11 @@ public class AttackBrain<T> where T : Enum {
         curAttackProbs[attackIndex] = defaultProb;
         defaultAttackProbs[attackIndex] = defaultProb;
         repeatedProbDecays[attackIndex] = repeatedProbDecay;
+        cooldowns[attackIndex] = cooldown;
     }
-    
-    public T ChooseAttack(int level) {
+
+    // Returns false when every attack in the level is still on its repeat cooldown
+    public bool TryChooseAttack(int level, out T attack) {
         Assert.IsTrue(startingLevelPointers.IndexInRange(level), $"Attack level {level} is out of range, [0..{startingLevelPointers.Count})");
         
         int startingIndex = startingLevelPointers[level];
@@ -52,14 +59,26 @@ public class AttackBrain<T> where T : Enum {
             length = defaultAttackProbs.Length - startingIndex;
         }
         
+        // Attacks on cooldown get no chance of being chosen
         using var _ = ListPool<float>.Get(out var attackChances);
         float totalAttackChances = 0f;
+        int firstAvailableIndex = -1;
         for (int i = startingIndex; i < startingIndex + length; i++) {
-            attackChances.Add(curAttackProbs[i]);
-            totalAttackChances += curAttackProbs[i];
+            bool onCooldown = Time.time < lastChosenTimes[i] + cooldowns[i];
+            if (!onCooldown && firstAvailableIndex == -1) {
+                firstAvailableIndex = i;
+            }
+            float chance = onCooldown ? 0f : curAttackProbs[i];
+            attackChances.Add(chance);
+            totalAttackChances += chance;
         }
-        
-        int chosenAttackIndex = startingIndex;
+
+        if (firstAvailableIndex == -1) {
+            attack = default;
+            return false;
+        }
+
+        int chosenAttackIndex = firstAvailableIndex;
         float roll = Random.value * totalAttackChances;
         float threshold = 0f;
         for (int i = 0; i < length; i++) {
@@ -70,7 +89,9 @@ public class AttackBrain<T> where T : Enum {
                 break;
             }
         }
-        
+
+        lastChosenTimes[chosenAttackIndex] = Time.time;
+
         float newAttackProb = curAttackProbs[chosenAttackIndex];
         curAttackProbs[chosenAttackIndex] = Mathf.Clamp01(newAttackProb - repeatedProbDecays[chosenAttackIndex]);
 
@@ -79,7 +100,8 @@ public class AttackBrain<T> where T : Enum {
             curAttackProbs[i] = defaultAttackProbs[i];
         }
 
-        return Unsafe.As<int, T>(ref chosenAttackIndex);
+        attack = Unsafe.As<int, T>(ref chosenAttackIndex);
+        return true;
     }
     
 }

@@ -5,7 +5,7 @@ using VInspector;
 [CreateAssetMenu(fileName = "EnemyData", menuName = "Scriptable Objects/EnemyData")]
 public class EnemyData : ScriptableObject {
 
-    public enum EnemyType { Normal, Doughmon, Boomon, Meatbalon, FireBoss, FireBender }
+    public enum EnemyType { Normal, Doughmon, Boomon, Meatbalon, FireBoss, FireBender, SulfurBoss }
 
     public string displayName;
     public EnemyType type;

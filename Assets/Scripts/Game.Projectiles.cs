@@ -24,11 +24,15 @@ public partial class Game {
         public float distTraveled;
         public Vector2 velocity;
         public Vector2 initDir;
+        public float? gravity;
+        public float floorY;
         public LayerMask layerMask;
         public DemonEyeInstance eyeInstanceSpawnedFrom;
         public Entity sourceEntity;
         public Entity targetEntity;
         public List<Entity> ignoreEntities;
+        public float detonateNearPlayerRadius;
+        public Action<Vector2> onDetonate;
     }
     
     private static void OnSpawnProjectile(Projectile projectile) {
@@ -40,6 +44,8 @@ public partial class Game {
         projectile.curTimeAlive = default;
         projectile.distTraveled = default;
         projectile.velocity = default;
+        projectile.gravity = default;
+        projectile.floorY = default;
         projectile.layerMask = default;
         projectile.eyeInstanceSpawnedFrom = default;
         projectile.sourceEntity = default;
@@ -48,12 +54,17 @@ public partial class Game {
             ListPool<Entity>.Release(projectile.ignoreEntities);
         }
         projectile.ignoreEntities = default;
+        projectile.detonateNearPlayerRadius = default;
+        projectile.onDetonate = default;
     }
     
     private Projectile SpawnProjectile(EntityPool<Projectile> pool, Vector2 spawnPos, Vector2 velocity, float lifetime, Entity sourceEntity,
         Quaternion? rotation = default, float? damageMulti = default, int? flatDamage = default, float? spawnDelay = default, 
-        float? flatCritChance = default, LayerMask? layermask = default, ProjectileTypeFlags typeFlags = ProjectileTypeFlags.None) 
+        float? flatCritChance = default, LayerMask? layermask = default, ProjectileTypeFlags typeFlags = ProjectileTypeFlags.None,
+        float? gravity = default, float? floorY = default)
     {
+        Assert.IsTrue(!gravity.HasValue || floorY.HasValue, "Projectiles with gravity need a floor Y to land on");
+        
         Quaternion projectileRotation = rotation ?? ProjectileRotationFromVelocity(velocity);
         Projectile projectile = SpawnEntity(pool, spawnPos, projectileRotation);
         
@@ -66,6 +77,8 @@ public partial class Game {
         projectile.flatCritChance = flatCritChance;
         projectile.layerMask = layermask ?? Masks.DamagableMask;
         projectile.typeFlags = typeFlags;
+        projectile.gravity = gravity;
+        projectile.floorY = floorY ?? default;
 
         if (!spawnDelay.HasValue) {
             entities.projectiles.Add(projectile);
@@ -97,9 +110,36 @@ public partial class Game {
         for (int i = projectiles.Count - 1; i >= 0; i--) {
             Projectile proj = projectiles[i];
             proj.curTimeAlive += Time.deltaTime;
+            
+            if (proj.gravity.HasValue) {
+                proj.velocity.y -= proj.gravity.Value * Time.deltaTime;
+                proj.rotation = ProjectileRotationFromVelocity(proj.velocity);
+            }
+            
             proj.trans.position += (Vector3)proj.velocity * Time.deltaTime;
             proj.distTraveled += proj.velocity.magnitude * Time.deltaTime;
-            
+
+            if (proj.onDetonate != null) {
+                bool nearPlayer = Vector2.Distance(proj.position, player.position) <= proj.detonateNearPlayerRadius;
+                bool lifetimeOver = proj.curTimeAlive > proj.lifeTimeDuration;
+                if (nearPlayer || lifetimeOver) {
+                    proj.onDetonate(proj.position);
+                    DestroyEntity(projectiles[i]);
+                    projectiles.RemoveAt(i);
+                    continue;
+                }
+            }
+
+            bool hitFloor = proj.gravity.HasValue && proj.velocity.y < 0f && proj.position.y <= proj.floorY;
+            if (hitFloor) {
+                proj.position = proj.position.Offset(y: proj.floorY - proj.position.y);
+                Entity floorImpact = SpawnEntity(entityPools.projectileImpact, proj.position, RandomRotation());
+                DestroyEntity(floorImpact, CurrentClipLength(floorImpact.animator));
+                DestroyEntity(projectiles[i]);
+                projectiles.RemoveAt(i);
+                continue;
+            }
+
             Collider2D col = proj.damageShape ? proj.damageShape.OverlapFirst(proj.layerMask) : Physics2D.OverlapCircle(proj.trans.position, projectileRadius, proj.layerMask);
             if (!col) continue;
             
@@ -268,6 +308,17 @@ public partial class Game {
     
     private Quaternion ProjectileRotationFromVelocity(Vector2 velocity) {
         return Quaternion.AngleAxis(Vector2.SignedAngle(Vector2.right, velocity.normalized), Vector3.forward);
+    }
+
+    // The velocity that lobs a gravity projectile from start to target
+    private static Vector2 ProjectileLobVelocity(Vector2 start, Vector2 target, float gravity, float speed) {
+        Assert.IsTrue(speed > 0f, "Lob speed must be greater than zero");
+        Vector2 toTarget = target - start;
+        float flightTime = toTarget.magnitude / speed;
+        if (flightTime <= Mathf.Epsilon) {
+            return Vector2.zero;
+        }
+        return new(toTarget.x / flightTime, toTarget.y / flightTime + 0.5f * gravity * flightTime);
     }
 
 }

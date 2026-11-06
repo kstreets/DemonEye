@@ -20,7 +20,12 @@ public partial class Game {
         
         public bool bleeding;
         public Limiter bleedLimiter;
-        
+
+        // Poison makes the player take increased damage while above a health percent, like the enemy poison upgrade
+        public bool isPoisoned;
+        public float poisonDamageMulti;
+        public float poisonEndTime;
+
         public Limiter attackLimiter;
         public Limiter enemyCollisionDamageLimiter;
         
@@ -111,6 +116,11 @@ public partial class Game {
     
     private void DeinitPlayer() {
         player.bleeding = false;
+        player.isPoisoned = false;
+        // When dead, the poison visuals stay through the death animation and are removed in OnGameOverExit
+        if (player.health > 0) {
+            RemovePoisonedEffect(player);
+        }
         player.velocity = Vector3.zero;
         // The raid can end mid teleport, so the player needs to be made visible and hittable again
         SetPlayerTeleportHidden(false);
@@ -204,6 +214,11 @@ public partial class Game {
             }
         }
 
+        if (player.isPoisoned && Time.time >= player.poisonEndTime) {
+            player.isPoisoned = false;
+            RemovePoisonedEffect(player);
+        }
+
         // The player can't move or shoot while hidden mid teleport
         if (player.isTeleporting) {
             if (Time.time < player.teleportEndTime) return;
@@ -220,10 +235,10 @@ public partial class Game {
             return;
         }
         
-        Vector2 moveInput = input.move.ReadValue<Vector2>();
+        Vector2 moveInput = inputs.move.ReadVector2();
         Vector2 prevPos = player.position;
 
-        if (input.teleport.WasPressedThisFrame() && player.teleportCooldown.TryUse()) {
+        if (inputs.teleport.WasPressedThisFrame() && player.teleportCooldown.TryUse()) {
             StartTeleport(moveInput);
             return;
         }
@@ -320,7 +335,7 @@ public partial class Game {
         }
         
         bool wantsToShoot = TryGetAimDirection(out Vector2 aimDir);
-        wantsToShoot = !usingController && (Mouse.current?.leftButton.isPressed ?? false);
+        wantsToShoot = !UsingController && (Mouse.current?.leftButton.isPressed ?? false);
         
         bool setNextIdleToFaceAimingDirection = !hasVelocity;
         if (setNextIdleToFaceAimingDirection) {
@@ -418,7 +433,7 @@ public partial class Game {
         PlayAudioClip(audio.teleportOutClip, outTeleportFxEntity.position);
 
         // Still holding towards where they teleported carries the teleport's momentum into a slide, letting go means no slide
-        if (MoveInputInTeleportDirection(input.move.ReadValue<Vector2>())) {
+        if (MoveInputInTeleportDirection(inputs.move.ReadVector2())) {
             player.isSliding = true;
             player.slideStartTime = Time.time;
         }
@@ -492,13 +507,8 @@ public partial class Game {
     private bool TryGetAimDirection(out Vector2 aim) {
         aim = Vector2.zero;
 
-        if (usingController) {
-            Gamepad gamepad = Gamepad.current;
-            if (gamepad == null) {
-                return false;
-            }
-
-            Vector2 stick = gamepad.rightStick.ReadValue();
+        if (UsingController) {
+            Vector2 stick = inputs.aim.ReadVector2();
             if (stick.magnitude <= ControllerNavigation.stickDeadzone) {
                 return false;
             }
@@ -764,7 +774,15 @@ public partial class Game {
             }
             return;
         }
-        
+
+        if (player.isPoisoned) {
+            const float poisonHealthPercentage = 0.3f;
+            int minHealthForExtraPoisonDamage = Mathf.RoundToInt(FullPlayerHealth() * poisonHealthPercentage);
+            if (player.health >= minHealthForExtraPoisonDamage) {
+                damage = Mathf.RoundToInt(damage * player.poisonDamageMulti);
+            }
+        }
+
         player.health = Mathf.Clamp(player.health - damage, 0, int.MaxValue);
         
         // Rolled after the damage is applied so a hit that takes the player under the auto stop threshold can't start a bleed
@@ -782,6 +800,17 @@ public partial class Game {
         
     }
     
+    private void PoisonPlayer(float damageMulti, float duration) {
+        if (Time.time < player.invulnerableUntil) return;
+
+        if (!player.isPoisoned) {
+            player.isPoisoned = true;
+            AddPoisonedEffect(player);
+        }
+        player.poisonDamageMulti = damageMulti;
+        player.poisonEndTime = Time.time + duration;
+    }
+
     private bool PlayerHealthIsAtAutoBleedStop() {
         return player.health <= AutoBleedStopHealth();
     }

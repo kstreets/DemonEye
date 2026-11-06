@@ -1,0 +1,98 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6be7b725e872d8544a676cc6767aad0a, type: 3}
+  m_Name: SulfurFieldsBossTesting
+  m_EditorClassIdentifier: 
+  timeBeforeFirstPhase: 5
+  timeBeforePortalSpawns: 15
+  phasePools:
+  - name: Wave 0
+    musicIntensity: 0
+    variants:
+    - name: Variant 0
+      maxDuration: 15
+      spawnDuration: 15
+      startNextPhaseEarlyDelay: 12
+      spawnCellRange: {x: 20, y: 28}
+      repositionCellRange: {x: 20, y: 28}
+      reteleportCount: 8
+      reteleportInterval: 1
+      spawnRateCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 0
+      enemyBatches:
+      - enemyCount: 0
+        enemyData: {fileID: 11400000, guid: 32cbf20c358e9904cacd9be297ab7e7f, type: 2}
+      - enemyCount: 0
+        enemyData: {fileID: 11400000, guid: 53c3cf128195d3c44872f0d25801891a, type: 2}
+  raidBoss: {fileID: 11400000, guid: d9a3394a496d8184191b7ec36a56c3eb, type: 2}
+  maxEnemiesForBossTrash: 10
+  bossTrashPool:
+    name: 
+    musicIntensity: 0
+    variants:
+    - name: 
+      maxDuration: 0
+      spawnDuration: 15
+      startNextPhaseEarlyDelay: 0
+      spawnCellRange: {x: 16, y: 19}
+      repositionCellRange: {x: 16, y: 19}
+      reteleportCount: 10
+      reteleportInterval: 1
+      spawnRateCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 0
+      enemyBatches:
+      - enemyCount: 15
+        enemyData: {fileID: 11400000, guid: 53c3cf128195d3c44872f0d25801891a, type: 2}

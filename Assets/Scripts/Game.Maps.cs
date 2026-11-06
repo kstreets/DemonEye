@@ -296,7 +296,7 @@ public partial class Game {
         Vector2 dir = velocity.normalized;
         float dist = velocity.magnitude;
         
-        Vector2 targetPos = origin;
+        Vector2 targetPos = target;
         RaycastHit2D hit = Physics2D.Raycast(origin, dir, dist, Masks.StaticLevelMask);
         if (hit) {
              targetPos = hit.point + hit.normal * bufferRadius;

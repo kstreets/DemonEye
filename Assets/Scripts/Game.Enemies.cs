@@ -35,7 +35,7 @@ public partial class Game {
         public Vector2 moveDir;
         public Vector2 graphicalDir;
         public Limiter changeDirLimiter;
-        public Tween attackDelayTween;
+        public Tween attackDelay;
         public bool queuedForRangedAttack;
         public OptionalRef<BleedEyeUpgrade.InstanceData> bleed;
         public OptionalRef<HemorrhageAugment.InstanceData> hemorrhage;
@@ -65,7 +65,7 @@ public partial class Game {
         enemy.flowFieldAcc = Random.Range(2.5f, 3.5f);
         enemy.rigidbody.mass = data.defaultMass;
         enemy.collider.enabled = true;
-        enemy.attackDelayTween = Tween.Delay(data.projectileCooldownTime);
+        enemy.attackDelay = Tween.Delay(data.projectileCooldownTime);
         enemy.queuedForRangedAttack = false;
     }
 
@@ -118,6 +118,9 @@ public partial class Game {
             switch (enemy.data.type) {
                 case EnemyData.EnemyType.FireBoss:
                     FireBossLogic(enemy);
+                    break;
+                case EnemyData.EnemyType.SulfurBoss:
+                    SulfurBossLogic(enemy);
                     break;
                 case EnemyData.EnemyType.FireBender:
                     RangedLogic(enemy);
@@ -224,7 +227,7 @@ public partial class Game {
     }
 
     private void RangedLogic(Enemy enemy) {
-        if (enemy.attackDelayTween.isAlive || enemy.queuedForRangedAttack) return;
+        if (enemy.attackDelay.isAlive || enemy.queuedForRangedAttack) return;
         enemy.queuedForRangedAttack = true;
         rangedAttackManager.queuedEnemies.Add(enemy);
     }
@@ -243,7 +246,7 @@ public partial class Game {
             if (!TryPerformRangedAttack(enemy)) continue;
 
             enemy.queuedForRangedAttack = false;
-            enemy.attackDelayTween = Tween.Delay(enemy.data.projectileCooldownTime);
+            enemy.attackDelay = Tween.Delay(enemy.data.projectileCooldownTime);
             rm.queuedEnemies.RemoveAt(i);
             rm.nextAttackAllowedTime = Time.time + Random.Range(RangedAttackManager.minTimeBetweenAttacks, RangedAttackManager.maxTimeBetweenAttacks);
             return;
@@ -314,7 +317,6 @@ public partial class Game {
         
         public const float minAttackDelay = 0.65f;
         public const float maxAttackDelay = 1.75f;
-        public Tween attackDelay;
         
         public const int fireballDamage = 10;
         public const float fireballSpeed = 1.5f;
@@ -334,9 +336,9 @@ public partial class Game {
         fireBoss.attackDelay = Tween.Delay(FireBoss.minAttackDelay, FireBoss.maxAttackDelay);
         
         fireBoss.attackBrain = new((int)FireBoss.AttackTypes.Count);
-        fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.Fireball, level: 0, defaultProb: 0.5f, repeatedProbDecay: 0.5f);
-        fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.Meteor, level: 0, defaultProb: 0.5f, repeatedProbDecay: 0.5f);
-        fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.DoubleFireball, level: 1, defaultProb: 0.5f, repeatedProbDecay: 0.1f);
+        fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.Fireball, level: 0, defaultProb: 1f, repeatedProbDecay: 0.25f);
+        fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.Meteor, level: 0, defaultProb: 0.5f, repeatedProbDecay: 0.1f);
+        fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.DoubleFireball, level: 1, defaultProb: 1f, repeatedProbDecay: 0.25f);
         fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.MutliMeteor, level: 1, defaultProb: 0.5f, repeatedProbDecay: 0.1f);
         
         return fireBoss;
@@ -348,10 +350,11 @@ public partial class Game {
         bool canAtttack = !fireBoss.attackDelay.isAlive;
         if (!canAtttack) return;
         
-        fireBoss.attackDelay = Tween.Delay(FireBoss.minAttackDelay, FireBoss.maxAttackDelay);
         int attackLevel = (fireBoss.health / (float)fireBoss.data.health) > 0.5f ? 0 : 1;
-        
-        switch(fireBoss.attackBrain.ChooseAttack(attackLevel)) {
+        if (!fireBoss.attackBrain.TryChooseAttack(attackLevel, out FireBoss.AttackTypes attack)) return;
+
+        fireBoss.attackDelay = Tween.Delay(FireBoss.minAttackDelay, FireBoss.maxAttackDelay);
+        switch(attack) {
             case FireBoss.AttackTypes.Fireball:
                 ShootFireball();
                 break;
@@ -385,17 +388,16 @@ public partial class Game {
             Vector2 centeralAimPoint = PredictedPlayerPosition(predictionTime);
             centeralAimPoint = ClampPositionToMap(player.position, centeralAimPoint, FireBoss.meteorRadius);
 
-            // One meteor always goes on the player, the rest get scattered around it
             using var _ = ListPool<Vector2>.Get(out var meteorPositions);
-            meteorPositions.Add(centeralAimPoint);
+            meteorPositions.Add(centeralAimPoint); // First meteor is focused on the player
 
             // Grows with the count so the meteors are spread at a similar density no matter how many there are
             float scatterRadius = FireBoss.meteorScatterRadiusPerMeteor * Mathf.Sqrt(meteorCount);
             ScatterPositions(ref meteorPositions, meteorCount - 1, centeralAimPoint, scatterRadius, FireBoss.meteorRadius);
 
-            // The one on the player drops first, tied to the boss so the remaining meteors are cancelled if it dies mid rain
             for (int i = 0; i < meteorPositions.Count; i++) {
                 Vector2 meteorPos = meteorPositions[i];
+                // Tied to the boss so the remaining meteors are cancelled if it dies mid rain
                 Delay(fireBoss, i * FireBoss.delayBetweenMeteors, _ => SpawnSingleMeteor(meteorPos, predictionTime));
             }
         }
@@ -416,6 +418,117 @@ public partial class Game {
                 DestroyEntity(meteorEntity);
             });
         }
+    }
+    
+    private class SulfurBoss : Enemy {
+        public enum AttackTypes { PoisonCloud, PoisonEruption, Count }
+        public AttackBrain<AttackTypes> attackBrain;
+        
+        public const float minAttackDelay = 0.65f;
+        public const float maxAttackDelay = 1.75f;
+        
+        public Vector2 projectileSpawnPos => position.Offset(y: 0.2f);
+        
+        public const int poisonCloudDamage = 10;
+        public const float poisonCloudProjectileSpeed = 1.7f;
+        public const float poisonCloudProjectileLifetime = 2f;
+        public const float poisonCloudDetonateRadius = 0.15f;
+        public const float poisonDamageMulti = 1.5f;
+        public const float poisonDebuffDuration = 5f;
+        
+        public const float poisonEruptionSpeed = 1.5f;
+        public const int poisonEruptionCount = 12;
+        public const float delayBetweenPoisonLobs = 0.012f;
+        public const float poisonEruptionScatterRadius = 1.5f;
+        public const float poisonPoolSpacing = 0.12f;
+
+        public const int poisonPoolDamage = 5;
+        public const float poisonPoolDuration = 10f;
+        public const float poisonPoolTickInterval = 0.5f;
+        public const float poisonPoolWarningRadius = 0.25f;
+    }
+    
+    private Enemy InitSulfurBoss(EnemyData data, Vector2 spawnPos) {
+        SulfurBoss sulfurBoss = SpawnEntity<SulfurBoss>(data.enemyPrefab, spawnPos, Quaternion.identity);
+        sulfurBoss.attackDelay = Tween.Delay(SulfurBoss.minAttackDelay, SulfurBoss.maxAttackDelay);
+        
+        sulfurBoss.attackBrain = new((int)SulfurBoss.AttackTypes.Count);
+        sulfurBoss.attackBrain.AddAttack(SulfurBoss.AttackTypes.PoisonCloud, level: 0, defaultProb: 1f,  repeatedProbDecay: 0.1f);
+        sulfurBoss.attackBrain.AddAttack(SulfurBoss.AttackTypes.PoisonEruption, level: 0, defaultProb: 0.35f, repeatedProbDecay: 1f, cooldown: 5f);
+        
+        return sulfurBoss;
+    }
+    
+    private void SulfurBossLogic(Enemy enemy) {
+        if (enemy is not SulfurBoss sulfurBoss) return;
+        
+        bool canAtttack = !sulfurBoss.attackDelay.isAlive;
+        if (!canAtttack) return;
+        
+        // int attackLevel = (sulfurBoss.health / (float)sulfurBoss.data.health) > 0.5f ? 0 : 1;
+        int attackLevel = 0;
+        // Every attack is on cooldown, so try again next frame
+        if (!sulfurBoss.attackBrain.TryChooseAttack(attackLevel, out SulfurBoss.AttackTypes attack)) return;
+
+        sulfurBoss.attackDelay = Tween.Delay(SulfurBoss.minAttackDelay, SulfurBoss.maxAttackDelay);
+        switch(attack) {
+            case SulfurBoss.AttackTypes.PoisonCloud:
+                ShootPoisonCloud();
+                break;
+            case SulfurBoss.AttackTypes.PoisonEruption:
+                PoisonEruption(); 
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+        
+        // ------------------------------
+        // Nested Methods
+        // ------------------------------
+        
+        void ShootPoisonCloud() {
+            Vector2 spawnPos = sulfurBoss.projectileSpawnPos;
+            if (!TryGetPlayerInterceptPoint(spawnPos, SulfurBoss.poisonCloudProjectileSpeed, out Vector2 aimPoint)) return;
+            Vector2 velocity = (aimPoint - spawnPos).normalized * SulfurBoss.poisonCloudProjectileSpeed;
+            Projectile projectile = SpawnProjectile(entityPools.gooProjectile, spawnPos, velocity, SulfurBoss.poisonCloudProjectileLifetime, sulfurBoss, layermask: 0);
+            projectile.detonateNearPlayerRadius = SulfurBoss.poisonCloudDetonateRadius;
+            projectile.onDetonate = static (detonatePos) => {
+                Entity poisonCloud = gameInstance.SpawnEntityOneShot(gameInstance.entityPools.poisonCloud, detonatePos, Quaternion.identity);
+                gameInstance.DealShapeDamage(poisonCloud, SulfurBoss.poisonCloudDamage, Masks.PlayerHurtMask);
+                gameInstance.Delay(poisonCloud, DamageShapeDelay(poisonCloud), static cloud => {
+                    if (cloud.damageShape.OverlapFirst(Masks.PlayerHurtMask)) {
+                        gameInstance.PoisonPlayer(SulfurBoss.poisonDamageMulti, SulfurBoss.poisonDebuffDuration);
+                    }
+                });
+            };
+        }
+        
+        void PoisonEruption() {
+            using var _ = ListPool<Vector2>.Get(out var poolPositions);
+            ScatterPositions(ref poolPositions, SulfurBoss.poisonEruptionCount, player.position, SulfurBoss.poisonEruptionScatterRadius, SulfurBoss.poisonPoolSpacing);
+            for (int i = 0; i < poolPositions.Count; i++) {
+                Vector2 poolPos = poolPositions[i];
+                // Tied to the boss so the remaining lobs are cancelled if it dies mid eruption
+                Delay(sulfurBoss, i * SulfurBoss.delayBetweenPoisonLobs, _ => LobPoisonPool(poolPos));
+            }
+        }
+
+        void LobPoisonPool(Vector2 targetPos) {
+            Vector2 spawnPos = sulfurBoss.projectileSpawnPos;
+            float gravity = config.gameplay.projectileGravity;
+            Vector2 velocity = ProjectileLobVelocity(spawnPos, targetPos, gravity, SulfurBoss.poisonEruptionSpeed);
+            SpawnProjectile(entityPools.gooProjectile, spawnPos, velocity, float.MaxValue, sulfurBoss, layermask: 0, gravity: gravity, floorY: targetPos.y);
+
+            float travelTime = Vector2.Distance(spawnPos, targetPos) / SulfurBoss.poisonEruptionSpeed;
+            Entity attackCircleEntity = SpawnEntity(entityPools.attackCircle, targetPos, Quaternion.identity);
+            attackCircleEntity.attackCircle.Animate(SulfurBoss.poisonPoolWarningRadius, travelTime * 0.9f, startDelay: travelTime * 0.1f);
+
+            Tween.Delay(travelTime, () => {
+                DestroyEntity(attackCircleEntity);
+                SpawnHazard(entityPools.poisonPool, targetPos, SulfurBoss.poisonPoolDamage, Masks.PlayerHurtMask, SulfurBoss.poisonPoolDuration, SulfurBoss.poisonPoolTickInterval);
+            });
+        }
+        
     }
     
     private void ScatterPositions(ref List<Vector2> positions, int count, Vector2 center, float scatterRadius, float radius, int maxAttemptsPerPosition = 10) {
@@ -1020,6 +1133,7 @@ public partial class Game {
         EnemyData bossEnemy = sm.spawnPattern.raidBoss;
         Enemy enemy = bossEnemy.type switch {
             EnemyData.EnemyType.FireBoss => InitFireBoss(bossEnemy, randomSpawnPos),
+            EnemyData.EnemyType.SulfurBoss => InitSulfurBoss(bossEnemy, randomSpawnPos),
             _ => throw new ArgumentOutOfRangeException(),
         };
 

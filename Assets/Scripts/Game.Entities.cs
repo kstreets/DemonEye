@@ -276,6 +276,19 @@ public partial class Game {
         
         entity.SetEffect(EffectsIndicies.Poisoned, tween);
     }
+
+    // Cleans up directly instead of completing the tween, since the tween can already be stopped (e.g. Tween.StopAll on death)
+    public void RemovePoisonedEffect(Entity entity) {
+        Entity poisonDebuff = entity.poisonedEffect.poisonDebuffEntity;
+        if (poisonDebuff == null) return;
+
+        entity.GetEffect(EffectsIndicies.Poisoned).Stop();
+        ClearHSVColorEffect(entity);
+        if (EntityIsValid(poisonDebuff)) {
+            DestroyEntity(poisonDebuff);
+        }
+        entity.poisonedEffect = default;
+    }
     
     public void AddPetrifyEffect(Entity entity, float duration) {
         SetHSVColorEffect(entity, config.enemyColors.petrifiedHSV);

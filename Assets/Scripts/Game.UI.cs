@@ -23,7 +23,7 @@ public partial class Game {
     private Texture2D shownCursorTexture;
 
     private void InitUI() {
-        Cursor.visible = !usingController;
+        Cursor.visible = ShowCursorInMenus();
         SetCursorTexture(config.styles.cursorTexture);
 
         CloseSettingsMenuUI();
@@ -32,6 +32,7 @@ public partial class Game {
         ShowMainMenuUI();
         InitCurrencyNumbers();
         InitUIHints();
+        InitInputPrompts();
         
         ui.levelUpNotification.Init();
         ui.menuBackButton.gameObject.SetActive(false);
@@ -53,7 +54,7 @@ public partial class Game {
         
         SetCursorTexture(inRaidGameplay && crosshair ? crosshair : config.styles.cursorTexture);
         if (inRaidGameplay) {
-            Cursor.visible = !usingController;
+            Cursor.visible = !UsingController;
         }
     }
 
@@ -576,7 +577,7 @@ public partial class Game {
             hotBar.slotUIs[i].ClearItem();
             // Controller only has the selected slot bound, so it's highlighted. Not while the inventory is open, since the hotbar can't be used then.
             bool inventoryOpen = PlayerInventoryIsOpen || LootInventoryIsOpen;
-            hotBar.slotUIs[i].SetOutlined(UsingControllerControls && !inventoryOpen && i == hotBar.selectedIndex);
+            hotBar.slotUIs[i].SetOutlined(UsingController && !inventoryOpen && i == hotBar.selectedIndex);
 
             ItemInstance itemInstance = inventories.player.slots[itemIndex].itemInstance;
             if (itemInstance != null) {
@@ -1059,13 +1060,49 @@ public partial class Game {
         
         return true;
     }
+    
+    private void InitInputPrompts() {
+        BindPromptToAction(inputPrompts.inventorySelect, inputs.selectItem);
+        BindPromptToAction(inputPrompts.inventoryQuickMove, inputs.moveStack);
+        BindPromptToAction(inputPrompts.inventorySplitStack, inputs.splitStack);
+        
+        void BindPromptToAction(InputPrompt prompt, GameAction action) {
+            prompt.boundAction = action;
+            inputPrompts.allBoundPrompts.Add(prompt);
+        } 
+    }
+
+    // Swaps the inventory prompts in and out with the raid's open inventory prompt
+    private void UpdateInputPrompts() {
+        foreach (InputPrompt prompt in inputPrompts.allBoundPrompts) {
+            if (prompt.image.sprite != prompt.boundAction.steamGlyph) {
+                prompt.image.sprite = prompt.boundAction.steamGlyph;
+            }
+        }
+
+        if (InRaid && thisFrame.flags.HasFlag(GameData.FrameFlags.InventoryOpened)) {
+            if (UsingController) { // Hide it on controller because Y splits the stack not closes inventory
+                inputPrompts.raidInventory.SetActive(false);
+            }
+            foreach (Transform invPrompt in inputPrompts.allInventoryPrompts) {
+                invPrompt.gameObject.SetActive(true);
+            }
+        }
+        else if (InRaid && !PlayerInventoryIsOpen) {
+            inputPrompts.raidInventory.SetActive(true);
+            foreach (Transform invPrompt in inputPrompts.allInventoryPrompts) {
+                invPrompt.gameObject.SetActive(false);
+            }
+        }
+    }
 
     private void EnableInteractionPrompt(Vector3 position, string shortInteractString, string detailsString) {
         ui.interactDetails.gameObject.SetActive(true);
         ui.interactDetails.text = detailsString;
         
         ui.interactionPrompt.gameObject.SetActive(true);
-        ui.interactionPrompt.Show(InputIcon(input.interact), shortInteractString);
+        ui.interactionPrompt.promptText.text = shortInteractString;
+        ui.interactionPrompt.Show(shortInteractString);
         ui.interactionPrompt.transform.position = camera.main.WorldToScreenPoint(position);
     }
     

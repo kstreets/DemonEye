@@ -9,7 +9,6 @@ public static class Masks {
     public static LayerMask DamagableMask { get; }
     public static LayerMask MineableMask { get; }
     public static LayerMask ItemMask { get; }
-    public static LayerMask EnemySpacerMask { get; }
     
     static Masks() {
         StaticLevelMask = CreateLayerMask("Default");
@@ -19,7 +18,6 @@ public static class Masks {
         DamagableMask = CreateLayerMask("Enemy", "Mineable");
         MineableMask = CreateLayerMask("Mineable");
         ItemMask = CreateLayerMask("Item");
-        EnemySpacerMask = CreateLayerMask("EnemySpacers");
     }
 
     private static LayerMask CreateLayerMask(params string[] names) {

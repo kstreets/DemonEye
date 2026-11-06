@@ -1,7 +1,6 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.InputSystem;
 
 public partial class Game {
     
@@ -19,8 +18,8 @@ public partial class Game {
         
         SetDeathWipe(1f, 1f); // Start fully covered, the raid enter sequence fades it out
 
+        InitPlatform();
         InitInput();
-        InitInputDevice();
         InitResources();
         InitAudio();
         InitMusic();
@@ -32,7 +31,6 @@ public partial class Game {
         InitBlood();
         InitGameStates();
         InitMenuNavigation();
-        InitInputIcons();
         InitHotBar();
         
         InitInventories(gameState);
@@ -58,28 +56,6 @@ public partial class Game {
         InitPlayerState(player, gameState);
     }
     
-    private void InitInput() {
-        input.move = InputSystem.actions.FindAction("Move");
-        input.interact = InputSystem.actions.FindAction("Interact");
-        input.advanceDialogue = InputSystem.actions.FindAction("AdvanceDialogue");
-        input.inventory = InputSystem.actions.FindAction("Inventory");
-        input.selectItem = InputSystem.actions.FindAction("SelectItem");
-        input.placeSingleItem = InputSystem.actions.FindAction("PlaceSingleItem");
-        input.splitStack = InputSystem.actions.FindAction("SplitStack");
-        input.moveStack = InputSystem.actions.FindAction("MoveStack");
-        input.useItem = InputSystem.actions.FindAction("UseItem");
-        input.escape = InputSystem.actions.FindAction("Escape");
-        input.pause = InputSystem.actions.FindAction("Pause");
-        input.quickUse1 = InputSystem.actions.FindAction("QuickUse1");
-        input.quickUse2 = InputSystem.actions.FindAction("QuickUse2");
-        input.quickUse3 = InputSystem.actions.FindAction("QuickUse3");
-        input.quickUse4 = InputSystem.actions.FindAction("QuickUse4");
-        input.quickUseSelected = InputSystem.actions.FindAction("QuickUseSelected");
-        input.quickUsePrevious = InputSystem.actions.FindAction("QuickUsePrevious");
-        input.quickUseNext = InputSystem.actions.FindAction("QuickUseNext");
-        input.teleport = InputSystem.actions.FindAction("Teleport");
-    }
-
     private void InitEntityPools() {
         entityPools.itemDrop = CreateEntityPool<Entity>(prefabs.itemDrop, 20, null);
         entityPools.bloodDrop = CreateEntityPool<Entity>(prefabs.bloodDrop, 10, null);
@@ -105,6 +81,8 @@ public partial class Game {
         entityPools.forgeDust = CreateEntityPool<Entity>(prefabs.forgeDust, 5, null);
         entityPools.upgradeFractureParticles = CreateEntityPool<Entity>(prefabs.upgradeFractureParticles, 5, null);
         entityPools.blast = CreateEntityPool<Entity>(prefabs.blast, 5, null);
+        entityPools.poisonPool = CreateEntityPool<Hazard>(prefabs.poisonPool, 5, OnSpawnHazard);
+        entityPools.poisonCloud = CreateEntityPool<Entity>(prefabs.poisonCloud, 3, null);
         entityPools.lootReveal = CreateEntityPool<Entity>(prefabs.lootReveal, 1, null);
         entityPools.notification = CreateEntityPool<Entity>(prefabs.notification, 2, null);
         entityPools.bloodBubble = CreateEntityPool<Entity>(prefabs.bloodBubble, 10, null);
@@ -172,7 +150,7 @@ public partial class Game {
         });
         
         ui.menuBackButton.AddListener(() => {
-            OnEscapePressed(new());
+            OnEscapePressed();
         });
         
         settings.applyChangesButton.AddListener(ApplySettings);
@@ -258,27 +236,13 @@ public partial class Game {
     
     private void InitHotBar() {
         hotBar.quickUseActions = new() {
-            input.quickUse1, 
-            input.quickUse2, 
-            input.quickUse3, 
-            input.quickUse4,
+            inputs.quickUse1, 
+            inputs.quickUse2, 
+            inputs.quickUse3, 
+            inputs.quickUse4,
         };
         hotBar.slotUIs = ui.hotBarParent.GetComponentsInChildren<InventorySlotUI>();
         Assert.IsTrue(hotBar.slotUIs.Length == playerQuickUseSize, "Make sure to match hot bar inventory UIs count with quick use count");
-        Assert.IsTrue(hotBar.inputPrompts.Count == playerQuickUseSize, "Make sure to match hot bar input prompts count with quick use count");
-
-        // Keyboard has a key per slot, controller only shows the button on the selected slot
-        for (int i = 0; i < hotBar.inputPrompts.Count; i++) {
-            int slotIndex = i;
-            InputAction keyboardAction = hotBar.quickUseActions[i];
-            AddInputPrompt(hotBar.inputPrompts[i], () => {
-                if (!UsingControllerControls) return (keyboardAction, string.Empty);
-                return slotIndex == hotBar.selectedIndex ? (input.quickUseSelected, string.Empty) : (null, null);
-            });
-        }
-        // The bound actions are controller only, so these show nothing on keyboard
-        AddInputPrompt(hotBar.leftShoulderPrompt.GetComponent<TextMeshProUGUI>(), () => (input.quickUsePrevious, string.Empty));
-        AddInputPrompt(hotBar.rightShoulderPrompt.GetComponent<TextMeshProUGUI>(), () => (input.quickUseNext, string.Empty));
     }
     
 }

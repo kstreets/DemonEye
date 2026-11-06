@@ -41,7 +41,7 @@ public partial class Game {
     private void UpdateDialogue() {
         Dialogue dialogue = tutorial.dialogue;
         if (dialogue.Finished || dialogue.FadingOut) return;
-        if (!input.advanceDialogue.WasPressedThisFrame()) return;
+        if (!inputs.advanceDialogue.WasPressedThisFrame()) return;
 
         TypewriterComponent typewriter = tutorial.dialogueTypewriter;
         if (typewriter.IsShowingText) {

@@ -33,12 +33,23 @@ public partial class Game {
     
     private void DealShapeDamage(Entity entity, int damage, LayerMask mask) {
         Assert.IsNotNull(entity.damageShape, "Cannot deal shape damage because there is no DamageShape");
+        
         entity.delayedDamage = damage;
         entity.delayedDamageLayerMask = mask;
-        Delay(entity, DamageFrameDelay(entity), static entity => gameInstance.ApplyShapeDamage(entity));
+        
+        Delay(entity, DamageShapeDelay(entity), static entity => {
+            DamageShape damageShape = entity.damageShape;
+            int damage = entity.delayedDamage;
+            LayerMask mask = entity.delayedDamageLayerMask;
+        
+            entity.delayedDamage = 0;
+            entity.delayedDamageLayerMask = 0;
+            
+            gameInstance.DamageEntitiesInShape(entity, damageShape, damage, mask);
+        });
     }
     
-    private float DamageFrameDelay(Entity entity) {
+    private static float DamageShapeDelay(Entity entity) {
         int frame = entity.damageShape.damageFrame;
         if (frame <= 0 || !entity.animator) {
             return 0f;
@@ -59,14 +70,7 @@ public partial class Game {
         return frame / (clipInfos[0].clip.frameRate * entity.animator.speed);
     }
     
-    private void ApplyShapeDamage(Entity entity) {
-        DamageShape damageShape = entity.damageShape;
-        int damage = entity.delayedDamage;
-        LayerMask mask = entity.delayedDamageLayerMask;
-        
-        entity.delayedDamage = 0;
-        entity.delayedDamageLayerMask = 0;
-        
+    private void DamageEntitiesInShape(Entity sourceEntity, DamageShape damageShape, int damage, LayerMask mask) {
         List<Collider2D> cols = damageShape.Overlap(mask);
         
         bool damagedPlayer = false;
@@ -75,7 +79,7 @@ public partial class Game {
             
             if ((Masks.PlayerHurtMask & colliderLayerMask) != 0) {
                 if (damagedPlayer) continue;
-                DamagePlayer(damage, PlayerDamageType.Normal, entity);
+                DamagePlayer(damage, PlayerDamageType.Normal, sourceEntity);
                 damagedPlayer = true;
                 continue;
             }
