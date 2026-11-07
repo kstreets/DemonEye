@@ -17,10 +17,6 @@ public partial class Game {
     public bool OnSteam => steamInitialized;
     public bool OnSteamDeck => platform == Platform.SteamDeck;
 
-    public bool ShowCursorInMenus() {
-        return !UsingController;
-    }
-
     private void InitPlatform() {
         try {
             Environment.SetEnvironmentVariable("SteamAppId", steamAppId.ToString());

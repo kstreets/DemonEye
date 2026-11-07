@@ -15,7 +15,7 @@ public static class Extensions {
             return true;
         }
         const int controllerId = GameData.ControllerNavigation.pointerEventId;
-        if (Game.gameInstance.UsingController) {
+        if (Game.gameInstance.UsingControllerAsPointer) {
             return eventData.pointerId == controllerId;
         }
         return eventData.pointerId != controllerId;

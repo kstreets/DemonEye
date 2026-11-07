@@ -4,6 +4,7 @@ using Steamworks;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
+using UnityEngine.InputSystem.Utilities;
 using static GameData;
 
 public partial class Game {
@@ -11,7 +12,8 @@ public partial class Game {
     // The only action set in the Steam In-Game Actions file, it holds every action since the game reads all of them at once
     private const string steamActionSet = "Gameplay";
     
-    public bool UsingController => inputs.device == Inputs.Device.Controller;
+    public bool UsingController => inputs.device is Inputs.Device.Controller or Inputs.Device.ControllerWithMouse;
+    public bool UsingControllerAsPointer => inputs.device is Inputs.Device.Controller;
 
     private void InitInput() {
         inputs.move = AddAction("Move");
@@ -42,24 +44,16 @@ public partial class Game {
         inputs.menuSecondaryTabRight = AddAction("MenuSecondaryTabRight");
 
         // The Steam Deck starts on the controller, its touchpad switches to the cursor once it's used
-        inputs.device = OnSteamDeck ? Inputs.Device.Controller : Inputs.Device.KeyboardMouse;
+        inputs.device = OnSteamDeck ? Inputs.Device.ControllerWithMouse : Inputs.Device.KeyboardMouse;
 
         if (OnSteam) {
-            inputs.usingSteamInput = SteamInput.Init(true);
-            if (!inputs.usingSteamInput) {
+            inputs.steamInputInitalized = SteamInput.Init(true);
+            if (!inputs.steamInputInitalized) {
                 Debug.Log("Steam Input failed to initialize");
             }
         }
-
-        // A previous play session that didn't shut down cleanly can leave gamepads disabled in the editor.
-        // Marked as disabled first so the call actually goes through the devices and enables them.
-        inputs.unityGamepadsDisabled = true;
-        SetUnityGamepadsEnabled(true);
-
-        // Unity's gamepads are turned off while Steam Input has controllers (see UpdateSteamInput), this catches ones plugged in after that
-        if (inputs.usingSteamInput) {
-            InputSystem.onDeviceChange += OnUnityDeviceChange;
-        }
+        
+        UpdateUnityInputGlyphs();
 
         GameAction AddAction(string actionName) {
             GameAction action = new(actionName);
@@ -69,23 +63,25 @@ public partial class Game {
     }
     
     private void ShutdownInput() {
-        // The editor keeps disabled devices between play sessions, which would leave gamepads dead when playing without Steam
-        SetUnityGamepadsEnabled(true);
-
-        if (inputs.usingSteamInput) {
-            InputSystem.onDeviceChange -= OnUnityDeviceChange;
+        if (inputs.steamInputInitalized) {
             SteamInput.Shutdown();
-            inputs.usingSteamInput = false;
+            inputs.steamInputInitalized = false;
         }
     }
 
     private void UpdateInput() {
-        if (inputs.usingSteamInput) {
-            UpdateSteamInput();
+        if (inputs.steamInputInitalized) {
+            inputs.activelyUsingSteamInput = UpdateSteamInput();
         }
         
-        CheckForInputDeviceChange();
-
+        // When using steam input we want to hide all gamepads from Unity
+        ToggleGamepadsForUnity(!inputs.activelyUsingSteamInput);
+        
+        if (CheckForInputDeviceChange()) {
+            inputs.lastDeviceSwitchTime = Time.unscaledTime;
+            MenuNavigationOnInputDeviceChanged();
+        }
+        
         // Done here instead of with performed callbacks so Steam Input presses work too
         if (inputs.pause.WasPressedThisFrame()) {
             OnPausePressed();
@@ -93,22 +89,41 @@ public partial class Game {
         if (inputs.escape.WasPressedThisFrame()) {
             OnEscapePressed(fromKeyboard: inputs.escape.WasPressedThisFrameOnKeyboard());
         }
+        
+    }
+
+    public void UpdateUnityInputGlyphs() {
+        Gamepad gamepad = Gamepad.current;
+        inputs.gamepadUsedForCurrentGlyphs = gamepad;
+
+        InputGlyphSheet gamepadSheet = gamepad switch {
+            _ => inputPrompts.xboxGlyphs,
+        };
+
+        foreach (GameAction action in inputs.all) {
+            action.UpdateUnityInputGlyphs(inputPrompts.keyboardMouseGlyphs, gamepadSheet);
+        }
     }
     
-    private void UpdateSteamInput() {
+    private bool UpdateSteamInput() {
         SteamInput.RunFrame();
 
         foreach (GameAction action in inputs.all) {
             action.ResetSteamState();
         }
 
+        // Keep polling to load Steam Actions, because it can take a few frames after init
+        if (!SteamActionSetLoaded() && !TryLoadSteamActionSet()) {
+            return false;
+        }
+        
         // Steam Input takes over controllers when it has them. When it has none (e.g. the player turned Steam Input off for the game,
         // or Steam doesn't handle that controller type), Unity reads them instead so the controller still works.
         int controllerCount = SteamInput.GetConnectedControllers(inputs.steamControllers);
-        SetUnityGamepadsEnabled(controllerCount == 0);
-
-        // Keep polling to load Steam Actions, because it can take a few frames after init
-        if (!SteamActionSetLoaded() && !TryLoadSteamActionSet()) return;
+        
+        if (controllerCount == 0) {
+            return false;
+        }
 
         // This is just setting all controllers to use the only action set the game has,
         // apparently you can have multiple action sets and assign different controllers to different sets
@@ -126,7 +141,7 @@ public partial class Game {
             }
         }
         
-        // Until a controller is used, show the first connected one's glyphs
+        // Assign the first controller we see to be the active steam controller until any other one is used
         if (inputs.activeSteamController.m_InputHandle == 0 && controllerCount > 0) {
             inputs.activeSteamController = inputs.steamControllers[0];
         }
@@ -134,9 +149,11 @@ public partial class Game {
         InputHandle_t activeController = inputs.activeSteamController;
         if (activeController.m_InputHandle != 0) {
             foreach (GameAction action in inputs.all) {
-                action.UpdateSteamGlyph(activeController, inputs.steamActionSet);
+                action.UpdateSteamInputGlyph(activeController, inputs.steamActionSet);
             }
         }
+        
+        return true;
 
         bool SteamActionSetLoaded() {
             return inputs.steamActionSet.m_InputActionSetHandle != 0;
@@ -155,25 +172,38 @@ public partial class Game {
             return loadedOnThisFrame;
         }
     }
-
-    private void CheckForInputDeviceChange() {
-        // On the Steam Deck buttons can be used along with the touchpad's cursor, so only moving the selection gets rid of the cursor
-        // Controllers are read through Steam Input while it has them, otherwise through Unity's gamepads
-        bool gamepadUsed = inputs.unityGamepadsDisabled
-            ? (OnSteamDeck ? SteamNavigatedThisFrame() : SteamUsedThisFrame())
-            : (OnSteamDeck ? GamepadNavigatedThisFrame() : GamepadUsedThisFrame());
-        bool switchToController = !UsingController && gamepadUsed;
+    
+    private bool CheckForInputDeviceChange() {
+        if (inputs.device == Inputs.Device.Controller && MouseUsedThisFrame()) {
+            inputs.device = Inputs.Device.ControllerWithMouse;
+            return true;
+        }
         
-        // The Steam Deck's touchpads act as a mouse, so they switch to the cursor. It has no keyboard, its buttons are all on the controller.
-        bool switchToKeyboardMouse = UsingController && (MouseUsedThisFrame() || (!OnSteamDeck && KeyboardUsedThisFrame()));
-        if (!switchToController && !switchToKeyboardMouse) return;
-
-        inputs.device = switchToController ? Inputs.Device.Controller : Inputs.Device.KeyboardMouse;
-        inputs.lastDeviceSwitchTime = Time.unscaledTime;
-        MenuNavigationOnInputDeviceChanged();
+        if (inputs.device != Inputs.Device.KeyboardMouse && KeyboardUsedThisFrame()) {
+            inputs.device = Inputs.Device.KeyboardMouse;
+            return true;
+        }
+        
+        if (inputs.device == Inputs.Device.ControllerWithMouse) {
+            bool analogUsed = inputs.activelyUsingSteamInput ? SteamInputAnalogUsedThisFrame() : GamepadAnalogUsedThisFrame(); 
+            if (analogUsed) {
+                inputs.device = Inputs.Device.Controller;
+                return true;
+            }
+        }
+        
+        if (inputs.device == Inputs.Device.KeyboardMouse) {
+            bool gamepadUsed = inputs.activelyUsingSteamInput ? AnySteamInputUsedThisFrame() : GamepadUsedThisFrame();
+            if (gamepadUsed) {
+                inputs.device = Inputs.Device.Controller;
+                return true;
+            }
+        }
+        
+        return false;
     }
 
-    private bool GamepadNavigatedThisFrame() {
+    private bool GamepadAnalogUsedThisFrame() {
         Gamepad gamepad = Gamepad.current;
         if (gamepad == null) return false;
 
@@ -185,8 +215,13 @@ public partial class Game {
 
     private bool GamepadUsedThisFrame() {
         Gamepad gamepad = Gamepad.current;
-        if (gamepad == null) return false;
-        if (GamepadNavigatedThisFrame()) return true;
+        if (gamepad == null) {
+            return false;
+        }
+        
+        if (GamepadAnalogUsedThisFrame()) {
+            return true;
+        }
 
         foreach (InputControl control in gamepad.allControls) {
             if (control is ButtonControl { synthetic: false } button && button.wasPressedThisFrame) {
@@ -205,16 +240,7 @@ public partial class Game {
         return Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame;
     }
 
-    private void OnUnityDeviceChange(InputDevice device, InputDeviceChange change) {
-        if (inputs.unityGamepadsDisabled && device is Gamepad && device.enabled && change is InputDeviceChange.Added or InputDeviceChange.Reconnected) {
-            InputSystem.DisableDevice(device);
-        }
-    }
-
-    private void SetUnityGamepadsEnabled(bool enable) {
-        if (inputs.unityGamepadsDisabled != enable) return;
-        inputs.unityGamepadsDisabled = !enable;
-
+    private void ToggleGamepadsForUnity(bool enable) {
         foreach (InputDevice device in InputSystem.devices) {
             if (device is not Gamepad || device.enabled == enable) continue;
             if (enable) {
@@ -226,20 +252,21 @@ public partial class Game {
         }
     }
 
-    // Any stick or other analog action moved past the deadzone
-    private bool SteamNavigatedThisFrame() {
+    private bool AnySteamInputUsedThisFrame() {
+        if (SteamInputAnalogUsedThisFrame()) {
+            return true;
+        }
         foreach (GameAction action in inputs.all) {
-            if (action.isAnalog && action.steamValue.magnitude > ControllerNavigation.stickDeadzone) {
+            if (!action.isAnalog && action.steamInputIsDown && !action.steamInputWasDownLastFrame) {
                 return true;
             }
         }
         return false;
     }
-
-    private bool SteamUsedThisFrame() {
-        if (SteamNavigatedThisFrame()) return true;
+    
+    private bool SteamInputAnalogUsedThisFrame() {
         foreach (GameAction action in inputs.all) {
-            if (!action.isAnalog && action.steamInputIsDown && !action.steamInputWasDownLastFrame) {
+            if (action.isAnalog && action.steamValue.magnitude > ControllerNavigation.stickDeadzone) {
                 return true;
             }
         }
@@ -259,13 +286,17 @@ public class GameAction {
     public Vector2 steamValue;
 
     public EInputActionOrigin curSteamGlyphId;
-    public Sprite steamGlyph;
     public InputDigitalActionHandle_t steamDigitalHandle;
     public InputAnalogActionHandle_t steamAnalogHandle;
     
+    // Two slots so a modifier composite can show both parts: [modifier, binding], or [binding, null] when there's no modifier
+    private readonly Sprite[] gamepadGlyphs = new Sprite[2];
+    private readonly Sprite[] keyboardMouseGlyphs = new Sprite[2];
+    private readonly Sprite[] steamGlyphs = new Sprite[2];
+    
     private static EInputActionOrigin[] actionOrigins = new EInputActionOrigin[Constants.STEAM_INPUT_MAX_ORIGINS];
     private static readonly Dictionary<EInputActionOrigin, Sprite> steamGlyphSprites = new();
-
+    
     public GameAction(string name) {
         this.name = name;
         unityInputAction = InputSystem.actions.FindAction(name, throwIfNotFound: true);
@@ -280,7 +311,64 @@ public class GameAction {
         steamDigitalHandle = SteamInput.GetDigitalActionHandle(name);
     }
     
-    public void UpdateSteamGlyph(InputHandle_t controller, InputActionSetHandle_t inputActionSet) {
+    public void UpdateUnityInputGlyphs(InputGlyphSheet keyboardMouseSheet, InputGlyphSheet curGamepadSheet) {
+        ResolveUnityGlyphs(keyboardMouseSheet, "Keyboard&Mouse", keyboardMouseGlyphs);
+        ResolveUnityGlyphs(curGamepadSheet, "Gamepad", gamepadGlyphs);
+    }
+
+    private void ResolveUnityGlyphs(InputGlyphSheet sheet, string bindingGroup, Sprite[] glyphs) {
+        glyphs[0] = null;
+        glyphs[1] = null;
+        if (sheet == null) return;
+
+        InputBinding groupMask = InputBinding.MaskByGroup(bindingGroup);
+        int index = unityInputAction.GetBindingIndex(groupMask);
+        if (index < 0) return;
+        
+        ReadOnlyArray<InputBinding> bindings = unityInputAction.bindings;
+        
+        if (bindings[index].isPartOfComposite) {
+            int compositeIndex = index;
+            while (compositeIndex > 0 && !bindings[compositeIndex].isComposite) {
+                compositeIndex--;
+            }
+        
+            string compositeName = bindings[compositeIndex].GetNameOfComposite();
+            if (compositeName == "OneModifier" || compositeName == "ButtonWithOneModifier") {
+                Sprite modifier = null;
+                Sprite binding = null;
+                for (int i = compositeIndex + 1; i < bindings.Count && bindings[i].isPartOfComposite; i++) {
+                    if (!groupMask.Matches(bindings[i])) continue;
+        
+                    if (string.Equals(bindings[i].name, "modifier", System.StringComparison.OrdinalIgnoreCase)) {
+                        modifier = LookUp(i);
+                    }
+                    else {
+                        binding = LookUp(i);
+                    }
+                }
+        
+                if (modifier != null) {
+                    glyphs[0] = modifier;
+                    glyphs[1] = binding;
+                }
+                else {
+                    glyphs[0] = binding;
+                }
+                return;
+            }
+            // Other composites (like WASD) just show the first part for now
+        }
+        
+        glyphs[0] = LookUp(index);
+        
+        Sprite LookUp(int bindingIndex) {
+            unityInputAction.GetBindingDisplayString(bindingIndex, out _, out string controlPath);
+            return sheet.Get(controlPath);
+        }
+    }
+    
+    public void UpdateSteamInputGlyph(InputHandle_t controller, InputActionSetHandle_t inputActionSet) {
         int originCount = isAnalog ? SteamInput.GetAnalogActionOrigins(controller, inputActionSet, steamAnalogHandle, actionOrigins) :
                                      SteamInput.GetDigitalActionOrigins(controller, inputActionSet, steamDigitalHandle, actionOrigins);
         
@@ -289,7 +377,15 @@ public class GameAction {
         if (curSteamGlyphId == origin) return;
         
         curSteamGlyphId = origin;
-        steamGlyph = LoadSteamGlyph(origin);
+        steamGlyphs[0] = LoadSteamGlyph(origin);
+    }
+    
+    public Sprite[] GetCurrentDisplayGlyphs() {
+        Inputs inputs = Game.gameInstance.inputs;
+        if (inputs.device == Inputs.Device.KeyboardMouse) {
+            return keyboardMouseGlyphs;
+        }
+        return inputs.activelyUsingSteamInput ? steamGlyphs : gamepadGlyphs;
     }
 
     public void ResetSteamState() {

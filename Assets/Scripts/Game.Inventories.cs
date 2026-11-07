@@ -844,7 +844,7 @@ public partial class Game {
     private void UpdateDragAndDropItemToCursor() {
         if (dragItemInstance == null) return;
         Vector2 mousePos = PointerScreenPos;
-        if (UsingController) {
+        if (UsingControllerAsPointer) {
             // Offset so the dragged item doesn't completely cover the selected slot
             mousePos += new Vector2(20f, -20f) * CanvasScale;
         }
@@ -1357,7 +1357,7 @@ public partial class Game {
         thisFrame.flags |= GameData.FrameFlags.InventoryOpened;
         IgnoreHeldNavigationInput();
         playerPanel.panel.gameObject.SetActive(true);
-        Cursor.visible = ShowCursorInMenus();
+        Cursor.visible = ShowCursorInMenus;
     }
 
     private void ClosePlayerInventory() {

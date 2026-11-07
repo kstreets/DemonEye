@@ -9,9 +9,10 @@ using static GameData;
 public partial class Game {
 
     // Where the UI should treat the "cursor" as being. Follows the controller selection when using a controller.
-    private Vector2 PointerScreenPos => UsingController ? controllNav.pointerPos : Mouse.current.position.ReadValue();
+    private Vector2 PointerScreenPos => UsingControllerAsPointer ? controllNav.pointerPos : Mouse.current.position.ReadValue();
     private bool MenuNavigationNeeded => !InRaid || PlayerInventoryIsOpen || LootInventoryIsOpen || pauseMenu.paused || ui.messagePopup.IsShowing;
-
+    private bool ShowCursorInMenus => !UsingControllerAsPointer;
+    
     public class NavPanel {
         public RectTransform panel;
         public int priority; // Higher priority panels get selected over more recently used ones
@@ -112,12 +113,7 @@ public partial class Game {
     }
 
     private void UpdateMenuNavigation() {
-        if (!UsingController) {
-            if (OnSteamDeck) {
-                UpdateToggleGroupSwitching();
-            }
-            return;
-        }
+        if (!UsingControllerAsPointer) return;
         
         // We do gamepad navigation ourselves so we need to clear Unity's to avoid double presses
         if (EventSystem.current && EventSystem.current.currentSelectedGameObject) {
@@ -177,7 +173,7 @@ public partial class Game {
 
         var switchedMode = CheckForToggleGroupSwitching();
         // We dont clear the selection when doing a secondary toggle switch, and there's no selection when using the cursor
-        if (switchedMode == ToggleButtonGroup.NavigationMode.Primary && UsingController) {
+        if (switchedMode == ToggleButtonGroup.NavigationMode.Primary && UsingControllerAsPointer) {
             ClearControllerSelection();
             SelectDefaultNavTarget();
         }
@@ -191,19 +187,22 @@ public partial class Game {
     // Whether the player moved the pointer this frame.
     // In order for this method to work reliably, the menu navigation must update before gamestate tick
     private bool PlayerMovedPointerThisFrame() {
-        if (UsingController) {
+        if (UsingControllerAsPointer) {
             return controllNav.lastTimePlayerMovedSelection == Time.unscaledTime;
         }
         return Mouse.current != null && Mouse.current.delta.ReadValue() != Vector2.zero;
     }
 
     private void MenuNavigationOnInputDeviceChanged() {
-        if (!UsingController) {
+        if (!UsingControllerAsPointer) {
+            if (controllNav.hasPointerPos) {
+                Mouse.current.WarpCursorPosition(controllNav.pointerPos);
+            }
+            Cursor.visible = MenuNavigationNeeded;
+            
             ClearControllerSelection();
             controllNav.submitPressedOn = null;
-            Cursor.visible = MenuNavigationNeeded;
         }
-        // Whatever was highlighted belongs to the other device
         ClearAllHighlights();
     }
 
@@ -232,7 +231,7 @@ public partial class Game {
 
     // Ignores the stick until it's let go, for when it's already being held as a menu opens
     private void IgnoreHeldNavigationInput() {
-        if (!UsingController) return;
+        if (!UsingControllerAsPointer) return;
         controllNav.waitingForNavRelease = true;
     }
 

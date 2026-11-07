@@ -10,6 +10,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 using Steamworks;
+using UnityEngine.InputSystem;
 using static Game;
 
 [Serializable]
@@ -210,8 +211,11 @@ public class GameData {
     
     [Serializable]
     public class InputPrompts {
-        public RectTransform hideoutParent;
+        public InputGlyphSheet xboxGlyphs;
+        public InputGlyphSheet keyboardMouseGlyphs;
+        
         public List<Transform> allInventoryPrompts;
+        public RectTransform hideoutParent;
         public GameObject inRaidParent;
         public GameObject raidInventory;
         
@@ -219,7 +223,7 @@ public class GameData {
         public InputPrompt inventoryQuickMove;
         public InputPrompt inventorySplitStack;
         
-        public List<InputPrompt> allBoundPrompts = new();
+        [NonSerialized] public List<InputPrompt> allBoundPrompts = new();
     }
     
     [Serializable]
@@ -537,15 +541,19 @@ public class GameData {
         
         public readonly List<GameAction> all = new();
         
-        public enum Device { KeyboardMouse, Controller, }
+        public enum Device { KeyboardMouse, Controller, ControllerWithMouse }
         public Device device;
         public float lastDeviceSwitchTime;
+        public Gamepad gamepadUsedForCurrentGlyphs;
+        public bool glyphsForController;
+        public bool glyphsNeedRefresh;
+
+        public bool steamInputInitalized;
+        public bool activelyUsingSteamInput;
         
-        public bool usingSteamInput;
         public InputActionSetHandle_t steamActionSet;
         public readonly InputHandle_t[] steamControllers = new InputHandle_t[Constants.STEAM_INPUT_MAX_COUNT];
         public InputHandle_t activeSteamController;
-        public bool unityGamepadsDisabled;
     }
     
     public class EntityPools {

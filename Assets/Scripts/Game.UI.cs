@@ -23,7 +23,7 @@ public partial class Game {
     private Texture2D shownCursorTexture;
 
     private void InitUI() {
-        Cursor.visible = ShowCursorInMenus();
+        Cursor.visible = ShowCursorInMenus;
         SetCursorTexture(config.styles.cursorTexture);
 
         CloseSettingsMenuUI();
@@ -1066,33 +1066,34 @@ public partial class Game {
         BindPromptToAction(inputPrompts.inventoryQuickMove, inputs.moveStack);
         BindPromptToAction(inputPrompts.inventorySplitStack, inputs.splitStack);
         
+        BindPromptToAction(hideoutTabs.toggleGroup.leftInputPrompt, inputs.menuTabLeft);
+        BindPromptToAction(hideoutTabs.toggleGroup.rightInputPrompt, inputs.menuTabRight);
+        
+        BindPromptToAction(settings.toggleGroup.leftInputPrompt, inputs.menuTabLeft);
+        BindPromptToAction(settings.toggleGroup.rightInputPrompt, inputs.menuTabRight);
+        
+        BindPromptToAction(eyeForgePanel.toggleButtonGroup.leftInputPrompt, inputs.menuSecondaryTabLeft);
+        BindPromptToAction(eyeForgePanel.toggleButtonGroup.rightInputPrompt, inputs.menuSecondaryTabRight);
+        
+        BindPromptToAction(transactionPanel.transaction.toggleGroup.leftInputPrompt, inputs.menuSecondaryTabLeft);
+        BindPromptToAction(transactionPanel.transaction.toggleGroup.rightInputPrompt, inputs.menuSecondaryTabRight);
+        
+        BindPromptToAction(questsPanel.toggleButtonGroup.leftInputPrompt, inputs.menuSecondaryTabLeft);
+        BindPromptToAction(questsPanel.toggleButtonGroup.rightInputPrompt, inputs.menuSecondaryTabRight);
+        
         void BindPromptToAction(InputPrompt prompt, GameAction action) {
             prompt.boundAction = action;
             inputPrompts.allBoundPrompts.Add(prompt);
         } 
     }
 
-    // Swaps the inventory prompts in and out with the raid's open inventory prompt
     private void UpdateInputPrompts() {
         foreach (InputPrompt prompt in inputPrompts.allBoundPrompts) {
-            if (prompt.image.sprite != prompt.boundAction.steamGlyph) {
-                prompt.image.sprite = prompt.boundAction.steamGlyph;
+            bool shouldShow = prompt.ShouldBeShowing(UsingController);
+            if (prompt.gameObject.activeSelf != shouldShow) {
+                prompt.gameObject.SetActive(shouldShow);
             }
-        }
-
-        if (InRaid && thisFrame.flags.HasFlag(GameData.FrameFlags.InventoryOpened)) {
-            if (UsingController) { // Hide it on controller because Y splits the stack not closes inventory
-                inputPrompts.raidInventory.SetActive(false);
-            }
-            foreach (Transform invPrompt in inputPrompts.allInventoryPrompts) {
-                invPrompt.gameObject.SetActive(true);
-            }
-        }
-        else if (InRaid && !PlayerInventoryIsOpen) {
-            inputPrompts.raidInventory.SetActive(true);
-            foreach (Transform invPrompt in inputPrompts.allInventoryPrompts) {
-                invPrompt.gameObject.SetActive(false);
-            }
+            prompt.Set(prompt.boundAction.GetCurrentDisplayGlyphs());
         }
     }
 

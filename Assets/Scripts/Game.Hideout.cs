@@ -213,7 +213,7 @@ public partial class Game {
         transactionPanel.inventoryParent.gameObject.SetActive(false);
 
         SetTradingSlot(curTradingInventorySlot, tweenSize: false);
-        if (UsingController) {
+        if (UsingControllerAsPointer) {
             SetControllerSelection(curTradingInventorySlot.ui.rectTransform);
         }
 
@@ -231,7 +231,7 @@ public partial class Game {
         curTradingInventorySlot?.ui.ClearSelectionUnderlay();
         
         // Move the controller pointer over to the stash from the traders inventory
-        if (UsingController && lastInventoryHoverInfo.inventory == inventories.trader) {
+        if (UsingControllerAsPointer && lastInventoryHoverInfo.inventory == inventories.trader) {
             SelectDefaultNavTarget();
         }
     }

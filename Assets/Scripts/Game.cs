@@ -136,7 +136,7 @@ public partial class Game : MonoBehaviour {
     }
 
     private void OnMainMenuStateEnter() {
-        Cursor.visible = ShowCursorInMenus();
+        Cursor.visible = ShowCursorInMenus;
         ShowMainMenuUI();
         OnMenuMusicEnter();
         TryShowDemoEndDialogue();

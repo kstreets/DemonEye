@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public partial class Game {
 
@@ -55,7 +54,7 @@ public partial class Game {
         pauseMenu.panel.gameObject.SetActive(true);
         IgnoreHeldNavigationInput();
         ClearControllerSelection();
-        Cursor.visible = ShowCursorInMenus();
+        Cursor.visible = ShowCursorInMenus;
     }
 
     private void ResumeRaid() {
