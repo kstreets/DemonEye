@@ -259,6 +259,8 @@ public partial class Game {
             HideInventoryItemPopup();
             return;
         }
+        
+        KeepStashSorted();
 
         // Opening an inventory can be from an action that also has an inventory action meaning
         // so to prevent opening an inventory and doing something, we just stop early before doing something
@@ -274,6 +276,99 @@ public partial class Game {
         else {
             UpdateInventoryItemPopup(invHoverInfo);
             CheckToConsumeItem(invHoverInfo);
+        }
+    }
+    
+    private void KeepStashSorted() {
+        if (!StashInventoryIsOpen) return;
+        
+        Inventory stash = inventories.stash;
+        if (IsStashSorted(stash)) return;
+        
+        using var _ = ListPool<ItemInstance>.Get(out var sortingList);
+        foreach (InventorySlot slot in stash.slots) {
+            if (slot.itemInstance == null) continue;
+            sortingList.Add(slot.itemInstance);
+        }
+        
+        sortingList.Sort(CompareStashItems);
+        MergeSortedStacks(sortingList);
+        
+        for (int i = 0; i < stash.slots.Length; i++) {
+            stash.slots[i].itemInstance = i < sortingList.Count ? sortingList[i] : null;
+        }
+    }
+    
+    private static bool IsStashSorted(Inventory stash) {
+        ItemInstance previous = null;
+        bool seenEmptySlot = false;
+        
+        foreach (InventorySlot slot in stash.slots) {
+            ItemInstance item = slot.itemInstance;
+            if (item == null) {
+                seenEmptySlot = true;
+                continue;
+            }
+            
+            if (seenEmptySlot) {
+                return false;
+            }
+            
+            if (previous != null) {
+                if (CompareStashItems(previous, item) > 0) {
+                    return false;
+                }
+                if (CanMergeStacks(previous, item)) {
+                    return false;
+                }
+            }
+            previous = item;
+        }
+        
+        return true;
+    }
+    
+    private static int CompareStashItems(ItemInstance x, ItemInstance y) {
+        Item xItem = x.ItemRef;
+        Item yItem = y.ItemRef;
+        
+        int result = string.Compare(xItem.type ? xItem.type.displayName : null, yItem.type ? yItem.type.displayName : null, StringComparison.Ordinal);
+        if (result != 0) return result;
+        
+        result = yItem.GetRarity().CompareTo(xItem.GetRarity());
+        if (result != 0) return result;
+        
+        result = string.Compare(xItem.displayName, yItem.displayName, StringComparison.Ordinal);
+        if (result != 0) return result;
+        
+        result = x.itemOrInstanceUuid.CompareTo(y.itemOrInstanceUuid);
+        if (result != 0) return result;
+        
+        return y.count.CompareTo(x.count);
+    }
+    
+    private static bool CanMergeStacks(ItemInstance into, ItemInstance from) {
+        return into.itemOrInstanceUuid == from.itemOrInstanceUuid && into.count < into.ItemRef.MaxStackCount;
+    }
+    
+    private static void MergeSortedStacks(List<ItemInstance> sortedItems) {
+        for (int i = 0; i < sortedItems.Count; i++) {
+            ItemInstance into = sortedItems[i];
+            int next = i + 1;
+            
+            while (next < sortedItems.Count && CanMergeStacks(into, sortedItems[next])) {
+                ItemInstance from = sortedItems[next];
+                int moveCount = Mathf.Min(into.ItemRef.MaxStackCount - into.count, from.count);
+                into.count += moveCount;
+                from.count -= moveCount;
+                
+                if (from.count <= 0) {
+                    sortedItems.RemoveAt(next);
+                }
+                else {
+                    next++;
+                }
+            }
         }
     }
     
@@ -410,7 +505,7 @@ public partial class Game {
         MoveItemOption moveOption = MoveItemOption.FullStack;
         Inventory destinationInventory = null;
         
-        SuppressInventoryPopup();
+        // SuppressInventoryPopup();
         
         if (InRaid) {
             if (hoveredInventory == inventories.player && LootInventoryIsOpen) {
@@ -675,6 +770,7 @@ public partial class Game {
     private bool UpdateInventoryDragAndDrop(InventoryHoverInfo hoverInfo) {
         bool pickupInputUsed = inputs.selectItem.WasPressedThisFrame() || inputs.splitStack.WasPressedThisFrame();
         bool placeInputUsed = inputs.selectItem.WasPressedThisFrame() || inputs.placeSingleItem.WasPressedThisFrame();
+        
         bool inventoryIsLocked = hoverInfo.inventory?.isLocked ?? false;
         
         if ((!pickupInputUsed && !placeInputUsed) || inventoryIsLocked) {
@@ -744,7 +840,7 @@ public partial class Game {
             bool tryingToPlaceInTraderInventory = hoverInfo.inventory == inventories.trader;
             // bool tryingToPlaceWhileUpgradingDemonEye = hoverInfo.inventory == inventories.eyeForge && forgeMode == ForgeMode.UpgradingDemonEye;
             
-            if (droppingItemInHideout || tryingToPlaceItemToSellWhileBuying || tryingToPlaceInTraderInventory) { //|| tryingToPlaceWhileUpgradingDemonEye) {
+            if (droppingItemInHideout || tryingToPlaceItemToSellWhileBuying || tryingToPlaceInTraderInventory) {
                 TryAddItemToInventory(startDragInfo.inventory, dragItemInstance, startDragInfo.slotIndex);
                 EndDragAndDropItem();
                 return IsDraggingItem;
@@ -769,8 +865,13 @@ public partial class Game {
                 return IsDraggingItem;
             }
 
+            // The stash sorts itself, so where an item is dropped in it doesn't matter, it just gets added
+            bool droppingIntoStash = hoverInfo.inventory == inventories.stash;
+            int dropSlotIndex = droppingIntoStash ? -1 : hoverInfo.slotIndex;
+            
             bool swappingItems = false;
-            if (TryGetItemFromHoverInfo(hoverInfo, out ItemInstance swapItem)) {
+            ItemInstance swapItem = null;
+            if (!droppingIntoStash && TryGetItemFromHoverInfo(hoverInfo, out swapItem)) {
                 // The same item with room in its stack gets placed onto instead, which tops it up and keeps any leftovers dragging
                 bool stackOntoSwapItem = swapItem.itemOrInstanceUuid == dragItemInstance.itemOrInstanceUuid
                     && !swapItem.IsFullStack && !hoverInfo.inventory.slots[hoverInfo.slotIndex].ui.disallowItemStacking;
@@ -800,7 +901,7 @@ public partial class Game {
 
             bool placingSingleItemFromStack = inputs.placeSingleItem.WasPressedThisFrame();
             if (placingSingleItemFromStack) {
-                InventoryAddResult result = TryAddItemToInventory(hoverInfo.inventory, dragItemInstance.ItemRef, 1, hoverInfo.slotIndex, onlyVisibleSlots: true);
+                InventoryAddResult result = TryAddItemToInventory(hoverInfo.inventory, dragItemInstance.ItemRef, 1, dropSlotIndex, onlyVisibleSlots: true);
 
                 dragItemInstance.count -= result.addedCount;
                 if (dragItemInstance.count <= 0) {
@@ -814,7 +915,7 @@ public partial class Game {
 
             bool placingEntireStack = !placingSingleItemFromStack;
             if (placingEntireStack) {
-                InventoryAddResult result = TryAddItemToInventory(hoverInfo.inventory, dragItemInstance, hoverInfo.slotIndex, onlyVisibleSlots: true);
+                InventoryAddResult result = TryAddItemToInventory(hoverInfo.inventory, dragItemInstance, dropSlotIndex, onlyVisibleSlots: true);
                 if (result.type == InventoryAddResult.ResultType.Success) {
                     EndDragAndDropItem();
                 }
@@ -875,13 +976,11 @@ public partial class Game {
         return TryAddItemToInventory(inventory, newItemInstance, slotIndex, onlyVisibleSlots);
     }
 
-    // onlyVisibleSlots is for items the player places themselves, so dropping onto a panel without hitting a slot
-    // doesn't put the item into a slot they can't see (e.g. the pockets of the slim player panel)
     public InventoryAddResult TryAddItemToInventory(Inventory inventory, ItemInstance itemInstance, int slotIndex = -1, bool onlyVisibleSlots = false) {
         InventoryAddResult result = new() { type = InventoryAddResult.ResultType.Failure };
         
         bool allowInfiniteStacking = inventory == inventories.trader;
-        bool droppingItemInSpecificSlot = slotIndex != -1;
+        bool droppingItemInSpecificSlot = slotIndex != -1 && inventory != inventories.stash;
 
         using var _ = ListPool<InventorySlot>.Get(out List<InventorySlot> availableSlots);
         

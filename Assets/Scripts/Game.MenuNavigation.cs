@@ -24,7 +24,6 @@ public partial class Game {
     private void InitMenuNavigation() {
         controllNav.pointerEventData = new(EventSystem.current) { pointerId = ControllerNavigation.pointerEventId };
         
-
         // Popups and the dragged item follow the pointer, so they shouldn't count as covering up what's under them
         controllNav.ignoredRoots = new[] {
             ui.dragAndDropItemUI.transform,

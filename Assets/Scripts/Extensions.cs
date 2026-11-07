@@ -10,17 +10,6 @@ using Random = UnityEngine.Random;
 
 public static class Extensions {
 
-    public static bool FromDominantInputDevice(this PointerEventData eventData) {
-        if (eventData == null) {
-            return true;
-        }
-        const int controllerId = GameData.ControllerNavigation.pointerEventId;
-        if (Game.gameInstance.UsingControllerAsPointer) {
-            return eventData.pointerId == controllerId;
-        }
-        return eventData.pointerId != controllerId;
-    }
-    
     public static float LinearToDecibel(this float value) {
         const float maxVolume = 0f;
         const float minVolume = -80f;

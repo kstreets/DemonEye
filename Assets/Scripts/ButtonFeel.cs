@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using static Game;
 
 public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler {
 
@@ -43,13 +44,13 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
     }
 
     public void OnPointerEnter(PointerEventData eventData) {
-        if (!eventData.FromDominantInputDevice()) return;
+        if (!EventCameFromCurrentPointerDevice(eventData)) return;
         
         beingHovered = true;
         if (!highlightedSprite) return;
         image.sprite = GetHighlightedSprite();
         if (hoveredClip != null) {
-            Game.gameInstance.PlayAudioClip(hoveredClip);
+            gameInstance.PlayAudioClip(hoveredClip);
         }
         if (isDisabled || beingKeptPressed) {
             SetMargin(styles.pressedButtonTextMargin);
@@ -60,7 +61,7 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
     }
     
     public void OnPointerExit(PointerEventData eventData) {
-        if (!eventData.FromDominantInputDevice()) return;
+        if (!EventCameFromCurrentPointerDevice(eventData)) return;
         
         beingHovered = false;
         if (!highlightedSprite) return;

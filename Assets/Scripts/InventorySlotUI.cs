@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using static Game;
 
 public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler  {
 
@@ -54,7 +55,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     }
 
     private void SetHovered(PointerEventData eventData, bool hovered) {
-        if (eventData != null && !eventData.FromDominantInputDevice()) return;
+        if (eventData != null && !EventCameFromCurrentPointerDevice(eventData)) return;
         isHovered = hovered;
         RefreshSlotSprite();
     }
@@ -119,7 +120,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         rarityFrameImage.color = styles.GetSlotColorForRarity(item.GetRarity());
     }
 
-    public void SetItem(Game.ItemInstance itemInstance) {
+    public void SetItem(ItemInstance itemInstance) {
         itemUI.SetItem(itemInstance.ItemRef, itemInstance.count);
         rarityFrameImage.color = styles.GetSlotColorForRarity(itemInstance.GetRarity());
     }

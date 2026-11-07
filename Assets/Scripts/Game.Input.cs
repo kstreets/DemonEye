@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using Steamworks;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 using UnityEngine.InputSystem.Utilities;
@@ -14,6 +15,17 @@ public partial class Game {
     
     public bool UsingController => inputs.device is Inputs.Device.Controller or Inputs.Device.ControllerWithMouse;
     public bool UsingControllerAsPointer => inputs.device is Inputs.Device.Controller;
+    
+    public static bool EventCameFromCurrentPointerDevice(PointerEventData eventData) {
+        if (eventData == null) {
+            return true;
+        }
+        const int controllerId = ControllerNavigation.pointerEventId;
+        if (gameInstance.UsingControllerAsPointer) {
+            return eventData.pointerId == controllerId;
+        }
+        return eventData.pointerId != controllerId;
+    }
 
     private void InitInput() {
         inputs.move = AddAction("Move");
@@ -42,7 +54,7 @@ public partial class Game {
         inputs.menuTabRight = AddAction("MenuTabRight");
         inputs.menuSecondaryTabLeft = AddAction("MenuSecondaryTabLeft");
         inputs.menuSecondaryTabRight = AddAction("MenuSecondaryTabRight");
-
+        
         // The Steam Deck starts on the controller, its touchpad switches to the cursor once it's used
         inputs.device = OnSteamDeck ? Inputs.Device.ControllerWithMouse : Inputs.Device.KeyboardMouse;
 
@@ -91,7 +103,7 @@ public partial class Game {
         }
         
     }
-
+    
     public void UpdateUnityInputGlyphs() {
         Gamepad gamepad = Gamepad.current;
         inputs.gamepadUsedForCurrentGlyphs = gamepad;
@@ -420,7 +432,7 @@ public class GameAction {
     public bool WasReleasedThisFrame() {
         return (!steamInputIsDown && steamInputWasDownLastFrame) || unityInputAction.WasReleasedThisFrame();
     }
-
+    
     // Checks the bound controls instead of activeControl, which is already cleared if the key was tapped and released within the frame
     public bool WasPressedThisFrameOnKeyboard() {
         foreach (InputControl control in unityInputAction.controls) {

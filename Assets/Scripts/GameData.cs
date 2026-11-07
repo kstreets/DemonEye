@@ -746,9 +746,9 @@ public class GameData {
         public readonly List<NavPanel> recentPanels = new(); // Highest priority first, then most recently used
         public readonly List<RectTransform> possibleSelections = new();
         public readonly Vector3[] navCorners = new Vector3[4];
-        public const float stickDeadzone = 0.5f;
-        public const float repeatDelay = 0.4f;
-        public const float repeatInterval = 0.12f;
+        public const float stickDeadzone = 0.7f;
+        public const float repeatDelay = 0.25f;
+        public const float repeatInterval = 0.1f;
         public const int pointerEventId = -100;
     }
     
