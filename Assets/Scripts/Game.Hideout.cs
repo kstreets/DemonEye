@@ -207,13 +207,16 @@ public partial class Game {
 
     private enum TransactionState { Selling, Buying }
     private TransactionState transactionState;
-    
-    private void OnBuyTogglePressed() {
+
+    private void OnBuyTogglePressed() => SetBuyingState(moveControllerSelection: true);
+    private void OnSellTogglePressed() => SetSellingState(moveControllerSelection: true);
+
+    private void SetBuyingState(bool moveControllerSelection) {
         transactionState = TransactionState.Buying;
         transactionPanel.inventoryParent.gameObject.SetActive(false);
 
         SetTradingSlot(curTradingInventorySlot, tweenSize: false);
-        if (UsingControllerAsPointer) {
+        if (moveControllerSelection && UsingControllerAsPointer) {
             SetControllerSelection(curTradingInventorySlot.ui.rectTransform);
         }
 
@@ -224,14 +227,14 @@ public partial class Game {
         }
         ClearInventory(inventories.transaction);
     }
-    
-    private void OnSellTogglePressed() {
+
+    private void SetSellingState(bool moveControllerSelection) {
         transactionState = TransactionState.Selling;
         transactionPanel.inventoryParent.gameObject.SetActive(true);
         curTradingInventorySlot?.ui.ClearSelectionUnderlay();
-        
+
         // Move the controller pointer over to the stash from the traders inventory
-        if (UsingControllerAsPointer && lastInventoryHoverInfo.inventory == inventories.trader) {
+        if (moveControllerSelection && UsingControllerAsPointer && lastInventoryHoverInfo.inventory == inventories.trader) {
             SelectDefaultNavTarget();
         }
     }
@@ -241,6 +244,7 @@ public partial class Game {
         int sellPrice = GetInventoryValue(inventories.transaction, InventoryValueType.Sell);
         player.state.coinCurrency += sellPrice;
         ClearInventory(inventories.transaction);
+        SuppressInventoryPopup();
         PlayAudioClip(audio.cashRegisterClip);
         thisFrame.flags |= FrameFlags.SoldToTrader;
 
@@ -615,6 +619,7 @@ public partial class Game {
         if (PlayingForgeAnimation) return;
 
         HideHint();
+        SuppressInventoryPopup();
         
         if (forgeMode is ForgeMode.PostForgeOrUpgrade) {
             forgeMode = ForgeMode.Empty;
@@ -809,6 +814,7 @@ public partial class Game {
     private Sequence levelUpPentagramSequence;
     
     private void OnLevelUpPentagramPressed() {
+        SuppressInventoryPopup();
         PlayAudioClip(audio.burnClip);
         
         levelUpPentagramSequence.Complete();

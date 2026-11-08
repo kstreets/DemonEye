@@ -17,6 +17,7 @@ public partial class Game {
         public RectTransform panel;
         public int priority; // Higher priority panels get selected over more recently used ones
         public Func<RectTransform> getDefaultSelection; // Used when nothing's been selected in the panel yet
+        public Func<RectTransform> getEntrySelection; // Used instead of the nearest element when first navigating into the panel
         public RectTransform rememberedSelection;
         public bool alwaysCallDefault;
     }
@@ -50,7 +51,15 @@ public partial class Game {
         {
             const int selectionPriority = 0;
             AddNavPanel(playerPanel.panel, selectionPriority, () => PlayerInventoryIsSlim ? null : inventories.player.slots[playerEquipmentSize + playerQuickUseSize].ui.rectTransform);
-            AddNavPanel(eyeForgePanel.panel, selectionPriority);
+            AddNavPanel(eyeForgePanel.panel, selectionPriority, getEntrySelection: () => {
+                if (ForgeIsOnCrafting && !eyeForgePanel.forgeButton.isDisabled) {
+                    return eyeForgePanel.forgeButton.rectTransform;
+                }
+                if (ForgeIsOnLevelUp && !eyeForgePanel.levelUpButton.isDisabled) {
+                    return eyeForgePanel.levelUpButton.rectTransform;
+                }
+                return null;
+            });
             AddNavPanel(eyeForgeDetailsPanel.panel, selectionPriority);
             AddNavPanel(traderPanel.panel, selectionPriority);
             AddNavPanel(transactionPanel.panel, selectionPriority);
@@ -59,18 +68,19 @@ public partial class Game {
         }
     }
 
-    private void AddNavPanel(RectTransform panel, int priority, Func<RectTransform> getDefaultSelection = null, bool alwaysCallDefault = false) {
-        NavPanel navPanel = new() { 
-            panel = panel, 
-            priority = priority, 
+    private void AddNavPanel(RectTransform panel, int priority, Func<RectTransform> getDefaultSelection = null, bool alwaysCallDefault = false, Func<RectTransform> getEntrySelection = null) {
+        NavPanel navPanel = new() {
+            panel = panel,
+            priority = priority,
             getDefaultSelection = getDefaultSelection,
+            getEntrySelection = getEntrySelection,
             alwaysCallDefault = alwaysCallDefault,
         };
         controllNav.navPanels.Add(panel, navPanel);
         InsertIntoRecentPanels(navPanel, false);
     }
 
-    private void OnEscapePressed(bool fromKeyboard = false) {
+    private void OnBackPressed(bool fromKeyboard = false) {
         CancelItemDrag();
         ClearControllerSelection();
         
@@ -285,6 +295,14 @@ public partial class Game {
         }
 
         if (targetRecTransform) {
+            NavPanel targetPanel = FindNavPanel(targetRecTransform);
+            if (targetPanel != null && targetPanel != FindNavPanel(controllNav.selected)) {
+                RectTransform entrySelection = targetPanel.getEntrySelection?.Invoke();
+                if (IsValidNavTarget(entrySelection)) {
+                    targetRecTransform = entrySelection;
+                }
+            }
+
             SetControllerSelection(targetRecTransform);
             controllNav.lastTimePlayerMovedSelection = Time.unscaledTime;
         }
@@ -331,17 +349,34 @@ public partial class Game {
         controllNav.pointerPos = GetScreenRect(target).center;
         controllNav.hasPointerPos = true;
         ExecuteEvents.Execute(target.gameObject, controllNav.pointerEventData, ExecuteEvents.pointerEnterHandler);
+        SyncTransactionStateToControllerSelection(target);
+    }
+    
+    private void SyncTransactionStateToControllerSelection(RectTransform selection) {
+        if (!OnTradingTab || !UsingControllerAsPointer) return;
+
+        if (transactionState != TransactionState.Buying && selection.IsChildOf(inventories.trader.parent)) {
+            SetBuyingState(moveControllerSelection: false);
+        }
+        else if (transactionState != TransactionState.Selling && selection.IsChildOf(inventories.stash.parent)) {
+            SetSellingState(moveControllerSelection: false);
+        }
     }
 
     private void RememberSelection(RectTransform target) {
-        // Walk up so the closest panel wins if panels are nested
+        NavPanel navPanel = FindNavPanel(target);
+        if (navPanel == null) return;
+        navPanel.rememberedSelection = target;
+        controllNav.recentPanels.Remove(navPanel);
+        InsertIntoRecentPanels(navPanel, true);
+    }
+
+    // Walks up so the closest panel wins if panels are nested
+    private NavPanel FindNavPanel(Transform target) {
         for (Transform parent = target; parent; parent = parent.parent) {
-            if (!controllNav.navPanels.TryGetValue(parent, out NavPanel navPanel)) continue;
-            navPanel.rememberedSelection = target;
-            controllNav.recentPanels.Remove(navPanel);
-            InsertIntoRecentPanels(navPanel, true);
-            return;
+            if (controllNav.navPanels.TryGetValue(parent, out NavPanel navPanel)) return navPanel;
         }
+        return null;
     }
 
     // Keeps the list sorted by priority, then goes either in front of or behind the panels with the same priority
@@ -387,7 +422,7 @@ public partial class Game {
 
     // Simulates a mouse click on buttons. Inventory slots don't need this since the inventory actions have gamepad bindings.
     private void UpdateControllerSubmit() {
-        if (inputs.menuSubmit.WasReleasedThisFrame() && controllNav.submitPressedOn) {
+        if (inputs.select.WasReleasedThisFrame() && controllNav.submitPressedOn) {
             GameObject pressed = controllNav.submitPressedOn;
             controllNav.submitPressedOn = null;
             ExecuteEvents.Execute(pressed, controllNav.pointerEventData, ExecuteEvents.pointerUpHandler);
@@ -396,7 +431,7 @@ public partial class Game {
             }
         }
 
-        if (!inputs.menuSubmit.WasPressedThisFrame()) return;
+        if (!inputs.select.WasPressedThisFrame()) return;
         if (!controllNav.selected || !controllNav.selected.TryGetComponent(out Selectable _)) return;
 
         controllNav.submitPressedOn = controllNav.selected.gameObject;

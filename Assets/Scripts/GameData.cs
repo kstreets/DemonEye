@@ -214,14 +214,12 @@ public class GameData {
         public InputGlyphSheet xboxGlyphs;
         public InputGlyphSheet keyboardMouseGlyphs;
         
-        public List<Transform> allInventoryPrompts;
         public RectTransform hideoutParent;
         public GameObject inRaidParent;
         public GameObject raidInventory;
-        
-        public InputPrompt inventorySelect;
-        public InputPrompt inventoryQuickMove;
-        public InputPrompt inventorySplitStack;
+
+        public List<InputPrompt> hideoutPrompts;
+        public List<InputPrompt> raidPrompts;
         
         [NonSerialized] public List<InputPrompt> allBoundPrompts = new();
     }
@@ -516,12 +514,23 @@ public class GameData {
         public GameAction move;
         public GameAction interact;
         public GameAction inventory;
-        public GameAction selectItem;
-        public GameAction placeSingleItem;
+        
+        public GameAction select;
+        
+        public GameAction sellSingleItem;
+        public GameAction sellStack;
+        public GameAction quickSell;
+        public GameAction tradeItems;
+        public GameAction purchase;
+        
+        public GameAction place;
+        public GameAction placeSingle;
+        public GameAction cancel;
         public GameAction useItem;
-        public GameAction moveStack;
+        public GameAction quickMove;
+        public GameAction quickDrop;
         public GameAction splitStack;
-        public GameAction escape;
+        public GameAction back;
         public GameAction pause;
         public GameAction quickUse1;
         public GameAction quickUse2;
@@ -532,7 +541,6 @@ public class GameData {
         public GameAction quickUseNext;
         public GameAction teleport;
         public GameAction menuMove;
-        public GameAction menuSubmit;
         public GameAction menuTabLeft;
         public GameAction menuTabRight;
         public GameAction menuSecondaryTabLeft;
@@ -540,7 +548,26 @@ public class GameData {
         public GameAction advanceDialogue;
         
         public readonly List<GameAction> all = new();
-        
+
+        // Keyed by the Unity action's id
+        public readonly Dictionary<Guid, GameAction> gameActionLookup = new();
+
+        // Rebuilt every frame from game state, last is the top. When actions on different layers share a binding, the higher one wins.
+        public readonly List<InputActionMap> layerStack = new();
+        public readonly HashSet<string> claimedUnityBindings = new();
+        public readonly HashSet<EInputActionOrigin> claimedSteamOrigins = new();
+
+        public const string GlobalLayer = "Global";
+        public const string GameplayLayer = "Gameplay";
+        public const string SelectionLayer = "Selection";
+        public const string MenuLayer = "Menu";
+        public const string InventoryLayer = "Inventory";
+        public const string PlayerInventoryLayer = "PlayerInventory";
+        public const string SellingLayer = "Selling";
+        public const string BuyingLayer = "Buying";
+        public const string SelectedItemLayer = "SelectedItem";
+        public const string DialogueLayer = "Dialogue";
+
         public enum Device { KeyboardMouse, Controller, ControllerWithMouse }
         public Device device;
         public float lastDeviceSwitchTime;
@@ -741,7 +768,6 @@ public class GameData {
         public float lastTimePlayerMovedSelection;
         public Transform[] ignoredRoots;
         public PointerEventData pointerEventData;
-        // Selections are remembered per panel, so switching tabs goes back to where we were in any panel that's still showing
         public readonly Dictionary<Transform, NavPanel> navPanels = new();
         public readonly List<NavPanel> recentPanels = new(); // Highest priority first, then most recently used
         public readonly List<RectTransform> possibleSelections = new();

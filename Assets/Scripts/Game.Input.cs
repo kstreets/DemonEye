@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Steamworks;
@@ -6,7 +7,9 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 using UnityEngine.InputSystem.Utilities;
+using UnityEngine.Pool;
 using static GameData;
+using Object = UnityEngine.Object;
 
 public partial class Game {
 
@@ -33,12 +36,20 @@ public partial class Game {
         inputs.interact = AddAction("Interact");
         inputs.advanceDialogue = AddAction("AdvanceDialogue");
         inputs.inventory = AddAction("Inventory");
-        inputs.selectItem = AddAction("SelectItem");
-        inputs.placeSingleItem = AddAction("PlaceSingleItem");
+        inputs.select = AddAction("Select");
+        inputs.sellSingleItem = AddAction("SellSingle");
+        inputs.sellStack = AddAction("SellStack");
+        inputs.quickSell = AddAction("QuickSell");
+        inputs.tradeItems = AddAction("TradeItems");
+        inputs.purchase = AddAction("Purchase");
+        inputs.place = AddAction("Place");
+        inputs.placeSingle = AddAction("PlaceSingle");
+        inputs.cancel = AddAction("Cancel");
         inputs.splitStack = AddAction("SplitStack");
-        inputs.moveStack = AddAction("MoveStack");
+        inputs.quickMove = AddAction("QuickMove");
+        inputs.quickDrop = AddAction("QuickDrop");
         inputs.useItem = AddAction("UseItem");
-        inputs.escape = AddAction("Escape");
+        inputs.back = AddAction("Back");
         inputs.pause = AddAction("Pause");
         inputs.quickUse1 = AddAction("QuickUse1");
         inputs.quickUse2 = AddAction("QuickUse2");
@@ -49,12 +60,11 @@ public partial class Game {
         inputs.quickUseNext = AddAction("QuickUseNext");
         inputs.teleport = AddAction("Teleport");
         inputs.menuMove = AddAction("MenuMove");
-        inputs.menuSubmit = AddAction("MenuSubmit");
         inputs.menuTabLeft = AddAction("MenuTabLeft");
         inputs.menuTabRight = AddAction("MenuTabRight");
         inputs.menuSecondaryTabLeft = AddAction("MenuSecondaryTabLeft");
         inputs.menuSecondaryTabRight = AddAction("MenuSecondaryTabRight");
-        
+
         // The Steam Deck starts on the controller, its touchpad switches to the cursor once it's used
         inputs.device = OnSteamDeck ? Inputs.Device.ControllerWithMouse : Inputs.Device.KeyboardMouse;
 
@@ -70,6 +80,7 @@ public partial class Game {
         GameAction AddAction(string actionName) {
             GameAction action = new(actionName);
             inputs.all.Add(action);
+            inputs.gameActionLookup.Add(action.unityInputAction.id, action);
             return action;
         }
     }
@@ -93,17 +104,154 @@ public partial class Game {
             inputs.lastDeviceSwitchTime = Time.unscaledTime;
             MenuNavigationOnInputDeviceChanged();
         }
-        
+
+        BuildInputLayerStack();
+        UpdateInputLayers();
+        CheckButtonControllerShortcuts();
+
         // Done here instead of with performed callbacks so Steam Input presses work too
         if (inputs.pause.WasPressedThisFrame()) {
             OnPausePressed();
         }
-        if (inputs.escape.WasPressedThisFrame()) {
-            OnEscapePressed(fromKeyboard: inputs.escape.WasPressedThisFrameOnKeyboard());
+        if (inputs.back.WasPressedThisFrame()) {
+            OnBackPressed(fromKeyboard: inputs.back.WasPressedThisFrameOnKeyboard());
         }
         
     }
     
+    // Layers are added bottom to top. A layer that isn't added is fully off, which is how menus block gameplay.
+    private void BuildInputLayerStack() {
+        inputs.layerStack.Clear();
+        AddInputLayer(Inputs.GlobalLayer);
+
+        bool popupOpen = pauseMenu.paused || ui.messagePopup.IsShowing;
+        if (popupOpen) {
+            AddInputLayer(Inputs.SelectionLayer);
+            AddInputLayer(Inputs.MenuLayer);
+        }
+        else if (InRaid) {
+            if (PlayerInventoryIsOpen || LootInventoryIsOpen) {
+                AddInputLayer(Inputs.SelectionLayer);
+                AddInputLayer(Inputs.MenuLayer);
+                if (!IsDraggingItem) {
+                    AddInputLayer(Inputs.InventoryLayer);
+                }
+                if (!IsDraggingItem && !LootInventoryIsOpen) {
+                    AddInputLayer(Inputs.PlayerInventoryLayer);
+                }
+            }
+            else {
+                AddInputLayer(Inputs.GameplayLayer);
+            }
+        }
+        else if (InHideout) {
+            AddInputLayer(Inputs.SelectionLayer);
+            AddInputLayer(Inputs.MenuLayer);
+            if (!IsDraggingItem) {
+                AddInputLayer(Inputs.InventoryLayer);
+            }
+            if (!IsDraggingItem && OnTradingTab && transactionState == TransactionState.Selling) {
+                AddInputLayer(Inputs.SellingLayer);
+            }
+            if (OnTradingTab && transactionState == TransactionState.Buying) {
+                AddInputLayer(Inputs.BuyingLayer);
+            }
+        }
+        else {
+            AddInputLayer(Inputs.SelectionLayer);
+            AddInputLayer(Inputs.MenuLayer);
+        }
+
+        if (IsDraggingItem && !popupOpen) {
+            AddInputLayer(Inputs.SelectedItemLayer);
+        }
+
+        if (!tutorial.dialogue.Finished) {
+            AddInputLayer(Inputs.DialogueLayer);
+        }
+    }
+
+    private void AddInputLayer(string actionMapName) {
+        inputs.layerStack.Add(InputSystem.actions.FindActionMap(actionMapName, throwIfNotFound: true));
+    }
+
+    public GameAction FindGameAction(InputAction unityAction) {
+        if (unityAction == null) return null;
+        return inputs.gameActionLookup.GetValueOrDefault(unityAction.id);
+    }
+
+    private void CheckButtonControllerShortcuts() {
+        // Clicking a button can enable or disable others, so this goes over a copy
+        using var _ = ListPool<ButtonFeel>.Get(out var buttonsToCheck);
+        buttonsToCheck.AddRange(ButtonFeel.activeWithControllerShortcuts);
+        
+        foreach (ButtonFeel button in buttonsToCheck) {
+            if (!button.isActiveAndEnabled) continue; // Disabled by an earlier click this frame
+            GameAction action = FindGameAction(button.controllerShortcut.action);
+            UpdateButtonShortcutGlyph(button, action);
+            if (action == null || !action.WasPressedThisFrame()) continue;
+            button.PlayShortcutPress();
+            button.TriggerClick();
+        }
+    }
+
+    private void UpdateButtonShortcutGlyph(ButtonFeel button, GameAction action) {
+        // Single image, so a modifier composite only shows its first part
+        Sprite glyph = action != null && action.isActive ? action.GetCurrentDisplayGlyphs()[0] : null;
+        button.SetInputGlyph(glyph);
+    }
+
+    // Decides which actions are active this frame. An action is active when its map is on the stack and none of its bindings
+    // for the current device are also used by an active action on a higher layer. Actions on the same layer never shadow each other.
+    private void UpdateInputLayers() {
+        if (inputs.layerStack.Count == 0) {
+            foreach (GameAction action in inputs.all) {
+                action.isActive = true;
+                action.layerIndex = -1;
+            }
+            return;
+        }
+
+        GameAction.BindingSource source;
+        if (inputs.device == Inputs.Device.KeyboardMouse) {
+            source = GameAction.BindingSource.KeyboardMouse;
+        }
+        else if (inputs.activelyUsingSteamInput) {
+            source = GameAction.BindingSource.Steam;
+        }
+        else {
+            source = GameAction.BindingSource.Gamepad;
+        }
+
+        foreach (GameAction action in inputs.all) {
+            action.isActive = false;
+            action.layerIndex = -1;
+        }
+
+        inputs.claimedUnityBindings.Clear();
+        inputs.claimedSteamOrigins.Clear();
+
+        for (int i = inputs.layerStack.Count - 1; i >= 0; i--) {
+            InputActionMap map = inputs.layerStack[i];
+
+            // Checked against higher layers only, before this layer claims anything, so actions on the same layer don't shadow each other
+            foreach (GameAction action in inputs.all) {
+                if (action.unityInputAction.actionMap != map) continue;
+                action.layerIndex = i;
+                
+                bool hasBindings = action.HasBindings(source);
+                bool bindingsNotClaimed = !action.SharesClaimedBinding(source, inputs.claimedUnityBindings, inputs.claimedSteamOrigins);
+                action.isActive = hasBindings && bindingsNotClaimed;
+            }
+
+            // Shadowed actions don't claim, so their other bindings still reach lower layers
+            foreach (GameAction action in inputs.all) {
+                if (action.unityInputAction.actionMap != map || !action.isActive) continue;
+                action.ClaimBindings(source, inputs.claimedUnityBindings, inputs.claimedSteamOrigins);
+            }
+        }
+    }
+
     public void UpdateUnityInputGlyphs() {
         Gamepad gamepad = Gamepad.current;
         inputs.gamepadUsedForCurrentGlyphs = gamepad;
@@ -114,6 +262,7 @@ public partial class Game {
 
         foreach (GameAction action in inputs.all) {
             action.UpdateUnityInputGlyphs(inputPrompts.keyboardMouseGlyphs, gamepadSheet);
+            action.UpdateUnityBindingKeys();
         }
     }
     
@@ -306,13 +455,119 @@ public class GameAction {
     private readonly Sprite[] keyboardMouseGlyphs = new Sprite[2];
     private readonly Sprite[] steamGlyphs = new Sprite[2];
     
-    private static EInputActionOrigin[] actionOrigins = new EInputActionOrigin[Constants.STEAM_INPUT_MAX_ORIGINS];
     private static readonly Dictionary<EInputActionOrigin, Sprite> steamGlyphSprites = new();
-    
+
+    public readonly string label;
+    public bool isActive = true;
+    public int layerIndex = -1;
+
+    public enum BindingSource { KeyboardMouse, Gamepad, Steam }
+
+    // One key per binding, composites joined into a single key so Shift+LMB doesn't count as the same binding as LMB
+    private readonly List<string> keyboardMouseBindingKeys = new();
+    private readonly List<string> gamepadBindingKeys = new();
+
+    private readonly EInputActionOrigin[] steamOrigins = new EInputActionOrigin[Constants.STEAM_INPUT_MAX_ORIGINS];
+    private int steamOriginCount;
+
     public GameAction(string name) {
         this.name = name;
+        label = MakeLabel(name);
         unityInputAction = InputSystem.actions.FindAction(name, throwIfNotFound: true);
         isAnalog = unityInputAction.expectedControlType == "Vector2";
+        UpdateUnityBindingKeys();
+    }
+
+    private static string MakeLabel(string actionName) {
+        System.Text.StringBuilder builder = new(actionName.Length + 4);
+        for (int i = 0; i < actionName.Length; i++) {
+            char c = actionName[i];
+            if (i > 0) {
+                char previous = actionName[i - 1];
+                bool wordStart = char.IsUpper(c) && !char.IsUpper(previous);
+                bool numberStart = char.IsDigit(c) && !char.IsDigit(previous);
+                if (wordStart || numberStart) {
+                    builder.Append(' ');
+                }
+            }
+            builder.Append(c);
+        }
+        return builder.ToString();
+    }
+
+    // Call again after rebinding, keys come from effective paths so overrides are included
+    public void UpdateUnityBindingKeys() {
+        CollectBindingKeys("Keyboard&Mouse", keyboardMouseBindingKeys);
+        CollectBindingKeys("Gamepad", gamepadBindingKeys);
+    }
+
+    private void CollectBindingKeys(string bindingGroup, List<string> keys) {
+        keys.Clear();
+        InputBinding groupMask = InputBinding.MaskByGroup(bindingGroup);
+        ReadOnlyArray<InputBinding> bindings = unityInputAction.bindings;
+
+        // Bindings with no group count for every device, otherwise they would never be shadowed
+        bool InGroup(InputBinding binding) => string.IsNullOrEmpty(binding.groups) || groupMask.Matches(binding);
+
+        for (int i = 0; i < bindings.Count; i++) {
+            InputBinding binding = bindings[i];
+
+            if (binding.isComposite) {
+                List<string> parts = new();
+                int part = i + 1;
+                for (; part < bindings.Count && bindings[part].isPartOfComposite; part++) {
+                    if (InGroup(bindings[part]) && !string.IsNullOrEmpty(bindings[part].effectivePath)) {
+                        parts.Add(bindings[part].effectivePath);
+                    }
+                }
+                i = part - 1;
+
+                if (parts.Count > 0) {
+                    parts.Sort(StringComparer.Ordinal);
+                    keys.Add(string.Join("+", parts));
+                }
+                continue;
+            }
+
+            if (InGroup(binding) && !string.IsNullOrEmpty(binding.effectivePath)) {
+                keys.Add(binding.effectivePath);
+            }
+        }
+    }
+
+    public bool HasBindings(BindingSource source) {
+        return source switch {
+            BindingSource.Steam => steamOriginCount > 0,
+            BindingSource.KeyboardMouse => keyboardMouseBindingKeys.Count > 0,
+            _ => gamepadBindingKeys.Count > 0,
+        };
+    }
+
+    public bool SharesClaimedBinding(BindingSource source, HashSet<string> claimedUnityBindings, HashSet<EInputActionOrigin> claimedSteamOrigins) {
+        if (source == BindingSource.Steam) {
+            for (int i = 0; i < steamOriginCount; i++) {
+                if (claimedSteamOrigins.Contains(steamOrigins[i])) return true;
+            }
+            return false;
+        }
+
+        foreach (string key in source == BindingSource.KeyboardMouse ? keyboardMouseBindingKeys : gamepadBindingKeys) {
+            if (claimedUnityBindings.Contains(key)) return true;
+        }
+        return false;
+    }
+
+    public void ClaimBindings(BindingSource source, HashSet<string> claimedUnityBindings, HashSet<EInputActionOrigin> claimedSteamOrigins) {
+        if (source == BindingSource.Steam) {
+            for (int i = 0; i < steamOriginCount; i++) {
+                claimedSteamOrigins.Add(steamOrigins[i]);
+            }
+            return;
+        }
+
+        foreach (string key in source == BindingSource.KeyboardMouse ? keyboardMouseBindingKeys : gamepadBindingKeys) {
+            claimedUnityBindings.Add(key);
+        }
     }
     
     public void BindSteamActionHandle() {
@@ -381,11 +636,11 @@ public class GameAction {
     }
     
     public void UpdateSteamInputGlyph(InputHandle_t controller, InputActionSetHandle_t inputActionSet) {
-        int originCount = isAnalog ? SteamInput.GetAnalogActionOrigins(controller, inputActionSet, steamAnalogHandle, actionOrigins) :
-                                     SteamInput.GetDigitalActionOrigins(controller, inputActionSet, steamDigitalHandle, actionOrigins);
-        
+        steamOriginCount = isAnalog ? SteamInput.GetAnalogActionOrigins(controller, inputActionSet, steamAnalogHandle, steamOrigins) :
+                                      SteamInput.GetDigitalActionOrigins(controller, inputActionSet, steamDigitalHandle, steamOrigins);
+
         // None when the action isn't bound on this controller, which clears the glyph
-        EInputActionOrigin origin = originCount > 0 ? actionOrigins[0] : EInputActionOrigin.k_EInputActionOrigin_None;
+        EInputActionOrigin origin = steamOriginCount > 0 ? steamOrigins[0] : EInputActionOrigin.k_EInputActionOrigin_None;
         if (curSteamGlyphId == origin) return;
         
         curSteamGlyphId = origin;
@@ -422,19 +677,23 @@ public class GameAction {
     }
 
     public bool IsPressed() {
+        if (!isActive) return false;
         return steamInputIsDown || unityInputAction.IsPressed();
     }
 
     public bool WasPressedThisFrame() {
+        if (!isActive) return false;
         return (steamInputIsDown && !steamInputWasDownLastFrame) || unityInputAction.WasPressedThisFrame();
     }
 
     public bool WasReleasedThisFrame() {
+        if (!isActive) return false;
         return (!steamInputIsDown && steamInputWasDownLastFrame) || unityInputAction.WasReleasedThisFrame();
     }
-    
+
     // Checks the bound controls instead of activeControl, which is already cleared if the key was tapped and released within the frame
     public bool WasPressedThisFrameOnKeyboard() {
+        if (!isActive) return false;
         foreach (InputControl control in unityInputAction.controls) {
             if (control.device is Keyboard && control is ButtonControl { wasPressedThisFrame: true }) {
                 return true;
@@ -444,6 +703,7 @@ public class GameAction {
     }
 
     public Vector2 ReadVector2() {
+        if (!isActive) return Vector2.zero;
         Vector2 unityValue = unityInputAction.ReadValue<Vector2>();
         return steamValue.sqrMagnitude > unityValue.sqrMagnitude ? steamValue : unityValue;
     }

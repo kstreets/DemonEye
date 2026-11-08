@@ -150,7 +150,7 @@ public partial class Game {
         });
         
         ui.menuBackButton.AddListener(() => {
-            OnEscapePressed();
+            OnBackPressed();
         });
         
         settings.applyChangesButton.AddListener(ApplySettings);

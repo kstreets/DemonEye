@@ -1,16 +1,22 @@
 using System;
+using System.Collections.Generic;
+using PrimeTween;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using static Game;
 
 public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler {
 
+    public static readonly List<ButtonFeel> activeWithControllerShortcuts = new();
+    
     public Styles styles;
     public RectTransform rectTransform;
     public Button button;
     public Image image;
+    public Image inputGlyph;
     public TextMeshProUGUI text;
     public Sprite pressedSprite;
     public Sprite nonHighlightedPressedSprite;
@@ -22,13 +28,56 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
     public bool beingKeptPressed;
     public DynamicClip pressedClip;
     public DynamicClip hoveredClip;
+    public InputActionReference controllerShortcut;
 
     [NonSerialized] public Action buttonListenerCallback;
-    [NonSerialized] public Action overrideButtonListenerCallback;
     private bool beingHovered;
+
+    private const float shortcutPressDuration = 0.1f;
+    private Tween shortcutReleaseTween;
+
+    private Vector2 inputGlyphRestPosition;
+
+    private void Awake() {
+        if (inputGlyph) {
+            inputGlyphRestPosition = inputGlyph.rectTransform.anchoredPosition;
+        }
+    }
+
+    private void OnEnable() {
+        if (controllerShortcut == null) return;
+        activeWithControllerShortcuts.Add(this);
+    }
 
     private void OnDisable() {
         OnPointerExit(null);
+        activeWithControllerShortcuts.Remove(this);
+
+        // Don't leave the button stuck down if it's hidden mid press
+        if (shortcutReleaseTween.isAlive) {
+            shortcutReleaseTween.Stop();
+            OnPointerUp(null);
+        }
+    }
+
+    public void PlayShortcutPress() {
+        if (isDisabled || beingKeptPressed) return;
+
+        shortcutReleaseTween.Stop();
+        OnPointerDown(null);
+        shortcutReleaseTween = Tween.Delay(this, shortcutPressDuration, static target => target.OnPointerUp(null), useUnscaledTime: true);
+    }
+
+    public void SetInputGlyph(Sprite glyph) {
+        if (!inputGlyph) return;
+
+        bool show = glyph != null;
+        if (inputGlyph.gameObject.activeSelf != show) {
+            inputGlyph.gameObject.SetActive(show);
+        }
+        if (show && inputGlyph.sprite != glyph) {
+            inputGlyph.sprite = glyph;
+        }
     }
 
     public void OnPointerDown(PointerEventData eventData) {
@@ -100,14 +149,6 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
         button.onClick.AddListener(OnButtonClicked);
     }
     
-    public void AddOverrideListener(Action callback) {
-        overrideButtonListenerCallback = callback;
-    }
-    
-    public void ClearOverrideListener() {
-        overrideButtonListenerCallback = null;
-    }
-    
     public void KeepPressed() {
         beingKeptPressed = true;
         OnPointerDown(null);
@@ -141,15 +182,17 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
     private void SetMargin(Vector4 margin) {
         if (!text) return;
         text.margin = margin;
+        if (inputGlyph) {
+            // Margin is (left, top, right, bottom). Assumes left-middle aligned text.
+            Vector4 delta = margin - styles.normalButtonTextMargin;
+            Vector2 textOffset = new(delta.x, (delta.w - delta.y) * 0.5f);
+            inputGlyph.rectTransform.anchoredPosition = inputGlyphRestPosition + textOffset;
+        }
     }
 
     private void OnButtonClicked() {
         if (isDisabled || beingKeptPressed) return;
-        Game.gameInstance.PlayAudioClip(pressedClip);
-        if (overrideButtonListenerCallback != null) {
-            overrideButtonListenerCallback();
-            return;
-        }
+        gameInstance.PlayAudioClip(pressedClip);
         buttonListenerCallback?.Invoke();
     }
 

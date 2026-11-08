@@ -27,7 +27,8 @@ public partial class Game {
                     return gameInstance.config.demonEyeLevels.items[DemonEyeLevel - 1];
                 }
                 
-                UuidScriptableObject uuidObject = gameInstance.res.lookup[itemOrInstanceUuid];
+                bool found = gameInstance.res.lookup.TryGetValue(itemOrInstanceUuid, out UuidScriptableObject uuidObject);
+                Assert.IsTrue(found, "ItemInstance uuid isn't a resource or a Demon Eye instance. Clone the ItemInstance instead of rebuilding it from ItemRef.");
                 return uuidObject switch {
                     Item item => item,
                     Augment augment => augment.augmentedEyeUpgrade,
@@ -488,7 +489,12 @@ public partial class Game {
     }
     
     private void CheckToMoveItem(InventoryHoverInfo invHoverInfo) {
-        if (!inputs.moveStack.WasPressedThisFrame()) return;
+        bool quickMove = inputs.quickMove.WasPressedThisFrame();
+        bool singleSell = inputs.sellSingleItem.WasPressedThisFrame();
+        bool stackSell = inputs.sellStack.WasPressedThisFrame();
+        bool quickDrop = inputs.quickDrop.WasPressedThisFrame();
+
+        if (!quickMove && !singleSell && !stackSell && !quickDrop) return;
 
         Inventory hoveredInventory = invHoverInfo.inventory;
         if (hoveredInventory == null || hoveredInventory.isLocked) return;
@@ -496,16 +502,21 @@ public partial class Game {
         if (!TryGetItemFromHoverInfo(invHoverInfo, out ItemInstance hoverdItemInstance)) return;
         if (NotAllowedToMoveOrPickupItem(invHoverInfo)) return;
         if (ClickedOnEquipedBackpackWithItems(invHoverInfo.inventory, invHoverInfo.slotIndex)) return;
-        
+
+        if (quickDrop) {
+            DropItemFromInventory(hoverdItemInstance);
+            RemoveItemFromInventory(hoveredInventory, invHoverInfo.slotIndex);
+            SuppressInventoryPopup();
+            return;
+        }
+
         // When attempting to move items in stash, make it change to selling
         if (OnTradingTab && hoveredInventory == inventories.stash && transactionState == TransactionState.Buying) {
             OnSellTogglePressed();
         }
 
-        MoveItemOption moveOption = MoveItemOption.FullStack;
+        MoveItemOption moveOption = singleSell ? MoveItemOption.Single : MoveItemOption.FullStack;
         Inventory destinationInventory = null;
-        
-        // SuppressInventoryPopup();
         
         if (InRaid) {
             if (hoveredInventory == inventories.player && LootInventoryIsOpen) {
@@ -555,7 +566,14 @@ public partial class Game {
         }
 
         if (destinationInventory == null) return;
+        int countBeforeMove = hoverdItemInstance.count;
         MoveItemBetweenInventories(hoveredInventory, destinationInventory, invHoverInfo.slotIndex, moveOption);
+
+        ItemInstance itemLeftInSlot = hoveredInventory.slots[invHoverInfo.slotIndex].itemInstance;
+        bool movedPartOfStack = itemLeftInSlot != null && itemLeftInSlot.count < countBeforeMove;
+        if (movedPartOfStack) {
+            SuppressInventoryPopup();
+        }
     }
 
     private void CheckToConsumeItem(InventoryHoverInfo invHoverInfo) {
@@ -768,9 +786,14 @@ public partial class Game {
     private bool IsDraggingItem => dragItemInstance != null;
 
     private bool UpdateInventoryDragAndDrop(InventoryHoverInfo hoverInfo) {
-        bool pickupInputUsed = inputs.selectItem.WasPressedThisFrame() || inputs.splitStack.WasPressedThisFrame();
-        bool placeInputUsed = inputs.selectItem.WasPressedThisFrame() || inputs.placeSingleItem.WasPressedThisFrame();
-        
+        if (inputs.cancel.WasPressedThisFrame()) {
+            CancelItemDrag();
+            return IsDraggingItem;
+        }
+
+        bool pickupInputUsed = inputs.select.WasPressedThisFrame() || inputs.splitStack.WasPressedThisFrame();
+        bool placeInputUsed = inputs.place.WasPressedThisFrame() || inputs.placeSingle.WasPressedThisFrame();
+
         bool inventoryIsLocked = hoverInfo.inventory?.isLocked ?? false;
         
         if ((!pickupInputUsed && !placeInputUsed) || inventoryIsLocked) {
@@ -848,7 +871,7 @@ public partial class Game {
 
             bool droppingItemInRaid = hoverInfo.inventory == null && InRaid;
             if (droppingItemInRaid) {
-                bool droppingEntireStack = inputs.selectItem.WasPressedThisFrame();
+                bool droppingEntireStack = inputs.place.WasPressedThisFrame();
                 if (droppingEntireStack) {
                     DropItemFromInventory(dragItemInstance);
                     dragItemInstance.count = 0;
@@ -875,7 +898,7 @@ public partial class Game {
                 // The same item with room in its stack gets placed onto instead, which tops it up and keeps any leftovers dragging
                 bool stackOntoSwapItem = swapItem.itemOrInstanceUuid == dragItemInstance.itemOrInstanceUuid
                     && !swapItem.IsFullStack && !hoverInfo.inventory.slots[hoverInfo.slotIndex].ui.disallowItemStacking;
-                swappingItems = !stackOntoSwapItem && inputs.selectItem.WasPressedThisFrame();
+                swappingItems = !stackOntoSwapItem && inputs.place.WasPressedThisFrame();
             }
             
             if (swappingItems && IsHoveredItemGrayedOut(hoverInfo)) {
@@ -899,9 +922,11 @@ public partial class Game {
                 return IsDraggingItem;
             }
 
-            bool placingSingleItemFromStack = inputs.placeSingleItem.WasPressedThisFrame();
+            bool placingSingleItemFromStack = inputs.placeSingle.WasPressedThisFrame();
             if (placingSingleItemFromStack) {
-                InventoryAddResult result = TryAddItemToInventory(hoverInfo.inventory, dragItemInstance.ItemRef, 1, dropSlotIndex, onlyVisibleSlots: true);
+                ItemInstance singleItem = dragItemInstance.Clone();
+                singleItem.count = 1;
+                InventoryAddResult result = TryAddItemToInventory(hoverInfo.inventory, singleItem, dropSlotIndex, onlyVisibleSlots: true);
 
                 dragItemInstance.count -= result.addedCount;
                 if (dragItemInstance.count <= 0) {

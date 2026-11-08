@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,7 +19,18 @@ public class InputPrompt : MonoBehaviour {
     public TextMeshProUGUI text;
     [EndIf]
     
-    public GameAction boundAction;
+    public readonly List<GameAction> boundActions = new();
+
+    public GameAction GetWinningAction() {
+        GameAction winner = null;
+        foreach (GameAction action in boundActions) {
+            if (!action.isActive) continue;
+            if (winner == null || action.layerIndex > winner.layerIndex) {
+                winner = action;
+            }
+        }
+        return winner;
+    }
     
     public bool ShouldBeShowing(bool usingController) {
         return showWhenUsingDevice switch {
@@ -28,6 +40,12 @@ public class InputPrompt : MonoBehaviour {
         };
     }
     
+    // Simple prompts are glyph only, so they have no label
+    public void SetLabel(string label) {
+        if (isSimplePrompt || text == null || text.text == label) return;
+        text.text = label;
+    }
+
     public void Set(Sprite[] glyphs) {
         Sprite primary = glyphs.Length > 0 ? glyphs[0] : null;
         

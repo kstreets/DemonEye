@@ -192,10 +192,6 @@ public partial class Game {
         ui.hotBarParent.gameObject.SetActive(true);
         
         inputPrompts.inRaidParent.SetActive(true);
-        foreach (Transform invPrompt in inputPrompts.allInventoryPrompts) {
-            invPrompt.SetParent(inputPrompts.inRaidParent.transform, false);
-            invPrompt.gameObject.SetActive(false);
-        }
 
         // Initialize minimap for this raid (Tilemap GameObject must be active)
         {
@@ -224,10 +220,6 @@ public partial class Game {
         ui.minimap.gameObject.SetActive(false);
         
         inputPrompts.inRaidParent.SetActive(false);
-        foreach (Transform invPrompt in inputPrompts.allInventoryPrompts) {
-            invPrompt.SetParent(inputPrompts.hideoutParent.transform, false);
-            invPrompt.gameObject.SetActive(true);
-        }
     }
 
     private void ToggleHideoutPanels(params RectTransform[] panels) {
@@ -1062,10 +1054,21 @@ public partial class Game {
     }
     
     private void InitInputPrompts() {
-        BindPromptToAction(inputPrompts.inventorySelect, inputs.selectItem);
-        BindPromptToAction(inputPrompts.inventoryQuickMove, inputs.moveStack);
-        BindPromptToAction(inputPrompts.inventorySplitStack, inputs.splitStack);
+        List<InputPrompt> activePromptList = inputPrompts.hideoutPrompts;
         
+        BindPromptToActiveList(0, inputs.select, inputs.sellSingleItem, inputs.place);
+        BindPromptToActiveList(1, inputs.quickMove, inputs.sellStack);
+        BindPromptToActiveList(2, inputs.splitStack, inputs.placeSingle);
+        BindPromptToActiveList(3, inputs.cancel);
+
+        activePromptList = inputPrompts.raidPrompts;
+
+        BindPromptToActiveList(0, inputs.inventory);
+        BindPromptToActiveList(1, inputs.select, inputs.place);
+        BindPromptToActiveList(2, inputs.quickMove, inputs.quickDrop);
+        BindPromptToActiveList(3, inputs.splitStack, inputs.placeSingle);
+        BindPromptToActiveList(4, inputs.cancel);
+
         BindPromptToAction(hideoutTabs.toggleGroup.leftInputPrompt, inputs.menuTabLeft);
         BindPromptToAction(hideoutTabs.toggleGroup.rightInputPrompt, inputs.menuTabRight);
         
@@ -1081,19 +1084,29 @@ public partial class Game {
         BindPromptToAction(questsPanel.toggleButtonGroup.leftInputPrompt, inputs.menuSecondaryTabLeft);
         BindPromptToAction(questsPanel.toggleButtonGroup.rightInputPrompt, inputs.menuSecondaryTabRight);
         
-        void BindPromptToAction(InputPrompt prompt, GameAction action) {
-            prompt.boundAction = action;
-            inputPrompts.allBoundPrompts.Add(prompt);
-        } 
+        void BindPromptToAction(InputPrompt prompt, params GameAction[] actions) {
+            prompt.boundActions.AddRange(actions);
+            if (!inputPrompts.allBoundPrompts.Contains(prompt)) {
+                inputPrompts.allBoundPrompts.Add(prompt);
+            }
+        }
+
+        void BindPromptToActiveList(int index, params GameAction[] actions) {
+            BindPromptToAction(activePromptList[index], actions);
+        }
     }
 
     private void UpdateInputPrompts() {
         foreach (InputPrompt prompt in inputPrompts.allBoundPrompts) {
-            bool shouldShow = prompt.ShouldBeShowing(UsingController);
+            // Hidden while a higher layer has taken the action's binding, so only the winning action's prompt shows
+            GameAction action = prompt.GetWinningAction();
+            bool shouldShow = prompt.ShouldBeShowing(UsingController) && action != null;
             if (prompt.gameObject.activeSelf != shouldShow) {
                 prompt.gameObject.SetActive(shouldShow);
             }
-            prompt.Set(prompt.boundAction.GetCurrentDisplayGlyphs());
+            if (action == null) continue;
+            prompt.Set(action.GetCurrentDisplayGlyphs());
+            prompt.SetLabel(action.label);
         }
     }
 
