@@ -84,7 +84,7 @@ MonoBehaviour:
     bottomLeft: {r: 1, g: 1, b: 1, a: 1}
     bottomRight: {r: 1, g: 1, b: 1, a: 1}
   m_fontColorGradientPreset: {fileID: 0}
-  m_spriteAsset: {fileID: 0}
+  m_spriteAsset: {fileID: 11400000, guid: b549577070cfd094d85d4b6347e012b3, type: 2}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
   m_TextStyleHashCode: -1183493901
@@ -214,6 +214,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7862bda6e18757b4a92d889c127e529a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InputPrompt
+  isSimplePrompt: 0
+  showWhenUsingDevice: 0
   primaryGlyphImage: {fileID: 8429623846975464059}
   secondaryGlyphImage: {fileID: 9056397871505853411}
   compositePlusImage: {fileID: 7196780120093569214}

@@ -225,7 +225,6 @@ public partial class Game {
         HideInventoryItemPopup(); 
         HideHint();
         ui.interactionPrompt.gameObject.SetActive(false);
-        ui.interactDetails.gameObject.SetActive(false);
         playerInfo.parent.gameObject.SetActive(false);
         raidInfo.parent.SetActive(false);
         bossBar.parent.SetActive(false);
@@ -1136,20 +1135,17 @@ public partial class Game {
         }
     }
 
-    private void EnableInteractionPrompt(Vector3 position, string shortInteractString, string detailsString) {
-        ui.interactDetails.gameObject.SetActive(true);
-        ui.interactDetails.text = detailsString;
-        
-        ui.interactionPrompt.gameObject.SetActive(true);
-        ui.interactionPrompt.promptText.text = shortInteractString;
-        ui.interactionPrompt.Show(shortInteractString);
-        ui.interactionPrompt.transform.position = camera.main.WorldToScreenPoint(position);
+    // Not in the bound prompt list, since that would overwrite the label with the action name every frame
+    private void EnableInteractionPrompt(Vector3 position, string interactionText) {
+        InputPrompt prompt = ui.interactionPrompt;
+        prompt.gameObject.SetActive(true);
+        prompt.Set(inputs.interact.GetCurrentDisplayGlyphs());
+        prompt.SetLabel(interactionText);
+        prompt.transform.position = camera.main.WorldToScreenPoint(position);
     }
-    
+
     private void DisableInteractionPrompt() {
         ui.interactionPrompt.gameObject.SetActive(false);
-        ui.interactDetails.gameObject.SetActive(false);
-        ui.interactDetails.color = config.styles.interactionsTextColor;
     }
     
     // Multiply canvas units (sizes and offsets authored at 1080p) by this to get screen pixels

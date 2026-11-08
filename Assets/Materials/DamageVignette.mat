@@ -37,13 +37,13 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _ClearRadius: 0.38
-    - _EdgeSoftness: 0.4
-    - _NoiseScale: 7
-    - _NoiseStrength: 0.2
+    - _ClearRadius: 0.7
+    - _EdgeSoftness: 0.265
+    - _NoiseScale: 4
+    - _NoiseStrength: 0
     m_Colors:
     - _NoiseOffset: {r: 0.15, g: 0.1, b: 0, a: 0}
     - _NoiseSpeed: {r: 0.15, g: 0.1, b: 0, a: 0}
-    - _VignetteColor: {r: 0.65, g: 0, b: 0.02, a: 1}
+    - _VignetteColor: {r: 0.6603774, g: 0.08514295, b: 0.10246923, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

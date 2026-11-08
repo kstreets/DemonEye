@@ -15,6 +15,7 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
     public TextMeshProUGUI weightText;
     public GameObject metaInfoParent;
     public GameObject consumePromtParent;
+    public InputPrompt consumeInputPrompt;
     public HorizontalLayoutGroup tagsLayoutGroup;
     public VerticalLayoutGroup bodyLayoutGroup;
     public ImageTextGroup typeTagGroup;
@@ -124,6 +125,9 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
         weightText.text = tintedWeightSprite + ColorText((item.Weight * itemInstance.count).ToString(), styles.underWeightColor);
         
         consumePromtParent.gameObject.SetActive(item.type == gameInstance.itemTypes.quickUse);
+        if (consumePromtParent.activeInHierarchy) {
+            consumeInputPrompt.Set(gameInstance.inputs.useItem.GetCurrentDisplayGlyphs());
+        }
     }
 
     private void SetDescription(ItemInstance itemInstance, Item item) {

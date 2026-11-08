@@ -34,7 +34,9 @@ public static class RenderManager {
 
     private static ScriptableRendererData renderer;
     private static FullScreenPassRendererFeature environmentFullscreenPass;
-    
+    private static FullScreenPassRendererFeature damageVignettePass;
+    private static FullScreenPassRendererFeature deathWipePass;
+
 #if UNITY_EDITOR
     static RenderManager() {
         Initialize();
@@ -63,7 +65,23 @@ public static class RenderManager {
         environmentFullscreenPass.passMaterial = mat;
         renderer.SetDirty();
     }
-    
+
+    public static void SetDamageVignettePassActive(bool active) {
+        damageVignettePass ??= GetRenderFeature<FullScreenPassRendererFeature>("DamageVignette");
+        if (damageVignettePass == null || damageVignettePass.isActive == active) return;
+
+        damageVignettePass.SetActive(active);
+        renderer.SetDirty();
+    }
+
+    public static void SetDeathWipePassActive(bool active) {
+        deathWipePass ??= GetRenderFeature<FullScreenPassRendererFeature>("Death Wipe");
+        if (deathWipePass == null || deathWipePass.isActive == active) return;
+
+        deathWipePass.SetActive(active);
+        renderer.SetDirty();
+    }
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void Initialize() {
         offScreenRenderingSize = Vector2Int.zero;
@@ -72,7 +90,11 @@ public static class RenderManager {
         referenceResolution = 180;
         renderer = null;
         environmentFullscreenPass = null;
+        damageVignettePass = null;
+        deathWipePass = null;
         SetFullscreenEnvironmentMaterial(null);
+        SetDamageVignettePassActive(false);
+        SetDeathWipePassActive(false);
         RenderPipelineManager.beginCameraRendering -= OnBeginRendering;
         RenderPipelineManager.beginCameraRendering += OnBeginRendering;
     }

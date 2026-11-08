@@ -69,6 +69,7 @@ public partial class Game : MonoBehaviour {
 
     private void OnApplicationQuit() {
         SetDeathWipe(0f, 0f);
+        ClearDamageVignette();
         ShutdownInput(); // Before the platform, since Steam Input has to shut down before Steam
         ShutdownPlatform();
     }
@@ -324,6 +325,7 @@ public partial class Game : MonoBehaviour {
         Cursor.visible = false;
 
         SetDeathWipe(0f, 0f);
+        ClearDamageVignette();
         curRaid.mapInstance.gameObject.SetActive(true);
 
         int randomSpawnIndex = Random.Range(0, curRaid.mapInstance.spawnPositionsParent.childCount);
@@ -563,19 +565,6 @@ public partial class Game : MonoBehaviour {
             camera.pixelPerfect.assetsPPU = initialPPU;
             onCompleteCallback?.Invoke();
         });
-    }
-    
-    private void SetDeathWipe(float fill, float alpha) {
-        Shader.SetGlobalFloat(ShaderIds.deathWipeFill, fill);
-        Shader.SetGlobalFloat(ShaderIds.deathWipeAlpha, alpha);
-    }
-
-    private Tween TweenDeathWipeFill(float startValue, float endValue, float duration, Ease ease) {
-        return Tween.Custom(startValue, endValue, duration, val => Shader.SetGlobalFloat(ShaderIds.deathWipeFill, val), ease);
-    }
-
-    private Tween TweenDeathWipeAlpha(float startValue, float endValue, float duration, Ease ease) {
-        return Tween.Custom(startValue, endValue, duration, val => Shader.SetGlobalFloat(ShaderIds.deathWipeAlpha, val), ease);
     }
     
     private Vector2Int lastScreenSize;

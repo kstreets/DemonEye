@@ -281,7 +281,8 @@ public partial class Game {
     }
     
     private void KeepStashSorted() {
-        if (!StashInventoryIsOpen) return;
+        // Leaves the held item's slot empty until it's placed, so the stash doesn't shift under the cursor
+        if (!StashInventoryIsOpen || IsDraggingItem) return;
         
         Inventory stash = inventories.stash;
         if (IsStashSorted(stash)) return;

@@ -167,7 +167,7 @@ public class GameData {
         public TMP_FontAsset mainFontAsset;
         public RectTransform mainCanvasRectTransform;
         public CanvasScaler mainCanvasScaler;
-        public InteractionPrompt interactionPrompt;
+        public InputPrompt interactionPrompt;
         public RawImage controllerCrosshair;
         public Minimap minimap;
         public ItemDescPopup itemDescPopupInv;
@@ -197,7 +197,6 @@ public class GameData {
         public LayoutElement lootInventoryLayoutElement;
         public RectTransform lootInventoryParent;
         public GameObject lootSearchingText;
-        public TextMeshProUGUI interactDetails;
         public RectTransform portalArrow;
         public RectTransform damageNumbersParent;
         public RectTransform currencyForSmallScreensParent;

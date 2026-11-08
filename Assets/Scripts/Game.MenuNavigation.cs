@@ -349,18 +349,6 @@ public partial class Game {
         controllNav.pointerPos = GetScreenRect(target).center;
         controllNav.hasPointerPos = true;
         ExecuteEvents.Execute(target.gameObject, controllNav.pointerEventData, ExecuteEvents.pointerEnterHandler);
-        SyncTransactionStateToControllerSelection(target);
-    }
-    
-    private void SyncTransactionStateToControllerSelection(RectTransform selection) {
-        if (!OnTradingTab || !UsingControllerAsPointer) return;
-
-        if (transactionState != TransactionState.Buying && selection.IsChildOf(inventories.trader.parent)) {
-            SetBuyingState(moveControllerSelection: false);
-        }
-        else if (transactionState != TransactionState.Selling && selection.IsChildOf(inventories.stash.parent)) {
-            SetSellingState(moveControllerSelection: false);
-        }
     }
 
     private void RememberSelection(RectTransform target) {

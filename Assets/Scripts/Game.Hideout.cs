@@ -208,15 +208,12 @@ public partial class Game {
     private enum TransactionState { Selling, Buying }
     private TransactionState transactionState;
 
-    private void OnBuyTogglePressed() => SetBuyingState(moveControllerSelection: true);
-    private void OnSellTogglePressed() => SetSellingState(moveControllerSelection: true);
-
-    private void SetBuyingState(bool moveControllerSelection) {
+    private void OnBuyTogglePressed() {
         transactionState = TransactionState.Buying;
         transactionPanel.inventoryParent.gameObject.SetActive(false);
 
         SetTradingSlot(curTradingInventorySlot, tweenSize: false);
-        if (moveControllerSelection && UsingControllerAsPointer) {
+        if (UsingControllerAsPointer) {
             SetControllerSelection(curTradingInventorySlot.ui.rectTransform);
         }
 
@@ -228,13 +225,13 @@ public partial class Game {
         ClearInventory(inventories.transaction);
     }
 
-    private void SetSellingState(bool moveControllerSelection) {
+    private void OnSellTogglePressed() {
         transactionState = TransactionState.Selling;
         transactionPanel.inventoryParent.gameObject.SetActive(true);
         curTradingInventorySlot?.ui.ClearSelectionUnderlay();
 
         // Move the controller pointer over to the stash from the traders inventory
-        if (moveControllerSelection && UsingControllerAsPointer && lastInventoryHoverInfo.inventory == inventories.trader) {
+        if (UsingControllerAsPointer && lastInventoryHoverInfo.inventory == inventories.trader) {
             SelectDefaultNavTarget();
         }
     }

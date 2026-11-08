@@ -20,6 +20,7 @@ public class InputPrompt : MonoBehaviour {
     [EndIf]
     
     public readonly List<GameAction> boundActions = new();
+    public RectTransform rectTransform => (RectTransform)transform;
 
     public GameAction GetWinningAction() {
         GameAction winner = null;

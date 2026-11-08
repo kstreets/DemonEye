@@ -27,6 +27,7 @@ public static class ShaderIds {
     public static readonly int bloodMaskRect = Shader.PropertyToID("_BloodMaskRect");
     public static readonly int deathWipeAlpha = Shader.PropertyToID("_DeathWipeAlpha");
     public static readonly int deathWipeFill = Shader.PropertyToID("_DeathWipeFill");
+    public static readonly int damageIntensity = Shader.PropertyToID("_DamageIntensity");
     public static readonly int unscaledTime = Shader.PropertyToID("_UnscaledTime");
     public static readonly int waterMap = Shader.PropertyToID("_WaterMap");
     public static readonly int waterOcclusionMap = Shader.PropertyToID("_WaterOcclusionMap");

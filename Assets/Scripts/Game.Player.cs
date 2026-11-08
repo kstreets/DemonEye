@@ -797,7 +797,7 @@ public partial class Game {
         float damageShakeFreq = Mathf.Lerp(6f, 10f, damageImpactScale);
         float damageShakeMag = Mathf.Lerp(0.02f, 0.1f, damageImpactScale);
         camera.cameraShake.Shake(damageShakeFreq, damageShakeMag, 0.6f);
-        
+        AnimateDamageVignette(Mathf.Lerp(0.5f, 1f, damageImpactScale));
     }
     
     private void PoisonPlayer(float damageMulti, float duration) {
