@@ -33,6 +33,7 @@ public partial class Game {
     private void InitInput() {
         inputs.move = AddAction("Move");
         inputs.aim = AddAction("Aim");
+        inputs.attack = AddAction("Attack");
         inputs.interact = AddAction("Interact");
         inputs.advanceDialogue = AddAction("AdvanceDialogue");
         inputs.inventory = AddAction("Inventory");

@@ -168,6 +168,7 @@ public class GameData {
         public RectTransform mainCanvasRectTransform;
         public CanvasScaler mainCanvasScaler;
         public InteractionPrompt interactionPrompt;
+        public RawImage controllerCrosshair;
         public Minimap minimap;
         public ItemDescPopup itemDescPopupInv;
         public ItemDescPopup itemDescPopupPickup;
@@ -216,10 +217,12 @@ public class GameData {
         
         public RectTransform hideoutParent;
         public GameObject inRaidParent;
-        public GameObject raidInventory;
+        public InputPrompt hotBarLeft;
+        public InputPrompt hotBarRight;
 
         public List<InputPrompt> hideoutPrompts;
         public List<InputPrompt> raidPrompts;
+        public List<InputPrompt> hotBarPrompts;
         
         [NonSerialized] public List<InputPrompt> allBoundPrompts = new();
     }
@@ -271,7 +274,6 @@ public class GameData {
         public ButtonFeel suicideButton;
         [NonSerialized] public bool paused;
         [NonSerialized] public bool showingSettings;
-        [NonSerialized] public int resumedOnFrame = -1;
         [NonSerialized] public readonly List<AudioSource> pausedAudioSources = new();
     }
     
@@ -499,18 +501,15 @@ public class GameData {
         [NonSerialized] public SettingsState curSettingsState;
     }
     
-    [Serializable]
     public class HotBar {
-        [NonSerialized] public List<GameAction> quickUseActions;
-        [NonSerialized] public InventorySlotUI[] slotUIs;
-        [NonSerialized] public int selectedIndex; // The only slot bound on controller, the bumpers move it
-
-        public GameObject leftShoulderPrompt;
-        public GameObject rightShoulderPrompt;
+        public List<GameAction> quickUseActions;
+        public InventorySlotUI[] slotUIs;
+        public int selectedIndex; // The only slot bound on controller
     }
     
     public class Inputs {
         public GameAction aim;
+        public GameAction attack;
         public GameAction move;
         public GameAction interact;
         public GameAction inventory;

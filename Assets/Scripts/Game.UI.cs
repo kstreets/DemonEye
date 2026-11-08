@@ -56,6 +56,20 @@ public partial class Game {
         if (inRaidGameplay) {
             Cursor.visible = !UsingController;
         }
+
+        // The hardware cursor can't follow the stick without warping the mouse, which would switch the input device
+        const float controllerCrosshairDistance = 0.6f;
+        RawImage controllerCrosshair = ui.controllerCrosshair;
+        Vector2 aimDir = Vector2.zero;
+        bool showControllerCrosshair = inRaidGameplay && UsingController && TryGetAimDirection(out aimDir);
+        if (controllerCrosshair.gameObject.activeSelf != showControllerCrosshair) {
+            controllerCrosshair.gameObject.SetActive(showControllerCrosshair);
+        }
+        if (showControllerCrosshair) {
+            controllerCrosshair.texture = crosshair;
+            Vector3 crosshairWorldPos = GetPlayerEyePos() + (Vector3)(aimDir * controllerCrosshairDistance);
+            controllerCrosshair.rectTransform.position = camera.main.WorldToScreenPoint(crosshairWorldPos);
+        }
     }
 
     private void SetCursorTexture(Texture2D texture) {
@@ -1068,6 +1082,18 @@ public partial class Game {
         BindPromptToActiveList(2, inputs.quickMove, inputs.quickDrop);
         BindPromptToActiveList(3, inputs.splitStack, inputs.placeSingle);
         BindPromptToActiveList(4, inputs.cancel);
+
+        activePromptList = inputPrompts.hotBarPrompts;
+
+        BindPromptToActiveList(0, inputs.quickUse1);
+        BindPromptToActiveList(1, inputs.quickUse2);
+        BindPromptToActiveList(2, inputs.quickUse3);
+        BindPromptToActiveList(3, inputs.quickUse4);
+        // Moves with the selection, see MoveHotBarSelection
+        BindPromptToActiveList(hotBar.selectedIndex, inputs.quickUseSelected);
+
+        BindPromptToAction(inputPrompts.hotBarLeft, inputs.quickUsePrevious);
+        BindPromptToAction(inputPrompts.hotBarRight, inputs.quickUseNext);
 
         BindPromptToAction(hideoutTabs.toggleGroup.leftInputPrompt, inputs.menuTabLeft);
         BindPromptToAction(hideoutTabs.toggleGroup.rightInputPrompt, inputs.menuTabRight);

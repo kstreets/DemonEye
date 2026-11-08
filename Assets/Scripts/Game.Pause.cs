@@ -72,7 +72,6 @@ public partial class Game {
         pauseMenu.pausedAudioSources.Clear();
 
         pauseMenu.paused = false;
-        pauseMenu.resumedOnFrame = Time.frameCount;
         Time.timeScale = 1f;
         states.gameStateMachine.UnPause();
         tutorial.stateMachine?.UnPause();

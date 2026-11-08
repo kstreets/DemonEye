@@ -334,8 +334,8 @@ public partial class Game {
             }
         }
         
-        bool wantsToShoot = TryGetAimDirection(out Vector2 aimDir);
-        wantsToShoot = !UsingController && (Mouse.current?.leftButton.isPressed ?? false);
+        bool hasAimDir = TryGetAimDirection(out Vector2 aimDir);
+        bool wantsToShoot = UsingController ? hasAimDir : hasAimDir && inputs.attack.IsPressed();
         
         bool setNextIdleToFaceAimingDirection = !hasVelocity;
         if (setNextIdleToFaceAimingDirection) {

@@ -452,10 +452,6 @@ public partial class Game {
         
     }
     
-    // On controller south also selects items in the inventory and confirms in menus, so it only uses the hotbar while playing.
-    // Resuming from the pause menu is checked too, since pressing resume with south would otherwise also use an item that frame.
-    private bool CanUseControllerHotBar => InRaid && !PlayerInventoryIsOpen && !LootInventoryIsOpen && pauseMenu.resumedOnFrame != Time.frameCount;
-
     private void CheckForHotBarInteractions() {
         int quickUseIndex = -1;
         for (int i = 0; i < hotBar.quickUseActions.Count; i++) {
@@ -465,16 +461,14 @@ public partial class Game {
             }
         }
 
-        if (CanUseControllerHotBar) {
-            if (inputs.quickUsePrevious.WasPressedThisFrame()) {
-                MoveHotBarSelection(-1);
-            }
-            if (inputs.quickUseNext.WasPressedThisFrame()) {
-                MoveHotBarSelection(1);
-            }
-            if (inputs.quickUseSelected.WasPressedThisFrame()) {
-                quickUseIndex = hotBar.selectedIndex;
-            }
+        if (inputs.quickUsePrevious.WasPressedThisFrame()) {
+            MoveHotBarSelection(-1);
+        }
+        if (inputs.quickUseNext.WasPressedThisFrame()) {
+            MoveHotBarSelection(1);
+        }
+        if (inputs.quickUseSelected.WasPressedThisFrame()) {
+            quickUseIndex = hotBar.selectedIndex;
         }
 
         if (quickUseIndex == -1) return;
@@ -487,7 +481,9 @@ public partial class Game {
     // Wraps around, so going left from the first slot goes to the last
     private void MoveHotBarSelection(int direction) {
         int slotCount = hotBar.quickUseActions.Count;
+        inputPrompts.hotBarPrompts[hotBar.selectedIndex].boundActions.Remove(inputs.quickUseSelected);
         hotBar.selectedIndex = (hotBar.selectedIndex + direction + slotCount) % slotCount;
+        inputPrompts.hotBarPrompts[hotBar.selectedIndex].boundActions.Add(inputs.quickUseSelected);
     }
     
 }

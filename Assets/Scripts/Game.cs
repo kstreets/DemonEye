@@ -41,7 +41,6 @@ public partial class Game : MonoBehaviour {
     public Audio audio;
     public Music music;
     public Settings settings;
-    public HotBar hotBar;
     
     [NonSerialized] public readonly Inputs inputs = new();
     [NonSerialized] public readonly EntityPools entityPools = new();
@@ -53,6 +52,7 @@ public partial class Game : MonoBehaviour {
     [NonSerialized] public readonly CurrentGamingSession curSession = new();
     [NonSerialized] public readonly CurrentRaid curRaid = new();
     [NonSerialized] public readonly Inventories inventories = new();
+    [NonSerialized] public readonly HotBar hotBar = new();
     [NonSerialized] public readonly PerFrameData thisFrame = new();
     [NonSerialized] public readonly ControllerNavigation controllNav = new();
     [NonSerialized] public readonly Tutorial tutorial = new();
