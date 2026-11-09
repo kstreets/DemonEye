@@ -92,6 +92,7 @@ public partial class Game : MonoBehaviour {
         UpdateMenuMusic();
         UpdateQuests(); // !
         UpdateInputPrompts();
+        UpdateSettings();
         ClearPerFrameData();
         CheckForScreenSizeChange();
         UpdateCursorStyle();
@@ -146,7 +147,7 @@ public partial class Game : MonoBehaviour {
     private void OnMainMenuStateExit() {
         CloseMainMenuUI();
     }
-
+    
     private void OnHideoutStateEnter() {
         ShowHideoutUI();
         SuppressInventoryPopup();
@@ -161,7 +162,7 @@ public partial class Game : MonoBehaviour {
         CloseHideoutUI();
         SaveGameState();
     }
-
+    
     private void OnHideoutStateUpdate() {
         UpdateHideoutNotifiers();
         UpdateInventory();

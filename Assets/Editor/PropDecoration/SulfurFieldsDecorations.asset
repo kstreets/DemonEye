@@ -1,0 +1,142 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3aec51d07be80b47bc535c7558c44bd, type: 3}
+  m_Name: SulfurFieldsDecorations
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::PropDecorationRules
+  rules:
+  - name: Trees
+    anchors:
+    - {fileID: 6772421346144172790, guid: 8e9a629ea2703134898a5c341bba90ea, type: 3}
+    - {fileID: 776516440161750012, guid: 1722a7e178ee92b42857140898033a20, type: 3}
+    - {fileID: 3451307586492273064, guid: d69ca87170fdb5a48b27cf9352b7db43, type: 3}
+    - {fileID: 7564345725893470153, guid: 91c236b879d0bd54fa5012f758c1cfe3, type: 3}
+    - {fileID: 1469624838790098705, guid: 4e05f9f26cead074281120e7b56b2d5a, type: 3}
+    - {fileID: 5205157934377646997, guid: ac93006ffa2ef0e4ebfdddacaf32c9f7, type: 3}
+    - {fileID: 6157034580446410294, guid: 3cbc0bf5f549dd045b6288497a590a9a, type: 3}
+    decorations:
+    - prefab: {fileID: 8977996825771860062, guid: 380d25c8278a67143b97591afa0e0e78, type: 3}
+      weight: 2
+    - prefab: {fileID: 4174506953238002133, guid: ef03c2a7ca1215641905b4b6622f372b, type: 3}
+      weight: 2
+    - prefab: {fileID: 2165768254244827646, guid: 7cded4a2c8ee3fa49bfb18e6debf6f41, type: 3}
+      weight: 2
+    - prefab: {fileID: 4603976836577243809, guid: 9b5065e5a0edff14ba5f72e599f591f3, type: 3}
+      weight: 2
+    - prefab: {fileID: 2386747496197902115, guid: 19e340ff072b35e48a4985dae8f88877, type: 3}
+      weight: 2
+    - prefab: {fileID: 1718944382301546445, guid: 7aec77030b6b9dc46bc3f527ca948379, type: 3}
+      weight: 2
+    count: {x: 1, y: 3}
+    distance: {x: 0.02, y: 0.4}
+    sideBias: 0.5
+    randomFlip: 0
+  - name: Rocks
+    anchors:
+    - {fileID: 2660934404229899089, guid: e0fbac6cdda621143953257db2610301, type: 3}
+    - {fileID: 3751784693154680884, guid: 73193d6843501d149ab5529b78cd128f, type: 3}
+    - {fileID: 7443111519077106932, guid: b1c748115c189c84fabf9e4d888d79a9, type: 3}
+    - {fileID: 7155300367784665883, guid: 043e1af452658274c8f4a79a932aadff, type: 3}
+    - {fileID: 7160098637627186652, guid: 66b329a9c5626c143941dedf35ba543f, type: 3}
+    - {fileID: 6265535447049675360, guid: 50b6dac3e1f3e1e4aa0a6881612239d7, type: 3}
+    decorations:
+    - prefab: {fileID: 8497874592463570825, guid: deaabb2cec20d9849b8fbe7cf14ba1b5, type: 3}
+      weight: 3
+    - prefab: {fileID: 5713861510563012557, guid: f909404e77f120f4994f2e7e85a097f9, type: 3}
+      weight: 2
+    - prefab: {fileID: 1022451663430192143, guid: 7d1cf7b1f01718b41933f210bf201c70, type: 3}
+      weight: 1
+    - prefab: {fileID: 7584331927469076348, guid: 2c7e6d4553245fc408e292e1f48d2a65, type: 3}
+      weight: 1
+    - prefab: {fileID: 4603976836577243809, guid: 9b5065e5a0edff14ba5f72e599f591f3, type: 3}
+      weight: 1
+    - prefab: {fileID: 8851808800694703906, guid: d4751d1d4b1be034a8cf1dd6eb5d1f5d, type: 3}
+      weight: 0.5
+    - prefab: {fileID: 8664969005334801856, guid: 186615077690b7448b5f094347b389f3, type: 3}
+      weight: 0.5
+    count: {x: 3, y: 6}
+    distance: {x: 0.02, y: 0.35}
+    sideBias: 0.6
+    randomFlip: 1
+  - name: Pools
+    anchors:
+    - {fileID: 4118498658650147229, guid: 6991fec20706bc84bac5458fd3c9105d, type: 3}
+    - {fileID: 3592361335571813125, guid: 2823cad53a43c974ab68fe002c63e0a8, type: 3}
+    - {fileID: 4772732239261501682, guid: 6c8d939d801d53041b7adef893a4b009, type: 3}
+    decorations:
+    - prefab: {fileID: 5754785530610257152, guid: 5574b0f4f26549d4e91f15389b2bb9af, type: 3}
+      weight: 1
+    - prefab: {fileID: 1392753964311584480, guid: e166114b99a6d6248b6441c34f520c59, type: 3}
+      weight: 0.5
+    - prefab: {fileID: 8977996825771860062, guid: 380d25c8278a67143b97591afa0e0e78, type: 3}
+      weight: 2
+    - prefab: {fileID: 2165768254244827646, guid: 7cded4a2c8ee3fa49bfb18e6debf6f41, type: 3}
+      weight: 2
+    - prefab: {fileID: 2386747496197902115, guid: 19e340ff072b35e48a4985dae8f88877, type: 3}
+      weight: 2
+    - prefab: {fileID: 8497874592463570825, guid: deaabb2cec20d9849b8fbe7cf14ba1b5, type: 3}
+      weight: 1
+    - prefab: {fileID: 450913935526404327, guid: bc3cd99f73d797642bc60a905b20b1e0, type: 3}
+      weight: 0.5
+    count: {x: 4, y: 7}
+    distance: {x: 0.02, y: 0.35}
+    sideBias: 0.3
+    randomFlip: 1
+  - name: Landmarks
+    anchors:
+    - {fileID: 5681465077393684388, guid: 85ff29ca15d89614eb35dd5a8440f9d3, type: 3}
+    - {fileID: 3089070318528285331, guid: 144e611d4d25aec469be8791c0feb684, type: 3}
+    - {fileID: 3966678891545876025, guid: a70fe5a391bbdfe49bc8bd81897d2780, type: 3}
+    - {fileID: 2673615005646074792, guid: fd235c0a08f0e5b41bc9e0a07f8886e5, type: 3}
+    - {fileID: 7989613971816279167, guid: f7362512c949e3e469afefa94a6dfe8e, type: 3}
+    - {fileID: 1504792115855190240, guid: 1a2fc824691e78a408085186a76cc803, type: 3}
+    - {fileID: 2641178497511944080, guid: 5fa3bff056f1ba5499fd23b26450aaea, type: 3}
+    - {fileID: 5156064237995251755, guid: 5455eefe3ca230344a8c5a833b4a539a, type: 3}
+    - {fileID: 1918201672164876010, guid: 0e62372bf85b73747842ddddf76b230e, type: 3}
+    - {fileID: 6730581829676399921, guid: 978f51ae94d12564d8f8ff6313f87e37, type: 3}
+    - {fileID: 8781833962637246315, guid: 2a9e8fd7dc0f77e4bb6b80bba2392173, type: 3}
+    - {fileID: 7844342516046093338, guid: 5106c6ff1b2f3744f93560d92ac1b230, type: 3}
+    decorations:
+    - prefab: {fileID: 8497874592463570825, guid: deaabb2cec20d9849b8fbe7cf14ba1b5, type: 3}
+      weight: 3
+    - prefab: {fileID: 5713861510563012557, guid: f909404e77f120f4994f2e7e85a097f9, type: 3}
+      weight: 2
+    - prefab: {fileID: 7584331927469076348, guid: 2c7e6d4553245fc408e292e1f48d2a65, type: 3}
+      weight: 1
+    - prefab: {fileID: 4174506953238002133, guid: ef03c2a7ca1215641905b4b6622f372b, type: 3}
+      weight: 1
+    - prefab: {fileID: 4603976836577243809, guid: 9b5065e5a0edff14ba5f72e599f591f3, type: 3}
+      weight: 1
+    - prefab: {fileID: 450913935526404327, guid: bc3cd99f73d797642bc60a905b20b1e0, type: 3}
+      weight: 1
+    - prefab: {fileID: 1625512291101600947, guid: b131d5ff3a8d9374ba6c951ec069449a, type: 3}
+      weight: 1
+    count: {x: 4, y: 8}
+    distance: {x: 0.02, y: 0.45}
+    sideBias: 0.4
+    randomFlip: 1
+  - name: Vents
+    anchors:
+    - {fileID: 4486414843517446370, guid: 4156816a2a7c7544d82059da03d43fc2, type: 3}
+    - {fileID: 6507620466896638572, guid: f64b780f128a34a4b94f4c892e173041, type: 3}
+    - {fileID: 104619979744599416, guid: 2774b8bdf1033d64c8ab386fa79e2b0f, type: 3}
+    decorations:
+    - prefab: {fileID: 450913935526404327, guid: bc3cd99f73d797642bc60a905b20b1e0, type: 3}
+      weight: 1
+    - prefab: {fileID: 8497874592463570825, guid: deaabb2cec20d9849b8fbe7cf14ba1b5, type: 3}
+      weight: 2
+    - prefab: {fileID: 4603976836577243809, guid: 9b5065e5a0edff14ba5f72e599f591f3, type: 3}
+      weight: 1
+    count: {x: 2, y: 4}
+    distance: {x: 0.02, y: 0.2}
+    sideBias: 0.3
+    randomFlip: 1
+  spacing: 0.03

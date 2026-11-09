@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -91,7 +92,7 @@ public partial class Game {
         
         if (pauseMenu.paused) {
             if (pauseMenu.showingSettings) {
-                ClosePauseSettings();
+                LeaveSettings(ClosePauseSettings);
             }
             else {
                 ResumeRaid();
@@ -108,7 +109,11 @@ public partial class Game {
             ReturnToMapSelection();
             return;
         }
-        if (InMapSelection || InHideout || InSettings) {
+        if (InSettings) {
+            LeaveSettings(() => states.gameStateMachine.SetState(states.mainMenu));
+            return;
+        }
+        if (InMapSelection || InHideout) {
             states.gameStateMachine.SetState(states.mainMenu);
         }
         if (InRaid && PlayerInventoryIsOpen) {
@@ -130,6 +135,9 @@ public partial class Game {
         }
 
         Cursor.visible = false;
+
+        // The stick and buttons are being listened to for a new binding
+        if (controlBindings.IsRebindingControls) return;
 
         if (states.gameStateMachine.CurState != controllNav.lastNavGameState) {
             controllNav.lastNavGameState = states.gameStateMachine.CurState;
@@ -515,13 +523,29 @@ public partial class Game {
         ScrollRect scrollRect = target.GetComponentInParent<ScrollRect>();
         if (!scrollRect || !scrollRect.content) return;
 
+        // Headers above the first selectable (or below the last) could never be scrolled to otherwise,
+        // so the ends of what can be navigated to snap the scroll view to its ends
+        bool snappedVertically = false;
+        if (scrollRect.vertical && TryGetScrollEnd(scrollRect, target, out bool atTop)) {
+            scrollRect.velocity = Vector2.zero;
+            scrollRect.verticalNormalizedPosition = atTop ? 1f : 0f;
+            snappedVertically = true;
+        }
+
         RectTransform viewport = scrollRect.viewport ? scrollRect.viewport : (RectTransform)scrollRect.transform;
         Bounds bounds = RectTransformUtility.CalculateRelativeRectTransformBounds(viewport, target);
         Rect view = viewport.rect;
 
+        // A header right above the target comes into view with it when scrolling up
+        float top = bounds.max.y;
+        RectTransform header = FindHeaderAbove(scrollRect.content, target);
+        if (header) {
+            top = Mathf.Max(top, RectTransformUtility.CalculateRelativeRectTransformBounds(viewport, header).max.y);
+        }
+
         Vector2 offset = Vector2.zero;
-        if (scrollRect.vertical) {
-            if (bounds.max.y > view.yMax) offset.y = view.yMax - bounds.max.y;
+        if (scrollRect.vertical && !snappedVertically) {
+            if (top > view.yMax) offset.y = view.yMax - top;
             else if (bounds.min.y < view.yMin) offset.y = view.yMin - bounds.min.y;
         }
         if (scrollRect.horizontal) {
@@ -532,6 +556,55 @@ public partial class Game {
 
         scrollRect.velocity = Vector2.zero;
         scrollRect.content.anchoredPosition += offset;
+    }
+
+    // Whether the target is the highest or lowest thing that can be navigated to in the scroll view
+    private bool TryGetScrollEnd(ScrollRect scrollRect, RectTransform target, out bool atTop) {
+        float highest = float.MinValue;
+        float lowest = float.MaxValue;
+
+        foreach (Selectable selectable in Selectable.allSelectablesArray) {
+            CheckCandidate((RectTransform)selectable.transform);
+        }
+        foreach (Inventory inventory in inventories.all) {
+            if (!inventory.parent.gameObject.activeInHierarchy) continue;
+            foreach (InventorySlot slot in inventory.slots) {
+                if (slot.ui) {
+                    CheckCandidate(slot.ui.rectTransform);
+                }
+            }
+        }
+
+        // Things on the same row count as the end too, like the two bindings in a controls row
+        const float sameRowTolerance = 1f;
+        Rect targetRect = GetScreenRect(target);
+        atTop = targetRect.yMax >= highest - sameRowTolerance;
+        bool atBottom = targetRect.yMin <= lowest + sameRowTolerance;
+        return atTop || atBottom;
+
+        void CheckCandidate(RectTransform candidate) {
+            if (!candidate.IsChildOf(scrollRect.content) || !IsValidNavTarget(candidate)) return;
+            Rect rect = GetScreenRect(candidate);
+            highest = Mathf.Max(highest, rect.yMax);
+            lowest = Mathf.Min(lowest, rect.yMin);
+        }
+    }
+
+    // A text-only sibling right before the target's row in the scroll content, like a section header
+    private static RectTransform FindHeaderAbove(RectTransform content, RectTransform target) {
+        Transform row = target;
+        while (row && row.parent != content) {
+            row = row.parent;
+        }
+        if (!row) return null;
+
+        for (int i = row.GetSiblingIndex() - 1; i >= 0; i--) {
+            Transform sibling = content.GetChild(i);
+            if (!sibling.gameObject.activeInHierarchy) continue;
+            bool isHeader = sibling.TryGetComponent(out TMP_Text _) && !sibling.GetComponentInChildren<Selectable>();
+            return isHeader ? (RectTransform)sibling : null;
+        }
+        return null;
     }
 
     private Rect GetScreenRect(RectTransform rectTransform) {

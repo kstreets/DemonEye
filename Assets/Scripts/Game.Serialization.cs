@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using static GameData;
 
 public partial class Game {
@@ -32,6 +33,22 @@ public partial class Game {
 
     public string GetGameStateSavePath() {
         return $"{Application.persistentDataPath}/save";
+    }
+
+    public string GetBindingsSavePath() {
+        return $"{Application.persistentDataPath}/bindings.json";
+    }
+
+    private void SaveBindingOverrides() {
+        File.WriteAllText(GetBindingsSavePath(), InputSystem.actions.SaveBindingOverridesAsJson());
+    }
+
+    private void LoadBindingOverrides() {
+        string savePath = GetBindingsSavePath();
+        if (!File.Exists(savePath)) return;
+        string json = File.ReadAllText(savePath);
+        if (string.IsNullOrEmpty(json)) return; // Saved with no overrides
+        InputSystem.actions.LoadBindingOverridesFromJson(json);
     }
     
     public void SaveSettings() {

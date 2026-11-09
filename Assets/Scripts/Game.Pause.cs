@@ -19,7 +19,13 @@ public partial class Game {
         if (cutscene.playing) return; // Unpausing would resume the raid in the middle of the cutscene
 
         if (pauseMenu.paused) {
-            ResumeRaid();
+            // Start skips back to the raid, so it asks about unapplied settings too
+            if (pauseMenu.showingSettings) {
+                LeaveSettings(ResumeRaid);
+            }
+            else {
+                ResumeRaid();
+            }
         }
         else {
             PauseRaid();
@@ -86,10 +92,6 @@ public partial class Game {
         ShowSettingsMenuUI();
         IgnoreHeldNavigationInput();
         ClearControllerSelection();
-        playerInfo.parent.gameObject.SetActive(false);
-        ui.minimap.gameObject.SetActive(false);
-        ui.hotBarParent.gameObject.SetActive(false);
-        raidInfo.waveText.gameObject.SetActive(false);
     }
 
     private void ClosePauseSettings() {
@@ -98,10 +100,6 @@ public partial class Game {
         pauseMenu.panel.gameObject.SetActive(true);
         IgnoreHeldNavigationInput();
         ClearControllerSelection();
-        playerInfo.parent.gameObject.SetActive(true);
-        ui.minimap.gameObject.SetActive(true);
-        ui.hotBarParent.gameObject.SetActive(true);
-        raidInfo.waveText.gameObject.SetActive(true);
     }
 
 }

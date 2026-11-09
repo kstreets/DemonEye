@@ -34,7 +34,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 0
+    filterMode: 1
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -1905,7 +1905,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: buttonSouth
+      name: buttonSouth_fill
       rect:
         serializedVersion: 2
         x: 256
@@ -1927,7 +1927,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: buttonSouth_outline
+      name: buttonSouth
       rect:
         serializedVersion: 2
         x: 384
@@ -1949,7 +1949,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: buttonEast
+      name: buttonEast_fill
       rect:
         serializedVersion: 2
         x: 512
@@ -1971,7 +1971,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: buttonEast_outline
+      name: buttonEast
       rect:
         serializedVersion: 2
         x: 640
@@ -1993,7 +1993,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: buttonWest
+      name: buttonWest_fill
       rect:
         serializedVersion: 2
         x: 768
@@ -2015,7 +2015,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: buttonWest_outline
+      name: buttonWest
       rect:
         serializedVersion: 2
         x: 896
@@ -2037,7 +2037,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: buttonNorth
+      name: buttonNorth_fill
       rect:
         serializedVersion: 2
         x: 1024
@@ -2059,7 +2059,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: buttonNorth_outline
+      name: buttonNorth
       rect:
         serializedVersion: 2
         x: 1152
@@ -2318,20 +2318,20 @@ TextureImporter:
     nameFileIdTable:
       adaptiveController: -1960016489
       blank: -114594171
-      buttonEast: -819281450
-      buttonEast_outline: -1776455652
+      buttonEast: -1776455652
+      buttonEast_fill: -819281450
       buttonEast_white: 1009236087
       buttonEast_white_outline: 1871985978
-      buttonNorth: 900532797
-      buttonNorth_outline: -1761997933
+      buttonNorth: -1761997933
+      buttonNorth_fill: 900532797
       buttonNorth_white: 2059245199
       buttonNorth_white_outline: 1891718259
-      buttonSouth: 671898853
-      buttonSouth_outline: -778460218
+      buttonSouth: -778460218
+      buttonSouth_fill: 671898853
       buttonSouth_white: -1145644583
       buttonSouth_white_outline: -1509979398
-      buttonWest: -1639515978
-      buttonWest_outline: -1388817350
+      buttonWest: -1388817350
+      buttonWest_fill: -1639515978
       buttonWest_white: -1002927921
       buttonWest_white_outline: -483114191
       controller: -1707025331

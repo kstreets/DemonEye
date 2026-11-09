@@ -480,9 +480,16 @@ public partial class Game {
     // Wraps around, so going left from the first slot goes to the last
     private void MoveHotBarSelection(int direction) {
         int slotCount = hotBar.quickUseActions.Count;
-        inputPrompts.hotBarPrompts[hotBar.selectedIndex].boundActions.Remove(inputs.quickUseSelected);
         hotBar.selectedIndex = (hotBar.selectedIndex + direction + slotCount) % slotCount;
-        inputPrompts.hotBarPrompts[hotBar.selectedIndex].boundActions.Add(inputs.quickUseSelected);
+    }
+
+    // Keyboard and mouse work like the controller once using the selected slot and moving the selection are bound
+    private bool HotBarUsesSelection {
+        get {
+            if (UsingController) return true;
+            const GameAction.BindingSource kbm = GameAction.BindingSource.KeyboardMouse;
+            return inputs.quickUseSelected.HasBindings(kbm) && (inputs.quickUsePrevious.HasBindings(kbm) || inputs.quickUseNext.HasBindings(kbm));
+        }
     }
     
 }

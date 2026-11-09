@@ -33,7 +33,7 @@ public partial class Game {
         InitCurrencyNumbers();
         InitUIHints();
         InitInputPrompts();
-        
+
         ui.levelUpNotification.Init();
         ui.menuBackButton.gameObject.SetActive(false);
         ui.messagePopup.Hide();
@@ -121,16 +121,15 @@ public partial class Game {
         mainMenu.hideoutNotifier.SetActive(false);
     }
     
+    // The settings panel has its own back button, so the menu back button stays hidden
     private void ShowSettingsMenuUI() {
         ui.settingsParent.gameObject.SetActive(true);
-        ui.menuBackButton.gameObject.SetActive(true);
         ui.animatedBgImage.gameObject.SetActive(true);
         settings.toggleGroup.ManualyToggle(settings.audioToggle);
     }
-    
+
     private void CloseSettingsMenuUI() {
         ui.settingsParent.gameObject.SetActive(false);
-        ui.menuBackButton.gameObject.SetActive(false);
         ui.animatedBgImage.gameObject.SetActive(false);
         SaveSettings();
     }
@@ -576,18 +575,43 @@ public partial class Game {
     
     private void UpdateHotBarUI() {
         if (!ui.hotBarParent.gameObject.activeInHierarchy) return;
+        UpdateHotBarPrompts();
 
         for (int i = 0; i < playerQuickUseSize; i++) {
             int itemIndex = i + playerEquipmentSize;
             hotBar.slotUIs[i].ClearItem();
-            // Controller only has the selected slot bound, so it's highlighted. Not while the inventory is open, since the hotbar can't be used then.
+            // The selected slot is highlighted. Not while the inventory is open, since the hotbar can't be used then.
             bool inventoryOpen = PlayerInventoryIsOpen || LootInventoryIsOpen;
-            hotBar.slotUIs[i].SetOutlined(UsingController && !inventoryOpen && i == hotBar.selectedIndex);
+            hotBar.slotUIs[i].SetOutlined(HotBarUsesSelection && !inventoryOpen && i == hotBar.selectedIndex);
 
             ItemInstance itemInstance = inventories.player.slots[itemIndex].itemInstance;
             if (itemInstance != null) {
                 hotBar.slotUIs[i].SetItem(itemInstance);
             } 
+        }
+    }
+
+    // With a selection only the selected slot and the move prompts show, otherwise each slot shows its own key
+    private void UpdateHotBarPrompts() {
+        bool useSelection = HotBarUsesSelection;
+        for (int i = 0; i < playerQuickUseSize; i++) {
+            List<GameAction> actions = inputPrompts.hotBarPrompts[i].boundActions;
+            actions.Clear();
+            if (!useSelection) {
+                actions.Add(hotBar.quickUseActions[i]);
+            }
+            else if (i == hotBar.selectedIndex) {
+                actions.Add(inputs.quickUseSelected);
+            }
+        }
+        SetMovePrompt(inputPrompts.hotBarLeft, inputs.quickUsePrevious);
+        SetMovePrompt(inputPrompts.hotBarRight, inputs.quickUseNext);
+
+        void SetMovePrompt(InputPrompt prompt, GameAction action) {
+            prompt.boundActions.Clear();
+            if (useSelection) {
+                prompt.boundActions.Add(action);
+            }
         }
     }
 
@@ -1002,6 +1026,11 @@ public partial class Game {
             // This makes sure that hints that can change during runtime are always up to date when already showing
             if (uiHints.descriptionCallbackLookup.TryGetValue(hoverInfo.hoveringTransform, out Func<string> callback)) {
                 ui.hintPopup.descText.text = callback.Invoke();
+                
+                // Hint callbacks that return nothing will make the hint hide
+                if (string.IsNullOrEmpty(ui.hintPopup.descText.text)) {
+                    HideHint();
+                }
             }
             return;
         }
@@ -1014,7 +1043,7 @@ public partial class Game {
         }
         else if (uiHints.descriptionCallbackLookup.TryGetValue(hoverInfo.hoveringTransform, out Func<string> callback)) {
             string description = callback.Invoke();
-            if (description == string.Empty) return;
+            if (string.IsNullOrEmpty( description)) return;
             ui.hintPopup.Show(hoveredCenter + popupOffset, description);
         }
     }
@@ -1057,7 +1086,7 @@ public partial class Game {
             
         bool hoveringOverPrevElement = info.hoveringTransform == uiHints.lastHintHoverInfo.hoveringTransform;
         if (hoveringOverPrevElement) {
-            info.timeSpentHovering = uiHints.lastHintHoverInfo.timeSpentHovering + Time.deltaTime;
+            info.timeSpentHovering = uiHints.lastHintHoverInfo.timeSpentHovering + Time.unscaledDeltaTime; // Unscaled so hints work in the pause menu
         }
         else {
             info.timeSpentHovering = 0f;
@@ -1084,22 +1113,22 @@ public partial class Game {
 
         activePromptList = inputPrompts.hotBarPrompts;
 
-        BindPromptToActiveList(0, inputs.quickUse1);
-        BindPromptToActiveList(1, inputs.quickUse2);
-        BindPromptToActiveList(2, inputs.quickUse3);
-        BindPromptToActiveList(3, inputs.quickUse4);
-        // Moves with the selection, see MoveHotBarSelection
-        BindPromptToActiveList(hotBar.selectedIndex, inputs.quickUseSelected);
-
-        BindPromptToAction(inputPrompts.hotBarLeft, inputs.quickUsePrevious);
-        BindPromptToAction(inputPrompts.hotBarRight, inputs.quickUseNext);
+        // Actions are set each frame, see UpdateHotBarPrompts
+        foreach (InputPrompt prompt in inputPrompts.hotBarPrompts) {
+            BindPromptToAction(prompt);
+        }
+        BindPromptToAction(inputPrompts.hotBarLeft);
+        BindPromptToAction(inputPrompts.hotBarRight);
+        // Keyboard and mouse can use them too, UpdateHotBarPrompts unbinds them when there's no selection
+        inputPrompts.hotBarLeft.showWhenUsingDevice = InputPrompt.ShowWithDevice.All;
+        inputPrompts.hotBarRight.showWhenUsingDevice = InputPrompt.ShowWithDevice.All;
 
         BindPromptToAction(hideoutTabs.toggleGroup.leftInputPrompt, inputs.menuTabLeft);
         BindPromptToAction(hideoutTabs.toggleGroup.rightInputPrompt, inputs.menuTabRight);
         
         BindPromptToAction(settings.toggleGroup.leftInputPrompt, inputs.menuTabLeft);
         BindPromptToAction(settings.toggleGroup.rightInputPrompt, inputs.menuTabRight);
-        
+
         BindPromptToAction(eyeForgePanel.toggleButtonGroup.leftInputPrompt, inputs.menuSecondaryTabLeft);
         BindPromptToAction(eyeForgePanel.toggleButtonGroup.rightInputPrompt, inputs.menuSecondaryTabRight);
         

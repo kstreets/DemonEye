@@ -469,22 +469,34 @@ public class GameData {
         public AudioMixer musicAudioMixer;
         
         public GameObject settingsParent;
+        public ButtonFeel applyChangesButton;
+        public ButtonFeel resetPageButton; // Resets whichever page is showing
+        public ButtonFeel backButton;
         
         public ToggleButtonGroup toggleGroup;
         public ToggleButton audioToggle;
         public ToggleButton displayToggle;
         public ToggleButton gameToggle;
-        
+        public ToggleButton controlsToggle;
+
         public RectTransform audioParent;
         public RectTransform displayParent;
         public RectTransform gameParent;
+        public RectTransform controlsParent;
+        [NonSerialized] public RectTransform curPage;
+
+        public RectTransform steamInputBanner;
+        public ButtonFeel steamInputBindingsButton;
+        public ScrollRect controlsScrollRect;
+        public RectTransform controlsContent;
+        public InputBindingRow controlsRowPrefab;
+        [NonSerialized] public readonly List<InputBindingRow> controlsRows = new();
         
         public SingleSetting fullscreenMode;
         public SingleSetting resolution;
         public SingleSetting targetMonitor;
         public SingleSetting fpsLimit;
         public SingleSetting vsync;
-        public ButtonFeel applyChangesButton;
         
         public SingleSetting masterVolume;
         public SingleSetting musicVolume;
@@ -503,7 +515,7 @@ public class GameData {
     public class HotBar {
         public List<GameAction> quickUseActions;
         public InventorySlotUI[] slotUIs;
-        public int selectedIndex; // The only slot bound on controller
+        public int selectedIndex; // Used by Quick Use Selected, on controller or when it is bound on keyboard and mouse
     }
     
     public class Inputs {

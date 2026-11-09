@@ -16,10 +16,11 @@ public class SingleSetting : MonoBehaviour {
     [NonSerialized] public int appliedIndex;
     [NonSerialized] public int curIndex;
     [NonSerialized] public int numOfSettings;
-    
+
     private Action<int> onSettingIndexChanged;
     private Action<int> onApplyCallback;
-
+    private Func<int> getDefaultIndex;
+    
     public void OnHorizontalNav(bool right) {
         if (right) {
             rightButton.TriggerClick();
@@ -28,19 +29,28 @@ public class SingleSetting : MonoBehaviour {
             leftButton.TriggerClick();
         }
     }
-
-    public SingleSetting Init(int startingIndex, int settingsCount) {
+    
+    // Without a saved index the setting starts on its default, so OnDefault has to come before OnChange
+    public SingleSetting Init(int settingsCount, int? savedIndex = null) {
         numOfSettings = settingsCount;
-        curIndex = startingIndex;
+        curIndex = savedIndex ?? -1;
         appliedIndex = int.MinValue;
-        SetBreadcrumbIndex(startingIndex); 
         leftButton.AddListener(OnDecrement);
         rightButton.AddListener(OnIncrement);
         return this;
     }
     
+    public SingleSetting OnDefault(Func<int> callback) {
+        getDefaultIndex = callback;
+        if (curIndex < 0) {
+            curIndex = callback();
+        }
+        return this;
+    }
+    
     public SingleSetting OnChange(Action<int> callback) {
-        onSettingIndexChanged = callback; 
+        onSettingIndexChanged = callback;
+        SetBreadcrumbIndex(curIndex);
         onSettingIndexChanged?.Invoke(curIndex);
         return this;
     }
@@ -87,28 +97,30 @@ public class SingleSetting : MonoBehaviour {
         breadcrumbs[index].sprite = selectedBreadcrumb;
     }
     
-    private void OnIncrement() {
-        curIndex = (curIndex + 1) % numOfSettings;
+    // Like the player picking it, so settings with an apply step still wait for apply
+    public void ResetToDefault() {
+        ChangeTo(getDefaultIndex());
+    }
+    
+    private void ChangeTo(int index) {
+        curIndex = index;
         if (onApplyCallback == null) {
             appliedIndex = curIndex;
         }
-        
+    
         SetBreadcrumbIndex(curIndex);
         onSettingIndexChanged?.Invoke(curIndex);
-        TweenArrowButton(rightButton.rectTransform);
         Game.OnAnySettingsChanged();
     }
     
+    private void OnIncrement() {
+        ChangeTo((curIndex + 1) % numOfSettings);
+        TweenArrowButton(rightButton.rectTransform);
+    }
+    
     private void OnDecrement() {
-        curIndex = (curIndex - 1 + numOfSettings) % numOfSettings;
-        if (onApplyCallback == null) {
-            appliedIndex = curIndex;
-        }
-        
-        SetBreadcrumbIndex(curIndex);
-        onSettingIndexChanged?.Invoke(curIndex);
+        ChangeTo((curIndex - 1 + numOfSettings) % numOfSettings);
         TweenArrowButton(leftButton.rectTransform);
-        Game.OnAnySettingsChanged();
     }
     
     private void TweenArrowButton(RectTransform arrowButton) {

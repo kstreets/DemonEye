@@ -1,4 +1,3 @@
-using TMPro;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -20,6 +19,7 @@ public partial class Game {
 
         InitPlatform();
         InitInput();
+        InitSettingsControlsPage();
         InitResources();
         InitAudio();
         InitMusic();
@@ -131,29 +131,16 @@ public partial class Game {
             ui.messagePopup.Show("Are you sure you would like to exit?", "Yes", "No", onYes: QuitGame);
         });
         
-        settings.displayToggle.AddListener(() => {
-            settings.displayParent.gameObject.SetActive(true);
-            settings.audioParent.gameObject.SetActive(false);
-            settings.gameParent.gameObject.SetActive(false);
-        });
+        settings.audioToggle.AddListener(() => ShowSettingsPage(settings.audioParent));
+        settings.displayToggle.AddListener(() => ShowSettingsPage(settings.displayParent));
+        settings.gameToggle.AddListener(() => ShowSettingsPage(settings.gameParent));
+        settings.controlsToggle.AddListener(() => ShowSettingsPage(settings.controlsParent));
         
-        settings.audioToggle.AddListener(() => {
-            settings.displayParent.gameObject.SetActive(false);
-            settings.audioParent.gameObject.SetActive(true);
-            settings.gameParent.gameObject.SetActive(false);
-        });
-        
-        settings.gameToggle.AddListener(() => {
-            settings.displayParent.gameObject.SetActive(false);
-            settings.audioParent.gameObject.SetActive(false);
-            settings.gameParent.gameObject.SetActive(true);
-        });
-        
-        ui.menuBackButton.AddListener(() => {
-            OnBackPressed();
-        });
-        
+        ui.menuBackButton.AddListener(() => OnBackPressed());
+
+        settings.backButton.AddListener(() => OnBackPressed());
         settings.applyChangesButton.AddListener(ApplySettings);
+        settings.resetPageButton.AddListener(OnResetPagePressed);
         
         // Quick version of the hideout fade, played every time a tab is switched to (including when entering the hideout)
         const float tabFadeRiseDistance = 7f;
