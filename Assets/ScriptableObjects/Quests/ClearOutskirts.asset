@@ -19,7 +19,8 @@ MonoBehaviour:
     the waves I'll grant you portal privlages to a better raid.
   traderReputationReward: 250
   objectives:
-  - type: 55
+  - id: 1
+    type: 55
     description: Clear all waves on Outskirts
     targetValue: 1
     targetEnemy: {fileID: 0}

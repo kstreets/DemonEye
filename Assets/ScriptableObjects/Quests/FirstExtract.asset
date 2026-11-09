@@ -20,7 +20,8 @@ MonoBehaviour:
     though, they don't stay open forever.
   traderReputationReward: 100
   objectives:
-  - type: 50
+  - id: 1
+    type: 50
     description: Extract Early from Outskirts
     targetValue: 1
     targetEnemy: {fileID: 0}

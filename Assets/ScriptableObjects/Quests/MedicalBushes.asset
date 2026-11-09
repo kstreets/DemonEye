@@ -20,7 +20,8 @@ MonoBehaviour:
     is look in bushes for medical supplies.
   traderReputationReward: 100
   objectives:
-  - type: 110
+  - id: 1
+    type: 110
     description: Find 3 quick use items in bushes
     targetValue: 3
     targetEnemy: {fileID: 0}

@@ -18,24 +18,23 @@ public partial class Game {
             bloodMushroomSpawns = new(),
         };
         
-        if (gameState == null) {
-            for (int i = 0; i < maps.Count; i++) {
-                maps[i].state = new() {
-                    isUnlocked = i == 0,
-                    bloodMushroomSpawns = new(),
-                };
-            }
-            return;
-        }
-        
-        if (maps.Count != gameState.mapStates.Count) {
-            Debug.LogError("Maps save does not match current maps. Saves are not going to be loaded");
-            return;
-        }
-        
         for (int i = 0; i < maps.Count; i++) {
-            maps[i].state = gameState.mapStates[i];
+            MapData map = maps[i];
+            // Maps missing from the save are new, so they start like they would in a new game
+            map.state = FindSavedMapState(gameState, map) ?? new() {
+                isUnlocked = i == 0,
+                bloodMushroomSpawns = new(),
+            };
+            map.state.mapUuid = map.uuid;
         }
+    }
+
+    private static MapData.State FindSavedMapState(GameState gameState, MapData map) {
+        if (gameState == null) return null;
+        foreach (MapData.State state in gameState.mapStates) {
+            if (state != null && state.mapUuid == map.uuid) return state;
+        }
+        return null;
     }
     
     public enum MapLoadingState { Unloaded, Loaded, Loading, Unloading }

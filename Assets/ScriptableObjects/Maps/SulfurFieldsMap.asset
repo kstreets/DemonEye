@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0aa690954e129034abb7319a8a860125, type: 3}
   m_Name: SulfurFieldsMap
   m_EditorClassIdentifier: Assembly-CSharp::MapData
+  uuid: 2080772172
   displayName: Sulfur Fields
   sceneReference: SulfurFields
   spawning: {fileID: 11400000, guid: b290348677cdc4641b56d30a4eaa1309, type: 2}

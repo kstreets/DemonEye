@@ -1128,6 +1128,8 @@ public partial class Game {
         
         BindPromptToAction(settings.toggleGroup.leftInputPrompt, inputs.menuTabLeft);
         BindPromptToAction(settings.toggleGroup.rightInputPrompt, inputs.menuTabRight);
+        BindPromptToAction(settings.cancelRebindPrompt, inputs.cancelRebind);
+        BindPromptToAction(settings.unbindPrompt, inputs.unbind);
 
         BindPromptToAction(eyeForgePanel.toggleButtonGroup.leftInputPrompt, inputs.menuSecondaryTabLeft);
         BindPromptToAction(eyeForgePanel.toggleButtonGroup.rightInputPrompt, inputs.menuSecondaryTabRight);

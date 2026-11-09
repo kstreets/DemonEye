@@ -490,6 +490,8 @@ public class GameData {
         public ScrollRect controlsScrollRect;
         public RectTransform controlsContent;
         public InputBindingRow controlsRowPrefab;
+        public InputPrompt cancelRebindPrompt;
+        public InputPrompt unbindPrompt;
         [NonSerialized] public readonly List<InputBindingRow> controlsRows = new();
         
         public SingleSetting fullscreenMode;
@@ -556,7 +558,9 @@ public class GameData {
         public GameAction menuSecondaryTabLeft;
         public GameAction menuSecondaryTabRight;
         public GameAction advanceDialogue;
-        
+        public GameAction cancelRebind;
+        public GameAction unbind;
+
         public readonly List<GameAction> all = new();
 
         // Keyed by the Unity action's id
@@ -577,6 +581,7 @@ public class GameData {
         public const string BuyingLayer = "Buying";
         public const string SelectedItemLayer = "SelectedItem";
         public const string DialogueLayer = "Dialogue";
+        public const string RebindingLayer = "Rebinding";
 
         public enum Device { KeyboardMouse, Controller, ControllerWithMouse }
         public Device device;

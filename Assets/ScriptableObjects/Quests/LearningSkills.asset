@@ -18,7 +18,8 @@ MonoBehaviour:
     use to upgrade your base stats and become less pathetic by default.
   traderReputationReward: 100
   objectives:
-  - type: 60
+  - id: 1
+    type: 60
     description: Upgrade 2 skills
     targetValue: 2
     targetEnemy: {fileID: 0}

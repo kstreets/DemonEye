@@ -22,7 +22,8 @@ MonoBehaviour:
     forget to bring them. Then you might die.'
   traderReputationReward: 100
   objectives:
-  - type: 70
+  - id: 1
+    type: 70
     description: Stop 2 bleeds using bandages
     targetValue: 2
     targetEnemy: {fileID: 0}

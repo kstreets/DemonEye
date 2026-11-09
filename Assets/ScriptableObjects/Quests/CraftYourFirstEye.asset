@@ -21,7 +21,8 @@ MonoBehaviour:
     eye.
   traderReputationReward: 250
   objectives:
-  - type: 10
+  - id: 1
+    type: 10
     description: 
     targetValue: 1
     targetEnemy: {fileID: 0}
@@ -29,7 +30,8 @@ MonoBehaviour:
     targetItemType: {fileID: 0}
     targetMap: {fileID: 0}
     keepFetchedItems: 1
-  - type: 20
+  - id: 2
+    type: 20
     description: 
     targetValue: 5
     targetEnemy: {fileID: 0}
@@ -37,7 +39,8 @@ MonoBehaviour:
     targetItemType: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
     targetMap: {fileID: 0}
     keepFetchedItems: 1
-  - type: 120
+  - id: 3
+    type: 120
     description: Equip the Demon Eye
     targetValue: 1
     targetEnemy: {fileID: 0}

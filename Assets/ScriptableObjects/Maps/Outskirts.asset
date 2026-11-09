@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0aa690954e129034abb7319a8a860125, type: 3}
   m_Name: Outskirts
   m_EditorClassIdentifier: Assembly-CSharp::MapData
+  uuid: -1515474750
   displayName: Outskirts
   sceneReference: Outskirts
   spawning: {fileID: 11400000, guid: a6539f0178f4a554a84cbbaa445e68eb, type: 2}

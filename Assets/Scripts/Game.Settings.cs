@@ -8,16 +8,18 @@ using static GameData;
 
 public partial class Game {
     
+    // -1, or a resolution the screen doesn't have, means not saved, so the setting starts on its default
+    [Serializable]
     public class SettingsState {
-        public Vector2Int resolution;
-        public int fullScreenIndex;
-        public int fpsLimitIndex;
-        public int targetMonitor;
-        public int vsyncEnabled;
-        
-        public int masterVolumeIndex;
-        public int musicVolumeIndex;
-        public int gameVolumeIndex;
+        public Vector2Int resolution = new(-1, -1);
+        public int fullScreenIndex = -1;
+        public int fpsLimitIndex = -1;
+        public int targetMonitor = -1;
+        public int vsyncEnabled = -1;
+
+        public int masterVolumeIndex = -1;
+        public int musicVolumeIndex = -1;
+        public int gameVolumeIndex = -1;
     }
     
     private string[] fullScreenNames = { "Exclusive Full Screen", "Full Screen Window", "Maximized", "Windowed" };
@@ -402,8 +404,14 @@ public partial class Game {
             return;
         }
 
+        // The action only exists on the other device
+        if (!hasBinding) {
+            cellUI.Show(null, slot.device == BindingDevice.KeyboardMouse ? "Controller Only" : "Keyboard Only");
+            return;
+        }
+
         InputAction action = slot.action.unityInputAction;
-        if (!hasBinding || string.IsNullOrEmpty(action.bindings[slot.bindingIndex].effectivePath)) {
+        if (string.IsNullOrEmpty(action.bindings[slot.bindingIndex].effectivePath)) {
             cellUI.Show(null, ControlBindingsState.emptyBindingText);
             return;
         }
@@ -433,10 +441,6 @@ public partial class Game {
             .WithMatchingEventsBeingSuppressed() // So the press doesn't also click buttons or trigger other actions
             .WithExpectedControlType("Axis") // The actions expect buttons, which would rule out the scroll wheel
             .WithControlsExcluding("<Keyboard>/anyKey")
-            // Backspace and delete clear the binding and escape cancels, for either device
-            .WithControlsHavingToMatchPath("<Keyboard>/backspace")
-            .WithControlsHavingToMatchPath("<Keyboard>/delete")
-            .WithControlsHavingToMatchPath("<Keyboard>/escape")
             .OnPotentialMatch(op => {
                 // Buttons only, plus the wheel directions which are axes
                 for (int i = op.candidates.Count - 1; i >= 0; i--) {
@@ -446,12 +450,12 @@ public partial class Game {
                 }
                 if (op.candidates.Count == 0) return;
 
-                Key key = op.candidates[0] is KeyControl keyControl ? keyControl.keyCode : Key.None;
-                if (key is Key.Backspace or Key.Delete) {
+                InputControl control = op.candidates[0];
+                if (MatchesAnyBinding(inputs.unbind, control)) {
                     clear = true;
                     op.Cancel();
                 }
-                else if (key == Key.Escape) {
+                else if (MatchesAnyBinding(inputs.cancelRebind, control)) {
                     op.Cancel();
                 }
                 else {
@@ -471,6 +475,10 @@ public partial class Game {
                 }
             });
 
+        // Cancel and unbind work from either device, whichever slot is being rebound
+        AllowBindingPaths(operation, inputs.cancelRebind);
+        AllowBindingPaths(operation, inputs.unbind);
+
         if (slot.device == BindingDevice.KeyboardMouse) {
             operation.WithControlsHavingToMatchPath("<Keyboard>")
                 .WithControlsHavingToMatchPath("<Mouse>")
@@ -481,8 +489,7 @@ public partial class Game {
         }
         else {
             // Stick directions would be bound instead of the stick press while navigating
-            operation.WithCancelingThrough("<Gamepad>/start")
-                .WithControlsHavingToMatchPath("<Gamepad>")
+            operation.WithControlsHavingToMatchPath("<Gamepad>")
                 .WithControlsExcluding("<Gamepad>/leftStick/up")
                 .WithControlsExcluding("<Gamepad>/leftStick/down")
                 .WithControlsExcluding("<Gamepad>/leftStick/left")
@@ -498,6 +505,21 @@ public partial class Game {
         HideHint();
         RefreshCell(slot);
         operation.Start();
+    }
+
+    private static void AllowBindingPaths(InputActionRebindingExtensions.RebindingOperation operation, GameAction action) {
+        foreach (InputBinding binding in action.unityInputAction.bindings) {
+            if (!string.IsNullOrEmpty(binding.effectivePath)) {
+                operation.WithControlsHavingToMatchPath(binding.effectivePath);
+            }
+        }
+    }
+
+    private static bool MatchesAnyBinding(GameAction action, InputControl control) {
+        foreach (InputBinding binding in action.unityInputAction.bindings) {
+            if (!string.IsNullOrEmpty(binding.effectivePath) && InputControlPath.Matches(binding.effectivePath, control)) return true;
+        }
+        return false;
     }
 
     private static bool IsRebindableControl(InputControl control) {

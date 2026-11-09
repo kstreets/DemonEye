@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using static GameData;
 
@@ -26,6 +27,7 @@ public partial class Game {
     
     [Serializable]
     public class ObjectiveData {
+        [HideInInspector] public int id; // Unique within its quest, saved progress is matched by it
         public QuestObjectiveTypes type;
         public string description;
         public int targetValue = 1;
@@ -55,8 +57,9 @@ public partial class Game {
         }
     }
 
+    // Objectives added since the save have no progress yet, and a lowered target caps what was saved
     public static int GetObjectiveProgress(Quest quest, ObjectiveData obj) {
-        return quest.state.objectiveProgresses[quest.objectives.IndexOf(obj)];
+        return Mathf.Min(quest.state.objectiveProgresses.GetValueOrDefault(obj.id), obj.targetValue);
     }
     
     public static bool QuestIsComplete(Quest quest) {
@@ -69,8 +72,7 @@ public partial class Game {
     }
 
     public static bool ObjectiveIsComplete(Quest quest, ObjectiveData obj) {
-        int i = quest.objectives.IndexOf(obj);
-        return quest.state.objectiveProgresses[i] >= quest.objectives[i].targetValue;
+        return GetObjectiveProgress(quest, obj) >= obj.targetValue;
     }
     
     private void InitQuests(GameState gameState) {
@@ -101,9 +103,6 @@ public partial class Game {
             submitted = false,
             objectiveProgresses = new(),
         };
-        for (int i = 0; i < quest.objectives.Count; i++) {
-            quest.state.objectiveProgresses.Add(0);
-        }
     }
 
     private void UpdateQuests() {
@@ -243,20 +242,12 @@ public partial class Game {
         }
     }
     
-    private int GetProgressValue(Quest quest, ObjectiveData obj) {
-        int i = quest.objectives.IndexOf(obj);
-        return quest.state.objectiveProgresses[i];
-    }
-
     private void SetProgressValue(Quest quest, ObjectiveData obj, int value) {
-        int i = quest.objectives.IndexOf(obj);
-        quest.state.objectiveProgresses[i] = Mathf.Clamp(value, 0, obj.targetValue);
+        quest.state.objectiveProgresses[obj.id] = Mathf.Clamp(value, 0, obj.targetValue);
     }
 
     private void IncreaseProgressValue(Quest quest, ObjectiveData obj, int value) {
-        int i = quest.objectives.IndexOf(obj);
-        int newValue = quest.state.objectiveProgresses[i] + value;
-        quest.state.objectiveProgresses[i] = Mathf.Clamp(newValue, 0, obj.targetValue);
+        SetProgressValue(quest, obj, GetObjectiveProgress(quest, obj) + value);
     }
     
     private void SpawnQuestItemOnDeadBody(Quest quest, ObjectiveData obj) {

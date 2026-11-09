@@ -10,7 +10,9 @@ public class InputPrompt : MonoBehaviour {
     
     public enum ShowWithDevice { KeyboardMouse, Controller, All }
     public ShowWithDevice showWhenUsingDevice;
-    
+    [Tooltip("Keep showing while a higher input layer has taken the action, e.g. the hotbar while the inventory is open")]
+    public bool ignoreLayers;
+
     public Image primaryGlyphImage;
     
     [HideIf("isSimplePrompt")]
@@ -25,7 +27,7 @@ public class InputPrompt : MonoBehaviour {
     public GameAction GetWinningAction() {
         GameAction winner = null;
         foreach (GameAction action in boundActions) {
-            if (!action.isActive) continue;
+            if (ignoreLayers ? !action.hasBindingsForCurrentDevice : !action.isActive) continue;
             if (winner == null || action.layerIndex > winner.layerIndex) {
                 winner = action;
             }

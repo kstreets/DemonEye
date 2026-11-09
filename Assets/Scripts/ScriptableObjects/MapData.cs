@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "MapReference", menuName = "Scriptable Objects/MapReference")]
-public class MapData : ScriptableObject {
+public class MapData : UuidScriptableObject {
 
     public string displayName;
     public string sceneReference;
@@ -37,6 +37,7 @@ public class MapData : ScriptableObject {
     public float legendaryLootRarityIncrease;
 
     public class State {
+        public int mapUuid; // Saves find their map by this, so maps can be added or reordered
         public bool isUnlocked;
         public bool unlockRevealPending; // Unlocked, but the map selection screen hasn't played the unlock burn yet
         public List<Vector2> bloodMushroomSpawns;

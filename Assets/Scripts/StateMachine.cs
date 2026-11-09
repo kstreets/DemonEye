@@ -98,7 +98,7 @@ public class StateMachine {
     public enum UpdateMode { Update, FixedUpdate, LateUpdate }
 
     public void Tick(UpdateMode updateMode = UpdateMode.Update) {
-        if (isPaused) return;
+        if (Time.deltaTime == 0f || isPaused) return;
 
         bool needsUpdating = Time.time != lastUpdateTime;
         

@@ -22,19 +22,21 @@ MonoBehaviour:
 '
   traderReputationReward: 100
   objectives:
-  - type: 90
+  - id: 1
+    type: 90
     description: Make yourself overweight
     targetValue: 1
     targetEnemy: {fileID: 0}
     targetItem: {fileID: 0}
     targetItemType: {fileID: 0}
-    teleportMap: {fileID: 0}
+    targetMap: {fileID: 0}
     keepFetchedItems: 0
-  - type: 90
+  - id: 2
+    type: 90
     description: Extract while overweight
     targetValue: 1
     targetEnemy: {fileID: 0}
     targetItem: {fileID: 0}
     targetItemType: {fileID: 0}
-    teleportMap: {fileID: 0}
+    targetMap: {fileID: 0}
     keepFetchedItems: 0

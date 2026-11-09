@@ -3,6 +3,11 @@ using UnityEngine;
 
 public partial class Game {
 
+    // Keep animating shaders while the game is paused
+    private void UpdateGlobalShaders() {
+        Shader.SetGlobalFloat(ShaderIds.unscaledTime, Time.unscaledTime);
+    }
+    
     private void SetDeathWipe(float fill, float alpha) {
         Shader.SetGlobalFloat(ShaderIds.deathWipeFill, fill);
         Shader.SetGlobalFloat(ShaderIds.deathWipeAlpha, alpha);

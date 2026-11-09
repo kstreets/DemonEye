@@ -77,12 +77,6 @@ public partial class Game : MonoBehaviour {
     private void Update() {
         UpdatePlatform();
         UpdateInput();
-
-        // The same frame we unpause on still has deltaTime set to 0, which can cause NANs when we divide by deltaTime
-        // so we just skip this frame to prevent any bugs from happening
-        if (!pauseMenu.paused && Time.deltaTime == 0f) return;
-        
-        Shader.SetGlobalFloat(ShaderIds.unscaledTime, Time.unscaledTime); // Keep animating shaders while the game is paused
         UpdateMenuNavigation(); // !
         states.gameStateMachine.Tick();
         UpdateTutorial(); // !
@@ -93,9 +87,10 @@ public partial class Game : MonoBehaviour {
         UpdateQuests(); // !
         UpdateInputPrompts();
         UpdateSettings();
-        ClearPerFrameData();
         CheckForScreenSizeChange();
         UpdateCursorStyle();
+        UpdateGlobalShaders();
+        ClearPerFrameData();
 
 #if UNITY_EDITOR
         if (!pauseMenu.paused) {

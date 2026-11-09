@@ -32,6 +32,7 @@ public class GameAction {
 
     public readonly string label;
     public bool isActive = true;
+    public bool hasBindingsForCurrentDevice = true;
     public int layerIndex = -1;
 
     public enum BindingSource { KeyboardMouse, Gamepad, Steam }

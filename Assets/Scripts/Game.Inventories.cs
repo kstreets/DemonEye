@@ -183,8 +183,14 @@ public partial class Game {
         }
         
         // Items can be null because we save all inventory slots, including empty ones
-        foreach (ItemInstance itemInstance in itemInstances) {
+        for (int i = 0; i < itemInstances.Count; i++) {
+            ItemInstance itemInstance = itemInstances[i];
             if (itemInstance == null) continue;
+            if (!SavedItemStillExists(itemInstance)) {
+                Debug.LogWarning($"Dropped a saved item that no longer exists, uuid {itemInstance.itemOrInstanceUuid}");
+                itemInstances[i] = null;
+                continue;
+            }
             if (itemInstance.isDemonEye) {
                 BuildAndRegisterDemonEye(itemInstance);
             }
@@ -193,6 +199,19 @@ public partial class Game {
         CopyItemsToInventory(itemInstances, inventory);
     }
     
+    // Items deleted or whose uuid changed since the save would throw when looked up
+    private bool SavedItemStillExists(ItemInstance itemInstance) {
+        // Demon Eyes get a new instance uuid on load, so only what's forged into them needs to exist
+        if (itemInstance.isDemonEye) {
+            if (itemInstance.nestedUuids == null) return false;
+            foreach (int uuid in itemInstance.nestedUuids) {
+                if (!res.lookup.ContainsKey(uuid)) return false;
+            }
+            return true;
+        }
+        return res.lookup.ContainsKey(itemInstance.itemOrInstanceUuid);
+    }
+
     private void CopyItemsToInventory(List<ItemInstance> items, Inventory toInventory) {
         if (items == null || toInventory == null) return;
         

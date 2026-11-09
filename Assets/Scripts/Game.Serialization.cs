@@ -28,7 +28,7 @@ public partial class Game {
     }
     
     public string GetSettingsSavePath() {
-        return $"{Application.persistentDataPath}/settings";
+        return $"{Application.persistentDataPath}/settings.json";
     }
 
     public string GetGameStateSavePath() {
@@ -52,45 +52,23 @@ public partial class Game {
     }
     
     public void SaveSettings() {
-        using FileStream stream = File.Open(GetSettingsSavePath(), FileMode.OpenOrCreate); 
-        using BinaryWriter binWriter = new(stream);
-
-        SettingsState state = settings.curSettingsState;
-        SerializeVector2Int(binWriter, state.resolution);
-        SerializeInt(binWriter, state.fullScreenIndex);
-        SerializeInt(binWriter, state.fpsLimitIndex);
-        SerializeInt(binWriter, state.targetMonitor);
-        SerializeInt(binWriter, state.vsyncEnabled);
-        SerializeInt(binWriter, state.masterVolumeIndex);
-        SerializeInt(binWriter, state.musicVolumeIndex);
-        SerializeInt(binWriter, state.gameVolumeIndex);
+        File.WriteAllText(GetSettingsSavePath(), JsonUtility.ToJson(settings.curSettingsState, prettyPrint: true));
     }
-    
+
+    // Fields missing from the file keep their defaults
     public SettingsState LoadSettings() {
         string savePath = GetSettingsSavePath();
-        if (!File.Exists(savePath)) {
-            return null;
-        } 
-        
-        using FileStream stream = File.Open(savePath, FileMode.Open); 
-        using BinaryReader binReader = new(stream);
-        
-        return new() {
-            resolution = DeserializeVector2Int(binReader),
-            fullScreenIndex = DeserializeInt(binReader),
-            fpsLimitIndex = DeserializeInt(binReader),
-            targetMonitor = DeserializeInt(binReader),
-            vsyncEnabled = DeserializeInt(binReader),
-            masterVolumeIndex = DeserializeInt(binReader),
-            musicVolumeIndex = DeserializeInt(binReader),
-            gameVolumeIndex = DeserializeInt(binReader),
-        };
+        if (!File.Exists(savePath)) return null;
+        SettingsState state = new();
+        JsonUtility.FromJsonOverwrite(File.ReadAllText(savePath), state);
+        return state;
     }
     
     public void SaveGameState() {
-        using FileStream stream = File.Open(GetGameStateSavePath(), FileMode.OpenOrCreate); 
-        using BinaryWriter binWriter = new(stream);
+        WriteBinaryFileSafely(GetGameStateSavePath(), WriteGameState);
+    }
 
+    private void WriteGameState(BinaryWriter binWriter) {
         SerializeInt(binWriter, gameStateSaveVersion);
 
         // -1 marks the tutorial as completed
@@ -123,15 +101,12 @@ public partial class Game {
         }
     }
 
-    public GameState LoadGameState() {
-        string savePath = GetGameStateSavePath();
-        if (!File.Exists(savePath)) {
-            return null;
-        } 
-        
-        using FileStream stream = File.Open(savePath, FileMode.Open);
-        using BinaryReader binReader = new(stream);
+    // failed is set when there was a save but it couldn't be loaded, so a new game starts
+    public GameState LoadGameState(out bool failed) {
+        return ReadBinaryFileSafely(GetGameStateSavePath(), ReadGameState, out failed);
+    }
 
+    private GameState ReadGameState(BinaryReader binReader) {
         int version = DeserializeInt(binReader);
         return new() {
             version = version,
@@ -206,6 +181,7 @@ public partial class Game {
     }
 
     private void SerializeMapState(BinaryWriter binWriter, MapData.State mapState) {
+        binWriter.Write(mapState.mapUuid);
         binWriter.Write(mapState.isUnlocked);
         SerializeList(binWriter, mapState.bloodMushroomSpawns, SerializeVector2);
         binWriter.Write(mapState.unlockRevealPending);
@@ -213,6 +189,7 @@ public partial class Game {
 
     private MapData.State DeserializeMapState(BinaryReader binReader) {
         MapData.State state = new() {
+            mapUuid = binReader.ReadInt32(),
             isUnlocked = binReader.ReadBoolean(),
             bloodMushroomSpawns = DeserializeList(binReader, DeserializeVector2),
             unlockRevealPending = binReader.ReadBoolean(),
@@ -223,15 +200,29 @@ public partial class Game {
     private void SerializeQuestState(BinaryWriter binWriter, Quest.State questState) {
         binWriter.Write(questState.associatedQuestUuid);
         binWriter.Write(questState.submitted);
-        SerializeList(binWriter, questState.objectiveProgresses, SerializeInt);
+        SerializeList(binWriter, new List<KeyValuePair<int, int>>(questState.objectiveProgresses), SerializeIntPair);
     }
 
     private Quest.State DeserializeQuestState(BinaryReader binReader) {
-        return new() {
+        Quest.State state = new() {
             associatedQuestUuid = binReader.ReadInt32(),
             submitted = binReader.ReadBoolean(),
-            objectiveProgresses = DeserializeList(binReader, DeserializeInt)
+            objectiveProgresses = new(),
         };
+        foreach ((int objectiveId, int progress) in DeserializeList(binReader, DeserializeIntPair)) {
+            state.objectiveProgresses[objectiveId] = progress;
+        }
+        return state;
+    }
+
+    private void SerializeIntPair(BinaryWriter binWriter, KeyValuePair<int, int> pair) {
+        binWriter.Write(pair.Key);
+        binWriter.Write(pair.Value);
+    }
+
+    private KeyValuePair<int, int> DeserializeIntPair(BinaryReader binReader) {
+        int key = binReader.ReadInt32();
+        return new(key, binReader.ReadInt32());
     }
     
     private void SerializeItemInstance(BinaryWriter binWriter, ItemInstance itemInstance) {
@@ -268,6 +259,10 @@ public partial class Game {
     
     private List<T> DeserializeList<T>(BinaryReader reader, Func<BinaryReader, T> deserializeCallback) {
         int count = reader.ReadInt32();
+        // Every element takes at least a byte, so a corrupt count fails here instead of allocating a huge list
+        if (count < 0 || count > reader.BaseStream.Length - reader.BaseStream.Position) {
+            throw new InvalidDataException($"Bad list count {count}");
+        }
         List<T> list = new(count);
         for (int i = 0; i < count; i++) {
             bool isNull = reader.ReadBoolean();
@@ -305,23 +300,63 @@ public partial class Game {
         return new(x, y);
     }
     
-    private void SerializeVector2Int(BinaryWriter binWriter, Vector2Int value) {
-        binWriter.Write(value.x);
-        binWriter.Write(value.y);
-    }
-    
-    private Vector2Int DeserializeVector2Int(BinaryReader binReader) {
-        int x = binReader.ReadInt32();
-        int y = binReader.ReadInt32();
-        return new(x, y);
-    }
-    
     private void SerializeInt(BinaryWriter binWriter, int value) {
         binWriter.Write(value);
     }
     
     private int DeserializeInt(BinaryReader binReader) {
         return binReader.ReadInt32();
+    }
+
+    private static void WriteBinaryFileSafely(string path, Action<BinaryWriter> write) {
+        WriteFileSafely(path, tempPath => {
+            using FileStream stream = File.Open(tempPath, FileMode.Create);
+            using BinaryWriter binWriter = new(stream);
+            write(binWriter);
+        });
+    }
+
+    private static T ReadBinaryFileSafely<T>(string path, Func<BinaryReader, T> read, out bool failed) where T : class {
+        return ReadFileSafely(path, filePath => {
+            using FileStream stream = File.Open(filePath, FileMode.Open);
+            using BinaryReader binReader = new(stream);
+            T result = read(binReader);
+            // Reads are positional, so leftover data means the file doesn't match what was read
+            if (stream.Position != stream.Length) throw new InvalidDataException("Unread data at the end of the file");
+            return result;
+        }, out failed);
+    }
+
+    // Written to a temp file and swapped in, so a crash mid-save keeps the last good file. The one before it is kept as .bak
+    private static void WriteFileSafely(string path, Action<string> writeTo) {
+        string tempPath = path + ".tmp";
+        writeTo(tempPath);
+        if (File.Exists(path)) {
+            File.Replace(tempPath, path, path + ".bak");
+        }
+        else {
+            File.Move(tempPath, path);
+        }
+    }
+
+    // Tries the file, then the .bak from the save before it. Returns null when there's nothing to load, or nothing loads.
+    // failed is set when a file was there but couldn't be loaded, which is kept as .corrupt.
+    private static T ReadFileSafely<T>(string path, Func<string, T> readFrom, out bool failed) where T : class {
+        failed = false;
+        foreach (string filePath in new[] { path, path + ".bak" }) {
+            if (!File.Exists(filePath)) continue;
+            try {
+                return readFrom(filePath);
+            }
+            catch (Exception e) {
+                Debug.LogWarning($"Couldn't load {filePath}: {e.Message}");
+                if (filePath == path) {
+                    File.Copy(path, path + ".corrupt", overwrite: true);
+                }
+                failed = true;
+            }
+        }
+        return null;
     }
 
 }

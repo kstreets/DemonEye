@@ -62,6 +62,8 @@ public partial class Game {
         inputs.menuTabRight = AddAction("MenuTabRight");
         inputs.menuSecondaryTabLeft = AddAction("MenuSecondaryTabLeft");
         inputs.menuSecondaryTabRight = AddAction("MenuSecondaryTabRight");
+        inputs.cancelRebind = AddAction("CancelRebind");
+        inputs.unbind = AddAction("Unbind");
 
         // The Steam Deck starts on the controller, its touchpad switches to the cursor once it's used
         inputs.device = OnSteamDeck ? Inputs.Device.ControllerWithMouse : Inputs.Device.KeyboardMouse;
@@ -172,6 +174,11 @@ public partial class Game {
         if (!tutorial.dialogue.Finished) {
             AddInputLayer(Inputs.DialogueLayer);
         }
+
+        // Only there so its prompts show, the rebind operation reads the actual presses
+        if (controlBindings.IsRebindingControls) {
+            AddInputLayer(Inputs.RebindingLayer);
+        }
     }
 
     private void AddInputLayer(string actionMapName) {
@@ -207,14 +214,6 @@ public partial class Game {
     // Decides which actions are active this frame. An action is active when its map is on the stack and none of its bindings
     // for the current device are also used by an active action on a higher layer. Actions on the same layer never shadow each other.
     private void UpdateInputLayers() {
-        if (inputs.layerStack.Count == 0) {
-            foreach (GameAction action in inputs.all) {
-                action.isActive = true;
-                action.layerIndex = -1;
-            }
-            return;
-        }
-
         GameAction.BindingSource source;
         if (inputs.device == Inputs.Device.KeyboardMouse) {
             source = GameAction.BindingSource.KeyboardMouse;
@@ -224,6 +223,18 @@ public partial class Game {
         }
         else {
             source = GameAction.BindingSource.Gamepad;
+        }
+
+        foreach (GameAction action in inputs.all) {
+            action.hasBindingsForCurrentDevice = action.HasBindings(source);
+        }
+
+        if (inputs.layerStack.Count == 0) {
+            foreach (GameAction action in inputs.all) {
+                action.isActive = true;
+                action.layerIndex = -1;
+            }
+            return;
         }
 
         foreach (GameAction action in inputs.all) {
@@ -242,9 +253,8 @@ public partial class Game {
                 if (action.unityInputAction.actionMap != map) continue;
                 action.layerIndex = i;
                 
-                bool hasBindings = action.HasBindings(source);
                 bool bindingsNotClaimed = !action.SharesClaimedBinding(source, inputs.claimedUnityBindings, inputs.claimedSteamOrigins);
-                action.isActive = hasBindings && bindingsNotClaimed;
+                action.isActive = action.hasBindingsForCurrentDevice && bindingsNotClaimed;
             }
 
             // Shadowed actions don't claim, so their other bindings still reach lower layers

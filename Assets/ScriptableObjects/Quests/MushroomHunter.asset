@@ -20,11 +20,12 @@ MonoBehaviour:
     make from it.
   traderReputationReward: 100
   objectives:
-  - type: 10
+  - id: 1
+    type: 10
     description: 
     targetValue: 6
     targetEnemy: {fileID: 0}
     targetItem: {fileID: 11400000, guid: 4963528a44ecb3b4a9185883a5b0f0d4, type: 2}
     targetItemType: {fileID: 0}
-    teleportMap: {fileID: 0}
+    targetMap: {fileID: 0}
     keepFetchedItems: 0

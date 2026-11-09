@@ -34,10 +34,8 @@ public partial class Game {
 
     private void PauseRaid() {
         if (pauseMenu.paused) return;
+        
         pauseMenu.paused = true;
-
-        states.gameStateMachine.Pause();
-        tutorial.stateMachine?.Pause();
         Time.timeScale = 0f;
 
         CancelItemDrag();
@@ -89,6 +87,7 @@ public partial class Game {
     private void ShowPauseSettings() {
         pauseMenu.showingSettings = true;
         pauseMenu.panel.gameObject.SetActive(false);
+        SetRaidHUDVisible(false);
         ShowSettingsMenuUI();
         IgnoreHeldNavigationInput();
         ClearControllerSelection();
@@ -97,9 +96,17 @@ public partial class Game {
     private void ClosePauseSettings() {
         pauseMenu.showingSettings = false;
         CloseSettingsMenuUI();
+        SetRaidHUDVisible(true);
         pauseMenu.panel.gameObject.SetActive(true);
         IgnoreHeldNavigationInput();
         ClearControllerSelection();
+    }
+
+    // The settings menu shows the raid behind it, so the HUD would poke through
+    private void SetRaidHUDVisible(bool visible) {
+        playerInfo.parent.gameObject.SetActive(visible);
+        ui.hotBarParent.gameObject.SetActive(visible);
+        ui.minimap.gameObject.SetActive(visible);
     }
 
 }

@@ -19,11 +19,12 @@ MonoBehaviour:
     sell it again to someone else.
   traderReputationReward: 100
   objectives:
-  - type: 100
+  - id: 1
+    type: 100
     description: Bring back the trader's necklace
     targetValue: 1
     targetEnemy: {fileID: 0}
     targetItem: {fileID: 11400000, guid: 81232561f605c1546b430fbe457c269b, type: 2}
     targetItemType: {fileID: 0}
-    teleportMap: {fileID: 0}
+    targetMap: {fileID: 0}
     keepFetchedItems: 0

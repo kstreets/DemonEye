@@ -7,7 +7,7 @@ public partial class Game {
         SettingsState settingsState = LoadSettings();
         InitSettings(settingsState);
 
-        GameState gameState = LoadGameState();
+        GameState gameState = LoadGameState(out bool gameStateLoadFailed);
         persistentFlags = gameState?.persistentFlags ?? default;
         
         camera.defaultPPU = camera.pixelPerfect.assetsPPU;
@@ -48,6 +48,10 @@ public partial class Game {
         bool createInitialSaveFile = gameState == null;
         if (createInitialSaveFile) {
             SaveGameState();
+        }
+
+        if (gameStateLoadFailed && gameState == null) {
+            ui.messagePopup.Show("Your save couldn't be loaded, so a new game was started.", "OK", null, null);
         }
     }
     

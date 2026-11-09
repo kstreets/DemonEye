@@ -18,7 +18,8 @@ MonoBehaviour:
     Next time you take damage, use them to heal yourself.
   traderReputationReward: 100
   objectives:
-  - type: 80
+  - id: 1
+    type: 80
     description: Restore 200 health while in a raid
     targetValue: 200
     targetEnemy: {fileID: 0}

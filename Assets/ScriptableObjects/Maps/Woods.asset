@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0aa690954e129034abb7319a8a860125, type: 3}
   m_Name: Woods
   m_EditorClassIdentifier: Assembly-CSharp::MapData
+  uuid: 2046675523
   displayName: Woods
   sceneReference: Woods
   spawning: {fileID: 11400000, guid: c3f7f6d7c8bc62a4993a44c716d126e0, type: 2}
