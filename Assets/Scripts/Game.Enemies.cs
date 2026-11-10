@@ -21,13 +21,15 @@ public partial class Game {
     
     public class Enemy : Entity {
         public float flowFieldAcc;
-        public float prevAverageDistFromPlayer;
         public float curRunningSumDistFromPlayer;
         public int curRunningSumFrameCount;
         public float averageDistFromPlayerTime;
         public float lastTeleportTime;
         public float curDistFromPlayer;
         public Collider2D enemySpacerCollider;
+        public DamageShape sideAttackShape;
+        public DamageShape upAttackShape;
+        public DamageShape downAttackShape;
         public Vector2 separationOffset;
         public float fixedRandomSeparationAngle;
         public Vector2 separationVel;
@@ -67,8 +69,26 @@ public partial class Game {
         enemy.collider.enabled = true;
         enemy.attackDelay = Tween.Delay(data.projectileCooldownTime);
         enemy.queuedForRangedAttack = false;
+        
+        enemy.sideAttackShape = null;
+        enemy.upAttackShape = null;
+        enemy.downAttackShape = null;
+        for (int i = 0; i < enemy.trans.childCount; i++) {
+            if (!enemy.trans.GetChild(i).TryGetComponent(out DamageShape shape)) continue;
+            switch (shape.attackDir) {
+                case DamageShape.AttackDir.Side: 
+                    enemy.sideAttackShape = shape; 
+                    break;
+                case DamageShape.AttackDir.Up:   
+                    enemy.upAttackShape = shape;   
+                    break;
+                case DamageShape.AttackDir.Down: 
+                    enemy.downAttackShape = shape; 
+                    break;
+            }
+        }
     }
-
+    
     private void OnEnemyDeath(Enemy deadEnemy) {
         Assert.IsNotNull(deadEnemy.data.dropPool, "Enemy needs to have a drop pool");
         
@@ -110,7 +130,6 @@ public partial class Game {
             enemy.averageDistFromPlayerTime += Time.deltaTime;
             if (enemy.averageDistFromPlayerTime > 1f) {
                 enemy.averageDistFromPlayerTime = 0f;
-                enemy.prevAverageDistFromPlayer = enemy.curRunningSumDistFromPlayer / enemy.curRunningSumFrameCount;
                 enemy.curRunningSumDistFromPlayer = 0f;
                 enemy.curRunningSumFrameCount = 0;
             }
@@ -123,7 +142,7 @@ public partial class Game {
                     SulfurBossLogic(enemy);
                     break;
                 case EnemyData.EnemyType.FireBender:
-                    RangedLogic(enemy);
+                    RangedEnemyLogic(enemy);
                     break;
                 default:
                     BasicEnemyLogic(enemy);
@@ -187,7 +206,7 @@ public partial class Game {
         UpdateRangedAttackManager();
 
         Vector2 hurtColliderCenter = (Vector2)player.position + player.hurtCollider.offset;
-        List<Collider2D> overlapedEnemiesWithPlayer = Physics.OverlapCapsule(hurtColliderCenter, player.hurtCollider, Masks.EnemyMask);
+        List<Collider2D> overlapedEnemiesWithPlayer = Physics.OverlapCapsule(hurtColliderCenter, player.hurtCollider, Masks.EnemyWorldColliderMask);
         bool someEnemyOverlapsPlayer = overlapedEnemiesWithPlayer.Count > 0;
         
         if (someEnemyOverlapsPlayer) {
@@ -203,8 +222,10 @@ public partial class Game {
                     closestColToPlayer = col;
                 }
             }
-
-            Enemy collidedWithEnemy = entities.lookup[closestColToPlayer.gameObject] as Enemy;
+            
+            GameObject enemyGameobject = closestColToPlayer.transform.parent.gameObject;
+            Enemy collidedWithEnemy = entities.lookup[enemyGameobject] as Enemy;
+            Assert.IsNotNull(collidedWithEnemy, "Collider involved in player collision could not be mapped to a Enemy. Collider needs to child gameobject.");
             DamagePlayer(collidedWithEnemy.data.collisionDamage, PlayerDamageType.Collision, collidedWithEnemy);
         }
     }
@@ -226,7 +247,7 @@ public partial class Game {
         rangedAttackManager.nextAttackAllowedTime = 0f;
     }
 
-    private void RangedLogic(Enemy enemy) {
+    private void RangedEnemyLogic(Enemy enemy) {
         if (enemy.attackDelay.isAlive || enemy.queuedForRangedAttack) return;
         enemy.queuedForRangedAttack = true;
         rangedAttackManager.queuedEnemies.Add(enemy);
@@ -288,28 +309,63 @@ public partial class Game {
         bool canStartAttack = !playingAttackAnimation;
         bool withinAttackDist = enemy.curDistFromPlayer < enemy.data.attackDistance;
         bool facingPlayer = Vector2.Dot(enemy.graphicalDir, dirToPlayer) >= 0.5f;
-            
-        if (canStartAttack && withinAttackDist && facingPlayer) {
-            switch (CardinalDirFromVector(enemy.graphicalDir)) {
-                case CardinalDir.Right:
-                case CardinalDir.Left:
-                    enemy.animator.Play(attackSideAnim);
-                    break;
-                case CardinalDir.Up:
-                    enemy.animator.Play(attackUpAnim);
-                    break;
-                case CardinalDir.Down:
-                    enemy.animator.Play(attackDownAnim);
-                    break;
-            }
-            Delay(enemy, enemy.data.attackDamageDelay, static (enemy) => {
-                // Its possible the enemy died while waiting to apply the damage 
-                if (enemy.health <= 0) return;
-                gameInstance.PerformEnemyAttack(enemy); 
-            });
+
+        if (!canStartAttack || !withinAttackDist || !facingPlayer) return;
+        
+        switch (CardinalDirFromVector(enemy.graphicalDir)) {
+            case CardinalDir.Right:
+            case CardinalDir.Left:
+                enemy.animator.Play(attackSideAnim);
+                break;
+            case CardinalDir.Up:
+                enemy.animator.Play(attackUpAnim);
+                break;
+            case CardinalDir.Down:
+                enemy.animator.Play(attackDownAnim);
+                break;
+        }
+
+        switch (enemy.data.type) {
+            case EnemyData.EnemyType.Boomon:
+                PerformBoomonAttack(enemy);
+                break;
+            default:
+                PerformMeleeAttack(enemy);
+                break;
         }
     }
     
+    private void PerformMeleeAttack(Enemy enemy) {
+        DamageShape attackShape = EnemyAttackShape(enemy, out bool mirrored);
+        Assert.IsNotNull(attackShape, "Enemy is missing or does not have an attack shape, we should not be here");
+            
+        Action<Vector2> onDamageFrame = null;
+        if (enemy.data.type == EnemyData.EnemyType.Doughmon) {
+            onDamageFrame = static (pos) => gameInstance.SpawnSlamSmoke(pos);
+        }
+        DealShapeDamage(enemy, attackShape, enemy.data.damage, Masks.PlayerHurtMask, mirrored, enemy.data.changeToCauseBleed, onDamageFrame, onHit: null);
+    }
+    
+    private void PerformBoomonAttack(Enemy enemy) {
+        if (enemy.data.type != EnemyData.EnemyType.Boomon) return;
+        
+        const int projectileCount = 8;
+        const float angleDeltaPerDrop = 360f /  projectileCount;
+        const float randomRangePerDrop = angleDeltaPerDrop * 0.25f;
+
+        for (int i = 0; i <  projectileCount; i++) {
+            float randomAngle = (angleDeltaPerDrop * i) + Random.Range(-randomRangePerDrop, randomRangePerDrop);
+            Vector3 velocity = RotationVector(randomAngle) * 0.7f;
+            Vector3 position = gameInstance.OffsetY(enemy.position, 0.2f);
+            const float lifetime = 2f;
+            gameInstance.SpawnProjectile(
+                gameInstance.entityPools.gooProjectile, position, velocity, lifetime, enemy, 
+                flatDamage: enemy.data.damage, layermask: Masks.PlayerHurtMask
+            );
+        }
+            
+        enemy.health = 0;
+    }
     
     public class FireBoss : Enemy {
         public enum AttackTypes { Fireball, Meteor, DoubleFireball, MutliMeteor, Count }
@@ -494,9 +550,8 @@ public partial class Game {
             projectile.detonateNearPlayerRadius = SulfurBoss.poisonCloudDetonateRadius;
             projectile.onDetonate = static (detonatePos) => {
                 Entity poisonCloud = gameInstance.SpawnEntityOneShot(gameInstance.entityPools.poisonCloud, detonatePos, Quaternion.identity);
-                gameInstance.DealShapeDamage(poisonCloud, SulfurBoss.poisonCloudDamage, Masks.PlayerHurtMask);
-                gameInstance.Delay(poisonCloud, DamageShapeDelay(poisonCloud), static cloud => {
-                    if (cloud.damageShape.OverlapFirst(Masks.PlayerHurtMask)) {
+                gameInstance.DealShapeDamage(poisonCloud, SulfurBoss.poisonCloudDamage, Masks.PlayerHurtMask, onHit: static (hit) => {
+                    if (hit is Player) {
                         gameInstance.PoisonPlayer(SulfurBoss.poisonDamageMulti, SulfurBoss.poisonDebuffDuration);
                     }
                 });
@@ -773,25 +828,6 @@ public partial class Game {
     }
     
     private void PerformEnemyAttack(Enemy enemy) {
-        if (enemy.data.type == EnemyData.EnemyType.Boomon) {
-            const int projectileCount = 8;
-            const float angleDeltaPerDrop = 360f /  projectileCount;
-            const float randomRangePerDrop = angleDeltaPerDrop * 0.25f;
-
-            for (int i = 0; i <  projectileCount; i++) {
-                float randomAngle = (angleDeltaPerDrop * i) + Random.Range(-randomRangePerDrop, randomRangePerDrop);
-                Vector3 velocity = RotationVector(randomAngle) * 0.7f;
-                Vector3 position = gameInstance.OffsetY(enemy.position, 0.2f);
-                const float lifetime = 2f;
-                gameInstance.SpawnProjectile(
-                    gameInstance.entityPools.gooProjectile, position, velocity, lifetime, enemy, 
-                    flatDamage: enemy.data.damage, layermask: Masks.PlayerHurtMask
-                );
-            }
-            
-            enemy.health = 0;
-            return;
-        }
         
         Vector2 attackCheckPos = enemy.position;
         switch (gameInstance.CardinalDirFromVector(enemy.graphicalDir)) {
@@ -810,14 +846,13 @@ public partial class Game {
         }
 
         Collider2D col = Physics2D.OverlapCircle(attackCheckPos, enemy.data.attackRadius, Masks.PlayerHurtMask);
-        
-        if (!col) { 
+
+        if (!col) {
             col = Physics2D.OverlapCircle(enemy.Center, enemy.data.attackRadius, Masks.PlayerHurtMask);
         }
 
         if (enemy.data.type == EnemyData.EnemyType.Doughmon) {
-            Entity smokeSlam = gameInstance.SpawnEntity<Entity>(gameInstance.prefabs.slamSmoke, attackCheckPos, Quaternion.identity);
-            gameInstance.DestroyEntity(smokeSlam, gameInstance.CurrentClipLength(smokeSlam.animator));
+            gameInstance.SpawnSlamSmoke(attackCheckPos);
         }
 
         if (col) {
@@ -825,6 +860,11 @@ public partial class Game {
         }
     }
     
+    private void SpawnSlamSmoke(Vector2 position) {
+        Entity smokeSlam = SpawnEntity<Entity>(prefabs.slamSmoke, position, Quaternion.identity);
+        DestroyEntity(smokeSlam, CurrentClipLength(smokeSlam.animator));
+    }
+
     private void ReteleportEnemies(RaidSpawnPattern.Variant variant) {
         List<Enemy> enemies = entities.enemies;
         using var _ = ListPool<(Enemy, float)>.Get(out var reteleportCandidates);
@@ -884,6 +924,17 @@ public partial class Game {
         bool playingAttackAnim = animStateHash == attackSideAnim || animStateHash == attackUpAnim || animStateHash == attackDownAnim;
         bool clipIsNotFinished = stateInfo.normalizedTime <= 1f;
         return playingAttackAnim && clipIsNotFinished;
+    }
+    
+    private DamageShape EnemyAttackShape(Enemy enemy, out bool mirrored) {
+        CardinalDir dir = CardinalDirFromVector(enemy.graphicalDir);
+        DamageShape shape = dir switch {
+            CardinalDir.Right or CardinalDir.Left => enemy.sideAttackShape,
+            CardinalDir.Up                        => enemy.upAttackShape,
+            _                                     => enemy.downAttackShape,
+        };
+        mirrored = dir == CardinalDir.Left && shape && shape.mirrorForLeft;
+        return shape;
     }
     
     private enum TeleportType { Spawn, Reposition }

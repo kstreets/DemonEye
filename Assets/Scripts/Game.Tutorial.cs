@@ -15,9 +15,9 @@ public partial class Game {
     // Set from the Gameplay Testing window
     public const string skipTutorialEditorPrefKey = "DemonEye_SkipTutorial";
 
-    private void InitTutorial(GameState gameState) {
-        bool compltedTutorial = gameState != null && gameState.tutorialStateIndex == -1;
-        if (compltedTutorial) return;
+    private void InitTutorial() {
+        // Nothing is saved until the tutorial is done, so an unfinished one always starts over from a new game
+        if (persistentFlags.HasFlag(PersistentFlags.TutorialCompleted)) return;
 
 #if UNITY_EDITOR
         if (UnityEditor.EditorPrefs.GetBool(skipTutorialEditorPrefKey)) {
@@ -25,6 +25,11 @@ public partial class Game {
             return;
         }
 #endif
+
+        // Start from nothing, so a quit or failed run can't keep stacking up the starter items
+        ClearInventory(inventories.player);
+        ClearInventory(inventories.stash);
+        ClearInventory(inventories.eyeForge);
 
         mainMenu.hideoutButton.SetClickableState(false);
         tutorial.dialogueTypewriter = ui.openingDialogueTypewriter;
@@ -202,6 +207,7 @@ public partial class Game {
             inputPrompts.hideoutParent.gameObject.SetActive(true);
             ui.menuBackButton.gameObject.SetActive(true);
             mainMenu.playButton.SetClickableState(true);
+            persistentFlags |= PersistentFlags.TutorialCompleted;
             SaveGameState();
         });
         
@@ -220,46 +226,21 @@ public partial class Game {
         tutorial.hideoutTrader.To(tutorial.hideoutQuests).When(() => tutorial.dialogue.Finished);
         tutorial.hideoutQuests.To(tutorial.hideoutSkills).When(() => tutorial.dialogue.Finished);
         tutorial.hideoutSkills.To(tutorial.completed).When(() => tutorial.dialogue.Finished);
-
-        bool restoringTutorialFromSaveIndex = gameState != null;
-        if (restoringTutorialFromSaveIndex) {
-            State lastSaveState = tutorial.stateMachine.StateFromIndex(gameState.tutorialStateIndex);
-            // The save right before teleporting into the Slaughter map happens while still waiting to enter it,
-            // so the Demon Eye was already equipped and we restore into the map instead of redoing the first forge
-            if (lastSaveState == tutorial.waitingToEnterSlaughterMap) {
-                lastSaveState = tutorial.inSlaughterMap;
-            }
-            tutorial.stateMachine.SetStateWithoutCallbacks(lastSaveState);
-
-            if (InTutorialFirstForge) {
-                ClearInventory(inventories.stash);
-                ClearInventory(inventories.eyeForge);
-                ClearInventory(inventories.player);
-                tutorial.stateMachine.SetState(tutorial.entryState);
-            } else if (InTutorialSlaughterMap) {
-                player.health = FullPlayerHealth();
-            } else if (InTutorialFirstTraderMeeting) {
-                tutorial.stateMachine.SetStateWithoutCallbacks(tutorial.diedInSlaughterMap);
-            } else if (InTutorialHideoutTour) {
-                tutorial.stateMachine.SetState(tutorial.firstHideoutVisit);
-            }
-        }
     }
 
 #if UNITY_EDITOR
     private void SkipTutorial() {
         GiveStarterStashItems();
+        persistentFlags |= PersistentFlags.TutorialCompleted;
     }
 #endif
     
+    // Only given before the tutorial is completed, so once per save
     private void GiveStarterStashItems() {
-        if (persistentFlags.HasFlag(PersistentFlags.StarterStashItemsGiven)) return;
-        
         player.state.coinCurrency = config.starterStashInventory.coinCurrency;
         foreach (ItemWithCount itemWithCount in config.starterStashInventory.itemsWithCounts) {
             TryAddItemToInventory(inventories.stash, itemWithCount.item, itemWithCount.count);
         }
-        persistentFlags |= PersistentFlags.StarterStashItemsGiven;
     }
 
     private void UpdateTutorial() {

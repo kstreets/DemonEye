@@ -120,8 +120,11 @@ public partial class Game {
             Entity resourceEntity = SpawnResource<Entity>(prefab, resourceSpawn.transform, gridObstacle);
 
             switch (resourceEntity.gameObject.tag) {
-                case Tags.Mineable:
+                case Tags.SmallRock:
                     resourceEntity.health = 50;
+                    break;
+                case Tags.LargeRock:
+                    resourceEntity.health = 150;
                     break;
                 case Tags.DeadBody:
                     InitDeadBody(resourceEntity);
@@ -192,7 +195,7 @@ public partial class Game {
     }
     
     private void InitMapGrid() {
-        curRaid.mapInstance.grid.Init();
+        curRaid.mapInstance.grid.Init(player.position);
         curRaid.lastPlayerGridPos = new(float.MaxValue, float.MaxValue);
     }
 

@@ -826,6 +826,28 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: NewSulfurProps_32
+      rect:
+        serializedVersion: 2
+        x: 442
+        y: 185
+        width: 48
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 369d211cbf8231942877bcdb0b22bf46
+      internalID: -1497295162
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -867,6 +889,7 @@ TextureImporter:
       NewSulfurProps_3: 522841250
       NewSulfurProps_30: -1423338036
       NewSulfurProps_31: 117558773
+      NewSulfurProps_32: -1497295162
       NewSulfurProps_4: 779084914
       NewSulfurProps_5: -931956967
       NewSulfurProps_6: 2099869848

@@ -4,6 +4,7 @@ using UnityEngine;
 public class DamageShape : MonoBehaviour {
 
     public enum ShapeType { Circle, Box, Capsule }
+    public enum AttackDir { None, Side, Up, Down }
     
     [Header("Shape")]
     public ShapeType shape = ShapeType.Circle;
@@ -14,26 +15,38 @@ public class DamageShape : MonoBehaviour {
 
     [Header("Damage")]
     public int damageFrame;
+    public AttackDir attackDir;
+    [Tooltip("Also used flipped across the parent for left facing attacks")]
+    public bool mirrorForLeft;
 
     public Vector2 Center => transform.TransformPoint(offset);
+
+    public Vector2 GetCenter(bool mirrored) {
+        if (!mirrored || !transform.parent) return Center;
+        Vector3 local = transform.parent.InverseTransformPoint(Center);
+        local.x = -local.x;
+        return transform.parent.TransformPoint(local);
+    }
     
-    public List<Collider2D> Overlap(LayerMask mask) {
+    public List<Collider2D> Overlap(LayerMask mask, bool mirrored = false) {
         Vector2 scale = LossyScale2D();
-        float angle = transform.eulerAngles.z;
+        Vector2 center = GetCenter(mirrored);
+        float angle = mirrored ? -transform.eulerAngles.z : transform.eulerAngles.z;
         return shape switch {
-            ShapeType.Box     => Physics.OverlapBox(Center, Vector2.Scale(size, scale), angle, mask),
-            ShapeType.Capsule => Physics.OverlapCapsule(Center, Vector2.Scale(size, scale), capsuleDirection, angle, mask),
-            _                 => Physics.OverlapCircle(Center, radius * Mathf.Max(scale.x, scale.y), mask),
+            ShapeType.Box     => Physics.OverlapBox(center, Vector2.Scale(size, scale), angle, mask),
+            ShapeType.Capsule => Physics.OverlapCapsule(center, Vector2.Scale(size, scale), capsuleDirection, angle, mask),
+            _                 => Physics.OverlapCircle(center, radius * Mathf.Max(scale.x, scale.y), mask),
         };
     }
 
-    public Collider2D OverlapFirst(LayerMask mask) {
+    public Collider2D OverlapFirst(LayerMask mask, bool mirrored = false) {
         Vector2 scale = LossyScale2D();
-        float angle = transform.eulerAngles.z;
+        Vector2 center = GetCenter(mirrored);
+        float angle = mirrored ? -transform.eulerAngles.z : transform.eulerAngles.z;
         return shape switch {
-            ShapeType.Box     => Physics2D.OverlapBox(Center, Vector2.Scale(size, scale), angle, mask),
-            ShapeType.Capsule => Physics2D.OverlapCapsule(Center, Vector2.Scale(size, scale), capsuleDirection, angle, mask),
-            _                 => Physics2D.OverlapCircle(Center, radius * Mathf.Max(scale.x, scale.y), mask),
+            ShapeType.Box     => Physics2D.OverlapBox(center, Vector2.Scale(size, scale), angle, mask),
+            ShapeType.Capsule => Physics2D.OverlapCapsule(center, Vector2.Scale(size, scale), capsuleDirection, angle, mask),
+            _                 => Physics2D.OverlapCircle(center, radius * Mathf.Max(scale.x, scale.y), mask),
         };
     }
 
@@ -43,9 +56,18 @@ public class DamageShape : MonoBehaviour {
     }
 
     private void OnDrawGizmosSelected() {
+        DrawGizmo(transform.localToWorldMatrix, Color.red);
+        if (mirrorForLeft && transform.parent) {
+            Transform parent = transform.parent;
+            Matrix4x4 mirror = parent.localToWorldMatrix * Matrix4x4.Scale(new(-1f, 1f, 1f)) * parent.worldToLocalMatrix;
+            DrawGizmo(mirror * transform.localToWorldMatrix, new Color(1f, 0.6f, 0.1f));
+        }
+    }
+
+    private void DrawGizmo(Matrix4x4 matrix, Color color) {
         Vector2 center = offset;
-        Gizmos.matrix = transform.localToWorldMatrix;
-        Gizmos.color = Color.red;
+        Gizmos.matrix = matrix;
+        Gizmos.color = color;
         switch (shape) {
             case ShapeType.Circle:
                 Gizmos.DrawWireSphere(center, radius);

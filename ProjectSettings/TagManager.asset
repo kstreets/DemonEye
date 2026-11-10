@@ -4,7 +4,6 @@
 TagManager:
   serializedVersion: 3
   tags:
-  - GemRock
   - Enemy
   - ExitPortal
   - Pickup
@@ -14,6 +13,8 @@ TagManager:
   - Mineable
   - Chest
   - ExpressExitPortal
+  - SmallRock
+  - LargeRock
   layers:
   - Default
   - TransparentFX

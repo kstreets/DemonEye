@@ -30,7 +30,7 @@
 			{
 				"Interact"				"#Action_Interact"
 				"Inventory"				"#Action_Inventory"
-				"Escape"				"#Action_Escape"
+				"Back"					"#Action_Back"
 				"Pause"					"#Action_Pause"
 				"Teleport"				"#Action_Teleport"
 				"QuickUse1"				"#Action_QuickUse1"
@@ -64,7 +64,7 @@
 			"Action_MenuMove"				"Menu Navigate"
 			"Action_Interact"				"Interact"
 			"Action_Inventory"				"Inventory"
-			"Action_Escape"					"Back"
+			"Action_Back"						"Back"
 			"Action_Pause"					"Pause"
 			"Action_Teleport"				"Teleport"
 			"Action_QuickUse1"				"Quick Use 1"

@@ -12,9 +12,10 @@ GameObject:
   - component: {fileID: 7010526030902589278}
   - component: {fileID: 1758194713277359251}
   - component: {fileID: 3988463079117865098}
+  - component: {fileID: 6020482270806229214}
   m_Layer: 9
-  m_Name: GemRock
-  m_TagString: Mineable
+  m_Name: MiningRockLarge
+  m_TagString: LargeRock
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -83,7 +84,7 @@ SpriteRenderer:
   m_SortingLayer: 3
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 2053113619139583294, guid: 46c792b052ee9ed44a647719355ecc41, type: 3}
+  m_Sprite: {fileID: 354930422, guid: 46c792b052ee9ed44a647719355ecc41, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -92,7 +93,7 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_SpriteSortPoint: 0
+  m_SpriteSortPoint: 1
 --- !u!58 &1758194713277359251
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -127,8 +128,8 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.0073008537, y: 0.02210319}
-  m_Radius: 0.09683967
+  m_Offset: {x: -0.014376044, y: 0.027420163}
+  m_Radius: 0.15655363
 --- !u!114 &3988463079117865098
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -145,3 +146,17 @@ MonoBehaviour:
   carvingCollider: {fileID: 1758194713277359251}
   cellRadius: 1
   localOffset: {x: 0, y: 0}
+--- !u!114 &6020482270806229214
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6086678977028937640}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5cb368f0c5ef49f48a595f30691bbb72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BreakParticles
+  prefab: {fileID: 7286380919918648898, guid: a6501a20d4346d34e8ec2de549e1ea57, type: 3}
+  countRange: {x: 6, y: 9}

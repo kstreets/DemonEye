@@ -69,6 +69,11 @@ public partial class Game {
         public int delayedDamage;
         public LayerMask delayedDamageLayerMask;
         public bool delayedDamageIsCrit;
+        public DamageShape delayedDamageShape;
+        public bool delayedDamageMirrored;
+        public float delayedDamageBleedChance;
+        public Action<Vector2> delayedDamageCallback;
+        public Action<Entity> delayedDamageHitCallback;
         
         public PoisonedEffect poisonedEffect;
         public BounceEffect bounceEffect;

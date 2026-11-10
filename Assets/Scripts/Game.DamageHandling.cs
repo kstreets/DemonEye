@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using PrimeTween;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Pool;
+using Random = UnityEngine.Random;
 
 public partial class Game {
     
@@ -31,66 +33,99 @@ public partial class Game {
         StampBlood(enemy.position.Offset(y: -0.01f));
     }
     
-    private void DealShapeDamage(Entity entity, int damage, LayerMask mask) {
-        Assert.IsNotNull(entity.damageShape, "Cannot deal shape damage because there is no DamageShape");
-        
-        entity.delayedDamage = damage;
-        entity.delayedDamageLayerMask = mask;
-        
-        Delay(entity, DamageShapeDelay(entity), static entity => {
-            DamageShape damageShape = entity.damageShape;
+    private void DealShapeDamage(Entity damageShapeEntity, int damage, LayerMask mask, Action<Vector2> onDamageFrame = null, Action<Entity> onHit = null) {
+        DealShapeDamage(damageShapeEntity, damageShapeEntity.damageShape, damage, mask, mirrored: false, chanceToBleed: 0f, onDamageFrame: onDamageFrame, onHit: onHit);
+    }
+
+    private void DealShapeDamage(Entity sourceEntity, DamageShape damageShape, int damage, LayerMask mask, bool mirrored, float chanceToBleed, 
+        Action<Vector2> onDamageFrame, Action<Entity> onHit) 
+    {
+        Assert.IsNotNull(damageShape, "Cannot deal shape damage because there is no DamageShape");
+
+        sourceEntity.delayedDamage = damage;
+        sourceEntity.delayedDamageLayerMask = mask;
+        sourceEntity.delayedDamageShape = damageShape;
+        sourceEntity.delayedDamageMirrored = mirrored;
+        sourceEntity.delayedDamageBleedChance = chanceToBleed;
+        sourceEntity.delayedDamageCallback = onDamageFrame;
+        sourceEntity.delayedDamageHitCallback = onHit;
+
+        // Applies any Play from this frame so the delay is measured on the clip that's about to play
+        if (sourceEntity.animator && sourceEntity.animator.isActiveAndEnabled) {
+            sourceEntity.animator.Update(0f);
+        }
+
+        Delay(sourceEntity, DamageFrameDelay(sourceEntity.animator, damageShape.damageFrame), static (entity) => {
+            DamageShape damageShape = entity.delayedDamageShape;
             int damage = entity.delayedDamage;
             LayerMask mask = entity.delayedDamageLayerMask;
-        
+            bool mirrored = entity.delayedDamageMirrored;
+            float chanceToBleed = entity.delayedDamageBleedChance;
+            Action<Vector2> onDamageFrame = entity.delayedDamageCallback;
+            Action<Entity> onHit = entity.delayedDamageHitCallback;
+
             entity.delayedDamage = 0;
             entity.delayedDamageLayerMask = 0;
-            
-            gameInstance.DamageEntitiesInShape(entity, damageShape, damage, mask);
+            entity.delayedDamageShape = null;
+            entity.delayedDamageMirrored = false;
+            entity.delayedDamageBleedChance = 0f;
+            entity.delayedDamageCallback = null;
+            entity.delayedDamageHitCallback = null;
+
+            // Its possible an enemy died while waiting to apply the damage
+            if (entity is Enemy && entity.health <= 0) return;
+
+            onDamageFrame?.Invoke(damageShape.GetCenter(mirrored));
+            gameInstance.DamageEntitiesInShape(entity, damageShape, damage, mask, mirrored, chanceToBleed, onHit);
         });
     }
     
-    private static float DamageShapeDelay(Entity entity) {
-        int frame = entity.damageShape.damageFrame;
-        if (frame <= 0 || !entity.animator) {
+    private static float DamageFrameDelay(Animator animator, int frame) {
+        if (frame <= 0 || !animator) {
             return 0f;
         }
         
         using var _ = ListPool<AnimatorClipInfo>.Get(out List<AnimatorClipInfo> clipInfos);
-        entity.animator.GetCurrentAnimatorClipInfo(0, clipInfos);
+        animator.GetCurrentAnimatorClipInfo(0, clipInfos);
         
         // Pooled entities are rebound while inactive so the animator may not have evaluated its first state yet
         if (clipInfos.Count == 0) {
-            entity.animator.Update(0f);
-            entity.animator.GetCurrentAnimatorClipInfo(0, clipInfos);
+            animator.Update(0f);
+            animator.GetCurrentAnimatorClipInfo(0, clipInfos);
         }
         
         Assert.IsTrue(clipInfos.Count > 0, "Cannot wait for a damage frame because the animator has no clip playing");
         if (clipInfos.Count == 0) return 0f;
         
-        return frame / (clipInfos[0].clip.frameRate * entity.animator.speed);
+        return frame / (clipInfos[0].clip.frameRate * animator.speed);
     }
     
-    private void DamageEntitiesInShape(Entity sourceEntity, DamageShape damageShape, int damage, LayerMask mask) {
-        List<Collider2D> cols = damageShape.Overlap(mask);
-        
+    private void DamageEntitiesInShape(Entity sourceEntity, DamageShape damageShape, int damage, LayerMask mask, 
+        bool mirrored = false, float chanceToBleed = 0f, Action<Entity> onHit = null) 
+    {
+        List<Collider2D> cols = damageShape.Overlap(mask, mirrored);
+
         bool damagedPlayer = false;
         foreach (Collider2D col in cols) {
             int colliderLayerMask = 1 << col.gameObject.layer;
-            
+
             if ((Masks.PlayerHurtMask & colliderLayerMask) != 0) {
                 if (damagedPlayer) continue;
-                DamagePlayer(damage, PlayerDamageType.Normal, sourceEntity);
+                DamagePlayer(damage, PlayerDamageType.Normal, sourceEntity, chanceToBleed);
+                onHit?.Invoke(player);
                 damagedPlayer = true;
                 continue;
             }
-            
+
             if (!entities.lookup.TryGetValue(col.gameObject, out Entity hitEntity)) continue;
-            
+
             if (hitEntity is Enemy) {
                 DamageEnemy(hitEntity, damage, isCriticalStrike: false);
+                onHit?.Invoke(hitEntity);
             }
             else if ((Masks.MineableMask & colliderLayerMask) != 0) {
                 HandleDamageRock(hitEntity);
+                onHit?.Invoke(hitEntity);
             }
         }
     }
@@ -212,12 +247,13 @@ public partial class Game {
             curRaid.mapInstance.grid.ClearObstacle(entity.gridObstaclePos, entity.gridObstacleRadius);
         }
 
+        EmitBreakParticles(entity);
         Entity smokeEntity = SpawnEntity<Entity>(prefabs.rockSmokePrefab, entity.position, Quaternion.identity);
         DestroyEntity(smokeEntity, 0.417f);
         DestroyEntity(entity);
         PlayAudioClip(audio.stoneBreakClip, entity.position);
             
-        int dropCount = 1;
+        int dropCount = entity.gameObject.CompareTag(Tags.SmallRock) ? 1 : 2;
         if (trinkets.equiped is RockLootTrinket rockLoot) {
             if (RollProbability(rockLoot.chanceForSecondDrop)) {
                 dropCount++;
@@ -233,6 +269,20 @@ public partial class Game {
         }
     }
     
+    // One shared world space system per prefab, moved to the entity for each burst
+    private readonly Dictionary<ParticleSystem, ParticleSystem> breakParticleInstances = new();
+
+    private void EmitBreakParticles(Entity entity) {
+        if (!entity.trans.TryGetComponent(out BreakParticles breakParticles)) return;
+
+        if (!breakParticleInstances.TryGetValue(breakParticles.prefab, out ParticleSystem particles) || particles.isPlaying) {
+            particles = Instantiate(breakParticles.prefab, transform);
+            breakParticleInstances[breakParticles.prefab] = particles;
+        }
+        particles.transform.position = entity.position;
+        particles.Emit(Random.Range(breakParticles.countRange.x, breakParticles.countRange.y + 1));
+    }
+
     private float GetCriticalStrikeProbability(Projectile proj, Enemy enemy) {
         if (proj.flatCritChance.TryGetValue(out float flatCrit)) {
             return flatCrit;

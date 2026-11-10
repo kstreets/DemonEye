@@ -76,7 +76,8 @@ public class CoolerGrid : MonoBehaviour {
     // Much faster to read/write because of memory locality
     private GridCell[] gridCells;
 
-    public void Init() {
+    public void Init(Vector2 startingPlayerPos) {
+        predictedPlayerPos = startingPlayerPos;
         gridGameObjectPosition = transform.position;
 
         int cellCount = precomputedCells.Count;
@@ -153,9 +154,9 @@ public class CoolerGrid : MonoBehaviour {
     }
 
     public void FeedPlayerVelocity(Vector2 playerPos, Vector2 playerVelocity) {
-        const float lookAheadTime = 2.1f;
-        const float lookAheadSpeed = 1.3f;
-        predictedPlayerPos = Vector2.Lerp(predictedPlayerPos, playerPos + playerVelocity * lookAheadTime, Time.deltaTime * lookAheadSpeed);
+        const float lookAheadDist = 0.65f;
+        const float lookAheadSpeed = 2.5f;
+        predictedPlayerPos = Vector2.MoveTowards(predictedPlayerPos, playerPos + playerVelocity * lookAheadDist, Time.deltaTime * lookAheadSpeed);
     }
 
     public Vector3 GetSpawnPosition(Vector2 playerPosition, int innerCellRadius, int outerCellRadius, bool predictPlayerPos, List<Vector2> occupiedPositions) {
@@ -673,7 +674,7 @@ public class CoolerGrid : MonoBehaviour {
             Generate();
         }
         
-        Init();
+        Init(Vector2.zero);
         ScheduleFlowFieldCalculation(sourcePosForTesting.position);
         UpdateFlowFieldFromPreviousJob(forceComplete: true);
         Deinit();

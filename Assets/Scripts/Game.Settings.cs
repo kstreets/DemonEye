@@ -340,8 +340,20 @@ public partial class Game {
         InputActionMap gameplay = InputSystem.actions.FindActionMap(Inputs.GameplayLayer, throwIfNotFound: true);
         foreach (InputAction unityAction in gameplay.actions) {
             GameAction action = FindGameAction(unityAction);
-            if (action == null || !IsRebindable(action)) continue;
+            if (action == null) continue;
+            if (IsRebindable(action)) {
+                settings.rebindableActions.Add(action);
+            }
+            else {
+                settings.conflictOnlyActions.Add(action);
+            }
+        }
+        
+        // Global, but rebound like a gameplay action so keyboard action can close inventory,
+        // while controller overrides it with inventory specifc action
+        settings.rebindableActions.Insert(Mathf.Min(3, settings.rebindableActions.Count), inputs.inventory);
 
+        foreach (GameAction action in settings.rebindableActions) {
             InputBindingRow row = Instantiate(settings.controlsRowPrefab, settings.controlsContent);
             row.label.text = action.label;
             settings.controlsRows.Add(row);
@@ -600,7 +612,7 @@ public partial class Game {
         return builder.ToString();
     }
 
-    // Only other gameplay actions count as conflicts
+    // Only the rebindable and conflict-only actions count as conflicts
     private void RecalculateBindingConflicts() {
         controlBindings.conflicts.Clear();
         foreach (BindingSlot slot in controlBindings.bindingSlots) {
@@ -609,22 +621,26 @@ public partial class Game {
             if (string.IsNullOrEmpty(path)) continue;
 
             InputBinding groupMask = InputBinding.MaskByGroup(GetBindingGroup(slot.device));
-            foreach (GameAction other in inputs.all) {
-                if (other == slot.action) continue;
-                if (other.unityInputAction.actionMap.name != Inputs.GameplayLayer) continue;
+            AddBindingConflicts(slot, path, groupMask, settings.rebindableActions);
+            AddBindingConflicts(slot, path, groupMask, settings.conflictOnlyActions);
+        }
+    }
 
-                foreach (InputBinding binding in other.unityInputAction.bindings) {
-                    // Bindings with no group count for every device
-                    if (binding.isComposite || (!string.IsNullOrEmpty(binding.groups) && !groupMask.Matches(binding))) continue;
-                    if (!BindingPathsOverlap(path, binding.effectivePath)) continue;
+    private void AddBindingConflicts(BindingSlot slot, string path, InputBinding groupMask, List<GameAction> others) {
+        foreach (GameAction other in others) {
+            if (other == slot.action) continue;
 
-                    if (!controlBindings.conflicts.TryGetValue(slot, out List<GameAction> list)) {
-                        list = new();
-                        controlBindings.conflicts.Add(slot, list);
-                    }
-                    list.Add(other);
-                    break;
+            foreach (InputBinding binding in other.unityInputAction.bindings) {
+                // Bindings with no group count for every device
+                if (binding.isComposite || (!string.IsNullOrEmpty(binding.groups) && !groupMask.Matches(binding))) continue;
+                if (!BindingPathsOverlap(path, binding.effectivePath)) continue;
+
+                if (!controlBindings.conflicts.TryGetValue(slot, out List<GameAction> list)) {
+                    list = new();
+                    controlBindings.conflicts.Add(slot, list);
                 }
+                list.Add(other);
+                break;
             }
         }
     }

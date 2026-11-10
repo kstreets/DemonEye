@@ -493,6 +493,9 @@ public class GameData {
         public InputPrompt cancelRebindPrompt;
         public InputPrompt unbindPrompt;
         [NonSerialized] public readonly List<InputBindingRow> controlsRows = new();
+        [NonSerialized] public readonly List<GameAction> rebindableActions = new();
+        // Not shown in the controls page, but rebinding onto one of their bindings still warns
+        [NonSerialized] public readonly List<GameAction> conflictOnlyActions = new();
         
         public SingleSetting fullscreenMode;
         public SingleSetting resolution;
@@ -731,12 +734,12 @@ public class GameData {
     public enum PersistentFlags {
         None                     = 0,
         BloodMushroomsUnlocked   = 1 << 0,
-        StarterStashItemsGiven   = 1 << 1,
         HasExtracted             = 1 << 2,
         FirstMapPlayedOnce       = 1 << 3,
         FirstMapPlayedTwice      = 1 << 4,
         DemoEndShown             = 1 << 5,
         ShowStashTransferButton  = 1 << 6,
+        TutorialCompleted        = 1 << 7,
     }
     
     [Flags] 

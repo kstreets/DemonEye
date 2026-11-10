@@ -784,7 +784,7 @@ public partial class Game {
         }
 
         player.health = Mathf.Clamp(player.health - damage, 0, int.MaxValue);
-        
+
         // Rolled after the damage is applied so a hit that takes the player under the auto stop threshold can't start a bleed
         chanceToBleed -= GetAbsoluteStat(PlayerStat.BleedResist); 
         if (!player.bleeding && !curRaid.map.playerCantBleed && !PlayerHealthIsAtAutoBleedStop() && RollProbability(chanceToBleed)) {

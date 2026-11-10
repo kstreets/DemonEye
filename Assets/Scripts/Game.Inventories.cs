@@ -395,7 +395,9 @@ public partial class Game {
     
     private void HandleInventoryVisibility() {
         if (!InRaid || !inputs.inventory.WasPressedThisFrame()) return;
-        
+        // Global action, so it's still active behind popups
+        if (pauseMenu.paused || ui.messagePopup.IsShowing) return;
+
         // On controller the inventory button also splits stacks, so it only opens the inventory and escape closes it
         if (UsingController && PlayerInventoryIsOpen) return;
         

@@ -11,7 +11,6 @@ public partial class Game {
 
     public class GameState {
         public int version;
-        public int tutorialStateIndex;
         public PersistentFlags persistentFlags;
         
         public HideoutState hideoutState;
@@ -65,14 +64,13 @@ public partial class Game {
     }
     
     public void SaveGameState() {
+        // The tutorial starts over if it's quit partway, so nothing from it is saved until it's completed
+        if (InTutorial) return;
         WriteBinaryFileSafely(GetGameStateSavePath(), WriteGameState);
     }
 
     private void WriteGameState(BinaryWriter binWriter) {
         SerializeInt(binWriter, gameStateSaveVersion);
-
-        // -1 marks the tutorial as completed
-        SerializeInt(binWriter, InTutorial ? tutorial.stateMachine.GetCurrentStateIndex() : -1);
         SerializeInt(binWriter, (int)persistentFlags);
         SerializeHideoutState(binWriter, hideoutState);
         SerializePlayerState(binWriter, player);
@@ -110,7 +108,6 @@ public partial class Game {
         int version = DeserializeInt(binReader);
         return new() {
             version = version,
-            tutorialStateIndex = DeserializeInt(binReader),
             persistentFlags = (PersistentFlags)DeserializeInt(binReader),
             hideoutState = DeserializeHideoutState(binReader),
             playerState = DeserializePlayerState(binReader),

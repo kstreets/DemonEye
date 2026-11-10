@@ -16,8 +16,10 @@ public partial class Game {
         bool overridingSequenceOccuring = raidEnterSequence.isAlive || camera.lookAhead.fadeOutTween.isAlive || cutscene.playing;
         if (overridingSequenceOccuring && !MenuNavigationNeeded) return;
         
+        // Eases back to center while an inventory is open
+        bool inventoryOpen = PlayerInventoryIsOpen || LootInventoryIsOpen;
         Vector2 target = Vector2.zero;
-        if (TryGetAimDirection(out Vector2 aim)) {
+        if (!inventoryOpen && TryGetAimDirection(out Vector2 aim)) {
             float strength = UsingController ? Mathf.InverseLerp(ControllerNavigation.stickDeadzone, 1f, aim.magnitude) : Mathf.Clamp01(aim.magnitude / CameraLookahead.mouseRange);
             target = aim.normalized * (strength * CameraLookahead.maxDistance);
         }

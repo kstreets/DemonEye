@@ -69,16 +69,6 @@ public class StateMachine {
         timeWhenCurStateStarted = Time.time;
     }
     
-    public int GetCurrentStateIndex() {
-        if (states.Count <= 0) return -1;
-        return states.IndexOf(CurState); 
-    }
-    
-    public State StateFromIndex(int index) {
-        if (states.Count <= 0) return null;
-        return states[index]; 
-    }
-    
     public bool PassedThisState(State state) {
         return states.IndexOf(CurState) > states.IndexOf(state);
     }
