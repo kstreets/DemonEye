@@ -3,7 +3,8 @@ using UnityEngine;
 public static class Masks {
     
     public static LayerMask StaticLevelMask { get; }
-    public static LayerMask PlayerHurtMask { get; }
+    public static LayerMask PlayerMeleeHurtMask { get; }
+    public static LayerMask PlayerProjectileHurtMask { get; }
     public static LayerMask EnemyMask { get; }
     public static LayerMask EnemyWorldColliderMask { get; }
     public static LayerMask DamagableMask { get; }
@@ -12,7 +13,8 @@ public static class Masks {
     
     static Masks() {
         StaticLevelMask = CreateLayerMask("Default");
-        PlayerHurtMask = CreateLayerMask("PlayerHurtBox");
+        PlayerMeleeHurtMask = CreateLayerMask("PlayerMeleeHurtBox");
+        PlayerProjectileHurtMask = CreateLayerMask("PlayerProjectileHurtBox");
         EnemyMask = CreateLayerMask("Enemy", "EnemyNonTarget");
         EnemyWorldColliderMask = CreateLayerMask("EnemyWorldCollider");
         DamagableMask = CreateLayerMask("Enemy", "Mineable");

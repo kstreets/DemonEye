@@ -1,0 +1,2796 @@
+fileFormatVersion: 2
+guid: d8fcfddf4de52564ebf4afc208ec92b5
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 3474805479501490430
+    second: SulfurBoss_WalkDown_0
+  - first:
+      213: 4028847801359183831
+    second: SulfurBoss_WalkDown_1
+  - first:
+      213: -981848711100407545
+    second: SulfurBoss_WalkDown_2
+  - first:
+      213: 3769632500682485932
+    second: SulfurBoss_WalkDown_3
+  - first:
+      213: 3663928184980567133
+    second: SulfurBoss_WalkDown_4
+  - first:
+      213: 8071907805527742937
+    second: SulfurBoss_WalkDown_5
+  - first:
+      213: -6846934935165602030
+    second: SulfurBoss_WalkDown_6
+  - first:
+      213: -5398083888185299841
+    second: SulfurBoss_WalkDown_7
+  - first:
+      213: -2476298831674746583
+    second: SulfurBoss_WalkSide_0
+  - first:
+      213: 8020305564762488083
+    second: SulfurBoss_WalkSide_1
+  - first:
+      213: -8725910732605933193
+    second: SulfurBoss_WalkSide_2
+  - first:
+      213: -5615177384755371845
+    second: SulfurBoss_WalkSide_3
+  - first:
+      213: 1284355126026856468
+    second: SulfurBoss_WalkSide_4
+  - first:
+      213: -2480645706884685881
+    second: SulfurBoss_WalkSide_5
+  - first:
+      213: -2884252684086239915
+    second: SulfurBoss_WalkSide_6
+  - first:
+      213: 705715540937492133
+    second: SulfurBoss_WalkSide_7
+  - first:
+      213: -7459842281325512165
+    second: SulfurBoss_WalkUp_0
+  - first:
+      213: -4621439189481875399
+    second: SulfurBoss_WalkUp_1
+  - first:
+      213: 417207759469520032
+    second: SulfurBoss_WalkUp_2
+  - first:
+      213: -5637865212184652979
+    second: SulfurBoss_WalkUp_3
+  - first:
+      213: -80347372623785394
+    second: SulfurBoss_WalkUp_4
+  - first:
+      213: 5908882715364995065
+    second: SulfurBoss_WalkUp_5
+  - first:
+      213: 4341554363499035925
+    second: SulfurBoss_WalkUp_6
+  - first:
+      213: 2131438431758369354
+    second: SulfurBoss_WalkUp_7
+  - first:
+      213: -6799901879858090119
+    second: SulfurBoss_ShootDown_0
+  - first:
+      213: 2654059758031721178
+    second: SulfurBoss_ShootDown_1
+  - first:
+      213: -2074983466927737852
+    second: SulfurBoss_ShootDown_2
+  - first:
+      213: 2856838269239655133
+    second: SulfurBoss_ShootDown_3
+  - first:
+      213: 5742091978540087100
+    second: SulfurBoss_ShootDown_4
+  - first:
+      213: 7524212391966944700
+    second: SulfurBoss_ShootDown_5
+  - first:
+      213: 7052643516022881381
+    second: SulfurBoss_ShootDown_6
+  - first:
+      213: 7420854334269115197
+    second: SulfurBoss_ShootDown_7
+  - first:
+      213: 4880681390448415277
+    second: SulfurBoss_ShootDown_8
+  - first:
+      213: -8050161250382883450
+    second: SulfurBoss_ShootDown_9
+  - first:
+      213: -7855321119693053137
+    second: SulfurBoss_ShootDown_10
+  - first:
+      213: -1407338677262820194
+    second: SulfurBoss_ShootDown_11
+  - first:
+      213: -4660519621006383389
+    second: SulfurBoss_ShootDown_12
+  - first:
+      213: -4557781238229392911
+    second: SulfurBoss_ShootSide_0
+  - first:
+      213: -781626869584198265
+    second: SulfurBoss_ShootSide_1
+  - first:
+      213: -904043735522023429
+    second: SulfurBoss_ShootSide_2
+  - first:
+      213: 3656440156287800261
+    second: SulfurBoss_ShootSide_3
+  - first:
+      213: -5231586224672445711
+    second: SulfurBoss_ShootSide_4
+  - first:
+      213: 6455614699274765058
+    second: SulfurBoss_ShootSide_5
+  - first:
+      213: -2088027624589140896
+    second: SulfurBoss_ShootSide_6
+  - first:
+      213: 1025071145667195600
+    second: SulfurBoss_ShootSide_7
+  - first:
+      213: -8481839921782337897
+    second: SulfurBoss_ShootSide_8
+  - first:
+      213: 2126526602682773796
+    second: SulfurBoss_ShootSide_9
+  - first:
+      213: 7012130192223398336
+    second: SulfurBoss_ShootSide_10
+  - first:
+      213: -5642916702511136480
+    second: SulfurBoss_ShootSide_11
+  - first:
+      213: -5292426715918781156
+    second: SulfurBoss_ShootSide_12
+  - first:
+      213: 2724603014787861152
+    second: SulfurBoss_ShootUp_0
+  - first:
+      213: 7169472629177908771
+    second: SulfurBoss_ShootUp_1
+  - first:
+      213: -4195609833097079439
+    second: SulfurBoss_ShootUp_2
+  - first:
+      213: -1084497207627664707
+    second: SulfurBoss_ShootUp_3
+  - first:
+      213: -1082561505202636025
+    second: SulfurBoss_ShootUp_4
+  - first:
+      213: 6246764971912914095
+    second: SulfurBoss_ShootUp_5
+  - first:
+      213: -2949258130544882115
+    second: SulfurBoss_ShootUp_6
+  - first:
+      213: -5064622455914126390
+    second: SulfurBoss_ShootUp_7
+  - first:
+      213: 5049274586810910403
+    second: SulfurBoss_ShootUp_8
+  - first:
+      213: -1191344768467942402
+    second: SulfurBoss_ShootUp_9
+  - first:
+      213: -6432190629706702708
+    second: SulfurBoss_ShootUp_10
+  - first:
+      213: -6283049807266547364
+    second: SulfurBoss_ShootUp_11
+  - first:
+      213: 5151387548944755760
+    second: SulfurBoss_ShootUp_12
+  - first:
+      213: -4017070615628137245
+    second: SulfurBoss_EruptDown_0
+  - first:
+      213: 6683951501367776040
+    second: SulfurBoss_EruptDown_1
+  - first:
+      213: -8666154568698179856
+    second: SulfurBoss_EruptDown_2
+  - first:
+      213: -7539945437829353412
+    second: SulfurBoss_EruptDown_3
+  - first:
+      213: 976496061923919499
+    second: SulfurBoss_EruptDown_4
+  - first:
+      213: -2691333710162253816
+    second: SulfurBoss_EruptDown_5
+  - first:
+      213: -2521875647866043525
+    second: SulfurBoss_EruptDown_6
+  - first:
+      213: -7985810606638645288
+    second: SulfurBoss_EruptDown_7
+  - first:
+      213: 133964342976902275
+    second: SulfurBoss_EruptDown_8
+  - first:
+      213: 4527277207383999960
+    second: SulfurBoss_EruptDown_9
+  - first:
+      213: -1949372907372713278
+    second: SulfurBoss_EruptDown_10
+  - first:
+      213: 1991196944608652536
+    second: SulfurBoss_EruptDown_11
+  - first:
+      213: -1456602152685906013
+    second: SulfurBoss_EruptDown_12
+  - first:
+      213: -3568435686244783811
+    second: SulfurBoss_EruptDown_13
+  - first:
+      213: 5820048951960354398
+    second: SulfurBoss_SpawnSide_0
+  - first:
+      213: -6891482684870059985
+    second: SulfurBoss_SpawnSide_1
+  - first:
+      213: -6992195794593419611
+    second: SulfurBoss_SpawnSide_2
+  - first:
+      213: -6537139402882307681
+    second: SulfurBoss_SpawnSide_3
+  - first:
+      213: -5593025587260391603
+    second: SulfurBoss_SpawnSide_4
+  - first:
+      213: -9037877079805810601
+    second: SulfurBoss_SpawnSide_5
+  - first:
+      213: 128399108239646751
+    second: SulfurBoss_SpawnSide_6
+  - first:
+      213: 3017516585557721236
+    second: SulfurBoss_SpawnSide_7
+  - first:
+      213: -3443799308467322994
+    second: SulfurBoss_SpawnSide_8
+  - first:
+      213: 3832974498565370283
+    second: SulfurBoss_SpawnSide_9
+  - first:
+      213: 565855639172841773
+    second: SulfurBoss_SpawnSide_10
+  - first:
+      213: 266589085869338094
+    second: SulfurBoss_SpawnSide_11
+  - first:
+      213: 238916746756883453
+    second: SulfurBoss_SpawnSide_12
+  - first:
+      213: 5004003441893565355
+    second: SulfurBoss_SpawnSide_13
+  - first:
+      213: -556584989696109187
+    second: SulfurBoss_SpawnSide_14
+  - first:
+      213: -5347163713524568127
+    second: SulfurBoss_SpawnSide_15
+  - first:
+      213: -5608322568856734213
+    second: SulfurBoss_DeathSide_0
+  - first:
+      213: 6360057410860223296
+    second: SulfurBoss_DeathSide_1
+  - first:
+      213: -448573347606132636
+    second: SulfurBoss_DeathSide_2
+  - first:
+      213: -5060885835870645286
+    second: SulfurBoss_DeathSide_3
+  - first:
+      213: -9166112838857688533
+    second: SulfurBoss_DeathSide_4
+  - first:
+      213: -4455581468694191911
+    second: SulfurBoss_DeathSide_5
+  - first:
+      213: 743948086294719829
+    second: SulfurBoss_DeathSide_6
+  - first:
+      213: -3471160351636836364
+    second: SulfurBoss_DeathSide_7
+  - first:
+      213: 4590408693190638091
+    second: SulfurBoss_DeathSide_8
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: SulfurBoss_WalkDown_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 896
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ef8644d5c2df83030800000000000000
+      internalID: 3474805479501490430
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_WalkDown_1
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 896
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7dfa026cab759e730800000000000000
+      internalID: 4028847801359183831
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_WalkDown_2
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 896
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7016faf9cc5cf52f0800000000000000
+      internalID: -981848711100407545
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_WalkDown_3
+      rect:
+        serializedVersion: 2
+        x: 336
+        y: 896
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ca072f879cc605430800000000000000
+      internalID: 3769632500682485932
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_WalkDown_4
+      rect:
+        serializedVersion: 2
+        x: 448
+        y: 896
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d54fe4c9543e8d230800000000000000
+      internalID: 3663928184980567133
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_WalkDown_5
+      rect:
+        serializedVersion: 2
+        x: 560
+        y: 896
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9d91f20e16d250070800000000000000
+      internalID: 8071907805527742937
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_WalkDown_6
+      rect:
+        serializedVersion: 2
+        x: 672
+        y: 896
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 217fd3df3fccaf0a0800000000000000
+      internalID: -6846934935165602030
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_WalkDown_7
+      rect:
+        serializedVersion: 2
+        x: 784
+        y: 896
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f7ca4f0dd472615b0800000000000000
+      internalID: -5398083888185299841
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_WalkSide_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 784
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 929df44255b62add0800000000000000
+      internalID: -2476298831674746583
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_WalkSide_1
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 784
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 31db1c1fa69dd4f60800000000000000
+      internalID: 8020305564762488083
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_WalkSide_2
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 784
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7793149ab6657e680800000000000000
+      internalID: -8725910732605933193
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_WalkSide_3
+      rect:
+        serializedVersion: 2
+        x: 336
+        y: 784
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bb069d64be1e212b0800000000000000
+      internalID: -5615177384755371845
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_WalkSide_4
+      rect:
+        serializedVersion: 2
+        x: 448
+        y: 784
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 418684cae22f2d110800000000000000
+      internalID: 1284355126026856468
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_WalkSide_5
+      rect:
+        serializedVersion: 2
+        x: 560
+        y: 784
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7cf5a836fd9f29dd0800000000000000
+      internalID: -2480645706884685881
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_WalkSide_6
+      rect:
+        serializedVersion: 2
+        x: 672
+        y: 784
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 55d929a177319f7d0800000000000000
+      internalID: -2884252684086239915
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_WalkSide_7
+      rect:
+        serializedVersion: 2
+        x: 784
+        y: 784
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5a64d02ab843bc900800000000000000
+      internalID: 705715540937492133
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_WalkUp_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 672
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b1a372518f0597890800000000000000
+      internalID: -7459842281325512165
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_WalkUp_1
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 672
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9381dd7ea895ddfb0800000000000000
+      internalID: -4621439189481875399
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_WalkUp_2
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 672
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0a4a7bc2f383ac500800000000000000
+      internalID: 417207759469520032
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_WalkUp_3
+      rect:
+        serializedVersion: 2
+        x: 336
+        y: 672
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d439330d57742c1b0800000000000000
+      internalID: -5637865212184652979
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_WalkUp_4
+      rect:
+        serializedVersion: 2
+        x: 448
+        y: 672
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e429f148d7c82eef0800000000000000
+      internalID: -80347372623785394
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_WalkUp_5
+      rect:
+        serializedVersion: 2
+        x: 560
+        y: 672
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9ffa6c4e581900250800000000000000
+      internalID: 5908882715364995065
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_WalkUp_6
+      rect:
+        serializedVersion: 2
+        x: 672
+        y: 672
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 51d3869e0bc404c30800000000000000
+      internalID: 4341554363499035925
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_WalkUp_7
+      rect:
+        serializedVersion: 2
+        x: 784
+        y: 672
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a42c299f5f3649d10800000000000000
+      internalID: 2131438431758369354
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootDown_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 560
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 97f2c878445e1a1a0800000000000000
+      internalID: -6799901879858090119
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootDown_1
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 560
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ad2d322c94d15d420800000000000000
+      internalID: 2654059758031721178
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootDown_2
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 560
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 404b6f2d78d2433e0800000000000000
+      internalID: -2074983466927737852
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootDown_3
+      rect:
+        serializedVersion: 2
+        x: 336
+        y: 560
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dda75ca054785a720800000000000000
+      internalID: 2856838269239655133
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootDown_4
+      rect:
+        serializedVersion: 2
+        x: 448
+        y: 560
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c3770884b3200bf40800000000000000
+      internalID: 5742091978540087100
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootDown_5
+      rect:
+        serializedVersion: 2
+        x: 560
+        y: 560
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cbd28c53e4f5b6860800000000000000
+      internalID: 7524212391966944700
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootDown_6
+      rect:
+        serializedVersion: 2
+        x: 672
+        y: 560
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 56c710c49e500e160800000000000000
+      internalID: 7052643516022881381
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootDown_7
+      rect:
+        serializedVersion: 2
+        x: 784
+        y: 560
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d3b470c13bb2cf660800000000000000
+      internalID: 7420854334269115197
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootDown_8
+      rect:
+        serializedVersion: 2
+        x: 896
+        y: 560
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d22998b9dd9abb340800000000000000
+      internalID: 4880681390448415277
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootDown_9
+      rect:
+        serializedVersion: 2
+        x: 1008
+        y: 560
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 685505e8ef4184090800000000000000
+      internalID: -8050161250382883450
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootDown_10
+      rect:
+        serializedVersion: 2
+        x: 1120
+        y: 560
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f2362189f0b4cf290800000000000000
+      internalID: -7855321119693053137
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootDown_11
+      rect:
+        serializedVersion: 2
+        x: 1232
+        y: 560
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e9cd41fede0287ce0800000000000000
+      internalID: -1407338677262820194
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootDown_12
+      rect:
+        serializedVersion: 2
+        x: 1344
+        y: 560
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3e62d21e812825fb0800000000000000
+      internalID: -4660519621006383389
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootSide_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 448
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1f1a56bac128fb0c0800000000000000
+      internalID: -4557781238229392911
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootSide_1
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 448
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 785888bd08a1725f0800000000000000
+      internalID: -781626869584198265
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootSide_2
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 448
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bf7eaca23013473f0800000000000000
+      internalID: -904043735522023429
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootSide_3
+      rect:
+        serializedVersion: 2
+        x: 336
+        y: 448
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5c3120213f84eb230800000000000000
+      internalID: 3656440156287800261
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootSide_4
+      rect:
+        serializedVersion: 2
+        x: 448
+        y: 448
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1fa629afb0ca567b0800000000000000
+      internalID: -5231586224672445711
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootSide_5
+      rect:
+        serializedVersion: 2
+        x: 560
+        y: 448
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 203001d9d53f69950800000000000000
+      internalID: 6455614699274765058
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootSide_6
+      rect:
+        serializedVersion: 2
+        x: 672
+        y: 448
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 06c592330f5d503e0800000000000000
+      internalID: -2088027624589140896
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootSide_7
+      rect:
+        serializedVersion: 2
+        x: 784
+        y: 448
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0d2fef2a6c8c93e00800000000000000
+      internalID: 1025071145667195600
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootSide_8
+      rect:
+        serializedVersion: 2
+        x: 896
+        y: 448
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 79ecf64a7837a4a80800000000000000
+      internalID: -8481839921782337897
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootSide_9
+      rect:
+        serializedVersion: 2
+        x: 1008
+        y: 448
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4213356ada0f28d10800000000000000
+      internalID: 2126526602682773796
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootSide_10
+      rect:
+        serializedVersion: 2
+        x: 1120
+        y: 448
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0c9644a0247105160800000000000000
+      internalID: 7012130192223398336
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootSide_11
+      rect:
+        serializedVersion: 2
+        x: 1232
+        y: 448
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 02184b1182550b1b0800000000000000
+      internalID: -5642916702511136480
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootSide_12
+      rect:
+        serializedVersion: 2
+        x: 1344
+        y: 448
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c15bfdd31f58d86b0800000000000000
+      internalID: -5292426715918781156
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootUp_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 336
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0aa8362a10cbfc520800000000000000
+      internalID: 2724603014787861152
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootUp_1
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 336
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 32ef809ee551f7360800000000000000
+      internalID: 7169472629177908771
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootUp_2
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 336
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 175dc1a061336c5c0800000000000000
+      internalID: -4195609833097079439
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootUp_3
+      rect:
+        serializedVersion: 2
+        x: 336
+        y: 336
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: db2337b198713f0f0800000000000000
+      internalID: -1084497207627664707
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootUp_4
+      rect:
+        serializedVersion: 2
+        x: 448
+        y: 336
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 70b72e2fb08f9f0f0800000000000000
+      internalID: -1082561505202636025
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootUp_5
+      rect:
+        serializedVersion: 2
+        x: 560
+        y: 336
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fa4e83a25a7f0b650800000000000000
+      internalID: 6246764971912914095
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootUp_6
+      rect:
+        serializedVersion: 2
+        x: 672
+        y: 336
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d3e80f92b512217d0800000000000000
+      internalID: -2949258130544882115
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootUp_7
+      rect:
+        serializedVersion: 2
+        x: 784
+        y: 336
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ac3a5c9b5b8d6b9b0800000000000000
+      internalID: -5064622455914126390
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootUp_8
+      rect:
+        serializedVersion: 2
+        x: 896
+        y: 336
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3c685480c70a21640800000000000000
+      internalID: 5049274586810910403
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootUp_9
+      rect:
+        serializedVersion: 2
+        x: 1008
+        y: 336
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ef3c27ebe3e777fe0800000000000000
+      internalID: -1191344768467942402
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootUp_10
+      rect:
+        serializedVersion: 2
+        x: 1120
+        y: 336
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c806cb493b44cb6a0800000000000000
+      internalID: -6432190629706702708
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootUp_11
+      rect:
+        serializedVersion: 2
+        x: 1232
+        y: 336
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c597ac34d7f1ec8a0800000000000000
+      internalID: -6283049807266547364
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_ShootUp_12
+      rect:
+        serializedVersion: 2
+        x: 1344
+        y: 336
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 03ce83bbea76d7740800000000000000
+      internalID: 5151387548944755760
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_EruptDown_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3ec33d5fe8f7048c0800000000000000
+      internalID: -4017070615628137245
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_EruptDown_1
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 82317f63a7a22cc50800000000000000
+      internalID: 6683951501367776040
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_EruptDown_2
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0fecd14c552abb780800000000000000
+      internalID: -8666154568698179856
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_EruptDown_3
+      rect:
+        serializedVersion: 2
+        x: 336
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c30ba58929bbc5790800000000000000
+      internalID: -7539945437829353412
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_EruptDown_4
+      rect:
+        serializedVersion: 2
+        x: 448
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b860b8f9ef53d8d00800000000000000
+      internalID: 976496061923919499
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_EruptDown_5
+      rect:
+        serializedVersion: 2
+        x: 560
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 808aeb9ff3676aad0800000000000000
+      internalID: -2691333710162253816
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_EruptDown_6
+      rect:
+        serializedVersion: 2
+        x: 672
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b738c31b57f700dd0800000000000000
+      internalID: -2521875647866043525
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_EruptDown_7
+      rect:
+        serializedVersion: 2
+        x: 784
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8dfb1cb5093bc2190800000000000000
+      internalID: -7985810606638645288
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_EruptDown_8
+      rect:
+        serializedVersion: 2
+        x: 896
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 384f4b33cdfebd100800000000000000
+      internalID: 133964342976902275
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_EruptDown_9
+      rect:
+        serializedVersion: 2
+        x: 1008
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8d588d132ae14de30800000000000000
+      internalID: 4527277207383999960
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_EruptDown_10
+      rect:
+        serializedVersion: 2
+        x: 1120
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2ca67414baf62f4e0800000000000000
+      internalID: -1949372907372713278
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_EruptDown_11
+      rect:
+        serializedVersion: 2
+        x: 1232
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8fced31421722ab10800000000000000
+      internalID: 1991196944608652536
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_EruptDown_12
+      rect:
+        serializedVersion: 2
+        x: 1344
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3a7561e3f0c19cbe0800000000000000
+      internalID: -1456602152685906013
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_EruptDown_13
+      rect:
+        serializedVersion: 2
+        x: 1456
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d396d8556ae5a7ec0800000000000000
+      internalID: -3568435686244783811
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_SpawnSide_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 112
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e5e3bf49fa7f4c050800000000000000
+      internalID: 5820048951960354398
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_SpawnSide_1
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 112
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f289090c2098c50a0800000000000000
+      internalID: -6891482684870059985
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_SpawnSide_2
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 112
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5ae674798fab6fe90800000000000000
+      internalID: -6992195794593419611
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_SpawnSide_3
+      rect:
+        serializedVersion: 2
+        x: 336
+        y: 112
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f99adfb295a6745a0800000000000000
+      internalID: -6537139402882307681
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_SpawnSide_4
+      rect:
+        serializedVersion: 2
+        x: 448
+        y: 112
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d4f7cab8cd49162b0800000000000000
+      internalID: -5593025587260391603
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_SpawnSide_5
+      rect:
+        serializedVersion: 2
+        x: 560
+        y: 112
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 758a78e3ea2039280800000000000000
+      internalID: -9037877079805810601
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_SpawnSide_6
+      rect:
+        serializedVersion: 2
+        x: 672
+        y: 112
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f10e9140f4a28c100800000000000000
+      internalID: 128399108239646751
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_SpawnSide_7
+      rect:
+        serializedVersion: 2
+        x: 784
+        y: 112
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 490840ad85f50e920800000000000000
+      internalID: 3017516585557721236
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_SpawnSide_8
+      rect:
+        serializedVersion: 2
+        x: 896
+        y: 112
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e8fb11566ca2530d0800000000000000
+      internalID: -3443799308467322994
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_SpawnSide_9
+      rect:
+        serializedVersion: 2
+        x: 1008
+        y: 112
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ba1be1c9ff5713530800000000000000
+      internalID: 3832974498565370283
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_SpawnSide_10
+      rect:
+        serializedVersion: 2
+        x: 1120
+        y: 112
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d218c0fa4b25ad700800000000000000
+      internalID: 565855639172841773
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_SpawnSide_11
+      rect:
+        serializedVersion: 2
+        x: 1232
+        y: 112
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eedec347c5d13b300800000000000000
+      internalID: 266589085869338094
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_SpawnSide_12
+      rect:
+        serializedVersion: 2
+        x: 1344
+        y: 112
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: df3065de38dc05300800000000000000
+      internalID: 238916746756883453
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_SpawnSide_13
+      rect:
+        serializedVersion: 2
+        x: 1456
+        y: 112
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ba3e5e83e9ac17540800000000000000
+      internalID: 5004003441893565355
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_SpawnSide_14
+      rect:
+        serializedVersion: 2
+        x: 1568
+        y: 112
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d7559d996ec9648f0800000000000000
+      internalID: -556584989696109187
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_SpawnSide_15
+      rect:
+        serializedVersion: 2
+        x: 1680
+        y: 112
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1cf628bdeee0bc5b0800000000000000
+      internalID: -5347163713524568127
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_DeathSide_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bf5fc79765c3b22b0800000000000000
+      internalID: -5608322568856734213
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_DeathSide_1
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 0
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 04b0a65a486734850800000000000000
+      internalID: 6360057410860223296
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_DeathSide_2
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 0
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4688a30cae856c9f0800000000000000
+      internalID: -448573347606132636
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_DeathSide_3
+      rect:
+        serializedVersion: 2
+        x: 336
+        y: 0
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ad3df10652f14c9b0800000000000000
+      internalID: -5060885835870645286
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_DeathSide_4
+      rect:
+        serializedVersion: 2
+        x: 448
+        y: 0
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b2a7dbcefec6bc080800000000000000
+      internalID: -9166112838857688533
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_DeathSide_5
+      rect:
+        serializedVersion: 2
+        x: 560
+        y: 0
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9d06baac2489a22c0800000000000000
+      internalID: -4455581468694191911
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_DeathSide_6
+      rect:
+        serializedVersion: 2
+        x: 672
+        y: 0
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 55dade6c7d8035a00800000000000000
+      internalID: 743948086294719829
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_DeathSide_7
+      rect:
+        serializedVersion: 2
+        x: 784
+        y: 0
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4ff244a1d06f3dfc0800000000000000
+      internalID: -3471160351636836364
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SulfurBoss_DeathSide_8
+      rect:
+        serializedVersion: 2
+        x: 896
+        y: 0
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b0a3e7ba26864bf30800000000000000
+      internalID: 4590408693190638091
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      AttackRune1_0: 637263459462573385
+      SulfurBoss_DeathSide_0: -5608322568856734213
+      SulfurBoss_DeathSide_1: 6360057410860223296
+      SulfurBoss_DeathSide_2: -448573347606132636
+      SulfurBoss_DeathSide_3: -5060885835870645286
+      SulfurBoss_DeathSide_4: -9166112838857688533
+      SulfurBoss_DeathSide_5: -4455581468694191911
+      SulfurBoss_DeathSide_6: 743948086294719829
+      SulfurBoss_DeathSide_7: -3471160351636836364
+      SulfurBoss_DeathSide_8: 4590408693190638091
+      SulfurBoss_EruptDown_0: -4017070615628137245
+      SulfurBoss_EruptDown_1: 6683951501367776040
+      SulfurBoss_EruptDown_10: -1949372907372713278
+      SulfurBoss_EruptDown_11: 1991196944608652536
+      SulfurBoss_EruptDown_12: -1456602152685906013
+      SulfurBoss_EruptDown_13: -3568435686244783811
+      SulfurBoss_EruptDown_2: -8666154568698179856
+      SulfurBoss_EruptDown_3: -7539945437829353412
+      SulfurBoss_EruptDown_4: 976496061923919499
+      SulfurBoss_EruptDown_5: -2691333710162253816
+      SulfurBoss_EruptDown_6: -2521875647866043525
+      SulfurBoss_EruptDown_7: -7985810606638645288
+      SulfurBoss_EruptDown_8: 133964342976902275
+      SulfurBoss_EruptDown_9: 4527277207383999960
+      SulfurBoss_ShootDown_0: -6799901879858090119
+      SulfurBoss_ShootDown_1: 2654059758031721178
+      SulfurBoss_ShootDown_10: -7855321119693053137
+      SulfurBoss_ShootDown_11: -1407338677262820194
+      SulfurBoss_ShootDown_12: -4660519621006383389
+      SulfurBoss_ShootDown_2: -2074983466927737852
+      SulfurBoss_ShootDown_3: 2856838269239655133
+      SulfurBoss_ShootDown_4: 5742091978540087100
+      SulfurBoss_ShootDown_5: 7524212391966944700
+      SulfurBoss_ShootDown_6: 7052643516022881381
+      SulfurBoss_ShootDown_7: 7420854334269115197
+      SulfurBoss_ShootDown_8: 4880681390448415277
+      SulfurBoss_ShootDown_9: -8050161250382883450
+      SulfurBoss_ShootSide_0: -4557781238229392911
+      SulfurBoss_ShootSide_1: -781626869584198265
+      SulfurBoss_ShootSide_10: 7012130192223398336
+      SulfurBoss_ShootSide_11: -5642916702511136480
+      SulfurBoss_ShootSide_12: -5292426715918781156
+      SulfurBoss_ShootSide_2: -904043735522023429
+      SulfurBoss_ShootSide_3: 3656440156287800261
+      SulfurBoss_ShootSide_4: -5231586224672445711
+      SulfurBoss_ShootSide_5: 6455614699274765058
+      SulfurBoss_ShootSide_6: -2088027624589140896
+      SulfurBoss_ShootSide_7: 1025071145667195600
+      SulfurBoss_ShootSide_8: -8481839921782337897
+      SulfurBoss_ShootSide_9: 2126526602682773796
+      SulfurBoss_ShootUp_0: 2724603014787861152
+      SulfurBoss_ShootUp_1: 7169472629177908771
+      SulfurBoss_ShootUp_10: -6432190629706702708
+      SulfurBoss_ShootUp_11: -6283049807266547364
+      SulfurBoss_ShootUp_12: 5151387548944755760
+      SulfurBoss_ShootUp_2: -4195609833097079439
+      SulfurBoss_ShootUp_3: -1084497207627664707
+      SulfurBoss_ShootUp_4: -1082561505202636025
+      SulfurBoss_ShootUp_5: 6246764971912914095
+      SulfurBoss_ShootUp_6: -2949258130544882115
+      SulfurBoss_ShootUp_7: -5064622455914126390
+      SulfurBoss_ShootUp_8: 5049274586810910403
+      SulfurBoss_ShootUp_9: -1191344768467942402
+      SulfurBoss_SpawnSide_0: 5820048951960354398
+      SulfurBoss_SpawnSide_1: -6891482684870059985
+      SulfurBoss_SpawnSide_10: 565855639172841773
+      SulfurBoss_SpawnSide_11: 266589085869338094
+      SulfurBoss_SpawnSide_12: 238916746756883453
+      SulfurBoss_SpawnSide_13: 5004003441893565355
+      SulfurBoss_SpawnSide_14: -556584989696109187
+      SulfurBoss_SpawnSide_15: -5347163713524568127
+      SulfurBoss_SpawnSide_2: -6992195794593419611
+      SulfurBoss_SpawnSide_3: -6537139402882307681
+      SulfurBoss_SpawnSide_4: -5593025587260391603
+      SulfurBoss_SpawnSide_5: -9037877079805810601
+      SulfurBoss_SpawnSide_6: 128399108239646751
+      SulfurBoss_SpawnSide_7: 3017516585557721236
+      SulfurBoss_SpawnSide_8: -3443799308467322994
+      SulfurBoss_SpawnSide_9: 3832974498565370283
+      SulfurBoss_WalkDown_0: 3474805479501490430
+      SulfurBoss_WalkDown_1: 4028847801359183831
+      SulfurBoss_WalkDown_2: -981848711100407545
+      SulfurBoss_WalkDown_3: 3769632500682485932
+      SulfurBoss_WalkDown_4: 3663928184980567133
+      SulfurBoss_WalkDown_5: 8071907805527742937
+      SulfurBoss_WalkDown_6: -6846934935165602030
+      SulfurBoss_WalkDown_7: -5398083888185299841
+      SulfurBoss_WalkSide_0: -2476298831674746583
+      SulfurBoss_WalkSide_1: 8020305564762488083
+      SulfurBoss_WalkSide_2: -8725910732605933193
+      SulfurBoss_WalkSide_3: -5615177384755371845
+      SulfurBoss_WalkSide_4: 1284355126026856468
+      SulfurBoss_WalkSide_5: -2480645706884685881
+      SulfurBoss_WalkSide_6: -2884252684086239915
+      SulfurBoss_WalkSide_7: 705715540937492133
+      SulfurBoss_WalkUp_0: -7459842281325512165
+      SulfurBoss_WalkUp_1: -4621439189481875399
+      SulfurBoss_WalkUp_2: 417207759469520032
+      SulfurBoss_WalkUp_3: -5637865212184652979
+      SulfurBoss_WalkUp_4: -80347372623785394
+      SulfurBoss_WalkUp_5: 5908882715364995065
+      SulfurBoss_WalkUp_6: 4341554363499035925
+      SulfurBoss_WalkUp_7: 2131438431758369354
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

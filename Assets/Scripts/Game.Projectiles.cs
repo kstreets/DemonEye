@@ -144,7 +144,7 @@ public partial class Game {
             if (!col) continue;
             
             // Hack for identifying if the projectile hit the player 
-            if (proj.layerMask == Masks.PlayerHurtMask) {
+            if (proj.layerMask == Masks.PlayerProjectileHurtMask) {
                 Assert.IsTrue(proj.flatDamage.HasValue, "Projectiles that damage the player need to have a flat damage value");
                 DamagePlayer(proj.flatDamage.Value, PlayerDamageType.Normal, proj);
                 DestroyEntity(projectiles[i]);

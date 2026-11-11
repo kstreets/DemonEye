@@ -245,12 +245,14 @@ public class GameData {
     public class RaidInfo {
         public GameObject parent;
         public TextMeshProUGUI waveText;
+        public TextMeshProUGUI swarmText;
     }
     
     [Serializable]
     public class BossBar {
         public GameObject parent;
         public Image fillImage;
+        public Image backgroundImage;
         public TextMeshProUGUI nameTextMesh;
     }
     
@@ -423,7 +425,10 @@ public class GameData {
         public DynamicClip boneShatterClip;
         public DynamicClip soulVolleyClip;
         public DynamicClip explosionClip;
-        
+        public DynamicClip drinkClip;
+        public DynamicClip bandageClip;
+        public DynamicClip notificationClip;
+
         public Dictionary<int, List<DynamicClipRecord>> records = new(50);
         public Dictionary<AudioSource, int> generationLookup = new();
         public List<AudioClipHandle> loopingSources = new();

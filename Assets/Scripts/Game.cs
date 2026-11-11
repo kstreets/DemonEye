@@ -252,12 +252,19 @@ public partial class Game : MonoBehaviour {
 
     private void OnEarlyExitEnter() {
         persistentFlags |= PersistentFlags.HasExtracted;
-        persistentFlags |= PersistentFlags.ShowStashTransferButton;
+        FlagStashTransferButtonIfPocketsHaveItems();
         SaveGameState();
         AnimateEarlyExitSequence(() => states.gameStateMachine.SetStateIfNotCurrent(states.mainMenu));
         StopMusic(MusicOption.Fast); // Needs to be after animation sequence because it stops all tweens
     }
     
+    // The transfer button only moves pocket/backpack items, so there's nothing for it to do if they're empty
+    private void FlagStashTransferButtonIfPocketsHaveItems() {
+        if (GetInventoryItemCountInRange(inventories.player, playerPocketRange) > 0) {
+            persistentFlags |= PersistentFlags.ShowStashTransferButton;
+        }
+    }
+
     private void OnEarlyExitExit() {
         DeinitRaid();
     }
@@ -272,7 +279,7 @@ public partial class Game : MonoBehaviour {
         }
         
         persistentFlags |= PersistentFlags.HasExtracted;
-        persistentFlags |= PersistentFlags.ShowStashTransferButton;
+        FlagStashTransferButtonIfPocketsHaveItems();
 
         // Beating the second map is the end of the demo, the trader thanks the player once they're back in the main menu
         bool beatSecondMap = maps.Count > 1 && curRaid.map == maps[1];
@@ -340,8 +347,8 @@ public partial class Game : MonoBehaviour {
         InitRaidBlood();
         CreateDropPoolsForMap(curRaid.map);
         InitSpawnManager(curRaid.map.spawning);
-        SpawnMapResources(curRaid.mapInstance.resourceParent);
         SpawnInitialExitPortals(curRaid.mapInstance.exitPortalsParent, curRaid.map.exitPortalsCount);
+        SpawnMapResources(curRaid.mapInstance.resourceParent); // After portals since some resources depend on which portals spawned
         AnimateRaidEnterSequence();
         PlayAudioClip(audio.ambientClip, Vector2.zero, loop: true);
         
@@ -356,7 +363,7 @@ public partial class Game : MonoBehaviour {
         if (spawnManager.BeforeLastWave) {
             curRaid.state = RaidState.InitialWaves;
         }
-        else if (!spawnManager.FinishedSpawningThisWave || entities.enemies.Count > 0) {
+        else if (!spawnManager.FinishedSpawningThisWave || entities.enemies.Count > 0 || spawnManager.SwarmPending) {
             curRaid.state = RaidState.FinalWave;
         }
         else {

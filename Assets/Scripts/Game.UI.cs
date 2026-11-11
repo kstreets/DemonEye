@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Febucci.TextAnimatorForUnity;
 using PrimeTween;
 using TMPro;
 using UnityEngine;
@@ -201,6 +202,7 @@ public partial class Game {
         playerInfo.soulsCurrencyParent.gameObject.SetActive(true);
         playerInfo.parent.gameObject.SetActive(true);
         raidInfo.parent.SetActive(true);
+        raidInfo.swarmText.gameObject.SetActive(false);
         bossBar.parent.SetActive(false);
         ui.hotBarParent.gameObject.SetActive(true);
         
@@ -226,11 +228,11 @@ public partial class Game {
         ui.interactionPrompt.gameObject.SetActive(false);
         playerInfo.parent.gameObject.SetActive(false);
         raidInfo.parent.SetActive(false);
+        raidInfo.swarmText.gameObject.SetActive(false);
         bossBar.parent.SetActive(false);
         ui.portalArrow.gameObject.SetActive(false);
         ui.hotBarParent.gameObject.SetActive(false);
         ui.minimap.gameObject.SetActive(false);
-        
         inputPrompts.inRaidParent.SetActive(false);
     }
 
@@ -461,6 +463,11 @@ public partial class Game {
         return seq;
     }
     
+    private int displayedWaveNumber;
+    private int displayedSwarmSeconds = -1;
+    private Sequence waveTextSequence;
+    private string WaveCountText() => $"Wave {spawnManager.CurWaveNumber}/{spawnManager.TotalWaveCount}";
+    
     private void UpdateInRaidUI() {
         ui.minimap.UpdateMinimap(player.position);
         
@@ -470,9 +477,7 @@ public partial class Game {
         playerInfo.bleedDebuffIcon.gameObject.SetActive(player.bleeding);
         
         Enemy boss = entities.boss;
-        bossBar.parent.SetActive(boss != null);
-        if (boss != null) {
-            bossBar.nameTextMesh.text = boss.data.displayName;
+        if (boss != null && bossBar.parent.gameObject.activeInHierarchy && !bossBarFillSequence.isAlive) {
             bossBar.fillImage.fillAmount = Mathf.Clamp01(boss.health / (float)boss.data.health);
         }
         
@@ -498,7 +503,12 @@ public partial class Game {
             }
             else if (curRaid.state == RaidState.FinalWave) {
                 AnimateWaveTextChange("Final Wave");
-                AnimateSmallRaidText(ColorText("Final Wave", config.styles.inRaidRedColor));
+                if (spawnManager.OnBossWave) {
+                    AnimateInBossHealthBar();
+                }
+                else {
+                    AnimateSmallRaidText(ColorText("Final Wave", config.styles.inRaidRedColor));
+                }
             }
             else if (curRaid.state == RaidState.PostFinalWave) {
                 raidInfo.waveText.gameObject.SetActive(false);
@@ -509,12 +519,34 @@ public partial class Game {
             displayedWaveNumber = spawnManager.CurWaveNumber;
             AnimateWaveTextChange(WaveCountText());
         }
+
+        if (spawnManager.swarmWarningStartedThisFrame) {
+            AnimateSmallRaidText(ColorText("Swarm Incoming!", config.styles.inRaidRedColor));
+        }
+
+        // Gives the "Swarm Incoming" text time to play before the countdown shows up
+        const float swarmCountdownShowDelay = 1.5f;
+        bool showSwarmWarning = spawnManager.swarmState == SwarmState.Warning && spawnManager.swarmCountdown <= EnemySpawnManager.swarmWarningTime - swarmCountdownShowDelay;
+        bool swarmTextJustShown = showSwarmWarning && !raidInfo.swarmText.gameObject.activeSelf;
+        raidInfo.swarmText.gameObject.SetActive(showSwarmWarning);
+        if (swarmTextJustShown) {
+            Tween.Alpha(raidInfo.swarmText, startValue: 0f, endValue: 1f, duration: 0.5f);
+        }
+        if (showSwarmWarning) {
+            int swarmSeconds = Mathf.CeilToInt(spawnManager.swarmCountdown);
+            if (swarmSeconds != displayedSwarmSeconds) {
+                displayedSwarmSeconds = swarmSeconds;
+                raidInfo.swarmText.text = $"Swarm in {swarmSeconds}";
+            }
+        }
+        else {
+            displayedSwarmSeconds = -1;
+        }
+
+        if (spawnManager.swarmStartedThisFrame) {
+            AnimateSmallRaidText(ColorText("Swarm!", config.styles.inRaidRedColor));
+        }
     }
-
-    private int displayedWaveNumber;
-    private Sequence waveTextSequence;
-
-    private string WaveCountText() => $"Wave {spawnManager.CurWaveNumber}/{spawnManager.TotalWaveCount}";
 
     // Grows the wave text, swaps the text at its largest, then shrinks it back down
     private void AnimateWaveTextChange(string newText) {
@@ -524,6 +556,18 @@ public partial class Game {
             .Chain(Tween.Scale(waveText.transform, 1.35f, 0.15f, Ease.OutQuad))
             .ChainCallback(() => waveText.text = newText)
             .Chain(Tween.Scale(waveText.transform, 1f, 0.3f, Ease.OutBack));
+    }
+    
+    private Sequence bossBarFillSequence;
+
+    private void AnimateInBossHealthBar() {
+        Enemy boss = entities.boss;
+        if (boss == null) return;
+        bossBar.parent.SetActive(true);
+        bossBar.nameTextMesh.GetComponent<TypewriterComponent>().ShowText(boss.data.displayName);
+        bossBarFillSequence = Sequence.Create();
+        bossBarFillSequence.Chain(Tween.UIFillAmount(bossBar.fillImage, startValue: 0f, endValue: 1f, duration: 1.2f, ease: Ease.OutCubic));
+        bossBarFillSequence.Group(Tween.Alpha(bossBar.backgroundImage, 0f, 1f, duration: 0.4f, Ease.OutCubic));
     }
     
     private void UpdatePlayerPanelUI() {
@@ -785,7 +829,8 @@ public partial class Game {
     public void PushNotification(string text) {
         Entity notification = SpawnEntity(entityPools.notification, Vector3.zero, Quaternion.identity, ui.notificationParent, EntityLifetime.Global);
         notification.gameObject.GetComponent<NotificationUI>().text.text = text;
-        
+        PlayAudioClip(audio.notificationClip);
+
         const float startWidth = 0f;
         float endWidth = ui.notificationParent.rect.width;
         

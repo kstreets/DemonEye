@@ -28,11 +28,11 @@ TagManager:
   - Mineable
   - Portal
   - EnemyWorldCollider
-  - PlayerHurtBox
+  - PlayerMeleeHurtBox
   - EnemyAttack
   - EnemyNonTarget
   - DeathWipe
-  - 
+  - PlayerProjectileHurtBox
   - 
   - 
   - Tilemap

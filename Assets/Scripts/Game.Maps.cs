@@ -111,8 +111,14 @@ public partial class Game {
         curRaid.bushSlotsLookup.Clear();
         curRaid.chestSlotsLookup.Clear();
         
+        foreach (ResourceSpawnGroup group in resourceSpawnParent.GetComponentsInChildren<ResourceSpawnGroup>()) {
+            group.RollChildren();
+        }
+
         ResourceSpawn[] resourceSpawns = resourceSpawnParent.GetComponentsInChildren<ResourceSpawn>();
-        foreach (ResourceSpawn resourceSpawn in resourceSpawns) { 
+        foreach (ResourceSpawn resourceSpawn in resourceSpawns) {
+            if (resourceSpawn.IsBlockedByExitPortal) continue;
+
             GameObject prefab = resourceSpawn.GetPrefabToSpawn();
             if (!prefab) continue;
             
@@ -151,6 +157,7 @@ public partial class Game {
         }
     }
     
+
     private T SpawnResource<T>(GameObject resourcePrefab, Transform spawnPoint, [CanBeNull] GridObstacle obstacle) where T : Entity, new() {
         T resource = SpawnEntity<T>(resourcePrefab, spawnPoint.position, spawnPoint.rotation);
         if (obstacle != null) {

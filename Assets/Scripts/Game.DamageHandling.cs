@@ -42,6 +42,9 @@ public partial class Game {
     {
         Assert.IsNotNull(damageShape, "Cannot deal shape damage because there is no DamageShape");
 
+        // The pending damage data lives on the entity, so a new attack replaces any that hasn't landed yet
+        sourceEntity.delayedShapeDamageTween.Stop();
+
         sourceEntity.delayedDamage = damage;
         sourceEntity.delayedDamageLayerMask = mask;
         sourceEntity.delayedDamageShape = damageShape;
@@ -55,7 +58,7 @@ public partial class Game {
             sourceEntity.animator.Update(0f);
         }
 
-        Delay(sourceEntity, DamageFrameDelay(sourceEntity.animator, damageShape.damageFrame), static (entity) => {
+        sourceEntity.delayedShapeDamageTween = Delay(sourceEntity, DamageFrameDelay(sourceEntity.animator, damageShape.damageFrame), static (entity) => {
             DamageShape damageShape = entity.delayedDamageShape;
             int damage = entity.delayedDamage;
             LayerMask mask = entity.delayedDamageLayerMask;
@@ -109,7 +112,7 @@ public partial class Game {
         foreach (Collider2D col in cols) {
             int colliderLayerMask = 1 << col.gameObject.layer;
 
-            if ((Masks.PlayerHurtMask & colliderLayerMask) != 0) {
+            if ((Masks.PlayerMeleeHurtMask & colliderLayerMask) != 0) {
                 if (damagedPlayer) continue;
                 DamagePlayer(damage, PlayerDamageType.Normal, sourceEntity, chanceToBleed);
                 onHit?.Invoke(player);

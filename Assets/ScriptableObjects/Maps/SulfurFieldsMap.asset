@@ -18,7 +18,7 @@ MonoBehaviour:
   spawning: {fileID: 11400000, guid: fc2949be33c63e14eb9ce0a4eed242b8, type: 2}
   waterSettings: {fileID: 11400000, guid: 1866c6a4b026e3443ab0d054026b2d00, type: 2}
   minimapTexture: {fileID: 2800000, guid: bc896caf85a8cdb46adf3aa0d1217e98, type: 3}
-  environmentMaterial: {fileID: 2100000, guid: b0495faaf9b6dd94c9a8ddadf3daea33, type: 2}
+  environmentMaterial: {fileID: 2100000, guid: 5ab47fb5a748e3e49820d27add6b27ea, type: 2}
   icon: {fileID: 779084914, guid: fc22346a1d143684bbb07dbf4e628853, type: 3}
   previewImage: {fileID: 2800000, guid: f31c16a440e5c414fa0b2771fac280b9, type: 3}
   difficultyText: Difficult

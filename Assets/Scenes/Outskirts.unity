@@ -240,7 +240,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -287,7 +287,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawn
   elements:
   - prefab: {fileID: 6890249216092585072, guid: de1cc8963fe796945ab4545582d312f6, type: 3}
-    spawnChance: 0.5
+    spawnChance: 0.65
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &57538871
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -752,7 +754,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -799,7 +801,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawn
   elements:
   - prefab: {fileID: 6890249216092585072, guid: de1cc8963fe796945ab4545582d312f6, type: 3}
-    spawnChance: 0.5
+    spawnChance: 0.65
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &98195857
 GameObject:
   m_ObjectHideFlags: 0
@@ -848,6 +852,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 7104348053268977879, guid: 155b87af078ab3d4790da6d5e29d1337, type: 3}
     spawnChance: 1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!212 &98195860
 SpriteRenderer:
   serializedVersion: 2
@@ -874,7 +880,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -954,7 +960,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawn
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
-    spawnChance: 0.7
+    spawnChance: 1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!212 &145280518
 SpriteRenderer:
   serializedVersion: 2
@@ -981,7 +989,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1062,6 +1070,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 5395410728115875330, guid: afdf8245c74212145bf95fa82c9d4eb5, type: 3}
     spawnChance: 0.7
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!212 &160455222
 SpriteRenderer:
   serializedVersion: 2
@@ -1088,7 +1098,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1324,6 +1334,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 5395410728115875330, guid: afdf8245c74212145bf95fa82c9d4eb5, type: 3}
     spawnChance: 0.7
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!212 &276033947
 SpriteRenderer:
   serializedVersion: 2
@@ -1350,7 +1362,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1534,11 +1546,11 @@ Transform:
   m_GameObject: {fileID: 322726161}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 7.273, y: -0.295, z: 0}
+  m_LocalPosition: {x: 6.343, y: 2.0349998, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 820981750}
+  m_Father: {fileID: 524615206}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &322726163
 SpriteRenderer:
@@ -1566,7 +1578,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1614,6 +1626,62 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 1160536062516325457, guid: 9cf0359de9b7f2444a8f0111aecd246c, type: 3}
     spawnChance: 0.1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
+--- !u!21 &336232874
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Shader Graphs/OutlineShader
+  m_Shader: {fileID: -6465566751694194690, guid: 6e58b502c0aea8a4abecc63899a3c8fb, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _ColorMask: 15
+    - _Stencil: 0
+    - _StencilComp: 8
+    - _StencilOp: 0
+    - _StencilReadMask: 255
+    - _StencilWriteMask: 255
+    - _UIMaskSoftnessX: 1
+    - _UIMaskSoftnessY: 1
+    m_Colors:
+    - _ClipRect: {r: 0, g: 0, b: 0, a: 0}
+    - _Color: {r: 1, g: 0.4980392, b: 0.3137255, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
 --- !u!1 &336487347
 GameObject:
   m_ObjectHideFlags: 0
@@ -1673,7 +1741,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1721,6 +1789,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 5684300478470835813, guid: 9a1d6fd835fa2474a9cdbed7d6ada3f8, type: 3}
     spawnChance: 1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &366672491
 GameObject:
   m_ObjectHideFlags: 0
@@ -1780,7 +1850,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1827,7 +1897,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawn
   elements:
   - prefab: {fileID: 6890249216092585072, guid: de1cc8963fe796945ab4545582d312f6, type: 3}
-    spawnChance: 0.5
+    spawnChance: 0.65
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &376426582
 GameObject:
   m_ObjectHideFlags: 0
@@ -1887,7 +1959,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1934,7 +2006,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawn
   elements:
   - prefab: {fileID: 6890249216092585072, guid: de1cc8963fe796945ab4545582d312f6, type: 3}
-    spawnChance: 0.5
+    spawnChance: 0.65
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &376453011
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1997,6 +2071,53 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3245100481190851344, guid: c73de8bb30f962d4a8cf1601a0660526, type: 3}
   m_PrefabInstance: {fileID: 376453011}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &394478123
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 394478124}
+  - component: {fileID: 394478125}
+  m_Layer: 0
+  m_Name: AltarSpawnGroup
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &394478124
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 394478123}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 2018579854}
+  - {fileID: 633662670}
+  m_Father: {fileID: 820981750}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &394478125
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 394478123}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 661c2e44517084849a271436f5bb96a8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawnGroup
+  spawnCountRange: {x: 1, y: 1}
 --- !u!1001 &417868171
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2168,7 +2289,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawn
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
-    spawnChance: 0.7
+    spawnChance: 1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!212 &431405660
 SpriteRenderer:
   serializedVersion: 2
@@ -2195,7 +2318,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2276,6 +2399,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 5395410728115875330, guid: afdf8245c74212145bf95fa82c9d4eb5, type: 3}
     spawnChance: 1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!212 &465137770
 SpriteRenderer:
   serializedVersion: 2
@@ -2302,7 +2427,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2542,6 +2667,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 5395410728115875330, guid: afdf8245c74212145bf95fa82c9d4eb5, type: 3}
     spawnChance: 0.7
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!212 &500985846
 SpriteRenderer:
   serializedVersion: 2
@@ -2568,7 +2695,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2663,6 +2790,55 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1160074037910697895, guid: c9f97500c447d584682c855316495500, type: 3}
   m_PrefabInstance: {fileID: 510958397}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &524615205
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 524615206}
+  - component: {fileID: 524615207}
+  m_Layer: 0
+  m_Name: AllChestSpawns
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &524615206
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 524615205}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.93, y: -2.33, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1182921955}
+  - {fileID: 1422917266}
+  - {fileID: 322726162}
+  - {fileID: 1845636332}
+  m_Father: {fileID: 820981750}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &524615207
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 524615205}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 661c2e44517084849a271436f5bb96a8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawnGroup
+  spawnCountRange: {x: 0, y: 1}
 --- !u!1001 &526253594
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3037,7 +3213,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 820981750}
+  m_Father: {fileID: 394478124}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &633662671
 SpriteRenderer:
@@ -3065,7 +3241,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3113,6 +3289,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 5684300478470835813, guid: 9a1d6fd835fa2474a9cdbed7d6ada3f8, type: 3}
     spawnChance: 0.6
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &642513896
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3268,7 +3446,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 820981750}
+  m_Father: {fileID: 1637886085}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &659256101
 SpriteRenderer:
@@ -3296,7 +3474,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3344,6 +3522,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 5684300478470835813, guid: 9a1d6fd835fa2474a9cdbed7d6ada3f8, type: 3}
     spawnChance: 0.6
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &663170603
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -20430,7 +20610,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawn
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
-    spawnChance: 0.7
+    spawnChance: 1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!212 &706322149
 SpriteRenderer:
   serializedVersion: 2
@@ -20457,7 +20639,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -20549,7 +20731,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -20596,7 +20778,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawn
   elements:
   - prefab: {fileID: 6890249216092585072, guid: de1cc8963fe796945ab4545582d312f6, type: 3}
-    spawnChance: 0.5
+    spawnChance: 0.65
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &720238046
 GameObject:
   m_ObjectHideFlags: 0
@@ -20656,7 +20840,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -20704,6 +20888,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 5395410728115875330, guid: afdf8245c74212145bf95fa82c9d4eb5, type: 3}
     spawnChance: 0.7
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &759073138
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -28897,7 +29083,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -28944,7 +29130,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawn
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
-    spawnChance: 0.7
+    spawnChance: 1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &820981749
 GameObject:
   m_ObjectHideFlags: 0
@@ -29012,16 +29200,11 @@ Transform:
   - {fileID: 982549169}
   - {fileID: 366672492}
   - {fileID: 1714736868}
-  - {fileID: 659256100}
+  - {fileID: 1637886085}
   - {fileID: 336487348}
-  - {fileID: 2018579854}
-  - {fileID: 633662670}
-  - {fileID: 1385509940}
+  - {fileID: 394478124}
   - {fileID: 913164610}
-  - {fileID: 1182921955}
-  - {fileID: 1422917266}
-  - {fileID: 322726162}
-  - {fileID: 1845636332}
+  - {fileID: 524615206}
   m_Father: {fileID: 890915382}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &820981751
@@ -29158,7 +29341,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -29205,7 +29388,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawn
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
-    spawnChance: 0.7
+    spawnChance: 1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &871213712
 GameObject:
   m_ObjectHideFlags: 0
@@ -29555,6 +29740,7 @@ Transform:
   - {fileID: 583104844}
   - {fileID: 499255181}
   - {fileID: 1196299453}
+  - {fileID: 2110856841}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &890915383
@@ -29634,7 +29820,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -29682,6 +29868,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 5684300478470835813, guid: 9a1d6fd835fa2474a9cdbed7d6ada3f8, type: 3}
     spawnChance: 1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &931915467
 GameObject:
   m_ObjectHideFlags: 0
@@ -29741,7 +29929,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -29788,7 +29976,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawn
   elements:
   - prefab: {fileID: 6890249216092585072, guid: de1cc8963fe796945ab4545582d312f6, type: 3}
-    spawnChance: 0.5
+    spawnChance: 0.65
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &946411347
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -30034,7 +30224,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -30081,7 +30271,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawn
   elements:
   - prefab: {fileID: 6890249216092585072, guid: de1cc8963fe796945ab4545582d312f6, type: 3}
-    spawnChance: 0.5
+    spawnChance: 0.65
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &984189023
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -30192,6 +30384,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 7104348053268977879, guid: 155b87af078ab3d4790da6d5e29d1337, type: 3}
     spawnChance: 1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!212 &1011602937
 SpriteRenderer:
   serializedVersion: 2
@@ -30218,7 +30412,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -30299,6 +30493,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
     spawnChance: 0.7
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!212 &1017037578
 SpriteRenderer:
   serializedVersion: 2
@@ -30325,7 +30521,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -30417,7 +30613,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -30464,7 +30660,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawn
   elements:
   - prefab: {fileID: 6890249216092585072, guid: de1cc8963fe796945ab4545582d312f6, type: 3}
-    spawnChance: 0.5
+    spawnChance: 0.65
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &1038114855
 GameObject:
   m_ObjectHideFlags: 0
@@ -30524,7 +30722,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -30571,7 +30769,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawn
   elements:
   - prefab: {fileID: 6890249216092585072, guid: de1cc8963fe796945ab4545582d312f6, type: 3}
-    spawnChance: 0.5
+    spawnChance: 0.65
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &1073459117
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -30971,11 +31171,11 @@ Transform:
   m_GameObject: {fileID: 1182921954}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.171, y: -2.403, z: 0}
+  m_LocalPosition: {x: -1.1010001, y: -0.07300019, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 820981750}
+  m_Father: {fileID: 524615206}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &1182921956
 SpriteRenderer:
@@ -31003,7 +31203,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -31051,6 +31251,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 1160536062516325457, guid: 9cf0359de9b7f2444a8f0111aecd246c, type: 3}
     spawnChance: 0.1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &1184051664
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -31466,7 +31668,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -31513,61 +31715,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawn
   elements:
   - prefab: {fileID: 6890249216092585072, guid: de1cc8963fe796945ab4545582d312f6, type: 3}
-    spawnChance: 0.5
---- !u!21 &1258563870
-Material:
-  serializedVersion: 8
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: Shader Graphs/OutlineShader
-  m_Shader: {fileID: -6465566751694194690, guid: 6e58b502c0aea8a4abecc63899a3c8fb, type: 3}
-  m_Parent: {fileID: 0}
-  m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
-  m_InvalidKeywords: []
-  m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
-  disabledShaderPasses: []
-  m_LockedProperties: 
-  m_SavedProperties:
-    serializedVersion: 3
-    m_TexEnvs:
-    - _MainTex:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - unity_Lightmaps:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - unity_LightmapsInd:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - unity_ShadowMasks:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    m_Ints: []
-    m_Floats:
-    - _ColorMask: 15
-    - _Stencil: 0
-    - _StencilComp: 8
-    - _StencilOp: 0
-    - _StencilReadMask: 255
-    - _StencilWriteMask: 255
-    - _UIMaskSoftnessX: 1
-    - _UIMaskSoftnessY: 1
-    m_Colors:
-    - _ClipRect: {r: 0, g: 0, b: 0, a: 0}
-    - _Color: {r: 1, g: 0.4980392, b: 0.3137255, a: 1}
-  m_BuildTextureStacks: []
-  m_AllowLocking: 1
+    spawnChance: 0.65
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &1278384219
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -61718,7 +61868,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 820981750}
+  m_Father: {fileID: 1637886085}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &1385509941
 SpriteRenderer:
@@ -61746,7 +61896,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -61794,6 +61944,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 5684300478470835813, guid: 9a1d6fd835fa2474a9cdbed7d6ada3f8, type: 3}
     spawnChance: 0.8
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &1395027971
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -61904,6 +62056,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 5395410728115875330, guid: afdf8245c74212145bf95fa82c9d4eb5, type: 3}
     spawnChance: 0.7
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!212 &1413834837
 SpriteRenderer:
   serializedVersion: 2
@@ -61930,7 +62084,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -61990,11 +62144,11 @@ Transform:
   m_GameObject: {fileID: 1422917265}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -5, y: -2.97, z: 0}
+  m_LocalPosition: {x: -5.93, y: -0.6400001, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 820981750}
+  m_Father: {fileID: 524615206}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &1422917267
 SpriteRenderer:
@@ -62022,7 +62176,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -62070,6 +62224,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 1160536062516325457, guid: 9cf0359de9b7f2444a8f0111aecd246c, type: 3}
     spawnChance: 0.1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &1440756151
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -62551,7 +62707,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawn
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
-    spawnChance: 0.7
+    spawnChance: 1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!212 &1511434284
 SpriteRenderer:
   serializedVersion: 2
@@ -62578,7 +62736,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -62659,6 +62817,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
     spawnChance: 0.7
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!212 &1524634128
 SpriteRenderer:
   serializedVersion: 2
@@ -62685,7 +62845,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -63059,6 +63219,53 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7264462497661616851, guid: 8dfa7eb87e04f2747b29ffe71fd307fe, type: 3}
   m_PrefabInstance: {fileID: 1621053028}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1637886084
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1637886085}
+  - component: {fileID: 1637886086}
+  m_Layer: 0
+  m_Name: AltarSpawnGroup
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1637886085
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1637886084}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 659256100}
+  - {fileID: 1385509940}
+  m_Father: {fileID: 820981750}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1637886086
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1637886084}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 661c2e44517084849a271436f5bb96a8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawnGroup
+  spawnCountRange: {x: 1, y: 1}
 --- !u!1 &1687421701
 GameObject:
   m_ObjectHideFlags: 0
@@ -63106,7 +63313,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawn
   elements:
   - prefab: {fileID: 6890249216092585072, guid: de1cc8963fe796945ab4545582d312f6, type: 3}
-    spawnChance: 0.5
+    spawnChance: 0.65
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!212 &1687421704
 SpriteRenderer:
   serializedVersion: 2
@@ -63133,7 +63342,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -63276,6 +63485,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
     spawnChance: 0.7
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!212 &1714736870
 SpriteRenderer:
   serializedVersion: 2
@@ -63302,7 +63513,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -63383,6 +63594,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 7104348053268977879, guid: 155b87af078ab3d4790da6d5e29d1337, type: 3}
     spawnChance: 0.5
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!212 &1742525692
 SpriteRenderer:
   serializedVersion: 2
@@ -63409,7 +63622,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -63490,6 +63703,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 5395410728115875330, guid: afdf8245c74212145bf95fa82c9d4eb5, type: 3}
     spawnChance: 0.7
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!212 &1756582596
 SpriteRenderer:
   serializedVersion: 2
@@ -63516,7 +63731,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -63783,6 +63998,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
     spawnChance: 0.7
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!212 &1784698478
 SpriteRenderer:
   serializedVersion: 2
@@ -63809,7 +64026,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -63932,7 +64149,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -63979,7 +64196,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawn
   elements:
   - prefab: {fileID: 6890249216092585072, guid: de1cc8963fe796945ab4545582d312f6, type: 3}
-    spawnChance: 0.5
+    spawnChance: 0.65
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &1819868482
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -64081,11 +64300,11 @@ Transform:
   m_GameObject: {fileID: 1845636331}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 13.312, y: -2.157, z: 0}
+  m_LocalPosition: {x: 12.382, y: 0.17299986, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 820981750}
+  m_Father: {fileID: 524615206}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &1845636333
 SpriteRenderer:
@@ -64113,7 +64332,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -64161,6 +64380,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 1160536062516325457, guid: 9cf0359de9b7f2444a8f0111aecd246c, type: 3}
     spawnChance: 0.1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &1855187125
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -64271,6 +64492,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 5395410728115875330, guid: afdf8245c74212145bf95fa82c9d4eb5, type: 3}
     spawnChance: 0.7
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!212 &1862992854
 SpriteRenderer:
   serializedVersion: 2
@@ -64297,7 +64520,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -64563,7 +64786,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawn
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
-    spawnChance: 0.7
+    spawnChance: 1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!212 &1896947619
 SpriteRenderer:
   serializedVersion: 2
@@ -64590,7 +64815,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -65057,7 +65282,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 820981750}
+  m_Father: {fileID: 394478124}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &2018579855
 SpriteRenderer:
@@ -65085,7 +65310,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -65133,6 +65358,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 5684300478470835813, guid: 9a1d6fd835fa2474a9cdbed7d6ada3f8, type: 3}
     spawnChance: 0.8
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &2041518022
 GameObject:
   m_ObjectHideFlags: 0
@@ -65336,6 +65563,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 7104348053268977879, guid: 155b87af078ab3d4790da6d5e29d1337, type: 3}
     spawnChance: 0.5
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!212 &2099103999
 SpriteRenderer:
   serializedVersion: 2
@@ -65362,7 +65591,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -70282,12 +70511,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2110856838}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 3.5, y: -1.6, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 890915382}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &2111733091
 PrefabInstance:
@@ -70461,6 +70690,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 7104348053268977879, guid: 155b87af078ab3d4790da6d5e29d1337, type: 3}
     spawnChance: 0.5
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!212 &2132093184
 SpriteRenderer:
   serializedVersion: 2
@@ -70487,7 +70718,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -70641,7 +70872,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 1258563870}
+  - {fileID: 336232874}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -70688,7 +70919,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ResourceSpawn
   elements:
   - prefab: {fileID: 6890249216092585072, guid: de1cc8963fe796945ab4545582d312f6, type: 3}
-    spawnChance: 0.5
+    spawnChance: 0.65
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &6414423221074261437
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -70796,4 +71029,3 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 890915382}
-  - {fileID: 2110856841}

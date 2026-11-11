@@ -420,9 +420,57 @@ MonoBehaviour:
         enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
       - enemyCount: 180
         enemyData: {fileID: 11400000, guid: 53c3cf128195d3c44872f0d25801891a, type: 2}
-  raidBoss: {fileID: 0}
-  maxEnemiesForBossTrash: 10
-  bossTrashPool:
-    name: 
+  bossPhase:
+    name: Boss Wave
     musicIntensity: 0
-    variants: []
+    raidBoss: {fileID: 11400000, guid: d9a3394a496d8184191b7ec36a56c3eb, type: 2}
+    trashEnemies:
+    - enemyCount: 10
+      enemyData: {fileID: 11400000, guid: 53c3cf128195d3c44872f0d25801891a, type: 2}
+    - enemyCount: 8
+      enemyData: {fileID: 11400000, guid: 274f3f5fababc7740b7a02cd693022a6, type: 2}
+    spawnCellRange: {x: 16, y: 18}
+    trashRefillAtPercentage: 0.6
+    minTrashRefillDelay: 8
+  swarm:
+    chance: 1
+    waveRange: {x: 4, y: 8}
+    pool:
+      name: Swarm
+      musicIntensity: 0
+      variants:
+      - name: Variant 0
+        maxDuration: 0
+        spawnDuration: 25
+        startNextPhaseEarlyDelay: 0
+        spawnCellRange: {x: 13, y: 25}
+        repositionCellRange: {x: 13, y: 21}
+        reteleportCount: 10
+        reteleportInterval: 1
+        spawnRateCurve:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 34
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 1
+            value: 1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 34
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 0
+        enemyBatches:
+        - enemyCount: 80
+          enemyData: {fileID: 11400000, guid: 53c3cf128195d3c44872f0d25801891a, type: 2}

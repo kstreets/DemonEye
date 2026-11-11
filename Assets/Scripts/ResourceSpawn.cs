@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using VInspector;
 using Random = UnityEngine.Random;
 
 [ExecuteInEditMode]
@@ -13,14 +14,35 @@ public class ResourceSpawn : MonoBehaviour {
     }
     
     public List<Element> elements;
-    
-    public GameObject GetPrefabToSpawn() {
-        float total = 0f;
-        foreach (Element element in elements) {
-            total += element.spawnChance;
+
+    public bool blockedByExitPortal;
+    [ShowIf("blockedByExitPortal")]
+    public Portal blockingPortal;
+    [EndIf]
+
+    public bool IsBlockedByExitPortal => blockedByExitPortal && blockingPortal != null && blockingPortal.gameObject.activeSelf;
+
+    public float TotalSpawnChance {
+        get {
+            float total = 0f;
+            foreach (Element element in elements) {
+                total += element.spawnChance;
+            }
+            return total;
         }
-        
-        total = total < 1f ? 1f : total;
+    }
+
+    public enum GroupRoll { None, Picked, NotPicked }
+    [NonSerialized] public GroupRoll groupRoll;
+
+    public GameObject GetPrefabToSpawn() {
+        if (groupRoll == GroupRoll.NotPicked) return null;
+
+        float total = TotalSpawnChance;
+        // A picked spawn already passed its chance to spawn in the group roll, so it only chooses which prefab
+        if (groupRoll != GroupRoll.Picked) {
+            total = total < 1f ? 1f : total;
+        }
         
         float prefixedSum = 0f;
         float random = Random.Range(0f, total);
@@ -59,7 +81,36 @@ public class ResourceSpawn : MonoBehaviour {
         spriteRenderer.sortingLayerID = prefabSpriteRenderer.sortingLayerID;
         spriteRenderer.sortingOrder = prefabSpriteRenderer.sortingOrder;
     }
-    
+
+    private void OnValidate() {
+        if (blockedByExitPortal && blockingPortal == null) {
+            LinkClosestExitPortal();
+        }
+    }
+
+    [ContextMenu("Link Closest Exit Portal")]
+    private void LinkClosestExitPortal() {
+        MapInstance mapInstance = GetComponentInParent<MapInstance>();
+        if (mapInstance == null || mapInstance.exitPortalsParent == null) return;
+
+        float closestDistSqr = float.MaxValue;
+        foreach (Transform portalTrans in mapInstance.exitPortalsParent) {
+            float distSqr = Vector2.SqrMagnitude(portalTrans.position - transform.position);
+            if (distSqr < closestDistSqr && portalTrans.TryGetComponent(out Portal portal)) {
+                closestDistSqr = distSqr;
+                blockingPortal = portal;
+            }
+        }
+    }
+
+    private void OnDrawGizmos() {
+        if (!blockedByExitPortal || blockingPortal == null) return;
+
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawLine(transform.position, blockingPortal.transform.position);
+        Gizmos.DrawWireSphere(blockingPortal.transform.position, 0.15f);
+    }
+
 #endif
 
 }

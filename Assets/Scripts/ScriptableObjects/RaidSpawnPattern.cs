@@ -31,19 +31,41 @@ public class RaidSpawnPattern : ScriptableObject {
     }
     
     [Serializable]
-    public class PhasePool {
-        [HideInInspector] 
-        public string name;
+    public class Phase {
+        [HideInInspector] public string name;
         public Game.MusicIntensity musicIntensity;
+    }
+    
+    [Serializable]
+    public class PhasePool : Phase {
         public List<Variant> variants = new();
     }
     
+    [Serializable]
+    public class BossPhase : Phase {
+        public EnemyData raidBoss;
+        public List<EnemyBatch> trashEnemies;
+        [MinMaxSlider(0, 40)]
+        public Vector2Int spawnCellRange;
+        [Range(0f, 1f)]
+        public float trashRefillAtPercentage;
+        public float minTrashRefillDelay;
+    }
+    
+    [Serializable]
+    public class Swarm {
+        [Range(0f, 1f)]
+        public float chance;
+        [MinMaxSlider(1, 20)]
+        public Vector2Int waveRange = new(1, 1);
+        public PhasePool pool;
+    }
+
     public float timeBeforeFirstPhase;
     public float timeBeforePortalSpawns;
     public List<PhasePool> phasePools;
-    public EnemyData raidBoss;
-    public int maxEnemiesForBossTrash = 10;
-    public PhasePool bossTrashPool;
+    public BossPhase bossPhase;
+    public Swarm swarm;
     
 #if UNITY_EDITOR
     
@@ -58,8 +80,22 @@ public class RaidSpawnPattern : ScriptableObject {
             }
         }
         
-        foreach (Variant variant in phasePools[^1].variants) {
-            variant.maxDuration = variant.spawnDuration;
+        bossPhase.name = "Boss Wave";
+
+        swarm.pool.name = "Swarm";
+        int maxSwarmWave = bossPhase.raidBoss != null ? phasePools.Count - 1 : phasePools.Count;
+        if (swarm.waveRange.y > maxSwarmWave) {
+            swarm.waveRange.Clamp(Vector2Int.one, new(maxSwarmWave, maxSwarmWave));
+        }
+        for (int j = 0; j < swarm.pool.variants.Count; j++) {
+            swarm.pool.variants[j].name = $"Variant {j}";
+        }
+
+        // Nothing comes after the final wave so its max duration is unused
+        if (bossPhase.raidBoss == null) {
+            foreach (Variant variant in phasePools[^1].variants) {
+                variant.maxDuration = variant.spawnDuration;
+            }
         }
     }
 

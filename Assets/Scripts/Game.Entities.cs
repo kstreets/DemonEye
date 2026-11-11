@@ -74,6 +74,7 @@ public partial class Game {
         public float delayedDamageBleedChance;
         public Action<Vector2> delayedDamageCallback;
         public Action<Entity> delayedDamageHitCallback;
+        public Tween delayedShapeDamageTween;
         
         public PoisonedEffect poisonedEffect;
         public BounceEffect bounceEffect;

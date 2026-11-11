@@ -199,13 +199,12 @@ public partial class Game {
             int bleedDamage = Mathf.Min(maxBleedDamage, player.health - AutoBleedStopHealth());
             if (bleedDamage > 0) {
                 player.health -= bleedDamage;
-                SpawnPlayerDamageNumber(bleedDamage);
+                PlayPlayerDamageFeedback(bleedDamage, shake: false);
 
                 Entity bloodDrop = SpawnEntity(entityPools.bloodDrop, OffsetY(player.position, 0.11f), Quaternion.identity);
                 AddParentEffect(bloodDrop, player, 0.4f);
                 DestroyEntity(bloodDrop, 0.8f);
 
-                AddFlashHitEffect(player);
                 Tween.PunchScale(playerInfo.bleedDebuffIcon.transform, Vector3.one * 0.8f, 0.25f, 5f);
             }
 
@@ -669,6 +668,15 @@ public partial class Game {
         player.animator.Play(animationHash);
         player.animator.Update(0);
 
+        DynamicClip consumeClip = item.animationType switch {
+            ConsumableItem.AnimationType.Drink   => audio.drinkClip,
+            ConsumableItem.AnimationType.Bandage => audio.bandageClip,
+            _                                    => null,
+        };
+        if (consumeClip) {
+            PlayAudioClip(consumeClip, player.position);
+        }
+
         float animationLength = CurrentClipLength(player.animator); 
         float actionDelay = animationLength * performActionAtAnimationCompletion;
         float postActionDelay = animationLength * (1f - performActionAtAnimationCompletion);
@@ -790,13 +798,19 @@ public partial class Game {
         if (!player.bleeding && !curRaid.map.playerCantBleed && !PlayerHealthIsAtAutoBleedStop() && RollProbability(chanceToBleed)) {
             player.bleeding = true;
         }
+        PlayPlayerDamageFeedback(damage, shake: true);
+    }
+
+    private void PlayPlayerDamageFeedback(int damage, bool shake) {
         AddFlashHitEffect(player);
         SpawnPlayerDamageNumber(damage);
-        
+
         float damageImpactScale = Mathf.Clamp01(damage / 35f);
-        float damageShakeFreq = Mathf.Lerp(6f, 10f, damageImpactScale);
-        float damageShakeMag = Mathf.Lerp(0.02f, 0.1f, damageImpactScale);
-        camera.cameraShake.Shake(damageShakeFreq, damageShakeMag, 0.6f);
+        if (shake) {
+            float damageShakeFreq = Mathf.Lerp(6f, 10f, damageImpactScale);
+            float damageShakeMag = Mathf.Lerp(0.02f, 0.1f, damageImpactScale);
+            camera.cameraShake.Shake(damageShakeFreq, damageShakeMag, 0.6f);
+        }
         AnimateDamageVignette(Mathf.Lerp(0.5f, 1f, damageImpactScale));
     }
     

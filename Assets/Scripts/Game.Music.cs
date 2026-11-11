@@ -158,7 +158,7 @@ public partial class Game {
     // How fast and aggressive a song is
     public enum MusicIntensity { Low, Medium, High, Insane }
 
-    private MusicIntensity CurWaveMusicIntensity => spawnManager.CurPhasePool?.musicIntensity ?? MusicIntensity.Low;
+    private MusicIntensity CurWaveMusicIntensity => spawnManager.CurPhase?.musicIntensity ?? MusicIntensity.Low;
 
     private static bool SongHasIntensity(GameplaySong song, MusicIntensity intensity) {
         if (song.intensities == null || song.intensities.Count <= 0) {

@@ -159,4 +159,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BreakParticles
   prefab: {fileID: 7286380919918648898, guid: a6501a20d4346d34e8ec2de549e1ea57, type: 3}
-  countRange: {x: 6, y: 9}
+  countRange: {x: 25, y: 32}

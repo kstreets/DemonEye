@@ -62,7 +62,7 @@ public class Item : UuidScriptableObject  {
     public static float RollValueOfRarity(Rarity rarity) {
         return rarity switch {
             Rarity.Common => 1f,
-            Rarity.Uncommon => 0.3f,
+            Rarity.Uncommon => 0.2f,
             Rarity.Rare => 0.08f,
             Rarity.Epic => 0.04f,
             Rarity.Legendary => 0.01f,
