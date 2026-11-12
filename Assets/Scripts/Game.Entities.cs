@@ -16,9 +16,9 @@ public partial class Game {
     }
 
     public class EntityPool<T> : IEntityPooler where T : Entity {
-        public Action<T> OnSpawnCallback;
+        public Action<T> onSpawnCallback;
         public GameObject prefab;
-        public List<T> standbyList = new();
+        public readonly List<T> standbyList = new();
 
         public void ReleaseEntity(Entity entity) {
             Assert.IsFalse(standbyList.Contains((T)entity), "Already released this entity!");
@@ -29,7 +29,7 @@ public partial class Game {
     
     private EntityPool<T> CreateEntityPool<T>(GameObject gameObj, int initialSize, Action<T> onSpawnCallback) where T : Entity, new() {
         EntityPool<T> pool = new() {
-            OnSpawnCallback = onSpawnCallback,
+            onSpawnCallback = onSpawnCallback,
             prefab = gameObj,
         };
         
@@ -121,16 +121,44 @@ public partial class Game {
         return entity;
     }
     
-    private T SpawnEntity<T>(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level) where T : Entity, new() {
-        GameObject obj = Instantiate(prefab, position, rotation, parent);
-        T entity = InitializeEntity<T>(obj, lifetime);
-        ApplySpawnOffset(entity, position, rotation);
-        ResetEntity(entity);
-        RegisterEntity(entity);
+    private readonly Dictionary<GameObject, EntityPool<Entity>> bubblePools = new();
+
+    public void SpawnBubble(BubbleSpawner spawner, Transform point) {
+        if (!bubblePools.TryGetValue(spawner.bubblePrefab, out EntityPool<Entity> pool)) {
+            pool = CreateEntityPool<Entity>(spawner.bubblePrefab, 0, null);
+            bubblePools.Add(spawner.bubblePrefab, pool);
+        }
+        Entity bubble = SpawnEntityOneShot(pool, point.position, point.rotation);
+        bubble.spriteRenderer.color = spawner.tint;
+        if (spawner.bubbleClip) {
+            PlayAudioClip(spawner.bubbleClip, point.position);
+        }
+    }
+
+    private void RegisterOnSpawnCallback<T>(Action<T, object> callback) where T : Entity {
+        entities.onSpawnCallbacks[typeof(T)] = (entity, data) => callback((T)entity, data);
+    }
+
+    private void RegisterOnSpawnCallback<T>(Action<T> callback) where T : Entity {
+        entities.onSpawnCallbacks[typeof(T)] = (entity, _) => callback((T)entity);
+    }
+
+    private void InvokeOnSpawnCallbacks(Entity entity, Type type, object data) {
+        if (type != typeof(Entity)) { // Invoke spawn callbacks starting from base and ending at subclass type
+            InvokeOnSpawnCallbacks(entity, type.BaseType, data);
+        }
+        if (entities.onSpawnCallbacks.TryGetValue(type, out Action<Entity, object> callback)) {
+            callback(entity, data);
+        }
+    }
+
+    private T SpawnEntity<T>(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level, object data = null) where T : Entity, new() {
+        T entity = InstantiateEntity<T>(prefab, position, rotation, parent, lifetime);
+        InvokeOnSpawnCallbacks(entity, typeof(T), data);
         return entity;
     }
-    
-    private T SpawnEntity<T>(EntityPool<T> pool, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level) where T : Entity, new() {
+
+    private T SpawnEntity<T>(EntityPool<T> pool, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level, object data = null) where T : Entity, new() {
         T entity;
         if (pool.standbyList.Count > 0) {
             entity = pool.standbyList.PopLast();
@@ -141,13 +169,23 @@ public partial class Game {
             ResetEntity(entity);
             RegisterEntity(entity);
         }
-        else { 
-            entity = SpawnEntity<T>(pool.prefab, position, rotation, parent, lifetime);
+        else {
+            entity = InstantiateEntity<T>(pool.prefab, position, rotation, parent, lifetime);
             entity.entityPool = pool;
         }
-        
+
         entity.gameObject.SetActive(true);
-        pool.OnSpawnCallback?.Invoke(entity);
+        InvokeOnSpawnCallbacks(entity, typeof(T), data);
+        pool.onSpawnCallback?.Invoke(entity);
+        return entity;
+    }
+
+    private T InstantiateEntity<T>(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent, EntityLifetime lifetime) where T : Entity, new() {
+        GameObject obj = Instantiate(prefab, position, rotation, parent);
+        T entity = InitializeEntity<T>(obj, lifetime);
+        ApplySpawnOffset(entity, position, rotation);
+        ResetEntity(entity);
+        RegisterEntity(entity);
         return entity;
     }
     
@@ -416,12 +454,12 @@ public partial class Game {
         entity.SetEffect(EffectsIndicies.Dissolve, tween);
     }
 
-    private Tween Delay<T>(T entity, float delay, Action<T> callback) where T: Entity {
+    private static Tween Delay<T>(T entity, float delay, Action<T> callback) where T: Entity {
         if (delay <= 0f) {
             callback?.Invoke(entity);
             return default;
         }
-        return Tween.Delay(entity, delay, onComplete: callback, onValidate: EntityIsValid);
+        return Tween.Delay(entity, delay, onComplete: callback, onValidate: gameInstance.EntityIsValid);
     }
     
 }

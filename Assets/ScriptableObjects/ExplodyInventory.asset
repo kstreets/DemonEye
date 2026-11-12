@@ -15,9 +15,13 @@ MonoBehaviour:
   demonEyeUpgrades:
   - {fileID: 11400000, guid: 3505426df7dc8164caf246c28362eb53, type: 2}
   - {fileID: 11400000, guid: 5208da11a0273eb40938911e8a5feefc, type: 2}
-  - {fileID: 11400000, guid: 397aeb580ff1a8546a185c24e5d667f2, type: 2}
+  - {fileID: 11400000, guid: 5208da11a0273eb40938911e8a5feefc, type: 2}
   - {fileID: 11400000, guid: b1b3e21dc77ecd142825d6501ddef4a6, type: 2}
   - {fileID: 11400000, guid: 5208da11a0273eb40938911e8a5feefc, type: 2}
-  backpack: {fileID: 0}
+  backpack: {fileID: 11400000, guid: 36ab1c5cc43a10640a391494ef0348a0, type: 2}
   trinket: {fileID: 11400000, guid: 02b630014f197cf49b8983f961cc9762, type: 2}
-  items: []
+  items:
+  - item: {fileID: 11400000, guid: dd009ea01f816a34eb1f3f8775d3c61c, type: 2}
+    count: 5
+  - item: {fileID: 11400000, guid: c627ac66bc33f4345a7d565a0fc1938c, type: 2}
+    count: 5

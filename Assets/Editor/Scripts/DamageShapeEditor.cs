@@ -79,7 +79,7 @@ public class DamageShapeEditor : Editor {
         SceneView.RepaintAll();
     }
 
-    private static EnemyData FindEnemyData(GameObject go) {
+    public static EnemyData FindEnemyData(GameObject go) {
         string path = PrefabStageUtility.GetPrefabStage(go)?.assetPath;
         if (string.IsNullOrEmpty(path)) path = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(go);
         if (string.IsNullOrEmpty(path)) path = AssetDatabase.GetAssetPath(go);
@@ -100,11 +100,12 @@ public class DamageShapeEditor : Editor {
             DamageShape.AttackDir.Down => "AttackDown",
             _                          => null,
         };
-        if (stateName == null || !animator) return null;
+        return FindStateClip(animator, stateName, data);
+    }
 
-        RuntimeAnimatorController controller = data && data.animatorOverride ? data.animatorOverride : animator.runtimeAnimatorController;
-        AnimatorOverrideController overrideController = controller as AnimatorOverrideController;
-        AnimatorController baseController = (overrideController ? overrideController.runtimeAnimatorController : controller) as AnimatorController;
+    public static AnimationClip FindStateClip(Animator animator, string stateName, EnemyData data) {
+        if (string.IsNullOrEmpty(stateName)) return null;
+        AnimatorController baseController = BaseController(animator, data, out AnimatorOverrideController overrideController);
         if (!baseController) return null;
 
         foreach (ChildAnimatorState child in baseController.layers[0].stateMachine.states) {
@@ -114,45 +115,12 @@ public class DamageShapeEditor : Editor {
         return null;
     }
 
-    [MenuItem("GameObject/DemonEye/Create Attack Damage Shapes", false, 0)]
-    private static void CreateAttackShapesForSelection() {
-        foreach (GameObject go in Selection.gameObjects) {
-            CreateAttackShapes(go.transform, FindEnemyData(go));
-        }
-    }
-
-    // Seeds Side/Up/Down children from the EnemyData values the melee check uses today
-    public static void CreateAttackShapes(Transform root, EnemyData data) {
-        if (!data) {
-            Debug.LogWarning($"No EnemyData uses {root.name} as its prefab", root);
-            return;
-        }
-        Animator animator = root.GetComponent<Animator>();
-        CreateAttackShape(root, animator, data, DamageShape.AttackDir.Side, data.sideAttackOffset);
-        CreateAttackShape(root, animator, data, DamageShape.AttackDir.Up, data.upAttackOffset);
-        CreateAttackShape(root, animator, data, DamageShape.AttackDir.Down, data.donwAttackOffset);
-    }
-
-    private static void CreateAttackShape(Transform root, Animator animator, EnemyData data, DamageShape.AttackDir dir, Vector2 offset) {
-        string name = $"Attack{dir}";
-        if (root.Find(name)) return;
-
-        GameObject go = new(name);
-        Undo.RegisterCreatedObjectUndo(go, "Create Attack Damage Shapes");
-        go.transform.SetParent(root, false);
-
-        // The melee check uses world offsets and radius, so undo the enemy's scale
-        Vector3 scale = root.lossyScale;
-        go.transform.localPosition = new Vector3(offset.x / scale.x, offset.y / scale.y, 0f);
-
-        DamageShape shape = go.AddComponent<DamageShape>();
-        shape.shape = DamageShape.ShapeType.Circle;
-        shape.radius = data.attackRadius / Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.y));
-        shape.attackDir = dir;
-        shape.mirrorForLeft = dir == DamageShape.AttackDir.Side;
-
-        AnimationClip clip = FindAttackClip(animator, dir, data);
-        shape.damageFrame = clip ? Mathf.RoundToInt(data.attackDamageDelay * clip.frameRate) : 0;
+    public static AnimatorController BaseController(Animator animator, EnemyData data, out AnimatorOverrideController overrideController) {
+        overrideController = null;
+        if (!animator) return null;
+        RuntimeAnimatorController controller = data && data.animatorOverride ? data.animatorOverride : animator.runtimeAnimatorController;
+        overrideController = controller as AnimatorOverrideController;
+        return (overrideController ? overrideController.runtimeAnimatorController : controller) as AnimatorController;
     }
 
 }

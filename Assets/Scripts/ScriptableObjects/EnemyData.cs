@@ -26,9 +26,6 @@ public class EnemyData : ScriptableObject {
     public float attackDistance;
     public float attackDamageDelay;
     public float attackRadius;
-    public Vector2 sideAttackOffset;
-    public Vector2 upAttackOffset;
-    public Vector2 donwAttackOffset;
     
     [Header("Projectiles")]
     public float projectileSpeed;

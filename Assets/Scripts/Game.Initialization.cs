@@ -27,6 +27,7 @@ public partial class Game {
         InitDemonEye();
         InitButtonCallbacks();
         InitPauseMenu();
+        InitEnemies();
         InitEntityPools();
         InitBlood();
         InitGameStates();
@@ -89,7 +90,6 @@ public partial class Game {
         entityPools.poisonCloud = CreateEntityPool<Entity>(prefabs.poisonCloud, 3, null);
         entityPools.lootReveal = CreateEntityPool<Entity>(prefabs.lootReveal, 1, null);
         entityPools.notification = CreateEntityPool<Entity>(prefabs.notification, 2, null);
-        entityPools.bloodBubble = CreateEntityPool<Entity>(prefabs.bloodBubble, 10, null);
         entityPools.eyeUpgradeReveal = CreateEntityPool<Entity>(prefabs.eyeUpgradeReveal, 1, null);
         entityPools.altarSoulSwirl = CreateEntityPool<Entity>(prefabs.altarSoulSwirl, 1, null);
         entityPools.attackCircle = CreateEntityPool<Entity>(prefabs.attackCircle, 10, null);

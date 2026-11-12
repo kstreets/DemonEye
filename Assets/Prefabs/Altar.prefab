@@ -5177,6 +5177,7 @@ GameObject:
   - component: {fileID: -8910915283566868482}
   - component: {fileID: 6658191472571490109}
   - component: {fileID: 3776462933296670690}
+  - component: {fileID: 171637268819213483}
   m_Layer: 8
   m_Name: Altar
   m_TagString: Altar
@@ -5329,7 +5330,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Altar
   bloodPoolAnimator: {fileID: 4424271140034825072}
   bloodExplosionParticles: {fileID: 7571363348809901288}
-  bloodBubbleSpawns:
+  bloodBubbles: {fileID: 171637268819213483}
+  soulSwirlSpawnPoint: {fileID: 7358930221288906850}
+--- !u!114 &171637268819213483
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5684300478470835813}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a0672c2127ba8346a037fc02645e580, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BubbleSpawner
+  bubblePrefab: {fileID: 3572148981998031263, guid: 610f7a2b979281646bded7f3104b3933, type: 3}
+  bubbleClip: {fileID: 11400000, guid: a2e971548a9c443478fee1284bc5c6b9, type: 2}
+  tint: {r: 0.64779866, g: 0.19293049, b: 0.17315361, a: 1}
+  spawnPoints:
   - {fileID: 6998017759306375730}
   - {fileID: 5286438383042123473}
   - {fileID: 3301232166677212001}
@@ -5339,7 +5357,36 @@ MonoBehaviour:
   - {fileID: 1586566170880926172}
   - {fileID: 3779055099580222903}
   - {fileID: 6561589195396261729}
-  soulSwirlSpawnPoint: {fileID: 7358930221288906850}
+  playOnEnable: 0
+  loop: 0
+  bubbleCount: 30
+  startDelay: 0.25
+  interval: 0.35
+  intervalJitter: 0
+  rateCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0.8742746
+      outSlope: 0.8742746
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.05231236
+    - serializedVersion: 3
+      time: 0.8593756
+      value: 0.92
+      inSlope: 0.32260227
+      outSlope: 0.32260227
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.11007791
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &5944407083299719048
 GameObject:
   m_ObjectHideFlags: 0

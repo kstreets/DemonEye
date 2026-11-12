@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a5df0d022d54a7488a42b771db86189, type: 3}
   m_Name: SulfurBoss
   m_EditorClassIdentifier: 
-  displayName: Sulfur Boss
+  displayName: Gorgon
   type: 6
   enemyPrefab: {fileID: 7814119993517076521, guid: 33bcad0d1db489e4ba928f15a58df168, type: 3}
-  animatorOverride: {fileID: 22100000, guid: 212710a56cb9fc24294c6682b61cee39, type: 2}
+  animatorOverride: {fileID: 0}
   dropPool: {fileID: 11400000, guid: a50fac0e0c375294296c54b1d6d4450d, type: 2}
   chanceToDropItem: 0.06
   usesFlowField: 1
@@ -27,17 +27,14 @@ MonoBehaviour:
   attackDistance: 0.25
   attackDamageDelay: 0.4
   attackRadius: 0.15
-  sideAttackOffset: {x: 0.172, y: 0.065}
-  upAttackOffset: {x: 0, y: 0.257}
-  donwAttackOffset: {x: 0, y: -0.045}
   projectileSpeed: 0
   projectileLifetime: 0
   projectileCooldownTime: 0
-  speed: 0.33
+  speed: 0.5
   health: 1600
   damage: 10
   collisionDamage: 8
   changeToCauseBleed: 0.15
   soulWorthPerKill: 100
   xpWorthPerKill: 20
-  defaultMass: 46.77759
+  defaultMass: 1

@@ -42,14 +42,11 @@ public class RaidSpawnPattern : ScriptableObject {
     }
     
     [Serializable]
-    public class BossPhase : Phase {
-        public EnemyData raidBoss;
-        public List<EnemyBatch> trashEnemies;
-        [MinMaxSlider(0, 40)]
-        public Vector2Int spawnCellRange;
+    public class BossPhase : PhasePool {
         [Range(0f, 1f)]
         public float trashRefillAtPercentage;
         public float minTrashRefillDelay;
+        public EnemyData raidBoss;
     }
     
     [Serializable]
@@ -80,15 +77,21 @@ public class RaidSpawnPattern : ScriptableObject {
             }
         }
         
-        bossPhase.name = "Boss Wave";
-
-        swarm.pool.name = "Swarm";
-        int maxSwarmWave = bossPhase.raidBoss != null ? phasePools.Count - 1 : phasePools.Count;
-        if (swarm.waveRange.y > maxSwarmWave) {
-            swarm.waveRange.Clamp(Vector2Int.one, new(maxSwarmWave, maxSwarmWave));
+        if (swarm.pool != null) {
+            swarm.pool.name = "Swarm";
+            int maxSwarmWave = bossPhase.raidBoss != null ? phasePools.Count - 1 : phasePools.Count;
+            if (swarm.waveRange.y > maxSwarmWave) {
+                swarm.waveRange.Clamp(Vector2Int.one, new(maxSwarmWave, maxSwarmWave));
+            }
+            for (int j = 0; j < swarm.pool.variants.Count; j++) {
+                swarm.pool.variants[j].name = $"Variant {j}";
+            }
         }
-        for (int j = 0; j < swarm.pool.variants.Count; j++) {
-            swarm.pool.variants[j].name = $"Variant {j}";
+        
+        
+        bossPhase.name = "Boss Wave";
+        for (int j = 0; j < bossPhase.variants.Count; j++) {
+            bossPhase.variants[j].name = $"Variant {j}";
         }
 
         // Nothing comes after the final wave so its max duration is unused

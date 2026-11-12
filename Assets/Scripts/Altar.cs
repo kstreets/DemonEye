@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Altar : MonoBehaviour {
@@ -8,7 +7,7 @@ public class Altar : MonoBehaviour {
     
     public Animator bloodPoolAnimator;
     public ParticleSystem bloodExplosionParticles;
-    public List<Transform> bloodBubbleSpawns;
+    public BubbleSpawner bloodBubbles;
     public Transform soulSwirlSpawnPoint;
     
     [NonSerialized] public Item summoningItem;

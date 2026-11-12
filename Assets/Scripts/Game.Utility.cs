@@ -216,11 +216,11 @@ public partial class Game {
         return value * Mathf.Pow(stackCount, taper);
     }
 
-    private enum CardinalDir { Right, Left, Up, Down }
+    public enum CardinalDir { Right, Left, Up, Down }
 
-    private CardinalDir CardinalDirFromVector(Vector2 vector) {
+    private static CardinalDir CardinalDirFromVector(Vector2 vector) {
         float dot = Vector2.Dot(Vector2.right, vector.normalized);
-        if (Mathf.Abs(dot) >= 0.2f) {
+        if (Mathf.Abs(dot) >= 0.3f) {
             return vector.x > 0 ? CardinalDir.Right : CardinalDir.Left;
         } 
         return vector.y > 0 ? CardinalDir.Up : CardinalDir.Down;

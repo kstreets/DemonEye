@@ -78,7 +78,6 @@ public class GameData {
         public GameObject questSelectionToggle;
         public GameObject quest;
         public GameObject notification;
-        public GameObject bloodBubble;
         public GameObject eyeUpgradeReveal;
         public GameObject altarSoulSwirl;
         public GameObject attackCircle;
@@ -159,7 +158,6 @@ public class GameData {
         public AnimationCurve skillBurn;
         public AnimationCurve skillBurnEmbers;
         public AnimationCurve discoverSlotTimingCurve;
-        public AnimationCurve altarBubbleRate;
     }
     
     [Serializable] 
@@ -390,7 +388,6 @@ public class GameData {
         public DynamicClip stoneBreakClip;
         public DynamicClip stoneHitClip;
         public DynamicClip altarSoulsClip;
-        public DynamicClip altarBubbleClip;
         public DynamicClip altarBloodExplosionClip;
         public DynamicClip projectileImpact;
         public DynamicClip bloodBurstClip;
@@ -634,7 +631,6 @@ public class GameData {
         public EntityPool<Entity> blast;
         public EntityPool<Entity> lootReveal;
         public EntityPool<Entity> notification;
-        public EntityPool<Entity> bloodBubble;
         public EntityPool<Entity> eyeUpgradeReveal;
         public EntityPool<Entity> altarSoulSwirl;
         public EntityPool<Entity> attackCircle;
@@ -662,6 +658,7 @@ public class GameData {
         public List<Enemy> enemies = new();
         public Enemy boss;
         public Dictionary<GameObject, Entity> lookup = new();
+        public readonly Dictionary<Type, Action<Entity, object>> onSpawnCallbacks = new();
         public Player player;
     }
     

@@ -300,7 +300,7 @@ public partial class Game {
         spawns.Add(pos);
     }
     
-    private Vector2 ClampPositionToMap(Vector2 origin, Vector2 target, float bufferRadius) {
+    private static Vector2 ClampPositionToMap(Vector2 origin, Vector2 target, float bufferRadius) {
         Vector2 velocity = target - origin;
         Vector2 dir = velocity.normalized;
         float dist = velocity.magnitude;

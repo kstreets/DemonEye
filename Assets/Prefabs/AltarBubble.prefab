@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 4154263523900940008}
   - component: {fileID: 9157258500870276273}
   m_Layer: 0
-  m_Name: BloodBubble
+  m_Name: AltarBubble
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -21,21 +21,30 @@ public partial class Game {
         hazard.endTime = default;
     }
 
-    private Hazard SpawnHazard(EntityPool<Hazard> pool, Vector2 spawnPos, int damage, LayerMask layerMask, float duration, float tickInterval) {
+    private Hazard SpawnHazard(EntityPool<Hazard> pool, Vector2 spawnPos, int damage, LayerMask layerMask, float duration, float tickInterval, float spawnDelay = 0f) {
         Hazard hazard = SpawnEntity(pool, spawnPos, Quaternion.identity);
         Assert.IsNotNull(hazard.damageShape, "Hazards need a DamageShape to know what they're damaging");
 
         hazard.damage = damage;
         hazard.layerMask = layerMask;
         hazard.tickInterval = tickInterval;
-        hazard.nextTickTime = Time.time;
-        hazard.endTime = Time.time + duration;
+        hazard.nextTickTime = Time.time + spawnDelay;
+        hazard.endTime = Time.time + duration + spawnDelay;
+        
+        if (spawnDelay > 0f) {
+            hazard.gameObject.SetActive(false);
+            Delay(hazard, spawnDelay, FinalizeHazardSpawn);
+        }
+        else {
+            FinalizeHazardSpawn(hazard);
+        }
 
-        hazard.trans.localScale = Vector3.zero;
-        Tween.Scale(hazard.trans, Vector3.one, 0.15f, Ease.OutBack);
-
-        entities.hazards.Add(hazard);
         return hazard;
+    }
+    
+    private static void FinalizeHazardSpawn(Hazard hazard) {
+        hazard.gameObject.SetActive(true);
+        gameInstance.entities.hazards.Add(hazard);
     }
 
     private void UpdateHazards() {
@@ -50,10 +59,10 @@ public partial class Game {
                 continue;
             }
 
-            if (Time.time < hazard.nextTickTime) continue;
-
-            hazard.nextTickTime += hazard.tickInterval;
-            DamageEntitiesInShape(hazard, hazard.damageShape, hazard.damage, hazard.layerMask);
+            if (Time.time >= hazard.nextTickTime) {
+                hazard.nextTickTime += hazard.tickInterval;
+                DamageEntitiesInShape(hazard, hazard.damageShape, hazard.damage, hazard.layerMask);
+            }
         }
     }
 

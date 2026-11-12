@@ -27,7 +27,7 @@ MonoBehaviour:
   teleportGraceRadius: 0.28
   teleportGraceSteps: 4
   teleportHiddenDuration: 0.08
-  teleportInvulnerabilityDuration: 0.08
+  teleportInvulnerabilityDuration: 0.025
   teleportBaseCooldown: 1
   teleportMaxCooldown: 2
   teleportCooldownIncreasePerRapidUse: 0.25
