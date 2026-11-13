@@ -21,6 +21,7 @@ public static class ShaderIds {
     public static readonly int rotation = Shader.PropertyToID("_Rotation");
     public static readonly int useSmoothing = Shader.PropertyToID("_UseSmoothing");
     public static readonly int pixelDensity = Shader.PropertyToID("_PixelDensity");
+    public static readonly int border = Shader.PropertyToID("_Border");
 
     // Globals
     public static readonly int bloodMask = Shader.PropertyToID("_BloodMask");

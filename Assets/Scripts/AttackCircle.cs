@@ -9,10 +9,12 @@ public class AttackCircle : MonoBehaviour {
     
     private const float defaultRadius = 0.5f;
     private float defaultPixelDensity;
-    
+    private float defaultBorder;
+
     private void Awake() {
         spriteRenderer.material = new(spriteRenderer.material);
         defaultPixelDensity = spriteRenderer.material.GetFloat(ShaderIds.pixelDensity);
+        defaultBorder = spriteRenderer.material.GetFloat(ShaderIds.border);
     }
     
     public void Animate(float radius, float animateInTime, float startDelay = 0f) {
@@ -23,6 +25,9 @@ public class AttackCircle : MonoBehaviour {
         
         float pixelDensity = defaultPixelDensity * scale;
         spriteRenderer.material.SetFloat(ShaderIds.pixelDensity, pixelDensity);
+
+        // The border is in uv units, dividing by the scale keeps it the same number of pixels thick at any radius
+        spriteRenderer.material.SetFloat(ShaderIds.border, defaultBorder / scale);
         
         if (startDelay > 0f) {
             gameObject.SetActive(false);

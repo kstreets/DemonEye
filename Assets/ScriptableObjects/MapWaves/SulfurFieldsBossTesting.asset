@@ -61,7 +61,7 @@ MonoBehaviour:
     raidBoss: {fileID: 11400000, guid: d9a3394a496d8184191b7ec36a56c3eb, type: 2}
   swarm:
     chance: 0
-    waveRange: {x: 0, y: 0}
+    waveRange: {x: 1, y: 1}
     pool:
       name: Swarm
       musicIntensity: 0

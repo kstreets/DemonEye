@@ -525,7 +525,7 @@ public partial class Game {
         public const float poisonPoolDuration = 10f;
         public const float poisonPoolTickInterval = 0.35f;
         public const float poisonPoolWarningRadius = 0.2f;
-        public const float poisonPoolWarningTime = 0.27f;
+        public const float poisonPoolWarningTime = 0.4f;
     }
     
     private void InitSulfurBoss(SulfurBoss sulfurBoss) {

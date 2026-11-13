@@ -67,21 +67,21 @@ Material:
     m_Ints: []
     m_Floats:
     - _AspectRatio: 1
-    - _Border: 0.04
+    - _Border: 0.022
     - _BorderHarshness: 1.035
     - _Comp: 1
     - _Completion: 1
     - _EnableExternalAlpha: 0
     - _Perspective: 2
-    - _PixelDensity: 61
+    - _PixelDensity: 97
     - _QueueControl: -1
     - _QueueOffset: 0
     - _Radius: 0.5
     - _ZWrite: 0
     m_Colors:
     - White: {r: 1, g: 1, b: 1, a: 1}
-    - _BorderColor: {r: 1, g: 0.3405501, b: 0.3050313, a: 1}
-    - _Color: {r: 0.69803923, g: 0.2784314, b: 0.2784314, a: 1}
+    - _BorderColor: {r: 1, g: 0.3238992, b: 0.33214432, a: 1}
+    - _Color: {r: 1, g: 0.03343881, b: 0, a: 0.16470589}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
