@@ -354,8 +354,11 @@ public partial class Game {
             }
         }
         
+        if (!wantsToShoot) return;
+        
+        // This needs to be after the wantsToShoot check and not OR'd with it because it will reset the delay when we're not even shooting
         bool canShoot = player.attackLimiter.TimeHasPassed(GetFirerateDelay());
-        if (!wantsToShoot || !canShoot) return;
+        if (!canShoot) return;
         
         aimDir = AddInaccuracy(aimDir);
         PlayAudioClip(audio.shootClip, player.position);
