@@ -38,7 +38,8 @@ public static class ShaderIds {
     public static readonly int height = Shader.PropertyToID("_height");
     public static readonly int input = Shader.PropertyToID("_Input");
     public static readonly int result = Shader.PropertyToID("_Result");
-    public static readonly int verticalSampleOffset = Shader.PropertyToID("_verticalSampleOffset");
+    public static readonly int sampleOffset = Shader.PropertyToID("_sampleOffset");
+    public static readonly int inverseZoom = Shader.PropertyToID("_inverseZoom");
     public static readonly int camWorldXInPixels = Shader.PropertyToID("_camWorldXInPixels");
     public static readonly int pixelsPerUnit = Shader.PropertyToID("_pixelsPerUnit");
     public static readonly int waveStride = Shader.PropertyToID("_waveStride");

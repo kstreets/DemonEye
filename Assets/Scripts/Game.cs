@@ -82,6 +82,7 @@ public partial class Game : MonoBehaviour {
         UpdateTutorial(); // !
         UpdateDialogue();
         DemonEyeTween.Update();
+        UpdateCameraShake();
         UpdatePositionalVolumes();
         UpdateMenuMusic();
         UpdateQuests(); // !
@@ -136,7 +137,6 @@ public partial class Game : MonoBehaviour {
         Cursor.visible = ShowCursorInMenus;
         ShowMainMenuUI();
         OnMenuMusicEnter();
-        TryShowDemoEndDialogue();
     }
 
     private void OnMainMenuStateExit() {
@@ -251,16 +251,17 @@ public partial class Game : MonoBehaviour {
     }
 
     private void OnEarlyExitEnter() {
-        persistentFlags |= PersistentFlags.HasExtracted;
+        if (curRaid.data.raidCutscene.tutorialExitCutscenePlayed) {
+            persistentFlags |= PersistentFlags.DidTutorialExtraction;
+        }
         FlagStashTransferButtonIfPocketsHaveItems();
         SaveGameState();
         AnimateEarlyExitSequence(() => states.gameStateMachine.SetStateIfNotCurrent(states.mainMenu));
         StopMusic(MusicOption.Fast); // Needs to be after animation sequence because it stops all tweens
     }
     
-    // The transfer button only moves pocket/backpack items, so there's nothing for it to do if they're empty
     private void FlagStashTransferButtonIfPocketsHaveItems() {
-        if (GetInventoryItemCountInRange(inventories.player, playerPocketRange) > 0) {
+        if (GetInventoryItemCountInRange(inventories.player, playerStorageRange) > 0) {
             persistentFlags |= PersistentFlags.ShowStashTransferButton;
         }
     }
@@ -278,16 +279,8 @@ public partial class Game : MonoBehaviour {
             maps[nextMapIndex].state.unlockRevealPending = true;
         }
         
-        persistentFlags |= PersistentFlags.HasExtracted;
+        persistentFlags |= PersistentFlags.DidTutorialExtraction;
         FlagStashTransferButtonIfPocketsHaveItems();
-
-        // Beating the second map is the end of the demo, the trader thanks the player once they're back in the main menu
-        bool beatSecondMap = maps.Count > 1 && curRaid.map == maps[1];
-        if (beatSecondMap && !persistentFlags.HasFlag(PersistentFlags.DemoEndShown)) {
-            persistentFlags |= PersistentFlags.DemoEndShown;
-            cutscene.showDemoEndOnMainMenu = true;
-        }
-
         SaveGameState();
         AnimateGameWinSequence(() => states.gameStateMachine.SetStateIfNotCurrent(states.mainMenu));
     }

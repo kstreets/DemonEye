@@ -103,7 +103,7 @@ public partial class Game {
     public const int traderInventoryColCount = 6;
     public const int traderInventoryRowCount = 5;
     
-    public Range playerPocketRange => new (playerEquipmentSize + playerQuickUseSize)..;
+    public Range playerStorageRange => new (playerEquipmentSize + playerQuickUseSize)..;
     
     private int NakedPlayerInventorySize => playerPocketSize + playerQuickUseSize + playerEquipmentSize;
     private bool PlayerInventoryIsOpen => playerPanel.panel.gameObject.activeInHierarchy;
@@ -1161,7 +1161,7 @@ public partial class Game {
         if (transferToStashSequence.isAlive) return;
         CancelItemDrag();
 
-        int itemCount = GetInventoryItemCountInRange(inventories.player, playerPocketRange);
+        int itemCount = GetInventoryItemCountInRange(inventories.player, playerStorageRange);
         if (itemCount == 0) return;
 
         const float firstItemGap = 0.1f;
@@ -1171,7 +1171,7 @@ public partial class Game {
         float itemDelay = 0f;
         int itemIndex = 0;
 
-        (int offset, int length) = playerPocketRange.GetOffsetAndLength(inventories.player.slots.Length);
+        (int offset, int length) = playerStorageRange.GetOffsetAndLength(inventories.player.slots.Length);
         for (int i = offset; i < offset + length; i++) {
             if (inventories.player.slots[i].itemInstance == null) continue;
 

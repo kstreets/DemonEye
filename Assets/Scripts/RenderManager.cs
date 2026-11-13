@@ -10,7 +10,7 @@ using UnityEngine.Tilemaps;
 [InitializeOnLoad]
 #endif
 public static class RenderManager {
-    
+
     public static Vector2Int curScreenSize;
     public static Vector2Int offScreenRenderingSize;
     
@@ -18,13 +18,19 @@ public static class RenderManager {
     public static int pixelsPerTexel;
     public static int fixedPixelsPerUnit;
     public static int referenceResolution;
+    
     public static int verticalSamplingOffset;
+    public static int horizontalSamplingOffset; // Extra columns on each side so the shake offset never samples past the edge
     public static int screenPixelsPerUnit;
     public static Vector3 cameraPosition;
+    
+    public static Vector2 shakeOffset; // World units, applied to the whole finished image in the final blit
+    public static float punchZoom = 1f; // Scales the whole finished image about the screen center in the final blit, for small quick zooms
     
     // This will sometimes be null so we don't want render features accessing the pixel perfect camera.
     // Instead we expose value type members that reflect the pixel perfect camera's data or just the sensible defaults.
     private static PixelPerfectCamera pixelPerfectCamera;
+    private const int shakeMarginTexels = 16; // Furthest the final blit can shift for camera shake, in pixel perfect camera texels
     
     private static RTHandle tilemapRT;
     private static RTHandle waterOcclusionRT;
@@ -85,8 +91,10 @@ public static class RenderManager {
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void Initialize() {
         offScreenRenderingSize = Vector2Int.zero;
-        pixelsPerUnit = 48;
-        fixedPixelsPerUnit = 48;
+        shakeOffset = Vector2.zero;
+        punchZoom = 1f;
+        pixelsPerUnit = 58;
+        fixedPixelsPerUnit = 58;
         referenceResolution = 180;
         renderer = null;
         environmentFullscreenPass = null;
@@ -120,6 +128,8 @@ public static class RenderManager {
         
         int offScreenHeight = curScreenSize.y + (fixedPixelsPerUnit * pixelsPerTexel);
         verticalSamplingOffset = (offScreenHeight - curScreenSize.y) / 2;
+        horizontalSamplingOffset = shakeMarginTexels * pixelsPerTexel;
+        int offScreenWidth = curScreenSize.x + horizontalSamplingOffset * 2;
         
         // We need to manually define the tilemap chunk culling to match the size of the offscreen render textures
         if (Game.gameInstance != null && Game.gameInstance.InRaid) {
@@ -127,7 +137,7 @@ public static class RenderManager {
             if (tileMapRenderer.detectChunkCullingBounds != TilemapRenderer.DetectChunkCullingBounds.Manual) {
                 tileMapRenderer.detectChunkCullingBounds = TilemapRenderer.DetectChunkCullingBounds.Manual;
             }
-            float offscreenWidthInWorldSpace = Mathf.CeilToInt(curScreenSize.x / (float)screenPixelsPerUnit);
+            float offscreenWidthInWorldSpace = Mathf.CeilToInt(offScreenWidth / (float)screenPixelsPerUnit);
             float offscreenHeightInWorldSpace = Mathf.CeilToInt(offScreenHeight / (float)screenPixelsPerUnit);
             Vector3 cullingBounds = new(offscreenWidthInWorldSpace, offscreenHeightInWorldSpace, 100f);
             if (tileMapRenderer.chunkCullingBounds != cullingBounds) {
@@ -135,23 +145,24 @@ public static class RenderManager {
             }
         }
         
-        bool resizeRenderTextures = offScreenRenderingSize.x != curScreenSize.x || offScreenRenderingSize.y != offScreenHeight;
+        bool resizeRenderTextures = offScreenRenderingSize.x != offScreenWidth || offScreenRenderingSize.y != offScreenHeight
+                                    || finalOutputRT == null || finalOutputRT.referenceSize != curScreenSize;
         if (resizeRenderTextures) {
-            AllocRenderTexture(ref tilemapRT, curScreenSize.x, offScreenHeight);
-            AllocRenderTexture(ref sceneRT, curScreenSize.x, offScreenHeight);
-            AllocRenderTexture(ref waterRT, curScreenSize.x, offScreenHeight);
-            AllocRenderTexture(ref waterOcclusionRT, curScreenSize.x, offScreenHeight);
+            AllocRenderTexture(ref tilemapRT, offScreenWidth, offScreenHeight);
+            AllocRenderTexture(ref sceneRT, offScreenWidth, offScreenHeight);
+            AllocRenderTexture(ref waterRT, offScreenWidth, offScreenHeight);
+            AllocRenderTexture(ref waterOcclusionRT, offScreenWidth, offScreenHeight);
             AllocRenderTexture(ref finalOutputRT, curScreenSize.x, curScreenSize.y);
-            
+
             Shader.SetGlobalTexture(ShaderIds.waterMap, waterRT);
             Shader.SetGlobalTexture(ShaderIds.waterOcclusionMap, waterOcclusionRT);
-            
-            Vector4 uvShaderScaler = Vector4.one;
-            uvShaderScaler.y = 1f - ((offScreenHeight - curScreenSize.y) / (float)offScreenHeight);
+
+            // The water shader's screen position is render target pixels / screen size, this remaps it to the render texture's uv
+            Vector4 uvShaderScaler = new(curScreenSize.x / (float)offScreenWidth, curScreenSize.y / (float)offScreenHeight, 1f, 1f);
             Shader.SetGlobalVector(ShaderIds.waterUVScaler, uvShaderScaler);
         }
-        
-        offScreenRenderingSize = new(curScreenSize.x, offScreenHeight);
+
+        offScreenRenderingSize = new(offScreenWidth, offScreenHeight);
     }
     
     private static RTHandle EnsureRenderTexture(ref RTHandle rtHandle) {

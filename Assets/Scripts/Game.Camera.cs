@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using PrimeTween;
 using UnityEngine;
 using static GameData;
@@ -5,9 +6,9 @@ using static GameData;
 public partial class Game {
 
     public class CameraLookahead {
-        public const float maxDistance = 0.17f; // World units, the view is only ~3 units tall
+        public const float maxDistance = 0.15f; // World units, the view is only ~3 units tall
         public const float mouseRange = 0.2f; // Cursor distance from the player that gives the full offset
-        public const float smoothingTime = 1.3f;
+        public const float smoothingTime = 0.6f;
         public const float minSpeed = 0.12f; // World units per second
         public Vector2 velocity;
         public Tween fadeOutTween;
@@ -48,5 +49,89 @@ public partial class Game {
         camera.aimOffset.offset = Vector2.zero;
         camera.lookAhead.velocity = Vector2.zero;
     }
+    
+    public class CameraShake {
+        public enum Falloff { Linear, Sine, Quad, }
 
+        public struct Instance {
+            public float jitter;
+            public float magnitude;
+            public float duration;
+            public float elapsed;
+            public float curJitter;
+            public Vector2 randomSeed;
+            public float falloffScale;
+        }
+
+        public readonly List<Instance> active = new(5);
+    }
+
+    public void ShakeCamera(float jitter, float magnitude, float duration) {
+        AddCameraShake(jitter, magnitude, duration, 1f);
+    }
+
+    public void ShakeCamera(float jitter, float magnitude, float duration, Vector2 sourcePosition, float falloffStartRange, float falloffDistance, CameraShake.Falloff falloff) {
+        float distance = Vector2.Distance(camera.main.transform.position, sourcePosition);
+        AddCameraShake(jitter, magnitude, duration, CalculateShakeFalloffScale(distance, falloffStartRange, falloffDistance, falloff));
+    }
+
+    private void AddCameraShake(float jitter, float magnitude, float duration, float falloffScale) {
+        camera.shake.active.Add(new() {
+            jitter = jitter,
+            magnitude = magnitude,
+            duration = duration,
+            randomSeed = new(Random.Range(0f, 10000f), Random.Range(0f, 10000f)),
+            falloffScale = falloffScale,
+        });
+    }
+
+    // The shake shifts the finished image in the final blit rather than moving the camera, so it moves
+    // in whole screen pixels without re-rasterizing the pixel art, letting it go below one art pixel
+    private void UpdateCameraShake() {
+        List<CameraShake.Instance> shakes = camera.shake.active;
+        Vector2 combinedOffset = Vector2.zero;
+
+        for (int i = shakes.Count - 1; i >= 0; i--) {
+            CameraShake.Instance shake = shakes[i];
+            if (shake.elapsed >= shake.duration) {
+                shakes.RemoveAt(i);
+                continue;
+            }
+
+            shake.curJitter = (shake.curJitter + shake.jitter * Time.deltaTime) % 1f;
+            float x = (Mathf.PerlinNoise(shake.randomSeed.x, shake.curJitter) - 0.5f) * 2f;
+            float y = (Mathf.PerlinNoise(shake.randomSeed.y, shake.curJitter + 100f) - 0.5f) * 2f;
+
+            float remaining = 1f - Mathf.Clamp01(shake.elapsed / shake.duration);
+            combinedOffset += new Vector2(x, y) * (shake.magnitude * remaining * remaining * shake.falloffScale);
+
+            shake.elapsed += Time.deltaTime;
+            shakes[i] = shake;
+        }
+
+        RenderManager.shakeOffset = combinedOffset;
+    }
+
+    private static float CalculateShakeFalloffScale(float distance, float falloffStartRange, float falloffDistance, CameraShake.Falloff falloff) {
+        if (distance <= falloffStartRange) return 1f;
+        if (distance >= falloffStartRange + falloffDistance) return 0f;
+
+        float normalizedDistance = (distance - falloffStartRange) / falloffDistance;
+        return falloff switch {
+            CameraShake.Falloff.Linear => 1f - normalizedDistance,
+            CameraShake.Falloff.Sine => Mathf.Cos((normalizedDistance * Mathf.PI) / 2f),
+            CameraShake.Falloff.Quad => 1f - Mathf.Pow(normalizedDistance, 2f),
+            _ => 1f - normalizedDistance,
+        };
+    }
+
+    private Tween _cameraPunchZoomTween;
+    
+    private void CameraPunchZoom(float punch, float inDuration, float outDuration, Ease easeIn = Ease.OutQuad, Ease easeOut = Ease.InOutQuad) {
+        float zoomIn = 1f + (punch / 100f);
+        _cameraPunchZoomTween.Complete();
+        _cameraPunchZoomTween = Tween.Custom(1f, zoomIn, inDuration, val => RenderManager.punchZoom = val, easeIn);
+        _cameraPunchZoomTween.Chain(Tween.Custom(zoomIn, 1f, outDuration, val => RenderManager.punchZoom = val, easeOut));
+    }
+    
 }

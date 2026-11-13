@@ -23,6 +23,7 @@ public class FinalBlitFeature : ScriptableRendererFeature  {
         
         private ComputeShader blitShader;
         private int kernal;
+        private static readonly int[] sampleOffset = new int[2];
 
         private class PassData {
             public ComputeShader computeShader;
@@ -68,7 +69,18 @@ public class FinalBlitFeature : ScriptableRendererFeature  {
                 
                     cmdBuffer.SetComputeIntParam(data.computeShader, ShaderIds.width, Screen.width);
                     cmdBuffer.SetComputeIntParam(data.computeShader, ShaderIds.height, Screen.height);
-                    cmdBuffer.SetComputeIntParam(data.computeShader, ShaderIds.verticalSampleOffset, RenderManager.verticalSamplingOffset);
+                    // Camera shake moves the view by +offset, so the image samples further along by the same amount
+                    int margin = RenderManager.horizontalSamplingOffset;
+                    float screenPixelsPerWorldUnit = RenderManager.pixelsPerTexel * RenderManager.pixelsPerUnit;
+                    int shakeX = Mathf.Clamp(Mathf.RoundToInt(RenderManager.shakeOffset.x * screenPixelsPerWorldUnit), -margin, margin);
+                    int shakeY = Mathf.Clamp(Mathf.RoundToInt(RenderManager.shakeOffset.y * screenPixelsPerWorldUnit), -RenderManager.verticalSamplingOffset, RenderManager.verticalSamplingOffset);
+                    sampleOffset[0] = margin + shakeX;
+                    sampleOffset[1] = RenderManager.verticalSamplingOffset + shakeY;
+                    cmdBuffer.SetComputeIntParams(data.computeShader, ShaderIds.sampleOffset, sampleOffset);
+
+                    // Zooming in samples closer to the center. Never zooms out, there's nothing rendered past the margins.
+                    float punchZoom = Mathf.Max(1f, RenderManager.punchZoom);
+                    cmdBuffer.SetComputeFloatParam(data.computeShader, ShaderIds.inverseZoom, 1f / punchZoom);
                     cmdBuffer.DispatchCompute(data.computeShader, data.kernal, threadGroupsX, threadGroupsY, 1);
                 });
             }

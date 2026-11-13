@@ -72,6 +72,7 @@ public class OrthoRenderFeature : ScriptableRendererFeature {
         private class PassData {
             public bool clearRenderTarget;
             public TextureHandle color;
+            public int viewportWidth;
             public int viewportHeight;
             public RendererListHandle rendererListHdl;
             public UniversalCameraData cameraData;
@@ -108,11 +109,13 @@ public class OrthoRenderFeature : ScriptableRendererFeature {
             if (texture == RenderManager.Texture.UrpColorTexture) {
                 UniversalResourceData resourceData = frameData.Get<UniversalResourceData>();
                 targetColorTexture = resourceData.activeColorTexture;
+                passData.viewportWidth = Screen.width;
                 passData.viewportHeight = Screen.height;
             }
             else {
                 RTHandle renderTextureHandle = RenderManager.GetRenderTexture(texture);
                 targetColorTexture = renderGraph.ImportTexture(renderTextureHandle);
+                passData.viewportWidth = renderTextureHandle.referenceSize.x;
                 passData.viewportHeight = renderTextureHandle.referenceSize.y;
             }
 
@@ -139,16 +142,17 @@ public class OrthoRenderFeature : ScriptableRendererFeature {
             Camera camera = passData.cameraData.camera;
             
             if (isGameCamera) {
-                Rect viewPortRect = new(0, 0, Screen.width, passData.viewportHeight);
-                float extraScreenPixels = viewPortRect.height - Screen.height;
-                float extraWorldUnits = extraScreenPixels / RenderManager.pixelsPerTexel / RenderManager.pixelsPerUnit;
-                float halfExtraWorldUnits = extraWorldUnits * 0.5f;
-            
+                // The viewport must cover the whole texture, a smaller one made the draws use the camera's own projection
+                Rect viewPortRect = new(0, 0, passData.viewportWidth, passData.viewportHeight);
+                float screenPixelsPerWorldUnit = RenderManager.pixelsPerTexel * RenderManager.pixelsPerUnit;
+                float halfExtraWorldWidth = (viewPortRect.width - Screen.width) * 0.5f / screenPixelsPerWorldUnit;
+                float halfExtraWorldHeight = (viewPortRect.height - Screen.height) * 0.5f / screenPixelsPerWorldUnit;
+
                 Matrix4x4 projectionMatrix = Matrix4x4.Ortho(
-                    -camera.orthographicSize * camera.aspect,
-                    camera.orthographicSize * camera.aspect,
-                    -camera.orthographicSize - halfExtraWorldUnits,
-                    camera.orthographicSize + halfExtraWorldUnits,
+                    -camera.orthographicSize * camera.aspect - halfExtraWorldWidth,
+                    camera.orthographicSize * camera.aspect + halfExtraWorldWidth,
+                    -camera.orthographicSize - halfExtraWorldHeight,
+                    camera.orthographicSize + halfExtraWorldHeight,
                     camera.nearClipPlane,
                     camera.farClipPlane
                 );

@@ -423,49 +423,12 @@ MonoBehaviour:
   bossPhase:
     name: Boss Wave
     musicIntensity: 0
-    variants:
-    - name: Variant 0
-      maxDuration: 0
-      spawnDuration: 0
-      startNextPhaseEarlyDelay: 0
-      spawnCellRange: {x: 16, y: 18}
-      repositionCellRange: {x: 16, y: 18}
-      reteleportCount: 0
-      reteleportInterval: 1
-      spawnRateCurve:
-        serializedVersion: 2
-        m_Curve:
-        - serializedVersion: 3
-          time: 0
-          value: 1
-          inSlope: 0
-          outSlope: 0
-          tangentMode: 0
-          weightedMode: 0
-          inWeight: 0
-          outWeight: 0
-        - serializedVersion: 3
-          time: 1
-          value: 1
-          inSlope: 0
-          outSlope: 0
-          tangentMode: 0
-          weightedMode: 0
-          inWeight: 0
-          outWeight: 0
-        m_PreInfinity: 2
-        m_PostInfinity: 2
-        m_RotationOrder: 4
-      enemyBatches:
-      - enemyCount: 10
-        enemyData: {fileID: 11400000, guid: 53c3cf128195d3c44872f0d25801891a, type: 2}
-      - enemyCount: 8
-        enemyData: {fileID: 11400000, guid: 274f3f5fababc7740b7a02cd693022a6, type: 2}
-    raidBoss: {fileID: 11400000, guid: d9a3394a496d8184191b7ec36a56c3eb, type: 2}
+    variants: []
     trashRefillAtPercentage: 0.6
     minTrashRefillDelay: 8
+    raidBoss: {fileID: 0}
   swarm:
-    chance: 1
+    chance: 0.15
     waveRange: {x: 4, y: 8}
     pool:
       name: Swarm

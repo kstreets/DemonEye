@@ -137,7 +137,7 @@ public partial class Game {
         
         settings.audioToggle.AddListener(() => ShowSettingsPage(settings.audioParent));
         settings.displayToggle.AddListener(() => ShowSettingsPage(settings.displayParent));
-        settings.gameToggle.AddListener(() => ShowSettingsPage(settings.gameParent));
+        // settings.gameToggle.AddListener(() => ShowSettingsPage(settings.gameParent));
         settings.controlsToggle.AddListener(() => ShowSettingsPage(settings.controlsParent));
         
         ui.menuBackButton.AddListener(() => OnBackPressed());

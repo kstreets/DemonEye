@@ -122,13 +122,13 @@ public class GameData {
     [Serializable]
     public class Camera {
         public UnityEngine.Camera main;
-        public CameraShake cameraShake;
         public CameraAimOffset aimOffset;
         public CinemachineCamera cinemachine;
         public PixelPerfectCamera pixelPerfect;
-        
+
         [NonSerialized] public int defaultPPU;
         [NonSerialized] public CameraLookahead lookAhead = new();
+        [NonSerialized] public CameraShake shake = new();
     }
 
     [Serializable]
@@ -478,12 +478,12 @@ public class GameData {
         public ToggleButtonGroup toggleGroup;
         public ToggleButton audioToggle;
         public ToggleButton displayToggle;
-        public ToggleButton gameToggle;
+        // public ToggleButton gameToggle;
         public ToggleButton controlsToggle;
 
         public RectTransform audioParent;
         public RectTransform displayParent;
-        public RectTransform gameParent;
+        // public RectTransform gameParent;
         public RectTransform controlsParent;
         [NonSerialized] public RectTransform curPage;
 
@@ -721,9 +721,9 @@ public class GameData {
             public DamagingData damaging;
             public InteractionData interactions;
             public TrinketData trinkets;
+            public RaidCutsceneData raidCutscene;
             public Limiter reteleportLimitter;
             public int soulsGained;
-            public bool exitPortalCutscenePlayed;
         }
         public Data data;
     } 
@@ -735,13 +735,12 @@ public class GameData {
     [Flags]
     public enum PersistentFlags {
         None                     = 0,
-        BloodMushroomsUnlocked   = 1 << 0,
-        HasExtracted             = 1 << 2,
-        FirstMapPlayedOnce       = 1 << 3,
-        FirstMapPlayedTwice      = 1 << 4,
-        DemoEndShown             = 1 << 5,
-        ShowStashTransferButton  = 1 << 6,
-        TutorialCompleted        = 1 << 7,
+        FirstMapPlayedOnce       = 1 << 1,
+        FirstMapPlayedTwice      = 1 << 2,
+        TutorialCompleted        = 1 << 3,
+        DidTutorialExtraction    = 1 << 4,
+        ShowStashTransferButton  = 1 << 5,
+        BloodMushroomsUnlocked   = 1 << 6,
     }
     
     [Flags] 
@@ -825,9 +824,8 @@ public class GameData {
 
     public class Cutscene {
         public bool playing;
-        public Transform cameraTarget; // The camera follows this while panning so Cinemachine's damping still applies
+        public Transform cameraTarget;
         public bool restoreLookahead;
-        public bool showDemoEndOnMainMenu;
     }
 
 }

@@ -402,7 +402,7 @@ public partial class Game {
         Tween.Delay(altar, curBubbleSpawnTime, static (altar) => {
             altar.bloodExplosionParticles.Play();
             gameInstance.PlayAudioClip(gameInstance.audio.altarBloodExplosionClip, altar.bloodExplosionParticles.transform.position);
-            gameInstance.camera.cameraShake.Shake(5f, 0.1f, 0.5f, altar.transform.position, falloffStartRange: 0.5f, falloffDistance: 1.5f, CameraShake.Falloff.Linear);
+            gameInstance.ShakeCamera(15f, 0.1f, 0.5f, altar.transform.position, falloffStartRange: 0.5f, falloffDistance: 1.5f, CameraShake.Falloff.Linear);
             
             altar.summoningItem = gameInstance.GetItemFromDropPool(gameInstance.dropPools.eyeUpgrades);
             Entity item = gameInstance.SpawnItemAsEntity(altar.summoningItem, 1, altar.transform.position, Quaternion.identity);

@@ -88,7 +88,7 @@ public class Portal : MonoBehaviour {
             portal.summonedPortal.Open();
             Game.gameInstance.PlayerOnExitPortalSummoned(portal);
 
-            Game.gameInstance.camera.cameraShake.Shake(5f, 0.1f, 0.5f, portal.transform.position, falloffStartRange: 0.7f, falloffDistance: 2f, CameraShake.Falloff.Linear);
+            Game.gameInstance.ShakeCamera(5f, 0.1f, 0.5f, portal.transform.position, falloffStartRange: 0.7f, falloffDistance: 2f, Game.CameraShake.Falloff.Linear);
 
             foreach (Transform fragTrans in portal.crystalFragments) {
                 fragTrans.gameObject.SetActive(true);

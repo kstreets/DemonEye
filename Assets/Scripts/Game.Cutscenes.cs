@@ -5,25 +5,26 @@ using static GameData;
 
 public partial class Game {
 
-    private const int exitPortalCutsceneWave = 4;
-
-    // Shows players who have never extracted where the exit portals are, partway through their first map
+    public struct RaidCutsceneData {
+        public bool tutorialExitCutscenePlayed;
+    }
+    
     private void CheckForExitPortalCutscene() {
-        if (curRaid.data.exitPortalCutscenePlayed) return;
-        if (persistentFlags.HasFlag(PersistentFlags.HasExtracted)) return;
+        ref bool tutorialExitCutscenePlayed = ref curRaid.data.raidCutscene.tutorialExitCutscenePlayed;
+        
+        if (tutorialExitCutscenePlayed || persistentFlags.HasFlag(PersistentFlags.DidTutorialExtraction)) return;
         if (curRaid.map != config.maps[0]) return;
-        // Once the final wave starts the express exit portal shows up on its own
-        if (curRaid.state != RaidState.InitialWaves) return;
-
+        
+        const int exitPortalCutsceneWave = 4;
         bool clearedWave = spawnManager.CurWaveNumber == exitPortalCutsceneWave && spawnManager.FinishedSpawningThisWave && entities.enemies.Count <= 0;
         bool pastWave = spawnManager.CurWaveNumber > exitPortalCutsceneWave; // The next wave can start before the player clears this one
         if (!clearedWave && !pastWave) return;
         
-        curRaid.data.exitPortalCutscenePlayed = true;
+        tutorialExitCutscenePlayed = true;
         Tween.Delay(1.5f, static () => {
             // The raid can end or the player can find a portal on their own during the delay
             if (!gameInstance.InRaid || player.health <= 0 || gameInstance.pauseMenu.paused || gameInstance.cutscene.playing) return;
-            if (gameInstance.AnyExitPortalSummoned()) return; // They already know how to extract, and the portal would keep closing during the cutscene
+            if (AnyExitPortalSummoned()) return; // They already know how to extract, and the portal would keep closing during the cutscene
 
             Portal closestPortal = ClosestInactiveExitPortal();
             if (closestPortal == null) return; // Every portal was already used up
@@ -31,26 +32,28 @@ public partial class Game {
             gameInstance.spawnManager.startNextWaveDelay += 8;
             gameInstance.PlayExitPortalCutscene(closestPortal);
         });
-    }
-
-    private bool AnyExitPortalSummoned() {
-        foreach (Portal portal in curRaid.activeExitPortals) {
-            if (portal.state is Portal.State.BeingSummoned or Portal.State.Open) return true;
+        
+        static bool AnyExitPortalSummoned() {
+            foreach (Portal portal in gameInstance.curRaid.activeExitPortals) {
+                if (portal.state is Portal.State.BeingSummoned or Portal.State.Open) {
+                    return true;
+                }
+            }
+            return false;
         }
-        return false;
-    }
 
-    private static Portal ClosestInactiveExitPortal() {
-        Portal closest = null;
-        float closestSqrDist = float.MaxValue;
-        foreach (Portal portal in gameInstance.curRaid.activeExitPortals) {
-            if (portal.state != Portal.State.Inactive) continue; // Closed portals can't be summoned again
-            float sqrDist = (portal.transform.position - player.position).sqrMagnitude;
-            if (sqrDist >= closestSqrDist) continue;
-            closestSqrDist = sqrDist;
-            closest = portal;
+        static Portal ClosestInactiveExitPortal() {
+            Portal closest = null;
+            float closestSqrDist = float.MaxValue;
+            foreach (Portal portal in gameInstance.curRaid.activeExitPortals) {
+                if (portal.state != Portal.State.Inactive) continue;
+                float sqrDist = (portal.transform.position - player.position).sqrMagnitude;
+                if (sqrDist >= closestSqrDist) continue;
+                closestSqrDist = sqrDist;
+                closest = portal;
+            }
+            return closest;
         }
-        return closest;
     }
 
     private void PlayExitPortalCutscene(Portal portal) {
@@ -91,43 +94,6 @@ public partial class Game {
             },
             Line("It's time to skedaddle with the loot. You're not powerful enough yet to survive the remaining waves.")
         );
-    }
-
-    private void TryShowDemoEndDialogue() {
-        if (!cutscene.showDemoEndOnMainMenu) return;
-        cutscene.showDemoEndOnMainMenu = false;
-
-        // Same as the tutorial's first trader meeting: the menu animation restarts from off screen and holds there,
-        // so only the trader is showing until they're done talking
-        mainMenuSequence.Complete();
-        ShowMainMenuUI();
-        mainMenuSequence.isPaused = true;
-        states.gameStateMachine.Pause();
-        // The buttons are off screen, but controller navigation could still select and press them
-        SetMainMenuButtonsClickable(false);
-
-        tutorial.dialogueTypewriter = ui.traderTutorialTypewriter;
-        ui.traderTutorialDialogueBox.SetActive(true);
-        FadeIn(ui.traderTutorialDialogueCanvasGroup, 1f);
-
-        StartDialogue(
-            onFinished: () => {
-                ui.traderTutorialDialogueBox.SetActive(false);
-                SetMainMenuButtonsClickable(true);
-                mainMenuSequence.isPaused = false;
-                states.gameStateMachine.UnPause();
-            },
-            Line("Well, look at you. You've made it further than most of my clients. Thanks for playing the demo!"),
-            Line("Feel free to keep experimenting with Demon Eye builds. I'll keep taking your money."),
-            Line("And wishlist the game on Steam please! The full game releases November 5th, and my business depends on it.")
-        );
-    }
-
-    private void SetMainMenuButtonsClickable(bool clickable) {
-        mainMenu.playButton.SetClickableState(clickable);
-        mainMenu.hideoutButton.SetClickableState(clickable);
-        mainMenu.settingsButton.SetClickableState(clickable);
-        mainMenu.exitButton.SetClickableState(clickable);
     }
 
     // Freezes the raid in place so the camera can be moved around

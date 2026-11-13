@@ -3,13 +3,27 @@
 
 Texture2D<float4> _Input;
 RWTexture2D<float4> _Result;
+SamplerState sampler_linear_clamp;
 
 int _width;
 int _height;
-int _verticalSampleOffset;
+int2 _sampleOffset; // Margin plus the camera shake, in pixels
+float _inverseZoom; // 1 / punch zoom
 
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID) {
     if (id.x >= _width || id.y >= _height) return;
-    _Result[id.xy] = _Input[int2(id.x, id.y + _verticalSampleOffset)]; 
+
+    if (_inverseZoom >= 1.0) {
+        _Result[id.xy] = _Input[int2(id.xy) + _sampleOffset];
+        return;
+    }
+
+    // Punch zoom scales about the screen center. Bilinear only while zoomed, point sampling a slight
+    // scale would double up a few rows and columns that crawl across the image as the zoom animates.
+    float2 center = float2(_width, _height) * 0.5;
+    float2 pos = center + (id.xy + 0.5 - center) * _inverseZoom + _sampleOffset;
+    float2 inputSize;
+    _Input.GetDimensions(inputSize.x, inputSize.y);
+    _Result[id.xy] = _Input.SampleLevel(sampler_linear_clamp, pos / inputSize, 0);
 }

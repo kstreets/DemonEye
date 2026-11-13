@@ -580,7 +580,7 @@ public partial class Game {
         playerPanel.weightText.text = $"<color=#98C5CC>{inventoryWeight}</color><size=22>/{startEncumberingWeight}";
         
         if (InHideout) { // If we move all items manually to the stash then we need to hide the transfer button
-            int pocketItemCount = GetInventoryItemCountInRange(inventories.player, playerPocketRange);
+            int pocketItemCount = GetInventoryItemCountInRange(inventories.player, playerStorageRange);
             if (pocketItemCount == 0 && persistentFlags.HasFlag(GameData.PersistentFlags.ShowStashTransferButton)) {
                 persistentFlags &= ~GameData.PersistentFlags.ShowStashTransferButton;
                 playerPanel.transferToStashButton.gameObject.SetActive(false); 
