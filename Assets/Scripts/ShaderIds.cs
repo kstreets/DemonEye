@@ -22,6 +22,7 @@ public static class ShaderIds {
     public static readonly int useSmoothing = Shader.PropertyToID("_UseSmoothing");
     public static readonly int pixelDensity = Shader.PropertyToID("_PixelDensity");
     public static readonly int border = Shader.PropertyToID("_Border");
+    public static readonly int radius = Shader.PropertyToID("_Radius");
 
     // Globals
     public static readonly int bloodMask = Shader.PropertyToID("_BloodMask");

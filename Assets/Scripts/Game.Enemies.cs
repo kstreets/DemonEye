@@ -642,7 +642,7 @@ public partial class Game {
             float travelTime = Vector2.Distance(spawnPos, targetPos) / SulfurBoss.poisonEruptionSpeed;
             float gravity = g.config.gameplay.projectileGravity;
             Vector2 velocity = ProjectileLobVelocity(spawnPos, targetPos, gravity, SulfurBoss.poisonEruptionSpeed);
-            g.SpawnProjectile(g.entityPools.gooProjectile, spawnPos, velocity, float.MaxValue, boss, layermask: 0, gravity: gravity, floorY: targetPos.y);
+            g.SpawnProjectile(g.entityPools.gooProjectile, spawnPos, velocity, float.MaxValue, boss, layermask: 0, gravity: gravity, lobTarget: targetPos, lobTime: travelTime);
             g.SpawnHazard(g.entityPools.poisonPool, targetPos, SulfurBoss.poisonPoolDamage, Masks.PlayerMeleeHurtMask,
                 SulfurBoss.poisonPoolDuration, SulfurBoss.poisonPoolTickInterval, spawnDelay: travelTime);
         }

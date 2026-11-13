@@ -83,6 +83,7 @@ public class GameData {
         public GameObject attackCircle;
         public GameObject meteorExplosion;
         public GameObject muzzleFlash;
+        public GameObject shadow;
     }
     
     [Serializable]
@@ -636,6 +637,7 @@ public class GameData {
         public EntityPool<Entity> attackCircle;
         public EntityPool<Entity> meteorExplosion;
         public EntityPool<Entity> muzzleFlash;
+        public EntityPool<Entity> shadow;
     }
     
     public class States {

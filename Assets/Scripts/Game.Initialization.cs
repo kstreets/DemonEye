@@ -95,6 +95,7 @@ public partial class Game {
         entityPools.attackCircle = CreateEntityPool<Entity>(prefabs.attackCircle, 10, null);
         entityPools.meteorExplosion = CreateEntityPool<Entity>(prefabs.meteorExplosion, 4, null);
         entityPools.muzzleFlash = CreateEntityPool<Entity>(prefabs.muzzleFlash, 10, null);
+        entityPools.shadow = CreateEntityPool<Entity>(prefabs.shadow, 40, null);
     }
 
     private void InitGameStates() {

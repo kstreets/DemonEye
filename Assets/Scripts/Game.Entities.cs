@@ -55,6 +55,7 @@ public partial class Game {
         public Animator animator;
         public TextMeshProUGUI textMesh;
         public AttackCircle attackCircle;
+        public Shadow shadow;
         public DamageShape damageShape;
         public SpawnOffset spawnOffset;
         public EntityLifetime lifetime;
@@ -204,6 +205,7 @@ public partial class Game {
             animator = objInstance.TryGetComponent(out Animator anim) ? anim : null,
             textMesh = objInstance.TryGetComponent(out TextMeshProUGUI text) ? text : null,
             attackCircle = objInstance.TryGetComponent(out AttackCircle attackCircle) ? attackCircle : null,
+            shadow = objInstance.TryGetComponent(out Shadow shadow) ? shadow : null,
             damageShape = objInstance.TryGetComponent(out DamageShape damageShape) ? damageShape : null,
             spawnOffset = objInstance.TryGetComponent(out SpawnOffset spawnOffset) ? spawnOffset : null,
             lifetime = lifetime,
