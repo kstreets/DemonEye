@@ -6,11 +6,8 @@ using static GameData;
 public partial class Game {
 
     public class CameraLookahead {
-        public const float maxDistance = 0.15f; // World units, the view is only ~3 units tall
-        public const float mouseRange = 0.2f; // Cursor distance from the player that gives the full offset
-        public const float smoothingTime = 0.6f;
-        public const float minSpeed = 0.12f; // World units per second
-        public Vector2 velocity;
+        public const float maxDistance = 0.35f;
+        public const float speed = 0.75f;
         public Tween fadeOutTween;
     }
 
@@ -20,34 +17,25 @@ public partial class Game {
         
         bool inventoryOpen = PlayerInventoryIsOpen || LootInventoryIsOpen;
         Vector2 target = Vector2.zero;
-        if (!inventoryOpen && TryGetAimDirection(out Vector2 aim)) {
-            float strength = UsingController ? Mathf.InverseLerp(ControllerNavigation.stickDeadzone, 1f, aim.magnitude) : Mathf.Clamp01(aim.magnitude / CameraLookahead.mouseRange);
+        if (!inventoryOpen && TryGetAimVector(out Vector2 aim)) {
+            Vector2 mouseDistance = aim - camera.aimOffset.offset;
+            float mouseRange = (Screen.height / 2f) / 100f;
+            float strength = UsingController ? Mathf.InverseLerp(ControllerNavigation.stickDeadzone, 1f, aim.magnitude) : Mathf.Clamp01(mouseDistance.magnitude / mouseRange);
             target = aim.normalized * (strength * CameraLookahead.maxDistance);
         }
         
         Vector2 current = camera.aimOffset.offset;
-        Vector2 next = Vector2.SmoothDamp(current, target, ref camera.lookAhead.velocity, CameraLookahead.smoothingTime);
-
-        // SmoothDamp's tail crawls across single pixels, which jitters on the pixel perfect camera
-        Vector2 minStep = Vector2.MoveTowards(current, target, CameraLookahead.minSpeed * Time.deltaTime);
-        if (Vector2.Distance(minStep, target) < Vector2.Distance(next, target)) {
-            next = minStep;
-        }
-        if (next == target) {
-            camera.lookAhead.velocity = Vector2.zero;
-        }
+        Vector2 next = Vector2.MoveTowards(current, target, CameraLookahead.speed * Time.deltaTime);
         camera.aimOffset.offset = next;
     }
     
     private void FadeoutAimLookAhead() {
         const float fadeOutTime = 0.25f;
-        camera.lookAhead.velocity = Vector2.zero;
         camera.lookAhead.fadeOutTween = Tween.Custom(camera.aimOffset.offset, Vector2.zero, fadeOutTime, val => camera.aimOffset.offset = val, Ease.OutQuad);
     }
 
     private void ResetAimLookAhead() {
         camera.aimOffset.offset = Vector2.zero;
-        camera.lookAhead.velocity = Vector2.zero;
     }
     
     public class CameraShake {

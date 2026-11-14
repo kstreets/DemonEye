@@ -364,7 +364,8 @@ public partial class Game {
         PlayAudioClip(audio.shootClip, player.position);
         ShootProjectile(aimDir, isMainProjectile: true);
         SpawnEntityOneShot(entityPools.muzzleFlash, GetPlayerEyePos(), ProjectileRotationFromVelocity(aimDir), player.trans);
-        
+        EmitBarrelSmoke(GetPlayerEyePos(), aimDir);
+
         if (trinkets.equiped is CauterizingWoundsTrinket cauterizingWounds) {
             if (player.bleeding && RollProbability(cauterizingWounds.chancePerShotToStopBleeding)) {
                 player.bleeding = false;
@@ -509,6 +510,12 @@ public partial class Game {
     }
 
     private bool TryGetAimDirection(out Vector2 aim) {
+        bool hasAim = TryGetAimVector(out aim);
+        aim = aim.normalized;
+        return hasAim;
+    }
+
+    private bool TryGetAimVector(out Vector2 aim) {
         aim = Vector2.zero;
 
         if (UsingController) {
@@ -517,7 +524,7 @@ public partial class Game {
                 return false;
             }
 
-            aim = stick.normalized;
+            aim = stick;
             return true;
         }
 
@@ -532,8 +539,19 @@ public partial class Game {
             return false;
         }
 
-        aim = toMouse.normalized;
+        aim = toMouse;
         return true;
+    }
+
+    // One shared world space system so puffs stay put as the player moves
+    private BarrelSmoke barrelSmoke;
+
+    private void EmitBarrelSmoke(Vector2 position, Vector2 aimDir) {
+        if (!prefabs.barrelSmoke) return;
+        if (!barrelSmoke) {
+            barrelSmoke = Instantiate(prefabs.barrelSmoke, transform);
+        }
+        barrelSmoke.Emit(position, aimDir, player.velocity);
     }
 
     private Vector3 GetPlayerEyePos() {
@@ -776,12 +794,11 @@ public partial class Game {
         // Thorns makes it so collision damage is ignored and imposed on the enemy
         if (trinkets.equiped is Thorns thorns && trinkets.data.cooldownDuration.HasPassed() && damageType == PlayerDamageType.Collision) {
             Entity damageEntity = sourceEntity switch {
-                Enemy enemy     => enemy,
                 Projectile proj => proj.sourceEntity,
-                _               => null,
+                _               => sourceEntity,
             };
-            if (damageEntity != null) {
-                DamageEnemy(damageEntity, damage, isCriticalStrike: false);
+            if (damageEntity is Enemy enemy) {
+                DamageEnemy(enemy, damage, isCriticalStrike: false);
                 SpawnTrinketActivationText(thorns.activationPopUpText);
                 trinkets.data.cooldownDuration.Reset(thorns.cooldownTime);
             }

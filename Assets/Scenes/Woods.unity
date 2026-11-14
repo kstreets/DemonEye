@@ -426,7 +426,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -474,6 +474,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 5684300478470835813, guid: 9a1d6fd835fa2474a9cdbed7d6ada3f8, type: 3}
     spawnChance: 1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &49096279
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -719,7 +721,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -767,6 +769,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
     spawnChance: 0.7
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &100620799
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1051,7 +1055,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1103,6 +1107,8 @@ MonoBehaviour:
     spawnChance: 0.1
   - prefab: {fileID: 6890249216092585072, guid: 80b66d976ca6a504e8fc95464db20ad7, type: 3}
     spawnChance: 0.1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &154980886
 GameObject:
   m_ObjectHideFlags: 0
@@ -1162,7 +1168,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1210,6 +1216,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
     spawnChance: 0.6
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &180098870
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1331,7 +1339,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1379,6 +1387,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 5395410728115875330, guid: afdf8245c74212145bf95fa82c9d4eb5, type: 3}
     spawnChance: 0.35
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &204724269
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1562,7 +1572,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1610,6 +1620,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 5395410728115875330, guid: afdf8245c74212145bf95fa82c9d4eb5, type: 3}
     spawnChance: 0.35
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &236585483
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2473,7 +2485,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2525,6 +2537,8 @@ MonoBehaviour:
     spawnChance: 0.1
   - prefab: {fileID: 6890249216092585072, guid: 80b66d976ca6a504e8fc95464db20ad7, type: 3}
     spawnChance: 0.1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &381715251
 GameObject:
   m_ObjectHideFlags: 0
@@ -2584,7 +2598,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2632,6 +2646,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 7104348053268977879, guid: 155b87af078ab3d4790da6d5e29d1337, type: 3}
     spawnChance: 1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &393647708
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2753,7 +2769,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2801,6 +2817,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 7104348053268977879, guid: 155b87af078ab3d4790da6d5e29d1337, type: 3}
     spawnChance: 0.5
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &396790449
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2922,7 +2940,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2970,6 +2988,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
     spawnChance: 0.7
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &478362453
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3339,7 +3359,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3387,6 +3407,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
     spawnChance: 0.6
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &526974144
 GameObject:
   m_ObjectHideFlags: 0
@@ -3446,7 +3468,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3494,6 +3516,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 7104348053268977879, guid: 155b87af078ab3d4790da6d5e29d1337, type: 3}
     spawnChance: 1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &534031619
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3677,7 +3701,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3729,6 +3753,8 @@ MonoBehaviour:
     spawnChance: 0.1
   - prefab: {fileID: 6890249216092585072, guid: 80b66d976ca6a504e8fc95464db20ad7, type: 3}
     spawnChance: 0.1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &556269780
 GameObject:
   m_ObjectHideFlags: 0
@@ -3788,7 +3814,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3836,6 +3862,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 7104348053268977879, guid: 155b87af078ab3d4790da6d5e29d1337, type: 3}
     spawnChance: 0.5
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &561760109
 GameObject:
   m_ObjectHideFlags: 0
@@ -3895,7 +3923,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3947,6 +3975,8 @@ MonoBehaviour:
     spawnChance: 0.1
   - prefab: {fileID: 6890249216092585072, guid: 80b66d976ca6a504e8fc95464db20ad7, type: 3}
     spawnChance: 0.1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &563751158
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4130,7 +4160,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4178,6 +4208,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
     spawnChance: 0.6
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &586965757
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4299,7 +4331,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4351,6 +4383,8 @@ MonoBehaviour:
     spawnChance: 0.1
   - prefab: {fileID: 6890249216092585072, guid: 80b66d976ca6a504e8fc95464db20ad7, type: 3}
     spawnChance: 0.1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &616187995
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4568,60 +4602,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7264462497661616851, guid: 8dfa7eb87e04f2747b29ffe71fd307fe, type: 3}
   m_PrefabInstance: {fileID: 622177495}
   m_PrefabAsset: {fileID: 0}
---- !u!21 &624036002
-Material:
-  serializedVersion: 8
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: Shader Graphs/OutlineShader
-  m_Shader: {fileID: -6465566751694194690, guid: 6e58b502c0aea8a4abecc63899a3c8fb, type: 3}
-  m_Parent: {fileID: 0}
-  m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
-  m_InvalidKeywords: []
-  m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
-  disabledShaderPasses: []
-  m_LockedProperties: 
-  m_SavedProperties:
-    serializedVersion: 3
-    m_TexEnvs:
-    - _MainTex:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - unity_Lightmaps:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - unity_LightmapsInd:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - unity_ShadowMasks:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    m_Ints: []
-    m_Floats:
-    - _ColorMask: 15
-    - _Stencil: 0
-    - _StencilComp: 8
-    - _StencilOp: 0
-    - _StencilReadMask: 255
-    - _StencilWriteMask: 255
-    - _UIMaskSoftnessX: 1
-    - _UIMaskSoftnessY: 1
-    m_Colors:
-    - _ClipRect: {r: 0, g: 0, b: 0, a: 0}
-    - _Color: {r: 1, g: 0.4980392, b: 0.3137255, a: 1}
-  m_BuildTextureStacks: []
-  m_AllowLocking: 1
 --- !u!1 &626518228
 GameObject:
   m_ObjectHideFlags: 0
@@ -4681,7 +4661,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4729,6 +4709,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
     spawnChance: 0.6
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &629322988
 GameObject:
   m_ObjectHideFlags: 0
@@ -4788,7 +4770,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4836,6 +4818,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 5684300478470835813, guid: 9a1d6fd835fa2474a9cdbed7d6ada3f8, type: 3}
     spawnChance: 1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &633811640
 GameObject:
   m_ObjectHideFlags: 0
@@ -4895,7 +4879,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4943,6 +4927,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
     spawnChance: 0.7
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &641229834
 GameObject:
   m_ObjectHideFlags: 0
@@ -5002,7 +4988,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5050,6 +5036,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 5395410728115875330, guid: afdf8245c74212145bf95fa82c9d4eb5, type: 3}
     spawnChance: 0.35
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &646263155
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5517,7 +5505,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5569,6 +5557,8 @@ MonoBehaviour:
     spawnChance: 0.1
   - prefab: {fileID: 6890249216092585072, guid: 80b66d976ca6a504e8fc95464db20ad7, type: 3}
     spawnChance: 0.1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &719444190
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5690,7 +5680,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5738,6 +5728,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
     spawnChance: 0.7
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &739987563
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5859,7 +5851,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5907,6 +5899,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
     spawnChance: 0.7
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &747296441
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6028,7 +6022,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -6076,6 +6070,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
     spawnChance: 0.6
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &766872607
 GameObject:
   m_ObjectHideFlags: 0
@@ -6135,7 +6131,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -6183,6 +6179,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 5395410728115875330, guid: afdf8245c74212145bf95fa82c9d4eb5, type: 3}
     spawnChance: 0.35
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &767275483
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6366,7 +6364,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -6414,6 +6412,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 7104348053268977879, guid: 155b87af078ab3d4790da6d5e29d1337, type: 3}
     spawnChance: 0.5
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &806512399
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7614,7 +7614,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -7666,6 +7666,8 @@ MonoBehaviour:
     spawnChance: 0.1
   - prefab: {fileID: 6890249216092585072, guid: 80b66d976ca6a504e8fc95464db20ad7, type: 3}
     spawnChance: 0.1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &959158744
 GameObject:
   m_ObjectHideFlags: 0
@@ -7725,7 +7727,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -7773,6 +7775,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 1160536062516325457, guid: 9cf0359de9b7f2444a8f0111aecd246c, type: 3}
     spawnChance: 0.1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &983022114
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8018,7 +8022,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -8066,6 +8070,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
     spawnChance: 0.7
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &1037906929
 GameObject:
   m_ObjectHideFlags: 0
@@ -8125,7 +8131,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -8173,6 +8179,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 1160536062516325457, guid: 9cf0359de9b7f2444a8f0111aecd246c, type: 3}
     spawnChance: 1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &1047945015
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8480,7 +8488,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -8528,6 +8536,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 5395410728115875330, guid: afdf8245c74212145bf95fa82c9d4eb5, type: 3}
     spawnChance: 0.35
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &1097902606
 GameObject:
   m_ObjectHideFlags: 0
@@ -8587,7 +8597,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -8635,6 +8645,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 5684300478470835813, guid: 9a1d6fd835fa2474a9cdbed7d6ada3f8, type: 3}
     spawnChance: 1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &1115966503
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8880,7 +8892,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -8928,6 +8940,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
     spawnChance: 0.6
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &1144551174
 GameObject:
   m_ObjectHideFlags: 0
@@ -8987,7 +9001,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -9035,6 +9049,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 5684300478470835813, guid: 9a1d6fd835fa2474a9cdbed7d6ada3f8, type: 3}
     spawnChance: 1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &1151134805
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9311,7 +9327,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -9359,6 +9375,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
     spawnChance: 0.6
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &1187056710
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9480,7 +9498,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -9528,6 +9546,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 5684300478470835813, guid: 9a1d6fd835fa2474a9cdbed7d6ada3f8, type: 3}
     spawnChance: 0.35
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &1211027951
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9649,7 +9669,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -9701,6 +9721,8 @@ MonoBehaviour:
     spawnChance: 0.1
   - prefab: {fileID: 6890249216092585072, guid: 80b66d976ca6a504e8fc95464db20ad7, type: 3}
     spawnChance: 0.1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &1222749583
 GameObject:
   m_ObjectHideFlags: 0
@@ -9760,7 +9782,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -9812,6 +9834,8 @@ MonoBehaviour:
     spawnChance: 0.1
   - prefab: {fileID: 6890249216092585072, guid: 80b66d976ca6a504e8fc95464db20ad7, type: 3}
     spawnChance: 0.1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &1249592764
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9933,7 +9957,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -9981,6 +10005,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
     spawnChance: 0.8
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &1267728419
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10288,7 +10314,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -10336,6 +10362,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 5684300478470835813, guid: 9a1d6fd835fa2474a9cdbed7d6ada3f8, type: 3}
     spawnChance: 1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &1357677407
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10581,7 +10609,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -10629,6 +10657,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 1160536062516325457, guid: 9cf0359de9b7f2444a8f0111aecd246c, type: 3}
     spawnChance: 0.25
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &1415284085
 GameObject:
   m_ObjectHideFlags: 0
@@ -10688,7 +10718,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -10736,6 +10766,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
     spawnChance: 0.6
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &1427414289
 GameObject:
   m_ObjectHideFlags: 0
@@ -27327,7 +27359,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -27375,6 +27407,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 7104348053268977879, guid: 155b87af078ab3d4790da6d5e29d1337, type: 3}
     spawnChance: 1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &1526353536
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -27620,7 +27654,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -27668,6 +27702,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 5395410728115875330, guid: afdf8245c74212145bf95fa82c9d4eb5, type: 3}
     spawnChance: 1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &1555507066
 GameObject:
   m_ObjectHideFlags: 0
@@ -32683,7 +32719,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -32731,6 +32767,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 1160536062516325457, guid: 9cf0359de9b7f2444a8f0111aecd246c, type: 3}
     spawnChance: 0.1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &1558057842
 GameObject:
   m_ObjectHideFlags: 0
@@ -32895,7 +32933,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -32943,6 +32981,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
     spawnChance: 0.5
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &1600770368
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -33188,7 +33228,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -33236,6 +33276,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
     spawnChance: 0.6
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &1645482170
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -33512,7 +33554,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -33560,6 +33602,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
     spawnChance: 0.7
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &1725104784
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -33681,7 +33725,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -33729,6 +33773,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
     spawnChance: 0.7
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &1737953416
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -33850,7 +33896,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -33898,6 +33944,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 5395410728115875330, guid: afdf8245c74212145bf95fa82c9d4eb5, type: 3}
     spawnChance: 0.35
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &1755359291
 GameObject:
   m_ObjectHideFlags: 0
@@ -33929,6 +33977,60 @@ Transform:
   m_Children: []
   m_Father: {fileID: 141757159}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!21 &1762678856
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Shader Graphs/OutlineShader
+  m_Shader: {fileID: -6465566751694194690, guid: 6e58b502c0aea8a4abecc63899a3c8fb, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _ColorMask: 15
+    - _Stencil: 0
+    - _StencilComp: 8
+    - _StencilOp: 0
+    - _StencilReadMask: 255
+    - _StencilWriteMask: 255
+    - _UIMaskSoftnessX: 1
+    - _UIMaskSoftnessY: 1
+    m_Colors:
+    - _ClipRect: {r: 0, g: 0, b: 0, a: 0}
+    - _Color: {r: 1, g: 0.4980392, b: 0.3137255, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
 --- !u!1001 &1764161250
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -34050,7 +34152,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -34098,6 +34200,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
     spawnChance: 0.6
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &1805355162
 GameObject:
   m_ObjectHideFlags: 0
@@ -34157,7 +34261,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -34205,6 +34309,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 5395410728115875330, guid: afdf8245c74212145bf95fa82c9d4eb5, type: 3}
     spawnChance: 0.35
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &1827454133
 GameObject:
   m_ObjectHideFlags: 0
@@ -34264,7 +34370,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -34312,6 +34418,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 7104348053268977879, guid: 155b87af078ab3d4790da6d5e29d1337, type: 3}
     spawnChance: 1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &1827742135
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -34836,7 +34944,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -34888,6 +34996,8 @@ MonoBehaviour:
     spawnChance: 0.1
   - prefab: {fileID: 6890249216092585072, guid: 80b66d976ca6a504e8fc95464db20ad7, type: 3}
     spawnChance: 0.1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &1969825889
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -35102,7 +35212,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -35150,6 +35260,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
     spawnChance: 0.6
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &2001474457
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -95580,7 +95692,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -95632,6 +95744,8 @@ MonoBehaviour:
     spawnChance: 0.1
   - prefab: {fileID: 6890249216092585072, guid: 80b66d976ca6a504e8fc95464db20ad7, type: 3}
     spawnChance: 0.1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &2024480574
 GameObject:
   m_ObjectHideFlags: 0
@@ -95691,7 +95805,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -95739,6 +95853,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 6086678977028937640, guid: 15a653ea88a498f48948938dd48ba60c, type: 3}
     spawnChance: 0.7
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1 &2027835014
 GameObject:
   m_ObjectHideFlags: 0
@@ -96588,7 +96704,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -96640,6 +96756,8 @@ MonoBehaviour:
     spawnChance: 0.1
   - prefab: {fileID: 6890249216092585072, guid: 80b66d976ca6a504e8fc95464db20ad7, type: 3}
     spawnChance: 0.1
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &2108089186
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -96761,7 +96879,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 624036002}
+  - {fileID: 1762678856}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -96809,6 +96927,8 @@ MonoBehaviour:
   elements:
   - prefab: {fileID: 7104348053268977879, guid: 155b87af078ab3d4790da6d5e29d1337, type: 3}
     spawnChance: 0.7
+  blockedByExitPortal: 0
+  blockingPortal: {fileID: 0}
 --- !u!1001 &2136178104
 PrefabInstance:
   m_ObjectHideFlags: 0

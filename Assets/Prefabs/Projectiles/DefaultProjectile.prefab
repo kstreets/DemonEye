@@ -83,7 +83,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 01b531e73df48e24a9f6b914ddbaada7, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -133,8 +133,9 @@ MonoBehaviour:
   radius: 0.03
   size: {x: 0.2, y: 0.2}
   capsuleDirection: 0
-  targets: 2
   damageFrame: 0
+  attackDir: 0
+  mirrorForLeft: 0
 --- !u!114 &5322245904402581138
 MonoBehaviour:
   m_ObjectHideFlags: 0

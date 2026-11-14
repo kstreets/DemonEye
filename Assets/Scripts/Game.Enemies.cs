@@ -26,20 +26,20 @@ public partial class Game {
         public static readonly int shootDown = Animator.StringToHash("ShootDown");
         
         public static readonly int erupt = Animator.StringToHash("Erupt");
+        public static readonly int summon = Animator.StringToHash("Summon");
         
         public static readonly List<int> movementBlockingAnimations = new() {
             attackSide, attackUp, attackDown, shootSide, shootUp, shootDown,
-            spawn, death, erupt,
+            spawn, death, erupt, summon,
         };
     }
     
-    private const float enemySlowedMass = 1e6f;
-
     public class Enemy : Entity {
         public Action onDeathCallback;
         public float flowFieldAcc;
         public float lastTeleportTime;
         public float curDistFromPlayer;
+        public float hitStopEndTime;
         public CircleCollider2D worldCollider;
         public DamageShape sideAttackShape;
         public DamageShape upAttackShape;
@@ -56,19 +56,30 @@ public partial class Game {
         public Tween attackDelay;
         public bool queuedForRangedAttack;
         public bool isBossTrash;
+        public bool cannotBePushedByOthers;
         public OptionalRef<BleedEyeUpgrade.InstanceData> bleed;
         public OptionalRef<HemorrhageAugment.InstanceData> hemorrhage;
         public OptionalRef<PoisonEyeUpgrade.InstanceData> poison;
         public OptionalRef<SlowEyeUpgrade.InstanceData> slow;
         public OptionalRef<KnockBackAugment.InstanceData> knockBack;
+        
+        public bool IsHitStopped => Time.time < hitStopEndTime;
     }
-    
+
     public static void ClearEnemyDebuffs(Enemy enemy) {
         enemy.bleed.ClearValue();
         enemy.poison.ClearValue();
         enemy.slow.ClearValue();
         enemy.knockBack.ClearValue();
         enemy.GetEffect(Entity.EffectsIndicies.Poisoned).Stop();
+    }
+    
+    
+    private const float enemyHitStopDuration = 0.08f;
+
+    private void HitStopEnemy(Enemy enemy) {
+        enemy.hitStopEndTime = Time.time + enemyHitStopDuration;
+        enemy.animator.speed = 0f;
     }
     
     private void OnEnemySpawned(Enemy enemy, object spawnData) {
@@ -80,7 +91,9 @@ public partial class Game {
         enemy.data = data;
         enemy.health = data.health;
         enemy.isBossTrash = false;
-        
+        enemy.hitStopEndTime = 0f;
+        enemy.animator.speed = 1f;
+
         if (data.animatorOverride) { 
             enemy.animator.runtimeAnimatorController = data.animatorOverride;
         }
@@ -167,7 +180,12 @@ public partial class Game {
             Enemy enemy = enemies[i];
             
             if (!enemy.gameObject.activeInHierarchy) continue;
+
+            if (!enemy.IsHitStopped && enemy.animator.speed == 0f) {
+                enemy.animator.speed = 1f;
+            }
             
+            enemy.cannotBePushedByOthers = enemy.slow.HasValue || !EnemyCanMove(enemy);
             enemy.curDistFromPlayer = Vector2.Distance(player.Center, enemy.Center);
 
             switch (enemy.data.type) {
@@ -225,6 +243,7 @@ public partial class Game {
                 // It looks better if the enemies keep some momentum when dying
                 deadEnemy.rigidbody.linearVelocity *= 0.3f;
                 deadEnemy.collider.enabled = false;
+                deadEnemy.animator.speed = 1f; // Dead enemies leave the update loop, so the hit stop would never end
             
                 const float deathDelay = 0.03f;
                 Delay(deadEnemy, deathDelay, static (deadEnemy) => {
@@ -397,17 +416,21 @@ public partial class Game {
     public class FireBoss : Enemy {
         public enum AttackTypes { Fireball, Meteor, DoubleFireball, MutliMeteor, Count }
         public AttackBrain<AttackTypes> attackBrain;
+        public AttackTypes? curAttackType;
+        public int pendingFireballCount;
+        public int pendingMeteorCount;
         
         public const float minAttackDelay = 0.65f;
         public const float maxAttackDelay = 1.75f;
         
         public const int fireballDamage = 10;
         public const float fireballSpeed = 1.5f;
-        public const float fireballLifetime = 5f; 
-        public Vector2 fireBallSpawnPos => position.Offset(y: 0.2f);
+        public const float fireballLifetime = 5f;
+        public const float delayBetweenFireballs = 0.2f;
         
         public const int meteorDamage = 15;
         public const float meteorTravelTime = 0.6f;
+        public const float meteorWarningTime = meteorTravelTime * 0.5f;
         public const float meteorRadius = 0.2f;
         public const float meteorScatterRadiusPerMeteor = 0.3f;
         public const float delayBetweenMeteors = 0.12f;
@@ -421,31 +444,40 @@ public partial class Game {
         fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.Meteor, level: 0, defaultProb: 0.5f, repeatedProbDecay: 0.1f);
         fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.DoubleFireball, level: 1, defaultProb: 1f, repeatedProbDecay: 0.25f);
         fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.MutliMeteor, level: 1, defaultProb: 0.5f, repeatedProbDecay: 0.1f);
+        fireBoss.animator.Play(EnemyAnimations.spawn);
     }
     
     private void FireBossLogic(Enemy enemy) {
         if (enemy is not FireBoss fireBoss) return;
+        
+        if (fireBoss.curAttackType.TryGetValue(out FireBoss.AttackTypes curAttack)) {
+            if (curAttack is FireBoss.AttackTypes.Fireball or FireBoss.AttackTypes.DoubleFireball) {
+                if (!TryGetPlayerInterceptPoint(fireBoss.position, FireBoss.fireballSpeed, out Vector2 aimPoint)) {
+                    aimPoint = player.position;
+                }
+                FaceDirectionWhileShooting(fireBoss, CardinalDirFromVector(aimPoint - (Vector2)fireBoss.position));
+            }
+        }
         
         bool canAtttack = !fireBoss.attackDelay.isAlive;
         if (!canAtttack) return;
         
         int attackLevel = (fireBoss.health / (float)fireBoss.data.health) > 0.5f ? 0 : 1;
         if (!fireBoss.attackBrain.TryChooseAttack(attackLevel, out FireBoss.AttackTypes attack)) return;
-
+        
         fireBoss.attackDelay = Tween.Delay(FireBoss.minAttackDelay, FireBoss.maxAttackDelay);
         switch(attack) {
             case FireBoss.AttackTypes.Fireball:
-                ShootFireball();
+                CastFireballs(attack, 1);
                 break;
             case FireBoss.AttackTypes.Meteor:
-                RainMeteors(1);
+                SummonMeteors(attack, 1);
                 break;
             case FireBoss.AttackTypes.DoubleFireball:
-                ShootFireball();
-                Tween.Delay(0.2f, ShootFireball);
+                CastFireballs(attack, 2);
                 break;
             case FireBoss.AttackTypes.MutliMeteor:
-                RainMeteors(FireBoss.multiMeteorCount);
+                SummonMeteors(attack, FireBoss.multiMeteorCount);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -455,46 +487,77 @@ public partial class Game {
         // Nested Methods
         // ------------------------------
         
-        void ShootFireball() {
-            Vector2 spawnPos = fireBoss.fireBallSpawnPos;
-            if (!TryGetPlayerInterceptPoint(spawnPos, FireBoss.fireballSpeed, out Vector2 aimPoint)) return;
-            Vector2 velocity = (aimPoint - spawnPos).normalized * FireBoss.fireballSpeed;
-            SpawnProjectile(entityPools.fireBossProjectile, spawnPos, velocity, FireBoss.fireballLifetime, fireBoss, flatDamage: FireBoss.fireballDamage, layermask: Masks.PlayerProjectileHurtMask);
+        void CastFireballs(FireBoss.AttackTypes attackType, int count) {
+            int animHash = ShootAnimation(CardinalDirFromVector(fireBoss.graphicalDir));
+            fireBoss.animator.Play(animHash);
+            fireBoss.curAttackType = attackType;
+            fireBoss.pendingFireballCount = count;
+            
+            WaitForAttackSpawnFrame(fireBoss, animHash, static (boss, spawnPos) => {
+                var fireBoss = (FireBoss)boss;
+                fireBoss.curAttackType = null;
+                for (int i = 0; i < fireBoss.pendingFireballCount; i++) {
+                    Delay(boss, i * FireBoss.delayBetweenFireballs, (_) => ShootFireball(boss, spawnPos));
+                }
+            });
         }
         
-        void RainMeteors(int meteorCount) {
+        static void ShootFireball(Enemy boss, Vector2 spawnPos) {
+            var g = gameInstance;
+            if (!g.TryGetPlayerInterceptPoint(spawnPos, FireBoss.fireballSpeed, out Vector2 aimPoint)) return;
+            Vector2 velocity = (aimPoint - spawnPos).normalized * FireBoss.fireballSpeed;
+            g.SpawnProjectile(g.entityPools.fireBossProjectile, spawnPos, velocity, FireBoss.fireballLifetime, boss, flatDamage: FireBoss.fireballDamage, layermask: Masks.PlayerProjectileHurtMask);
+        }
+        
+        void SummonMeteors(FireBoss.AttackTypes attackType, int meteorCount) {
+            fireBoss.animator.Play(EnemyAnimations.summon);
+            fireBoss.curAttackType = attackType;
+            fireBoss.pendingMeteorCount = meteorCount;
+            
+            WaitForAttackSpawnFrame(fireBoss, EnemyAnimations.summon, static (boss, _) => {
+                var fireBoss = (FireBoss)boss;
+                fireBoss.curAttackType = null;
+                RainMeteors(fireBoss, fireBoss.pendingMeteorCount);
+            });
+        }
+        
+        static void RainMeteors(FireBoss fireBoss, int meteorCount) {
+            var g = gameInstance;
+            
             const float predictionTime = FireBoss.meteorTravelTime * 0.85f;
-            Vector2 centeralAimPoint = PredictedPlayerPosition(predictionTime);
+            Vector2 centeralAimPoint = g.PredictedPlayerPosition(predictionTime);
             centeralAimPoint = ClampPositionToMap(player.position, centeralAimPoint, FireBoss.meteorRadius);
-
+            
             using var _ = ListPool<Vector2>.Get(out var meteorPositions);
             meteorPositions.Add(centeralAimPoint); // First meteor is focused on the player
-
+            
             // Grows with the count so the meteors are spread at a similar density no matter how many there are
             float scatterRadius = FireBoss.meteorScatterRadiusPerMeteor * Mathf.Sqrt(meteorCount);
             ScatterPositions(ref meteorPositions, meteorCount - 1, centeralAimPoint, scatterRadius, FireBoss.meteorRadius);
-
+            
             for (int i = 0; i < meteorPositions.Count; i++) {
                 Vector2 meteorPos = meteorPositions[i];
                 // Tied to the boss so the remaining meteors are cancelled if it dies mid rain
-                Delay(fireBoss, i * FireBoss.delayBetweenMeteors, _ => SpawnSingleMeteor(meteorPos, predictionTime));
+                Delay(fireBoss, i * FireBoss.delayBetweenMeteors, _ => SpawnSingleMeteor(meteorPos));
             }
         }
         
-        void SpawnSingleMeteor(Vector2 targetPos, float warningTime) {
-            Vector2 meteorSpawnPos = new(targetPos.x, targetPos.y + 2);
-            Entity attackCircleEntity = SpawnEntity(entityPools.attackCircle, targetPos, Quaternion.identity);
-            attackCircleEntity.attackCircle.Animate(FireBoss.meteorRadius, warningTime);
+        static void SpawnSingleMeteor(Vector2 targetPos) {
+            var g = gameInstance;
             
-            Entity meteorEntity = SpawnEntity(entityPools.meteor, meteorSpawnPos, Quaternion.identity);
+            Vector2 meteorSpawnPos = new(targetPos.x, targetPos.y + 2);
+            Entity attackCircleEntity = g.SpawnEntity(g.entityPools.attackCircle, targetPos, Quaternion.identity);
+            attackCircleEntity.attackCircle.Animate(FireBoss.meteorRadius, FireBoss.meteorWarningTime);
+            
+            Entity meteorEntity = g.SpawnEntity(g.entityPools.meteor, meteorSpawnPos, Quaternion.identity);
             Tween.Custom(0f, 1f, FireBoss.meteorTravelTime, ease: Ease.InQuad, onValueChange: (comp) => {
-                meteorEntity.position = Vector2.Lerp(meteorSpawnPos, targetPos, comp);    
+                meteorEntity.position = Vector2.Lerp(meteorSpawnPos, targetPos, comp);
             })
             .OnComplete(() => {
-                Entity explosion = SpawnEntityOneShot(entityPools.meteorExplosion, targetPos, Quaternion.identity);
-                DealShapeDamage(explosion, FireBoss.meteorDamage, Masks.PlayerMeleeHurtMask);
-                DestroyEntity(attackCircleEntity);
-                DestroyEntity(meteorEntity);
+                Entity explosion = g.SpawnEntityOneShot(g.entityPools.meteorExplosion, targetPos, Quaternion.identity);
+                g.DealShapeDamage(explosion, FireBoss.meteorDamage, Masks.PlayerMeleeHurtMask);
+                g.DestroyEntity(attackCircleEntity);
+                g.DestroyEntity(meteorEntity);
             });
         }
     }
@@ -649,11 +712,10 @@ public partial class Game {
         
     }
     
-    private const float goldenAngle = 137.50776f;
-
     // Sunflower spiral so the positions cover the circle evenly with no big gaps, then jittered so it doesn't look like a pattern.
     // Ordered outside in, the first position is the outer edge and the last one is the exact center
     private static void SpreadPositionsInCircle(List<Vector2> positions, int count, Vector2 center, float circleRadius, float jitter, float bufferRadius) {
+        const float goldenAngle = 137.50776f;
         float startAngle = Random.Range(0f, 360f);
         for (int i = count - 1; i >= 0; i--) {
             if (i == 0) {
@@ -715,13 +777,11 @@ public partial class Game {
             float radius = enemy.data.separationRadius * gameplay.separationRadiusScale;
             maxRadius = Mathf.Max(maxRadius, radius);
 
-            bool holdsGround = enemy.slow.HasValue || !EnemyCanMove(enemy);
-
             separationAgents[agentCount++] = new() {
                 enemy = enemy,
                 center = enemy.rigidbody.position + enemy.separationOffset,
                 radius = radius,
-                mass = holdsGround ? enemySlowedMass : enemy.rigidbody.mass,
+                mass = enemy.cannotBePushedByOthers ? 1e6f : enemy.rigidbody.mass,
                 layer = enemy.data.separationLayer,
             };
         }
@@ -837,10 +897,8 @@ public partial class Game {
             slow.timeSpentSlowed += Time.fixedDeltaTime;
             
             totalSlowPercentage += slow.speedReductionPercent;
-            enemy.rigidbody.mass = enemySlowedMass;
             
             if (slow.timeSpentSlowed >= slow.duration) {
-                enemy.rigidbody.mass = enemy.data.defaultMass;
                 enemy.slow.ClearValue();
             }
         }
@@ -976,6 +1034,10 @@ public partial class Game {
     }
 
     private bool EnemyCanMove(Enemy enemy) {
+        if (enemy.IsHitStopped) {
+            return false;
+        }
+        
         var stateInfo = enemy.animator.GetCurrentAnimatorStateInfo(0);
         int animStateHash = stateInfo.shortNameHash;
         

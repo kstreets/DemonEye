@@ -1,0 +1,2380 @@
+fileFormatVersion: 2
+guid: 2873ef834d640e042889cb61691fc5e2
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 6862206918504247076
+    second: FireSorcerer_WalkDown_0
+  - first:
+      213: 175758518867279960
+    second: FireSorcerer_WalkDown_1
+  - first:
+      213: -1547406679152482054
+    second: FireSorcerer_WalkDown_2
+  - first:
+      213: -6946235434870523076
+    second: FireSorcerer_WalkDown_3
+  - first:
+      213: -2459963296119016441
+    second: FireSorcerer_WalkDown_4
+  - first:
+      213: 3343405314602966099
+    second: FireSorcerer_WalkDown_5
+  - first:
+      213: 5379159346828637947
+    second: FireSorcerer_WalkDown_6
+  - first:
+      213: -7153890200263329145
+    second: FireSorcerer_WalkDown_7
+  - first:
+      213: 8334253257694035281
+    second: FireSorcerer_WalkSide_0
+  - first:
+      213: -4908344025354453427
+    second: FireSorcerer_WalkSide_1
+  - first:
+      213: -5771989317388635576
+    second: FireSorcerer_WalkSide_2
+  - first:
+      213: 4180289605073638148
+    second: FireSorcerer_WalkSide_3
+  - first:
+      213: 5982491709542561739
+    second: FireSorcerer_WalkSide_4
+  - first:
+      213: 168813581970835754
+    second: FireSorcerer_WalkSide_5
+  - first:
+      213: -247022407884841251
+    second: FireSorcerer_WalkSide_6
+  - first:
+      213: -1662851163348938848
+    second: FireSorcerer_WalkSide_7
+  - first:
+      213: 7160709644399942884
+    second: FireSorcerer_WalkUp_0
+  - first:
+      213: -27712690650849731
+    second: FireSorcerer_WalkUp_1
+  - first:
+      213: 1313974501504521453
+    second: FireSorcerer_WalkUp_2
+  - first:
+      213: 2339227307947702826
+    second: FireSorcerer_WalkUp_3
+  - first:
+      213: -3390632530310573903
+    second: FireSorcerer_WalkUp_4
+  - first:
+      213: 6412286852638423627
+    second: FireSorcerer_WalkUp_5
+  - first:
+      213: 3106248080443875207
+    second: FireSorcerer_WalkUp_6
+  - first:
+      213: 6682120873696166906
+    second: FireSorcerer_WalkUp_7
+  - first:
+      213: -6736739780396839710
+    second: FireSorcerer_ShootDown_0
+  - first:
+      213: 3595243509781227152
+    second: FireSorcerer_ShootDown_1
+  - first:
+      213: 5777486324554950603
+    second: FireSorcerer_ShootDown_2
+  - first:
+      213: -5991345201732477722
+    second: FireSorcerer_ShootDown_3
+  - first:
+      213: -4587641444050022356
+    second: FireSorcerer_ShootDown_4
+  - first:
+      213: 8790685429852223922
+    second: FireSorcerer_ShootDown_5
+  - first:
+      213: -6851860340003585198
+    second: FireSorcerer_ShootDown_6
+  - first:
+      213: 9055091478275640715
+    second: FireSorcerer_ShootDown_7
+  - first:
+      213: 7231666035503776167
+    second: FireSorcerer_ShootSide_0
+  - first:
+      213: -1711623606079925136
+    second: FireSorcerer_ShootSide_1
+  - first:
+      213: 5910119945084800955
+    second: FireSorcerer_ShootSide_2
+  - first:
+      213: -465340045831772723
+    second: FireSorcerer_ShootSide_3
+  - first:
+      213: -4430876630031259802
+    second: FireSorcerer_ShootSide_4
+  - first:
+      213: -655387221136767675
+    second: FireSorcerer_ShootSide_5
+  - first:
+      213: -1466273472668346149
+    second: FireSorcerer_ShootSide_6
+  - first:
+      213: -6108391950665996934
+    second: FireSorcerer_ShootSide_7
+  - first:
+      213: -5030529533565027232
+    second: FireSorcerer_ShootUp_0
+  - first:
+      213: -7998071503978117244
+    second: FireSorcerer_ShootUp_1
+  - first:
+      213: 2460519887566434894
+    second: FireSorcerer_ShootUp_2
+  - first:
+      213: -2619510370362771315
+    second: FireSorcerer_ShootUp_3
+  - first:
+      213: 5331488762349129388
+    second: FireSorcerer_ShootUp_4
+  - first:
+      213: -6015860601337626237
+    second: FireSorcerer_ShootUp_5
+  - first:
+      213: -3099725667886017369
+    second: FireSorcerer_ShootUp_6
+  - first:
+      213: 4207428574979543991
+    second: FireSorcerer_ShootUp_7
+  - first:
+      213: 2647868611147459896
+    second: FireSorcerer_SummonDown_0
+  - first:
+      213: 4616973202472593286
+    second: FireSorcerer_SummonDown_1
+  - first:
+      213: 1004347555061972180
+    second: FireSorcerer_SummonDown_2
+  - first:
+      213: -9054669477937273252
+    second: FireSorcerer_SummonDown_3
+  - first:
+      213: -745002243428104136
+    second: FireSorcerer_SummonDown_4
+  - first:
+      213: -1052912703996411282
+    second: FireSorcerer_SummonDown_5
+  - first:
+      213: -2567691533549372280
+    second: FireSorcerer_SummonDown_6
+  - first:
+      213: 7885754891388816058
+    second: FireSorcerer_SummonDown_7
+  - first:
+      213: 9128953902793974836
+    second: FireSorcerer_SummonDown_8
+  - first:
+      213: 1602707850032585825
+    second: FireSorcerer_SummonDown_9
+  - first:
+      213: -3843683536574610327
+    second: FireSorcerer_SummonDown_10
+  - first:
+      213: -4345699993832481348
+    second: FireSorcerer_SummonDown_11
+  - first:
+      213: -4297167637535804506
+    second: FireSorcerer_SummonDown_12
+  - first:
+      213: 8303090442147695731
+    second: FireSorcerer_SummonDown_13
+  - first:
+      213: -3546640403041854604
+    second: FireSorcerer_SummonDown_14
+  - first:
+      213: 2662592137224840415
+    second: FireSorcerer_SpawnSide_0
+  - first:
+      213: 3195507196294144754
+    second: FireSorcerer_SpawnSide_1
+  - first:
+      213: -8319276563182684412
+    second: FireSorcerer_SpawnSide_2
+  - first:
+      213: -4874210414510731303
+    second: FireSorcerer_SpawnSide_3
+  - first:
+      213: -573816689387683748
+    second: FireSorcerer_SpawnSide_4
+  - first:
+      213: 4387843120046542982
+    second: FireSorcerer_SpawnSide_5
+  - first:
+      213: -731640109240141900
+    second: FireSorcerer_SpawnSide_6
+  - first:
+      213: -3842253798726595061
+    second: FireSorcerer_SpawnSide_7
+  - first:
+      213: -6431751472625201188
+    second: FireSorcerer_SpawnSide_8
+  - first:
+      213: 3881355862357515976
+    second: FireSorcerer_SpawnSide_9
+  - first:
+      213: -2528648750505762505
+    second: FireSorcerer_SpawnSide_10
+  - first:
+      213: 554410348927003559
+    second: FireSorcerer_SpawnSide_11
+  - first:
+      213: -7507312234832583457
+    second: FireSorcerer_DeathSide_0
+  - first:
+      213: -2250528001461309243
+    second: FireSorcerer_DeathSide_1
+  - first:
+      213: -3801361220553416513
+    second: FireSorcerer_DeathSide_2
+  - first:
+      213: -97803203855596294
+    second: FireSorcerer_DeathSide_3
+  - first:
+      213: -6043484976221876471
+    second: FireSorcerer_DeathSide_4
+  - first:
+      213: 6128394879090372185
+    second: FireSorcerer_DeathSide_5
+  - first:
+      213: -4872714885647151487
+    second: FireSorcerer_DeathSide_6
+  - first:
+      213: -5859869983384054531
+    second: FireSorcerer_DeathSide_7
+  - first:
+      213: 3683241277059740987
+    second: FireSorcerer_DeathSide_8
+  - first:
+      213: 3112116197147571825
+    second: FireSorcerer_DeathSide_9
+  - first:
+      213: 3472913253676735117
+    second: FireSorcerer_DeathSide_10
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: FireSorcerer_WalkDown_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 896
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 42f6ca8b5d47b3f50800000000000000
+      internalID: 6862206918504247076
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_WalkDown_1
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 896
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8504553117b607200800000000000000
+      internalID: 175758518867279960
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_WalkDown_2
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 896
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: af8ac06e2d1868ae0800000000000000
+      internalID: -1547406679152482054
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_WalkDown_3
+      rect:
+        serializedVersion: 2
+        x: 336
+        y: 896
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c3bbf4abca30a9f90800000000000000
+      internalID: -6946235434870523076
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_WalkDown_4
+      rect:
+        serializedVersion: 2
+        x: 448
+        y: 896
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 704b3566a647cddd0800000000000000
+      internalID: -2459963296119016441
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_WalkDown_5
+      rect:
+        serializedVersion: 2
+        x: 560
+        y: 896
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 35c10156b69266e20800000000000000
+      internalID: 3343405314602966099
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_WalkDown_6
+      rect:
+        serializedVersion: 2
+        x: 672
+        y: 896
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bf671f90dec96aa40800000000000000
+      internalID: 5379159346828637947
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_WalkDown_7
+      rect:
+        serializedVersion: 2
+        x: 784
+        y: 896
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 78af72b04c648bc90800000000000000
+      internalID: -7153890200263329145
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_WalkSide_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 784
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 15dbefc5e2739a370800000000000000
+      internalID: 8334253257694035281
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_WalkSide_1
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 784
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d4e365d4d1f02ebb0800000000000000
+      internalID: -4908344025354453427
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_WalkSide_2
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 784
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 84273b11c46c5efa0800000000000000
+      internalID: -5771989317388635576
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_WalkSide_3
+      rect:
+        serializedVersion: 2
+        x: 336
+        y: 784
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4031ca86f3f530a30800000000000000
+      internalID: 4180289605073638148
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_WalkSide_4
+      rect:
+        serializedVersion: 2
+        x: 448
+        y: 784
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bc7f0036384160350800000000000000
+      internalID: 5982491709542561739
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_WalkSide_5
+      rect:
+        serializedVersion: 2
+        x: 560
+        y: 784
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a2902a2fe0fb75200800000000000000
+      internalID: 168813581970835754
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_WalkSide_6
+      rect:
+        serializedVersion: 2
+        x: 672
+        y: 784
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dde5676cd66629cf0800000000000000
+      internalID: -247022407884841251
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_WalkSide_7
+      rect:
+        serializedVersion: 2
+        x: 784
+        y: 784
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0afcd365dad5ce8e0800000000000000
+      internalID: -1662851163348938848
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_WalkUp_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 672
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4ec1c268b73ff5360800000000000000
+      internalID: 7160709644399942884
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_WalkUp_1
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 672
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d3e5cf5647b8d9ff0800000000000000
+      internalID: -27712690650849731
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_WalkUp_2
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 672
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: de4191ee8dc2c3210800000000000000
+      internalID: 1313974501504521453
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_WalkUp_3
+      rect:
+        serializedVersion: 2
+        x: 336
+        y: 672
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a2abd13c7da967020800000000000000
+      internalID: 2339227307947702826
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_WalkUp_4
+      rect:
+        serializedVersion: 2
+        x: 448
+        y: 672
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1b054f29dad02f0d0800000000000000
+      internalID: -3390632530310573903
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_WalkUp_5
+      rect:
+        serializedVersion: 2
+        x: 560
+        y: 672
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b4abb613be40df850800000000000000
+      internalID: 6412286852638423627
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_WalkUp_6
+      rect:
+        serializedVersion: 2
+        x: 672
+        y: 672
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 78f981beb2c9b1b20800000000000000
+      internalID: 3106248080443875207
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_WalkUp_7
+      rect:
+        serializedVersion: 2
+        x: 784
+        y: 672
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: af302eef789abbc50800000000000000
+      internalID: 6682120873696166906
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_ShootDown_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 560
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2ec043dccda4282a0800000000000000
+      internalID: -6736739780396839710
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_ShootDown_1
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 560
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 096e9897ceed4e130800000000000000
+      internalID: 3595243509781227152
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_ShootDown_2
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 560
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bc766c5a331cd2050800000000000000
+      internalID: 5777486324554950603
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_ShootDown_3
+      rect:
+        serializedVersion: 2
+        x: 336
+        y: 560
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6ec9ef358477adca0800000000000000
+      internalID: -5991345201732477722
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_ShootDown_4
+      rect:
+        serializedVersion: 2
+        x: 448
+        y: 560
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c20d98ab96c6550c0800000000000000
+      internalID: -4587641444050022356
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_ShootDown_5
+      rect:
+        serializedVersion: 2
+        x: 560
+        y: 560
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2b93b8ac2d9cef970800000000000000
+      internalID: 8790685429852223922
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_ShootDown_6
+      rect:
+        serializedVersion: 2
+        x: 672
+        y: 560
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 253cf7fc25d49e0a0800000000000000
+      internalID: -6851860340003585198
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_ShootDown_7
+      rect:
+        serializedVersion: 2
+        x: 784
+        y: 560
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b8d494b39b52aad70800000000000000
+      internalID: 9055091478275640715
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_ShootSide_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 448
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7a1c57cb1f90c5460800000000000000
+      internalID: 7231666035503776167
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_ShootSide_1
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 448
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 074de6a16671f38e0800000000000000
+      internalID: -1711623606079925136
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_ShootSide_2
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 448
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bbf0bb2e6c6f40250800000000000000
+      internalID: 5910119945084800955
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_ShootSide_3
+      rect:
+        serializedVersion: 2
+        x: 336
+        y: 448
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dc5ee6c91b7ca89f0800000000000000
+      internalID: -465340045831772723
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_ShootSide_4
+      rect:
+        serializedVersion: 2
+        x: 448
+        y: 448
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 66728674e2d5282c0800000000000000
+      internalID: -4430876630031259802
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_ShootSide_5
+      rect:
+        serializedVersion: 2
+        x: 560
+        y: 448
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 54500d57bc897e6f0800000000000000
+      internalID: -655387221136767675
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_ShootSide_6
+      rect:
+        serializedVersion: 2
+        x: 672
+        y: 448
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bd856069b00c6abe0800000000000000
+      internalID: -1466273472668346149
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_ShootSide_7
+      rect:
+        serializedVersion: 2
+        x: 784
+        y: 448
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a75a2bf62e1aa3ba0800000000000000
+      internalID: -6108391950665996934
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_ShootUp_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 336
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 06cbeb7ca08ff2ab0800000000000000
+      internalID: -5030529533565027232
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_ShootUp_1
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 336
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 487c53db754210190800000000000000
+      internalID: -7998071503978117244
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_ShootUp_2
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 336
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e427e252dc5852220800000000000000
+      internalID: 2460519887566434894
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_ShootUp_3
+      rect:
+        serializedVersion: 2
+        x: 336
+        y: 336
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d8833196231a5abd0800000000000000
+      internalID: -2619510370362771315
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_ShootUp_4
+      rect:
+        serializedVersion: 2
+        x: 448
+        y: 336
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cae8ecb28c04df940800000000000000
+      internalID: 5331488762349129388
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_ShootUp_5
+      rect:
+        serializedVersion: 2
+        x: 560
+        y: 336
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 381c00f08ae538ca0800000000000000
+      internalID: -6015860601337626237
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_ShootUp_6
+      rect:
+        serializedVersion: 2
+        x: 672
+        y: 336
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7a45e789def8bf4d0800000000000000
+      internalID: -3099725667886017369
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_ShootUp_7
+      rect:
+        serializedVersion: 2
+        x: 784
+        y: 336
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7b3db7d3ff9c36a30800000000000000
+      internalID: 4207428574979543991
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_SummonDown_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 83de95b097e1fb420800000000000000
+      internalID: 2647868611147459896
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_SummonDown_1
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 68760e67aa8c21040800000000000000
+      internalID: 4616973202472593286
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_SummonDown_2
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4dc3082b7c820fd00800000000000000
+      internalID: 1004347555061972180
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_SummonDown_3
+      rect:
+        serializedVersion: 2
+        x: 336
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c562af0651a575280800000000000000
+      internalID: -9054669477937273252
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_SummonDown_4
+      rect:
+        serializedVersion: 2
+        x: 448
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8384993286839a5f0800000000000000
+      internalID: -745002243428104136
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_SummonDown_5
+      rect:
+        serializedVersion: 2
+        x: 560
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e624cca697d4361f0800000000000000
+      internalID: -1052912703996411282
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_SummonDown_6
+      rect:
+        serializedVersion: 2
+        x: 672
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 88cf20a872abd5cd0800000000000000
+      internalID: -2567691533549372280
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_SummonDown_7
+      rect:
+        serializedVersion: 2
+        x: 784
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aba870f0b44df6d60800000000000000
+      internalID: 7885754891388816058
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_SummonDown_8
+      rect:
+        serializedVersion: 2
+        x: 896
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 43463f2153f80be70800000000000000
+      internalID: 9128953902793974836
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_SummonDown_9
+      rect:
+        serializedVersion: 2
+        x: 1008
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 16c1cef4c46fd3610800000000000000
+      internalID: 1602707850032585825
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_SummonDown_10
+      rect:
+        serializedVersion: 2
+        x: 1120
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 964047d203e78aac0800000000000000
+      internalID: -3843683536574610327
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_SummonDown_11
+      rect:
+        serializedVersion: 2
+        x: 1232
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cbd923f41e8f0b3c0800000000000000
+      internalID: -4345699993832481348
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_SummonDown_12
+      rect:
+        serializedVersion: 2
+        x: 1344
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6a3bf501dc46d54c0800000000000000
+      internalID: -4297167637535804506
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_SummonDown_13
+      rect:
+        serializedVersion: 2
+        x: 1456
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 37c8726f3c08a3370800000000000000
+      internalID: 8303090442147695731
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_SummonDown_14
+      rect:
+        serializedVersion: 2
+        x: 1568
+        y: 224
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 47b54a6285dc7cec0800000000000000
+      internalID: -3546640403041854604
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_SpawnSide_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 112
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fd4e809117d63f420800000000000000
+      internalID: 2662592137224840415
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_SpawnSide_1
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 112
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2f221505dd8b85c20800000000000000
+      internalID: 3195507196294144754
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_SpawnSide_2
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 112
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 407734f0b0efb8c80800000000000000
+      internalID: -8319276563182684412
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_SpawnSide_3
+      rect:
+        serializedVersion: 2
+        x: 336
+        y: 112
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9df0492e3735b5cb0800000000000000
+      internalID: -4874210414510731303
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_SpawnSide_4
+      rect:
+        serializedVersion: 2
+        x: 448
+        y: 112
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c504bded2c46908f0800000000000000
+      internalID: -573816689387683748
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_SpawnSide_5
+      rect:
+        serializedVersion: 2
+        x: 560
+        y: 112
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6801484e110c4ec30800000000000000
+      internalID: 4387843120046542982
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_SpawnSide_6
+      rect:
+        serializedVersion: 2
+        x: 672
+        y: 112
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4b730517231b8d5f0800000000000000
+      internalID: -731640109240141900
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_SpawnSide_7
+      rect:
+        serializedVersion: 2
+        x: 784
+        y: 112
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b0e8106f6829daac0800000000000000
+      internalID: -3842253798726595061
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_SpawnSide_8
+      rect:
+        serializedVersion: 2
+        x: 896
+        y: 112
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cdf449ecc14ddb6a0800000000000000
+      internalID: -6431751472625201188
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_SpawnSide_9
+      rect:
+        serializedVersion: 2
+        x: 1008
+        y: 112
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8ce13bea7985dd530800000000000000
+      internalID: 3881355862357515976
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_SpawnSide_10
+      rect:
+        serializedVersion: 2
+        x: 1120
+        y: 112
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7316e58db5f68ecd0800000000000000
+      internalID: -2528648750505762505
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_SpawnSide_11
+      rect:
+        serializedVersion: 2
+        x: 1232
+        y: 112
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7ab28936649a1b700800000000000000
+      internalID: 554410348927003559
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_DeathSide_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fd42cd04c4ba0d790800000000000000
+      internalID: -7507312234832583457
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_DeathSide_1
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 0
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5c034dbd4b484c0e0800000000000000
+      internalID: -2250528001461309243
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_DeathSide_2
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 0
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fb0e7f14c1ade3bc0800000000000000
+      internalID: -3801361220553416513
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_DeathSide_3
+      rect:
+        serializedVersion: 2
+        x: 336
+        y: 0
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: af4ca48118884aef0800000000000000
+      internalID: -97803203855596294
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_DeathSide_4
+      rect:
+        serializedVersion: 2
+        x: 448
+        y: 0
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 90f82e21f6a312ca0800000000000000
+      internalID: -6043484976221876471
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_DeathSide_5
+      rect:
+        serializedVersion: 2
+        x: 560
+        y: 0
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 95e21834cae6c0550800000000000000
+      internalID: 6128394879090372185
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_DeathSide_6
+      rect:
+        serializedVersion: 2
+        x: 672
+        y: 0
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 18e4e35d0a3a06cb0800000000000000
+      internalID: -4872714885647151487
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_DeathSide_7
+      rect:
+        serializedVersion: 2
+        x: 784
+        y: 0
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: df45b6a0c4f8daea0800000000000000
+      internalID: -5859869983384054531
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_DeathSide_8
+      rect:
+        serializedVersion: 2
+        x: 896
+        y: 0
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b35b3354d608d1330800000000000000
+      internalID: 3683241277059740987
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_DeathSide_9
+      rect:
+        serializedVersion: 2
+        x: 1008
+        y: 0
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 17678be4135703b20800000000000000
+      internalID: 3112116197147571825
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: FireSorcerer_DeathSide_10
+      rect:
+        serializedVersion: 2
+        x: 1120
+        y: 0
+        width: 112
+        height: 112
+      alignment: 9
+      pivot: {x: 0.5, y: 0.32}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d8ad5253434423030800000000000000
+      internalID: 3472913253676735117
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      AttackRune1_0: 637263459462573385
+      FireSorcerer_DeathSide_0: -7507312234832583457
+      FireSorcerer_DeathSide_1: -2250528001461309243
+      FireSorcerer_DeathSide_10: 3472913253676735117
+      FireSorcerer_DeathSide_2: -3801361220553416513
+      FireSorcerer_DeathSide_3: -97803203855596294
+      FireSorcerer_DeathSide_4: -6043484976221876471
+      FireSorcerer_DeathSide_5: 6128394879090372185
+      FireSorcerer_DeathSide_6: -4872714885647151487
+      FireSorcerer_DeathSide_7: -5859869983384054531
+      FireSorcerer_DeathSide_8: 3683241277059740987
+      FireSorcerer_DeathSide_9: 3112116197147571825
+      FireSorcerer_ShootDown_0: -6736739780396839710
+      FireSorcerer_ShootDown_1: 3595243509781227152
+      FireSorcerer_ShootDown_2: 5777486324554950603
+      FireSorcerer_ShootDown_3: -5991345201732477722
+      FireSorcerer_ShootDown_4: -4587641444050022356
+      FireSorcerer_ShootDown_5: 8790685429852223922
+      FireSorcerer_ShootDown_6: -6851860340003585198
+      FireSorcerer_ShootDown_7: 9055091478275640715
+      FireSorcerer_ShootSide_0: 7231666035503776167
+      FireSorcerer_ShootSide_1: -1711623606079925136
+      FireSorcerer_ShootSide_2: 5910119945084800955
+      FireSorcerer_ShootSide_3: -465340045831772723
+      FireSorcerer_ShootSide_4: -4430876630031259802
+      FireSorcerer_ShootSide_5: -655387221136767675
+      FireSorcerer_ShootSide_6: -1466273472668346149
+      FireSorcerer_ShootSide_7: -6108391950665996934
+      FireSorcerer_ShootUp_0: -5030529533565027232
+      FireSorcerer_ShootUp_1: -7998071503978117244
+      FireSorcerer_ShootUp_2: 2460519887566434894
+      FireSorcerer_ShootUp_3: -2619510370362771315
+      FireSorcerer_ShootUp_4: 5331488762349129388
+      FireSorcerer_ShootUp_5: -6015860601337626237
+      FireSorcerer_ShootUp_6: -3099725667886017369
+      FireSorcerer_ShootUp_7: 4207428574979543991
+      FireSorcerer_SpawnSide_0: 2662592137224840415
+      FireSorcerer_SpawnSide_1: 3195507196294144754
+      FireSorcerer_SpawnSide_10: -2528648750505762505
+      FireSorcerer_SpawnSide_11: 554410348927003559
+      FireSorcerer_SpawnSide_2: -8319276563182684412
+      FireSorcerer_SpawnSide_3: -4874210414510731303
+      FireSorcerer_SpawnSide_4: -573816689387683748
+      FireSorcerer_SpawnSide_5: 4387843120046542982
+      FireSorcerer_SpawnSide_6: -731640109240141900
+      FireSorcerer_SpawnSide_7: -3842253798726595061
+      FireSorcerer_SpawnSide_8: -6431751472625201188
+      FireSorcerer_SpawnSide_9: 3881355862357515976
+      FireSorcerer_SummonDown_0: 2647868611147459896
+      FireSorcerer_SummonDown_1: 4616973202472593286
+      FireSorcerer_SummonDown_10: -3843683536574610327
+      FireSorcerer_SummonDown_11: -4345699993832481348
+      FireSorcerer_SummonDown_12: -4297167637535804506
+      FireSorcerer_SummonDown_13: 8303090442147695731
+      FireSorcerer_SummonDown_14: -3546640403041854604
+      FireSorcerer_SummonDown_2: 1004347555061972180
+      FireSorcerer_SummonDown_3: -9054669477937273252
+      FireSorcerer_SummonDown_4: -745002243428104136
+      FireSorcerer_SummonDown_5: -1052912703996411282
+      FireSorcerer_SummonDown_6: -2567691533549372280
+      FireSorcerer_SummonDown_7: 7885754891388816058
+      FireSorcerer_SummonDown_8: 9128953902793974836
+      FireSorcerer_SummonDown_9: 1602707850032585825
+      FireSorcerer_WalkDown_0: 6862206918504247076
+      FireSorcerer_WalkDown_1: 175758518867279960
+      FireSorcerer_WalkDown_2: -1547406679152482054
+      FireSorcerer_WalkDown_3: -6946235434870523076
+      FireSorcerer_WalkDown_4: -2459963296119016441
+      FireSorcerer_WalkDown_5: 3343405314602966099
+      FireSorcerer_WalkDown_6: 5379159346828637947
+      FireSorcerer_WalkDown_7: -7153890200263329145
+      FireSorcerer_WalkSide_0: 8334253257694035281
+      FireSorcerer_WalkSide_1: -4908344025354453427
+      FireSorcerer_WalkSide_2: -5771989317388635576
+      FireSorcerer_WalkSide_3: 4180289605073638148
+      FireSorcerer_WalkSide_4: 5982491709542561739
+      FireSorcerer_WalkSide_5: 168813581970835754
+      FireSorcerer_WalkSide_6: -247022407884841251
+      FireSorcerer_WalkSide_7: -1662851163348938848
+      FireSorcerer_WalkUp_0: 7160709644399942884
+      FireSorcerer_WalkUp_1: -27712690650849731
+      FireSorcerer_WalkUp_2: 1313974501504521453
+      FireSorcerer_WalkUp_3: 2339227307947702826
+      FireSorcerer_WalkUp_4: -3390632530310573903
+      FireSorcerer_WalkUp_5: 6412286852638423627
+      FireSorcerer_WalkUp_6: 3106248080443875207
+      FireSorcerer_WalkUp_7: 6682120873696166906
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

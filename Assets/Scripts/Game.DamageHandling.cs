@@ -13,7 +13,7 @@ public partial class Game {
         public float lastDoubleCritActivationTime;
     }
     
-    private void DamageEnemyAfterDelay(Entity enemy, int damage, bool isCriticalStrike, float delay) {
+    private void DamageEnemyAfterDelay(Enemy enemy, int damage, bool isCriticalStrike, float delay) {
         enemy.delayedDamage = damage;
         enemy.delayedDamageIsCrit = isCriticalStrike;
         Delay(enemy, delay, static enemy => {
@@ -21,11 +21,12 @@ public partial class Game {
         });
     }
     
-    private void DamageEnemy(Entity enemy, int damage, bool isCriticalStrike, bool useEnemyDamageMultiplier = true) {
+    private void DamageEnemy(Enemy enemy, int damage, bool isCriticalStrike, bool useEnemyDamageMultiplier = true) {
         if (useEnemyDamageMultiplier) {
             damage = Mathf.RoundToInt(damage * GetDamageMultiplierOnEnemy((Enemy)enemy));
         }
         enemy.health -= damage;
+        HitStopEnemy(enemy);
         AddFlashHitEffect(enemy);
         SpawnDamageNumber(EnemyDamageNumberSpawnPos(enemy), damage, isCriticalStrike ? DamageColor.Crit : DamageColor.Normal);
         Tween.PunchScale(enemy.trans, Vector3.one * 0.15f, 0.1f, 15f);
@@ -100,7 +101,9 @@ public partial class Game {
         Assert.IsTrue(clipInfos.Count > 0, "Cannot wait for a damage frame because the animator has no clip playing");
         if (clipInfos.Count == 0) return 0f;
         
-        return frame / (clipInfos[0].clip.frameRate * animator.speed);
+        // A hit stopped animator has speed 0, which would make the delay infinite
+        float speed = animator.speed > 0f ? animator.speed : 1f;
+        return frame / (clipInfos[0].clip.frameRate * speed);
     }
     
     private void DamageEntitiesInShape(Entity sourceEntity, DamageShape damageShape, int damage, LayerMask mask, 
@@ -122,8 +125,8 @@ public partial class Game {
 
             if (!entities.lookup.TryGetValue(col.gameObject, out Entity hitEntity)) continue;
 
-            if (hitEntity is Enemy) {
-                DamageEnemy(hitEntity, damage, isCriticalStrike: false);
+            if (hitEntity is Enemy enemy) {
+                DamageEnemy(enemy, damage, isCriticalStrike: false);
                 onHit?.Invoke(hitEntity);
             }
             else if ((Masks.MineableMask & colliderLayerMask) != 0) {
@@ -194,7 +197,7 @@ public partial class Game {
             foreach (Collider2D col in cols) {
                 if (entityLookup[col.gameObject] is Enemy explosionEnemy) {
                     int explosionDamage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(explosionEnemy) * explosion.damageMulti);
-                    DamageEnemyAfterDelay(entityLookup[col.gameObject], explosionDamage, false, 0.1f);
+                    DamageEnemyAfterDelay(explosionEnemy, explosionDamage, false, 0.1f);
                 }
             }
         }

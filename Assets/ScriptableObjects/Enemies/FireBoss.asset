@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: Fire Boss
   type: 4
-  enemyPrefab: {fileID: 7814119993517076521, guid: 5f63a89b056cae744a15b4483a109145, type: 3}
+  enemyPrefab: {fileID: 7814119993517076521, guid: a360b6a79ed97f848825a536c18ff02b, type: 3}
   animatorOverride: {fileID: 0}
   dropPool: {fileID: 11400000, guid: a50fac0e0c375294296c54b1d6d4450d, type: 2}
   chanceToDropItem: 0.06
@@ -27,17 +27,14 @@ MonoBehaviour:
   attackDistance: 0.25
   attackDamageDelay: 0.4
   attackRadius: 0.15
-  sideAttackOffset: {x: 0.172, y: 0.065}
-  upAttackOffset: {x: 0, y: 0.257}
-  donwAttackOffset: {x: 0, y: -0.045}
   projectileSpeed: 0
   projectileLifetime: 0
   projectileCooldownTime: 0
-  speed: 0.33
+  speed: 0.45
   health: 1200
   damage: 10
   collisionDamage: 8
   changeToCauseBleed: 0.15
   soulWorthPerKill: 100
   xpWorthPerKill: 20
-  defaultMass: 41.0909
+  defaultMass: 4.960002

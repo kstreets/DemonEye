@@ -359,7 +359,7 @@ public partial class Game {
             if (Vector2.Distance(proj.position, proj.targetEntity.position) < 0.035f) {
                 DestroyProjectile(proj);
                 entities.soulTrackingProjectiles.RemoveAt(i);
-                DamageEnemy(proj.targetEntity, proj.flatDamage.Value, isCriticalStrike: false);
+                DamageEnemy((Enemy)proj.targetEntity, proj.flatDamage.Value, isCriticalStrike: false);
                 continue;
             }
             

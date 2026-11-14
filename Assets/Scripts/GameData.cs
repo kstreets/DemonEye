@@ -83,6 +83,7 @@ public class GameData {
         public GameObject attackCircle;
         public GameObject meteorExplosion;
         public GameObject muzzleFlash;
+        public BarrelSmoke barrelSmoke;
         public GameObject shadow;
     }
     
