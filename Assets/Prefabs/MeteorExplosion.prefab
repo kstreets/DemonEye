@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 4804582363957335801}
   - component: {fileID: 4037585411893826639}
   - component: {fileID: 3252378479911979465}
+  - component: {fileID: 1276951331857115675}
   m_Layer: 0
   m_Name: MeteorExplosion
   m_TagString: Untagged
@@ -150,3 +151,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpawnOffset
   offset: {x: -0.0032, y: -0.04}
   rotateWithEntity: 0
+--- !u!114 &1276951331857115675
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6612703808539729084}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5cb368f0c5ef49f48a595f30691bbb72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ParticleBatch
+  prefab: {fileID: 6584711241690703480, guid: 1df7b2c543208f34aab47672040d212c, type: 3}
+  countRange: {x: 12, y: 20}
+  playOnEnable: 1
+  playOnEnableDelay: 0.05

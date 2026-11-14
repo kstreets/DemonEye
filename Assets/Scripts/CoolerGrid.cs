@@ -254,6 +254,27 @@ public class CoolerGrid : MonoBehaviour {
         return Vector2.zero;
     }
 
+    public bool IsWalkable(Vector2 position) {
+        if (gridCells == null) {
+            return true;
+        }
+
+        Vector2 posInGridSpace = position - gridGameObjectPosition;
+        int x = Mathf.FloorToInt(posInGridSpace.x / cellSize);
+        int y = Mathf.FloorToInt(posInGridSpace.y / cellSize);
+        if (x < 0 || x >= width || y < 0 || y >= height) {
+            return false;
+        }
+
+        int index = y * width + x;
+        if (!gridCells.IndexInRange(index)) {
+            return false;
+        }
+        
+        GridCell cell = gridCells[index];
+        return cell.traversable && !cell.isObstacleObstructed;
+    }
+
     private bool TryGetCellAtPosition(Vector2 position, out GridCell cell, out int index) {
         Vector2 posInGridSpace = position - gridGameObjectPosition;
 

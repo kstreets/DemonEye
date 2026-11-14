@@ -157,6 +157,6 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5cb368f0c5ef49f48a595f30691bbb72, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BreakParticles
-  prefab: {fileID: 7286380919918648898, guid: a6501a20d4346d34e8ec2de549e1ea57, type: 3}
+  m_EditorClassIdentifier: Assembly-CSharp::ParticleBatch
+  prefab: {fileID: 8129754543125927204, guid: 9f38e2aa4fabe1f4b9e0abfbde272e16, type: 3}
   countRange: {x: 12, y: 18}

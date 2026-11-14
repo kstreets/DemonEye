@@ -254,12 +254,11 @@ public partial class Game {
             curRaid.mapInstance.grid.ClearObstacle(entity.gridObstaclePos, entity.gridObstacleRadius);
         }
 
-        EmitBreakParticles(entity);
-        Entity smokeEntity = SpawnEntity<Entity>(prefabs.rockSmokePrefab, entity.position, Quaternion.identity);
-        DestroyEntity(smokeEntity, 0.417f);
-        DestroyEntity(entity);
+        entity.particleBatch.Play();
+        SpawnEntityOneShot<Entity>(prefabs.rockSmokePrefab, entity.position, Quaternion.identity);
         PlayAudioClip(audio.stoneBreakClip, entity.position);
         ShakeCamera(5f, 0.05f, 0.3f, entity.position, 0.1f, 0.8f, CameraShake.Falloff.Sine);
+        DestroyEntity(entity);
             
         int dropCount = entity.gameObject.CompareTag(Tags.SmallRock) ? 1 : 2;
         if (trinkets.equiped is RockLootTrinket rockLoot) {
@@ -275,20 +274,6 @@ public partial class Game {
             Vector3 endPos = entity.position + RotationVector(Random.Range(0f, 360f), 0.18f, 0.25f);
             AddBounceEffect(rockDropEntity, endPos, 0.8f);
         }
-    }
-    
-    // One shared world space system per prefab, moved to the entity for each burst
-    private readonly Dictionary<ParticleSystem, ParticleSystem> breakParticleInstances = new();
-
-    private void EmitBreakParticles(Entity entity) {
-        if (!entity.trans.TryGetComponent(out BreakParticles breakParticles)) return;
-
-        if (!breakParticleInstances.TryGetValue(breakParticles.prefab, out ParticleSystem particles) || particles.isPlaying) {
-            particles = Instantiate(breakParticles.prefab, transform);
-            breakParticleInstances[breakParticles.prefab] = particles;
-        }
-        particles.transform.position = entity.position;
-        particles.Emit(Random.Range(breakParticles.countRange.x, breakParticles.countRange.y + 1));
     }
 
     private float GetCriticalStrikeProbability(Projectile proj, Enemy enemy) {

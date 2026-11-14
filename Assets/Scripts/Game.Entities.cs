@@ -56,6 +56,7 @@ public partial class Game {
         public TextMeshProUGUI textMesh;
         public AttackCircle attackCircle;
         public Shadow shadow;
+        public ParticleBatch particleBatch;
         public DamageShape damageShape;
         public SpawnOffset spawnOffset;
         public EntityLifetime lifetime;
@@ -122,12 +123,19 @@ public partial class Game {
         return entity;
     }
     
-    private readonly Dictionary<GameObject, EntityPool<Entity>> bubblePools = new();
+    private T SpawnEntityOneShot<T>(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level) where T : Entity, new() {
+        T entity = SpawnEntity<T>(prefab, position, rotation, parent, lifetime);
+        Assert.IsNotNull(entity.animator, "Cannot spawn entity with one shot because there is no animator");
+        DestroyEntity(entity, CurrentClipLength(entity.animator));
+        return entity;
+    }
+    
+    private readonly Dictionary<GameObject, EntityPool<Entity>> _bubblePools = new();
 
     public void SpawnBubble(BubbleSpawner spawner, Transform point) {
-        if (!bubblePools.TryGetValue(spawner.bubblePrefab, out EntityPool<Entity> pool)) {
+        if (!_bubblePools.TryGetValue(spawner.bubblePrefab, out EntityPool<Entity> pool)) {
             pool = CreateEntityPool<Entity>(spawner.bubblePrefab, 0, null);
-            bubblePools.Add(spawner.bubblePrefab, pool);
+            _bubblePools.Add(spawner.bubblePrefab, pool);
         }
         Entity bubble = SpawnEntityOneShot(pool, point.position, point.rotation);
         bubble.spriteRenderer.color = spawner.tint;
@@ -206,6 +214,7 @@ public partial class Game {
             textMesh = objInstance.TryGetComponent(out TextMeshProUGUI text) ? text : null,
             attackCircle = objInstance.TryGetComponent(out AttackCircle attackCircle) ? attackCircle : null,
             shadow = objInstance.TryGetComponent(out Shadow shadow) ? shadow : null,
+            particleBatch = objInstance.TryGetComponent(out ParticleBatch particleBatch) ? particleBatch : null,
             damageShape = objInstance.TryGetComponent(out DamageShape damageShape) ? damageShape : null,
             spawnOffset = objInstance.TryGetComponent(out SpawnOffset spawnOffset) ? spawnOffset : null,
             lifetime = lifetime,
