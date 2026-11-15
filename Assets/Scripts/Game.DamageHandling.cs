@@ -21,16 +21,24 @@ public partial class Game {
         });
     }
     
-    private void DamageEnemy(Enemy enemy, int damage, bool isCriticalStrike, bool useEnemyDamageMultiplier = true) {
+    public struct DamageBloodParams {
+        public Vector2 position;
+        public Vector2 velocity;
+    }
+    
+    private void DamageEnemy(Enemy enemy, int damage, bool isCriticalStrike, bool useEnemyDamageMultiplier = true, DamageBloodParams? damageBlood = default) {
         if (useEnemyDamageMultiplier) {
-            damage = Mathf.RoundToInt(damage * GetDamageMultiplierOnEnemy((Enemy)enemy));
+            damage = Mathf.RoundToInt(damage * GetDamageMultiplierOnEnemy(enemy));
         }
         enemy.health -= damage;
         HitStopEnemy(enemy);
         AddFlashHitEffect(enemy);
         SpawnDamageNumber(EnemyDamageNumberSpawnPos(enemy), damage, isCriticalStrike ? DamageColor.Crit : DamageColor.Normal);
         Tween.PunchScale(enemy.trans, Vector3.one * 0.15f, 0.1f, 15f);
-
+        
+        Vector2 bloodPos = damageBlood?.position ?? enemy.Center;
+        Quaternion bloodRot = damageBlood.HasValue ? LookRotation(-damageBlood.Value.velocity, entityForward: Vector2.up) : Quaternion.identity;
+        SpawnEntityOneShot(entityPools.bloodSplatter, bloodPos, bloodRot);
         StampBlood(enemy.position.Offset(y: -0.01f));
     }
     
@@ -151,6 +159,11 @@ public partial class Game {
         var entityLookup = entities.lookup;
         if (entityLookup[entity.gameObject] is not Enemy enemy) return;
         
+        DamageBloodParams damageBloodParams = new() {
+            position = projectile.position,
+            velocity = projectile.velocity,
+        };
+        
         /*
         ============== Simple projectile land ===================
         Any projectile with flat damage is deemed to be a simple projectile
@@ -158,7 +171,7 @@ public partial class Game {
         */
         
         if (projectile.flatDamage.HasValue) {
-            DamageEnemy(enemy, projectile.flatDamage.Value, isCriticalStrike: false);
+            DamageEnemy(enemy, projectile.flatDamage.Value, isCriticalStrike: false, damageBlood: damageBloodParams);
             return;
         }
         
@@ -176,7 +189,7 @@ public partial class Game {
         }
 
         int damage = GetProjectileDamage(projectile, enemy, isCriticalStrike);
-        DamageEnemy(enemy, damage, isCriticalStrike, useEnemyDamageMultiplier: false); // GetProjectileDamage already includes enemy multiplier
+        DamageEnemy(enemy, damage, isCriticalStrike, damageBlood: damageBloodParams, useEnemyDamageMultiplier: false); // GetProjectileDamage already includes enemy multiplier
 
         DemonEyeInstance eyeInstance = projectile.eyeInstanceSpawnedFrom;
         foreach (EquipedUpgradeInstance modInstance in eyeInstance.upgradeInstances) {

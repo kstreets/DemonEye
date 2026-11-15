@@ -65,6 +65,7 @@ public class GameData {
         public GameObject teleportOut;
         public GameObject expressExitPortal;
         public GameObject bloodSplatter;
+        public GameObject largeBloodSplatter;
         public GameObject runSmoke;
         public GameObject slamSmoke;
         public GameObject blast;
@@ -625,6 +626,7 @@ public class GameData {
         public EntityPool<Entity> teleportOut;
         public EntityPool<Entity> expressExitPortal;
         public EntityPool<Entity> bloodSplatter;
+        public EntityPool<Entity> largeBloodSplatter;
         public EntityPool<Entity> runSmoke;
         public EntityPool<Entity> damageNumber;
         public EntityPool<Entity> forgeExplosion;

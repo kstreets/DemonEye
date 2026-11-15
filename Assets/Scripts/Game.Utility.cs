@@ -59,6 +59,11 @@ public partial class Game {
         return Quaternion.AngleAxis(Random.Range(0f, 360f), Vector3.forward);
     }
     
+    private Quaternion LookRotation(Vector2 lookDir, Vector2 entityForward = default) {
+        entityForward = entityForward == default ? Vector2.right : entityForward;
+        return Quaternion.AngleAxis(Vector2.SignedAngle(entityForward.normalized, lookDir.normalized), Vector3.forward);
+    }
+    
     private Vector2 OffsetY(Vector2 pos, float yOffset) {
         return new(pos.x, pos.y + yOffset);
     }

@@ -75,7 +75,7 @@ public partial class Game {
     {
         Assert.IsTrue(!gravity.HasValue || (lobTarget.HasValue && lobTime.HasValue), "Projectiles with gravity need a target and flight time to land with");
         
-        Quaternion projectileRotation = rotation ?? ProjectileRotationFromVelocity(velocity);
+        Quaternion projectileRotation = rotation ?? LookRotation(velocity);
         Projectile projectile = SpawnEntity(pool, spawnPos, projectileRotation);
         
         projectile.velocity = velocity;
@@ -180,7 +180,7 @@ public partial class Game {
             
             if (proj.gravity.HasValue) {
                 proj.velocity.y -= proj.gravity.Value * Time.deltaTime;
-                proj.rotation = ProjectileRotationFromVelocity(proj.velocity);
+                proj.rotation = LookRotation(proj.velocity);
             }
             
             proj.trans.position += (Vector3)proj.velocity * Time.deltaTime;
@@ -231,7 +231,7 @@ public partial class Game {
                     if (reflectedCount == 0) {
                         Vector2 reflectedVelocity = Quaternion.AngleAxis(Random.Range(-45, 45), Vector3.forward) * -proj.velocity;
                         proj.velocity = reflectedVelocity;
-                        proj.rotation = ProjectileRotationFromVelocity(reflectedVelocity);
+                        proj.rotation = LookRotation(reflectedVelocity);
                         proj.curTimeAlive = 0f;
                         PlayAudioClip(audio.reflectedShotClip, proj.position);
                         continue;
@@ -359,7 +359,8 @@ public partial class Game {
             if (Vector2.Distance(proj.position, proj.targetEntity.position) < 0.035f) {
                 DestroyProjectile(proj);
                 entities.soulTrackingProjectiles.RemoveAt(i);
-                DamageEnemy((Enemy)proj.targetEntity, proj.flatDamage.Value, isCriticalStrike: false);
+                DamageBloodParams bloodParams = new() { position = proj.position, velocity = proj.velocity };
+                DamageEnemy((Enemy)proj.targetEntity, proj.flatDamage.Value, isCriticalStrike: false, damageBlood: bloodParams);
                 continue;
             }
             
@@ -376,10 +377,6 @@ public partial class Game {
         }
     }
     
-    private Quaternion ProjectileRotationFromVelocity(Vector2 velocity) {
-        return Quaternion.AngleAxis(Vector2.SignedAngle(Vector2.right, velocity.normalized), Vector3.forward);
-    }
-
     // The velocity that lobs a gravity projectile from start to target
     private static Vector2 ProjectileLobVelocity(Vector2 start, Vector2 target, float gravity, float speed) {
         Assert.IsTrue(speed > 0f, "Lob speed must be greater than zero");

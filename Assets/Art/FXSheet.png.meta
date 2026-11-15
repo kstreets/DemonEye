@@ -438,8 +438,8 @@ TextureImporter:
         y: 996
         width: 32
         height: 32
-      alignment: 9
-      pivot: {x: 0.5, y: 0.1}
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -460,8 +460,8 @@ TextureImporter:
         y: 996
         width: 32
         height: 32
-      alignment: 9
-      pivot: {x: 0.5, y: 0.1}
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -482,8 +482,8 @@ TextureImporter:
         y: 996
         width: 32
         height: 32
-      alignment: 9
-      pivot: {x: 0.5, y: 0.1}
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -504,8 +504,8 @@ TextureImporter:
         y: 996
         width: 32
         height: 32
-      alignment: 9
-      pivot: {x: 0.5, y: 0.1}
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -526,8 +526,8 @@ TextureImporter:
         y: 996
         width: 32
         height: 32
-      alignment: 9
-      pivot: {x: 0.5, y: 0.1}
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -548,8 +548,8 @@ TextureImporter:
         y: 996
         width: 32
         height: 32
-      alignment: 9
-      pivot: {x: 0.5, y: 0.1}
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -3444,6 +3444,424 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: Debris_0
+      rect:
+        serializedVersion: 2
+        x: 929
+        y: 701
+        width: 4
+        height: 3
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1ca813a00835784429293cfc13c17083
+      internalID: -1046239346
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Debris_1
+      rect:
+        serializedVersion: 2
+        x: 937
+        y: 702
+        width: 4
+        height: 3
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f8c26dbf92a35744faaa3edeb9e5b478
+      internalID: -547157774
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Debris_2
+      rect:
+        serializedVersion: 2
+        x: 944
+        y: 702
+        width: 4
+        height: 5
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1385bad72e0f60a45b42db8a26a2a5f0
+      internalID: 915251724
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Debris_3
+      rect:
+        serializedVersion: 2
+        x: 955
+        y: 703
+        width: 3
+        height: 4
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 85cf31d72ac298f4ca2c64eacb0fa4d8
+      internalID: -1185980902
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Debris_4
+      rect:
+        serializedVersion: 2
+        x: 929
+        y: 693
+        width: 5
+        height: 4
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3d75fe67b10c01341bfc6b0da89c538f
+      internalID: -644846045
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Debris_5
+      rect:
+        serializedVersion: 2
+        x: 942
+        y: 696
+        width: 4
+        height: 3
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2e14498ffe8d6a847a3ba0dbbe81bd4d
+      internalID: -256681003
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Debris_6
+      rect:
+        serializedVersion: 2
+        x: 953
+        y: 695
+        width: 5
+        height: 4
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ba833fb12fc512544a7d1e2f032f4e40
+      internalID: -538872119
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Debris_7
+      rect:
+        serializedVersion: 2
+        x: 929
+        y: 684
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d19491eab2288314599539bf7df0799d
+      internalID: -1656488604
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Debris_8
+      rect:
+        serializedVersion: 2
+        x: 942
+        y: 687
+        width: 3
+        height: 3
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2d1320938a0f84548944d4820195aecd
+      internalID: -838228086
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Debris_9
+      rect:
+        serializedVersion: 2
+        x: 953
+        y: 688
+        width: 7
+        height: 5
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 137cbed45db029249a886b6a366cf32a
+      internalID: 2142419662
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Debris_10
+      rect:
+        serializedVersion: 2
+        x: 954
+        y: 683
+        width: 3
+        height: 3
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cb8b9961ab0026247a9c023ae28abd52
+      internalID: -501977621
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Debris_11
+      rect:
+        serializedVersion: 2
+        x: 932
+        y: 677
+        width: 4
+        height: 4
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 48ad392cd8532f148bd2a37ed21d0f87
+      internalID: -302388844
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Debris_12
+      rect:
+        serializedVersion: 2
+        x: 942
+        y: 680
+        width: 5
+        height: 3
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 01c5d77b501a6c64dae54fe091c1471b
+      internalID: 1941187541
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LargeBloodSplatter_0
+      rect:
+        serializedVersion: 2
+        x: 403
+        y: 619
+        width: 64
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.2}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e444d14ce03f6524a8d1ab7cd35f73c6
+      internalID: 281584855
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LargeBloodSplatter_1
+      rect:
+        serializedVersion: 2
+        x: 467
+        y: 619
+        width: 64
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.2}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d452e2492837c5e43b6cfb110e9cf724
+      internalID: 542668
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LargeBloodSplatter_2
+      rect:
+        serializedVersion: 2
+        x: 531
+        y: 619
+        width: 64
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.2}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9c041eb777ce5ba4fbaa5834365be555
+      internalID: 1919777986
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LargeBloodSplatter_3
+      rect:
+        serializedVersion: 2
+        x: 595
+        y: 619
+        width: 64
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.2}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 802b2148cfef8c84596ced14698a5e4d
+      internalID: -1982094901
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LargeBloodSplatter_4
+      rect:
+        serializedVersion: 2
+        x: 659
+        y: 619
+        width: 64
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.2}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a3e41ef64221715479f5b934b6963a4d
+      internalID: 143030622
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: LargeBloodSplatter_5
+      rect:
+        serializedVersion: 2
+        x: 723
+        y: 619
+        width: 64
+        height: 48
+      alignment: 9
+      pivot: {x: 0.5, y: 0.2}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4ae12dadb4e7e794d81f3955335f3d47
+      internalID: 913611061
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -3459,6 +3877,19 @@ TextureImporter:
       entries: []
     nameFileIdTable:
       AttackRune1_0: -1449579096
+      Debris_0: -1046239346
+      Debris_1: -547157774
+      Debris_10: -501977621
+      Debris_11: -302388844
+      Debris_12: 1941187541
+      Debris_2: 915251724
+      Debris_3: -1185980902
+      Debris_4: -644846045
+      Debris_5: -256681003
+      Debris_6: -538872119
+      Debris_7: -1656488604
+      Debris_8: -838228086
+      Debris_9: 2142419662
       FXSheet_0: -820185562
       FXSheet_1: -1683081003
       FXSheet_10: 441374509
@@ -3600,6 +4031,12 @@ TextureImporter:
       Impact_1: 960664873
       Impact_2: -636486116
       Impact_3: 1663724738
+      LargeBloodSplatter_0: 281584855
+      LargeBloodSplatter_1: 542668
+      LargeBloodSplatter_2: 1919777986
+      LargeBloodSplatter_3: -1982094901
+      LargeBloodSplatter_4: 143030622
+      LargeBloodSplatter_5: 913611061
       SpawnFire_0: -399961516
       SpawnFire_1: -1131178160
       SpawnFire_2: 1842784519

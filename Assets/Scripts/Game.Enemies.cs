@@ -243,12 +243,13 @@ public partial class Game {
                 // It looks better if the enemies keep some momentum when dying
                 deadEnemy.rigidbody.linearVelocity *= 0.3f;
                 deadEnemy.collider.enabled = false;
+                deadEnemy.worldCollider.enabled = false;
                 deadEnemy.animator.speed = 1f; // Dead enemies leave the update loop, so the hit stop would never end
             
                 const float deathDelay = 0.03f;
                 Delay(deadEnemy, deathDelay, static (deadEnemy) => {
                     Game game = gameInstance;
-                    game.SpawnEntityOneShot(game.entityPools.bloodSplatter, deadEnemy.position, Quaternion.identity);
+                    game.SpawnEntityOneShot(game.entityPools.largeBloodSplatter, deadEnemy.position, Quaternion.identity);
                     game.PlayAudioClip(game.audio.bloodBurstClip, deadEnemy.position);
                     game.OnEnemyDeath(deadEnemy);
                 });

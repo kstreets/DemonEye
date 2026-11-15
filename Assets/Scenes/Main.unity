@@ -34554,6 +34554,7 @@ MonoBehaviour:
     teleportOut: {fileID: 6668224194367103619, guid: f2492c473fe22234f8435f7a2fe2718d, type: 3}
     expressExitPortal: {fileID: 2397945398143942433, guid: 08b399cc9aafa9943ad0b57a7907b6d5, type: 3}
     bloodSplatter: {fileID: 6976199733450676790, guid: 0254a536d11a93d4098c129b54678c27, type: 3}
+    largeBloodSplatter: {fileID: 228155643015516669, guid: afd27362585ecc64ea4342c2e1bf14f7, type: 3}
     runSmoke: {fileID: 4378626395619131299, guid: 6bdba9655f698ac44b5a53bb65691265, type: 3}
     slamSmoke: {fileID: 5935938718941175970, guid: 4171e8b273ae10f42a6b38c11eb7bc66, type: 3}
     blast: {fileID: 7981613312970761855, guid: e7be5f74a1a834f478c26f3db82143c1, type: 3}

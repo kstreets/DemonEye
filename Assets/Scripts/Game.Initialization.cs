@@ -80,6 +80,7 @@ public partial class Game {
         entityPools.teleportOut = CreateEntityPool<Entity>(prefabs.teleportOut, 20, null);
         entityPools.expressExitPortal = CreateEntityPool<Entity>(prefabs.expressExitPortal, 1, null);
         entityPools.bloodSplatter = CreateEntityPool<Entity>(prefabs.bloodSplatter, 20, null);
+        entityPools.largeBloodSplatter = CreateEntityPool<Entity>(prefabs.largeBloodSplatter, 20, null);
         entityPools.runSmoke = CreateEntityPool<Entity>(prefabs.runSmoke, 5, null);
         entityPools.damageNumber = CreateEntityPool<Entity>(prefabs.damageNumber, 20, null);
         entityPools.forgeExplosion = CreateEntityPool<Entity>(prefabs.forgeExplosion, 1, null);

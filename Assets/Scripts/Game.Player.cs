@@ -363,7 +363,7 @@ public partial class Game {
         aimDir = AddInaccuracy(aimDir);
         PlayAudioClip(audio.shootClip, player.position);
         ShootProjectile(aimDir, isMainProjectile: true);
-        SpawnEntityOneShot(entityPools.muzzleFlash, GetPlayerEyePos(), ProjectileRotationFromVelocity(aimDir), player.trans);
+        SpawnEntityOneShot(entityPools.muzzleFlash, GetPlayerEyePos(), LookRotation(aimDir), player.trans);
         EmitBarrelSmoke(GetPlayerEyePos(), aimDir);
 
         if (trinkets.equiped is CauterizingWoundsTrinket cauterizingWounds) {
