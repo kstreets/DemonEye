@@ -39,7 +39,11 @@ public partial class Game {
         Vector2 bloodPos = damageBlood?.position ?? enemy.Center;
         Quaternion bloodRot = damageBlood.HasValue ? LookRotation(-damageBlood.Value.velocity, entityForward: Vector2.up) : Quaternion.identity;
         SpawnEntityOneShot(entityPools.bloodSplatter, bloodPos, bloodRot);
-        StampBlood(enemy.position.Offset(y: -0.01f));
+        
+        Vector2 bloodGroundPos = new(bloodPos.x, enemy.position.y - 0.01f); 
+        Vector2 randomGroundBloodDir = damageBlood.HasValue ? RandomizeVectorAngle(-damageBlood.Value.velocity.normalized, 15f) : Vector2.zero;
+        bloodGroundPos += randomGroundBloodDir * Random.Range(0f, 0.15f);
+        StampBlood(bloodGroundPos, BloodSize.Small, delay: 0.08f);
     }
     
     private void DealShapeDamage(Entity damageShapeEntity, int damage, LayerMask mask, Action<Vector2> onDamageFrame = null, Action<Entity> onHit = null) {

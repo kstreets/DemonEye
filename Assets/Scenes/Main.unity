@@ -34601,14 +34601,22 @@ MonoBehaviour:
   blood:
     overlay: {fileID: 1069311161}
     stampMaterial: {fileID: 2100000, guid: 6b2d4f8a0e3c4d7b9f1a3c5e7b9d1f2e, type: 2}
-    splatterMasks:
-    - {fileID: 637263459462573385, guid: 71f5604906ecba64ca2b2aebcf2dea17, type: 3}
-    - {fileID: 2139537671, guid: 71f5604906ecba64ca2b2aebcf2dea17, type: 3}
-    - {fileID: -1167351418, guid: 71f5604906ecba64ca2b2aebcf2dea17, type: 3}
-    - {fileID: 1709403367, guid: 71f5604906ecba64ca2b2aebcf2dea17, type: 3}
-    - {fileID: -995031852, guid: 71f5604906ecba64ca2b2aebcf2dea17, type: 3}
-    - {fileID: 66852091, guid: 71f5604906ecba64ca2b2aebcf2dea17, type: 3}
-    texelsPerUnit: 64
+    smallSplatterMasks:
+    - {fileID: -1645643630, guid: 164aa4c683f258a4fa9aa203de7c02f1, type: 3}
+    - {fileID: -317363388, guid: 164aa4c683f258a4fa9aa203de7c02f1, type: 3}
+    - {fileID: -2050724884, guid: 164aa4c683f258a4fa9aa203de7c02f1, type: 3}
+    - {fileID: -275964128, guid: 164aa4c683f258a4fa9aa203de7c02f1, type: 3}
+    - {fileID: 96959021, guid: 164aa4c683f258a4fa9aa203de7c02f1, type: 3}
+    mediumSplatterMasks:
+    - {fileID: -1191793417, guid: 164aa4c683f258a4fa9aa203de7c02f1, type: 3}
+    - {fileID: 1115399941, guid: 164aa4c683f258a4fa9aa203de7c02f1, type: 3}
+    - {fileID: -662306888, guid: 164aa4c683f258a4fa9aa203de7c02f1, type: 3}
+    - {fileID: 836661439, guid: 164aa4c683f258a4fa9aa203de7c02f1, type: 3}
+    largeSplatterMasks:
+    - {fileID: 166695579, guid: 164aa4c683f258a4fa9aa203de7c02f1, type: 3}
+    - {fileID: 2097634063, guid: 164aa4c683f258a4fa9aa203de7c02f1, type: 3}
+    - {fileID: -86109481, guid: 164aa4c683f258a4fa9aa203de7c02f1, type: 3}
+    texelsPerUnit: 100
   curves:
     hitFlash:
       serializedVersion: 2

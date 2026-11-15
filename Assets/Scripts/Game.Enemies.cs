@@ -255,6 +255,8 @@ public partial class Game {
                 });
             
                 DissolveAndDestroy(deadEnemy, 0.6f, config.enemyColors.enemyDissolveBloodColor);
+                StampBlood(deadEnemy.position.Offset(y: -0.01f), BloodSize.Medium, delay: 0.05f);
+                
                 enemies.RemoveAt(i);
             }
         }

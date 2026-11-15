@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 using Random = UnityEngine.Random;
@@ -7,6 +9,7 @@ public partial class Game {
 
     public struct BloodStamp {
         public Vector2 position;
+        public float spawnTime;
         public Sprite sprite;
         public bool flipX;
     }
@@ -50,7 +53,6 @@ public partial class Game {
             blood.mask.Create();
         }
 
-        blood.maskWorldRect = new(min, size);
         Shader.SetGlobalTexture(ShaderIds.bloodMask, blood.mask);
         Shader.SetGlobalVector(ShaderIds.bloodMaskRect, new(min.x, min.y, 1f / size.x, 1f / size.y));
 
@@ -71,14 +73,25 @@ public partial class Game {
         blood.pendingStamps.Clear();
         blood.overlay.gameObject.SetActive(false);
     }
+    
+    private enum BloodSize { Small, Medium, Large }
 
-    private void StampBlood(Vector2 position) {
-        Sprite[] masks = blood.splatterMasks;
-        if (masks.Length == 0) return;
+    private void StampBlood(Vector2 position, BloodSize size, float delay = 0f) {
+        Assert.IsTrue(blood.smallSplatterMasks.Length > 0, "We have 0 small blood masks defined");
+        Assert.IsTrue(blood.mediumSplatterMasks.Length > 0, "We have 0 medium blood masks defined");
+        Assert.IsTrue(blood.largeSplatterMasks.Length > 0, "We have 0 large blood masks defined");
+        
+        Sprite maskSprite = size switch {
+            BloodSize.Small => blood.smallSplatterMasks.GetRandom(),
+            BloodSize.Medium => blood.mediumSplatterMasks.GetRandom(),
+            BloodSize.Large => blood.largeSplatterMasks.GetRandom(),
+            _ => throw new ArgumentOutOfRangeException(nameof(size), size, null),
+        };
 
         blood.pendingStamps.Add(new() {
             position = position,
-            sprite = masks[Random.Range(0, masks.Length)],
+            spawnTime = Time.time + delay,
+            sprite = maskSprite,
             flipX = Random.value < 0.5f,
         });
     }
@@ -91,7 +104,10 @@ public partial class Game {
         cmd.SetRenderTarget(blood.mask);
 
         float texelsPerUnit = blood.texelsPerUnit;
-        foreach (BloodStamp stamp in blood.pendingStamps) {
+        for (int i = blood.pendingStamps.Count - 1; i >= 0; i--) {
+            BloodStamp stamp = blood.pendingStamps[i];
+            if (Time.time < stamp.spawnTime) continue;
+
             Sprite sprite = stamp.sprite;
             Texture2D tex = sprite.texture;
             Rect texRect = sprite.textureRect;
@@ -102,7 +118,7 @@ public partial class Game {
             // One sprite pixel per mask texel regardless of the sprite's import PPU, snapped to the texel grid so the pixels stay crisp
             Vector2 sizeInUnits = texRect.size / texelsPerUnit;
             Vector2 snappedPos = new(Mathf.Round(stamp.position.x * texelsPerUnit) / texelsPerUnit, Mathf.Round(stamp.position.y * texelsPerUnit) / texelsPerUnit);
-            
+
             // Odd sized sprites need a half texel shift so their edges land on texel boundaries instead of texel centers
             snappedPos.x += (int)texRect.width % 2 == 1 ? 0.5f / texelsPerUnit : 0f;
             snappedPos.y += (int)texRect.height % 2 == 1 ? 0.5f / texelsPerUnit : 0f;
@@ -110,10 +126,11 @@ public partial class Game {
 
             // Command buffers copy the property block when recording, so reusing it per stamp is safe
             cmd.DrawMesh(blood.stampQuad, Matrix4x4.TRS(snappedPos, Quaternion.identity, scale), blood.stampMaterial, 0, 0, blood.materialProperyBlock);
+            
+            blood.pendingStamps.RemoveAt(i);
         }
 
         Graphics.ExecuteCommandBuffer(cmd);
-        blood.pendingStamps.Clear();
     }
 
 }
