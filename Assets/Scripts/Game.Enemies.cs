@@ -417,17 +417,17 @@ public partial class Game {
     }
     
     public class FireBoss : Enemy {
-        public enum AttackTypes { Fireball, Meteor, DoubleFireball, MutliMeteor, Count }
+        public enum AttackTypes { Fireball, Meteor, EmberScatter, DoubleFireball, MutliMeteor, Count }
         public AttackBrain<AttackTypes> attackBrain;
         public AttackTypes? curAttackType;
         public int pendingFireballCount;
         public int pendingMeteorCount;
         
-        public const float minAttackDelay = 0.65f;
-        public const float maxAttackDelay = 1.75f;
+        public const float minAttackDelay = 1f;
+        public const float maxAttackDelay = 2.5f;
         
-        public const int fireballDamage = 10;
-        public const float fireballSpeed = 1.5f;
+        public const int fireballDamage = 25;
+        public const float fireballSpeed = 1.7f;
         public const float fireballLifetime = 5f;
         public const float delayBetweenFireballs = 0.2f;
         
@@ -443,10 +443,11 @@ public partial class Game {
     private void InitFireBoss(FireBoss fireBoss) { 
         fireBoss.attackDelay = Tween.Delay(FireBoss.minAttackDelay, FireBoss.maxAttackDelay);
         fireBoss.attackBrain = new((int)FireBoss.AttackTypes.Count);
-        fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.Fireball, level: 0, defaultProb: 1f, repeatedProbDecay: 0.25f);
-        fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.Meteor, level: 0, defaultProb: 0.5f, repeatedProbDecay: 0.1f);
-        fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.DoubleFireball, level: 1, defaultProb: 1f, repeatedProbDecay: 0.25f);
-        fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.MutliMeteor, level: 1, defaultProb: 0.5f, repeatedProbDecay: 0.1f);
+        fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.Fireball, level: 0, marbles: 3);
+        fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.Meteor, level: 0, marbles: 2);
+        fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.EmberScatter, level: 0, marbles: 1, preventConsecutive: true);
+        fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.DoubleFireball, level: 1, marbles: 2);
+        fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.MutliMeteor, level: 1, marbles: 1);
         fireBoss.animator.Play(EnemyAnimations.spawn);
     }
     
@@ -454,7 +455,7 @@ public partial class Game {
         if (enemy is not FireBoss fireBoss) return;
         
         if (fireBoss.curAttackType.TryGetValue(out FireBoss.AttackTypes curAttack)) {
-            if (curAttack is FireBoss.AttackTypes.Fireball or FireBoss.AttackTypes.DoubleFireball) {
+            if (curAttack is FireBoss.AttackTypes.Fireball or FireBoss.AttackTypes.DoubleFireball or FireBoss.AttackTypes.EmberScatter) {
                 if (!TryGetPlayerInterceptPoint(fireBoss.position, FireBoss.fireballSpeed, out Vector2 aimPoint)) {
                     aimPoint = player.position;
                 }
@@ -466,7 +467,7 @@ public partial class Game {
         if (!canAtttack) return;
         
         int attackLevel = (fireBoss.health / (float)fireBoss.data.health) > 0.5f ? 0 : 1;
-        if (!fireBoss.attackBrain.TryChooseAttack(attackLevel, out FireBoss.AttackTypes attack)) return;
+        FireBoss.AttackTypes attack = fireBoss.attackBrain.ChooseAttack(attackLevel);
         
         fireBoss.attackDelay = Tween.Delay(FireBoss.minAttackDelay, FireBoss.maxAttackDelay);
         switch(attack) {
@@ -475,6 +476,9 @@ public partial class Game {
                 break;
             case FireBoss.AttackTypes.Meteor:
                 SummonMeteors(attack, 1);
+                break;
+            case FireBoss.AttackTypes.EmberScatter:
+                CastEmberScatter(attack); 
                 break;
             case FireBoss.AttackTypes.DoubleFireball:
                 CastFireballs(attack, 2);
@@ -563,6 +567,34 @@ public partial class Game {
                 g.DestroyEntity(meteorEntity);
             });
         }
+        
+        void CastEmberScatter(FireBoss.AttackTypes attackType) {
+            fireBoss.curAttackType = attackType;
+            int animHash = ShootAnimation(CardinalDirFromVector(fireBoss.graphicalDir));
+            fireBoss.animator.Play(animHash);
+            
+            WaitForAttackSpawnFrame(fireBoss, animHash, static (boss, spawnPos) => {
+                var g = gameInstance;
+                
+                FireBoss fireBoss = (FireBoss)boss;
+                fireBoss.curAttackType = null;
+                
+                if (!g.TryGetPlayerInterceptPoint(spawnPos, FireBoss.fireballSpeed, out Vector2 aimPoint)) return;
+                
+                const int emberCount = 10;
+                const float castAngle = 45f;
+                Vector2 aimDir = (aimPoint - spawnPos).normalized;
+                using var _ = ListPool<Vector2>.Get(out var shootDirections);
+                ScatterAimForProjectiles(aimDir, castAngle, emberCount, ref shootDirections);
+                
+                foreach (Vector2 shootDir in shootDirections) {
+                    g.SpawnProjectile(g.entityPools.fireBossProjectile, spawnPos, shootDir * 1f, 10f, fireBoss, flatDamage: 10, layermask: Masks.PlayerProjectileHurtMask);        
+                }
+                
+                fireBoss.curAttackType = null;
+            });
+             
+        }
     }
     
     private class SulfurBoss : Enemy {
@@ -597,8 +629,8 @@ public partial class Game {
     private void InitSulfurBoss(SulfurBoss sulfurBoss) {
         sulfurBoss.attackDelay = Tween.Delay(SulfurBoss.minAttackDelay, SulfurBoss.maxAttackDelay);
         sulfurBoss.attackBrain = new((int)SulfurBoss.AttackTypes.Count);
-        sulfurBoss.attackBrain.AddAttack(SulfurBoss.AttackTypes.PoisonCloud, level: 0, defaultProb: 1f,  repeatedProbDecay: 0.1f);
-        sulfurBoss.attackBrain.AddAttack(SulfurBoss.AttackTypes.PoisonEruption, level: 0, defaultProb: 0.35f, repeatedProbDecay: 1f, cooldown: 5f);
+        sulfurBoss.attackBrain.AddAttack(SulfurBoss.AttackTypes.PoisonCloud, level: 0, marbles: 3);
+        sulfurBoss.attackBrain.AddAttack(SulfurBoss.AttackTypes.PoisonEruption, level: 0, marbles: 1, preventConsecutive: true);
         sulfurBoss.animator.Play(EnemyAnimations.spawn);
     }
     
@@ -618,7 +650,7 @@ public partial class Game {
         if (!canAtttack) return;
         
         int attackLevel = 0;
-        if (!sulfurBoss.attackBrain.TryChooseAttack(attackLevel, out SulfurBoss.AttackTypes attack)) return;
+        SulfurBoss.AttackTypes attack = sulfurBoss.attackBrain.ChooseAttack(attackLevel);
 
         sulfurBoss.attackDelay = Tween.Delay(SulfurBoss.minAttackDelay, SulfurBoss.maxAttackDelay);
         switch(attack) {

@@ -1,35 +1,30 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.Pool;
 using Random = UnityEngine.Random;
 
+// Each level is a bag of marbles. Drawing removes a marble; the bag refills once empty.
 public class AttackBrain<T> where T : Enum {
-    
-    private int curAttackLevel; // 0 - N where N is most powerful attacks
-    private float[] curAttackProbs;
-    private float[] defaultAttackProbs;
-    private float[] repeatedProbDecays;
-    private float[] cooldowns;
-    private float[] lastChosenTimes;
+
+    private int[] marbleCounts;
+    private int[] marblesLeft;
+    private bool[] preventConsecutives;
+    private int lastChosenIndex = -1;
 
     private List<int> startingLevelPointers = new();
     private int curLevelLength;
 
     public AttackBrain(int attackCount) {
-        curAttackProbs = new float[attackCount];
-        defaultAttackProbs = new float[attackCount];
-        repeatedProbDecays = new float[attackCount];
-        cooldowns = new float[attackCount];
-        lastChosenTimes = new float[attackCount];
-        Array.Fill(lastChosenTimes, Mathf.NegativeInfinity);
+        marbleCounts = new int[attackCount];
+        marblesLeft = new int[attackCount];
+        preventConsecutives = new bool[attackCount];
     }
 
-    public void AddAttack(T attackType, int level, float defaultProb, float repeatedProbDecay, float cooldown = 0f) {
+    public void AddAttack(T attackType, int level, int marbles, bool preventConsecutive = false) {
         Assert.IsTrue(level <= startingLevelPointers.Count, "Levels need to added in order and cannot be skipped");
-        
+        Assert.IsTrue(marbles > 0, "Attacks need at least one marble");
+
         bool movedToNextLevel = !startingLevelPointers.IndexInRange(level);
         if (movedToNextLevel) {
             int startOfNextLevel = startingLevelPointers.Count == 0 ? 0 : startingLevelPointers[^1] + curLevelLength;
@@ -37,71 +32,59 @@ public class AttackBrain<T> where T : Enum {
             curLevelLength = 0;
         }
         curLevelLength++;
-        
+
         int attackIndex = Convert.ToInt32(attackType);
-        curAttackProbs[attackIndex] = defaultProb;
-        defaultAttackProbs[attackIndex] = defaultProb;
-        repeatedProbDecays[attackIndex] = repeatedProbDecay;
-        cooldowns[attackIndex] = cooldown;
+        marbleCounts[attackIndex] = marbles;
+        marblesLeft[attackIndex] = marbles;
+        this.preventConsecutives[attackIndex] = preventConsecutive;
     }
 
-    // Returns false when every attack in the level is still on its repeat cooldown
-    public bool TryChooseAttack(int level, out T attack) {
+    public T ChooseAttack(int level) {
         Assert.IsTrue(startingLevelPointers.IndexInRange(level), $"Attack level {level} is out of range, [0..{startingLevelPointers.Count})");
-        
-        int startingIndex = startingLevelPointers[level];
-        
-        int length = 0;
-        if (startingLevelPointers.IndexInRange(level + 1)) {
-            length = startingLevelPointers[level + 1] - startingIndex;
-        }
-        else {
-            length = defaultAttackProbs.Length - startingIndex;
-        }
-        
-        // Attacks on cooldown get no chance of being chosen
-        using var _ = ListPool<float>.Get(out var attackChances);
-        float totalAttackChances = 0f;
-        int firstAvailableIndex = -1;
-        for (int i = startingIndex; i < startingIndex + length; i++) {
-            bool onCooldown = Time.time < lastChosenTimes[i] + cooldowns[i];
-            if (!onCooldown && firstAvailableIndex == -1) {
-                firstAvailableIndex = i;
+
+        int start = startingLevelPointers[level];
+        int end = startingLevelPointers.IndexInRange(level + 1) ? startingLevelPointers[level + 1] : marbleCounts.Length;
+
+        int blockedIndex = lastChosenIndex >= 0 && preventConsecutives[lastChosenIndex] ? lastChosenIndex : -1;
+
+        // Only blocked marbles left, refill early
+        int totalLeft = CountDrawable(start, end, blockedIndex);
+        if (totalLeft == 0) {
+            for (int i = start; i < end; i++) {
+                marblesLeft[i] = marbleCounts[i];
             }
-            float chance = onCooldown ? 0f : curAttackProbs[i];
-            attackChances.Add(chance);
-            totalAttackChances += chance;
+            totalLeft = CountDrawable(start, end, blockedIndex);
         }
 
-        if (firstAvailableIndex == -1) {
-            attack = default;
-            return false;
+        // Level only has the blocked attack
+        if (totalLeft == 0) {
+            blockedIndex = -1;
+            totalLeft = CountDrawable(start, end, blockedIndex);
         }
 
-        int chosenAttackIndex = firstAvailableIndex;
-        float roll = Random.value * totalAttackChances;
-        float threshold = 0f;
-        for (int i = 0; i < length; i++) {
-            float chance = attackChances[i];
-            threshold += chance;
-            if (roll < threshold) {
-                chosenAttackIndex = startingIndex + i;
+        int roll = Random.Range(0, totalLeft);
+        int chosenAttackIndex = start;
+        for (int i = start; i < end; i++) {
+            if (i == blockedIndex) continue;
+            roll -= marblesLeft[i];
+            if (roll < 0) {
+                chosenAttackIndex = i;
                 break;
             }
         }
 
-        lastChosenTimes[chosenAttackIndex] = Time.time;
-
-        float newAttackProb = curAttackProbs[chosenAttackIndex];
-        curAttackProbs[chosenAttackIndex] = Mathf.Clamp01(newAttackProb - repeatedProbDecays[chosenAttackIndex]);
-
-        for (int i = 0; i < curAttackProbs.Length; i++) {
-            if (i == chosenAttackIndex) continue;
-            curAttackProbs[i] = defaultAttackProbs[i];
-        }
-
-        attack = Unsafe.As<int, T>(ref chosenAttackIndex);
-        return true;
+        marblesLeft[chosenAttackIndex]--;
+        lastChosenIndex = chosenAttackIndex;
+        return Unsafe.As<int, T>(ref chosenAttackIndex);
     }
-    
+
+    private int CountDrawable(int start, int end, int blockedIndex) {
+        int total = 0;
+        for (int i = start; i < end; i++) {
+            if (i == blockedIndex) continue;
+            total += marblesLeft[i];
+        }
+        return total;
+    }
+
 }

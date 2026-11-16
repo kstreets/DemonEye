@@ -387,5 +387,15 @@ public partial class Game {
         }
         return new(toTarget.x / flightTime, toTarget.y / flightTime + 0.5f * gravity * flightTime);
     }
+    
+    private static void ScatterAimForProjectiles(Vector2 aimDir, float spreadAngle, int count, ref List<Vector2> scatterDirections) {
+        float angleStep = spreadAngle / count;
+        float curAngle = -(spreadAngle / 2f);
+        for (int i = 0; i < count; i++) {
+            Vector2 dir = Quaternion.AngleAxis(curAngle, Vector3.forward) * aimDir;
+            curAngle += angleStep;
+            scatterDirections.Add(dir);
+        }
+    }
 
 }
