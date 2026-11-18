@@ -60,10 +60,16 @@ public class RaidSpawnPattern : ScriptableObject {
 
     public float timeBeforeFirstPhase;
     public float timeBeforePortalSpawns;
+    
+    [Header("Ranged Attacks")]
+    public float minTimeBetweenRangedAttacks = 1.5f;
+    public float maxTimeBetweenRangedAttacks = 3f;
+    
     public List<PhasePool> phasePools;
     public BossPhase bossPhase;
     public Swarm swarm;
-    
+
+
 #if UNITY_EDITOR
     
     private void OnValidate() {

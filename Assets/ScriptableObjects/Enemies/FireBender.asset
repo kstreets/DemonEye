@@ -15,7 +15,7 @@ MonoBehaviour:
   displayName: Fire Bender
   type: 5
   enemyPrefab: {fileID: 7814119993517076521, guid: 11b75244595701148a2d26a092449123, type: 3}
-  animatorOverride: {fileID: 0}
+  animatorOverride: {fileID: 22100000, guid: 985968625fac499f8ff760f6aa00e5ea, type: 2}
   dropPool: {fileID: 11400000, guid: 9eeed80dc208fd04986551102c8859ff, type: 2}
   chanceToDropItem: 0.07
   usesFlowField: 1
@@ -27,12 +27,10 @@ MonoBehaviour:
   attackDistance: 1
   attackDamageDelay: 0
   attackRadius: 0
-  sideAttackOffset: {x: 0.157, y: 0.081}
-  upAttackOffset: {x: 0, y: 0.16}
-  donwAttackOffset: {x: 0, y: 0.004}
   projectileSpeed: 0.38
   projectileLifetime: 2
-  projectileCooldownTime: 3
+  projectileCooldownTime: 0.35
+  rangedAttackPriority: 1
   speed: 0.4
   health: 15
   damage: 10
@@ -40,4 +38,4 @@ MonoBehaviour:
   changeToCauseBleed: 0.1
   soulWorthPerKill: 1
   xpWorthPerKill: 5
-  defaultMass: 11.022728
+  defaultMass: 16.839996

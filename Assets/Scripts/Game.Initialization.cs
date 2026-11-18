@@ -69,6 +69,7 @@ public partial class Game {
         entityPools.gooProjectile = CreateEntityPool<Projectile>(prefabs.gooProjectile, 20, OnSpawnProjectile);
         entityPools.smallFireballProjectile = CreateEntityPool<Projectile>(prefabs.smallFireballProjectile, 5, OnSpawnProjectile);
         entityPools.fireBossProjectile = CreateEntityPool<Projectile>(prefabs.firebossProjectile, 5, OnSpawnProjectile);
+        entityPools.fireEmberProjectile = CreateEntityPool<Projectile>(prefabs.fireEmberProjectile, 5, OnSpawnProjectile);
         entityPools.piercingShotProjectile = CreateEntityPool<Projectile>(prefabs.piercingProjectile, 20, OnSpawnProjectile);
         entityPools.soulProjectile = CreateEntityPool<Projectile>(prefabs.soulProjectile, 40, OnSpawnProjectile);
         

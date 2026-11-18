@@ -34540,6 +34540,7 @@ MonoBehaviour:
     boneShatterProjectile: {fileID: 2758590605051147821, guid: f7b19a83567c00a4da11c9ce9c266d1f, type: 3}
     soulProjectile: {fileID: 744236230806242927, guid: 65e5ee4fa406fff44bdf203d055f749a, type: 3}
     firebossProjectile: {fileID: 2758590605051147821, guid: 8026516bca58b944c95c485707cf33ed, type: 3}
+    fireEmberProjectile: {fileID: 6028959556622450840, guid: 8d4a6120c819ac8438235fc619b0fb1a, type: 3}
     meteor: {fileID: 2758590605051147821, guid: 7eb8e643e883abe44a4efaa88a2b8625, type: 3}
     bloodDrop: {fileID: 2835100544158664230, guid: a3700393b2b39cc44a28e9dee1a285c8, type: 3}
     poisonDebuff: {fileID: 9042913863694245120, guid: b52083b254543e949b6579beea5aef46, type: 3}

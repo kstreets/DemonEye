@@ -52,6 +52,7 @@ public class GameData {
         public GameObject boneShatterProjectile;
         public GameObject soulProjectile;
         public GameObject firebossProjectile;
+        public GameObject fireEmberProjectile;
         public GameObject meteor;
         public GameObject bloodDrop;
         public GameObject poisonDebuff;
@@ -616,6 +617,7 @@ public class GameData {
         public EntityPool<Projectile> gooProjectile;
         public EntityPool<Projectile> smallFireballProjectile;
         public EntityPool<Projectile> fireBossProjectile;
+        public EntityPool<Projectile> fireEmberProjectile;
         public EntityPool<Projectile> piercingShotProjectile;
         public EntityPool<Projectile> soulProjectile;
         public EntityPool<Entity> meteor;

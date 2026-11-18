@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   timeBeforeFirstPhase: 22
   timeBeforePortalSpawns: 12
+  minTimeBetweenRangedAttacks: 0.75
+  maxTimeBetweenRangedAttacks: 1.5
   phasePools:
   - name: Wave 0
     musicIntensity: 0
@@ -23,7 +25,7 @@ MonoBehaviour:
       spawnDuration: 10
       startNextPhaseEarlyDelay: 10
       spawnCellRange: {x: 8, y: 10}
-      repositionCellRange: {x: 7, y: 9}
+      repositionCellRange: {x: 8, y: 10}
       reteleportCount: 2
       reteleportInterval: 1
       spawnRateCurve:
@@ -51,8 +53,8 @@ MonoBehaviour:
         m_PostInfinity: 2
         m_RotationOrder: 0
       enemyBatches:
-      - enemyCount: 12
-        enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
+      - enemyCount: 6
+        enemyData: {fileID: 11400000, guid: e317b66f7ab3f9a4eb9807435d01428e, type: 2}
   - name: Wave 1
     musicIntensity: 0
     variants:
@@ -249,9 +251,17 @@ MonoBehaviour:
         enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
       - enemyCount: 35
         enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
-  raidBoss: {fileID: 0}
-  maxEnemiesForBossTrash: 10
-  bossTrashPool:
-    name: 
-    musicIntensity: 3
+  bossPhase:
+    name: Boss Wave
+    musicIntensity: 0
     variants: []
+    trashRefillAtPercentage: 0
+    minTrashRefillDelay: 0
+    raidBoss: {fileID: 0}
+  swarm:
+    chance: 0
+    waveRange: {x: 1, y: 1}
+    pool:
+      name: Swarm
+      musicIntensity: 0
+      variants: []

@@ -55,6 +55,8 @@ public partial class Game {
         public float pendingDirStartTime;
         public Tween attackDelay;
         public bool queuedForRangedAttack;
+        public float lastRangedAttackTime;
+        public float rangedAttackScore;
         public bool isBossTrash;
         public bool cannotBePushedByOthers;
         public OptionalRef<BleedEyeUpgrade.InstanceData> bleed;
@@ -109,6 +111,7 @@ public partial class Game {
         enemy.collider.enabled = true;
         enemy.attackDelay = Tween.Delay(data.projectileCooldownTime);
         enemy.queuedForRangedAttack = false;
+        enemy.lastRangedAttackTime = Time.time;
         
         enemy.sideAttackShape = null;
         enemy.upAttackShape = null;
@@ -289,8 +292,15 @@ public partial class Game {
     }
     
     public class RangedAttackManager {
-        public const float minTimeBetweenAttacks = 1.5f;
-        public const float maxTimeBetweenAttacks = 3f;
+        // Used on maps without a spawn pattern, like the boss map
+        public const float defaultMinTimeBetweenAttacks = 1.5f;
+        public const float defaultMaxTimeBetweenAttacks = 3f;
+
+        // Score = type priority + closeness bonus + time since last attack
+        public const float distanceScoreRange = 2f;
+        public const float distanceScoreWeight = 1f;
+        public const float scorePerSecondWaiting = 0.5f;
+
         public float nextAttackAllowedTime;
         public readonly List<Enemy> queuedEnemies = new();
     }
@@ -306,6 +316,14 @@ public partial class Game {
     }
 
     private void RangedEnemyLogic(Enemy enemy) {
+        if (HasPendingAttackSpawn(enemy)) {
+            if (!TryGetPlayerInterceptPoint(enemy.position.Offset(y: 0.1f), enemy.data.projectileSpeed, out Vector2 aimPoint)) {
+                aimPoint = player.position;
+            }
+            CardinalDir dir = CardinalDirFromVector(aimPoint - (Vector2)enemy.position);
+            FaceDirectionWhileAttacking(enemy, dir, AttackAnimation(dir));
+        }
+
         if (enemy.attackDelay.isAlive || enemy.queuedForRangedAttack) return;
         enemy.queuedForRangedAttack = true;
         rangedAttackManager.queuedEnemies.Add(enemy);
@@ -317,30 +335,56 @@ public partial class Game {
 
         if (Time.time < rm.nextAttackAllowedTime) return;
 
+        foreach (Enemy enemy in rm.queuedEnemies) {
+            enemy.rangedAttackScore = RangedAttackScore(enemy);
+        }
+        rm.queuedEnemies.Sort(static (a, b) => b.rangedAttackScore.CompareTo(a.rangedAttackScore));
+
         for (int i = 0; i < rm.queuedEnemies.Count; i++) {
             Enemy enemy = rm.queuedEnemies[i];
 
-            // Teleporting enemies keep their place in line until they're back
+            // Teleporting enemies stay queued until they're back
             if (!enemy.gameObject.activeInHierarchy) continue;
             if (!TryPerformRangedAttack(enemy)) continue;
 
             enemy.queuedForRangedAttack = false;
+            enemy.lastRangedAttackTime = Time.time;
             enemy.attackDelay = Tween.Delay(enemy.data.projectileCooldownTime);
             rm.queuedEnemies.RemoveAt(i);
-            rm.nextAttackAllowedTime = Time.time + Random.Range(RangedAttackManager.minTimeBetweenAttacks, RangedAttackManager.maxTimeBetweenAttacks);
+
+            RaidSpawnPattern pattern = curRaid.map.spawning;
+            float minDelay = pattern ? pattern.minTimeBetweenRangedAttacks : RangedAttackManager.defaultMinTimeBetweenAttacks;
+            float maxDelay = pattern ? pattern.maxTimeBetweenRangedAttacks : RangedAttackManager.defaultMaxTimeBetweenAttacks;
+            rm.nextAttackAllowedTime = Time.time + Random.Range(minDelay, maxDelay);
             return;
         }
+    }
+
+    private static float RangedAttackScore(Enemy enemy) {
+        float closeness = 1f - Mathf.Clamp01(enemy.curDistFromPlayer / RangedAttackManager.distanceScoreRange);
+        float timeWaiting = Time.time - enemy.lastRangedAttackTime;
+        return enemy.data.rangedAttackPriority + closeness * RangedAttackManager.distanceScoreWeight + timeWaiting * RangedAttackManager.scorePerSecondWaiting;
     }
 
     private bool TryPerformRangedAttack(Enemy enemy) {
         switch (enemy.data.type) {
             case EnemyData.EnemyType.FireBender: {
-                Vector2 spawnPos = enemy.position.Offset(y: 0.2f);
-                if (!TryGetPlayerInterceptPoint(spawnPos, FireBoss.fireballSpeed, out Vector2 aimPoint)) return false;
+                if (!TryGetPlayerInterceptPoint(enemy.position.Offset(y: 0.1f), enemy.data.projectileSpeed, out Vector2 aimPoint)) return false;
 
-                EnemyData data = enemy.data;
-                Vector2 velocity = (aimPoint - spawnPos).normalized * FireBoss.fireballSpeed;
-                SpawnProjectile(entityPools.smallFireballProjectile, spawnPos, velocity, data.projectileLifetime, enemy, flatDamage: data.damage, layermask: Masks.PlayerProjectileHurtMask);
+                CardinalDir dir = CardinalDirFromVector(aimPoint - (Vector2)enemy.position);
+                SetFacing(enemy, dir);
+                int animHash = AttackAnimation(dir);
+                enemy.animator.Play(animHash, 0, 0f);
+
+                WaitForAttackSpawnFrame(enemy, animHash, static (enemy, spawnPos) => {
+                    Game g = gameInstance;
+                    if (!g.TryGetPlayerInterceptPoint(spawnPos, enemy.data.projectileSpeed, out Vector2 aimPoint)) {
+                        aimPoint = player.position;
+                    }
+                    Vector2 velocity = (aimPoint - spawnPos).normalized * enemy.data.projectileSpeed;
+                    g.SpawnProjectile(g.entityPools.smallFireballProjectile, spawnPos, velocity, enemy.data.projectileLifetime, enemy,
+                        flatDamage: enemy.data.damage, layermask: Masks.PlayerProjectileHurtMask);
+                });
                 return true;
             }
             default:
@@ -581,14 +625,14 @@ public partial class Game {
                 
                 if (!g.TryGetPlayerInterceptPoint(spawnPos, FireBoss.fireballSpeed, out Vector2 aimPoint)) return;
                 
-                const int emberCount = 10;
-                const float castAngle = 45f;
+                const int emberCount = 15;
+                const float castAngle = 60f;
                 Vector2 aimDir = (aimPoint - spawnPos).normalized;
                 using var _ = ListPool<Vector2>.Get(out var shootDirections);
                 ScatterAimForProjectiles(aimDir, castAngle, emberCount, ref shootDirections);
                 
                 foreach (Vector2 shootDir in shootDirections) {
-                    g.SpawnProjectile(g.entityPools.fireBossProjectile, spawnPos, shootDir * 1f, 10f, fireBoss, flatDamage: 10, layermask: Masks.PlayerProjectileHurtMask);        
+                    g.SpawnProjectile(g.entityPools.fireEmberProjectile, spawnPos, shootDir * 1f, 10f, fireBoss, flatDamage: 10, layermask: Masks.PlayerProjectileHurtMask);        
                 }
                 
                 fireBoss.curAttackType = null;
@@ -1105,7 +1149,15 @@ public partial class Game {
         };
     }
 
-    private void FaceDirectionWhileShooting(Enemy enemy, CardinalDir dir) {
+    private static int AttackAnimation(CardinalDir dir) {
+        return dir switch {
+            CardinalDir.Up   => EnemyAnimations.attackUp,
+            CardinalDir.Down => EnemyAnimations.attackDown,
+            _                => EnemyAnimations.attackSide,
+        };
+    }
+
+    private static void SetFacing(Enemy enemy, CardinalDir dir) {
         enemy.graphicalDir = dir switch {
             CardinalDir.Right => Vector2.right,
             CardinalDir.Left  => Vector2.left,
@@ -1113,12 +1165,26 @@ public partial class Game {
             _                 => Vector2.down,
         };
         enemy.spriteRenderer.flipX = dir == CardinalDir.Left;
+    }
 
-        int animHash = ShootAnimation(dir);
+    private void FaceDirectionWhileShooting(Enemy enemy, CardinalDir dir) {
+        FaceDirectionWhileAttacking(enemy, dir, ShootAnimation(dir));
+    }
+
+    private void FaceDirectionWhileAttacking(Enemy enemy, CardinalDir dir, int animHash) {
+        SetFacing(enemy, dir);
         AnimatorStateInfo stateInfo = enemy.animator.GetCurrentAnimatorStateInfo(0);
         if (stateInfo.shortNameHash != animHash) {
             enemy.animator.Play(animHash, 0, stateInfo.normalizedTime);
         }
+    }
+
+    private static bool HasPendingAttackSpawn(Enemy enemy) {
+        if (enemy.attackSpawnPoints == null) return false;
+        foreach (AttackSpawnPoint spawnPoint in enemy.attackSpawnPoints) {
+            if (spawnPoint.pendingTween.isAlive) return true;
+        }
+        return false;
     }
 
     private static AttackSpawnPoint FindAttackSpawnPoint(Enemy enemy, int stateHash) {

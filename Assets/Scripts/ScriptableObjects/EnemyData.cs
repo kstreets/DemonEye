@@ -31,7 +31,8 @@ public class EnemyData : ScriptableObject {
     public float projectileSpeed;
     public float projectileLifetime;
     public float projectileCooldownTime;
-    
+    public float rangedAttackPriority = 1f;
+
     [Header("Stats")]
     public float speed;
     public int health;
