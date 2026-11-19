@@ -42,9 +42,6 @@ public class DamageShapeEditor : Editor {
             int frameCount = Mathf.Max(1, Mathf.RoundToInt(clip.length * clip.frameRate));
             EditorGUILayout.IntSlider(frameProp, 0, frameCount, "Damage Frame");
             string info = $"Hits at {frameProp.intValue / clip.frameRate:F2}s of {clip.length:F2}s ({clip.frameRate}fps)";
-            if (enemyData) {
-                info += $"\nEnemyData.attackDamageDelay is {enemyData.attackDamageDelay:F2}s (frame {enemyData.attackDamageDelay * clip.frameRate:F1})";
-            }
             EditorGUILayout.HelpBox(info, MessageType.None);
         }
         else {

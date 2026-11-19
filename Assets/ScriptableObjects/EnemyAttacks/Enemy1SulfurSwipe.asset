@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 712c88c91a593eb49987868028b2cd33, type: 3}
+  m_Name: Enemy1SulfurSwipe
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAttack
+  kind: 0
+  range: 0.21
+  cooldown: 0
+  requireFacingPlayer: 1
+  faceTargetOnStart: 0
+  trackTargetUntilRelease: 0
+  damage: 12
+  bleedChance: 0.1
+  damageFrameEffect: 0
+  projectilePrefab: {fileID: 0}
+  projectileSpeed: 0
+  projectileLifetime: 0
+  leadTarget: 1
+  rangedPriority: 1

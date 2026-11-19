@@ -24,20 +24,12 @@ MonoBehaviour:
   excludeCollisionLayers:
     serializedVersion: 2
     m_Bits: 0
+  attack: {fileID: 11400000, guid: bb074490463236844bc632ae446f84c9, type: 2}
   attackDistance: 0.21
-  attackDamageDelay: 0.4
-  attackRadius: 0.1
-  sideAttackOffset: {x: 0.157, y: 0.081}
-  upAttackOffset: {x: 0, y: 0.16}
-  donwAttackOffset: {x: 0, y: 0.004}
-  projectileSpeed: 0
-  projectileLifetime: 0
-  projectileCooldownTime: 0
+  damage: 12
   speed: 0.47
   health: 30
-  damage: 12
   collisionDamage: 5
-  changeToCauseBleed: 0.1
   soulWorthPerKill: 1
   xpWorthPerKill: 5
-  defaultMass: 1
+  defaultMass: 2.4256005

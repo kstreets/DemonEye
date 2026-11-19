@@ -1,5 +1,3 @@
-using System;
-using PrimeTween;
 using UnityEngine;
 
 public class AttackSpawnPoint : MonoBehaviour {
@@ -7,10 +5,6 @@ public class AttackSpawnPoint : MonoBehaviour {
     public string animationState;
     public int spawnFrame;
     public bool mirrorForLeft;
-
-    // Set by OnAttackSpawnFrame so the delay callback can be static
-    [NonSerialized] public Action<Game.Enemy, Vector2> pendingCallback;
-    [NonSerialized] public Tween pendingTween;
 
     public int StateHash { get; private set; }
 

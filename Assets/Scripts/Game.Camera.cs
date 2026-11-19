@@ -7,7 +7,7 @@ public partial class Game {
 
     public class CameraLookahead {
         public const float maxDistance = 0.35f;
-        public const float speed = 0.75f;
+        public const float speed = 0.15f;
         public Tween fadeOutTween;
     }
 

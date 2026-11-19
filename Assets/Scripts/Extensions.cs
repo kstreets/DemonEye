@@ -221,6 +221,29 @@ public static class Extensions {
         return animator.GetCurrentAnimatorStateInfo(0).shortNameHash == animHash;
     }
     
+    public static AnimationClip CurrentClip(this Animator animator) {
+        using var _ = ListPool<AnimatorClipInfo>.Get(out List<AnimatorClipInfo> clipInfos);
+        animator.GetCurrentAnimatorClipInfo(0, clipInfos);
+        return clipInfos.Count > 0 ? clipInfos[0].clip : null;
+    }
+
+    public static int CurrentFrame(this Animator animator) {
+        AnimationClip clip = animator.CurrentClip();
+        if (!clip) return 0;
+        float normalizedTime = Mathf.Repeat(animator.GetCurrentAnimatorStateInfo(0).normalizedTime, 1f);
+        // Small nudge so float error right on a frame boundary doesn't round down to the previous frame
+        return Mathf.FloorToInt(normalizedTime * clip.length * clip.frameRate + 0.001f);
+    }
+
+    // Jumps the current state to the start of the given frame
+    public static void SetFrame(this Animator animator, int frame) {
+        AnimationClip clip = animator.CurrentClip();
+        if (!clip) return;
+        float frameCount = clip.length * clip.frameRate;
+        int stateHash = animator.GetCurrentAnimatorStateInfo(0).shortNameHash;
+        animator.Play(stateHash, 0, Mathf.Clamp(frame, 0, frameCount) / frameCount);
+    }
+
     public static float TimeLeftInCurrentAnimation(this Animator animator) {
         AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
         float normalizedTimeLeft = 1f - Mathf.Clamp01(stateInfo.normalizedTime);

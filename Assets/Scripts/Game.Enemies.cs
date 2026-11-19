@@ -28,12 +28,13 @@ public partial class Game {
         public static readonly int erupt = Animator.StringToHash("Erupt");
         public static readonly int summon = Animator.StringToHash("Summon");
         
-        public static readonly List<int> movementBlockingAnimations = new() {
-            attackSide, attackUp, attackDown, shootSide, shootUp, shootDown,
-            spawn, death, erupt, summon,
-        };
+        // Attacks block movement through their attack phase instead
+        public static readonly List<int> movementBlockingAnimations = new() { spawn, death };
     }
-    
+
+    public enum EnemyAttackPhase { None, Windup, Recovery }
+    public enum AttackAnimTracking { None, AttackAnims, ShootAnims }
+
     public class Enemy : Entity {
         public Action onDeathCallback;
         public float flowFieldAcc;
@@ -54,6 +55,14 @@ public partial class Game {
         public CardinalDir pendingDir;
         public float pendingDirStartTime;
         public Tween attackDelay;
+        public EnemyAttackPhase attackPhase;
+        public float attackTime;
+        public float attackReleaseTime;
+        public float attackEndTime;
+        public AttackAnimTracking attackAnimTracking;
+        public float attackLeadSpeed;
+        public int attackCount;
+        public Action<Enemy, Vector2> onAttackRelease;
         public bool queuedForRangedAttack;
         public float lastRangedAttackTime;
         public float rangedAttackScore;
@@ -109,7 +118,8 @@ public partial class Game {
         enemy.flowFieldAcc = Random.Range(2.5f, 3.5f);
         enemy.rigidbody.mass = data.defaultMass;
         enemy.collider.enabled = true;
-        enemy.attackDelay = Tween.Delay(data.projectileCooldownTime);
+        enemy.attackDelay = data.attack ? Tween.Delay(data.attack.cooldown) : default;
+        enemy.attackPhase = EnemyAttackPhase.None;
         enemy.queuedForRangedAttack = false;
         enemy.lastRangedAttackTime = Time.time;
         
@@ -155,10 +165,6 @@ public partial class Game {
         }
         
         if (deadEnemy.attackSpawnPoints != null) {
-            foreach (AttackSpawnPoint spawnPoint in deadEnemy.attackSpawnPoints) {
-                spawnPoint.pendingTween.Stop();
-                spawnPoint.pendingCallback = null;
-            }
             ListPool<AttackSpawnPoint>.Release(deadEnemy.attackSpawnPoints);
             deadEnemy.attackSpawnPoints = null;
         }
@@ -191,19 +197,21 @@ public partial class Game {
             enemy.cannotBePushedByOthers = enemy.slow.HasValue || !EnemyCanMove(enemy);
             enemy.curDistFromPlayer = Vector2.Distance(player.Center, enemy.Center);
 
-            switch (enemy.data.type) {
-                case EnemyData.EnemyType.FireBoss:
-                    FireBossLogic(enemy);
-                    break;
-                case EnemyData.EnemyType.SulfurBoss:
-                    SulfurBossLogic(enemy);
-                    break;
-                case EnemyData.EnemyType.FireBender:
-                    RangedEnemyLogic(enemy);
-                    break;
-                default:
-                    BasicEnemyLogic(enemy);
-                    break;
+            if (enemy.attackPhase != EnemyAttackPhase.None) {
+                UpdateEnemyAttackPhase(enemy);
+            }
+            else {
+                switch (enemy.data.type) {
+                    case EnemyData.EnemyType.FireBoss:
+                        FireBossLogic(enemy);
+                        break;
+                    case EnemyData.EnemyType.SulfurBoss:
+                        SulfurBossLogic(enemy);
+                        break;
+                    default:
+                        UpdateEnemyAttack(enemy);
+                        break;
+                }
             }
             
             if (enemy.bleed.HasValue) {
@@ -315,20 +323,6 @@ public partial class Game {
         rangedAttackManager.nextAttackAllowedTime = 0f;
     }
 
-    private void RangedEnemyLogic(Enemy enemy) {
-        if (HasPendingAttackSpawn(enemy)) {
-            if (!TryGetPlayerInterceptPoint(enemy.position.Offset(y: 0.1f), enemy.data.projectileSpeed, out Vector2 aimPoint)) {
-                aimPoint = player.position;
-            }
-            CardinalDir dir = CardinalDirFromVector(aimPoint - (Vector2)enemy.position);
-            FaceDirectionWhileAttacking(enemy, dir, AttackAnimation(dir));
-        }
-
-        if (enemy.attackDelay.isAlive || enemy.queuedForRangedAttack) return;
-        enemy.queuedForRangedAttack = true;
-        rangedAttackManager.queuedEnemies.Add(enemy);
-    }
-
     private void UpdateRangedAttackManager() {
         RangedAttackManager rm = rangedAttackManager;
         rm.queuedEnemies.RemoveAll(static enemy => enemy.health <= 0);
@@ -342,14 +336,14 @@ public partial class Game {
 
         for (int i = 0; i < rm.queuedEnemies.Count; i++) {
             Enemy enemy = rm.queuedEnemies[i];
+            EnemyAttack attack = enemy.data.attack;
 
             // Teleporting enemies stay queued until they're back
             if (!enemy.gameObject.activeInHierarchy) continue;
-            if (!TryPerformRangedAttack(enemy)) continue;
+            if (!CanStartEnemyAttack(enemy, attack) || !TryStartEnemyAttack(enemy, attack)) continue;
 
             enemy.queuedForRangedAttack = false;
             enemy.lastRangedAttackTime = Time.time;
-            enemy.attackDelay = Tween.Delay(enemy.data.projectileCooldownTime);
             rm.queuedEnemies.RemoveAt(i);
 
             RaidSpawnPattern pattern = curRaid.map.spawning;
@@ -363,118 +357,245 @@ public partial class Game {
     private static float RangedAttackScore(Enemy enemy) {
         float closeness = 1f - Mathf.Clamp01(enemy.curDistFromPlayer / RangedAttackManager.distanceScoreRange);
         float timeWaiting = Time.time - enemy.lastRangedAttackTime;
-        return enemy.data.rangedAttackPriority + closeness * RangedAttackManager.distanceScoreWeight + timeWaiting * RangedAttackManager.scorePerSecondWaiting;
+        return enemy.data.attack.rangedPriority + closeness * RangedAttackManager.distanceScoreWeight + timeWaiting * RangedAttackManager.scorePerSecondWaiting;
     }
 
-    private bool TryPerformRangedAttack(Enemy enemy) {
-        switch (enemy.data.type) {
-            case EnemyData.EnemyType.FireBender: {
-                if (!TryGetPlayerInterceptPoint(enemy.position.Offset(y: 0.1f), enemy.data.projectileSpeed, out Vector2 aimPoint)) return false;
+    private void UpdateEnemyAttack(Enemy enemy) {
+        EnemyAttack attack = enemy.data.attack;
+        if (!attack) return;
 
-                CardinalDir dir = CardinalDirFromVector(aimPoint - (Vector2)enemy.position);
-                SetFacing(enemy, dir);
-                int animHash = AttackAnimation(dir);
-                enemy.animator.Play(animHash, 0, 0f);
+        if (enemy.attackDelay.isAlive || !CanStartEnemyAttack(enemy, attack)) return;
 
-                WaitForAttackSpawnFrame(enemy, animHash, static (enemy, spawnPos) => {
-                    Game g = gameInstance;
-                    if (!g.TryGetPlayerInterceptPoint(spawnPos, enemy.data.projectileSpeed, out Vector2 aimPoint)) {
-                        aimPoint = player.position;
-                    }
-                    Vector2 velocity = (aimPoint - spawnPos).normalized * enemy.data.projectileSpeed;
-                    g.SpawnProjectile(g.entityPools.smallFireballProjectile, spawnPos, velocity, enemy.data.projectileLifetime, enemy,
-                        flatDamage: enemy.data.damage, layermask: Masks.PlayerProjectileHurtMask);
-                });
-                return true;
+        // Ranged attacks take turns through the ranged attack manager
+        if (attack.kind == EnemyAttack.AttackKind.Projectile && attack.usesRangedAttackManager) {
+            if (!enemy.queuedForRangedAttack) {
+                enemy.queuedForRangedAttack = true;
+                rangedAttackManager.queuedEnemies.Add(enemy);
             }
-            default:
+            return;
+        }
+
+        TryStartEnemyAttack(enemy, attack);
+    }
+
+    private bool CanStartEnemyAttack(Enemy enemy, EnemyAttack attack) {
+        if (!EnemyCanMove(enemy)) {
+            return false;
+        }
+        if (attack.range > 0f && enemy.curDistFromPlayer > attack.range) {
+            return false;
+        }
+        if (attack.requireFacingPlayer && !attack.snapFaceTargetOnStart) {
+            Vector2 dirToPlayer = (player.position - enemy.position).normalized;
+            if (Vector2.Dot(enemy.graphicalDir, dirToPlayer) < 0.5f) {
                 return false;
+            }
         }
+        return true;
     }
-    
-    private void BasicEnemyLogic(Enemy enemy) {
-        Vector2 dirToPlayer = (player.position - enemy.position).normalized;
-        bool withinAttackDist = enemy.curDistFromPlayer < enemy.data.attackDistance;
-        bool facingPlayer = Vector2.Dot(enemy.graphicalDir, dirToPlayer) >= 0.5f;
 
-        // If the enemy can't move, then we assume it is currently attacking already
-        if (!EnemyCanMove(enemy) || !withinAttackDist || !facingPlayer) return;
-        
-        switch (CardinalDirFromVector(enemy.graphicalDir)) {
-            case CardinalDir.Right:
-            case CardinalDir.Left:
-                enemy.animator.Play(EnemyAnimations.attackSide);
-                break;
-            case CardinalDir.Up:
-                enemy.animator.Play(EnemyAnimations.attackUp);
-                break;
-            case CardinalDir.Down:
-                enemy.animator.Play(EnemyAnimations.attackDown);
-                break;
+    // Fails when the attack can't be aimed, like a leading projectile that can't reach the player
+    private bool TryStartEnemyAttack(Enemy enemy, EnemyAttack attack) {
+        float leadSpeed = AttackLeadSpeed(attack);
+        CardinalDir dir = CardinalDirFromVector(enemy.graphicalDir);
+        if (attack.snapFaceTargetOnStart) {
+            if (!TryGetAimPoint(EnemyAttackOrigin(enemy), leadSpeed, out Vector2 aimPoint)) {
+                return false;
+            }
+            dir = CardinalDirFromVector(aimPoint - (Vector2)enemy.position);
+            SetFacing(enemy, dir);
         }
 
-        switch (enemy.data.type) {
-            case EnemyData.EnemyType.Boomon:
-                PerformBoomonAttack(enemy);
-                break;
-            default:
-                PerformMeleeAttack(enemy);
-                break;
+        AttackAnimTracking animTracking = attack.trackTargetUntilRelease ? AttackAnimTracking.AttackAnims : AttackAnimTracking.None;
+        StartEnemyAttack(enemy, AttackAnimationFromDir(dir), static (enemy, spawnPos) => gameInstance.ReleaseEnemyAttack(enemy, enemy.data.attack, spawnPos), animTracking, leadSpeed);
+        enemy.attackDelay = Tween.Delay(attack.cooldown);
+        return true;
+    }
+
+    // Plays the attack clip and calls onRelease on its release frame, which comes from the prefab's AttackSpawnPoint or DamageShape
+    private void StartEnemyAttack(Enemy enemy, int animHash, Action<Enemy, Vector2> onRelease, AttackAnimTracking animTracking = AttackAnimTracking.None, float leadSpeed = 0f) {
+        enemy.animator.Play(animHash, 0, 0f);
+        // Applies the Play so the timings below come from the attack clip
+        enemy.animator.Update(0f);
+
+        enemy.attackPhase = EnemyAttackPhase.Windup;
+        enemy.attackTime = 0f;
+        // Read from the clip, not the animator state, since the state's length is infinite while hit stop has the animator at speed 0.
+        // The attack time is already scaled by the animator speed.
+        AnimationClip clip = enemy.animator.CurrentClip();
+        Assert.IsNotNull(clip, $"{enemy.data.name} has no clip for its attack state");
+        enemy.attackReleaseTime = clip ? AttackReleaseFrame(enemy, animHash) / clip.frameRate : 0f;
+        enemy.attackEndTime = clip ? clip.length : 0f;
+        enemy.attackAnimTracking = animTracking;
+        enemy.attackLeadSpeed = leadSpeed;
+        enemy.onAttackRelease = onRelease;
+    }
+
+    private void UpdateEnemyAttackPhase(Enemy enemy) {
+        // Scaled by the animator so hit stop pauses the attack along with its animation
+        enemy.attackTime += Time.deltaTime * enemy.animator.speed;
+
+        if (enemy.attackPhase == EnemyAttackPhase.Windup) {
+            if (enemy.attackAnimTracking != AttackAnimTracking.None) {
+                Vector2 aimPoint = EnemyAimPoint(EnemyAttackOrigin(enemy), enemy.attackLeadSpeed);
+                CardinalDir dir = CardinalDirFromVector(aimPoint - (Vector2)enemy.position);
+                int animHash = enemy.attackAnimTracking == AttackAnimTracking.ShootAnims ? ShootAnimationFromDir(dir) : AttackAnimationFromDir(dir);
+                FaceDirectionWhileAttacking(enemy, dir, animHash);
+            }
+            if (enemy.attackTime >= enemy.attackReleaseTime) {
+                enemy.attackPhase = EnemyAttackPhase.Recovery;
+                enemy.onAttackRelease(enemy, CurrentAttackSpawnPos(enemy));
+            }
+        }
+        else {
+            if (enemy.attackTime >= enemy.attackEndTime) {
+                enemy.attackPhase = EnemyAttackPhase.None;
+            }
         }
     }
-    
-    private void PerformMeleeAttack(Enemy enemy) {
-        DamageShape attackShape = EnemyAttackShape(enemy, out bool mirrored);
-        Assert.IsNotNull(attackShape, "Enemy is missing or does not have an attack shape, we should not be here");
-            
-        Action<Vector2> onDamageFrame = null;
-        if (enemy.data.type == EnemyData.EnemyType.Doughmon) {
-            onDamageFrame = static (pos) => gameInstance.SpawnSlamSmoke(pos);
-        }
-        DealShapeDamage(enemy, attackShape, enemy.data.damage, Masks.PlayerMeleeHurtMask, mirrored, enemy.data.changeToCauseBleed, onDamageFrame, onHit: null);
+
+    // Steps the clip back so the attack winds up and releases again, for attacks that repeat within one clip
+    private static void RewindEnemyAttack(Enemy enemy, int frames) {
+        AnimationClip clip = enemy.animator.CurrentClip();
+        if (!clip) return;
+        enemy.attackTime = Mathf.Max(0f, enemy.attackReleaseTime - frames / clip.frameRate);
+        enemy.animator.SetFrame(Mathf.RoundToInt(enemy.attackTime * clip.frameRate));
+        enemy.attackPhase = EnemyAttackPhase.Windup;
     }
-    
+
+    private void ReleaseEnemyAttack(Enemy enemy, EnemyAttack attack, Vector2 spawnPos) {
+        switch (attack.kind) {
+            case EnemyAttack.AttackKind.Melee: {
+                DamageShape shape = EnemyAttackShape(enemy, out bool mirrored);
+                Assert.IsNotNull(shape, $"{enemy.data.name} has a melee attack but no DamageShape for this direction");
+                if (!shape) return;
+
+                if (attack.damageFrameEffect == EnemyAttack.DamageFrameEffect.SlamSmoke) {
+                    SpawnSlamSmoke(shape.GetCenter(mirrored));
+                }
+                DamageEntitiesInShape(enemy, shape, attack.damage, Masks.PlayerMeleeHurtMask, mirrored, attack.bleedChance);
+                break;
+            }
+            case EnemyAttack.AttackKind.Projectile: {
+                EntityPool<Projectile> pool = EnemyProjectilePool(attack.projectilePrefab);
+
+                if (attack.projectilePattern == EnemyAttack.ProjectilePattern.Ring) {
+                    float angleStep = 360f / attack.ringProjectileCount;
+                    float jitter = angleStep * attack.ringAngleJitter;
+                    for (int i = 0; i < attack.ringProjectileCount; i++) {
+                        float angle = angleStep * i + Random.Range(-jitter, jitter);
+                        Vector2 ringVelocity = RotationVector(angle) * attack.projectileSpeed;
+                        SpawnProjectile(pool, spawnPos, ringVelocity, attack.projectileLifetime, enemy,
+                            flatDamage: attack.damage, layermask: Masks.PlayerProjectileHurtMask);
+                    }
+                }
+                else {
+                    SpawnAimedProjectile(pool, enemy, spawnPos, attack.projectileSpeed, attack.projectileLifetime, attack.damage,
+                        Masks.PlayerProjectileHurtMask, attack.leadTarget);
+                }
+                break;
+            }
+        }
+
+        if (attack.diesOnRelease) {
+            enemy.health = 0;
+        }
+    }
+
+    private int AttackReleaseFrame(Enemy enemy, int animHash) {
+        AttackSpawnPoint point = FindAttackSpawnPoint(enemy, animHash);
+        if (point) {
+            return point.spawnFrame;
+        }
+        DamageShape shape = EnemyAttackShape(enemy, out _);
+        return shape ? shape.damageFrame : 0;
+    }
+
+    // The enemy may have turned since the attack started, so this uses the point for the clip playing now
+    private static Vector2 CurrentAttackSpawnPos(Enemy enemy) {
+        int stateHash = enemy.animator.GetCurrentAnimatorStateInfo(0).shortNameHash;
+        AttackSpawnPoint point = FindAttackSpawnPoint(enemy, stateHash);
+        if (!point) {
+            return EnemyAttackOrigin(enemy);
+        }
+        bool mirrored = point.mirrorForLeft && CardinalDirFromVector(enemy.graphicalDir) == CardinalDir.Left;
+        return point.GetPosition(mirrored);
+    }
+
+    private static Vector2 EnemyAttackOrigin(Enemy enemy) {
+        return enemy.position.Offset(y: 0.1f);
+    }
+
+    private static float AttackLeadSpeed(EnemyAttack attack) {
+        return attack.kind == EnemyAttack.AttackKind.Projectile && attack.leadTarget ? attack.projectileSpeed : 0f;
+    }
+
+    // A lead speed of 0 aims straight at the player
+    private bool TryGetAimPoint(Vector2 origin, float leadSpeed, out Vector2 aimPoint) {
+        if (leadSpeed > 0f) {
+            return TryGetPlayerInterceptPoint(origin, leadSpeed, out aimPoint);
+        }
+        aimPoint = player.position;
+        return true;
+    }
+
+    private Vector2 EnemyAimPoint(Vector2 origin, float leadSpeed) {
+        return TryGetAimPoint(origin, leadSpeed, out Vector2 aimPoint) ? aimPoint : player.position;
+    }
+
+    private Projectile SpawnAimedProjectile(EntityPool<Projectile> pool, Enemy source, Vector2 spawnPos, float speed, float lifetime, 
+        int? damage, LayerMask layermask, bool leadTarget = true)
+    {
+        Vector2 aimPoint = EnemyAimPoint(spawnPos, leadTarget ? speed : 0f);
+        Vector2 velocity = (aimPoint - spawnPos).normalized * speed;
+        return SpawnProjectile(pool, spawnPos, velocity, lifetime, source, flatDamage: damage, layermask: layermask);
+    }
+
+    private static bool TryChooseBossAttack<T>(Enemy boss, AttackBrain<T> brain, int level, float minDelay, float maxDelay, out T attack) where T : Enum {
+        attack = default;
+        if (boss.attackDelay.isAlive) {
+            return false;
+        }
+        attack = brain.ChooseAttack(level);
+        boss.attackDelay = Tween.Delay(minDelay, maxDelay);
+        return true;
+    }
+
+    private EntityPool<Projectile> EnemyProjectilePool(GameObject prefab) {
+        EntityPools pools = entityPools;
+        if (prefab == pools.smallFireballProjectile.prefab) return pools.smallFireballProjectile;
+        if (prefab == pools.fireBossProjectile.prefab) return pools.fireBossProjectile;
+        if (prefab == pools.fireEmberProjectile.prefab) return pools.fireEmberProjectile;
+        if (prefab == pools.gooProjectile.prefab) return pools.gooProjectile;
+
+        Assert.IsTrue(false, $"No projectile pool for {(prefab ? prefab.name : "null")}, add it to {nameof(EnemyProjectilePool)}");
+        return pools.smallFireballProjectile;
+    }
+
     private void SpawnSlamSmoke(Vector2 position) {
         Entity smokeSlam = SpawnEntity<Entity>(prefabs.slamSmoke, position, Quaternion.identity);
         DestroyEntity(smokeSlam, CurrentClipLength(smokeSlam.animator));
     }
     
-    private void PerformBoomonAttack(Enemy enemy) {
-        if (enemy.data.type != EnemyData.EnemyType.Boomon) return;
-        
-        const int projectileCount = 8;
-        const float angleDeltaPerDrop = 360f /  projectileCount;
-        const float randomRangePerDrop = angleDeltaPerDrop * 0.25f;
-
-        for (int i = 0; i <  projectileCount; i++) {
-            float randomAngle = (angleDeltaPerDrop * i) + Random.Range(-randomRangePerDrop, randomRangePerDrop);
-            Vector3 velocity = RotationVector(randomAngle) * 0.7f;
-            Vector3 position = gameInstance.OffsetY(enemy.position, 0.2f);
-            const float lifetime = 2f;
-            gameInstance.SpawnProjectile(
-                gameInstance.entityPools.gooProjectile, position, velocity, lifetime, enemy, 
-                flatDamage: enemy.data.damage, layermask: Masks.PlayerProjectileHurtMask
-            );
-        }
-            
-        enemy.health = 0;
-    }
-    
     public class FireBoss : Enemy {
-        public enum AttackTypes { Fireball, Meteor, EmberScatter, DoubleFireball, MutliMeteor, Count }
+        public enum AttackTypes { Fireball, Meteor, EmberScatter, TrippleEmberScatter, DoubleFireball, MutliMeteor, Count }
         public AttackBrain<AttackTypes> attackBrain;
-        public AttackTypes? curAttackType;
-        public int pendingFireballCount;
-        public int pendingMeteorCount;
-        
+
         public const float minAttackDelay = 1f;
         public const float maxAttackDelay = 2.5f;
-        
+
         public const int fireballDamage = 25;
         public const float fireballSpeed = 1.7f;
         public const float fireballLifetime = 5f;
         public const float delayBetweenFireballs = 0.2f;
-        
+
+        public const int emberCount = 15;
+        public const int emberDamage = 10;
+        public const float emberSpeed = 1f;
+        public const float emberLifetime = 10f;
+        public const float emberCastAngle = 60f;
+        public const int emberRecastRewindFrames = 2;
+
         public const int meteorDamage = 15;
         public const float meteorTravelTime = 0.6f;
         public const float meteorWarningTime = meteorTravelTime * 0.5f;
@@ -483,123 +604,98 @@ public partial class Game {
         public const float delayBetweenMeteors = 0.12f;
         public const int multiMeteorCount = 4;
     }
-    
-    private void InitFireBoss(FireBoss fireBoss) { 
+
+    private void InitFireBoss(FireBoss fireBoss) {
         fireBoss.attackDelay = Tween.Delay(FireBoss.minAttackDelay, FireBoss.maxAttackDelay);
         fireBoss.attackBrain = new((int)FireBoss.AttackTypes.Count);
         fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.Fireball, level: 0, marbles: 3);
         fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.Meteor, level: 0, marbles: 2);
         fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.EmberScatter, level: 0, marbles: 1, preventConsecutive: true);
-        fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.DoubleFireball, level: 1, marbles: 2);
-        fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.MutliMeteor, level: 1, marbles: 1);
+        fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.DoubleFireball, level: 1, marbles: 3);
+        fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.MutliMeteor, level: 1, marbles: 2);
+        fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.TrippleEmberScatter, level: 1, marbles: 1, preventConsecutive: true);
         fireBoss.animator.Play(EnemyAnimations.spawn);
     }
-    
+
     private void FireBossLogic(Enemy enemy) {
         if (enemy is not FireBoss fireBoss) return;
-        
-        if (fireBoss.curAttackType.TryGetValue(out FireBoss.AttackTypes curAttack)) {
-            if (curAttack is FireBoss.AttackTypes.Fireball or FireBoss.AttackTypes.DoubleFireball or FireBoss.AttackTypes.EmberScatter) {
-                if (!TryGetPlayerInterceptPoint(fireBoss.position, FireBoss.fireballSpeed, out Vector2 aimPoint)) {
-                    aimPoint = player.position;
-                }
-                FaceDirectionWhileShooting(fireBoss, CardinalDirFromVector(aimPoint - (Vector2)fireBoss.position));
-            }
-        }
-        
-        bool canAtttack = !fireBoss.attackDelay.isAlive;
-        if (!canAtttack) return;
-        
+
         int attackLevel = (fireBoss.health / (float)fireBoss.data.health) > 0.5f ? 0 : 1;
-        FireBoss.AttackTypes attack = fireBoss.attackBrain.ChooseAttack(attackLevel);
-        
-        fireBoss.attackDelay = Tween.Delay(FireBoss.minAttackDelay, FireBoss.maxAttackDelay);
+        if (!TryChooseBossAttack(fireBoss, fireBoss.attackBrain, attackLevel, FireBoss.minAttackDelay, FireBoss.maxAttackDelay, out FireBoss.AttackTypes attack)) return;
+
+        int shootAnim = ShootAnimationFromDir(CardinalDirFromVector(fireBoss.graphicalDir));
         switch(attack) {
             case FireBoss.AttackTypes.Fireball:
-                CastFireballs(attack, 1);
+                CastFireballs(1);
                 break;
             case FireBoss.AttackTypes.Meteor:
-                SummonMeteors(attack, 1);
+                SummonMeteors(1);
                 break;
             case FireBoss.AttackTypes.EmberScatter:
-                CastEmberScatter(attack); 
+                CastEmberScatter(1);
                 break;
             case FireBoss.AttackTypes.DoubleFireball:
-                CastFireballs(attack, 2);
+                CastFireballs(2);
                 break;
             case FireBoss.AttackTypes.MutliMeteor:
-                SummonMeteors(attack, FireBoss.multiMeteorCount);
+                SummonMeteors(FireBoss.multiMeteorCount);
+                break;
+            case FireBoss.AttackTypes.TrippleEmberScatter:
+                CastEmberScatter(3);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
-        
+
         // ------------------------------
         // Nested Methods
         // ------------------------------
-        
-        void CastFireballs(FireBoss.AttackTypes attackType, int count) {
-            int animHash = ShootAnimation(CardinalDirFromVector(fireBoss.graphicalDir));
-            fireBoss.animator.Play(animHash);
-            fireBoss.curAttackType = attackType;
-            fireBoss.pendingFireballCount = count;
-            
-            WaitForAttackSpawnFrame(fireBoss, animHash, static (boss, spawnPos) => {
-                var fireBoss = (FireBoss)boss;
-                fireBoss.curAttackType = null;
-                for (int i = 0; i < fireBoss.pendingFireballCount; i++) {
-                    Delay(boss, i * FireBoss.delayBetweenFireballs, (_) => ShootFireball(boss, spawnPos));
+
+        void CastFireballs(int count) {
+            fireBoss.attackCount = count;
+            StartEnemyAttack(fireBoss, shootAnim, animTracking: AttackAnimTracking.ShootAnims, leadSpeed: FireBoss.fireballSpeed, onRelease: static (boss, spawnPos) => {
+                var g = gameInstance;
+                for (int i = 0; i < boss.attackCount; i++) {
+                    Delay(boss, i * FireBoss.delayBetweenFireballs, (_) => {
+                        g.SpawnAimedProjectile(g.entityPools.fireBossProjectile, boss, spawnPos, FireBoss.fireballSpeed, FireBoss.fireballLifetime, FireBoss.fireballDamage, Masks.PlayerProjectileHurtMask);
+                    });
                 }
             });
         }
-        
-        static void ShootFireball(Enemy boss, Vector2 spawnPos) {
-            var g = gameInstance;
-            if (!g.TryGetPlayerInterceptPoint(spawnPos, FireBoss.fireballSpeed, out Vector2 aimPoint)) return;
-            Vector2 velocity = (aimPoint - spawnPos).normalized * FireBoss.fireballSpeed;
-            g.SpawnProjectile(g.entityPools.fireBossProjectile, spawnPos, velocity, FireBoss.fireballLifetime, boss, flatDamage: FireBoss.fireballDamage, layermask: Masks.PlayerProjectileHurtMask);
+
+        void SummonMeteors(int meteorCount) {
+            fireBoss.attackCount = meteorCount;
+            StartEnemyAttack(fireBoss, EnemyAnimations.summon, static (boss, _) => RainMeteors(boss, boss.attackCount));
         }
-        
-        void SummonMeteors(FireBoss.AttackTypes attackType, int meteorCount) {
-            fireBoss.animator.Play(EnemyAnimations.summon);
-            fireBoss.curAttackType = attackType;
-            fireBoss.pendingMeteorCount = meteorCount;
-            
-            WaitForAttackSpawnFrame(fireBoss, EnemyAnimations.summon, static (boss, _) => {
-                var fireBoss = (FireBoss)boss;
-                fireBoss.curAttackType = null;
-                RainMeteors(fireBoss, fireBoss.pendingMeteorCount);
-            });
-        }
-        
-        static void RainMeteors(FireBoss fireBoss, int meteorCount) {
+
+        static void RainMeteors(Enemy fireBoss, int meteorCount) {
             var g = gameInstance;
-            
+
             const float predictionTime = FireBoss.meteorTravelTime * 0.85f;
             Vector2 centeralAimPoint = g.PredictedPlayerPosition(predictionTime);
             centeralAimPoint = ClampPositionToMap(player.position, centeralAimPoint, FireBoss.meteorRadius);
-            
+
             using var _ = ListPool<Vector2>.Get(out var meteorPositions);
             meteorPositions.Add(centeralAimPoint); // First meteor is focused on the player
-            
+
             // Grows with the count so the meteors are spread at a similar density no matter how many there are
             float scatterRadius = FireBoss.meteorScatterRadiusPerMeteor * Mathf.Sqrt(meteorCount);
             ScatterPositions(ref meteorPositions, meteorCount - 1, centeralAimPoint, scatterRadius, FireBoss.meteorRadius);
-            
+
             for (int i = 0; i < meteorPositions.Count; i++) {
                 Vector2 meteorPos = meteorPositions[i];
                 // Tied to the boss so the remaining meteors are cancelled if it dies mid rain
                 Delay(fireBoss, i * FireBoss.delayBetweenMeteors, _ => SpawnSingleMeteor(meteorPos));
             }
         }
-        
+
         static void SpawnSingleMeteor(Vector2 targetPos) {
             var g = gameInstance;
-            
+
             Vector2 meteorSpawnPos = new(targetPos.x, targetPos.y + 2);
             Entity attackCircleEntity = g.SpawnEntity(g.entityPools.attackCircle, targetPos, Quaternion.identity);
             attackCircleEntity.attackCircle.Animate(FireBoss.meteorRadius, FireBoss.meteorWarningTime);
-            
+
             Entity meteorEntity = g.SpawnEntity(g.entityPools.meteor, meteorSpawnPos, Quaternion.identity);
             Tween.Custom(0f, 1f, FireBoss.meteorTravelTime, ease: Ease.InQuad, onValueChange: (comp) => {
                 meteorEntity.position = Vector2.Lerp(meteorSpawnPos, targetPos, comp);
@@ -612,51 +708,42 @@ public partial class Game {
             });
         }
         
-        void CastEmberScatter(FireBoss.AttackTypes attackType) {
-            fireBoss.curAttackType = attackType;
-            int animHash = ShootAnimation(CardinalDirFromVector(fireBoss.graphicalDir));
-            fireBoss.animator.Play(animHash);
-            
-            WaitForAttackSpawnFrame(fireBoss, animHash, static (boss, spawnPos) => {
+        void CastEmberScatter(int count) {
+            fireBoss.attackCount = count;
+            StartEnemyAttack(fireBoss, shootAnim, animTracking: AttackAnimTracking.ShootAnims, leadSpeed: FireBoss.emberSpeed, onRelease: static (boss, spawnPos) => {
                 var g = gameInstance;
-                
-                FireBoss fireBoss = (FireBoss)boss;
-                fireBoss.curAttackType = null;
-                
-                if (!g.TryGetPlayerInterceptPoint(spawnPos, FireBoss.fireballSpeed, out Vector2 aimPoint)) return;
-                
-                const int emberCount = 15;
-                const float castAngle = 60f;
-                Vector2 aimDir = (aimPoint - spawnPos).normalized;
+
+                Vector2 aimDir = (g.EnemyAimPoint(spawnPos, FireBoss.emberSpeed) - spawnPos).normalized;
                 using var _ = ListPool<Vector2>.Get(out var shootDirections);
-                ScatterAimForProjectiles(aimDir, castAngle, emberCount, ref shootDirections);
-                
+                ScatterAimForProjectiles(aimDir, FireBoss.emberCastAngle, FireBoss.emberCount, ref shootDirections);
+
                 foreach (Vector2 shootDir in shootDirections) {
-                    g.SpawnProjectile(g.entityPools.fireEmberProjectile, spawnPos, shootDir * 1f, 10f, fireBoss, flatDamage: 10, layermask: Masks.PlayerProjectileHurtMask);        
+                    g.SpawnProjectile(g.entityPools.fireEmberProjectile, spawnPos, shootDir * FireBoss.emberSpeed, FireBoss.emberLifetime, boss, flatDamage: FireBoss.emberDamage, layermask: Masks.PlayerProjectileHurtMask);
                 }
-                
-                fireBoss.curAttackType = null;
+
+                boss.attackCount--;
+                if (boss.attackCount > 0) {
+                    RewindEnemyAttack(boss, FireBoss.emberRecastRewindFrames);
+                }
             });
-             
         }
     }
-    
+
     private class SulfurBoss : Enemy {
         public enum AttackTypes { PoisonCloud, PoisonEruption, Count }
         public AttackBrain<AttackTypes> attackBrain;
-        public AttackTypes? curAttackType;
         public readonly List<Vector2> eruptionTargets = new();
 
         public const float minAttackDelay = 1.2f;
         public const float maxAttackDelay = 3f;
-        
+
         public const int poisonCloudDamage = 18;
         public const float poisonCloudProjectileSpeed = 1.7f;
         public const float poisonCloudProjectileLifetime = 2f;
         public const float poisonCloudDetonateRadius = 0.15f;
         public const float poisonDamageMulti = 1.5f;
         public const float poisonDebuffDuration = 5f;
-        
+
         public const float poisonEruptionSpeed = 1.5f;
         public const int poisonEruptionCount = 30;
         public const float delayBetweenPoisonLobs = 0.012f;
@@ -669,7 +756,7 @@ public partial class Game {
         public const float poisonPoolWarningRadius = 0.2f;
         public const float poisonPoolWarningTime = 0.4f;
     }
-    
+
     private void InitSulfurBoss(SulfurBoss sulfurBoss) {
         sulfurBoss.attackDelay = Tween.Delay(SulfurBoss.minAttackDelay, SulfurBoss.maxAttackDelay);
         sulfurBoss.attackBrain = new((int)SulfurBoss.AttackTypes.Count);
@@ -677,74 +764,59 @@ public partial class Game {
         sulfurBoss.attackBrain.AddAttack(SulfurBoss.AttackTypes.PoisonEruption, level: 0, marbles: 1, preventConsecutive: true);
         sulfurBoss.animator.Play(EnemyAnimations.spawn);
     }
-    
+
     private void SulfurBossLogic(Enemy enemy) {
         if (enemy is not SulfurBoss sulfurBoss) return;
-        
-        if (sulfurBoss.curAttackType.TryGetValue(out SulfurBoss.AttackTypes curAttack)) {
-            if (curAttack == SulfurBoss.AttackTypes.PoisonCloud) {
-                if (!TryGetPlayerInterceptPoint(sulfurBoss.position, SulfurBoss.poisonCloudProjectileSpeed, out Vector2 aimPoint)) {
-                    aimPoint = player.position;
-                }
-                FaceDirectionWhileShooting(sulfurBoss, CardinalDirFromVector(aimPoint - (Vector2)sulfurBoss.position));
-            }
-        }
-        
-        bool canAtttack = !sulfurBoss.attackDelay.isAlive;
-        if (!canAtttack) return;
-        
-        int attackLevel = 0;
-        SulfurBoss.AttackTypes attack = sulfurBoss.attackBrain.ChooseAttack(attackLevel);
 
-        sulfurBoss.attackDelay = Tween.Delay(SulfurBoss.minAttackDelay, SulfurBoss.maxAttackDelay);
+        if (!TryChooseBossAttack(sulfurBoss, sulfurBoss.attackBrain, 0, SulfurBoss.minAttackDelay, SulfurBoss.maxAttackDelay, out SulfurBoss.AttackTypes attack)) {
+            return;
+        }
+
         switch(attack) {
             case SulfurBoss.AttackTypes.PoisonCloud:
-                ShootPoisonCloud();
+                int shootAnim = ShootAnimationFromDir(CardinalDirFromVector(sulfurBoss.graphicalDir));
+                StartEnemyAttack(sulfurBoss, shootAnim, static (boss, spawnPos) => ShootPoisonCloud(boss, spawnPos),
+                    AttackAnimTracking.ShootAnims, SulfurBoss.poisonCloudProjectileSpeed);
                 break;
             case SulfurBoss.AttackTypes.PoisonEruption:
-                PoisonEruption(); 
+                PoisonEruption();
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
-        
+
         // ------------------------------
         // Nested Methods
         // ------------------------------
-        
-        void ShootPoisonCloud() {
-            int animHash = ShootAnimation(CardinalDirFromVector(sulfurBoss.graphicalDir));
-            sulfurBoss.animator.Play(animHash);
-            sulfurBoss.curAttackType = SulfurBoss.AttackTypes.PoisonCloud;
 
-            WaitForAttackSpawnFrame(sulfurBoss, animHash, static (boss, spawnPos) => {
-                var g = gameInstance;
-                ((SulfurBoss)boss).curAttackType = null;
-                if (!g.TryGetPlayerInterceptPoint(spawnPos, SulfurBoss.poisonCloudProjectileSpeed, out Vector2 aimPoint)) return;
+        static void ShootPoisonCloud(Enemy boss, Vector2 spawnPos) {
+            var g = gameInstance;
+            Projectile projectile = g.SpawnAimedProjectile(g.entityPools.gooProjectile, boss, spawnPos, SulfurBoss.poisonCloudProjectileSpeed,
+                SulfurBoss.poisonCloudProjectileLifetime, damage: null, layermask: 0);
+            projectile.detonateNearPlayerRadius = SulfurBoss.poisonCloudDetonateRadius;
 
-                Vector2 velocity = (aimPoint - spawnPos).normalized * SulfurBoss.poisonCloudProjectileSpeed;
-                Projectile projectile = g.SpawnProjectile(g.entityPools.gooProjectile, spawnPos, velocity, SulfurBoss.poisonCloudProjectileLifetime, boss, layermask: 0);
-                projectile.detonateNearPlayerRadius = SulfurBoss.poisonCloudDetonateRadius;
-                
-                projectile.onDetonate = static (detonatePos) => {
-                    Entity poisonCloud = gameInstance.SpawnEntityOneShot(gameInstance.entityPools.poisonCloud, detonatePos, Quaternion.identity);
-                    gameInstance.DealShapeDamage(poisonCloud, SulfurBoss.poisonCloudDamage, Masks.PlayerMeleeHurtMask, onHit: static (hit) => {
-                        if (hit is Player) {
-                            gameInstance.PoisonPlayer(SulfurBoss.poisonDamageMulti, SulfurBoss.poisonDebuffDuration);
-                        }
-                    });
-                };
-            });
+            projectile.onDetonate = static (detonatePos) => {
+                Entity poisonCloud = gameInstance.SpawnEntityOneShot(gameInstance.entityPools.poisonCloud, detonatePos, Quaternion.identity);
+                gameInstance.DealShapeDamage(poisonCloud, SulfurBoss.poisonCloudDamage, Masks.PlayerMeleeHurtMask, onHit: static (hit) => {
+                    if (hit is Player) {
+                        gameInstance.PoisonPlayer(SulfurBoss.poisonDamageMulti, SulfurBoss.poisonDebuffDuration);
+                    }
+                });
+            };
         }
-        
-        void PoisonEruption() {
-            sulfurBoss.animator.Play(EnemyAnimations.erupt);
-            sulfurBoss.animator.Update(0f);
 
-            AttackSpawnPoint point = FindAttackSpawnPoint(sulfurBoss, EnemyAnimations.erupt);
-            bool mirrored = point && point.mirrorForLeft && CardinalDirFromVector(sulfurBoss.graphicalDir) == CardinalDir.Left;
-            Vector2 estimatedSpawnPos = point ? point.GetPosition(mirrored) : sulfurBoss.position;
-            float lobSpawnDelay = point ? DamageFrameDelay(sulfurBoss.animator, point.spawnFrame) : 0f;
+        void PoisonEruption() {
+            StartEnemyAttack(sulfurBoss, EnemyAnimations.erupt, static (boss, spawnPos) => {
+                List<Vector2> targets = ((SulfurBoss)boss).eruptionTargets;
+                for (int i = 0; i < targets.Count; i++) {
+                    Vector2 poolPos = targets[i];
+                    // Tied to the boss so the remaining lobs are cancelled if it dies mid eruption
+                    Delay(boss, i * SulfurBoss.delayBetweenPoisonLobs, (_) => LobPoisonPool(boss, spawnPos, poolPos));
+                }
+            });
+
+            Vector2 estimatedSpawnPos = CurrentAttackSpawnPos(sulfurBoss);
+            float lobSpawnDelay = sulfurBoss.attackReleaseTime;
 
             // Centered on where the player will be when the pools land, not when the boss starts erupting
             Vector2 playerPos = player.hurtCollider.bounds.center;
@@ -756,22 +828,13 @@ public partial class Game {
             SpreadPositionsInCircle(targets, SulfurBoss.poisonEruptionCount, predictedPlayerPos, SulfurBoss.poisonEruptionScatterRadius,
                 SulfurBoss.poisonEruptionJitter, SulfurBoss.poisonPoolWarningRadius);
 
-            WaitForAttackSpawnFrame(sulfurBoss, EnemyAnimations.erupt, static (boss, spawnPos) => {
-                List<Vector2> targets = ((SulfurBoss)boss).eruptionTargets;
-                for (int i = 0; i < targets.Count; i++) {
-                    Vector2 poolPos = targets[i];
-                    // Tied to the boss so the remaining lobs are cancelled if it dies mid eruption
-                    Delay(boss, i * SulfurBoss.delayBetweenPoisonLobs, (_) => LobPoisonPool(boss, spawnPos, poolPos));
-                }
-            });
-
             // Each circle finishes filling right as its pool is lobbed, and stays until the pool lands
             for (int i = 0; i < targets.Count; i++) {
                 Vector2 targetPos = targets[i];
                 float lobTime = (i * SulfurBoss.delayBetweenPoisonLobs) + lobSpawnDelay;
                 float travelTime = Vector2.Distance(estimatedSpawnPos, targetPos) / SulfurBoss.poisonEruptionSpeed;
                 float warnStartTime = Mathf.Max(0f, lobTime + travelTime - SulfurBoss.poisonPoolWarningTime);
-                
+
                 const float attackCircleAnimInTime = SulfurBoss.poisonPoolWarningTime * 0.9f;
                 Entity attackCircleEntity = SpawnEntity(entityPools.attackCircle, targetPos, Quaternion.identity);
                 attackCircleEntity.attackCircle.Animate(SulfurBoss.poisonPoolWarningRadius, attackCircleAnimInTime, startDelay: warnStartTime);
@@ -788,9 +851,9 @@ public partial class Game {
             g.SpawnHazard(g.entityPools.poisonPool, targetPos, SulfurBoss.poisonPoolDamage, Masks.PlayerMeleeHurtMask,
                 SulfurBoss.poisonPoolDuration, SulfurBoss.poisonPoolTickInterval, spawnDelay: travelTime);
         }
-        
+
     }
-    
+
     // Sunflower spiral so the positions cover the circle evenly with no big gaps, then jittered so it doesn't look like a pattern.
     // Ordered outside in, the first position is the outer edge and the last one is the exact center
     private static void SpreadPositionsInCircle(List<Vector2> positions, int count, Vector2 center, float circleRadius, float jitter, float bufferRadius) {
@@ -1113,10 +1176,11 @@ public partial class Game {
     }
 
     private bool EnemyCanMove(Enemy enemy) {
-        if (enemy.IsHitStopped) {
+        if (enemy.IsHitStopped || enemy.attackPhase != EnemyAttackPhase.None) {
             return false;
         }
-        
+
+        // Spawn and death clips block movement until they finish
         var stateInfo = enemy.animator.GetCurrentAnimatorStateInfo(0);
         int animStateHash = stateInfo.shortNameHash;
         
@@ -1141,7 +1205,7 @@ public partial class Game {
         return shape;
     }
 
-    private static int ShootAnimation(CardinalDir dir) {
+    private static int ShootAnimationFromDir(CardinalDir dir) {
         return dir switch {
             CardinalDir.Up   => EnemyAnimations.shootUp,
             CardinalDir.Down => EnemyAnimations.shootDown,
@@ -1149,7 +1213,7 @@ public partial class Game {
         };
     }
 
-    private static int AttackAnimation(CardinalDir dir) {
+    private static int AttackAnimationFromDir(CardinalDir dir) {
         return dir switch {
             CardinalDir.Up   => EnemyAnimations.attackUp,
             CardinalDir.Down => EnemyAnimations.attackDown,
@@ -1167,24 +1231,12 @@ public partial class Game {
         enemy.spriteRenderer.flipX = dir == CardinalDir.Left;
     }
 
-    private void FaceDirectionWhileShooting(Enemy enemy, CardinalDir dir) {
-        FaceDirectionWhileAttacking(enemy, dir, ShootAnimation(dir));
-    }
-
     private void FaceDirectionWhileAttacking(Enemy enemy, CardinalDir dir, int animHash) {
         SetFacing(enemy, dir);
         AnimatorStateInfo stateInfo = enemy.animator.GetCurrentAnimatorStateInfo(0);
         if (stateInfo.shortNameHash != animHash) {
             enemy.animator.Play(animHash, 0, stateInfo.normalizedTime);
         }
-    }
-
-    private static bool HasPendingAttackSpawn(Enemy enemy) {
-        if (enemy.attackSpawnPoints == null) return false;
-        foreach (AttackSpawnPoint spawnPoint in enemy.attackSpawnPoints) {
-            if (spawnPoint.pendingTween.isAlive) return true;
-        }
-        return false;
     }
 
     private static AttackSpawnPoint FindAttackSpawnPoint(Enemy enemy, int stateHash) {
@@ -1195,48 +1247,6 @@ public partial class Game {
         return null;
     }
 
-    // The delay comes from the starting state's spawn point, but the position comes from whatever state is playing
-    // when it fires, since attacks like the Sulfur Boss shot can turn to a different direction's animation mid wind-up
-    private Tween WaitForAttackSpawnFrame(Enemy enemy, int stateHash, Action<Enemy, Vector2> onSpawnFrame) {
-        AttackSpawnPoint point = FindAttackSpawnPoint(enemy, stateHash);
-        if (!point) {
-            onSpawnFrame(enemy, enemy.position);
-            return default;
-        }
-
-        // Applies the Play from this frame so the delay is measured on the clip that's about to play
-        if (enemy.animator.isActiveAndEnabled) {
-            enemy.animator.Update(0f);
-        }
-
-        point.pendingCallback = onSpawnFrame;
-        point.pendingTween.Stop();
-        
-        point.pendingTween = Delay(enemy, DamageFrameDelay(enemy.animator, point.spawnFrame), static (enemy) => {
-            if (enemy.attackSpawnPoints == null) return;
-            AttackSpawnPoint point = null;
-            foreach (AttackSpawnPoint spawnPoint in enemy.attackSpawnPoints) {
-                if (spawnPoint.pendingCallback == null) continue;
-                point = spawnPoint;
-                break;
-            }
-            if (!point) return;
-
-            Action<Enemy, Vector2> onSpawnFrame = point.pendingCallback;
-            point.pendingCallback = null;
-            if (enemy.health <= 0) return;
-
-            int curStateHash = enemy.animator.GetCurrentAnimatorStateInfo(0).shortNameHash;
-            AttackSpawnPoint curPoint = FindAttackSpawnPoint(enemy, curStateHash);
-            if (!curPoint) {
-                curPoint = point;
-            }
-            bool mirrored = curPoint.mirrorForLeft && CardinalDirFromVector(enemy.graphicalDir) == CardinalDir.Left;
-            onSpawnFrame(enemy, curPoint.GetPosition(mirrored));
-        });
-        return point.pendingTween;
-    }
-    
     private enum TeleportType { Spawn, Reposition }
 
     private void TeleportEnemy(Enemy enemy, Vector3 position, TeleportType teleportType) {

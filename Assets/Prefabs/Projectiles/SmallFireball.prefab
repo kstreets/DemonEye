@@ -105,7 +105,7 @@ SpriteRenderer:
   m_SortingLayer: 3
   m_SortingOrder: 1
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -1334977098, guid: 86fe82712ae145242aa4771121f95cc2, type: 3}
+  m_Sprite: {fileID: -22553313, guid: 86fe82712ae145242aa4771121f95cc2, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -128,7 +128,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DamageShape
   shape: 0
-  offset: {x: 0.015, y: 0}
+  offset: {x: 0, y: 0}
   radius: 0.035
   size: {x: 0.2, y: 0.2}
   capsuleDirection: 0

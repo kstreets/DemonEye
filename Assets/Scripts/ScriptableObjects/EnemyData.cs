@@ -23,22 +23,12 @@ public class EnemyData : ScriptableObject {
     public LayerMask excludeCollisionLayers;
     
     [Header("Attack")]
-    public float attackDistance;
-    public float attackDamageDelay;
-    public float attackRadius;
-    
-    [Header("Projectiles")]
-    public float projectileSpeed;
-    public float projectileLifetime;
-    public float projectileCooldownTime;
-    public float rangedAttackPriority = 1f;
+    public EnemyAttack attack;
 
     [Header("Stats")]
     public float speed;
     public int health;
-    public int damage;
     public int collisionDamage;
-    public float changeToCauseBleed;
     public int soulWorthPerKill;
     public int xpWorthPerKill;
     
