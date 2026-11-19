@@ -16,8 +16,7 @@ public class QuestUI : MonoBehaviour {
     public Mask burnMask;
     public Image burnEffectImage;
     public BurnEdgeEmberSpawner emberSpawner;
-    
-    private UIBurnEffect burnEffect;
+    UIBurnEffect burnEffect;
 
     public void Init() {
         burnEffect = new(burnEffectImage, emberSpawner, burnMask: burnMask);

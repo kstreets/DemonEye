@@ -1,8 +1,7 @@
 using UnityEngine;
 
-public partial class Game {
-
-    private void InitPauseMenu() {
+public static partial class Game {
+    static void InitPauseMenu() {
         pauseMenu.resumeButton.AddListener(ResumeRaid);
         pauseMenu.settingsButton.AddListener(ShowPauseSettings);
         pauseMenu.suicideButton.AddListener(() => {
@@ -14,7 +13,7 @@ public partial class Game {
         pauseMenu.panel.gameObject.SetActive(false);
     }
 
-    private void OnPausePressed() {
+    static void OnPausePressed() {
         if (!InRaid) return;
         if (cutscene.playing) return; // Unpausing would resume the raid in the middle of the cutscene
 
@@ -32,7 +31,7 @@ public partial class Game {
         }
     }
 
-    private void PauseRaid() {
+    static void PauseRaid() {
         if (pauseMenu.paused) return;
         
         pauseMenu.paused = true;
@@ -61,7 +60,7 @@ public partial class Game {
         Cursor.visible = ShowCursorInMenus;
     }
 
-    private void ResumeRaid() {
+    static void ResumeRaid() {
         if (!pauseMenu.paused) return;
 
         if (pauseMenu.showingSettings) {
@@ -84,7 +83,7 @@ public partial class Game {
         Cursor.visible = false;
     }
 
-    private void ShowPauseSettings() {
+    static void ShowPauseSettings() {
         pauseMenu.showingSettings = true;
         pauseMenu.panel.gameObject.SetActive(false);
         SetRaidHUDVisible(false);
@@ -93,7 +92,7 @@ public partial class Game {
         ClearControllerSelection();
     }
 
-    private void ClosePauseSettings() {
+    static void ClosePauseSettings() {
         pauseMenu.showingSettings = false;
         CloseSettingsMenuUI();
         SetRaidHUDVisible(true);
@@ -103,7 +102,7 @@ public partial class Game {
     }
 
     // The settings menu shows the raid behind it, so the HUD would poke through
-    private void SetRaidHUDVisible(bool visible) {
+    static void SetRaidHUDVisible(bool visible) {
         playerInfo.parent.gameObject.SetActive(visible);
         ui.hotBarParent.gameObject.SetActive(visible);
         ui.minimap.gameObject.SetActive(visible);

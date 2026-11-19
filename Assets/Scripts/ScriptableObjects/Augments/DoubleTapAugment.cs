@@ -22,8 +22,8 @@ public class DoubleTapAugment : Augment {
     public override string GetDescription(int stackCount = 1) {
         return $"{DisplayProb(GetProbability(stackCount))} chance to shoot {DisplayNumber(2)} times in quick succession";
     }
-    
-    private float GetProbability(int stackCount) {
+
+    float GetProbability(int stackCount) {
         return TaperFloat(probability, stackCount, 0.3f);
     }
     

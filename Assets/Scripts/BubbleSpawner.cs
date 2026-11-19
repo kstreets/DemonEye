@@ -19,19 +19,19 @@ public class BubbleSpawner : MonoBehaviour {
     [Tooltip("Evaluated Per Sequence, 0 keeps constant rate")]
     public AnimationCurve rateCurve;
 
-    [NonSerialized] private readonly List<float> spawnTimes = new();
-    [NonSerialized] private int nextSpawn;
-    [NonSerialized] private int nextPoint = int.MaxValue;
-    [NonSerialized] private float startTime;
-    [NonSerialized] private bool playing;
+    [NonSerialized] readonly List<float> spawnTimes = new();
+    [NonSerialized] int nextSpawn;
+    [NonSerialized] int nextPoint = int.MaxValue;
+    [NonSerialized] float startTime;
+    [NonSerialized] bool playing;
 
-    private void OnEnable() {
+    void OnEnable() {
         if (playOnEnable) {
             Play();
         }
     }
 
-    private void OnDisable() {
+    void OnDisable() {
         Stop();
     }
 
@@ -44,7 +44,7 @@ public class BubbleSpawner : MonoBehaviour {
         playing = false;
     }
 
-    private float Schedule(float time) {
+    float Schedule(float time) {
         spawnTimes.Clear();
         for (int i = 0; i < bubbleCount; i++) {
             bool useCurve = rateCurve != null && rateCurve.length > 0;
@@ -58,13 +58,13 @@ public class BubbleSpawner : MonoBehaviour {
         return time;
     }
 
-    private void Update() {
+    void Update() {
         if (!playing) return;
 
         float elapsed = Time.time - startTime;
         while (nextSpawn < spawnTimes.Count && elapsed >= spawnTimes[nextSpawn]) {
             nextSpawn++;
-            Game.gameInstance.SpawnBubble(this, NextSpawnPoint());
+            Game.SpawnBubble(this, NextSpawnPoint());
         }
 
         if (nextSpawn >= spawnTimes.Count) {
@@ -73,7 +73,7 @@ public class BubbleSpawner : MonoBehaviour {
         }
     }
 
-    private Transform NextSpawnPoint() {
+    Transform NextSpawnPoint() {
         if (!spawnPoints.IndexInRange(nextPoint)) {
             nextPoint = 0;
             spawnPoints.Shuffle();

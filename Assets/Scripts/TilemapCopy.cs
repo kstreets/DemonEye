@@ -9,7 +9,7 @@ public class TilemapCopy : MonoBehaviour {
     public Tilemap lavaTilemap;
 
     [Button]
-    private void Copy() {
+    void Copy() {
         Tilemap resultingTilemap = GetComponent<Tilemap>();
         
         BoundsInt bounds = lavaTilemap.cellBounds;

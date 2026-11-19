@@ -6,18 +6,18 @@ using UnityEngine.Assertions;
 using UnityEngine.Pool;
 using Random = UnityEngine.Random;
 
-public partial class Game {
+public static partial class Game {
     
     public struct DamagingData {
         public int consecutiveCriticalHits;
         public float lastDoubleCritActivationTime;
     }
-    
-    private void DamageEnemyAfterDelay(Enemy enemy, int damage, bool isCriticalStrike, float delay) {
+
+    static void DamageEnemyAfterDelay(Enemy enemy, int damage, bool isCriticalStrike, float delay) {
         enemy.delayedDamage = damage;
         enemy.delayedDamageIsCrit = isCriticalStrike;
         Delay(enemy, delay, static enemy => {
-            gameInstance.DamageEnemy(enemy, enemy.delayedDamage, enemy.delayedDamageIsCrit);
+            DamageEnemy(enemy, enemy.delayedDamage, enemy.delayedDamageIsCrit);
         });
     }
     
@@ -25,8 +25,8 @@ public partial class Game {
         public Vector2 position;
         public Vector2 velocity;
     }
-    
-    private void DamageEnemy(Enemy enemy, int damage, bool isCriticalStrike, bool useEnemyDamageMultiplier = true, DamageBloodParams? damageBlood = default) {
+
+    static void DamageEnemy(Enemy enemy, int damage, bool isCriticalStrike, bool useEnemyDamageMultiplier = true, DamageBloodParams? damageBlood = default) {
         if (useEnemyDamageMultiplier) {
             damage = Mathf.RoundToInt(damage * GetDamageMultiplierOnEnemy(enemy));
         }
@@ -45,12 +45,12 @@ public partial class Game {
         bloodGroundPos += randomGroundBloodDir * Random.Range(0f, 0.15f);
         StampBlood(bloodGroundPos, BloodSize.Small, delay: 0.08f);
     }
-    
-    private void DealShapeDamage(Entity damageShapeEntity, int damage, LayerMask mask, Action<Vector2> onDamageFrame = null, Action<Entity> onHit = null) {
+
+    static void DealShapeDamage(Entity damageShapeEntity, int damage, LayerMask mask, Action<Vector2> onDamageFrame = null, Action<Entity> onHit = null) {
         DealShapeDamage(damageShapeEntity, damageShapeEntity.damageShape, damage, mask, mirrored: false, chanceToBleed: 0f, onDamageFrame: onDamageFrame, onHit: onHit);
     }
 
-    private void DealShapeDamage(Entity sourceEntity, DamageShape damageShape, int damage, LayerMask mask, bool mirrored, float chanceToBleed, 
+    static void DealShapeDamage(Entity sourceEntity, DamageShape damageShape, int damage, LayerMask mask, bool mirrored, float chanceToBleed, 
         Action<Vector2> onDamageFrame, Action<Entity> onHit) 
     {
         Assert.IsNotNull(damageShape, "Cannot deal shape damage because there is no DamageShape");
@@ -92,11 +92,11 @@ public partial class Game {
             if (entity is Enemy && entity.health <= 0) return;
 
             onDamageFrame?.Invoke(damageShape.GetCenter(mirrored));
-            gameInstance.DamageEntitiesInShape(entity, damageShape, damage, mask, mirrored, chanceToBleed, onHit);
+            DamageEntitiesInShape(entity, damageShape, damage, mask, mirrored, chanceToBleed, onHit);
         });
     }
-    
-    private static float DamageFrameDelay(Animator animator, int frame) {
+
+    static float DamageFrameDelay(Animator animator, int frame) {
         if (frame <= 0 || !animator) {
             return 0f;
         }
@@ -117,8 +117,8 @@ public partial class Game {
         float speed = animator.speed > 0f ? animator.speed : 1f;
         return frame / (clipInfos[0].clip.frameRate * speed);
     }
-    
-    private void DamageEntitiesInShape(Entity sourceEntity, DamageShape damageShape, int damage, LayerMask mask, 
+
+    static void DamageEntitiesInShape(Entity sourceEntity, DamageShape damageShape, int damage, LayerMask mask, 
         bool mirrored = false, float chanceToBleed = 0f, Action<Entity> onHit = null) 
     {
         List<Collider2D> cols = damageShape.Overlap(mask, mirrored);
@@ -147,8 +147,8 @@ public partial class Game {
             }
         }
     }
-    
-    private void HandleDamage(Projectile projectile, Entity entity) {
+
+    static void HandleDamage(Projectile projectile, Entity entity) {
         if (entity == null) return;
         if (entity.gameObject.CompareTag(Tags.Enemy)) {
             HandleDamageEnemy(projectile, entity);
@@ -158,8 +158,8 @@ public partial class Game {
             thisFrame.flags |= GameData.FrameFlags.ShotRock;
         }
     }
-    
-    private void HandleDamageEnemy(Projectile projectile, Entity entity) {
+
+    static void HandleDamageEnemy(Projectile projectile, Entity entity) {
         var entityLookup = entities.lookup;
         if (entityLookup[entity.gameObject] is not Enemy enemy) return;
         
@@ -205,10 +205,8 @@ public partial class Game {
         
         if (eyeInstance.explosion.TryGetValue(out var explosion) && RollProbability(explosion.probability)) {
             Vector2 expSpawnPos = GetExplosionPosition(projectile, enemy);
+            SpawnEntityOneShot(entityPools.explosion, expSpawnPos, Quaternion.identity); 
             PlayAudioClip(audio.explosionClip, expSpawnPos);
-
-            Entity expEntity = SpawnEntity(entityPools.explosion, expSpawnPos, Quaternion.identity); 
-            DestroyEntity(expEntity, CurrentClipLength(expEntity.animator));
             
             List<Collider2D> cols = Physics.OverlapCircle(expSpawnPos, explosion.radius, Masks.EnemyMask);
             foreach (Collider2D col in cols) {
@@ -252,8 +250,8 @@ public partial class Game {
             }
         }
     }
-    
-    private void HandleDamageRock(Entity entity, float damageMulti = 1f) {
+
+    static void HandleDamageRock(Entity entity, float damageMulti = 1f) {
         int damage = Mathf.RoundToInt(config.gameplay.damage * damageMulti);
         entity.health -= damage;
 
@@ -293,7 +291,7 @@ public partial class Game {
         }
     }
 
-    private float GetCriticalStrikeProbability(Projectile proj, Enemy enemy) {
+    static float GetCriticalStrikeProbability(Projectile proj, Enemy enemy) {
         if (proj.flatCritChance.TryGetValue(out float flatCrit)) {
             return flatCrit;
         }
@@ -305,7 +303,7 @@ public partial class Game {
         return criticalStrikeProb;
     }
 
-    private int GetProjectileDamage(Projectile proj, Enemy enemy, bool isCriticalHit) {
+    static int GetProjectileDamage(Projectile proj, Enemy enemy, bool isCriticalHit) {
         float damageMultiplier = GetDamageMultiplierOnEnemy(enemy);
         
         // Phase 1 - Multiplications to damage multiplier (Anything with a description of '1.5x Damage' or '0.65x Damage')
@@ -348,14 +346,14 @@ public partial class Game {
         return Mathf.RoundToInt(GetBaseDamage() * damageMultiplier);
     }
 
-    private int GetBaseDamage() {
+    static int GetBaseDamage() {
         int damage = Mathf.RoundToInt(config.gameplay.damage * GetAbsoluteStat(PlayerStat.DamageMulti));
         int damageRange = Mathf.RoundToInt(damage * 0.05f);
         damage += Random.Range(-damageRange, damageRange);
         return Mathf.Clamp(damage, 1, int.MaxValue);
     }
 
-    private float GetDamageMultiplierOnEnemy(Enemy enemy) {
+    static float GetDamageMultiplierOnEnemy(Enemy enemy) {
         float damageMultiplier = 1f;
         
         if (enemy.poison.HasValue) {
@@ -367,8 +365,8 @@ public partial class Game {
 
         return damageMultiplier;
     }
-    
-    private Vector2 GetExplosionPosition(Projectile projectile, Enemy enemy) {
+
+    static Vector2 GetExplosionPosition(Projectile projectile, Enemy enemy) {
         return projectile.position + (enemy.position - projectile.position) / 2f;
     }
     

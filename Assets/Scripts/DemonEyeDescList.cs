@@ -9,21 +9,19 @@ public class DemonEyeDescList : MonoBehaviour {
 
     public GameObject augmentDescPrefab;
     public DemonEyeDescElement[] elements;
-
-    private List<List<AugmentDescription>> childAugmentDescTrackingList;
-    private ObjectPool<AugmentDescription> augmentDescObjectPool;
+    List<List<AugmentDescription>> childAugmentDescTrackingList;
+    ObjectPool<AugmentDescription> augmentDescObjectPool;
 
     // Elements stay bound to the upgrade they show rather than to a list position, so a removed upgrade's element
     // can keep its content while it slides out, and the others don't swap content when the list reorders
-    private readonly Dictionary<EyeUpgrade, int> elementIndexFromUpgrade = new();
-    private EyeUpgrade[] shownUpgrades;
-    private int[] shownUpgradeCounts;
-    private bool[] slidingOut; // Still showing a removed upgrade while it slides away, so it can't be given a new one yet
-    private bool triggerReAnimation;
+    readonly Dictionary<EyeUpgrade, int> elementIndexFromUpgrade = new();
+    EyeUpgrade[] shownUpgrades;
+    int[] shownUpgradeCounts;
+    bool[] slidingOut; // Still showing a removed upgrade while it slides away, so it can't be given a new one yet
+    bool triggerReAnimation;
+    const float SlideInDelayPerElement = 0.06f;
 
-    private const float SlideInDelayPerElement = 0.06f;
-
-    private void Awake() {
+    void Awake() {
         childAugmentDescTrackingList = new();
         for (int i = 0; i < elements.Length; i++) {
             childAugmentDescTrackingList.Add(new(capacity: 3));
@@ -40,7 +38,7 @@ public class DemonEyeDescList : MonoBehaviour {
         HideAllElements();
     }
 
-    private void OnDisable() {
+    void OnDisable() {
         triggerReAnimation = true;
     }
 
@@ -135,7 +133,7 @@ public class DemonEyeDescList : MonoBehaviour {
         }
     }
 
-    private static void SlideInElement(DemonEyeDescElement demonEyeDescElm, float slideDistance, float delay) {
+    static void SlideInElement(DemonEyeDescElement demonEyeDescElm, float slideDistance, float delay) {
         const float slideDuration = 0.35f;
 
         // An element caught partway through sliding out carries on back in from where it is, rather than jumping off screen first
@@ -149,7 +147,7 @@ public class DemonEyeDescList : MonoBehaviour {
     }
 
     // The reverse of SlideInElement, then the element is hidden and freed up for another upgrade
-    private void SlideOutElement(int elementIndex, float slideDistance) {
+    void SlideOutElement(int elementIndex, float slideDistance) {
         const float slideDuration = 0.25f;
 
         slidingOut[elementIndex] = true;
@@ -160,7 +158,7 @@ public class DemonEyeDescList : MonoBehaviour {
             .ChainCallback(() => HideElement(elementIndex, stopSlide: false))); // Stopping the sequence from inside its own callback isn't allowed
     }
 
-    private void HideElement(int elementIndex, bool stopSlide = true) {
+    void HideElement(int elementIndex, bool stopSlide = true) {
         DemonEyeDescElement demonEyeDescElm = elements[elementIndex];
         if (stopSlide) demonEyeDescElm.StopSlide();
         demonEyeDescElm.StopPunch();
@@ -178,7 +176,7 @@ public class DemonEyeDescList : MonoBehaviour {
     }
 
     // Returns the element to show a newly added upgrade in, or -1 if every element is in use
-    private int ClaimElementFor(EyeUpgrade upgrade) {
+    int ClaimElementFor(EyeUpgrade upgrade) {
         // If it was taken out and put straight back in, take back the element that's still sliding away with it
         for (int i = 0; i < elements.Length; i++) {
             if (slidingOut[i] && shownUpgrades[i] == upgrade) {
@@ -200,7 +198,7 @@ public class DemonEyeDescList : MonoBehaviour {
 
     // Puts the elements in the same order as the set. Elements that are sliding out keep their spot relative to
     // the element that was above them, so they leave from where they were instead of jumping to the end.
-    private void OrderElements(EyeUpgradeSet eyeUpgradeSet) {
+    void OrderElements(EyeUpgradeSet eyeUpgradeSet) {
         using var _ = ListPool<DemonEyeDescElement>.Get(out List<DemonEyeDescElement> currentOrder);
         using var __ = ListPool<DemonEyeDescElement>.Get(out List<DemonEyeDescElement> desiredOrder);
 
@@ -243,36 +241,36 @@ public class DemonEyeDescList : MonoBehaviour {
         }
     }
 
-    private float GetLaidOutListWidth() {
+    float GetLaidOutListWidth() {
         Canvas.ForceUpdateCanvases(); // The panel may have only just been turned on, so make sure its width is up to date
         return ((RectTransform)transform).rect.width;
     }
 
-    private void ReleaseElementsAugmentDescriptions(List<AugmentDescription> list) {
+    void ReleaseElementsAugmentDescriptions(List<AugmentDescription> list) {
         for (int i = list.Count - 1; i >= 0; i--) {
             augmentDescObjectPool.Release(list[i]);
             list.RemoveAt(i);
         }
     }
-    
-    private void FillElmentsAugmentDescriptions(List<AugmentDescription> list, int count) {
+
+    void FillElmentsAugmentDescriptions(List<AugmentDescription> list, int count) {
         for (int i = 0; i < count; i++) {
             list.Add(augmentDescObjectPool.Get());
         }
     }
-    
-    private AugmentDescription OnCreateAugmentDescription() {
+
+    AugmentDescription OnCreateAugmentDescription() {
         var augmentDescInstance = Instantiate(augmentDescPrefab, transform).GetComponent<AugmentDescription>();        
         augmentDescInstance.gameObject.SetActive(false);
         return augmentDescInstance;
     }
-    
-    private void OnReleaseAugmentDescription(AugmentDescription augmendDesc) {
+
+    void OnReleaseAugmentDescription(AugmentDescription augmendDesc) {
         augmendDesc.transform.SetParent(transform);
         augmendDesc.gameObject.SetActive(false);
     }
-    
-    private void OnGetAugmentDescription(AugmentDescription augmendDesc) {
+
+    void OnGetAugmentDescription(AugmentDescription augmendDesc) {
         augmendDesc.gameObject.SetActive(true);
     }
 

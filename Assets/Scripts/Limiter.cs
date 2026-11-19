@@ -1,9 +1,8 @@
 using UnityEngine;
 
 public struct Limiter {
-
-    private float limitTime;
-    private float lastTime;
+    float limitTime;
+    float lastTime;
 
     public Limiter(float time) {
         limitTime = time;

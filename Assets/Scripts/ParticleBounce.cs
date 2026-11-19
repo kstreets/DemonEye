@@ -13,14 +13,15 @@ public class ParticleBounce : MonoBehaviour {
     [Tooltip("Seconds to fade out once the particle's ground point leaves walkable space")]
     public float offMapFadeDuration = 0.15f;
 
-    private ParticleSystem ps;
-    private ParticleSystem.Particle[] particles;
-    // x = height currently applied, y = bounce duration, z = height multiplier
-    private readonly List<Vector4> bounceData = new();
-    // x = age when the fade started + 1 (0 = not fading), y = alpha before fading
-    private readonly List<Vector4> fadeData = new();
+    ParticleSystem ps;
 
-    private void LateUpdate() {
+    ParticleSystem.Particle[] particles;
+    // x = height currently applied, y = bounce duration, z = height multiplier
+    readonly List<Vector4> bounceData = new();
+    // x = age when the fade started + 1 (0 = not fading), y = alpha before fading
+    readonly List<Vector4> fadeData = new();
+
+    void LateUpdate() {
         Apply();
     }
 
@@ -92,19 +93,20 @@ public class ParticleBounce : MonoBehaviour {
         ps.SetParticles(particles, count);
     }
 
-    private static CoolerGrid GetGrid() {
-        if (!Game.gameInstance) {
+    static CoolerGrid GetGrid() {
+        if (!Game.runner) {
             return null;
         }
-        MapInstance map = Game.gameInstance.curRaid.mapInstance;
+        MapInstance map = Game.curRaid.mapInstance;
         return map ? map.grid : null;
     }
 
     public AnimationCurve GetHeightCurve() {
         if (heightCurve is { length: > 0 }) return heightCurve;
-        // gameInstance isn't set outside play mode
-        Game game = Game.gameInstance ? Game.gameInstance : FindAnyObjectByType<Game>();
-        return game ? game.curves.bounce : null;
+        // Game's references aren't set outside play mode
+        if (Game.curves != null) return Game.curves.bounce;
+        GameRunner runner = FindAnyObjectByType<GameRunner>();
+        return runner ? runner.curves.bounce : null;
     }
 
 }

@@ -7,7 +7,7 @@ public class CrystalFragmentCreator : MonoBehaviour {
     public Sprite[] allSpriteFragments;
 
     [Button]
-    private void Create() {
+    void Create() {
         Sprite fullCystalSprite = GetComponent<SpriteRenderer>().sprite;
 
         foreach (Sprite sprite in allSpriteFragments) {

@@ -9,23 +9,22 @@ public class ParticleBatch : MonoBehaviour {
     [Min(0)] public float playOnEnableDelay;
 
     // Keys are ParticleSystem prefabs, values are the shared instances that emit them
-    private static readonly Dictionary<ParticleSystem, ParticleSystem> instances = new();
-    private static Transform instanceRoot;
+    static readonly Dictionary<ParticleSystem, ParticleSystem> instances = new();
+    static Transform instanceRoot;
+    float playTime = -1f;
 
-    private float playTime = -1f;
-
-    private void OnEnable() {
+    void OnEnable() {
         if (playOnEnable) {
             playTime = Time.time + playOnEnableDelay;
         }
     }
 
-    private void OnDisable() {
+    void OnDisable() {
         playTime = -1f;   
     }
 
     // Deferred to LateUpdate so objects that are enabled then disabled in the same frame (pool warmup) don't emit
-    private void LateUpdate() {
+    void LateUpdate() {
         if (playTime < 0f || Time.time < playTime) return;
         playTime = -1f;
         Play();
@@ -40,11 +39,11 @@ public class ParticleBatch : MonoBehaviour {
         particles.Emit(RandomCount());
     }
 
-    private int RandomCount() {
+    int RandomCount() {
         return Random.Range(countRange.x, countRange.y + 1);  
-    } 
+    }
 
-    private static ParticleSystem GetInstance(ParticleSystem prefab) {
+    static ParticleSystem GetInstance(ParticleSystem prefab) {
         if (instances.TryGetValue(prefab, out ParticleSystem particles) && particles) return particles;
 
         if (!instanceRoot) {

@@ -3,13 +3,13 @@ using Unity.Cinemachine;
 using UnityEngine;
 using static GameData;
 
-public partial class Game {
+public static partial class Game {
 
     public struct RaidCutsceneData {
         public bool tutorialExitCutscenePlayed;
     }
-    
-    private void CheckForExitPortalCutscene() {
+
+    static void CheckForExitPortalCutscene() {
         ref bool tutorialExitCutscenePlayed = ref curRaid.data.raidCutscene.tutorialExitCutscenePlayed;
         
         if (tutorialExitCutscenePlayed || persistentFlags.HasFlag(PersistentFlags.DidTutorialExtraction)) return;
@@ -23,18 +23,18 @@ public partial class Game {
         tutorialExitCutscenePlayed = true;
         Tween.Delay(1.5f, static () => {
             // The raid can end or the player can find a portal on their own during the delay
-            if (!gameInstance.InRaid || player.health <= 0 || gameInstance.pauseMenu.paused || gameInstance.cutscene.playing) return;
+            if (!InRaid || player.health <= 0 || pauseMenu.paused || cutscene.playing) return;
             if (AnyExitPortalSummoned()) return; // They already know how to extract, and the portal would keep closing during the cutscene
 
             Portal closestPortal = ClosestInactiveExitPortal();
             if (closestPortal == null) return; // Every portal was already used up
             
-            gameInstance.spawnManager.startNextWaveDelay += 8;
-            gameInstance.PlayExitPortalCutscene(closestPortal);
+            spawnManager.startNextWaveDelay += 8;
+            PlayExitPortalCutscene(closestPortal);
         });
         
         static bool AnyExitPortalSummoned() {
-            foreach (Portal portal in gameInstance.curRaid.activeExitPortals) {
+            foreach (Portal portal in curRaid.activeExitPortals) {
                 if (portal.state is Portal.State.BeingSummoned or Portal.State.Open) {
                     return true;
                 }
@@ -45,7 +45,7 @@ public partial class Game {
         static Portal ClosestInactiveExitPortal() {
             Portal closest = null;
             float closestSqrDist = float.MaxValue;
-            foreach (Portal portal in gameInstance.curRaid.activeExitPortals) {
+            foreach (Portal portal in curRaid.activeExitPortals) {
                 if (portal.state != Portal.State.Inactive) continue;
                 float sqrDist = (portal.transform.position - player.position).sqrMagnitude;
                 if (sqrDist >= closestSqrDist) continue;
@@ -56,7 +56,7 @@ public partial class Game {
         }
     }
 
-    private void PlayExitPortalCutscene(Portal portal) {
+    static void PlayExitPortalCutscene(Portal portal) {
         const float panTime = 1.6f;
         const float settleTime = 0.25f; // Lets the camera's damping catch up before the trader talks
 
@@ -97,7 +97,7 @@ public partial class Game {
     }
 
     // Freezes the raid in place so the camera can be moved around
-    private void StartCutscene() {
+    static void StartCutscene() {
         cutscene.playing = true;
         states.gameStateMachine.Pause();
 
@@ -130,7 +130,7 @@ public partial class Game {
         }
     }
 
-    private void EndCutscene() {
+    static void EndCutscene() {
         if (cutscene.restoreLookahead && camera.cinemachine.TryGetComponent(out CinemachinePositionComposer composer)) {
             composer.Lookahead.Enabled = true;
         }

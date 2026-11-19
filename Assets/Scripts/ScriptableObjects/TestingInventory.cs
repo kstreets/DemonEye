@@ -29,7 +29,7 @@ public class TestingInventory : ScriptableObject {
         }
     }
 
-    private void OnValidate() {
+    void OnValidate() {
         if (demonEyeUpgrades == null || demonEyeUpgrades.Length != GameData.Config.demonEyeCoreUpgradeCount) {
             Array.Resize(ref demonEyeUpgrades, GameData.Config.demonEyeCoreUpgradeCount);
         }
@@ -48,7 +48,7 @@ public class TestingInventory : ScriptableObject {
             return;
         }
 
-        Game.gameInstance.LoadTestingInventoryOntoPlayer(this);
+        Game.LoadTestingInventoryOntoPlayer(this);
     }
 
     [VInspector.Button]
@@ -58,9 +58,8 @@ public class TestingInventory : ScriptableObject {
             return;
         }
 
-        Game gameManager = FindAnyObjectByType(typeof(Game)) as Game;
         foreach (TestItemInstance inventoryItem in items) {
-            gameManager?.TryAddItemToInventory(gameManager.inventories.player, inventoryItem.item, inventoryItem.count);
+            Game.TryAddItemToInventory(Game.inventories.player, inventoryItem.item, inventoryItem.count);
         }
     }
 
@@ -71,9 +70,8 @@ public class TestingInventory : ScriptableObject {
             return;
         }
 
-        Game gameManager = FindAnyObjectByType(typeof(Game)) as Game;
         foreach (TestItemInstance inventoryItem in items) {
-            gameManager?.TryAddItemToInventory(gameManager.inventories.stash, inventoryItem.item, inventoryItem.count);
+            Game.TryAddItemToInventory(Game.inventories.stash, inventoryItem.item, inventoryItem.count);
         }
     }
 

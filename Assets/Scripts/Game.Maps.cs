@@ -8,9 +8,9 @@ using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 using static GameData;
 
-public partial class Game {
+public static partial class Game {
     
-    private void InitMaps(GameState gameState) {
+    static void InitMaps(GameState gameState) {
         List<MapData> maps = config.maps;
         
         config.tutorialSlaughterMap.state = new() {
@@ -29,7 +29,7 @@ public partial class Game {
         }
     }
 
-    private static MapData.State FindSavedMapState(GameState gameState, MapData map) {
+    static MapData.State FindSavedMapState(GameState gameState, MapData map) {
         if (gameState == null) return null;
         foreach (MapData.State state in gameState.mapStates) {
             if (state != null && state.mapUuid == map.uuid) return state;
@@ -39,7 +39,7 @@ public partial class Game {
     
     public enum MapLoadingState { Unloaded, Loaded, Loading, Unloading }
     
-    public void LoadMapAsync(MapData mapData) {
+    public static void LoadMapAsync(MapData mapData) {
         bool alreadyLoading = curRaid.mapLoadingState == MapLoadingState.Loading;
         if (alreadyLoading) return;
 
@@ -47,7 +47,7 @@ public partial class Game {
         if (loadOperation == null) return;
 
         curRaid.mapLoadingState = MapLoadingState.Loading;
-        StartCoroutine(WaitForSceneToLoad());
+        runner.StartCoroutine(WaitForSceneToLoad());
 
         IEnumerator WaitForSceneToLoad() {
             while (!loadOperation.isDone) {
@@ -76,7 +76,7 @@ public partial class Game {
         }
     }
     
-    public void UnloadCurrentMapAsync() {
+    public static void UnloadCurrentMapAsync() {
         bool alreadyUnloading = curRaid.mapLoadingState == MapLoadingState.Unloading;
         if (alreadyUnloading) return;
             
@@ -90,7 +90,7 @@ public partial class Game {
         curRaid.mapLoadingState = MapLoadingState.Unloading;
         curRaid.map = null;
         
-        StartCoroutine(WaitForSceneToLoad());
+        runner.StartCoroutine(WaitForSceneToLoad());
 
         IEnumerator WaitForSceneToLoad() {
             while (!unloadOperation.isDone) {
@@ -103,14 +103,14 @@ public partial class Game {
         }
     }
 
-    private void SpawnMapResources(Transform resourceSpawnParent) {
-        if (curRaid.mapInstance.isBossMap) return;
-        
-        // Clear past resource lookups
+    static void SpawnMapResources(Transform resourceSpawnParent) {
+        // Cleared on boss maps too, since bosses drop chests
         curRaid.deadBodySlotsLookup.Clear();
         curRaid.bushSlotsLookup.Clear();
         curRaid.chestSlotsLookup.Clear();
-        
+
+        if (curRaid.mapInstance.isBossMap) return;
+
         foreach (ResourceSpawnGroup group in resourceSpawnParent.GetComponentsInChildren<ResourceSpawnGroup>()) {
             group.RollChildren();
         }
@@ -145,7 +145,7 @@ public partial class Game {
         } 
         
         foreach (ResourceSpawn resourceSpawn in resourceSpawns) {
-            Destroy(resourceSpawn.gameObject);
+            Object.Destroy(resourceSpawn.gameObject);
         }
         
         // Spawn blood mushrooms from previous raid
@@ -156,9 +156,8 @@ public partial class Game {
             curRaid.map.state.bloodMushroomSpawns.Clear();
         }
     }
-    
 
-    private T SpawnResource<T>(GameObject resourcePrefab, Transform spawnPoint, [CanBeNull] GridObstacle obstacle) where T : Entity, new() {
+    static T SpawnResource<T>(GameObject resourcePrefab, Transform spawnPoint, [CanBeNull] GridObstacle obstacle) where T : Entity, new() {
         T resource = SpawnEntity<T>(resourcePrefab, spawnPoint.position, spawnPoint.rotation);
         if (obstacle != null) {
             Vector2 obstaclePos = obstacle.Center(spawnPoint.position);
@@ -169,8 +168,8 @@ public partial class Game {
         }
         return resource;
     }
-    
-    private void InitDeadBody(Entity entity) {
+
+    static void InitDeadBody(Entity entity) {
         using var _ = ListPool<Item>.Get(out var items);
             
         int maxDeadBodyItemCount = Random.Range(2, 6);
@@ -186,31 +185,45 @@ public partial class Game {
         
         curRaid.deadBodySlotsLookup.Add(entity.gameObject, lootInventory);
     }
-    
-    private void InitBush(Entity entity) {
+
+    static void InitBush(Entity entity) {
         using var _ = ListPool<Item>.Get(out var items);
         int maxBushItemCount = Random.Range(1, 3);
         GetUniqueItemsFromDropPool(dropPools.bushes, maxBushItemCount, ref items);
         curRaid.bushSlotsLookup.Add(entity.gameObject, CreateLootInventoryFromItems(items, dropPools.bushes)); 
     }
-    
-    private void InitChest(Entity entity) {
+
+    static void InitChest(Entity entity) {
         using var _ = ListPool<Item>.Get(out var items);
         int maxChestItemCount = Random.Range(1, 2);
         GetUniqueItemsFromDropPool(dropPools.chests, maxChestItemCount, ref items);
-        curRaid.chestSlotsLookup.Add(entity.gameObject, CreateLootInventoryFromItems(items, dropPools.chests)); 
+        curRaid.chestSlotsLookup.Add(entity.gameObject, CreateLootInventoryFromItems(items, dropPools.chests));
     }
-    
-    private void InitMapGrid() {
+
+    static void DropBossChest(Enemy boss) {
+        const float dropDistance = 0.15f;
+        const float bounceDuration = 0.6f;
+        Entity chest = SpawnEntity<Entity>(prefabs.chest, boss.position, Quaternion.identity);
+        AddBounceEffect(chest, boss.position.Offset(y: -dropDistance), bounceDuration);
+
+        using var _ = ListPool<Item>.Get(out var items);
+        DropPool dropPool = boss.data.dropPool;
+        if (dropPool.HasItems) {
+            GetUniqueItemsFromDropPool(dropPool, Random.Range(1, dropPool.Count), ref items);
+        }
+        curRaid.chestSlotsLookup.Add(chest.gameObject, CreateLootInventoryFromItems(items, dropPool));
+    }
+
+    static void InitMapGrid() {
         curRaid.mapInstance.grid.Init(player.position);
         curRaid.lastPlayerGridPos = new(float.MaxValue, float.MaxValue);
     }
 
-    private void DeinitMapGrid() {
+    static void DeinitMapGrid() {
         curRaid.mapInstance.grid.Deinit();
     }
-    
-    private void UpdateMapGrid() {
+
+    static void UpdateMapGrid() {
         CoolerGrid grid = curRaid.mapInstance.grid;
         grid.FeedPlayerVelocity(player.position, player.velocity);
         grid.UpdateFlowFieldFromPreviousJob();
@@ -228,8 +241,8 @@ public partial class Game {
             curRaid.lastPlayerGridPos = curPlayerGridPos;
         }
     }
-    
-    private Portal GetExitPortalFromTransform(Transform trans) {
+
+    static Portal GetExitPortalFromTransform(Transform trans) {
         foreach (Portal portal in curRaid.activeExitPortals) {
             if (portal.transform == trans) {
                 return portal;
@@ -238,8 +251,8 @@ public partial class Game {
         Assert.IsTrue(false, "We should not be requesting a portal from a non-valid transform");
         return null;
     }
-    
-    private void SpawnInitialExitPortals(Transform exitPortalParent, int exitPortalsCount) {
+
+    static void SpawnInitialExitPortals(Transform exitPortalParent, int exitPortalsCount) {
         if (curRaid.mapInstance.isBossMap) return;
         Assert.IsTrue(exitPortalsCount > 0, $"{nameof(exitPortalsCount)} needs to be 1 or more");
         
@@ -273,8 +286,8 @@ public partial class Game {
             curRaid.activeExitPortals.Clear();
         }
     }
-    
-    private bool SpawnFinalExitPortal() {
+
+    static bool SpawnFinalExitPortal() {
         for (int i = 0; i < 100; i++) {
             Vector2 randomPos = (Vector2)player.position + Random.insideUnitCircle * Random.Range(0.5f, 1.5f);
             if (Physics.OverlapCircle(randomPos, 0.2f, Masks.StaticLevelMask).Count > 0) continue;
@@ -284,8 +297,8 @@ public partial class Game {
         }
         return false;
     }
-    
-    private void PlantBloodMushroom(Vector2 pos) {
+
+    static void PlantBloodMushroom(Vector2 pos) {
         if (curRaid.mapInstance.isBossMap) return;
         if (!persistentFlags.HasFlag(PersistentFlags.BloodMushroomsUnlocked)) return;
         
@@ -299,8 +312,8 @@ public partial class Game {
         }
         spawns.Add(pos);
     }
-    
-    private static Vector2 ClampPositionToMap(Vector2 origin, Vector2 target, float bufferRadius) {
+
+    static Vector2 ClampPositionToMap(Vector2 origin, Vector2 target, float bufferRadius) {
         Vector2 velocity = target - origin;
         Vector2 dir = velocity.normalized;
         float dist = velocity.magnitude;

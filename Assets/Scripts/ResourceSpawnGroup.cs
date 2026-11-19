@@ -19,7 +19,7 @@ public class ResourceSpawnGroup : MonoBehaviour {
         }
     }
 
-    private static ResourceSpawn PickUnpickedSpawn(ResourceSpawn[] spawns, bool guaranteed) {
+    static ResourceSpawn PickUnpickedSpawn(ResourceSpawn[] spawns, bool guaranteed) {
         float total = 0f;
         foreach (ResourceSpawn spawn in spawns) {
             if (!CanPick(spawn)) continue;
@@ -45,7 +45,7 @@ public class ResourceSpawnGroup : MonoBehaviour {
         return null;
     }
 
-    private static bool CanPick(ResourceSpawn spawn) {
+    static bool CanPick(ResourceSpawn spawn) {
         return spawn.groupRoll == ResourceSpawn.GroupRoll.NotPicked && !spawn.IsBlockedByExitPortal;
     }
 

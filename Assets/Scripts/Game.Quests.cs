@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using static GameData;
 
-public partial class Game {
+public static partial class Game {
     
     // Explicitly define each value so we can remove or
     // re-arrange without breaking the serialization
@@ -74,8 +74,8 @@ public partial class Game {
     public static bool ObjectiveIsComplete(Quest quest, ObjectiveData obj) {
         return GetObjectiveProgress(quest, obj) >= obj.targetValue;
     }
-    
-    private void InitQuests(GameState gameState) {
+
+    static void InitQuests(GameState gameState) {
         if (gameState == null) {
             foreach (Quest quest in quests.graph.unorderedQuests) {
                 AssignNewEmptyState(quest);
@@ -97,7 +97,7 @@ public partial class Game {
         }
     }
 
-    private void AssignNewEmptyState(Quest quest) {
+    static void AssignNewEmptyState(Quest quest) {
         quest.state = new() {
             associatedQuestUuid = quest.uuid,
             submitted = false,
@@ -105,7 +105,7 @@ public partial class Game {
         };
     }
 
-    private void UpdateQuests() {
+    static void UpdateQuests() {
         if (InTutorial) return;
         
         foreach (QuestPackage questsActivePkg in quests.activePkgs) {
@@ -122,8 +122,8 @@ public partial class Game {
             }
         }
     }
-    
-    private void UpdateQuestObjective(Quest quest, ObjectiveData obj) {
+
+    static void UpdateQuestObjective(Quest quest, ObjectiveData obj) {
         switch (obj.type) {
             case QuestObjectiveTypes.Kill: {
                 if (thisFrame.enemyKillCount.TryGetValue(obj.targetEnemy, out int kills)) {
@@ -207,24 +207,24 @@ public partial class Game {
                 throw new ArgumentOutOfRangeException();
         }
     }
-    
-    private void IncreaseObjectiveFromFlags(Quest quest, ObjectiveData obj, FrameFlags flag) {
+
+    static void IncreaseObjectiveFromFlags(Quest quest, ObjectiveData obj, FrameFlags flag) {
         if (thisFrame.flags.HasAnyFlag(flag)) {
             IncreaseProgressValue(quest, obj, 1);
         }
     }
-    
-    private void UpdateObjectiveFetchItem(Quest quest, ObjectiveData obj) {
+
+    static void UpdateObjectiveFetchItem(Quest quest, ObjectiveData obj) {
         int itemCount = obj.keepFetchedItems ? GetItemCountInInventory(inventories.player, obj.targetItem) : GetOwnedCountOfItem(obj.targetItem);
         UpdateObjectiveFetch(quest, obj, itemCount);
     }
-    
-    private void UpdateObjectiveFetchType(Quest quest, ObjectiveData obj) {
+
+    static void UpdateObjectiveFetchType(Quest quest, ObjectiveData obj) {
         int itemCount = obj.keepFetchedItems ? GetItemCountInInventory(inventories.player, obj.targetItemType) : GetOwnedCountOfItem(obj.targetItemType);
         UpdateObjectiveFetch(quest, obj, itemCount);
     }
-    
-    private void UpdateObjectiveFetch(Quest quest, ObjectiveData obj, int itemCount) {
+
+    static void UpdateObjectiveFetch(Quest quest, ObjectiveData obj, int itemCount) {
         // If we keep the fetched items we only care about if the player returns with them, not if they have it in their stash.
         // Item count should be the number of items currently in the player's inventory when keepFetchedItems is true.
         if (obj.keepFetchedItems) {
@@ -241,16 +241,16 @@ public partial class Game {
             SetProgressValue(quest, obj, itemCount);
         }
     }
-    
-    private void SetProgressValue(Quest quest, ObjectiveData obj, int value) {
+
+    static void SetProgressValue(Quest quest, ObjectiveData obj, int value) {
         quest.state.objectiveProgresses[obj.id] = Mathf.Clamp(value, 0, obj.targetValue);
     }
 
-    private void IncreaseProgressValue(Quest quest, ObjectiveData obj, int value) {
+    static void IncreaseProgressValue(Quest quest, ObjectiveData obj, int value) {
         SetProgressValue(quest, obj, GetObjectiveProgress(quest, obj) + value);
     }
-    
-    private void SpawnQuestItemOnDeadBody(Quest quest, ObjectiveData obj) {
+
+    static void SpawnQuestItemOnDeadBody(Quest quest, ObjectiveData obj) {
         if (ObjectiveIsComplete(quest, obj)) return;
 
         InventorySlot[] chosenDeadbody = curRaid.deadBodySlotsLookup.RandomValue();

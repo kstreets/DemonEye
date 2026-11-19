@@ -16,10 +16,9 @@ public class SingleSetting : MonoBehaviour {
     [NonSerialized] public int appliedIndex;
     [NonSerialized] public int curIndex;
     [NonSerialized] public int numOfSettings;
-
-    private Action<int> onSettingIndexChanged;
-    private Action<int> onApplyCallback;
-    private Func<int> getDefaultIndex;
+    Action<int> onSettingIndexChanged;
+    Action<int> onApplyCallback;
+    Func<int> getDefaultIndex;
     
     public void OnHorizontalNav(bool right) {
         if (right) {
@@ -79,8 +78,8 @@ public class SingleSetting : MonoBehaviour {
         SetBreadcrumbIndex(index);
         onSettingIndexChanged?.Invoke(index);
     }
-    
-    private void SetBreadcrumbIndex(int index) {
+
+    void SetBreadcrumbIndex(int index) {
         for (int i = 0; i < breadcrumbs.Length; i++) {
             if (i >= numOfSettings) {
                 breadcrumbs[i].gameObject.SetActive(false);
@@ -101,8 +100,8 @@ public class SingleSetting : MonoBehaviour {
     public void ResetToDefault() {
         ChangeTo(getDefaultIndex());
     }
-    
-    private void ChangeTo(int index) {
+
+    void ChangeTo(int index) {
         curIndex = index;
         if (onApplyCallback == null) {
             appliedIndex = curIndex;
@@ -112,18 +111,18 @@ public class SingleSetting : MonoBehaviour {
         onSettingIndexChanged?.Invoke(curIndex);
         Game.OnAnySettingsChanged();
     }
-    
-    private void OnIncrement() {
+
+    void OnIncrement() {
         ChangeTo((curIndex + 1) % numOfSettings);
         TweenArrowButton(rightButton.rectTransform);
     }
-    
-    private void OnDecrement() {
+
+    void OnDecrement() {
         ChangeTo((curIndex - 1 + numOfSettings) % numOfSettings);
         TweenArrowButton(leftButton.rectTransform);
     }
-    
-    private void TweenArrowButton(RectTransform arrowButton) {
+
+    void TweenArrowButton(RectTransform arrowButton) {
         // Unscaled so it still plays in the pause menu
         Tween.PunchScale(arrowButton, Vector3.one * 0.15f, 0.125f, useUnscaledTime: true);
     }

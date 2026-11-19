@@ -29,19 +29,17 @@ public static class RenderManager {
     
     // This will sometimes be null so we don't want render features accessing the pixel perfect camera.
     // Instead we expose value type members that reflect the pixel perfect camera's data or just the sensible defaults.
-    private static PixelPerfectCamera pixelPerfectCamera;
-    private const int shakeMarginTexels = 16; // Furthest the final blit can shift for camera shake, in pixel perfect camera texels
-    
-    private static RTHandle tilemapRT;
-    private static RTHandle waterOcclusionRT;
-    private static RTHandle sceneRT;
-    private static RTHandle waterRT;
-    private static RTHandle finalOutputRT;
-
-    private static ScriptableRendererData renderer;
-    private static FullScreenPassRendererFeature environmentFullscreenPass;
-    private static FullScreenPassRendererFeature damageVignettePass;
-    private static FullScreenPassRendererFeature deathWipePass;
+    static PixelPerfectCamera pixelPerfectCamera;
+    const int shakeMarginTexels = 16; // Furthest the final blit can shift for camera shake, in pixel perfect camera texels
+    static RTHandle tilemapRT;
+    static RTHandle waterOcclusionRT;
+    static RTHandle sceneRT;
+    static RTHandle waterRT;
+    static RTHandle finalOutputRT;
+    static ScriptableRendererData renderer;
+    static FullScreenPassRendererFeature environmentFullscreenPass;
+    static FullScreenPassRendererFeature damageVignettePass;
+    static FullScreenPassRendererFeature deathWipePass;
 
 #if UNITY_EDITOR
     static RenderManager() {
@@ -89,7 +87,7 @@ public static class RenderManager {
     }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-    private static void Initialize() {
+    static void Initialize() {
         offScreenRenderingSize = Vector2Int.zero;
         shakeOffset = Vector2.zero;
         punchZoom = 1f;
@@ -106,8 +104,8 @@ public static class RenderManager {
         RenderPipelineManager.beginCameraRendering -= OnBeginRendering;
         RenderPipelineManager.beginCameraRendering += OnBeginRendering;
     }
-    
-    private static void OnBeginRendering(ScriptableRenderContext context, Camera camera) {
+
+    static void OnBeginRendering(ScriptableRenderContext context, Camera camera) {
         if (camera.cameraType != CameraType.SceneView && camera.cameraType != CameraType.Game) return;
         
         if (pixelPerfectCamera == null) {
@@ -132,8 +130,8 @@ public static class RenderManager {
         int offScreenWidth = curScreenSize.x + horizontalSamplingOffset * 2;
         
         // We need to manually define the tilemap chunk culling to match the size of the offscreen render textures
-        if (Game.gameInstance != null && Game.gameInstance.InRaid) {
-            TilemapRenderer tileMapRenderer = Game.gameInstance.curRaid.mapInstance.mainTilemapRenderer;
+        if (Game.runner && Game.InRaid) {
+            TilemapRenderer tileMapRenderer = Game.curRaid.mapInstance.mainTilemapRenderer;
             if (tileMapRenderer.detectChunkCullingBounds != TilemapRenderer.DetectChunkCullingBounds.Manual) {
                 tileMapRenderer.detectChunkCullingBounds = TilemapRenderer.DetectChunkCullingBounds.Manual;
             }
@@ -164,27 +162,27 @@ public static class RenderManager {
 
         offScreenRenderingSize = new(offScreenWidth, offScreenHeight);
     }
-    
-    private static RTHandle EnsureRenderTexture(ref RTHandle rtHandle) {
+
+    static RTHandle EnsureRenderTexture(ref RTHandle rtHandle) {
         if (RenderTextureExists(ref rtHandle)) {
             return rtHandle;
         }
         AllocRenderTexture(ref rtHandle, Screen.width, Screen.height);
         return rtHandle;
     }
-    
-    private static bool RenderTextureExists(ref RTHandle rtHandle) {
+
+    static bool RenderTextureExists(ref RTHandle rtHandle) {
         return rtHandle != null && rtHandle.rt != null && rtHandle.rt.IsCreated();
     }
-    
-    private static void AllocRenderTexture(ref RTHandle rtHandle, int width, int height) {
+
+    static void AllocRenderTexture(ref RTHandle rtHandle, int width, int height) {
         width = Mathf.Max(1, width);
         height = Mathf.Max(1, height);
         rtHandle?.Release();
         rtHandle = RTHandles.Alloc(width, height, GraphicsFormat.R32G32B32A32_SFloat, enableRandomWrite: true, autoGenerateMips: false, filterMode: FilterMode.Point);
     }
-    
-    private static Vector2Int GetGameViewSize() {
+
+    static Vector2Int GetGameViewSize() {
         #if UNITY_EDITOR
             Vector2 size = Handles.GetMainGameViewSize();
             int w = (int)size.x;
@@ -194,14 +192,14 @@ public static class RenderManager {
             return new(Screen.width, Screen.height);
         #endif
     }
-    
-    private static ScriptableRendererData GetRenderer(int index = 0) {
+
+    static ScriptableRendererData GetRenderer(int index = 0) {
         if (GraphicsSettings.currentRenderPipeline is not UniversalRenderPipelineAsset urpAsset) return null;
         ReadOnlySpan<ScriptableRendererData> list = urpAsset.rendererDataList;
         return index < list.Length ? list[index] : null;
     }
 
-    private static T GetRenderFeature<T>(string name) where T : ScriptableRendererFeature {
+    static T GetRenderFeature<T>(string name) where T : ScriptableRendererFeature {
         renderer ??= GetRenderer();
         if (renderer == null) {
             return null;

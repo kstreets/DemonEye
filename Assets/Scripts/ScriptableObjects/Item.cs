@@ -39,11 +39,13 @@ public class Item : UuidScriptableObject  {
     
     public ItemGroupProperties itemGroupProps;
     [ShowIf(nameof(itemGroupProps), null)]
-    [SerializeField] private int maxStackCount;
-    [SerializeField] [Range(0, 10)] private int weight;
+    [SerializeField]
+    int maxStackCount;
+    [SerializeField] [Range(0, 10)] int weight;
     [EndIf]
     
-    [SerializeField] [TextArea] private string description;
+    [SerializeField] [TextArea]
+    string description;
     
     [NonSerialized] public Augment augmentCreatedFrom;
     [NonSerialized] public List<Augment> augmentedVariants;
@@ -153,8 +155,8 @@ public class Item : UuidScriptableObject  {
     }
     
 #if UNITY_EDITOR
-    
-    private void OnValidate() {
+
+    void OnValidate() {
         dropOrigins.Sort((a, b) => string.Compare(a.dropPool?.name, b.dropPool?.name, StringComparison.Ordinal));
         
         bool updatedMaxStackCount = false;
@@ -172,12 +174,12 @@ public class Item : UuidScriptableObject  {
     }
     
     [Button]
-    private void AddToStash() {
+    void AddToStash() {
         if (!Application.isPlaying) {
             Debug.Log("Can only add to stash inventory when game is playing");
             return;
         }
-        gameInstance.TryAddItemToInventory(gameInstance.inventories.stash, this, 1);
+        Game.TryAddItemToInventory(Game.inventories.stash, this, 1);
     }
 
 #endif

@@ -26,11 +26,11 @@ public class ExplosionEyeUpgrade : EyeUpgrade {
         return $"{DisplayProb(GetProbability(stackCount))} chance for a projectile to explode on impact causing {DisplayMultiplier(GetDamage(stackCount))} damage";
     }
 
-    private float GetProbability(int stackCount) {
+    float GetProbability(int stackCount) {
         return TaperFloat(probability, stackCount, 0.65f);
     }
 
-    private float GetDamage(int stackCount) {
+    float GetDamage(int stackCount) {
         return TaperFloat(damageMulti, stackCount, 0.5f);
     }
     

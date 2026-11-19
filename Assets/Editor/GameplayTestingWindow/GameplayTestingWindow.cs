@@ -29,7 +29,7 @@ public class GameplayTestingWindow : EditorWindow {
     private SliderInt TraderLevelSlider => root.Q<SliderInt>("TraderLevelSlider");
     private Toggle SkipTutorialToggle => root.Q<Toggle>("SkipTutorial");
     
-    private List<MapData> Maps => FindFirstObjectByType<Game>().config.maps;
+    private List<MapData> Maps => FindFirstObjectByType<GameRunner>().config.maps;
 
     [MenuItem("Window/UI Toolkit/Gameplay Testing")]
     public static void ShowExample() {
@@ -94,16 +94,15 @@ public class GameplayTestingWindow : EditorWindow {
     private void OnCreateEyeClicked(ClickEvent e) {
         if (!Application.isPlaying || currentMap == null) return;
         
-        Game game = Game.gameInstance;
-        game.CreateDropPoolsForMap(currentMap); 
+        Game.CreateDropPoolsForMap(currentMap); 
         List<Game.ItemInstance> itemInstances = new();
         for (int i = 0; i < 5; i++) {
-            Item item = game.GetItemFromDropPool(game.dropPools.eyeUpgrades, currentMap);
+            Item item = Game.GetItemFromDropPool(Game.dropPools.eyeUpgrades, currentMap);
             itemInstances.Add(new(item));
         }
         
-        Game.ItemInstance demonEye = game.CreateNewDemonEyeItemInstance(Game.randomDemonEyeNames.GetRandom(), itemInstances);
-        game.TryAddItemToInventory(game.inventories.stash, demonEye);
+        Game.ItemInstance demonEye = Game.CreateNewDemonEyeItemInstance(Game.randomDemonEyeNames.GetRandom(), itemInstances);
+        Game.TryAddItemToInventory(Game.inventories.stash, demonEye);
     }
     
     private void OnMapDataChanged(ChangeEvent<Object> changeEvent) {
@@ -253,18 +252,18 @@ public class GameplayTestingWindow : EditorWindow {
 
         // Entering play mode loads it automatically, so only need to load it manually when assigned mid play
         if (Application.isPlaying && SelectedTestingInventory != null) {
-            Game.gameInstance.LoadTestingInventoryOntoPlayer(SelectedTestingInventory);
+            Game.LoadTestingInventoryOntoPlayer(SelectedTestingInventory);
         }
     }
     
     private void OnEquipTestingInventory(ClickEvent e) {
         if (!Application.isPlaying || SelectedTestingInventory == null) return;
-        Game.gameInstance.LoadTestingInventoryOntoPlayer(SelectedTestingInventory);
+        Game.LoadTestingInventoryOntoPlayer(SelectedTestingInventory);
     }
     
     private void OnDamagePlayer(ClickEvent e) {
         if (!Application.isPlaying) return;
-        Game.gameInstance.DamagePlayer(10, Game.PlayerDamageType.Normal, null);
+        Game.DamagePlayer(10, Game.PlayerDamageType.Normal, null);
     }
     
     private void OnMakePlayerBleed(ClickEvent e) {
@@ -286,10 +285,10 @@ public class GameplayTestingWindow : EditorWindow {
         if (!Application.isPlaying) return;
         
         int traderLevelIndex = changeEvent.newValue - 1; 
-        GameData.Config config = Game.gameInstance.config;
+        GameData.Config config = Game.config;
         int repNeeded = config.trader.levels.prefixedLevels[traderLevelIndex];
-        Game.gameInstance.config.trader.state.reputation = repNeeded;
-        Game.gameInstance.FillTraderInventoryWithItems();
+        Game.config.trader.state.reputation = repNeeded;
+        Game.FillTraderInventoryWithItems();
     }
     
 }

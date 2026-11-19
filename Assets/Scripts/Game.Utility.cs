@@ -2,17 +2,16 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-public partial class Game {
-
-    private static void QuitGame() {
+public static partial class Game {
+    static void QuitGame() {
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else
         Application.Quit();
 #endif
     }
-    
-    private static StringBuilder _stringBuilder = new();
+
+    static StringBuilder _stringBuilder = new();
     
     public static StringBuilder GetStringBuilder() {
         _stringBuilder.Clear();
@@ -22,24 +21,18 @@ public partial class Game {
     public static bool RollProbability(float probability) {
         return Random.value <= probability;
     }
-    
-    private Vector2 ScreenCenter => new(Screen.width / 2f, Screen.height / 2f);
-    
-    private Vector2Int ScreenSize => new(Screen.width, Screen.height);
-    
-    private bool InHideout => states.gameStateMachine.CurState == states.hideout;
-    
-    private bool InMapSelection => states.gameStateMachine.CurState == states.mapSelection;
-    
-    private bool SelectingMap => InMapSelection && mapPanels.mapSelectionPanel.gameObject.activeInHierarchy;
-    
-    private bool ConfirmingMapSelection => InMapSelection && mapPanels.confirmationPanel.gameObject.activeInHierarchy;
-    
-    private bool InSettings => states.gameStateMachine.CurState == states.settingsMenu;
-    
-    public bool InRaid => states.gameStateMachine.CurState == states.raid;
 
-    private Vector3 RotationVector360(float minDist, float maxDist) {
+    static Vector2 ScreenCenter => new(Screen.width / 2f, Screen.height / 2f);
+    static Vector2Int ScreenSize => new(Screen.width, Screen.height);
+    static bool InHideout => states.gameStateMachine.CurState == states.hideout;
+    static bool InMapSelection => states.gameStateMachine.CurState == states.mapSelection;
+    static bool SelectingMap => InMapSelection && mapPanels.mapSelectionPanel.gameObject.activeInHierarchy;
+    static bool ConfirmingMapSelection => InMapSelection && mapPanels.confirmationPanel.gameObject.activeInHierarchy;
+    static bool InSettings => states.gameStateMachine.CurState == states.settingsMenu;
+    
+    public static bool InRaid => states.gameStateMachine.CurState == states.raid;
+
+    static Vector3 RotationVector360(float minDist, float maxDist) {
         return Quaternion.AngleAxis(Random.Range(0, 360), Vector3.forward) * Vector3.right * Random.Range(minDist, maxDist);
     }
     
@@ -51,32 +44,28 @@ public partial class Game {
         return Quaternion.AngleAxis(degrees, Vector3.forward) * Vector3.right * Random.Range(minDist, maxDist);
     }
 
-    private Vector3 RandomizeVectorAngle(Vector3 vector, float degreeDelta) {
+    static Vector3 RandomizeVectorAngle(Vector3 vector, float degreeDelta) {
         return Quaternion.AngleAxis(Random.Range(-degreeDelta, degreeDelta), Vector3.forward) * vector;
     }
-    
-    private Quaternion RandomRotation() {
+
+    static Quaternion RandomRotation() {
         return Quaternion.AngleAxis(Random.Range(0f, 360f), Vector3.forward);
     }
-    
-    private Quaternion LookRotation(Vector2 lookDir, Vector2 entityForward = default) {
+
+    static Quaternion LookRotation(Vector2 lookDir, Vector2 entityForward = default) {
         entityForward = entityForward == default ? Vector2.right : entityForward;
         return Quaternion.AngleAxis(Vector2.SignedAngle(entityForward.normalized, lookDir.normalized), Vector3.forward);
     }
-    
-    private Vector2 OffsetY(Vector2 pos, float yOffset) {
+
+    static Vector2 OffsetY(Vector2 pos, float yOffset) {
         return new(pos.x, pos.y + yOffset);
     }
-    
-    private Vector2 OffsetX(Vector2 pos, float xOffset) {
+
+    static Vector2 OffsetX(Vector2 pos, float xOffset) {
         return new(pos.x + xOffset, pos.y);
     }
 
-    private float CurrentClipLength(Animator anim) {
-        return anim.GetCurrentAnimatorStateInfo(0).length;
-    }
-
-    private string GetCountdownText(float timeLeft) {
+    static string GetCountdownText(float timeLeft) {
         float time = Mathf.Clamp(timeLeft, 0f, float.MaxValue);
         int minutesLeft = Mathf.FloorToInt(time / 60f);
         int secondsLeft = Mathf.FloorToInt(time % 60f);
@@ -88,7 +77,7 @@ public partial class Game {
         return startingIndex + (num - 1);
     }
 
-    private static string SizeText(string text, int fontSize) {
+    static string SizeText(string text, int fontSize) {
         return $"<size={fontSize}>{text}</size>";
     }
     
@@ -101,7 +90,7 @@ public partial class Game {
     }
     
     public static string DisplayProb(float probability, Color? color = default) {
-        Color textColor = color ?? gameInstance.config.styles.timeDescColor;
+        Color textColor = color ?? config.styles.timeDescColor;
         return ColorText($"{Mathf.FloorToInt(probability * 100f)}%", textColor);
     }
     
@@ -114,26 +103,26 @@ public partial class Game {
     }
 
     public static string DisplayProbIncrease(float probability, Color? color = default) {
-        Color textColor = color ?? gameInstance.config.styles.increaseDescColor;
+        Color textColor = color ?? config.styles.increaseDescColor;
         return ColorText($"+{Mathf.FloorToInt(probability * 100f)}%", textColor);
     }
     
     public static string DisplayProbDecrease(float probability, Color? color = default) {
-        Color textColor = color ?? gameInstance.config.styles.decreaseDescColor;
+        Color textColor = color ?? config.styles.decreaseDescColor;
         return ColorText($"-{Mathf.Abs(Mathf.FloorToInt(probability * 100f))}%", textColor);
     }
 
     public static string DisplayHealth(int health) {
-        return ColorText(health.ToString(), gameInstance.config.styles.increaseDescColor);
+        return ColorText(health.ToString(), config.styles.increaseDescColor);
     }
 
     public static string DisplayNumber(int number, Color? color = default) {
-        Color textColor = color ?? gameInstance.config.styles.timeDescColor;
+        Color textColor = color ?? config.styles.timeDescColor;
         return ColorText(number.ToString(), textColor);
     }
     
     public static string DisplayNumber(float number, Color? color = default) {
-        Color textColor = color ?? gameInstance.config.styles.timeDescColor;
+        Color textColor = color ?? config.styles.timeDescColor;
         return ColorText(number.ToString("0.00"), textColor);
     }
     
@@ -146,12 +135,12 @@ public partial class Game {
     }
 
     public static string DisplayIncrease(int amount, Color? color = default) {
-        Color textColor = color ?? gameInstance.config.styles.increaseDescColor;
+        Color textColor = color ?? config.styles.increaseDescColor;
         return ColorText($"+{amount}", textColor);
     }
     
     public static string DisplayDecrease(int amount, Color? color = default) {
-        Color textColor = color ?? gameInstance.config.styles.decreaseDescColor;
+        Color textColor = color ?? config.styles.decreaseDescColor;
         return ColorText($"-{Mathf.Abs(amount)}", textColor);
     }
 
@@ -160,17 +149,17 @@ public partial class Game {
     }
 
     public static string DisplayIncrease(float amount, Color? color = default) {
-        Color textColor = color ?? gameInstance.config.styles.increaseDescColor;
+        Color textColor = color ?? config.styles.increaseDescColor;
         return ColorText($"+{amount:0.00}", textColor);
     }
     
     public static string DisplayDecrease(float amount, Color? color = default) {
-        Color textColor = color ?? gameInstance.config.styles.decreaseDescColor;
+        Color textColor = color ?? config.styles.decreaseDescColor;
         return ColorText($"-{Mathf.Abs(amount):0.00}", textColor);
     }
     
     public static string DisplayMultiplier(float multiplier, Color? color = default) {
-        Color textColor = multiplier >= 1f ? gameInstance.config.styles.increaseDescColor : gameInstance.config.styles.decreaseDescColor;
+        Color textColor = multiplier >= 1f ? config.styles.increaseDescColor : config.styles.decreaseDescColor;
         return ColorText($"{multiplier:0.00}x", color ?? textColor);
     }
     
@@ -183,32 +172,32 @@ public partial class Game {
     }
 
     public static string DisplayMultiplierIncrease(float multiplier, Color? color = default) {
-        Color textColor = color ?? gameInstance.config.styles.increaseDescColor;
+        Color textColor = color ?? config.styles.increaseDescColor;
         return ColorText($"+{multiplier:0.00}x", textColor);
     }
     
     public static string DisplayMultiplierDecrease(float multiplier, Color? color = default) {
-        Color textColor = color ?? gameInstance.config.styles.decreaseDescColor;
+        Color textColor = color ?? config.styles.decreaseDescColor;
         return ColorText($"-{Mathf.Abs(multiplier):0.00}x", textColor);
     }
 
     public static string DisplaySeconds(float time) {
         if (time == 1f) {
-            return ColorText($"{time:0}<space=0.12em>s", gameInstance.config.styles.timeDescColor);
+            return ColorText($"{time:0}<space=0.12em>s", config.styles.timeDescColor);
         }
         
         bool isWholeNumber = time % 1 == 0;
         if (isWholeNumber) {
-            return ColorText($"{time:0}<space=0.12em>s", gameInstance.config.styles.timeDescColor);
+            return ColorText($"{time:0}<space=0.12em>s", config.styles.timeDescColor);
         }
         
-        return ColorText($"{time:0.0#}<space=0.12em>s", gameInstance.config.styles.timeDescColor);
+        return ColorText($"{time:0.0#}<space=0.12em>s", config.styles.timeDescColor);
     }
     
     public static string DisplayDistance(float dist) {
-        float distPerUnit = gameInstance.config.gameplay.distancePerUnit;
+        float distPerUnit = config.gameplay.distancePerUnit;
         float unitDist =  dist / distPerUnit;
-        return ColorText($"{unitDist:0.0}<space=0.12em>m", gameInstance.config.styles.timeDescColor);
+        return ColorText($"{unitDist:0.0}<space=0.12em>m", config.styles.timeDescColor);
     }
     
     public static int TaperInteger(int value, int stackCount, float taper) {
@@ -223,7 +212,7 @@ public partial class Game {
 
     public enum CardinalDir { Right, Left, Up, Down }
 
-    private static CardinalDir CardinalDirFromVector(Vector2 vector) {
+    static CardinalDir CardinalDirFromVector(Vector2 vector) {
         float dot = Vector2.Dot(Vector2.right, vector.normalized);
         if (Mathf.Abs(dot) >= 0.3f) {
             return vector.x > 0 ? CardinalDir.Right : CardinalDir.Left;

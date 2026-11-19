@@ -1,9 +1,8 @@
 using UnityEngine.Assertions;
 
 public struct OptionalRef<T> where T : struct {
-    
-    private T value;
-    private bool hasValue;
+    T value;
+    bool hasValue;
     
     public bool HasValue => hasValue;
     public static implicit operator OptionalRef<T>(T value) => new (value);

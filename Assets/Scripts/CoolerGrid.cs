@@ -24,47 +24,44 @@ public class CoolerGrid : MonoBehaviour {
     public float cellSize = 0.1f;
 
     // Approximate ratio between straight diagonal 
-    private const int dijkstraOrthogonalDist = 7;
-    private const int dijkstraDiagonalDist = 10;
-
-    private List<GridCell> spawnCells = new(30);
+    const int dijkstraOrthogonalDist = 7;
+    const int dijkstraDiagonalDist = 10;
+    List<GridCell> spawnCells = new(30);
     
     // The spawn cells only get regathered when one of these changes, so spawning a batch in one frame reuses them
-    private int lastSpawnCellUpdateFrame = -1;
-    private int lastSpawnCellPlayerIndex = -1;
-    private int lastSpawnCellInnerRadius = -1;
-    private int lastSpawnCellOuterRadius = -1;
+    int lastSpawnCellUpdateFrame = -1;
+    int lastSpawnCellPlayerIndex = -1;
+    int lastSpawnCellInnerRadius = -1;
+    int lastSpawnCellOuterRadius = -1;
 
     // Occupied positions sorted into square buckets as wide as the search radius, so counting the positions near a cell
     // only needs to check the 3x3 buckets around it. Positions in bucket b are bucketedPositions[bucketStarts[b]..bucketStarts[b + 1]]
-    private Vector2 bucketOrigin;
-    private float bucketSize;
-    private int bucketsPerSide;
-    private int[] bucketStarts = Array.Empty<int>();
-    private int[] bucketsNextOpenPosIndex = Array.Empty<int>();
-    private Vector2[] bucketedPositions = Array.Empty<Vector2>();
-    
-    private Vector2 gridGameObjectPosition;
-    private Vector2 predictedPlayerPos;
-    
-    private JobHandle? flowFieldJobHandle;
+    Vector2 bucketOrigin;
+    float bucketSize;
+    int bucketsPerSide;
+    int[] bucketStarts = Array.Empty<int>();
+    int[] bucketsNextOpenPosIndex = Array.Empty<int>();
+    Vector2[] bucketedPositions = Array.Empty<Vector2>();
+    Vector2 gridGameObjectPosition;
+    Vector2 predictedPlayerPos;
+    JobHandle? flowFieldJobHandle;
 
     // Job inputs that are either fully static (positions) or only change when an obstacle
     // moves (traversables), so they are built once instead of every schedule.
-    private NativeArray<bool> nativeTraversables;
-    private NativeArray<Vector2> nativePositions;
-    private bool traversablesDirty;
+    NativeArray<bool> nativeTraversables;
+    NativeArray<Vector2> nativePositions;
+    bool traversablesDirty;
 
-    private struct FlowFieldBuffers {
+    struct FlowFieldBuffers {
         public NativeArray<int> distances;
         public NativeArray<Vector2> results;
     }
-    private readonly FlowFieldBuffers[] buffers = new FlowFieldBuffers[2];
-    
-    private int readBufferIndex;
-    private bool flowFieldReady;
 
-    private struct GridCell {
+    readonly FlowFieldBuffers[] buffers = new FlowFieldBuffers[2];
+    int readBufferIndex;
+    bool flowFieldReady;
+
+    struct GridCell {
         public Vector2 position;
         public bool traversable;
 
@@ -74,7 +71,7 @@ public class CoolerGrid : MonoBehaviour {
     }
     
     // Much faster to read/write because of memory locality
-    private GridCell[] gridCells;
+    GridCell[] gridCells;
 
     public void Init(Vector2 startingPlayerPos) {
         predictedPlayerPos = startingPlayerPos;
@@ -275,7 +272,7 @@ public class CoolerGrid : MonoBehaviour {
         return cell.traversable && !cell.isObstacleObstructed;
     }
 
-    private bool TryGetCellAtPosition(Vector2 position, out GridCell cell, out int index) {
+    bool TryGetCellAtPosition(Vector2 position, out GridCell cell, out int index) {
         Vector2 posInGridSpace = position - gridGameObjectPosition;
 
         int x = Mathf.FloorToInt(posInGridSpace.x / cellSize);
@@ -292,14 +289,14 @@ public class CoolerGrid : MonoBehaviour {
         return false;
     }
 
-    private int GetCellIndexAtPosition(Vector2 position) {
+    int GetCellIndexAtPosition(Vector2 position) {
         Vector2 posInGridSpace = position - gridGameObjectPosition;
         int x = Mathf.FloorToInt(posInGridSpace.x / cellSize);
         int y = Mathf.FloorToInt(posInGridSpace.y / cellSize);
         return y * width + x;
     }
 
-    private void UpdateDataForSpawnCells(GridCell playerCell, int playerIndex, int innerRadius, int outerRadius, bool predictPlayerPos, List<Vector2> occupiedPositions) {
+    void UpdateDataForSpawnCells(GridCell playerCell, int playerIndex, int innerRadius, int outerRadius, bool predictPlayerPos, List<Vector2> occupiedPositions) {
         Assert.IsTrue(innerRadius != outerRadius, $"{nameof(innerRadius)} cannot equal {nameof(outerRadius)}");
 
         bool sameRingAsLastCall = Time.frameCount == lastSpawnCellUpdateFrame && playerIndex == lastSpawnCellPlayerIndex &&
@@ -358,8 +355,8 @@ public class CoolerGrid : MonoBehaviour {
             }
         }
     }
-    
-    private void GatherSpawnCells(GridCell playerCell, int innerRadius, int outerRadius, bool useFlowFieldDist) {
+
+    void GatherSpawnCells(GridCell playerCell, int innerRadius, int outerRadius, bool useFlowFieldDist) {
         spawnCells.Clear();
 
         const float maxDistScaler = 1.3f;
@@ -394,7 +391,7 @@ public class CoolerGrid : MonoBehaviour {
     }
 
     // Positions outside the square of halfExtent around center are dropped, so it needs to cover everything that will be queried
-    private void BuildPositionBuckets(Vector2 center, float halfExtent, float size, List<Vector2> positions) {
+    void BuildPositionBuckets(Vector2 center, float halfExtent, float size, List<Vector2> positions) {
         bucketSize = size;
         bucketsPerSide = Mathf.CeilToInt(halfExtent * 2f / size);
         bucketOrigin = center - Vector2.one * halfExtent;
@@ -429,7 +426,7 @@ public class CoolerGrid : MonoBehaviour {
         }
     }
 
-    private int GetBucketIndex(Vector2 position) {
+    int GetBucketIndex(Vector2 position) {
         int x = Mathf.FloorToInt((position.x - bucketOrigin.x) / bucketSize);
         int y = Mathf.FloorToInt((position.y - bucketOrigin.y) / bucketSize);
         if (x < 0 || y < 0 || x >= bucketsPerSide || y >= bucketsPerSide) return -1;
@@ -437,7 +434,7 @@ public class CoolerGrid : MonoBehaviour {
     }
 
     // Radius can't be bigger than the bucket size, otherwise positions outside the 3x3 buckets could be in range
-    private int CountBucketedPositionsInRadius(Vector2 center, float radius) {
+    int CountBucketedPositionsInRadius(Vector2 center, float radius) {
         int centerX = Mathf.FloorToInt((center.x - bucketOrigin.x) / bucketSize);
         int centerY = Mathf.FloorToInt((center.y - bucketOrigin.y) / bucketSize);
         float sqrRadius = radius * radius;
@@ -455,22 +452,22 @@ public class CoolerGrid : MonoBehaviour {
         }
         return count;
     }
-    
-    private Vector2 CalculateCellPosition(int widthIndex, int heightIndex) {
+
+    Vector2 CalculateCellPosition(int widthIndex, int heightIndex) {
         Vector3 posOffset = new(cellSize / 2f, cellSize / 2f, 0f);
         Vector2 cellPos = transform.position + posOffset + new Vector3(widthIndex * cellSize, heightIndex * cellSize);
         return cellPos;
     }
 
     [BurstCompile]
-    private struct DijkstraJob : IJob {
+    struct DijkstraJob : IJob {
         public int startingIndex;
         public NativeArray<int> distances;
         [ReadOnly] public NativeArray<bool> traversable;
         public int gridWidth;
         public int gridHeight;
 
-        private struct QueueItem : IComparable<QueueItem>, IEquatable<QueueItem> {
+        struct QueueItem : IComparable<QueueItem>, IEquatable<QueueItem> {
             public int distance;
             public int indexIntoArrays;
             public int CompareTo(QueueItem other) => distance < other.distance ? -1 : 1;
@@ -532,7 +529,7 @@ public class CoolerGrid : MonoBehaviour {
     }
 
     [BurstCompile]
-    private struct FlowFieldJob : IJobParallelFor {
+    struct FlowFieldJob : IJobParallelFor {
         [ReadOnly] public NativeArray<int> distances;
         [ReadOnly] public NativeArray<bool> traversables;
         [ReadOnly] public NativeArray<Vector2> positions;
@@ -599,7 +596,7 @@ public class CoolerGrid : MonoBehaviour {
     }
 
     [BurstCompile]
-    private static int GetNeighborIndex(int width, int height, int curIndex, int neighborId) {
+    static int GetNeighborIndex(int width, int height, int curIndex, int neighborId) {
         int row = curIndex / width;
         int col = curIndex % width;
 
@@ -672,7 +669,7 @@ public class CoolerGrid : MonoBehaviour {
     }
 
     [VInspector.Button("Snap Position to Cell Factor")]
-    private void SnapPositionToGrid() {
+    void SnapPositionToGrid() {
         float size = cellSize;
         Vector3 pos = transform.position;
         pos.x = Mathf.Round(pos.x / size) * size;
@@ -685,7 +682,7 @@ public class CoolerGrid : MonoBehaviour {
     public Transform sourcePosForTesting;
     
     [VInspector.Button("Generate Flow Field")]
-    private void GenerateFlowField() {
+    void GenerateFlowField() {
         if (sourcePosForTesting == null) {
             Debug.LogError("Must assign sourcePosForTesting");
             return;
@@ -703,8 +700,8 @@ public class CoolerGrid : MonoBehaviour {
 
     public bool drawGizmos;
     public bool showFlowField;
-    
-    private void OnDrawGizmos() {
+
+    void OnDrawGizmos() {
         if (!drawGizmos) return;
         
         Color nonGeneratedColor = new(175f / 255f, 66f / 255f, 26f / 255f);

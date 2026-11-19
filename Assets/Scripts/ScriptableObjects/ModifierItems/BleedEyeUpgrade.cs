@@ -35,7 +35,7 @@ public class BleedEyeUpgrade : EyeUpgrade {
         return $"{DisplayProb(1f)} chance to inflict bleed, causing {DisplayMultiplier(GetBleedDamageMultiplier(stackCount))} damage initially and per bleed tick ({DisplaySeconds(bleedInterval)})";
     }
 
-    private float GetBleedDamageMultiplier(int stackCount) {
+    float GetBleedDamageMultiplier(int stackCount) {
         return TaperFloat(damageMulti, stackCount, 0.6f);
     }
     

@@ -30,11 +30,11 @@ public class BoneShatterEyeUpgrade : EyeUpgrade {
                $"sending out {DisplayNumber(shardsCount)} bone fragments, each dealing {DisplayMultiplier(GetDamage(stackCount))} damage";
     }
 
-    private float GetDamage(int stackCount) {
+    float GetDamage(int stackCount) {
         return TaperFloat(perShardDamageMulti, stackCount, 0.5f);
     }
-    
-    private float GetProbability(int stackCount) {
+
+    float GetProbability(int stackCount) {
         return TaperFloat(probability, stackCount, 0.15f);
     }
     

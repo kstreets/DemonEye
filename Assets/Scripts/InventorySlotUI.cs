@@ -24,10 +24,9 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
     public bool SlotIsInactive => isInactive;
     public bool AcceptsAllTypes => onlyAcceptedItemType == null;
     public bool IsGrayedOut => overlayImage.gameObject.activeInHierarchy;
-
-    private RectTransform _rectTransform;
-    private bool isHovered;
-    private bool isInactive;
+    RectTransform _rectTransform;
+    bool isHovered;
+    bool isInactive;
 
     public RectTransform rectTransform {
         get {
@@ -38,7 +37,7 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         }
     }
 
-    private void Awake() {
+    void Awake() {
         ClearItem(); // Prevent single frame flickering
     }
 
@@ -50,17 +49,17 @@ public class InventorySlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExit
         SetHovered(eventData, false);
     }
 
-    private void OnDisable() {
+    void OnDisable() {
         SetHovered(null, false);
     }
 
-    private void SetHovered(PointerEventData eventData, bool hovered) {
+    void SetHovered(PointerEventData eventData, bool hovered) {
         if (eventData != null && !EventCameFromCurrentPointerDevice(eventData)) return;
         isHovered = hovered;
         RefreshSlotSprite();
     }
 
-    private void RefreshSlotSprite() {
+    void RefreshSlotSprite() {
         if (isHovered) {
             slotImage.sprite = highlightedSlotSprite;
         }

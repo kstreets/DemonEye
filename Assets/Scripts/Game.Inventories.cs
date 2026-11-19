@@ -6,7 +6,7 @@ using UnityEngine.Assertions;
 using UnityEngine.Pool;
 using Debug = UnityEngine.Debug;
 
-public partial class Game {
+public static partial class Game {
     
     [Serializable]
     public class ItemInstance {
@@ -23,11 +23,11 @@ public partial class Game {
 
         public Item ItemRef {
             get {
-                if (gameInstance.demonEye.instanceFromItemId.ContainsKey(itemOrInstanceUuid)) {
-                    return gameInstance.config.demonEyeLevels.items[DemonEyeLevel - 1];
+                if (demonEye.instanceFromItemId.ContainsKey(itemOrInstanceUuid)) {
+                    return config.demonEyeLevels.items[DemonEyeLevel - 1];
                 }
                 
-                bool found = gameInstance.res.lookup.TryGetValue(itemOrInstanceUuid, out UuidScriptableObject uuidObject);
+                bool found = res.lookup.TryGetValue(itemOrInstanceUuid, out UuidScriptableObject uuidObject);
                 Assert.IsTrue(found, "ItemInstance uuid isn't a resource or a Demon Eye instance. Clone the ItemInstance instead of rebuilding it from ItemRef.");
                 return uuidObject switch {
                     Item item => item,
@@ -44,7 +44,7 @@ public partial class Game {
 
             int raritySum = 0;
             foreach (int uuid in nestedUuids) {
-                Item upgradeItem = gameInstance.res.lookup[uuid] switch {
+                Item upgradeItem = res.lookup[uuid] switch {
                     Item item => item,
                     Augment augment => augment.augmentedEyeUpgrade,
                     _ => null,
@@ -103,14 +103,13 @@ public partial class Game {
     public const int traderInventoryColCount = 6;
     public const int traderInventoryRowCount = 5;
     
-    public Range playerStorageRange => new (playerEquipmentSize + playerQuickUseSize)..;
-    
-    private int NakedPlayerInventorySize => playerPocketSize + playerQuickUseSize + playerEquipmentSize;
-    private bool PlayerInventoryIsOpen => playerPanel.panel.gameObject.activeInHierarchy;
-    private bool LootInventoryIsOpen => ui.lootInventoryPanel.gameObject.activeInHierarchy;
-    private bool StashInventoryIsOpen => stashPanel.panel.gameObject.activeInHierarchy;
+    public static Range playerStorageRange => new (playerEquipmentSize + playerQuickUseSize)..;
+    static int NakedPlayerInventorySize => playerPocketSize + playerQuickUseSize + playerEquipmentSize;
+    static bool PlayerInventoryIsOpen => playerPanel.panel.gameObject.activeInHierarchy;
+    static bool LootInventoryIsOpen => ui.lootInventoryPanel.gameObject.activeInHierarchy;
+    static bool StashInventoryIsOpen => stashPanel.panel.gameObject.activeInHierarchy;
 
-    private void InitInventories(GameState gameState) {
+    static void InitInventories(GameState gameState) {
         const int maxBackpackSize = 30;
         SpawnUiSlots(playerPanel.quickUseParent, playerQuickUseSize);
         SpawnUiSlots(playerPanel.pocketParent, playerPocketSize + maxBackpackSize);
@@ -153,8 +152,8 @@ public partial class Game {
         
         RefreshAllInventoryDisplays(); // Refreshing prevents single frame flickering when showing for first time
     }
-    
-    private void SetupEyeForgeInventorySlots() {
+
+    static void SetupEyeForgeInventorySlots() {
         int inventoryLength = inventories.eyeForge.slots.Length;
         for (int i = 0; i < inventoryLength; i++) {
             bool isCenterSlot = i == 0;
@@ -174,8 +173,8 @@ public partial class Game {
             slotUI.gameObject.transform.position = eyeForgePanel.pentagramParent.position + spawnDir;
         }
     }
-    
-    private void InitInventoryItems(List<ItemInstance> itemInstances, Inventory inventory) {
+
+    static void InitInventoryItems(List<ItemInstance> itemInstances, Inventory inventory) {
         if (itemInstances == null) return;
 
         if (inventory == inventories.player && itemInstances.Count != inventory.slots.Length) {
@@ -200,7 +199,7 @@ public partial class Game {
     }
     
     // Items deleted or whose uuid changed since the save would throw when looked up
-    private bool SavedItemStillExists(ItemInstance itemInstance) {
+    static bool SavedItemStillExists(ItemInstance itemInstance) {
         // Demon Eyes get a new instance uuid on load, so only what's forged into them needs to exist
         if (itemInstance.isDemonEye) {
             if (itemInstance.nestedUuids == null) return false;
@@ -212,7 +211,7 @@ public partial class Game {
         return res.lookup.ContainsKey(itemInstance.itemOrInstanceUuid);
     }
 
-    private void CopyItemsToInventory(List<ItemInstance> items, Inventory toInventory) {
+    static void CopyItemsToInventory(List<ItemInstance> items, Inventory toInventory) {
         if (items == null || toInventory == null) return;
         
         for (int i = 0; i < toInventory.slots.Length; i++) {
@@ -220,8 +219,8 @@ public partial class Game {
             toInventory.slots[i].itemInstance = items[i];
         }
     }
-    
-    private InventorySlot[] CreateLootInventoryInstance(List<ItemInstance> inventoryItems) {
+
+    static InventorySlot[] CreateLootInventoryInstance(List<ItemInstance> inventoryItems) {
         var slots = new InventorySlot[inventories.lootPtr.slots.Length];
         
         for (int i = 0; i < inventories.lootPtr.slots.Length; i++) {
@@ -237,8 +236,8 @@ public partial class Game {
         
         return slots;
     }
-    
-    private InventorySlot[] CreateLootInventoryFromItems(List<Item> items, DropPool dropPool) {
+
+    static InventorySlot[] CreateLootInventoryFromItems(List<Item> items, DropPool dropPool) {
         using var _ = ListPool<ItemInstance>.Get(out var itemInstances);
             
         foreach (Item item in items) {
@@ -261,8 +260,8 @@ public partial class Game {
         
         return CreateLootInventoryInstance(itemInstances);
     }
-    
-    private bool AppendToLootInventory(InventorySlot[] lootSlots, Item item, int stackCount) {
+
+    static bool AppendToLootInventory(InventorySlot[] lootSlots, Item item, int stackCount) {
         foreach (InventorySlot slot in lootSlots) {
             if (slot.itemInstance != null) continue;
             slot.itemInstance = new(item, stackCount) { notDiscovered = true };
@@ -270,8 +269,8 @@ public partial class Game {
         }
         return false;
     }
-    
-    private void UpdateInventory() {
+
+    static void UpdateInventory() {
         CheckForEquipmentChange();
         HandleInventoryVisibility();
 
@@ -298,8 +297,8 @@ public partial class Game {
             CheckToConsumeItem(invHoverInfo);
         }
     }
-    
-    private void KeepStashSorted() {
+
+    static void KeepStashSorted() {
         // Leaves the held item's slot empty until it's placed, so the stash doesn't shift under the cursor
         if (!StashInventoryIsOpen || IsDraggingItem) return;
         
@@ -319,8 +318,8 @@ public partial class Game {
             stash.slots[i].itemInstance = i < sortingList.Count ? sortingList[i] : null;
         }
     }
-    
-    private static bool IsStashSorted(Inventory stash) {
+
+    static bool IsStashSorted(Inventory stash) {
         ItemInstance previous = null;
         bool seenEmptySlot = false;
         
@@ -348,8 +347,8 @@ public partial class Game {
         
         return true;
     }
-    
-    private static int CompareStashItems(ItemInstance x, ItemInstance y) {
+
+    static int CompareStashItems(ItemInstance x, ItemInstance y) {
         Item xItem = x.ItemRef;
         Item yItem = y.ItemRef;
         
@@ -367,12 +366,12 @@ public partial class Game {
         
         return y.count.CompareTo(x.count);
     }
-    
-    private static bool CanMergeStacks(ItemInstance into, ItemInstance from) {
+
+    static bool CanMergeStacks(ItemInstance into, ItemInstance from) {
         return into.itemOrInstanceUuid == from.itemOrInstanceUuid && into.count < into.ItemRef.MaxStackCount;
     }
-    
-    private static void MergeSortedStacks(List<ItemInstance> sortedItems) {
+
+    static void MergeSortedStacks(List<ItemInstance> sortedItems) {
         for (int i = 0; i < sortedItems.Count; i++) {
             ItemInstance into = sortedItems[i];
             int next = i + 1;
@@ -392,8 +391,8 @@ public partial class Game {
             }
         }
     }
-    
-    private void HandleInventoryVisibility() {
+
+    static void HandleInventoryVisibility() {
         if (!InRaid || !inputs.inventory.WasPressedThisFrame()) return;
         // Global action, so it's still active behind popups
         if (pauseMenu.paused || ui.messagePopup.IsShowing) return;
@@ -411,8 +410,8 @@ public partial class Game {
             CloseLootInventory();
         }
     }
-    
-    private bool NoOpenInventories() {
+
+    static bool NoOpenInventories() {
         foreach (Inventory inventory in inventories.all) {
             if (inventory.parent.gameObject.activeInHierarchy) {
                 return false;
@@ -421,16 +420,16 @@ public partial class Game {
         return true;
     }
 
-    private InventoryHoverInfo? suppressedHoverInfo;
-    private int suppressCaptureFrame = -1;
+    static InventoryHoverInfo? suppressedHoverInfo;
+    static int suppressCaptureFrame = -1;
 
-    private void SuppressInventoryPopup() {
+    static void SuppressInventoryPopup() {
         suppressedHoverInfo = null;
         suppressCaptureFrame = Time.frameCount + 1;
         HideInventoryItemPopup();
     }
 
-    private bool IsInventoryPopupSuppressed(InventoryHoverInfo invHoverInfo) {
+    static bool IsInventoryPopupSuppressed(InventoryHoverInfo invHoverInfo) {
         if (suppressCaptureFrame != -1) {
             if (Time.frameCount < suppressCaptureFrame) {
                 return true;
@@ -461,7 +460,7 @@ public partial class Game {
         return false;
     }
 
-    private void UpdateInventoryItemPopup(InventoryHoverInfo invHoverInfo) {
+    static void UpdateInventoryItemPopup(InventoryHoverInfo invHoverInfo) {
         if (IsInventoryPopupSuppressed(invHoverInfo)) {
             HideInventoryItemPopup();
             return;
@@ -479,8 +478,8 @@ public partial class Game {
             HideInventoryItemPopup();
         }
     }
-    
-    private void ShowInventoryItemPopup(InventoryHoverInfo info) {
+
+    static void ShowInventoryItemPopup(InventoryHoverInfo info) {
         if (ui.itemDescPopupInv.gameObject.activeInHierarchy) return;
 
         InventorySlot hoveredSlot = info.inventory.slots[info.slotIndex];
@@ -501,7 +500,7 @@ public partial class Game {
         ui.itemDescPopupInv.Show(hoveredSlot.itemInstance, popupPosition);
     }
 
-    private void HideInventoryItemPopup() {
+    static void HideInventoryItemPopup() {
         if (!ui.itemDescPopupInv.IsShowing) return;
         ui.itemDescPopupInv.Hide();
         ui.mechanicDescPopup.nameText.text = string.Empty;
@@ -509,8 +508,8 @@ public partial class Game {
         ui.mechanicDescPopup.gameObject.SetActive(false);
         lastInventoryHoverInfo.timeSpentHovering = 0f;
     }
-    
-    private void CheckToMoveItem(InventoryHoverInfo invHoverInfo) {
+
+    static void CheckToMoveItem(InventoryHoverInfo invHoverInfo) {
         bool quickMove = inputs.quickMove.WasPressedThisFrame();
         bool singleSell = inputs.sellSingleItem.WasPressedThisFrame();
         bool stackSell = inputs.sellStack.WasPressedThisFrame();
@@ -598,7 +597,7 @@ public partial class Game {
         }
     }
 
-    private void CheckToConsumeItem(InventoryHoverInfo invHoverInfo) {
+    static void CheckToConsumeItem(InventoryHoverInfo invHoverInfo) {
         if (!inputs.useItem.WasPressedThisFrame()) return;
         // Consume is on the navigation stick's press, so ignore it while the stick is being pushed in case it was accidental
         if (UsingController && inputs.menuMove.ReadVector2().magnitude > GameData.ControllerNavigation.stickDeadzone) return;
@@ -608,7 +607,7 @@ public partial class Game {
         SuppressInventoryPopup(); // Annoying to have the popup still there after consuming
     }
 
-    private bool TryGetItemFromHoverInfo(InventoryHoverInfo invHoverInfo, out ItemInstance hoveredItemInstance) {
+    static bool TryGetItemFromHoverInfo(InventoryHoverInfo invHoverInfo, out ItemInstance hoveredItemInstance) {
         hoveredItemInstance = null;
         
         int hoveredSlot = invHoverInfo.slotIndex;
@@ -623,7 +622,7 @@ public partial class Game {
         return true;
     }
 
-    private bool IsHoveredItemGrayedOut(InventoryHoverInfo invHoverInfo) {
+    static bool IsHoveredItemGrayedOut(InventoryHoverInfo invHoverInfo) {
         Assert.IsTrue(TryGetItemFromHoverInfo(invHoverInfo, out _), 
             $"Method requires that you're hovering over an item, call {nameof(TryGetItemFromHoverInfo)} before to make sure.");
         
@@ -631,8 +630,8 @@ public partial class Game {
         Inventory hoveredInventory = invHoverInfo.inventory;
         return hoveredInventory.slots[hoveredSlot].ui.IsGrayedOut;
     }
-    
-    private bool NotAllowedToMoveOrPickupItem(InventoryHoverInfo info) {
+
+    static bool NotAllowedToMoveOrPickupItem(InventoryHoverInfo info) {
         if (IsHoveredItemGrayedOut(info)) {
             return true;
         }
@@ -647,14 +646,14 @@ public partial class Game {
         }
         return false;
     }
-    
-    private void SpawnUiSlots(RectTransform parent, int numSlots, GameObject slotPrefab = null) {
+
+    static void SpawnUiSlots(RectTransform parent, int numSlots, GameObject slotPrefab = null) {
         for (int i = 0; i < numSlots; i++) {
-            Instantiate(slotPrefab ? slotPrefab : prefabs.inventorySlot, Vector3.zero, Quaternion.identity, parent);
+            UnityEngine.Object.Instantiate(slotPrefab ? slotPrefab : prefabs.inventorySlot, Vector3.zero, Quaternion.identity, parent);
         }
     }
-    
-    private Inventory CreateInventory(RectTransform uiParent, int slotCount) {
+
+    static Inventory CreateInventory(RectTransform uiParent, int slotCount) {
         Inventory inventory = new() {
             parent = uiParent,
             slots = new InventorySlot[slotCount],
@@ -665,7 +664,7 @@ public partial class Game {
         return inventory;
     }
 
-    private void LinkInventoryWithUiSlots(Inventory inventory) {
+    static void LinkInventoryWithUiSlots(Inventory inventory) {
         InventorySlotUI[] slotUis = inventory.parent.GetComponentsInChildren<InventorySlotUI>(true);
         Assert.IsTrue(slotUis.Length >= inventory.slots.Length, $"Inventory needs {inventory.slots.Length} slot UIs but only has {slotUis.Length}");
         for (int i = 0; i < slotUis.Length; i++) {
@@ -676,7 +675,7 @@ public partial class Game {
         }
     }
 
-    private void ChangeInventorySize(Inventory inventory, int newSlotCount) {
+    static void ChangeInventorySize(Inventory inventory, int newSlotCount) {
         bool expanding = newSlotCount > inventory.slots.Length;
 
         InventorySlot[] oldSlots = inventory.slots;
@@ -690,11 +689,11 @@ public partial class Game {
         }
     }
 
-    private bool IsEquipmentSlot(Inventory inventory, int slotIndex) {
+    static bool IsEquipmentSlot(Inventory inventory, int slotIndex) {
         return inventory == inventories.player && slotIndex < playerEquipmentSize;
     }
-    
-    private bool EquipedBackpackHasItems() {
+
+    static bool EquipedBackpackHasItems() {
         int startingIndex = NakedPlayerInventorySize;
         for (int i = startingIndex; i < inventories.player.slots.Length; i++) {
             if (inventories.player.slots[i].itemInstance != null) {
@@ -703,19 +702,19 @@ public partial class Game {
         }
         return false;
     }
-    
-    private bool ClickedOnEquipedBackpackWithItems(Inventory inventory, int slotIndex) {
+
+    static bool ClickedOnEquipedBackpackWithItems(Inventory inventory, int slotIndex) {
         if (inventory.slots[slotIndex].itemInstance.ItemRef.type != itemTypes.backpack) {
             return false;
         }
         return IsEquipmentSlot(inventory, slotIndex) && EquipedBackpackHasItems();
     }
-    
-    private ItemInstance prevEquippedEyeItemInstance;
-    private ItemInstance prevEquippedBackpackItemInstance;
-    private ItemInstance prevEquippedTrinketItemInstance;
-    
-    private void CheckForEquipmentChange() {
+
+    static ItemInstance prevEquippedEyeItemInstance;
+    static ItemInstance prevEquippedBackpackItemInstance;
+    static ItemInstance prevEquippedTrinketItemInstance;
+
+    static void CheckForEquipmentChange() {
         ItemInstance curEyeItemInstance = inventories.player.slots[0].itemInstance;
         ItemInstance curBackpackItemInstance = inventories.player.slots[1].itemInstance;
         ItemInstance curTrinketItemInstance = inventories.player.slots[2].itemInstance;
@@ -757,9 +756,9 @@ public partial class Game {
         public float timeSpentHovering;
     }
 
-    private InventoryHoverInfo lastInventoryHoverInfo;
-    
-    private InventoryHoverInfo UpdateInventoryHover() {
+    static InventoryHoverInfo lastInventoryHoverInfo;
+
+    static InventoryHoverInfo UpdateInventoryHover() {
         InventoryHoverInfo info = new();
         Vector2 mousePos = PointerScreenPos;
         
@@ -788,8 +787,8 @@ public partial class Game {
         lastInventoryHoverInfo = info;
         return info;
     }
-    
-    private int GetHoveredInventorySlot(Inventory inventory) {
+
+    static int GetHoveredInventorySlot(Inventory inventory) {
         Vector2 mousePos = PointerScreenPos;
         for (int i = 0; i < inventory.slots.Length; i++) {
             RectTransform rectTrans = inventory.slots[i].ui.rectTransform;
@@ -802,12 +801,11 @@ public partial class Game {
         return -1;
     }
 
-    private ItemInstance dragItemInstance;
-    private InventoryHoverInfo startDragInfo;
-    
-    private bool IsDraggingItem => dragItemInstance != null;
+    static ItemInstance dragItemInstance;
+    static InventoryHoverInfo startDragInfo;
+    static bool IsDraggingItem => dragItemInstance != null;
 
-    private bool UpdateInventoryDragAndDrop(InventoryHoverInfo hoverInfo) {
+    static bool UpdateInventoryDragAndDrop(InventoryHoverInfo hoverInfo) {
         if (inputs.cancel.WasPressedThisFrame()) {
             CancelItemDrag();
             return IsDraggingItem;
@@ -977,7 +975,7 @@ public partial class Game {
         return IsDraggingItem;
     }
 
-    private void DropItemFromInventory(ItemInstance itemInstance, int count = -1) {
+    static void DropItemFromInventory(ItemInstance itemInstance, int count = -1) {
         Vector2 mouseWorldPos = camera.main.ScreenToWorldPoint(PointerScreenPos);
         Vector2 dropDir = (mouseWorldPos - (Vector2)player.position).normalized;
         
@@ -989,7 +987,7 @@ public partial class Game {
         AddBounceEffect(itemDropEntity, endPos, 0.8f);
     }
 
-    private void UpdateDragAndDropItemToCursor() {
+    static void UpdateDragAndDropItemToCursor() {
         if (dragItemInstance == null) return;
         Vector2 mousePos = PointerScreenPos;
         if (UsingControllerAsPointer) {
@@ -998,15 +996,15 @@ public partial class Game {
         }
         ui.dragAndDropItemUI.GetComponent<RectTransform>().position = mousePos;
     }
-    
-    private void EndDragAndDropItem() {
+
+    static void EndDragAndDropItem() {
         if (dragItemInstance == null) return;
         dragItemInstance = null;
         ui.dragAndDropItemUI.ClearItem();
         ui.dragAndDropItemUI.gameObject.SetActive(false);
     }
-    
-    private void CancelItemDrag() {
+
+    static void CancelItemDrag() {
         if (!IsDraggingItem) return;
         TryAddItemToInventory(startDragInfo.inventory, dragItemInstance, startDragInfo.slotIndex);
         EndDragAndDropItem();
@@ -1018,12 +1016,12 @@ public partial class Game {
         public int addedCount;
     }
     
-    public InventoryAddResult TryAddItemToInventory(Inventory inventory, Item item, int count, int slotIndex = -1, bool onlyVisibleSlots = false) {
+    public static InventoryAddResult TryAddItemToInventory(Inventory inventory, Item item, int count, int slotIndex = -1, bool onlyVisibleSlots = false) {
         ItemInstance newItemInstance = new(item, count);
         return TryAddItemToInventory(inventory, newItemInstance, slotIndex, onlyVisibleSlots);
     }
 
-    public InventoryAddResult TryAddItemToInventory(Inventory inventory, ItemInstance itemInstance, int slotIndex = -1, bool onlyVisibleSlots = false) {
+    public static InventoryAddResult TryAddItemToInventory(Inventory inventory, ItemInstance itemInstance, int slotIndex = -1, bool onlyVisibleSlots = false) {
         InventoryAddResult result = new() { type = InventoryAddResult.ResultType.Failure };
         
         bool allowInfiniteStacking = inventory == inventories.trader;
@@ -1104,16 +1102,16 @@ public partial class Game {
         
         return result;
     }
-    
-    private void TweenItemMove(ItemUI itemUI, bool force = false) {
+
+    static void TweenItemMove(ItemUI itemUI, bool force = false) {
         if (!force && !itemUI.gameObject.activeInHierarchy) return;
         Tween.PunchScale(itemUI.rectTransform, Vector3.one * 0.15f, 0.135f);
         PlayAudioClip(audio.itemMoveClip);
     }
 
-    private enum MoveItemOption { FullStack, Single }
+    enum MoveItemOption { FullStack, Single }
 
-    private void MoveItemBetweenInventories(Inventory fromInventory, Inventory toInventory, int slotIndex, MoveItemOption moveOption) {
+    static void MoveItemBetweenInventories(Inventory fromInventory, Inventory toInventory, int slotIndex, MoveItemOption moveOption) {
         ItemInstance itemInstance = GetInventoryItem(fromInventory, slotIndex);
         if (itemInstance == null || itemInstance.notDiscovered) return;
         
@@ -1140,7 +1138,7 @@ public partial class Game {
         MoveEntireItemStack(fromInventory, toInventory, slotIndex, specificSlotToMoveTo);
     }
 
-    private void MoveEntireItemStack(Inventory fromInventory, Inventory toInventory, int fromSlotIndex, int toSlotIndex = -1) {
+    static void MoveEntireItemStack(Inventory fromInventory, Inventory toInventory, int fromSlotIndex, int toSlotIndex = -1) {
         ItemInstance itemInstance = GetInventoryItem(fromInventory, fromSlotIndex);
         if (itemInstance == null) return;
 
@@ -1153,11 +1151,11 @@ public partial class Game {
             AdjustItemCountInInventory(fromInventory, fromSlotIndex, keepItemCount);
         }
     }
-    
-    private Sequence transferToStashSequence;
+
+    static Sequence transferToStashSequence;
 
     // Moves each pocket/backpack item over to the stash one at a time, starting slow and speeding up
-    private void TransferPlayerInventoryToStash(Action onComplete = null) {
+    static void TransferPlayerInventoryToStash(Action onComplete = null) {
         if (transferToStashSequence.isAlive) return;
         CancelItemDrag();
 
@@ -1187,8 +1185,8 @@ public partial class Game {
         
         transferToStashSequence.OnComplete(() => onComplete?.Invoke());
     }
-    
-    private void ClearInventory(Inventory inventory) {
+
+    static void ClearInventory(Inventory inventory) {
         for (int i = 0; i < inventory.slots.Length; i++) {
             RemoveItemFromInventory(inventory, i);
         }
@@ -1197,16 +1195,16 @@ public partial class Game {
         }
     }
 
-    private void RemoveItemFromInventory(Inventory inventory, int slotIndex) {
+    static void RemoveItemFromInventory(Inventory inventory, int slotIndex) {
         ClearInventorySlot(inventory.slots[slotIndex]);
     }
-    
-    private void ClearInventorySlot(InventorySlot slot) {
+
+    static void ClearInventorySlot(InventorySlot slot) {
         slot.itemInstance = null;
         slot.ui.ClearItem();
     }
-    
-    private void RemoveOwnedItemsFromInventories(List<ItemWithCount> itemWithCounts) {
+
+    static void RemoveOwnedItemsFromInventories(List<ItemWithCount> itemWithCounts) {
         foreach (ItemWithCount itemWCount in itemWithCounts) {
             int removedCount = RemoveNumberOfItemsFromInventory(inventories.stash, itemWCount.item, itemWCount.count);
             if (removedCount != itemWCount.count) {
@@ -1217,7 +1215,7 @@ public partial class Game {
     }
 
     // Returns the count of items we removed
-    private int RemoveNumberOfItemsFromInventory(Inventory inventory, Item item, int count) {
+    static int RemoveNumberOfItemsFromInventory(Inventory inventory, Item item, int count) {
         int removedCount = 0;
         
         for (int i = 0; i < inventory.slots.Length; i++) {
@@ -1238,7 +1236,7 @@ public partial class Game {
         return removedCount;
     }
 
-    private void RemoveNumberOfOwnedItems(Item item, int count) {
+    static void RemoveNumberOfOwnedItems(Item item, int count) {
         int removedCount = RemoveNumberOfItemsFromInventory(inventories.stash, item, count);
         if (removedCount != count) {
             int additionalRemoveCount = count - removedCount;
@@ -1246,15 +1244,15 @@ public partial class Game {
         }
         Assert.IsTrue(removedCount == count, "Did not remove the specified number of item, this is bad");
     }
-    
-    private ItemInstance GetInventoryItem(Inventory inventory, int slotIndex) {
+
+    static ItemInstance GetInventoryItem(Inventory inventory, int slotIndex) {
         if (slotIndex < 0 || slotIndex >= inventory.slots.Length) {
             return null;
         }
         return inventory.slots[slotIndex].itemInstance;
     }
-    
-    private int FindFirstInventorySlotOfItem(Inventory inventory, Item item) {
+
+    static int FindFirstInventorySlotOfItem(Inventory inventory, Item item) {
         for (int i = 0; i < inventory.slots.Length; i++) {
             InventorySlot slot = inventory.slots[i];
             if (slot.itemInstance == null) continue;
@@ -1264,8 +1262,8 @@ public partial class Game {
         }
         return -1;
     }
-    
-    private static InventorySlot FindFirstEmptyInventorySlot(Inventory inventory) {
+
+    static InventorySlot FindFirstEmptyInventorySlot(Inventory inventory) {
         for (int i = 0; i < inventory.slots.Length; i++) {
             InventorySlot slot = inventory.slots[i];
             if (slot.itemInstance == null) {
@@ -1276,7 +1274,7 @@ public partial class Game {
     }
 
     // Returns true if we reduced the item to nothing
-    private bool ReduceItemCountInInventory(Inventory inventory, int slotIndex, int reduction = 1, bool keepOnEmpty = false) {
+    static bool ReduceItemCountInInventory(Inventory inventory, int slotIndex, int reduction = 1, bool keepOnEmpty = false) {
         var item = GetInventoryItem(inventory, slotIndex);
         item.count -= reduction;
         if (item.count <= 0 && !keepOnEmpty) {
@@ -1285,8 +1283,8 @@ public partial class Game {
         }
         return false;
     }
-    
-    private void AdjustItemCountInInventory(Inventory inventory, int slotIndex, int newCount) {
+
+    static void AdjustItemCountInInventory(Inventory inventory, int slotIndex, int newCount) {
         ItemInstance itemInstance = GetInventoryItem(inventory, slotIndex);
         itemInstance.count = newCount;
         if (itemInstance.count <= 0) {
@@ -1294,7 +1292,7 @@ public partial class Game {
         }
     }
 
-    public void RefreshInventoryDisplay(Inventory inventory) {
+    public static void RefreshInventoryDisplay(Inventory inventory) {
         bool notBeingShown = !inventory.parent.gameObject.activeInHierarchy;
         if (notBeingShown) return;
         
@@ -1308,14 +1306,14 @@ public partial class Game {
             inventory.slots[i].ui.SetItem(itemInstance);
         }
     }
-    
-    private void RefreshAllInventoryDisplays() {
+
+    static void RefreshAllInventoryDisplays() {
         foreach (Inventory inventory in inventories.all) {
             RefreshInventoryDisplay(inventory);
         }
     }
-    
-    private void UpdateGraySlots() {
+
+    static void UpdateGraySlots() {
         if (OnEyeForgeTab) {
             foreach (InventorySlot slot in inventories.stash.slots) {
                 if (slot.itemInstance == null) continue;
@@ -1335,7 +1333,7 @@ public partial class Game {
         }
     }
 
-    public int GetInventoryItemCount(Inventory inventory) {
+    public static int GetInventoryItemCount(Inventory inventory) {
         int count = 0;
         foreach (InventorySlot slot in inventory.slots) {
             if (slot.itemInstance == null) continue;
@@ -1344,7 +1342,7 @@ public partial class Game {
         return count;
     }
     
-    public int GetInventoryItemCountInRange(Inventory inventory, Range range) {
+    public static int GetInventoryItemCountInRange(Inventory inventory, Range range) {
         int count = 0;
         (int offset, int length) = range.GetOffsetAndLength(inventory.slots.Length);
         for (int i = offset; i < offset + length; i++) {
@@ -1354,7 +1352,7 @@ public partial class Game {
         return count;
     }
 
-    public int GetItemCountInInventory(Inventory inventory, Item item) {
+    public static int GetItemCountInInventory(Inventory inventory, Item item) {
         int count = 0;
         foreach (InventorySlot slot in inventory.slots) {
             if (slot.itemInstance == null) continue;
@@ -1365,7 +1363,7 @@ public partial class Game {
         return count;
     }
     
-    public int GetItemCountInInventory(Inventory inventory, ItemType itemType) {
+    public static int GetItemCountInInventory(Inventory inventory, ItemType itemType) {
         int count = 0;
         foreach (InventorySlot slot in inventory.slots) {
             if (slot.itemInstance == null) continue;
@@ -1376,7 +1374,7 @@ public partial class Game {
         return count;
     }
     
-    public bool EverySlotHasAnItem(Inventory inventory) {
+    public static bool EverySlotHasAnItem(Inventory inventory) {
         foreach (InventorySlot slot in inventory.slots) {
             if (slot.itemInstance == null) {
                 return false;
@@ -1385,7 +1383,7 @@ public partial class Game {
         return true;
     }
     
-    public bool ReduceOwnedCountOfItem(Item item, int reductionCount = 1) {
+    public static bool ReduceOwnedCountOfItem(Item item, int reductionCount = 1) {
         int slotIndex = FindFirstInventorySlotOfItem(inventories.stash, item);
         if (slotIndex != -1) {
             ReduceItemCountInInventory(inventories.stash, slotIndex, reductionCount);
@@ -1399,7 +1397,7 @@ public partial class Game {
         return false;
     }
 
-    public int GetOwnedCountOfItem(Item item, bool useLooseAugmentMatching = false) {
+    public static int GetOwnedCountOfItem(Item item, bool useLooseAugmentMatching = false) {
         int itemCount = 0;
         itemCount += GetItemCountInInventory(inventories.stash, item);
         itemCount += GetItemCountInInventory(inventories.player, item);
@@ -1421,7 +1419,7 @@ public partial class Game {
         return itemCount;
     }
     
-    public int GetOwnedCountOfItem(ItemType itemType) {
+    public static int GetOwnedCountOfItem(ItemType itemType) {
         int itemCount = 0;
         itemCount += GetItemCountInInventory(inventories.stash, itemType);
         itemCount += GetItemCountInInventory(inventories.player, itemType);
@@ -1430,8 +1428,8 @@ public partial class Game {
         }
         return itemCount;
     }
-    
-    private bool OwnsAllItemsOfCounts(List<ItemWithCount> itemsWithCounts) {
+
+    static bool OwnsAllItemsOfCounts(List<ItemWithCount> itemsWithCounts) {
         foreach (ItemWithCount itemsWithCount in itemsWithCounts) {
             if (!OwnsSingleItemWithCount(itemsWithCount)) {
                 return false;
@@ -1440,7 +1438,7 @@ public partial class Game {
         return true;
     }
 
-    private bool OwnsSingleItemWithCount(ItemWithCount itemWithCount) {
+    static bool OwnsSingleItemWithCount(ItemWithCount itemWithCount) {
         int itemCount = 0;
         itemCount += GetItemCountInInventory(inventories.stash, itemWithCount.item);
         itemCount += GetItemCountInInventory(inventories.player, itemWithCount.item);
@@ -1449,8 +1447,8 @@ public partial class Game {
         }
         return itemCount >= itemWithCount.count; 
     }
-    
-    private void ItemListToUniqueItemsWithCount<T>(List<T> items, ref List<ItemWithCount> itemsWithCounts) where T : Item {
+
+    static void ItemListToUniqueItemsWithCount<T>(List<T> items, ref List<ItemWithCount> itemsWithCounts) where T : Item {
         var itemCountLookup = DictionaryPool<T, int>.Get();
         foreach (T item in items) {
             itemCountLookup.TryAdd(item, 0);
@@ -1471,7 +1469,7 @@ public partial class Game {
         HashSetPool<T>.Release(uniqueItems);
     }
 
-    private int GetInventoryWeight(Inventory inventory) {
+    static int GetInventoryWeight(Inventory inventory) {
         int weight = 0;
         foreach (InventorySlot slot in inventory.slots) {
             if (slot.itemInstance == null) continue;
@@ -1479,10 +1477,10 @@ public partial class Game {
         }
         return weight;
     }
-    
-    private enum InventoryValueType { Buy, Sell }
 
-    private int GetInventoryValue(Inventory inventory, InventoryValueType valueType) {
+    enum InventoryValueType { Buy, Sell }
+
+    static int GetInventoryValue(Inventory inventory, InventoryValueType valueType) {
         int value = 0;
         foreach (InventorySlot slot in inventory.slots) {
             if (slot.itemInstance == null) continue;
@@ -1498,7 +1496,7 @@ public partial class Game {
         return value;
     }
 
-    private void OpenPlayerInventory() {
+    static void OpenPlayerInventory() {
         if (PlayerInventoryIsOpen) return;
         thisFrame.flags |= GameData.FrameFlags.InventoryOpened;
         IgnoreHeldNavigationInput();
@@ -1506,7 +1504,7 @@ public partial class Game {
         Cursor.visible = ShowCursorInMenus;
     }
 
-    private void ClosePlayerInventory() {
+    static void ClosePlayerInventory() {
         playerPanel.panel.gameObject.SetActive(false);
         Cursor.visible = false;
         EndDragAndDropItem();
@@ -1515,7 +1513,7 @@ public partial class Game {
     // Set from the Gameplay Testing window. Holds the asset GUID of the testing inventory
     public const string testingInventoryEditorPrefKey = "DemonEye_TestingInventory";
 
-    private void LoadTestingInventoryFromSettings() {
+    static void LoadTestingInventoryFromSettings() {
 #if UNITY_EDITOR
         string guid = UnityEditor.EditorPrefs.GetString(testingInventoryEditorPrefKey);
         if (string.IsNullOrEmpty(guid)) return;
@@ -1527,7 +1525,7 @@ public partial class Game {
 #endif
     }
     
-    public void LoadTestingInventoryOntoPlayer(TestingInventory testingInventory) {
+    public static void LoadTestingInventoryOntoPlayer(TestingInventory testingInventory) {
         ClearInventory(inventories.player);
 
         if (testingInventory.HasDemonEye) {

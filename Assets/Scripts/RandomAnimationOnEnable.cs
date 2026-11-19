@@ -4,11 +4,10 @@ using UnityEngine;
 public class RandomAnimationOnEnable : MonoBehaviour {
 
     public string[] stateNames;
+    Animator animator;
+    int[] stateHashes;
 
-    private Animator animator;
-    private int[] stateHashes;
-
-    private void Awake() {
+    void Awake() {
         animator = GetComponent<Animator>();
         stateHashes = new int[stateNames.Length];
         for (int i = 0; i < stateNames.Length; i++) {
@@ -16,7 +15,7 @@ public class RandomAnimationOnEnable : MonoBehaviour {
         }
     }
 
-    private void OnEnable() {
+    void OnEnable() {
         if (stateHashes.Length == 0) return;
         animator.Play(stateHashes[Random.Range(0, stateHashes.Length)], 0, 0f);
         animator.Update(0f); // Apply now so the current state info (e.g. one shot lifetimes) reads the chosen clip

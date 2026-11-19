@@ -8,26 +8,26 @@ using UnityEngine.InputSystem.Controls;
 using UnityEngine.Pool;
 using static GameData;
 
-public partial class Game {
+public static partial class Game {
 
     // The only action set in the Steam In-Game Actions file, it holds every action since the game reads all of them at once
-    private const string steamActionSet = "Gameplay";
+    const string steamActionSet = "Gameplay";
     
-    public bool UsingController => inputs.device is Inputs.Device.Controller or Inputs.Device.ControllerWithMouse;
-    public bool UsingControllerAsPointer => inputs.device is Inputs.Device.Controller;
+    public static bool UsingController => inputs.device is Inputs.Device.Controller or Inputs.Device.ControllerWithMouse;
+    public static bool UsingControllerAsPointer => inputs.device is Inputs.Device.Controller;
     
     public static bool EventCameFromCurrentPointerDevice(PointerEventData eventData) {
         if (eventData == null) {
             return true;
         }
         const int controllerId = ControllerNavigation.pointerEventId;
-        if (gameInstance.UsingControllerAsPointer) {
+        if (UsingControllerAsPointer) {
             return eventData.pointerId == controllerId;
         }
         return eventData.pointerId != controllerId;
     }
 
-    private void InitInput() {
+    static void InitInput() {
         inputs.move = AddAction("Move");
         inputs.aim = AddAction("Aim");
         inputs.attack = AddAction("Attack");
@@ -85,15 +85,15 @@ public partial class Game {
             return action;
         }
     }
-    
-    private void ShutdownInput() {
+
+    static void ShutdownInput() {
         if (inputs.steamInputInitalized) {
             SteamInput.Shutdown();
             inputs.steamInputInitalized = false;
         }
     }
 
-    private void UpdateInput() {
+    static void UpdateInput() {
         if (inputs.steamInputInitalized) {
             inputs.activelyUsingSteamInput = UpdateSteamInput();
         }
@@ -125,7 +125,7 @@ public partial class Game {
     }
     
     // Layers are added bottom to top. A layer that isn't added is fully off, which is how menus block gameplay.
-    private void BuildInputLayerStack() {
+    static void BuildInputLayerStack() {
         inputs.layerStack.Clear();
         AddInputLayer(Inputs.GlobalLayer);
 
@@ -181,16 +181,16 @@ public partial class Game {
         }
     }
 
-    private void AddInputLayer(string actionMapName) {
+    static void AddInputLayer(string actionMapName) {
         inputs.layerStack.Add(InputSystem.actions.FindActionMap(actionMapName, throwIfNotFound: true));
     }
 
-    public GameAction FindGameAction(InputAction unityAction) {
+    public static GameAction FindGameAction(InputAction unityAction) {
         if (unityAction == null) return null;
         return inputs.gameActionLookup.GetValueOrDefault(unityAction.id);
     }
 
-    private void CheckButtonControllerShortcuts() {
+    static void CheckButtonControllerShortcuts() {
         // Clicking a button can enable or disable others, so this goes over a copy
         using var _ = ListPool<ButtonFeel>.Get(out var buttonsToCheck);
         buttonsToCheck.AddRange(ButtonFeel.activeWithControllerShortcuts);
@@ -205,7 +205,7 @@ public partial class Game {
         }
     }
 
-    private void UpdateButtonShortcutGlyph(ButtonFeel button, GameAction action) {
+    static void UpdateButtonShortcutGlyph(ButtonFeel button, GameAction action) {
         // Single image, so a modifier composite only shows its first part
         Sprite glyph = action != null && action.isActive ? action.GetCurrentDisplayGlyphs()[0] : null;
         button.SetInputGlyph(glyph);
@@ -213,7 +213,7 @@ public partial class Game {
 
     // Decides which actions are active this frame. An action is active when its map is on the stack and none of its bindings
     // for the current device are also used by an active action on a higher layer. Actions on the same layer never shadow each other.
-    private void UpdateInputLayers() {
+    static void UpdateInputLayers() {
         GameAction.BindingSource source;
         if (inputs.device == Inputs.Device.KeyboardMouse) {
             source = GameAction.BindingSource.KeyboardMouse;
@@ -265,7 +265,7 @@ public partial class Game {
         }
     }
 
-    public void UpdateUnityInputGlyphs() {
+    public static void UpdateUnityInputGlyphs() {
         Gamepad gamepad = Gamepad.current;
         inputs.gamepadUsedForCurrentGlyphs = gamepad;
 
@@ -278,8 +278,8 @@ public partial class Game {
             action.UpdateUnityBindingKeys();
         }
     }
-    
-    private bool UpdateSteamInput() {
+
+    static bool UpdateSteamInput() {
         SteamInput.RunFrame();
 
         foreach (GameAction action in inputs.all) {
@@ -346,8 +346,8 @@ public partial class Game {
             return loadedOnThisFrame;
         }
     }
-    
-    private bool CheckForInputDeviceChange() {
+
+    static bool CheckForInputDeviceChange() {
         if (inputs.device == Inputs.Device.Controller && MouseUsedThisFrame()) {
             inputs.device = Inputs.Device.ControllerWithMouse;
             return true;
@@ -377,7 +377,7 @@ public partial class Game {
         return false;
     }
 
-    private bool GamepadAnalogUsedThisFrame() {
+    static bool GamepadAnalogUsedThisFrame() {
         Gamepad gamepad = Gamepad.current;
         if (gamepad == null) return false;
 
@@ -387,7 +387,7 @@ public partial class Game {
             || gamepad.dpad.ReadValue() != Vector2.zero;
     }
 
-    private bool GamepadUsedThisFrame() {
+    static bool GamepadUsedThisFrame() {
         Gamepad gamepad = Gamepad.current;
         if (gamepad == null) {
             return false;
@@ -405,16 +405,16 @@ public partial class Game {
         return false;
     }
 
-    private bool MouseUsedThisFrame() {
+    static bool MouseUsedThisFrame() {
         Mouse mouse = Mouse.current;
         return mouse != null && (mouse.delta.ReadValue().sqrMagnitude > 4f || mouse.leftButton.wasPressedThisFrame || mouse.rightButton.wasPressedThisFrame);
     }
 
-    private bool KeyboardUsedThisFrame() {
+    static bool KeyboardUsedThisFrame() {
         return Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame;
     }
 
-    private void ToggleGamepadsForUnity(bool enable) {
+    static void ToggleGamepadsForUnity(bool enable) {
         foreach (InputDevice device in InputSystem.devices) {
             if (device is not Gamepad || device.enabled == enable) continue;
             if (enable) {
@@ -426,7 +426,7 @@ public partial class Game {
         }
     }
 
-    private bool AnySteamInputUsedThisFrame() {
+    static bool AnySteamInputUsedThisFrame() {
         if (SteamInputAnalogUsedThisFrame()) {
             return true;
         }
@@ -437,8 +437,8 @@ public partial class Game {
         }
         return false;
     }
-    
-    private bool SteamInputAnalogUsedThisFrame() {
+
+    static bool SteamInputAnalogUsedThisFrame() {
         foreach (GameAction action in inputs.all) {
             if (action.isAnalog && action.steamValue.magnitude > ControllerNavigation.stickDeadzone) {
                 return true;

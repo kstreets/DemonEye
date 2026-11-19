@@ -57,10 +57,9 @@ public class ResourceSpawn : MonoBehaviour {
     }
     
 #if UNITY_EDITOR
-    
-    private static Material outlineMaterial;
-    
-    private void Update() {
+    static Material outlineMaterial;
+
+    void Update() {
         if (!TryGetComponent(out SpriteRenderer spriteRenderer)) {
             spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
         }
@@ -82,14 +81,14 @@ public class ResourceSpawn : MonoBehaviour {
         spriteRenderer.sortingOrder = prefabSpriteRenderer.sortingOrder;
     }
 
-    private void OnValidate() {
+    void OnValidate() {
         if (blockedByExitPortal && blockingPortal == null) {
             LinkClosestExitPortal();
         }
     }
 
     [ContextMenu("Link Closest Exit Portal")]
-    private void LinkClosestExitPortal() {
+    void LinkClosestExitPortal() {
         MapInstance mapInstance = GetComponentInParent<MapInstance>();
         if (mapInstance == null || mapInstance.exitPortalsParent == null) return;
 
@@ -103,7 +102,7 @@ public class ResourceSpawn : MonoBehaviour {
         }
     }
 
-    private void OnDrawGizmos() {
+    void OnDrawGizmos() {
         if (!blockedByExitPortal || blockingPortal == null) return;
 
         Gizmos.color = Color.cyan;

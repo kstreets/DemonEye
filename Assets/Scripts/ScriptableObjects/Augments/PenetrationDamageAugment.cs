@@ -19,8 +19,8 @@ public class PenetrationDamageAugment : Augment {
     public override string GetDescription(int stackCount = 1) {
         return $"{DisplayMultiplierIncrease(GetDamageMultiplierPerPenetration(stackCount))} damage per enemy penetrated.";
     }
-    
-    private float GetDamageMultiplierPerPenetration(int stackCount) {
+
+    float GetDamageMultiplierPerPenetration(int stackCount) {
         return TaperFloat(damageMultiplierPerPenetration, stackCount, 0.35f);
     }
     

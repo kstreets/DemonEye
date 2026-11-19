@@ -30,16 +30,16 @@ public class SoulVolleyEyeUpgrade : EyeUpgrade {
         float damageMulti = GetProjDamageMultiplier(stackCount);
         return $"Every <sprite=1>{DisplayNumber(soulsNeeded, styles.soulCurrencyColor)} gained releases a volley of {DisplayNumber(count)} burning souls, each dealing {DisplayMultiplier(damageMulti)} damage";
     }
-    
-    private int GetVolleyCount(int stackCount) {
+
+    int GetVolleyCount(int stackCount) {
         return TaperInteger(volleyCount, stackCount, 0.75f);
     }
-    
-    private int GetSoulsNeeded(int stackCount) {
+
+    int GetSoulsNeeded(int stackCount) {
         return TaperInteger(soulsNeededPerVolley, stackCount, 0.15f);
     }
-    
-    private float GetProjDamageMultiplier(int stackCount) {
+
+    float GetProjDamageMultiplier(int stackCount) {
         return TaperFloat(projDamageMultiplier, stackCount, 0.35f);
     }
     

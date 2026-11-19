@@ -21,7 +21,7 @@ public class OverheatProcAugment : Augment {
         return $"Each additional shot fired has a {DisplayProb(GetProbability(stackCount))} chance to release an overheat blast";
     }
 
-    private float GetProbability(int stackCount) {
+    float GetProbability(int stackCount) {
         return Mathf.Clamp01(TaperFloat(probability, stackCount, 0.3f));
     }
 

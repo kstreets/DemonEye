@@ -6,16 +6,13 @@ public class StateMachine {
 
     public State CurState { get; private set; }
     public State PrevState { get; private set; }
-
-    private List<State> states = new();
-    private List<Transition> anyStateTransitions = new();
-
-    private float timeWhenCurStateStarted;
-    
-    private State nextStateAfterDelay;
-    private float nextStateAtTime;
-    private float lastUpdateTime;
-    private bool isPaused;
+    List<State> states = new();
+    List<Transition> anyStateTransitions = new();
+    float timeWhenCurStateStarted;
+    State nextStateAfterDelay;
+    float nextStateAtTime;
+    float lastUpdateTime;
+    bool isPaused;
 
     public bool Transitioning => nextStateAfterDelay != null;
     public bool OnLastState => states.Count > 0 && CurState != null && CurState == states[^1];
@@ -32,7 +29,7 @@ public class StateMachine {
         return AddState(new State<T>(target, update, fixedUpdate, lateUpdate, enter, exit, whileExiting));
     }
 
-    private TState AddState<TState>(TState newState) where TState : State {
+    TState AddState<TState>(TState newState) where TState : State {
         if (states.Count == 0) {
             SetStateImmediate(newState);
         }
@@ -116,8 +113,8 @@ public class StateMachine {
                 break;
         }
     }
-    
-    private void UpdateDelayedState() {
+
+    void UpdateDelayedState() {
         if (Time.time < nextStateAtTime) {
             CurState.InvokeWhileExiting();
             return;
@@ -125,7 +122,7 @@ public class StateMachine {
         SetStateImmediate(nextStateAfterDelay);
     }
 
-    private void UpdateState(List<Transition> transitions) {
+    void UpdateState(List<Transition> transitions) {
         foreach (Transition transition in transitions) {
             float secondsInCurState = Time.time - timeWhenCurStateStarted;
             if (secondsInCurState >= transition.Seconds && transition.EvaluateTransition()) {
@@ -134,8 +131,8 @@ public class StateMachine {
             }
         }
     }
-    
-    private void SetStateImmediate(State state) {
+
+    void SetStateImmediate(State state) {
         PrevState = CurState;
         CurState = state;
         nextStateAfterDelay = null;
@@ -144,7 +141,7 @@ public class StateMachine {
         timeWhenCurStateStarted = Time.time;
     }
 
-    private void SetStateWithDelay(State state, float delay) {
+    void SetStateWithDelay(State state, float delay) {
         if (delay <= 0f) {
             SetStateImmediate(state);
             return;

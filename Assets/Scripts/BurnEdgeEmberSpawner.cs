@@ -9,17 +9,19 @@ public class BurnEdgeEmberSpawner : MonoBehaviour {
     public ParticleSystem emberParticles; // Simulation Space: Local
  
     [Header("Match the shader's burn line")]
-    [SerializeField] private Vector2 burnDirection = new Vector2(-1f, 1f); // bottom-right -> top-left
+    [SerializeField]
+    Vector2 burnDirection = new Vector2(-1f, 1f); // bottom-right -> top-left
  
     [Header("Emission")]
-    [SerializeField] private float embersPerUnitLengthPerSecond = 30f;
-    [SerializeField] private float positionJitter = 0.01f;
+    [SerializeField]
+    float embersPerUnitLengthPerSecond = 30f;
+    [SerializeField] float positionJitter = 0.01f;
  
     [Tooltip("Drive this from the same value you feed the shader's _BurnAmount.")]
     [Range(0f, 1f)] public float BurnProgress;
- 
-    private float _emitAccumulator;
-    private bool _playing;
+
+    float _emitAccumulator;
+    bool _playing;
     
     public void Play() {
         emberParticles?.Play();
@@ -29,9 +31,9 @@ public class BurnEdgeEmberSpawner : MonoBehaviour {
     public void Stop() {
         emberParticles?.Stop();
         _playing = false;  
-    } 
- 
-    private void Update()
+    }
+
+    void Update()
     {
         if (targetRect == null || emberParticles == null || !_playing) return;
  
@@ -69,7 +71,7 @@ public class BurnEdgeEmberSpawner : MonoBehaviour {
  
     // Standard slab-clip: intersects [tMin, tMax] with the range of t for which
     // p0 + t * d stays inside [lo, hi] on one axis.
-    private static void ClipAxis(float p0, float d, float lo, float hi, ref float tMin, ref float tMax)
+    static void ClipAxis(float p0, float d, float lo, float hi, ref float tMin, ref float tMax)
     {
         if (Mathf.Approximately(d, 0f))
         {
@@ -85,7 +87,7 @@ public class BurnEdgeEmberSpawner : MonoBehaviour {
  
     // Local-space offset (relative to emberParticles' own transform), NOT a world position.
     // Requires Simulation Space = Local and emberParticles' transform to coincide with targetRect.
-    private Vector3 UVToLocalOffset(Vector2 uv)
+    Vector3 UVToLocalOffset(Vector2 uv)
     {
         Vector2 jitteredUV = uv + Random.insideUnitCircle * positionJitter;
         Rect r = targetRect.rect;

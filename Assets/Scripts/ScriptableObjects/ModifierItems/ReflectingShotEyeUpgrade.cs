@@ -20,7 +20,7 @@ public class ReflectingShotEyeUpgrade : EyeUpgrade {
         return $"{DisplayProb(GetProbability(stackCount))} chance for a projectile to reflect in a random direction after damaging an enemy";
     }
 
-    private float GetProbability(int stackCount) {
+    float GetProbability(int stackCount) {
         return TaperFloat(probability, stackCount, 0.5f);
     }
 

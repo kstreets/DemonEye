@@ -11,7 +11,7 @@ public class SpawnOffset : MonoBehaviour {
     }
 
     // The dot marks the requested spawn position relative to where the entity ends up
-    private void OnDrawGizmosSelected() {
+    void OnDrawGizmosSelected() {
         Vector3 worldOffset = rotateWithEntity ? transform.rotation * offset : offset;
         Vector3 spawnPos = transform.position - worldOffset;
         Gizmos.color = Color.cyan;

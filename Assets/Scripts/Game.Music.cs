@@ -4,15 +4,14 @@ using UnityEngine;
 using UnityEngine.Pool;
 using static GameData;
 
-public partial class Game {
-    
-    private bool PlayingMusic => music.source.isPlaying;
-    private bool FadingMusicOut => music.fadingOutTween.isAlive;
-    private bool MusicIsTransitioning => music.songTransition.tween.isAlive;
-    private bool GameplayHasLowPassFilterOn => music.gameplaySnapshotWeights[1] > 0f;
-    
-    private void InitMusic() {
-        GameObject audioGo = Instantiate(prefabs.audioSource, transform);
+public static partial class Game {
+    static bool PlayingMusic => music.source.isPlaying;
+    static bool FadingMusicOut => music.fadingOutTween.isAlive;
+    static bool MusicIsTransitioning => music.songTransition.tween.isAlive;
+    static bool GameplayHasLowPassFilterOn => music.gameplaySnapshotWeights[1] > 0f;
+
+    static void InitMusic() {
+        GameObject audioGo = UnityEngine.Object.Instantiate(prefabs.audioSource, runner.transform);
         music.source = audioGo.GetComponent<AudioSource>();
         music.source.outputAudioMixerGroup = music.masterGroup;
         music.source.loop = true;
@@ -23,8 +22,8 @@ public partial class Game {
         music.gameplayLowpassSnapshots = new[] { music.defaultSnapshot, music.lowPassSnapshot };
         music.gameplaySnapshotWeights = new float[2];
     }
-    
-    private void UpdateGameplayMusic() {
+
+    static void UpdateGameplayMusic() {
         if (curRaid.mapInstance.isBossMap) {
             return;
         }
@@ -95,13 +94,13 @@ public partial class Game {
     }
     
     // The menu song takes breaks so it doesn't get repetitive while sitting in the menus
-    private const int menuMinLoopsBeforeBreak = 2;
-    private const int menuMaxLoopsBeforeBreak = 3;
-    private const float menuMinBreakDuration = 60f;
-    private const float menuMaxBreakDuration = 100f;
+    const int menuMinLoopsBeforeBreak = 2;
+    const int menuMaxLoopsBeforeBreak = 3;
+    const float menuMinBreakDuration = 60f;
+    const float menuMaxBreakDuration = 100f;
 
     // Covers every menu (main menu, hideout, map selection, settings) since the menu song keeps playing between them
-    private void UpdateMenuMusic() {
+    static void UpdateMenuMusic() {
         if (!music.menuMusicActive) return;
         if (MusicIsTransitioning || FadingMusicOut) return;
 
@@ -121,7 +120,7 @@ public partial class Game {
         }
     }
 
-    private void OnMenuMusicEnter() {
+    static void OnMenuMusicEnter() {
         music.menuMusicActive = true;
 
         // Coming back from a raid gets a moment of quiet before the menu music fades in
@@ -143,12 +142,12 @@ public partial class Game {
         StartMenuMusic(MusicOption.Fast);
     }
 
-    private void OnMenuMusicExit() {
+    static void OnMenuMusicExit() {
         music.menuMusicActive = false;
         music.menuBreakEndTime = 0f; // A break shouldn't carry over to the next time we're back in the menus
     }
 
-    private void StartMenuMusic(MusicOption option) {
+    static void StartMenuMusic(MusicOption option) {
         music.menuLoopsBeforeBreak = UnityEngine.Random.Range(menuMinLoopsBeforeBreak, menuMaxLoopsBeforeBreak + 1);
         PlayMusic(music.mainMenuMusic, option);
     }
@@ -158,23 +157,23 @@ public partial class Game {
     // How fast and aggressive a song is
     public enum MusicIntensity { Low, Medium, High, Insane }
 
-    private MusicIntensity CurWaveMusicIntensity => spawnManager.CurPhase?.musicIntensity ?? MusicIntensity.Low;
+    static MusicIntensity CurWaveMusicIntensity => spawnManager.CurPhase?.musicIntensity ?? MusicIntensity.Low;
 
-    private static bool SongHasIntensity(GameplaySong song, MusicIntensity intensity) {
+    static bool SongHasIntensity(GameplaySong song, MusicIntensity intensity) {
         if (song.intensities == null || song.intensities.Count <= 0) {
             return intensity == MusicIntensity.Low;
         }
         return song.intensities.Contains(intensity);
     }
 
-    private bool SongHasIntensity(AudioClip clip, MusicIntensity intensity) {
+    static bool SongHasIntensity(AudioClip clip, MusicIntensity intensity) {
         foreach (GameplaySong song in music.gameplaySongs) {
             if (song.clip == clip) return SongHasIntensity(song, intensity);
         }
         return false;
     }
 
-    private AudioClip PickGameplaySong(MusicIntensity intensity, AudioClip exclude) {
+    static AudioClip PickGameplaySong(MusicIntensity intensity, AudioClip exclude) {
         using var _ = ListPool<AudioClip>.Get(out var options);
         foreach (GameplaySong song in music.gameplaySongs) {
             if (SongHasIntensity(song, intensity)) {
@@ -195,8 +194,8 @@ public partial class Game {
         }
         return options[UnityEngine.Random.Range(0, options.Count)];
     }
-    
-    private void PlayMusic(AudioClip song, MusicOption option) {
+
+    static void PlayMusic(AudioClip song, MusicOption option) {
         if (PlayingMusic && music.source.clip == song) return;
         
         music.source.clip = song;
@@ -205,8 +204,8 @@ public partial class Game {
         music.songTransition.tween.Stop();
         FadeInMusic(GetMusicFadeSpeed(option));
     }
-    
-    private void StopMusic(MusicOption option) {
+
+    static void StopMusic(MusicOption option) {
         if (!PlayingMusic) return;
         music.songTransition.tween.Stop();
         FadeOutMusic(GetMusicFadeSpeed(option));
@@ -217,8 +216,8 @@ public partial class Game {
         public MusicOption option;
         public Tween tween;
     }
-    
-    private void TransitionToSong(AudioClip song, MusicOption option) {
+
+    static void TransitionToSong(AudioClip song, MusicOption option) {
         if (MusicIsTransitioning) return;
         
         if (!PlayingMusic) {
@@ -232,12 +231,12 @@ public partial class Game {
         music.songTransition.song = song;
         music.songTransition.option = option;
         music.songTransition.tween = Tween.Delay(fadeoutDuration, static () => {
-            SongTransition transition = gameInstance.music.songTransition;
-            gameInstance.PlayMusic(transition.song, transition.option);
+            SongTransition transition = music.songTransition;
+            PlayMusic(transition.song, transition.option);
         });
     }
-    
-    private float GetMusicFadeSpeed(MusicOption option) {
+
+    static float GetMusicFadeSpeed(MusicOption option) {
         return option switch {
             MusicOption.Hard => 0f,
             MusicOption.Fast => 0.35f,
@@ -246,8 +245,8 @@ public partial class Game {
             _ => throw new ArgumentOutOfRangeException(nameof(option), option, null),
         };
     }
-    
-    private void FadeOutMusic(float duration) {
+
+    static void FadeOutMusic(float duration) {
         music.fadingInTween.Complete();
         music.fadingOutTween.Complete();
         
@@ -257,8 +256,8 @@ public partial class Game {
             source.clip = null;
         });
     }
-    
-    private void FadeInMusic(float duration) {
+
+    static void FadeInMusic(float duration) {
         music.fadingInTween.Complete();
         music.fadingOutTween.Complete();
         

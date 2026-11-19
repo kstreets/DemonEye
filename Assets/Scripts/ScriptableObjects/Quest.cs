@@ -27,7 +27,7 @@ public class Quest : UuidScriptableObject {
 #if UNITY_EDITOR
 
     // New objectives get an id no other objective in the quest has, including ones the + button copies from the last
-    private void OnValidate() {
+    void OnValidate() {
         if (objectives == null) return;
         int nextId = 1;
         foreach (ObjectiveData obj in objectives) {
@@ -43,7 +43,7 @@ public class Quest : UuidScriptableObject {
     }
 
     [Button]
-    private void CompleteForTesting() {
+    void CompleteForTesting() {
         if (!Application.isPlaying) {
             Debug.Log("Need to be in playmode to complete quest");
             return;
@@ -53,11 +53,11 @@ public class Quest : UuidScriptableObject {
             state.objectiveProgresses[obj.id] = obj.targetValue;
             // For fetch quests we need to actually have the items to complete it properly
             if (obj.type == QuestObjectiveTypes.FetchByItem) {
-                gameInstance.TryAddItemToInventory(gameInstance.inventories.stash, obj.targetItem, obj.targetValue);
+                Game.TryAddItemToInventory(Game.inventories.stash, obj.targetItem, obj.targetValue);
             }
         }
 
-        gameInstance.RefreshQuestDisplays();
+        Game.RefreshQuestDisplays();
     }
     
 #endif

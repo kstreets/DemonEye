@@ -9,13 +9,14 @@ public class EnemyData : ScriptableObject {
 
     public string displayName;
     public EnemyType type;
+    public bool isBoss;
     public GameObject enemyPrefab;
     public AnimatorOverrideController animatorOverride;
     
     [Header("Drops")]
     public DropPool dropPool;
     public float chanceToDropItem;
-    
+
     [Header("Movement")]
     public bool usesFlowField;
     public float separationRadius;
@@ -36,8 +37,8 @@ public class EnemyData : ScriptableObject {
     [ReadOnly] public float defaultMass;
     
 #if UNITY_EDITOR
-    
-    private void OnValidate() {
+
+    void OnValidate() {
         string[] assetGuids = AssetDatabase.FindAssets($"t:{nameof(EnemyData)}");
         
         float slowestEnemySpeed = speed;

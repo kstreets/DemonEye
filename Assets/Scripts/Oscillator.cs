@@ -8,9 +8,8 @@ public class Oscillator : MonoBehaviour {
     [Range(0f, 1f)] 
     public float startingOffset;
     public Ease ease;
-    
-    private Vector3 startingPos;
-    private Tween tween;
+    Vector3 startingPos;
+    Tween tween;
     
     public void OnEnable() {
         startingPos = transform.localPosition;

@@ -6,7 +6,7 @@ using UnityEngine.Assertions;
 using UnityEngine.Pool;
 using Random = UnityEngine.Random;
 
-public partial class Game {
+public static partial class Game {
     
     [Flags] 
     public enum ProjectileTypeFlags {
@@ -39,9 +39,9 @@ public partial class Game {
         public Vector2 shadowStart; // Only used by gravity projectiles, their shadow lerps along the ground to the lob target
     }
 
-    private const float defaultProjectileRadius = 0.035f;
+    const float defaultProjectileRadius = 0.035f;
 
-    private static void OnSpawnProjectile(Projectile projectile) {
+    static void OnSpawnProjectile(Projectile projectile) {
         projectile.typeFlags = ProjectileTypeFlags.None;
         projectile.flatDamage = default;
         projectile.flatCritChance = default;
@@ -68,7 +68,7 @@ public partial class Game {
         projectile.shadowStart = default;
     }
     
-    private Projectile SpawnProjectile(EntityPool<Projectile> pool, Vector2 spawnPos, Vector2 velocity, float lifetime, Entity sourceEntity,
+    static Projectile SpawnProjectile(EntityPool<Projectile> pool, Vector2 spawnPos, Vector2 velocity, float lifetime, Entity sourceEntity,
         Quaternion? rotation = default, float? damageMulti = default, int? flatDamage = default, float? spawnDelay = default, 
         float? flatCritChance = default, LayerMask? layermask = default, ProjectileTypeFlags typeFlags = ProjectileTypeFlags.None,
         float? gravity = default, Vector2? lobTarget = default, float? lobTime = default)
@@ -107,7 +107,7 @@ public partial class Game {
             projectile.gameObject.SetActive(true);
             projectile.shadowEntity.gameObject.SetActive(true);
             projectile.shadowEntity.shadow.SetRadius(GetProjectileRadius(projectile)); // Disabling the shadow resets its radius
-            gameInstance.entities.projectiles.Add(projectile);
+            entities.projectiles.Add(projectile);
             projectile.trans.localScale = Vector3.zero;
             Tween.Scale(projectile.trans, Vector3.one, 0.025f, Ease.InBounce);
         });
@@ -115,19 +115,19 @@ public partial class Game {
         return projectile;
     }
 
-    private void UpdateProjectiles() {
+    static void UpdateProjectiles() {
         UpdateSoulTrackingProjectiles();
         UpdateDefaultProjectiles();
     }
-    
-    private void SpawnProjectileShadow(Projectile projectile, float height) {
+
+    static void SpawnProjectileShadow(Projectile projectile, float height) {
         projectile.height = Mathf.Max(0f, height);
         Vector2 shadowPos = projectile.position.Offset(y: -projectile.height);
         projectile.shadowEntity = SpawnEntity(entityPools.shadow, shadowPos, Quaternion.identity);
         projectile.shadowEntity.shadow.SetRadius(GetProjectileRadius(projectile));
     }
 
-    private void UpdateProjectileShadow(Projectile proj) {
+    static void UpdateProjectileShadow(Projectile proj) {
         if (proj.shadowEntity == null) return;
         if (proj.gravity.HasValue) {
             float comp = proj.lobTime > 0f ? proj.curTimeAlive / proj.lobTime : 1f;
@@ -145,7 +145,7 @@ public partial class Game {
         }
     }
 
-    private void DestroyProjectileEntity(Projectile proj, float delay = 0f) {
+    static void DestroyProjectileEntity(Projectile proj, float delay = 0f) {
         if (proj.shadowEntity != null) {
             if (delay > 0f) {
                 Tween.Scale(proj.shadowEntity.trans, 0f, delay, Ease.InOutBounce);
@@ -156,11 +156,11 @@ public partial class Game {
         DestroyEntity(proj, delay);
     }
 
-    private float GetPlayerEyeHeight() {
+    static float GetPlayerEyeHeight() {
         return GetPlayerEyePos().y - player.position.y;
     }
 
-    private static float GetProjectileRadius(Projectile proj) {
+    static float GetProjectileRadius(Projectile proj) {
         DamageShape shape = proj.damageShape;
         if (!shape) {
             return defaultProjectileRadius;
@@ -171,7 +171,7 @@ public partial class Game {
         };
     }
 
-    private void UpdateDefaultProjectiles() {
+    static void UpdateDefaultProjectiles() {
         List<Projectile> projectiles = entities.projectiles;
         
         for (int i = projectiles.Count - 1; i >= 0; i--) {
@@ -201,8 +201,7 @@ public partial class Game {
             bool landed = proj.gravity.HasValue && proj.curTimeAlive >= proj.lobTime;
             if (landed) {
                 proj.position = proj.lobTarget;
-                Entity floorImpact = SpawnEntity(entityPools.projectileImpact, proj.position, RandomRotation());
-                DestroyEntity(floorImpact, CurrentClipLength(floorImpact.animator));
+                SpawnEntityOneShot(entityPools.projectileImpact, proj.position, RandomRotation());
                 DestroyProjectileEntity(projectiles[i]);
                 projectiles.RemoveAt(i);
                 continue;
@@ -241,9 +240,7 @@ public partial class Game {
             
             if (entity is Enemy && ProjectileShouldPassThrough(proj, entity)) continue;
 
-            Entity impact = SpawnEntity(entityPools.projectileImpact, proj.position, RandomRotation());
-            DestroyEntity(impact, CurrentClipLength(impact.animator));
-
+            SpawnEntityOneShot(entityPools.projectileImpact, proj.position, RandomRotation());
             DestroyProjectileEntity(projectiles[i]);
             projectiles.RemoveAt(i);
         }
@@ -257,8 +254,8 @@ public partial class Game {
             }
         }
     }
-    
-    private void DestroyAllProjectiles() {
+
+    static void DestroyAllProjectiles() {
         List<Projectile> projectiles = entities.projectiles;
         for (int i = projectiles.Count - 1; i >= 0; i--) {
             DestroyProjectile(projectiles[i]);
@@ -271,14 +268,14 @@ public partial class Game {
             soulTrackingProjectiles.RemoveAt(i);
         }
     }
-    
-    private void DestroyProjectile(Projectile projectile) {
+
+    static void DestroyProjectile(Projectile projectile) {
         const float despawnTime = 0.2f;
         Tween.Scale(projectile.trans, 0f, despawnTime, Ease.InOutBounce);
         DestroyProjectileEntity(projectile, despawnTime);
     }
-    
-    private bool ProjectileShouldPassThrough(Projectile proj, Entity entity) {
+
+    static bool ProjectileShouldPassThrough(Projectile proj, Entity entity) {
         if (ProjectileIsIgnoringEntity(proj, entity)) {
             return true;
         }
@@ -303,7 +300,7 @@ public partial class Game {
         return false;
     }
 
-    private void ProjectileMarkEntityToIgnore(Projectile proj, Entity entity) {
+    static void ProjectileMarkEntityToIgnore(Projectile proj, Entity entity) {
         bool alreadyContainsEntity = proj.ignoreEntities?.Contains(entity) ?? false;
         if (EntityIsValid(entity) && !alreadyContainsEntity) {
             proj.ignoreEntities ??= ListPool<Entity>.Get();
@@ -311,23 +308,23 @@ public partial class Game {
         }
     }
 
-    private bool ProjectileIsIgnoringEntity(Projectile proj, Entity entity) {
+    static bool ProjectileIsIgnoringEntity(Projectile proj, Entity entity) {
         return proj.ignoreEntities?.Contains(entity) ?? false;
     }
-    
-    private void SpawnSoulTrackingProjectile(Entity targetEntity, int damage, float spawnDelay) {
+
+    static void SpawnSoulTrackingProjectile(Entity targetEntity, int damage, float spawnDelay) {
         Projectile projectile = SpawnEntity(entityPools.soulProjectile, Vector3.zero, Quaternion.identity);
         projectile.targetEntity = targetEntity;
         projectile.flatDamage = damage;
         projectile.gameObject.SetActive(false);
         
         Delay(projectile, spawnDelay, static (projectile) => {
-            if (!gameInstance.EntityIsValid(projectile.targetEntity)) { // The target can die during the delay.
-                gameInstance.DestroyEntity(projectile);
+            if (!EntityIsValid(projectile.targetEntity)) { // The target can die during the delay.
+                DestroyEntity(projectile);
                 return;
             }
             
-            Vector2 spawnPos = gameInstance.GetPlayerEyePos();
+            Vector2 spawnPos = GetPlayerEyePos();
             Vector2 dirToTarget = ((Vector2)projectile.targetEntity.Center - spawnPos).normalized; 
             Vector2 initDir = Vector2.Lerp(Vector2.up, dirToTarget, Random.Range(0.3f, 1f));
             Quaternion projectileRotation = Quaternion.AngleAxis(Vector2.SignedAngle(Vector2.right, initDir), Vector3.forward);
@@ -336,16 +333,16 @@ public partial class Game {
             projectile.rotation = projectileRotation;  
             projectile.initDir = initDir;
             // We set this in case it gets switched to a default projectile later when the target enemy dies
-            projectile.lifeTimeDuration = gameInstance.GetProjectileRangeInSeconds();
+            projectile.lifeTimeDuration = GetProjectileRangeInSeconds();
             
             projectile.gameObject.SetActive(true);
-            gameInstance.SpawnProjectileShadow(projectile, gameInstance.GetPlayerEyeHeight());
-            gameInstance.entities.soulTrackingProjectiles.Add(projectile);
-            gameInstance.PlayAudioClip(gameInstance.audio.soulVolleyClip, spawnPos);
+            SpawnProjectileShadow(projectile, GetPlayerEyeHeight());
+            entities.soulTrackingProjectiles.Add(projectile);
+            PlayAudioClip(audio.soulVolleyClip, spawnPos);
         });
     }
-    
-    private void UpdateSoulTrackingProjectiles() {
+
+    static void UpdateSoulTrackingProjectiles() {
         for (int i = entities.soulTrackingProjectiles.Count - 1; i >= 0; i--) {
             Projectile proj = entities.soulTrackingProjectiles[i]; 
             
@@ -378,7 +375,7 @@ public partial class Game {
     }
     
     // The velocity that lobs a gravity projectile from start to target
-    private static Vector2 ProjectileLobVelocity(Vector2 start, Vector2 target, float gravity, float speed) {
+    static Vector2 ProjectileLobVelocity(Vector2 start, Vector2 target, float gravity, float speed) {
         Assert.IsTrue(speed > 0f, "Lob speed must be greater than zero");
         Vector2 toTarget = target - start;
         float flightTime = toTarget.magnitude / speed;
@@ -387,8 +384,8 @@ public partial class Game {
         }
         return new(toTarget.x / flightTime, toTarget.y / flightTime + 0.5f * gravity * flightTime);
     }
-    
-    private static void ScatterAimForProjectiles(Vector2 aimDir, float spreadAngle, int count, ref List<Vector2> scatterDirections) {
+
+    static void ScatterAimForProjectiles(Vector2 aimDir, float spreadAngle, int count, ref List<Vector2> scatterDirections) {
         float angleStep = spreadAngle / count;
         float curAngle = -(spreadAngle / 2f);
         for (int i = 0; i < count; i++) {

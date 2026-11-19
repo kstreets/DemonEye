@@ -17,7 +17,7 @@ public class MapConfirmationPanel : MonoBehaviour {
     public Sprite lootIcon;
     
     [NonSerialized] public MapData selectedMap;
-    private List<MapInfoLine> reservedInfoLines = new(7);
+    List<MapInfoLine> reservedInfoLines = new(7);
     
     public void Display(MapData map) {
         selectedMap = map;
@@ -33,15 +33,15 @@ public class MapConfirmationPanel : MonoBehaviour {
         DisplayLootIncrease(map.epicLootRarityIncrease, Item.Rarity.Epic);
         DisplayLootIncrease(map.legendaryLootRarityIncrease, Item.Rarity.Legendary);
     }
-    
-    private void DisplayLootIncrease(float lootIncrease, Item.Rarity rarityType) {
+
+    void DisplayLootIncrease(float lootIncrease, Item.Rarity rarityType) {
         if (lootIncrease <= 0f) return;
-        Color rarityColor = Game.gameInstance.config.styles.GetTextColorForRarity(rarityType);
+        Color rarityColor = Game.config.styles.GetTextColorForRarity(rarityType);
         string text = $"+{lootIncrease * 100f:0.#}% {rarityType.ToString()} Item Drops";
         reservedInfoLines.PopLast().Show(lootIcon, Game.ColorText(text, rarityColor));
     }
-    
-    private void QueueAllInfoLines() {
+
+    void QueueAllInfoLines() {
         foreach (MapInfoLine mapInfoLine in infoLines) {
             mapInfoLine.gameObject.SetActive(false);
             reservedInfoLines.Add(mapInfoLine);

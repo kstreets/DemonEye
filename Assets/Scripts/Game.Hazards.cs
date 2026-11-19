@@ -3,7 +3,7 @@ using PrimeTween;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-public partial class Game {
+public static partial class Game {
 
     public class Hazard : Entity {
         public int damage;
@@ -13,7 +13,7 @@ public partial class Game {
         public float endTime;
     }
 
-    private static void OnSpawnHazard(Hazard hazard) {
+    static void OnSpawnHazard(Hazard hazard) {
         hazard.damage = default;
         hazard.layerMask = default;
         hazard.tickInterval = default;
@@ -21,7 +21,7 @@ public partial class Game {
         hazard.endTime = default;
     }
 
-    private Hazard SpawnHazard(EntityPool<Hazard> pool, Vector2 spawnPos, int damage, LayerMask layerMask, float duration, float tickInterval, float spawnDelay = 0f) {
+    static Hazard SpawnHazard(EntityPool<Hazard> pool, Vector2 spawnPos, int damage, LayerMask layerMask, float duration, float tickInterval, float spawnDelay = 0f) {
         Hazard hazard = SpawnEntity(pool, spawnPos, Quaternion.identity);
         Assert.IsNotNull(hazard.damageShape, "Hazards need a DamageShape to know what they're damaging");
 
@@ -41,13 +41,13 @@ public partial class Game {
 
         return hazard;
     }
-    
-    private static void FinalizeHazardSpawn(Hazard hazard) {
+
+    static void FinalizeHazardSpawn(Hazard hazard) {
         hazard.gameObject.SetActive(true);
-        gameInstance.entities.hazards.Add(hazard);
+        entities.hazards.Add(hazard);
     }
 
-    private void UpdateHazards() {
+    static void UpdateHazards() {
         List<Hazard> hazards = entities.hazards;
 
         for (int i = hazards.Count - 1; i >= 0; i--) {
@@ -66,7 +66,7 @@ public partial class Game {
         }
     }
 
-    private void DestroyAllHazards() {
+    static void DestroyAllHazards() {
         List<Hazard> hazards = entities.hazards;
         for (int i = hazards.Count - 1; i >= 0; i--) {
             DestroyHazard(hazards[i]);
@@ -74,7 +74,7 @@ public partial class Game {
         }
     }
 
-    private void DestroyHazard(Hazard hazard) {
+    static void DestroyHazard(Hazard hazard) {
         const float despawnTime = 0.25f;
         Tween.Scale(hazard.trans, 0f, despawnTime, Ease.InBack);
         DestroyEntity(hazard, despawnTime);

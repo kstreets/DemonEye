@@ -9,10 +9,9 @@ public class MessagePopup : MonoBehaviour {
     public TextMeshProUGUI messageText;
     public ButtonFeel yesButton;
     public ButtonFeel noButton;
-
-    private Action onYes;
-    private Action onNo;
-    private bool listenersAdded;
+    Action onYes;
+    Action onNo;
+    bool listenersAdded;
 
     public bool IsShowing => gameObject.activeInHierarchy;
 
@@ -45,13 +44,13 @@ public class MessagePopup : MonoBehaviour {
         OnNoPressed();
     }
 
-    private void OnYesPressed() {
+    void OnYesPressed() {
         Action callback = onYes;
         Hide();
         callback?.Invoke();
     }
 
-    private void OnNoPressed() {
+    void OnNoPressed() {
         Action callback = onNo;
         Hide();
         callback?.Invoke();

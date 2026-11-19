@@ -9,17 +9,16 @@ using UnityEngine.UI;
 using static GameData;
 using Random = UnityEngine.Random;
 
-public partial class Game {
-    
-    private void InitHideout(GameState gameState) {
+public static partial class Game {
+    static void InitHideout(GameState gameState) {
         hideoutState = gameState?.hideoutState ?? new();
         InitTrader(gameState);
         InitSkillsPanel();
         InitQuestPanel();
         SetPentagramFill(0f);
     }
-    
-    private void UpdateHideoutNotifiers() {
+
+    static void UpdateHideoutNotifiers() {
         bool oneOrMoreQuestsReadyToSubmit = false;
         foreach (QuestPackage questPkg in quests.activePkgs) {
             Quest quest = questPkg.questNode.curQuest;
@@ -35,19 +34,19 @@ public partial class Game {
     // Trader
     // ************************
 
-    private void InitTrader(GameState gameState) {
+    static void InitTrader(GameState gameState) {
         config.trader.state = gameState?.traderState ?? new();
         CheckForTraderRestock();
         MarkTraderItemsAsTraderOwned();
         CalculateAndSetTraderRepBars();
     }
 
-    private void TraderOnExitRaid() {
+    static void TraderOnExitRaid() {
         config.trader.state.raidsUntilRestock--;
         CheckForTraderRestock();
     }
 
-    private void CheckForTraderRestock(bool forceRestock = false) {
+    static void CheckForTraderRestock(bool forceRestock = false) {
         ref int raidsUntilRestock = ref config.trader.state.raidsUntilRestock;
 
         if (forceRestock) {
@@ -67,7 +66,7 @@ public partial class Game {
         traderPanel.itemRefreshTimeText.text = $"Items restock in {raidsUntilRestock} more raids";
     }
 
-    private void IncreaseTraderRep(int repGain) {
+    static void IncreaseTraderRep(int repGain) {
         if (config.trader.ReachedMaxLevel()) return;
 
         int wouldGainLevels = config.trader.LevelsGainedFromXp(repGain);
@@ -81,7 +80,7 @@ public partial class Game {
         CalculateAndSetTraderRepBars();
     }
 
-    private void CalculateAndSetTraderRepBars() {
+    static void CalculateAndSetTraderRepBars() {
         int levelIndex = config.trader.GetLevel();
         
         if (config.trader.ReachedMaxLevel()) {
@@ -95,20 +94,20 @@ public partial class Game {
         SetTraderRepBarView(traderPanel.repBar, fill, repLeftToGo, levelIndex);
         SetTraderRepBarView(questsPanel.traderRepBar, fill, repLeftToGo, levelIndex);
     }
-    
-    private void SetTraderRepBarView(TraderRepBar bar, float fill, int repLeftToGo, int level) {
+
+    static void SetTraderRepBarView(TraderRepBar bar, float fill, int repLeftToGo, int level) {
         bar.xpLevelFill.fillAmount = fill;
         bar.remainingXpText.text = $"{repLeftToGo} Rep Left";
         bar.levelText.text = $"Level {level}";
     }
-    
-    private void SetTraderRepBarViewAsMaxLevel(TraderRepBar bar, int level) {
+
+    static void SetTraderRepBarViewAsMaxLevel(TraderRepBar bar, int level) {
         bar.xpLevelFill.fillAmount = 1f;
         bar.remainingXpText.text = string.Empty;
         bar.levelText.text = $"Level {level} (Max)";
     }
 
-    public void FillTraderInventoryWithItems() {
+    public static void FillTraderInventoryWithItems() {
         ClearInventory(inventories.trader);
         int curTraderLevel = config.trader.GetLevel();
         
@@ -150,7 +149,7 @@ public partial class Game {
     }
     
     // Any type not listed here gets placed after these, ordered by type name
-    private int TraderTypeOrder(ItemType type) {
+    static int TraderTypeOrder(ItemType type) {
         ItemType[] typeOrder = { itemTypes.quickUse, itemTypes.backpack, itemTypes.wearableModifier, itemTypes.eyeUpgrade };
         for (int i = 0; i < typeOrder.Length; i++) {
             if (type == typeOrder[i]) return i;
@@ -161,7 +160,7 @@ public partial class Game {
         return typeOrder.Length;
     }
 
-    private void MarkTraderItemsAsTraderOwned() {
+    static void MarkTraderItemsAsTraderOwned() {
         for (int i = 0; i < inventories.trader.slots.Length; i++) {
             InventorySlot slot = inventories.trader.slots[i];
             if (slot.itemInstance == null) continue;
@@ -170,17 +169,17 @@ public partial class Game {
         }
     }
 
-    private void ClearItemsAsTraderOwned(Inventory inventory) {
+    static void ClearItemsAsTraderOwned(Inventory inventory) {
         foreach (InventorySlot slot in inventory.slots) {
             if (slot.itemInstance == null) continue;
             slot.itemInstance.traderOwned = false;
             slot.itemInstance.traderSlotIndex = -1;
         }
     }
-    
-    private InventorySlot curTradingInventorySlot;
-    
-    private void SetTradingSlot(InventorySlot traderInventorySlot, bool tweenSize) {
+
+    static InventorySlot curTradingInventorySlot;
+
+    static void SetTradingSlot(InventorySlot traderInventorySlot, bool tweenSize) {
         traderInventorySlot ??= inventories.trader.slots[0];
         
         curTradingInventorySlot?.ui.ClearSelectionUnderlay();
@@ -199,16 +198,17 @@ public partial class Game {
             transactionPanel.transaction.toggleGroup.ManualyToggle(transactionPanel.transaction.buyToggle);
         }
     }
-    
-    private void ReduceTradingItemStock() {
+
+    static void ReduceTradingItemStock() {
         int slotIndex = curTradingInventorySlot.itemInstance.traderSlotIndex;
         ReduceItemCountInInventory(inventories.trader, slotIndex, keepOnEmpty: true);
     }
 
-    private enum TransactionState { Selling, Buying }
-    private TransactionState transactionState;
+    enum TransactionState { Selling, Buying }
 
-    private void OnBuyTogglePressed() {
+    static TransactionState transactionState;
+
+    static void OnBuyTogglePressed() {
         transactionState = TransactionState.Buying;
         transactionPanel.inventoryParent.gameObject.SetActive(false);
 
@@ -225,7 +225,7 @@ public partial class Game {
         ClearInventory(inventories.transaction);
     }
 
-    private void OnSellTogglePressed() {
+    static void OnSellTogglePressed() {
         transactionState = TransactionState.Selling;
         transactionPanel.inventoryParent.gameObject.SetActive(true);
         curTradingInventorySlot?.ui.ClearSelectionUnderlay();
@@ -236,7 +236,7 @@ public partial class Game {
         }
     }
 
-    private void OnSellButtonPressed() {
+    static void OnSellButtonPressed() {
         if (transactionState == TransactionState.Selling && GetInventoryItemCount(inventories.transaction) <= 0) return;
         int sellPrice = GetInventoryValue(inventories.transaction, InventoryValueType.Sell);
         player.state.coinCurrency += sellPrice;
@@ -249,7 +249,7 @@ public partial class Game {
             traderDialogueTween.Stop();
             traderPanel.shopTextTypewriter.gameObject.SetActive(false);
             traderDialogueTween = Tween.Delay(0.1f, () => {
-                var typewriter = gameInstance.traderPanel.shopTextTypewriter;
+                var typewriter = traderPanel.shopTextTypewriter;
                 string dialogue = traderGreetings.GetRandom(prevTraderDialogue);
                 prevTraderDialogue = dialogue;
                 typewriter.ShowText("{ffade}{shake}" + "Are you finished with those quests yet?");
@@ -257,8 +257,8 @@ public partial class Game {
             });
         }
     }
-    
-    private void OnMoneyPurchaseButtonPressed() {
+
+    static void OnMoneyPurchaseButtonPressed() {
         if (transactionState == TransactionState.Buying && curTradingInventorySlot == null) return;
         Item curTradingItem = curTradingInventorySlot.itemInstance.ItemRef;
         int buyPrice = curTradingItem.buyPrice;
@@ -272,8 +272,8 @@ public partial class Game {
             PlayAudioClip(audio.purchaseClip);
         }
     }
-    
-    private void OnBarterPurchaseButtonPressed() {
+
+    static void OnBarterPurchaseButtonPressed() {
         if (curTradingInventorySlot == null) return;
 
         Item curTradingItem = curTradingInventorySlot.itemInstance.ItemRef;
@@ -285,8 +285,8 @@ public partial class Game {
         TriggerTraderShopDialogue(TraderShopDialogueType.Purchase);
         PlayAudioClip(audio.purchaseClip);
     }
-    
-    private void UpdateTransactionUI() {
+
+    static void UpdateTransactionUI() {
         if (!OnTradingTab) return;
         
         if (transactionState == TransactionState.Buying) {
@@ -306,14 +306,14 @@ public partial class Game {
             transactionPanel.transaction.sellButton.SetClickableState(GetInventoryItemCount(inventories.transaction) > 0);
         }
     }
-    
-    private enum TraderShopDialogueType { Greeting, Purchase }
 
-    private Tween traderDialogueTween;
-    private string prevTraderDialogue;
-    private int raidCountOnLastDialogueTrigger = -1;
+    enum TraderShopDialogueType { Greeting, Purchase }
 
-    private void TriggerTraderShopDialogue(TraderShopDialogueType dialogueType) {
+    static Tween traderDialogueTween;
+    static string prevTraderDialogue;
+    static int raidCountOnLastDialogueTrigger = -1;
+
+    static void TriggerTraderShopDialogue(TraderShopDialogueType dialogueType) {
         bool canPlayNewDialogue = raidCountOnLastDialogueTrigger != curSession.raidsEntered;
         if (!canPlayNewDialogue) return;
         
@@ -324,7 +324,7 @@ public partial class Game {
 
         // The delay just looks nice 
         traderDialogueTween = Tween.Delay(0.1f, () => {
-            var typewriter = gameInstance.traderPanel.shopTextTypewriter;
+            var typewriter = traderPanel.shopTextTypewriter;
             if (dialogueType == TraderShopDialogueType.Greeting) {
                 string dialogue = traderGreetings.GetRandom(prevTraderDialogue);
                 prevTraderDialogue = dialogue;
@@ -337,18 +337,19 @@ public partial class Game {
     // ************************
     // Eye Forge 
     // ************************
-    
-    private enum ForgeMode { Empty, Forging, UpgradingDemonEye, PostForgeOrUpgrade }
-    private ForgeMode forgeMode;
-    
-    private enum ForgeError { Nothing, ForgingButJustEye, ForgingButWithoutEye, ForgingButMissingUpgrades, PentagramLevelTooLow, NeedsToOwnMoreEyeUpgrades }
-    private ForgeError forgeError;
-    
-    private bool forgeModeChangedThisFrame;
-    private bool ForgeIsOnCrafting => eyeForgePanel.forgingParent.activeInHierarchy;
-    private bool ForgeIsOnLevelUp => eyeForgePanel.levelUpParent.activeInHierarchy;
 
-    private void UpdateForgeState() {
+    enum ForgeMode { Empty, Forging, UpgradingDemonEye, PostForgeOrUpgrade }
+
+    static ForgeMode forgeMode;
+
+    enum ForgeError { Nothing, ForgingButJustEye, ForgingButWithoutEye, ForgingButMissingUpgrades, PentagramLevelTooLow, NeedsToOwnMoreEyeUpgrades }
+
+    static ForgeError forgeError;
+    static bool forgeModeChangedThisFrame;
+    static bool ForgeIsOnCrafting => eyeForgePanel.forgingParent.activeInHierarchy;
+    static bool ForgeIsOnLevelUp => eyeForgePanel.levelUpParent.activeInHierarchy;
+
+    static void UpdateForgeState() {
         forgeModeChangedThisFrame = false;
         
         bool showingForge = eyeForgePanel.panel.gameObject.activeInHierarchy;
@@ -415,8 +416,8 @@ public partial class Game {
             ToggleHideoutPanels(eyeForgeDetailsPanel.panel, eyeForgePanel.panel, stashPanel.panel);
         }
     }
-    
-    private void UpdateForgePanel() {
+
+    static void UpdateForgePanel() {
         bool showingForge = eyeForgePanel.panel.gameObject.activeInHierarchy;
         if (!showingForge) return;
         
@@ -508,7 +509,7 @@ public partial class Game {
                         slot.ui.itemUI.gameObject.SetActive(false);
                         seq.Chain(Tween.Delay(slot.ui.itemUI, curDelay, static (itemUI) => {
                             itemUI.gameObject.SetActive(true);
-                            gameInstance.TweenItemMove(itemUI);
+                            TweenItemMove(itemUI);
                         }));
                         curDelay = Mathf.Lerp(startDelay, endDelay, ++curIndex / 5f);
                     }
@@ -550,8 +551,8 @@ public partial class Game {
             }
         }
     }
-    
-    private bool OwnsEyeUpgradesRequiredToUpgradeDemonEye(ItemInstance eyeItemInstance) {
+
+    static bool OwnsEyeUpgradesRequiredToUpgradeDemonEye(ItemInstance eyeItemInstance) {
         using var _ = ListPool<EyeUpgrade>.Get(out var upgrades);
         using var __ = ListPool<ItemWithCount>.Get(out var itemsWithCount);
         GetDemonEyeCoreUpgrades(eyeItemInstance, ref upgrades);
@@ -559,7 +560,7 @@ public partial class Game {
         return OwnsAllItemsOfCounts(itemsWithCount);
     }
 
-    private void UpdateForgeInfoPanel() {
+    static void UpdateForgeInfoPanel() {
         if (!OnEyeForgeTab || !ShowingForgeDetailsPanel || PlayingForgeAnimation) return;
         
         TextMeshProUGUI panelText = eyeForgeDetailsPanel.panelHeaderText;
@@ -611,8 +612,8 @@ public partial class Game {
             demonEyeDesc.SlideInElements();
         }
     }
-    
-    private void OnForgeButtonPressed() {
+
+    static void OnForgeButtonPressed() {
         if (PlayingForgeAnimation) return;
 
         HideHint();
@@ -647,20 +648,20 @@ public partial class Game {
         // for (int i = 0; i < upgrades.Count; i++) {
         //     inventories.eyeForge.slots[i + 1].ui.ClearItem();
         //     Tween.Delay(upgrades[i], startFillingUpgradesDelay + (i * perUpgradeFillDelay), static (eyeUpgrade) => {
-        //         gameInstance.ReduceOwnedCountOfItem(eyeUpgrade);
-        //         Inventory eyeForgeInventory = gameInstance.inventories.eyeForge;
+        //         ReduceOwnedCountOfItem(eyeUpgrade);
+        //         Inventory eyeForgeInventory = inventories.eyeForge;
         //         InventorySlot slot = FindFirstEmptyInventorySlot(eyeForgeInventory);
         //         slot.itemInstance = new(eyeUpgrade);
-        //         gameInstance.TweenItemMove(slot.ui.itemUI);
+        //         TweenItemMove(slot.ui.itemUI);
         //     });
         // }
         //
         // const float startForgeDelay = 0.2f;
         // float totalStartForgeDelay = startForgeDelay + ((upgrades.Count * perUpgradeFillDelay));
-        // Tween.Delay(totalStartForgeDelay, static () => gameInstance.PlayEyeForgeAnimation(gameInstance.OnEyeForgeAnimationFinished));
+        // Tween.Delay(totalStartForgeDelay, static () => PlayEyeForgeAnimation(OnEyeForgeAnimationFinished));
     }
-    
-    private void OnEyeForgeAnimationFinished() {
+
+    static void OnEyeForgeAnimationFinished() {
         const int eyeSlotIndex = 0;
         
         ButtonFeel forgeButton = eyeForgePanel.forgeButton;
@@ -699,11 +700,11 @@ public partial class Game {
 
         forgeMode = ForgeMode.PostForgeOrUpgrade;
     }
-    
-    private Sequence eyeForgeSequence;
-    private bool PlayingForgeAnimation => eyeForgeSequence.isAlive || eyeForgePanel.forgeButton.beingKeptPressed;
-    
-    private void PlayEyeForgeAnimation(Action onAnimationEndCallback) {
+
+    static Sequence eyeForgeSequence;
+    static bool PlayingForgeAnimation => eyeForgeSequence.isAlive || eyeForgePanel.forgeButton.beingKeptPressed;
+
+    static void PlayEyeForgeAnimation(Action onAnimationEndCallback) {
         PlayAudioClip(audio.forgingClip);
         
         const float fillDuration = 5.5f;
@@ -721,12 +722,12 @@ public partial class Game {
         slots[0].ui.itemUI.forgeEffect.SetIntoSprite(config.demonEyeLevels.items[demonEyeSpriteIndex].inventorySprite);
         slots[0].ui.itemUI.forgeEffect.UseSmoothing(false);
         
-        Tween.Custom(this, 0f, 1f, fillDuration, ease: Ease.Linear, onValueChange: (target, val) => {
-            target.SetPentagramFill(target.curves.pentagramFill.Evaluate(val));
+        Tween.Custom(0f, 1f, fillDuration, ease: Ease.Linear, onValueChange: static val => {
+            SetPentagramFill(curves.pentagramFill.Evaluate(val));
         });
         
-        Tween.Custom(this, 1f, 0f, fillDuration * 0.3f, startDelay: totalAnimationDuration, ease: Ease.Linear, onValueChange: (target, val) => {
-            target.SetPentagramFill(target.curves.pentagramFill.Evaluate(val));
+        Tween.Custom(1f, 0f, fillDuration * 0.3f, startDelay: totalAnimationDuration, ease: Ease.Linear, onValueChange: static val => {
+            SetPentagramFill(curves.pentagramFill.Evaluate(val));
         });
 
         {
@@ -782,8 +783,7 @@ public partial class Game {
                 }));
                 
                 sequence.Group(Tween.Delay(popOutDuration, () => {
-                    Entity forgeExplosion = SpawnEntity(entityPools.forgeExplosion, slot.ui.rectTransform.position, Quaternion.identity, eyeForgePanel.panel);
-                    DestroyEntity(forgeExplosion, CurrentClipLength(forgeExplosion.animator));
+                    SpawnEntityOneShot(entityPools.forgeExplosion, slot.ui.rectTransform.position, Quaternion.identity, eyeForgePanel.panel);
                     Tween.PunchScale(eyeForgePanel.panel, Vector3.one * 0.035f, 1f, 12f);
                 }));
                 
@@ -799,18 +799,17 @@ public partial class Game {
                 sequence.ChainDelay(perUpgradeExplosionDelay + popOutDuration + 0.025f);
                 
                 sequence.ChainCallback(() => {
-                    Entity dust = SpawnEntity(entityPools.forgeDust, slot.ui.rectTransform.position, Quaternion.identity, eyeForgePanel.panel);
-                    DestroyEntity(dust, CurrentClipLength(dust.animator));
+                    SpawnEntityOneShot(entityPools.forgeDust, slot.ui.rectTransform.position, Quaternion.identity, eyeForgePanel.panel);
                     Entity fractureParticles = SpawnEntity(entityPools.upgradeFractureParticles, slot.ui.rectTransform.position, Quaternion.identity, ui.mainCanvasRectTransform);
                     DestroyEntity(fractureParticles, 1.1f);
                 });
             }
         }
     }
-    
-    private Sequence levelUpPentagramSequence;
-    
-    private void OnLevelUpPentagramPressed() {
+
+    static Sequence levelUpPentagramSequence;
+
+    static void OnLevelUpPentagramPressed() {
         SuppressInventoryPopup();
         PlayAudioClip(audio.burnClip);
         
@@ -826,27 +825,27 @@ public partial class Game {
         
         levelUpPentagramSequence.Group(
             Tween.Delay(0.25f, static () => {
-                List<ItemWithCount> reqs = gameInstance.config.eyeForgeUpgradePath.pathUpgrades[gameInstance.hideoutState.pentagramLevelIndex].requirements;
-                gameInstance.RemoveOwnedItemsFromInventories(reqs);
-                gameInstance.hideoutState.pentagramLevelIndex++;
-                gameInstance.SaveGameState();
+                List<ItemWithCount> reqs = config.eyeForgeUpgradePath.pathUpgrades[hideoutState.pentagramLevelIndex].requirements;
+                RemoveOwnedItemsFromInventories(reqs);
+                hideoutState.pentagramLevelIndex++;
+                SaveGameState();
             })
         );
         
         ui.levelUpNotification.Show($"Pentagram Level {hideoutState.pentagramLevelIndex + 2}", delay: 0.62f);
     }
-    
-    private void OnPentagramForgeTogglePressed() {
+
+    static void OnPentagramForgeTogglePressed() {
         eyeForgePanel.levelUpParent.SetActive(false);
         eyeForgePanel.forgingParent.SetActive(true);
     }
-    
-    private void OnPentagramLevelUpTogglePressed() {
+
+    static void OnPentagramLevelUpTogglePressed() {
         eyeForgePanel.levelUpParent.SetActive(true);
         eyeForgePanel.forgingParent.SetActive(false);
     }
-    
-    private void SetPentagramFill(float value) {
+
+    static void SetPentagramFill(float value) {
         eyeForgePanel.pentagramFillImage.material.SetFloat(ShaderIds.fill, value);
     }
     
@@ -859,8 +858,8 @@ public partial class Game {
         public QuestUI questUI;
         public ToggleButton questToggleButton;
     }
-    
-    private void InitQuestPanel() {
+
+    static void InitQuestPanel() {
         questsPanel.scortchedOverlayImage.material.SetFloat(ShaderIds.opacity, 0f);
         
         const int questUiPoolSize = 6;
@@ -878,8 +877,8 @@ public partial class Game {
         }
         RefreshQuestDisplays();
     }
-    
-    private void FindStartingQuestNodes(HashSet<QuestGraphRuntime.Node> nodes, QuestGraphRuntime.Node curNode) {
+
+    static void FindStartingQuestNodes(HashSet<QuestGraphRuntime.Node> nodes, QuestGraphRuntime.Node curNode) {
         bool questHasBeenSubmitted = quests.stateLookupFromUuid[curNode.curQuest.uuid].submitted;
         
         if (!questHasBeenSubmitted) {
@@ -892,7 +891,7 @@ public partial class Game {
         }
     }
 
-    public void RefreshQuestDisplays() {
+    public static void RefreshQuestDisplays() {
         if (quests.activePkgs.Count <= 0) return;
 
         if (quests.presentingPkg == null || quests.presentingPkg.questNode == null) {
@@ -909,7 +908,7 @@ public partial class Game {
         questsPanel.toggleButtonGroup.ManualyToggle(quests.presentingPkg.questToggleButton);
     }
 
-    private void AddQuestToDisplay(QuestGraphRuntime.Node questNode) {
+    static void AddQuestToDisplay(QuestGraphRuntime.Node questNode) {
         QuestPackage questPackage = GetQuestPackage();
         questPackage.questNode = questNode;
         questPackage.questToggleButton.gameObject.SetActive(true);
@@ -917,28 +916,28 @@ public partial class Game {
         quests.activePkgs.Add(questPackage);
     }
 
-    private void RemoveQuestFromDisplay(QuestPackage questPackage) {
+    static void RemoveQuestFromDisplay(QuestPackage questPackage) {
         quests.activePkgs.Remove(questPackage);
         ReleaseQuestPackage(questPackage);
     }
 
-    private QuestPackage GetQuestPackage() {
+    static QuestPackage GetQuestPackage() {
         return quests.reservedPkgs.TryDequeue(out QuestPackage reserved) ? reserved : CreateQuestPackage();
     }
-    
-    private void ReleaseQuestPackage(QuestPackage package) {
+
+    static void ReleaseQuestPackage(QuestPackage package) {
         package.questUI.gameObject.SetActive(false);
         package.questToggleButton.gameObject.SetActive(false);
         package.questUI.completeButton.StopKeepPressed();
         package.questNode = null;
         quests.reservedPkgs.Enqueue(package);
     }
-    
-    private QuestPackage CreateQuestPackage() {
-        QuestUI questUI = Instantiate(prefabs.quest, questsPanel.questsParent).GetComponent<QuestUI>();
+
+    static QuestPackage CreateQuestPackage() {
+        QuestUI questUI = UnityEngine.Object.Instantiate(prefabs.quest, questsPanel.questsParent).GetComponent<QuestUI>();
         questUI.Init();
         
-        ToggleButton toggle = Instantiate(prefabs.questSelectionToggle, questsPanel.questSelectionParent).GetComponent<ToggleButton>();
+        ToggleButton toggle = UnityEngine.Object.Instantiate(prefabs.questSelectionToggle, questsPanel.questSelectionParent).GetComponent<ToggleButton>();
         questsPanel.toggleButtonGroup.Add(toggle);
 
         QuestPackage questPackage = new() {
@@ -952,13 +951,13 @@ public partial class Game {
         
         return questPackage;
     }
-    
-    private void OnQuestToggleClicked(QuestPackage questPackage) {
+
+    static void OnQuestToggleClicked(QuestPackage questPackage) {
         quests.presentingPkg = questPackage;
         RefreshQuestDisplays();
     }
 
-    private void OnQuestCompleteClicked(QuestPackage questPackage) {
+    static void OnQuestCompleteClicked(QuestPackage questPackage) {
         PlayAudioClip(audio.burnClip);
         
         QuestGraphRuntime.Node compQuestNode = questPackage.questNode;
@@ -1004,7 +1003,7 @@ public partial class Game {
         questsPanel.scortchedOverlayImage.material.SetFloat(ShaderIds.opacity, 1f);
         questsPanel.scortchedOverlayImage.rectTransform.SetAsLastSibling();
         Tween.Custom(1f, 0f, scortchFadeTime, startDelay: fadeScortchDelay, onValueChange: static (comp) => {
-            gameInstance.questsPanel.scortchedOverlayImage.material.SetFloat(ShaderIds.opacity, comp);
+            questsPanel.scortchedOverlayImage.material.SetFloat(ShaderIds.opacity, comp);
         });
             
         // Burn the quest body
@@ -1013,11 +1012,11 @@ public partial class Game {
         
         // When done burning, release the quest package. The shader finishes a little early so we modify the duration.
         Tween.Delay(questPackage, burnTime, static (burningQuestPkg) => {
-            gameInstance.RemoveQuestFromDisplay(burningQuestPkg); 
+            RemoveQuestFromDisplay(burningQuestPkg); 
         });
     }
-    
-    private bool QuestIsActive(Quest quest) {
+
+    static bool QuestIsActive(Quest quest) {
         foreach (QuestPackage activeQuestPackage in quests.activePkgs) {
             if (quest == activeQuestPackage.questNode.curQuest) {
                 return true;
@@ -1030,7 +1029,7 @@ public partial class Game {
     // Leveling Skills
     // ************************
 
-    private void InitSkillsPanel() {
+    static void InitSkillsPanel() {
         skillsPanel.panel.hasteSkillRow.Init(skillUpgradePaths.haste.MaxLevel, 
             $"{DisplayProbIncrease(config.gameplay.movementSpeedIncPerLevel)} Movement Speed\n" +
             $"{DisplayProbIncrease(config.gameplay.lootingSpeedIncPerLevel)} Looting Speed\n" +
@@ -1053,7 +1052,7 @@ public partial class Game {
         );
     }
 
-    private void OnSkillLevelUpButtonPressed(SkillLevelUpRow skillRow, SkillUpgradePath upgradePath, int playerStatLevel) {
+    static void OnSkillLevelUpButtonPressed(SkillLevelUpRow skillRow, SkillUpgradePath upgradePath, int playerStatLevel) {
         UpgradeStatResult result = CanUpgradeSkill(upgradePath, playerStatLevel);
         if (result == UpgradeStatResult.CantAfford || result == UpgradeStatResult.AtMaxLevel) return;
         
@@ -1099,8 +1098,8 @@ public partial class Game {
             skillRow.levelUpButton.text.text = restoreText;
         });
     }
-    
-    private void RefreshSkillsPanel() {
+
+    static void RefreshSkillsPanel() {
         PlayerStatsPanel pStats = skillsPanel.playerStatsPanel;
         SkillsPanel skills = skillsPanel.panel;
         
@@ -1122,7 +1121,7 @@ public partial class Game {
         RefreshSkillRow(skills.strengthSkillRow, skillUpgradePaths.strength, player.state.strengthSkillLevel);
     }
 
-    private void RefreshSkillRow(SkillLevelUpRow skillLevelRow, SkillUpgradePath upgradePath, int playerStatLevel) {
+    static void RefreshSkillRow(SkillLevelUpRow skillLevelRow, SkillUpgradePath upgradePath, int playerStatLevel) {
         UpgradeStatResult result = CanUpgradeSkill(upgradePath, playerStatLevel);
         if (result == UpgradeStatResult.AtMaxLevel) {
             skillLevelRow.RefreshAtMaxLevel(upgradePath.MaxLevel);
@@ -1134,9 +1133,9 @@ public partial class Game {
         skillLevelRow.Refresh(playerStatLevel, upgradePath.MaxLevel, soulsRequired, enableButton);
     }
 
-    private enum UpgradeStatResult { CantAfford, Affordable, AtMaxLevel }
-    
-    private UpgradeStatResult CanUpgradeSkill(SkillUpgradePath upgradePath, int playerSkillLevel) {
+    enum UpgradeStatResult { CantAfford, Affordable, AtMaxLevel }
+
+    static UpgradeStatResult CanUpgradeSkill(SkillUpgradePath upgradePath, int playerSkillLevel) {
         if (!upgradePath.soulsNeededPerLevel.IndexInRange(playerSkillLevel)) {
             return UpgradeStatResult.AtMaxLevel;
         }

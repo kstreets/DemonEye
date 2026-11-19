@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using UnityEngine.Pool;
 using UnityEngine.UI;
@@ -49,7 +50,7 @@ public static class Extensions {
         return WorldRectFromMatrix(rectTransform.rect, ltw);
     }
 
-    private static Rect WorldRectFromMatrix(Rect rect, Matrix4x4 ltw) {
+    static Rect WorldRectFromMatrix(Rect rect, Matrix4x4 ltw) {
         Vector3 min = ltw.MultiplyPoint(rect.min);
         Vector3 max = ltw.MultiplyPoint(rect.max);
         return Rect.MinMaxRect(min.x, min.y, max.x, max.y);
@@ -219,6 +220,12 @@ public static class Extensions {
     public static bool Playing(this Animator animator, int animHash) {
         if (!animator.gameObject.activeInHierarchy) return false;
         return animator.GetCurrentAnimatorStateInfo(0).shortNameHash == animHash;
+    }
+    
+    public static float CurrentClipLength(this Animator animator) {
+        Assert.IsNotNull(animator, "Dont pass a null animator lol");
+        animator.Update(0f);
+        return animator.CurrentClip()?.length ?? 0f;
     }
     
     public static AnimationClip CurrentClip(this Animator animator) {

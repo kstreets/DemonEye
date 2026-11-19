@@ -71,13 +71,13 @@ public class RaidSpawnPattern : ScriptableObject {
 
 
 #if UNITY_EDITOR
-    
-    private void OnValidate() {
+
+    void OnValidate() {
         if (phasePools == null || phasePools.Count <= 0) return;
         
         for (int i = 0; i < phasePools.Count; i++) {
             PhasePool pool = phasePools[i];
-            pool.name = $"Wave {i}";
+            pool.name = $"Wave {i + 1}"; // +1 so it matches the wave counter, easier for kyle to understand
             for (int j = 0; j < pool.variants.Count; j++) {
                 pool.variants[j].name = $"Variant {j}";
             }

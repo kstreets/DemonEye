@@ -50,8 +50,8 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
         descText.text = string.Empty;
         gameObject.SetActive(false);
     }
-    
-    private void SetName(ItemInstance itemInstance, Item item) {
+
+    void SetName(ItemInstance itemInstance, Item item) {
         if (itemInstance.isDemonEye) {
             nameText.text = $"{itemInstance.demonEyeName} {ColorSprite(GetTextMeshRomanNumeralIndex(itemInstance.DemonEyeLevel), styles.headerTextColor)}";
             return;
@@ -59,7 +59,7 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
         nameText.text = item.displayName;
     }
 
-    private void SetTags(ItemInstance itemInstance, Item item) {
+    void SetTags(ItemInstance itemInstance, Item item) {
         // The instance's rarity, because a Demon Eye's rarity comes from its blood runes rather than the base item
         Item.Rarity itemRarity = itemInstance.GetRarity();
         Color itemRarityColor = styles.GetTextColorForRarity(itemRarity);
@@ -67,25 +67,25 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
         typeTagGroup.gameObject.SetActive(true);
         typeTagGroup.image.color = itemRarityColor;
         
-        if (item.type == gameInstance.itemTypes.demonEye) {
+        if (item.type == Game.itemTypes.demonEye) {
             typeTagGroup.textMesh.text = "Demon Eye";
         } 
-        else if (item.type == gameInstance.itemTypes.quickUse) {
+        else if (item.type == Game.itemTypes.quickUse) {
             typeTagGroup.textMesh.text = "Quick Use";
         } 
-        else if (item.type == gameInstance.itemTypes.eyeUpgrade) {
+        else if (item.type == Game.itemTypes.eyeUpgrade) {
             typeTagGroup.textMesh.text = "Blood Rune";
         }
-        else if (item.type == gameInstance.itemTypes.wearableModifier) {
+        else if (item.type == Game.itemTypes.wearableModifier) {
             typeTagGroup.textMesh.text = "Trinket";
         }
-        else if (item.type == gameInstance.itemTypes.backpack) {
+        else if (item.type == Game.itemTypes.backpack) {
             typeTagGroup.textMesh.text = "Backpack";
         }
-        else if (item.type == gameInstance.itemTypes.sellable) {
+        else if (item.type == Game.itemTypes.sellable) {
             typeTagGroup.textMesh.text = "Sellable";
         }
-        else if (item.type == gameInstance.itemTypes.resource || item.type == gameInstance.itemTypes.eye) {
+        else if (item.type == Game.itemTypes.resource || item.type == Game.itemTypes.eye) {
             typeTagGroup.textMesh.text = "Resource";
         }
         else {
@@ -99,7 +99,7 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
         rarityTagGroup.textMesh.text = itemRarity.ToString();
     }
 
-    private void SetMetaInfo(ItemInstance itemInstance, Item item) {
+    void SetMetaInfo(ItemInstance itemInstance, Item item) {
         if (itemInstance.traderOwned) {
             metaInfoParent.gameObject.SetActive(false);
             consumePromtParent.gameObject.SetActive(false);
@@ -109,8 +109,8 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
         metaInfoParent.gameObject.SetActive(true);
         
         int sellOrBuyPrice = 0;
-        if (item.type == gameInstance.itemTypes.demonEye) { 
-            sellOrBuyPrice = gameInstance.GetDemonEyeSellPrice(itemInstance);
+        if (item.type == Game.itemTypes.demonEye) { 
+            sellOrBuyPrice = Game.GetDemonEyeSellPrice(itemInstance);
         }
         else {
             bool itemIsOwnedByTrader = itemInstance.traderOwned;
@@ -124,20 +124,20 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
         string tintedWeightSprite = $"<sprite=2 color=#{ColorUtility.ToHtmlStringRGBA(styles.underWeightColor)}>";
         weightText.text = tintedWeightSprite + ColorText((item.Weight * itemInstance.count).ToString(), styles.underWeightColor);
         
-        consumePromtParent.gameObject.SetActive(item.type == gameInstance.itemTypes.quickUse);
+        consumePromtParent.gameObject.SetActive(item.type == Game.itemTypes.quickUse);
         if (consumePromtParent.activeInHierarchy) {
-            consumeInputPrompt.Set(gameInstance.inputs.useItem.GetCurrentDisplayGlyphs());
+            consumeInputPrompt.Set(Game.inputs.useItem.GetCurrentDisplayGlyphs());
         }
     }
 
-    private void SetDescription(ItemInstance itemInstance, Item item) {
+    void SetDescription(ItemInstance itemInstance, Item item) {
         augmentDesc.gameObject.SetActive(false);
         
         descText.gameObject.SetActive(!itemInstance.isDemonEye);
         demonEyeDesc.gameObject.SetActive(itemInstance.isDemonEye);
         
         if (itemInstance.isDemonEye) {
-            demonEyeDesc.UpdateDisplay(gameInstance.EyeUpgradeSetFromIds(itemInstance.nestedUuids), showCountsAsIncrease: false);
+            demonEyeDesc.UpdateDisplay(Game.EyeUpgradeSetFromIds(itemInstance.nestedUuids), showCountsAsIncrease: false);
         }
         else {
             descText.text = item.GetDescription();
@@ -156,7 +156,7 @@ public class ItemDescPopup : MonoBehaviour, ILayoutSelfController {
         
         // Keep popup from going offscreen
         {
-            float screenPadding = ItemDescPopup.screenPadding * (gameInstance?.CanvasScale ?? 1f);
+            float screenPadding = ItemDescPopup.screenPadding * (Game.runner ? Game.CanvasScale : 1f);
             Rect worldRect = rectTransform.WorldRectIgnoreScale();
             float minY = worldRect.yMin;
             float maxY = worldRect.yMax;

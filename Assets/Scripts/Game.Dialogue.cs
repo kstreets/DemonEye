@@ -3,7 +3,7 @@ using Febucci.TextAnimatorForUnity;
 using PrimeTween;
 using UnityEngine;
 
-public partial class Game {
+public static partial class Game {
 
     public struct DialogueLine {
         public string text;
@@ -20,13 +20,12 @@ public partial class Game {
         public bool FadingOut => fadeOutTween.isAlive;
     }
 
-    private static DialogueLine Line(string text, bool unskippable = false) => new() { text = text, unskippable = unskippable };
+    static DialogueLine Line(string text, bool unskippable = false) => new() { text = text, unskippable = unskippable };
+    static void StartDialogue(params DialogueLine[] lines) => StartDialogue(fadeOutTime: 0f, onFinished: null, lines);
+    static void StartDialogue(float fadeOutTime, params DialogueLine[] lines) => StartDialogue(fadeOutTime: fadeOutTime, onFinished: null, lines);
+    static void StartDialogue(Action onFinished, params DialogueLine[] lines) => StartDialogue(fadeOutTime: 0f, onFinished: onFinished, lines);
 
-    private void StartDialogue(params DialogueLine[] lines) => StartDialogue(fadeOutTime: 0f, onFinished: null, lines);
-    private void StartDialogue(float fadeOutTime, params DialogueLine[] lines) => StartDialogue(fadeOutTime: fadeOutTime, onFinished: null, lines);
-    private void StartDialogue(Action onFinished, params DialogueLine[] lines) => StartDialogue(fadeOutTime: 0f, onFinished: onFinished, lines);
-
-    private void StartDialogue(float fadeOutTime, Action onFinished = null, params DialogueLine[] lines) {
+    static void StartDialogue(float fadeOutTime, Action onFinished = null, params DialogueLine[] lines) {
         Dialogue dialogue = tutorial.dialogue;
         dialogue.lines = lines;
         dialogue.lineIndex = -1;
@@ -37,8 +36,8 @@ public partial class Game {
         tutorial.dialogueTypewriter.gameObject.SetActive(true);
         ShowNextDialogueLine();
     }
-    
-    private void UpdateDialogue() {
+
+    static void UpdateDialogue() {
         Dialogue dialogue = tutorial.dialogue;
         if (dialogue.Finished || dialogue.FadingOut) return;
         if (!inputs.advanceDialogue.WasPressedThisFrame()) return;
@@ -53,7 +52,7 @@ public partial class Game {
         ShowNextDialogueLine();
     }
 
-    private CanvasGroup DialogueCanvasGroup() {
+    static CanvasGroup DialogueCanvasGroup() {
         GameObject typewriterObject = tutorial.dialogueTypewriter.gameObject;
         if (!typewriterObject.TryGetComponent(out CanvasGroup canvasGroup)) {
             canvasGroup = typewriterObject.AddComponent<CanvasGroup>();
@@ -61,7 +60,7 @@ public partial class Game {
         return canvasGroup;
     }
 
-    private void ShowNextDialogueLine() {
+    static void ShowNextDialogueLine() {
         Dialogue dialogue = tutorial.dialogue;
         dialogue.lineIndex++;
 
@@ -77,7 +76,7 @@ public partial class Game {
         tutorial.dialogueTypewriter.ShowText(dialogue.lines[dialogue.lineIndex].text);
     }
 
-    private void EndDialogue() {
+    static void EndDialogue() {
         tutorial.dialogue.finishedCallback?.Invoke();
         tutorial.dialogue.lines = null;
         tutorial.dialogueTypewriter.ShowText(string.Empty); // This just clears the text

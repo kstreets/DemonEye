@@ -19,8 +19,8 @@ public class MultiProjectileCritAugment : Augment {
     public override string GetDescription(int stackCount = 1) {
         return $"Each additional projectile has a {DisplayProb(GetProbability(stackCount))} critical strike chance";
     }
-    
-    private float GetProbability(int stackCount) {
+
+    float GetProbability(int stackCount) {
         return TaperFloat(probability, stackCount, 0.27f);
     }
 

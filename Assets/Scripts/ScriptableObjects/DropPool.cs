@@ -12,6 +12,7 @@ public class DropPool : ScriptableObject {
     [NonSerialized] public Item lastDroppedItem;
     
     public bool HasItems => itemRarityTable.Count > 0;
+    public int Count => itemRarityTable.Count;
     
     public void Init() {
         itemRarityTable = new();

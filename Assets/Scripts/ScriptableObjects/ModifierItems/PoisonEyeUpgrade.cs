@@ -30,11 +30,11 @@ public class PoisonEyeUpgrade : EyeUpgrade {
                $"dealing {DisplayMultiplier(GetDamageMulti(stackCount))} damage to enemies over {DisplayProb(minHealthPercentForMulti)} health.";
     }
 
-    private float GetProbability(int stackCount) {
+    float GetProbability(int stackCount) {
         return TaperFloat(probability, stackCount, 0.5f);
     }
 
-    private float GetDamageMulti(int stackCount) {
+    float GetDamageMulti(int stackCount) {
         return TaperFloat(damageMulti, stackCount, 0.2f);
     }
     

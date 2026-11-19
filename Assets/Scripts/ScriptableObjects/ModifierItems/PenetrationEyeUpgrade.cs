@@ -24,7 +24,7 @@ public class PenetrationEyeUpgrade : EyeUpgrade {
         return $"Projectiles pass through {DisplayNumber(throughCount)} enemies before stopping";
     }
 
-    private int GetGoThroughCount(int stackCount) {
+    int GetGoThroughCount(int stackCount) {
         return startingGoThroughCount + (stackCount - 1);
     }
 

@@ -22,7 +22,7 @@ public static class Masks {
         ItemMask = CreateLayerMask("Item");
     }
 
-    private static LayerMask CreateLayerMask(params string[] names) {
+    static LayerMask CreateLayerMask(params string[] names) {
         int mask = 0;
         foreach (string name in names) {
             mask |= 1 << LayerMask.NameToLayer(name);

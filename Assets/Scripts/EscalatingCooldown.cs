@@ -9,9 +9,8 @@ public class EscalatingCooldown {
     public float increasePerRapidUse;
     // How soon after the cooldown is ready a use has to happen to count as rapid
     public float rapidUseWindow;
-
-    private float curDelay;
-    private float lastUseTime = Mathf.NegativeInfinity;
+    float curDelay;
+    float lastUseTime = Mathf.NegativeInfinity;
 
     public EscalatingCooldown(float baseDelay, float maxDelay, float increasePerRapidUse, float rapidUseWindow) {
         this.baseDelay = baseDelay;

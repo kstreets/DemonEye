@@ -19,7 +19,7 @@ public class ResourceRequirementList : MonoBehaviour {
             ItemWithCount itemWithCount = displayList[i];
             ResourceRequirement resReq = resourceRequirements[i];
             resReq.gameObject.SetActive(true);
-            resReq.Set(itemWithCount.item, itemWithCount.count, gameInstance.GetOwnedCountOfItem(itemWithCount.item), textOption);
+            resReq.Set(itemWithCount.item, itemWithCount.count, Game.GetOwnedCountOfItem(itemWithCount.item), textOption);
         }
     }
     

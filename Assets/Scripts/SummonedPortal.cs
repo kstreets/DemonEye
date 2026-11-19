@@ -7,14 +7,13 @@ public class SummonedPortal : MonoBehaviour {
     public float presentDelay;
     public float rotationSpeed;
     public AnimationCurve openAnimationCurve; 
-    public AnimationCurve closeAnimationCurve; 
-    
-    private float rotation;
-    private Limiter presentLimiter;
-    private Tween openPortalAnimationTween;
-    private Sequence openingTween;
-    private Tween closingTween;
-    private bool activeStateAfterClose;
+    public AnimationCurve closeAnimationCurve;
+    float rotation;
+    Limiter presentLimiter;
+    Tween openPortalAnimationTween;
+    Sequence openingTween;
+    Tween closingTween;
+    bool activeStateAfterClose;
     
     public void Init() {
         spriteRenderer.material = new(spriteRenderer.sharedMaterial);
@@ -58,8 +57,8 @@ public class SummonedPortal : MonoBehaviour {
     public void StopAnimating() {
         openPortalAnimationTween.Stop();
     }
-    
-    private void UpdateAnimation() {
+
+    void UpdateAnimation() {
         rotation += rotationSpeed * Time.deltaTime;
         rotation %= 360f;
         if (!presentLimiter.TimeHasPassed(presentDelay)) return;

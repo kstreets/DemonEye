@@ -31,25 +31,23 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
     public InputActionReference controllerShortcut;
 
     [NonSerialized] public Action buttonListenerCallback;
-    private bool beingHovered;
+    bool beingHovered;
+    const float shortcutPressDuration = 0.1f;
+    Tween shortcutReleaseTween;
+    Vector2 inputGlyphRestPosition;
 
-    private const float shortcutPressDuration = 0.1f;
-    private Tween shortcutReleaseTween;
-
-    private Vector2 inputGlyphRestPosition;
-
-    private void Awake() {
+    void Awake() {
         if (inputGlyph) {
             inputGlyphRestPosition = inputGlyph.rectTransform.anchoredPosition;
         }
     }
 
-    private void OnEnable() {
+    void OnEnable() {
         if (controllerShortcut == null) return;
         activeWithControllerShortcuts.Add(this);
     }
 
-    private void OnDisable() {
+    void OnDisable() {
         OnPointerExit(null);
         activeWithControllerShortcuts.Remove(this);
 
@@ -99,7 +97,7 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
         if (!highlightedSprite) return;
         image.sprite = GetHighlightedSprite();
         if (hoveredClip != null) {
-            gameInstance.PlayAudioClip(hoveredClip);
+            Game.PlayAudioClip(hoveredClip);
         }
         if (isDisabled || beingKeptPressed) {
             SetMargin(styles.pressedButtonTextMargin);
@@ -159,7 +157,7 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
         OnPointerUp(null);
     }
 
-    private Sprite GetHighlightedSprite() {
+    Sprite GetHighlightedSprite() {
         if (isDisabled) {
             return highlightedDisabledSprite;
         }
@@ -169,7 +167,7 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
         return highlightedSprite;
     }
 
-    private Sprite GetNonHighlightedSprite() {
+    Sprite GetNonHighlightedSprite() {
         if (isDisabled) {
             return disabledSprite;
         }
@@ -179,7 +177,7 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
         return unpressedSprite;
     }
 
-    private void SetMargin(Vector4 margin) {
+    void SetMargin(Vector4 margin) {
         if (!text) return;
         text.margin = margin;
         if (inputGlyph) {
@@ -190,9 +188,9 @@ public class ButtonFeel : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,
         }
     }
 
-    private void OnButtonClicked() {
+    void OnButtonClicked() {
         if (isDisabled || beingKeptPressed) return;
-        gameInstance.PlayAudioClip(pressedClip);
+        Game.PlayAudioClip(pressedClip);
         buttonListenerCallback?.Invoke();
     }
 

@@ -7,9 +7,9 @@ using UnityEngine.Pool;
 using static GameData;
 using Random = UnityEngine.Random;
 
-public partial class Game {
+public static partial class Game {
     
-    private static class EnemyAnimations {
+    static class EnemyAnimations {
         public static readonly int walkSide = Animator.StringToHash("WalkSide");
         public static readonly int walkUp = Animator.StringToHash("WalkUp");
         public static readonly int walkDown = Animator.StringToHash("WalkDown");
@@ -36,38 +36,43 @@ public partial class Game {
     public enum AttackAnimTracking { None, AttackAnims, ShootAnims }
 
     public class Enemy : Entity {
-        public Action onDeathCallback;
-        public float flowFieldAcc;
-        public float lastTeleportTime;
-        public float curDistFromPlayer;
-        public float hitStopEndTime;
+        public EnemyData data;
         public CircleCollider2D worldCollider;
         public DamageShape sideAttackShape;
         public DamageShape upAttackShape;
         public DamageShape downAttackShape;
         public List<AttackSpawnPoint> attackSpawnPoints;
+        
+        public float flowFieldAcc;
+        public float lastTeleportTime;
+        public float curDistFromPlayer;
+        public float hitStopEndTime;
+        
         public Vector2 separationOffset;
         public float fixedRandomSeparationAngle;
         public Vector2 separationVel;
-        public EnemyData data;
+        
         public Vector2 moveDir;
         public Vector2 graphicalDir;
         public CardinalDir pendingDir;
         public float pendingDirStartTime;
-        public Tween attackDelay;
+        
         public EnemyAttackPhase attackPhase;
+        public Action<Enemy, Vector2> onAttackRelease;
+        public AttackAnimTracking attackAnimTracking;
+        public Tween attackDelay;
         public float attackTime;
         public float attackReleaseTime;
         public float attackEndTime;
-        public AttackAnimTracking attackAnimTracking;
         public float attackLeadSpeed;
         public int attackCount;
-        public Action<Enemy, Vector2> onAttackRelease;
         public bool queuedForRangedAttack;
         public float lastRangedAttackTime;
         public float rangedAttackScore;
+        
         public bool isBossTrash;
         public bool cannotBePushedByOthers;
+        
         public OptionalRef<BleedEyeUpgrade.InstanceData> bleed;
         public OptionalRef<HemorrhageAugment.InstanceData> hemorrhage;
         public OptionalRef<PoisonEyeUpgrade.InstanceData> poison;
@@ -84,16 +89,14 @@ public partial class Game {
         enemy.knockBack.ClearValue();
         enemy.GetEffect(Entity.EffectsIndicies.Poisoned).Stop();
     }
-    
-    
-    private const float enemyHitStopDuration = 0.08f;
 
-    private void HitStopEnemy(Enemy enemy) {
+    static void HitStopEnemy(Enemy enemy) {
+        const float enemyHitStopDuration = 0.08f;
         enemy.hitStopEndTime = Time.time + enemyHitStopDuration;
         enemy.animator.speed = 0f;
     }
-    
-    private void OnEnemySpawned(Enemy enemy, object spawnData) {
+
+    static void OnEnemySpawned(Enemy enemy, object spawnData) {
         Assert.IsTrue(spawnData is EnemyData, "Enemies must be spawned with their EnemyData as the spawn data");
 
         entities.enemies.Add(enemy);
@@ -126,12 +129,15 @@ public partial class Game {
         enemy.sideAttackShape = null;
         enemy.upAttackShape = null;
         enemy.downAttackShape = null;
+        
         for (int i = 0; i < enemy.trans.childCount; i++) {
             if (enemy.trans.GetChild(i).TryGetComponent(out AttackSpawnPoint spawnPoint)) {
                 enemy.attackSpawnPoints ??= ListPool<AttackSpawnPoint>.Get();
                 enemy.attackSpawnPoints.Add(spawnPoint);
             }
+            
             if (!enemy.trans.GetChild(i).TryGetComponent(out DamageShape shape)) continue;
+            
             switch (shape.attackDir) {
                 case DamageShape.AttackDir.Side: 
                     enemy.sideAttackShape = shape; 
@@ -145,11 +151,11 @@ public partial class Game {
             }
         }
     }
-    
-    private void OnEnemyDeath(Enemy deadEnemy) {
+
+    static void OnEnemyDeath(Enemy deadEnemy) {
         Assert.IsNotNull(deadEnemy.data.dropPool, "Enemy needs to have a drop pool");
         
-        if (deadEnemy.data.dropPool.HasItems && RollProbability(deadEnemy.data.chanceToDropItem)) {
+        if (!deadEnemy.data.isBoss && deadEnemy.data.dropPool.HasItems && RollProbability(deadEnemy.data.chanceToDropItem)) {
             Item dropItem = GetItemFromDropPool(deadEnemy.data.dropPool);
             if (dropItem) {
                 Entity itemDropEntity = SpawnItemAsEntity(dropItem, 1, deadEnemy.Center, Quaternion.identity);
@@ -169,14 +175,14 @@ public partial class Game {
             deadEnemy.attackSpawnPoints = null;
         }
     }
-    
-    private void InitEnemies() {
+
+    static void InitEnemies() {
         RegisterOnSpawnCallback<Enemy>(OnEnemySpawned);
         RegisterOnSpawnCallback<FireBoss>(InitFireBoss);
         RegisterOnSpawnCallback<SulfurBoss>(InitSulfurBoss);
     }
-    
-    private void UpdateEnemies() {
+
+    static void UpdateEnemies() {
         List<Enemy> enemies = entities.enemies;
         if (enemies.Count <= 0) return;
         
@@ -197,10 +203,7 @@ public partial class Game {
             enemy.cannotBePushedByOthers = enemy.slow.HasValue || !EnemyCanMove(enemy);
             enemy.curDistFromPlayer = Vector2.Distance(player.Center, enemy.Center);
 
-            if (enemy.attackPhase != EnemyAttackPhase.None) {
-                UpdateEnemyAttackPhase(enemy);
-            }
-            else {
+            if (enemy.attackPhase == EnemyAttackPhase.None) {
                 switch (enemy.data.type) {
                     case EnemyData.EnemyType.FireBoss:
                         FireBossLogic(enemy);
@@ -212,6 +215,9 @@ public partial class Game {
                         UpdateEnemyAttack(enemy);
                         break;
                 }
+            }
+            else {
+                UpdateEnemyAttackPhase(enemy);
             }
             
             if (enemy.bleed.HasValue) {
@@ -233,10 +239,9 @@ public partial class Game {
                     enemy.health -= bleedDamage;
                     bleed.lastBleedTime = Time.time;
 
-                    Entity bloodDrop = SpawnEntity(entityPools.bloodDrop, OffsetY(enemy.position, 0.015f), Quaternion.identity);
+                    Entity bloodDrop = SpawnEntityOneShot(entityPools.bloodDrop, OffsetY(enemy.position, 0.015f), Quaternion.identity);
                     AddParentEffect(bloodDrop, enemy, 0.4f);
-                    DestroyEntity(bloodDrop, 0.8f);
-                
+                    
                     PlantBloodMushroom(enemy.position);
                     thisFrame.data.enemyBloodDropped++;
                 }
@@ -251,22 +256,29 @@ public partial class Game {
                     }
                 }
             
-                // It looks better if the enemies keep some momentum when dying
-                deadEnemy.rigidbody.linearVelocity *= 0.3f;
                 deadEnemy.collider.enabled = false;
                 deadEnemy.worldCollider.enabled = false;
                 deadEnemy.animator.speed = 1f; // Dead enemies leave the update loop, so the hit stop would never end
-            
-                const float deathDelay = 0.03f;
-                Delay(deadEnemy, deathDelay, static (deadEnemy) => {
-                    Game game = gameInstance;
-                    game.SpawnEntityOneShot(game.entityPools.largeBloodSplatter, deadEnemy.position, Quaternion.identity);
-                    game.PlayAudioClip(game.audio.bloodBurstClip, deadEnemy.position);
-                    game.OnEnemyDeath(deadEnemy);
-                });
-            
-                DissolveAndDestroy(deadEnemy, 0.6f, config.enemyColors.enemyDissolveBloodColor);
-                StampBlood(deadEnemy.position.Offset(y: -0.01f), BloodSize.Medium, delay: 0.05f);
+
+                if (deadEnemy.data.isBoss) {
+                    deadEnemy.rigidbody.linearVelocity = Vector2.zero;
+                    deadEnemy.animator.Play(EnemyAnimations.death);
+                    Delay(deadEnemy, deadEnemy.animator.CurrentClipLength(), static (deadEnemy) => DropBossChest(deadEnemy));
+                    OnEnemyDeath(deadEnemy);
+                }
+                else {
+                    // It looks better if the enemies keep some momentum when dying
+                    deadEnemy.rigidbody.linearVelocity *= 0.3f;
+                    DissolveAndDestroy(deadEnemy, 0.6f, config.enemyColors.enemyDissolveBloodColor);
+                    StampBlood(deadEnemy.position.Offset(y: -0.01f), BloodSize.Medium, delay: 0.05f);
+                    
+                    const float deathDelay = 0.03f;
+                    Delay(deadEnemy, deathDelay, static (deadEnemy) => {
+                        SpawnEntityOneShot(entityPools.largeBloodSplatter, deadEnemy.position, Quaternion.identity);
+                        PlayAudioClip(audio.bloodBurstClip, deadEnemy.position);
+                        OnEnemyDeath(deadEnemy);
+                    });
+                }
                 
                 enemies.RemoveAt(i);
             }
@@ -312,10 +324,10 @@ public partial class Game {
         public float nextAttackAllowedTime;
         public readonly List<Enemy> queuedEnemies = new();
     }
-    
-    private RangedAttackManager rangedAttackManager = new();
 
-    private void ClearRangedAttackManager() {
+    static RangedAttackManager rangedAttackManager = new();
+
+    static void ClearRangedAttackManager() {
         foreach (Enemy enemy in rangedAttackManager.queuedEnemies) {
             enemy.queuedForRangedAttack = false;
         }
@@ -323,7 +335,7 @@ public partial class Game {
         rangedAttackManager.nextAttackAllowedTime = 0f;
     }
 
-    private void UpdateRangedAttackManager() {
+    static void UpdateRangedAttackManager() {
         RangedAttackManager rm = rangedAttackManager;
         rm.queuedEnemies.RemoveAll(static enemy => enemy.health <= 0);
 
@@ -354,13 +366,13 @@ public partial class Game {
         }
     }
 
-    private static float RangedAttackScore(Enemy enemy) {
+    static float RangedAttackScore(Enemy enemy) {
         float closeness = 1f - Mathf.Clamp01(enemy.curDistFromPlayer / RangedAttackManager.distanceScoreRange);
         float timeWaiting = Time.time - enemy.lastRangedAttackTime;
         return enemy.data.attack.rangedPriority + closeness * RangedAttackManager.distanceScoreWeight + timeWaiting * RangedAttackManager.scorePerSecondWaiting;
     }
 
-    private void UpdateEnemyAttack(Enemy enemy) {
+    static void UpdateEnemyAttack(Enemy enemy) {
         EnemyAttack attack = enemy.data.attack;
         if (!attack) return;
 
@@ -378,7 +390,7 @@ public partial class Game {
         TryStartEnemyAttack(enemy, attack);
     }
 
-    private bool CanStartEnemyAttack(Enemy enemy, EnemyAttack attack) {
+    static bool CanStartEnemyAttack(Enemy enemy, EnemyAttack attack) {
         if (!EnemyCanMove(enemy)) {
             return false;
         }
@@ -395,7 +407,7 @@ public partial class Game {
     }
 
     // Fails when the attack can't be aimed, like a leading projectile that can't reach the player
-    private bool TryStartEnemyAttack(Enemy enemy, EnemyAttack attack) {
+    static bool TryStartEnemyAttack(Enemy enemy, EnemyAttack attack) {
         float leadSpeed = AttackLeadSpeed(attack);
         CardinalDir dir = CardinalDirFromVector(enemy.graphicalDir);
         if (attack.snapFaceTargetOnStart) {
@@ -407,13 +419,13 @@ public partial class Game {
         }
 
         AttackAnimTracking animTracking = attack.trackTargetUntilRelease ? AttackAnimTracking.AttackAnims : AttackAnimTracking.None;
-        StartEnemyAttack(enemy, AttackAnimationFromDir(dir), static (enemy, spawnPos) => gameInstance.ReleaseEnemyAttack(enemy, enemy.data.attack, spawnPos), animTracking, leadSpeed);
+        StartEnemyAttack(enemy, AttackAnimationFromDir(dir), static (enemy, spawnPos) => ReleaseEnemyAttack(enemy, enemy.data.attack, spawnPos), animTracking, leadSpeed);
         enemy.attackDelay = Tween.Delay(attack.cooldown);
         return true;
     }
 
     // Plays the attack clip and calls onRelease on its release frame, which comes from the prefab's AttackSpawnPoint or DamageShape
-    private void StartEnemyAttack(Enemy enemy, int animHash, Action<Enemy, Vector2> onRelease, AttackAnimTracking animTracking = AttackAnimTracking.None, float leadSpeed = 0f) {
+    static void StartEnemyAttack(Enemy enemy, int animHash, Action<Enemy, Vector2> onRelease, AttackAnimTracking animTracking = AttackAnimTracking.None, float leadSpeed = 0f) {
         enemy.animator.Play(animHash, 0, 0f);
         // Applies the Play so the timings below come from the attack clip
         enemy.animator.Update(0f);
@@ -431,7 +443,7 @@ public partial class Game {
         enemy.onAttackRelease = onRelease;
     }
 
-    private void UpdateEnemyAttackPhase(Enemy enemy) {
+    static void UpdateEnemyAttackPhase(Enemy enemy) {
         // Scaled by the animator so hit stop pauses the attack along with its animation
         enemy.attackTime += Time.deltaTime * enemy.animator.speed;
 
@@ -455,7 +467,7 @@ public partial class Game {
     }
 
     // Steps the clip back so the attack winds up and releases again, for attacks that repeat within one clip
-    private static void RewindEnemyAttack(Enemy enemy, int frames) {
+    static void RewindEnemyAttack(Enemy enemy, int frames) {
         AnimationClip clip = enemy.animator.CurrentClip();
         if (!clip) return;
         enemy.attackTime = Mathf.Max(0f, enemy.attackReleaseTime - frames / clip.frameRate);
@@ -463,7 +475,7 @@ public partial class Game {
         enemy.attackPhase = EnemyAttackPhase.Windup;
     }
 
-    private void ReleaseEnemyAttack(Enemy enemy, EnemyAttack attack, Vector2 spawnPos) {
+    static void ReleaseEnemyAttack(Enemy enemy, EnemyAttack attack, Vector2 spawnPos) {
         switch (attack.kind) {
             case EnemyAttack.AttackKind.Melee: {
                 DamageShape shape = EnemyAttackShape(enemy, out bool mirrored);
@@ -502,7 +514,7 @@ public partial class Game {
         }
     }
 
-    private int AttackReleaseFrame(Enemy enemy, int animHash) {
+    static int AttackReleaseFrame(Enemy enemy, int animHash) {
         AttackSpawnPoint point = FindAttackSpawnPoint(enemy, animHash);
         if (point) {
             return point.spawnFrame;
@@ -512,7 +524,7 @@ public partial class Game {
     }
 
     // The enemy may have turned since the attack started, so this uses the point for the clip playing now
-    private static Vector2 CurrentAttackSpawnPos(Enemy enemy) {
+    static Vector2 CurrentAttackSpawnPos(Enemy enemy) {
         int stateHash = enemy.animator.GetCurrentAnimatorStateInfo(0).shortNameHash;
         AttackSpawnPoint point = FindAttackSpawnPoint(enemy, stateHash);
         if (!point) {
@@ -522,16 +534,16 @@ public partial class Game {
         return point.GetPosition(mirrored);
     }
 
-    private static Vector2 EnemyAttackOrigin(Enemy enemy) {
+    static Vector2 EnemyAttackOrigin(Enemy enemy) {
         return enemy.position.Offset(y: 0.1f);
     }
 
-    private static float AttackLeadSpeed(EnemyAttack attack) {
+    static float AttackLeadSpeed(EnemyAttack attack) {
         return attack.kind == EnemyAttack.AttackKind.Projectile && attack.leadTarget ? attack.projectileSpeed : 0f;
     }
 
     // A lead speed of 0 aims straight at the player
-    private bool TryGetAimPoint(Vector2 origin, float leadSpeed, out Vector2 aimPoint) {
+    static bool TryGetAimPoint(Vector2 origin, float leadSpeed, out Vector2 aimPoint) {
         if (leadSpeed > 0f) {
             return TryGetPlayerInterceptPoint(origin, leadSpeed, out aimPoint);
         }
@@ -539,11 +551,11 @@ public partial class Game {
         return true;
     }
 
-    private Vector2 EnemyAimPoint(Vector2 origin, float leadSpeed) {
+    static Vector2 EnemyAimPoint(Vector2 origin, float leadSpeed) {
         return TryGetAimPoint(origin, leadSpeed, out Vector2 aimPoint) ? aimPoint : player.position;
     }
 
-    private Projectile SpawnAimedProjectile(EntityPool<Projectile> pool, Enemy source, Vector2 spawnPos, float speed, float lifetime, 
+    static Projectile SpawnAimedProjectile(EntityPool<Projectile> pool, Enemy source, Vector2 spawnPos, float speed, float lifetime, 
         int? damage, LayerMask layermask, bool leadTarget = true)
     {
         Vector2 aimPoint = EnemyAimPoint(spawnPos, leadTarget ? speed : 0f);
@@ -551,7 +563,7 @@ public partial class Game {
         return SpawnProjectile(pool, spawnPos, velocity, lifetime, source, flatDamage: damage, layermask: layermask);
     }
 
-    private static bool TryChooseBossAttack<T>(Enemy boss, AttackBrain<T> brain, int level, float minDelay, float maxDelay, out T attack) where T : Enum {
+    static bool TryChooseBossAttack<T>(Enemy boss, AttackBrain<T> brain, int level, float minDelay, float maxDelay, out T attack) where T : Enum {
         attack = default;
         if (boss.attackDelay.isAlive) {
             return false;
@@ -561,7 +573,7 @@ public partial class Game {
         return true;
     }
 
-    private EntityPool<Projectile> EnemyProjectilePool(GameObject prefab) {
+    static EntityPool<Projectile> EnemyProjectilePool(GameObject prefab) {
         EntityPools pools = entityPools;
         if (prefab == pools.smallFireballProjectile.prefab) return pools.smallFireballProjectile;
         if (prefab == pools.fireBossProjectile.prefab) return pools.fireBossProjectile;
@@ -572,13 +584,12 @@ public partial class Game {
         return pools.smallFireballProjectile;
     }
 
-    private void SpawnSlamSmoke(Vector2 position) {
-        Entity smokeSlam = SpawnEntity<Entity>(prefabs.slamSmoke, position, Quaternion.identity);
-        DestroyEntity(smokeSlam, CurrentClipLength(smokeSlam.animator));
+    static void SpawnSlamSmoke(Vector2 position) {
+        SpawnEntityOneShot<Entity>(prefabs.slamSmoke, position, Quaternion.identity);
     }
     
     public class FireBoss : Enemy {
-        public enum AttackTypes { Fireball, Meteor, EmberScatter, TrippleEmberScatter, DoubleFireball, MutliMeteor, Count }
+        public enum AttackTypes { Fireball, Meteor, EmberScatter, DoubleEmberScatter, DoubleFireball, MutliMeteor, Count }
         public AttackBrain<AttackTypes> attackBrain;
 
         public const float minAttackDelay = 1f;
@@ -594,7 +605,7 @@ public partial class Game {
         public const float emberSpeed = 1f;
         public const float emberLifetime = 10f;
         public const float emberCastAngle = 60f;
-        public const int emberRecastRewindFrames = 2;
+        public const int emberRecastRewindFrames = 3;
 
         public const int meteorDamage = 15;
         public const float meteorTravelTime = 0.6f;
@@ -605,7 +616,7 @@ public partial class Game {
         public const int multiMeteorCount = 4;
     }
 
-    private void InitFireBoss(FireBoss fireBoss) {
+    static void InitFireBoss(FireBoss fireBoss) {
         fireBoss.attackDelay = Tween.Delay(FireBoss.minAttackDelay, FireBoss.maxAttackDelay);
         fireBoss.attackBrain = new((int)FireBoss.AttackTypes.Count);
         fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.Fireball, level: 0, marbles: 3);
@@ -613,11 +624,11 @@ public partial class Game {
         fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.EmberScatter, level: 0, marbles: 1, preventConsecutive: true);
         fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.DoubleFireball, level: 1, marbles: 3);
         fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.MutliMeteor, level: 1, marbles: 2);
-        fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.TrippleEmberScatter, level: 1, marbles: 1, preventConsecutive: true);
+        fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.DoubleEmberScatter, level: 1, marbles: 1, preventConsecutive: true);
         fireBoss.animator.Play(EnemyAnimations.spawn);
     }
 
-    private void FireBossLogic(Enemy enemy) {
+    static void FireBossLogic(Enemy enemy) {
         if (enemy is not FireBoss fireBoss) return;
 
         int attackLevel = (fireBoss.health / (float)fireBoss.data.health) > 0.5f ? 0 : 1;
@@ -640,8 +651,8 @@ public partial class Game {
             case FireBoss.AttackTypes.MutliMeteor:
                 SummonMeteors(FireBoss.multiMeteorCount);
                 break;
-            case FireBoss.AttackTypes.TrippleEmberScatter:
-                CastEmberScatter(3);
+            case FireBoss.AttackTypes.DoubleEmberScatter:
+                CastEmberScatter(2);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -654,10 +665,9 @@ public partial class Game {
         void CastFireballs(int count) {
             fireBoss.attackCount = count;
             StartEnemyAttack(fireBoss, shootAnim, animTracking: AttackAnimTracking.ShootAnims, leadSpeed: FireBoss.fireballSpeed, onRelease: static (boss, spawnPos) => {
-                var g = gameInstance;
                 for (int i = 0; i < boss.attackCount; i++) {
                     Delay(boss, i * FireBoss.delayBetweenFireballs, (_) => {
-                        g.SpawnAimedProjectile(g.entityPools.fireBossProjectile, boss, spawnPos, FireBoss.fireballSpeed, FireBoss.fireballLifetime, FireBoss.fireballDamage, Masks.PlayerProjectileHurtMask);
+                        SpawnAimedProjectile(entityPools.fireBossProjectile, boss, spawnPos, FireBoss.fireballSpeed, FireBoss.fireballLifetime, FireBoss.fireballDamage, Masks.PlayerProjectileHurtMask);
                     });
                 }
             });
@@ -669,10 +679,9 @@ public partial class Game {
         }
 
         static void RainMeteors(Enemy fireBoss, int meteorCount) {
-            var g = gameInstance;
 
             const float predictionTime = FireBoss.meteorTravelTime * 0.85f;
-            Vector2 centeralAimPoint = g.PredictedPlayerPosition(predictionTime);
+            Vector2 centeralAimPoint = PredictedPlayerPosition(predictionTime);
             centeralAimPoint = ClampPositionToMap(player.position, centeralAimPoint, FireBoss.meteorRadius);
 
             using var _ = ListPool<Vector2>.Get(out var meteorPositions);
@@ -690,35 +699,33 @@ public partial class Game {
         }
 
         static void SpawnSingleMeteor(Vector2 targetPos) {
-            var g = gameInstance;
 
             Vector2 meteorSpawnPos = new(targetPos.x, targetPos.y + 2);
-            Entity attackCircleEntity = g.SpawnEntity(g.entityPools.attackCircle, targetPos, Quaternion.identity);
+            Entity attackCircleEntity = SpawnEntity(entityPools.attackCircle, targetPos, Quaternion.identity);
             attackCircleEntity.attackCircle.Animate(FireBoss.meteorRadius, FireBoss.meteorWarningTime);
 
-            Entity meteorEntity = g.SpawnEntity(g.entityPools.meteor, meteorSpawnPos, Quaternion.identity);
+            Entity meteorEntity = SpawnEntity(entityPools.meteor, meteorSpawnPos, Quaternion.identity);
             Tween.Custom(0f, 1f, FireBoss.meteorTravelTime, ease: Ease.InQuad, onValueChange: (comp) => {
                 meteorEntity.position = Vector2.Lerp(meteorSpawnPos, targetPos, comp);
             })
             .OnComplete(() => {
-                Entity explosion = g.SpawnEntityOneShot(g.entityPools.meteorExplosion, targetPos, Quaternion.identity);
-                g.DealShapeDamage(explosion, FireBoss.meteorDamage, Masks.PlayerMeleeHurtMask);
-                g.DestroyEntity(attackCircleEntity);
-                g.DestroyEntity(meteorEntity);
+                Entity explosion = SpawnEntityOneShot(entityPools.meteorExplosion, targetPos, Quaternion.identity);
+                DealShapeDamage(explosion, FireBoss.meteorDamage, Masks.PlayerMeleeHurtMask);
+                DestroyEntity(attackCircleEntity);
+                DestroyEntity(meteorEntity);
             });
         }
         
         void CastEmberScatter(int count) {
             fireBoss.attackCount = count;
             StartEnemyAttack(fireBoss, shootAnim, animTracking: AttackAnimTracking.ShootAnims, leadSpeed: FireBoss.emberSpeed, onRelease: static (boss, spawnPos) => {
-                var g = gameInstance;
 
-                Vector2 aimDir = (g.EnemyAimPoint(spawnPos, FireBoss.emberSpeed) - spawnPos).normalized;
+                Vector2 aimDir = (EnemyAimPoint(spawnPos, FireBoss.emberSpeed) - spawnPos).normalized;
                 using var _ = ListPool<Vector2>.Get(out var shootDirections);
                 ScatterAimForProjectiles(aimDir, FireBoss.emberCastAngle, FireBoss.emberCount, ref shootDirections);
 
                 foreach (Vector2 shootDir in shootDirections) {
-                    g.SpawnProjectile(g.entityPools.fireEmberProjectile, spawnPos, shootDir * FireBoss.emberSpeed, FireBoss.emberLifetime, boss, flatDamage: FireBoss.emberDamage, layermask: Masks.PlayerProjectileHurtMask);
+                    SpawnProjectile(entityPools.fireEmberProjectile, spawnPos, shootDir * FireBoss.emberSpeed, FireBoss.emberLifetime, boss, flatDamage: FireBoss.emberDamage, layermask: Masks.PlayerProjectileHurtMask);
                 }
 
                 boss.attackCount--;
@@ -729,7 +736,7 @@ public partial class Game {
         }
     }
 
-    private class SulfurBoss : Enemy {
+    class SulfurBoss : Enemy {
         public enum AttackTypes { PoisonCloud, PoisonEruption, Count }
         public AttackBrain<AttackTypes> attackBrain;
         public readonly List<Vector2> eruptionTargets = new();
@@ -757,7 +764,7 @@ public partial class Game {
         public const float poisonPoolWarningTime = 0.4f;
     }
 
-    private void InitSulfurBoss(SulfurBoss sulfurBoss) {
+    static void InitSulfurBoss(SulfurBoss sulfurBoss) {
         sulfurBoss.attackDelay = Tween.Delay(SulfurBoss.minAttackDelay, SulfurBoss.maxAttackDelay);
         sulfurBoss.attackBrain = new((int)SulfurBoss.AttackTypes.Count);
         sulfurBoss.attackBrain.AddAttack(SulfurBoss.AttackTypes.PoisonCloud, level: 0, marbles: 3);
@@ -765,7 +772,7 @@ public partial class Game {
         sulfurBoss.animator.Play(EnemyAnimations.spawn);
     }
 
-    private void SulfurBossLogic(Enemy enemy) {
+    static void SulfurBossLogic(Enemy enemy) {
         if (enemy is not SulfurBoss sulfurBoss) return;
 
         if (!TryChooseBossAttack(sulfurBoss, sulfurBoss.attackBrain, 0, SulfurBoss.minAttackDelay, SulfurBoss.maxAttackDelay, out SulfurBoss.AttackTypes attack)) {
@@ -790,16 +797,15 @@ public partial class Game {
         // ------------------------------
 
         static void ShootPoisonCloud(Enemy boss, Vector2 spawnPos) {
-            var g = gameInstance;
-            Projectile projectile = g.SpawnAimedProjectile(g.entityPools.gooProjectile, boss, spawnPos, SulfurBoss.poisonCloudProjectileSpeed,
+            Projectile projectile = SpawnAimedProjectile(entityPools.gooProjectile, boss, spawnPos, SulfurBoss.poisonCloudProjectileSpeed,
                 SulfurBoss.poisonCloudProjectileLifetime, damage: null, layermask: 0);
             projectile.detonateNearPlayerRadius = SulfurBoss.poisonCloudDetonateRadius;
 
             projectile.onDetonate = static (detonatePos) => {
-                Entity poisonCloud = gameInstance.SpawnEntityOneShot(gameInstance.entityPools.poisonCloud, detonatePos, Quaternion.identity);
-                gameInstance.DealShapeDamage(poisonCloud, SulfurBoss.poisonCloudDamage, Masks.PlayerMeleeHurtMask, onHit: static (hit) => {
+                Entity poisonCloud = SpawnEntityOneShot(entityPools.poisonCloud, detonatePos, Quaternion.identity);
+                DealShapeDamage(poisonCloud, SulfurBoss.poisonCloudDamage, Masks.PlayerMeleeHurtMask, onHit: static (hit) => {
                     if (hit is Player) {
-                        gameInstance.PoisonPlayer(SulfurBoss.poisonDamageMulti, SulfurBoss.poisonDebuffDuration);
+                        PoisonPlayer(SulfurBoss.poisonDamageMulti, SulfurBoss.poisonDebuffDuration);
                     }
                 });
             };
@@ -843,12 +849,11 @@ public partial class Game {
         }
 
         static void LobPoisonPool(Enemy boss, Vector2 spawnPos, Vector2 targetPos) {
-            var g = gameInstance;
             float travelTime = Vector2.Distance(spawnPos, targetPos) / SulfurBoss.poisonEruptionSpeed;
-            float gravity = g.config.gameplay.projectileGravity;
+            float gravity = config.gameplay.projectileGravity;
             Vector2 velocity = ProjectileLobVelocity(spawnPos, targetPos, gravity, SulfurBoss.poisonEruptionSpeed);
-            g.SpawnProjectile(g.entityPools.gooProjectile, spawnPos, velocity, float.MaxValue, boss, layermask: 0, gravity: gravity, lobTarget: targetPos, lobTime: travelTime);
-            g.SpawnHazard(g.entityPools.poisonPool, targetPos, SulfurBoss.poisonPoolDamage, Masks.PlayerMeleeHurtMask,
+            SpawnProjectile(entityPools.gooProjectile, spawnPos, velocity, float.MaxValue, boss, layermask: 0, gravity: gravity, lobTarget: targetPos, lobTime: travelTime);
+            SpawnHazard(entityPools.poisonPool, targetPos, SulfurBoss.poisonPoolDamage, Masks.PlayerMeleeHurtMask,
                 SulfurBoss.poisonPoolDuration, SulfurBoss.poisonPoolTickInterval, spawnDelay: travelTime);
         }
 
@@ -856,7 +861,7 @@ public partial class Game {
 
     // Sunflower spiral so the positions cover the circle evenly with no big gaps, then jittered so it doesn't look like a pattern.
     // Ordered outside in, the first position is the outer edge and the last one is the exact center
-    private static void SpreadPositionsInCircle(List<Vector2> positions, int count, Vector2 center, float circleRadius, float jitter, float bufferRadius) {
+    static void SpreadPositionsInCircle(List<Vector2> positions, int count, Vector2 center, float circleRadius, float jitter, float bufferRadius) {
         const float goldenAngle = 137.50776f;
         float startAngle = Random.Range(0f, 360f);
         for (int i = count - 1; i >= 0; i--) {
@@ -870,7 +875,7 @@ public partial class Game {
         }
     }
 
-    private static void ScatterPositions(ref List<Vector2> positions, int count, Vector2 center, float scatterRadius, float radius, int maxAttemptsPerPosition = 10) {
+    static void ScatterPositions(ref List<Vector2> positions, int count, Vector2 center, float scatterRadius, float radius, int maxAttemptsPerPosition = 10) {
         float minDist = radius * 2f;
         for (int i = 0; i < count; i++) {
             for (int attempt = 0; attempt < maxAttemptsPerPosition; attempt++) {
@@ -892,7 +897,7 @@ public partial class Game {
         }
     }
 
-    private struct SeparationAgent {
+    struct SeparationAgent {
         public Enemy enemy;
         public Vector2 center;
         public float radius;
@@ -901,10 +906,10 @@ public partial class Game {
         public int nextEnemyInSameCellIndex;
     }
 
-    private SeparationAgent[] separationAgents = new SeparationAgent[500];
-    private readonly Dictionary<long, int> firstAgentIndexInSeparationCell = new();
+    static SeparationAgent[] separationAgents = new SeparationAgent[500];
+    static readonly Dictionary<long, int> firstAgentIndexInSeparationCell = new();
 
-    private void UpdateEnemySeparation(List<Enemy> enemies) {
+    static void UpdateEnemySeparation(List<Enemy> enemies) {
         GameplayConfig gameplay = config.gameplay;
 
         if (separationAgents.Length < enemies.Count) {
@@ -1003,7 +1008,7 @@ public partial class Game {
         }
     }
 
-    private void FixedUpdateEnemies() {
+    static void FixedUpdateEnemies() {
         List<Enemy> enemies = entities.enemies;
         UpdateEnemySeparation(enemies);
         foreach (Enemy enemy in enemies) {
@@ -1012,8 +1017,8 @@ public partial class Game {
             OrientEnemy(enemy, canMove);
         }
     }
-    
-    private void MoveEnemy(Enemy enemy, bool canMove) {
+
+    static void MoveEnemy(Enemy enemy, bool canMove) {
         float speed = enemy.data.speed;
         
         if (enemy.knockBack.HasValue) {
@@ -1082,8 +1087,8 @@ public partial class Game {
 
         enemy.rigidbody.linearVelocity = goalVel + enemy.separationVel;
     }
-    
-    private void OrientEnemy(Enemy enemy, bool canMove) {
+
+    static void OrientEnemy(Enemy enemy, bool canMove) {
         if (!canMove) return;
 
         CardinalDir moveDir = CardinalDirFromVector(enemy.moveDir);
@@ -1121,8 +1126,8 @@ public partial class Game {
                 break;
         }
     }
-    
-    private void ReteleportEnemies(RaidSpawnPattern.Variant variant) {
+
+    static void ReteleportEnemies(RaidSpawnPattern.Variant variant) {
         List<Enemy> enemies = entities.enemies;
         using var _ = ListPool<(Enemy, float)>.Get(out var reteleportCandidates);
 
@@ -1162,7 +1167,7 @@ public partial class Game {
         }
     }
 
-    private bool EnemyIsOffscreen(Enemy enemy) {
+    static bool EnemyIsOffscreen(Enemy enemy) {
         // Small margin so enemies right at the edge of the screen don't vanish while partially visible
         const float margin = 0.05f;
         // The width is forced to 16:9 based on the screen height, otherwise enemies on wide screens would rarely count as offscreen
@@ -1175,7 +1180,7 @@ public partial class Game {
         return offscreenX || offscreenY;
     }
 
-    private bool EnemyCanMove(Enemy enemy) {
+    static bool EnemyCanMove(Enemy enemy) {
         if (enemy.IsHitStopped || enemy.attackPhase != EnemyAttackPhase.None) {
             return false;
         }
@@ -1193,8 +1198,8 @@ public partial class Game {
         
         return true;
     }
-    
-    private DamageShape EnemyAttackShape(Enemy enemy, out bool mirrored) {
+
+    static DamageShape EnemyAttackShape(Enemy enemy, out bool mirrored) {
         CardinalDir dir = CardinalDirFromVector(enemy.graphicalDir);
         DamageShape shape = dir switch {
             CardinalDir.Right or CardinalDir.Left => enemy.sideAttackShape,
@@ -1205,7 +1210,7 @@ public partial class Game {
         return shape;
     }
 
-    private static int ShootAnimationFromDir(CardinalDir dir) {
+    static int ShootAnimationFromDir(CardinalDir dir) {
         return dir switch {
             CardinalDir.Up   => EnemyAnimations.shootUp,
             CardinalDir.Down => EnemyAnimations.shootDown,
@@ -1213,7 +1218,7 @@ public partial class Game {
         };
     }
 
-    private static int AttackAnimationFromDir(CardinalDir dir) {
+    static int AttackAnimationFromDir(CardinalDir dir) {
         return dir switch {
             CardinalDir.Up   => EnemyAnimations.attackUp,
             CardinalDir.Down => EnemyAnimations.attackDown,
@@ -1221,7 +1226,7 @@ public partial class Game {
         };
     }
 
-    private static void SetFacing(Enemy enemy, CardinalDir dir) {
+    static void SetFacing(Enemy enemy, CardinalDir dir) {
         enemy.graphicalDir = dir switch {
             CardinalDir.Right => Vector2.right,
             CardinalDir.Left  => Vector2.left,
@@ -1231,7 +1236,7 @@ public partial class Game {
         enemy.spriteRenderer.flipX = dir == CardinalDir.Left;
     }
 
-    private void FaceDirectionWhileAttacking(Enemy enemy, CardinalDir dir, int animHash) {
+    static void FaceDirectionWhileAttacking(Enemy enemy, CardinalDir dir, int animHash) {
         SetFacing(enemy, dir);
         AnimatorStateInfo stateInfo = enemy.animator.GetCurrentAnimatorStateInfo(0);
         if (stateInfo.shortNameHash != animHash) {
@@ -1239,7 +1244,7 @@ public partial class Game {
         }
     }
 
-    private static AttackSpawnPoint FindAttackSpawnPoint(Enemy enemy, int stateHash) {
+    static AttackSpawnPoint FindAttackSpawnPoint(Enemy enemy, int stateHash) {
         if (enemy.attackSpawnPoints == null) return null;
         foreach (AttackSpawnPoint spawnPoint in enemy.attackSpawnPoints) {
             if (spawnPoint.StateHash == stateHash) return spawnPoint;
@@ -1247,9 +1252,9 @@ public partial class Game {
         return null;
     }
 
-    private enum TeleportType { Spawn, Reposition }
+    enum TeleportType { Spawn, Reposition }
 
-    private void TeleportEnemy(Enemy enemy, Vector3 position, TeleportType teleportType) {
+    static void TeleportEnemy(Enemy enemy, Vector3 position, TeleportType teleportType) {
         curRaid.teleportingInPositions.Add(position);
         
         if (teleportType == TeleportType.Reposition) {
@@ -1261,7 +1266,7 @@ public partial class Game {
         enemy.lastTeleportTime = Time.time;
 
         Entity inTeleportFxEntity = SpawnEntity(entityPools.teleportIn, enemy.position, Quaternion.identity);
-        float spawnAnimDuration = CurrentClipLength(inTeleportFxEntity.animator);
+        float spawnAnimDuration = inTeleportFxEntity.animator.CurrentClipLength();
         DestroyEntity(inTeleportFxEntity, spawnAnimDuration);
         
         PlayAudioClip(audio.teleportInClip, inTeleportFxEntity.position);
@@ -1270,13 +1275,12 @@ public partial class Game {
         
         Delay(enemy, spawnDelay, static (enemy) => {
             enemy.gameObject.SetActive(true);
-            gameInstance.curRaid.teleportingInPositions.Remove(enemy.position);
+            curRaid.teleportingInPositions.Remove(enemy.position);
         });
     }
-    
-    private void SpawnTeleportOut(Vector3 position) {
-        Entity outTeleportFxEntity = SpawnEntity(entityPools.teleportOut, position, Quaternion.identity);
-        DestroyEntity(outTeleportFxEntity, CurrentClipLength(outTeleportFxEntity.animator));
+
+    static void SpawnTeleportOut(Vector3 position) {
+        Entity outTeleportFxEntity = SpawnEntityOneShot(entityPools.teleportOut, position, Quaternion.identity);
         PlayAudioClip(audio.teleportOutClip, outTeleportFxEntity.position);
     }
     
@@ -1341,9 +1345,9 @@ public partial class Game {
 
     public enum SwarmState { None, Scheduled, Warning, Spawning }
 
-    [NonSerialized] private EnemySpawnManager spawnManager = new();
+    [NonSerialized] static EnemySpawnManager spawnManager = new();
 
-    private void InitSpawnManager(RaidSpawnPattern pattern) {
+    static void InitSpawnManager(RaidSpawnPattern pattern) {
         spawnManager.swarmState = SwarmState.None;
         spawnManager.swarmStartedThisFrame = false;
         spawnManager.swarmWarningStartedThisFrame = false;
@@ -1390,7 +1394,7 @@ public partial class Game {
     }
 
     // Picks the wave the swarm warning shows up in, and when during that wave's spawning it does
-    private void RollSwarm(EnemySpawnManager sm, RaidSpawnPattern pattern) {
+    static void RollSwarm(EnemySpawnManager sm, RaidSpawnPattern pattern) {
         RaidSpawnPattern.Swarm swarm = pattern.swarm;
         int waveCount = pattern.phasePools.Count;
         if (swarm.pool.variants.Count <= 0 || waveCount <= 0 || !RollProbability(swarm.chance)) return;
@@ -1404,10 +1408,10 @@ public partial class Game {
         sm.swarmVariant = swarm.pool.variants[Random.Range(0, swarm.pool.variants.Count)];
         sm.swarmState = SwarmState.Scheduled;
     }
-    
-    private Limiter spawnLimiterForEnemyBatching;
 
-    private void UpdateSpawnManager() {
+    static Limiter spawnLimiterForEnemyBatching;
+
+    static void UpdateSpawnManager() {
         if (curRaid.mapInstance.isBossMap) return;
 
         EnemySpawnManager sm = spawnManager;
@@ -1428,9 +1432,9 @@ public partial class Game {
         UpdateSwarm(sm);
     }
 
-    private Limiter swarmSpawnLimiter;
+    static Limiter swarmSpawnLimiter;
 
-    private void UpdateSwarm(EnemySpawnManager sm) {
+    static void UpdateSwarm(EnemySpawnManager sm) {
         sm.swarmStartedThisFrame = false;
         sm.swarmWarningStartedThisFrame = false;
         switch (sm.swarmState) {
@@ -1469,7 +1473,7 @@ public partial class Game {
         }
     }
 
-    private void UpdateWaveProgression(EnemySpawnManager sm, float prevTimeInCurPhase) {
+    static void UpdateWaveProgression(EnemySpawnManager sm, float prevTimeInCurPhase) {
         bool afterFirstWave = sm.curPhaseIndex >= 0;
         float waveDuration = afterFirstWave ? sm.CurMaxDuration : sm.spawnPattern.timeBeforeFirstPhase;
         bool timeLimitExceeded = sm.timeInCurPhase >= waveDuration;
@@ -1501,8 +1505,8 @@ public partial class Game {
             }
         }
     }
-    
-    private void AddTimeToNextWaveDelay(EnemySpawnManager sm, bool justHitTimeLimit, int curEnemyCount) {
+
+    static void AddTimeToNextWaveDelay(EnemySpawnManager sm, bool justHitTimeLimit, int curEnemyCount) {
         // Hitting the time limit with enemies still alive gives a buffer before the next wave, scaled by how much of the wave is left
         if (justHitTimeLimit && curEnemyCount > 0) {
             int totalEnemiesThisWave = 0;
@@ -1576,7 +1580,7 @@ public partial class Game {
         sm.startNextWaveDelay += timeAdded;
     }
 
-    private void UpdateBossWave(EnemySpawnManager sm, RaidSpawnPattern.BossPhase bossPhase) {
+    static void UpdateBossWave(EnemySpawnManager sm, RaidSpawnPattern.BossPhase bossPhase) {
         bool bossAlive = entities.boss != null && entities.boss.health > 0;
         if (!bossAlive || !sm.FinishedSpawningThisWave || sm.timeInCurPhase < sm.nextTrashRefillTime) return;
 
@@ -1591,14 +1595,14 @@ public partial class Game {
         }
     }
 
-    private void QueueBossTrashRefill(EnemySpawnManager sm, RaidSpawnPattern.BossPhase bossPhase) {
+    static void QueueBossTrashRefill(EnemySpawnManager sm, RaidSpawnPattern.BossPhase bossPhase) {
         sm.nextTrashRefillTime = sm.timeInCurPhase + bossPhase.minTrashRefillDelay;
         sm.spawnTimeIndex = 0;
         LayOutSpawnEvents(sm, sm.CurVariant, sm.spawnEvents, isBossTrash: true);
         spawnLimiterForEnemyBatching.MakeCurrent();
     }
 
-    private int AliveTrashCount(EnemyData ofType) {
+    static int AliveTrashCount(EnemyData ofType) {
         int count = 0;
         foreach (Enemy enemy in entities.enemies) {
             if (!enemy.isBossTrash || enemy.health <= 0) continue;
@@ -1608,7 +1612,7 @@ public partial class Game {
         return count;
     }
 
-    private void SpawnRaidBoss(RaidSpawnPattern.BossPhase bossPhase, RaidSpawnPattern.Variant variant) {
+    static void SpawnRaidBoss(RaidSpawnPattern.BossPhase bossPhase, RaidSpawnPattern.Variant variant) {
         Vector2Int spawnCellRange = variant.spawnCellRange;
         Vector2 randomSpawnPos = curRaid.mapInstance.grid.GetSpawnPosition(player.position, spawnCellRange.x, spawnCellRange.y, false, GatherEnemyPositions());
 
@@ -1622,7 +1626,7 @@ public partial class Game {
     }
 
     // Lays out when each of the variant's enemies spawn across its spawn duration, following its spawn rate curve
-    private void BeginSpawningVariant(EnemySpawnManager sm, RaidSpawnPattern.Variant variant) {
+    static void BeginSpawningVariant(EnemySpawnManager sm, RaidSpawnPattern.Variant variant) {
 #if UNITY_EDITOR
         foreach (RaidSpawnPattern.EnemyBatch batch in variant.enemyBatches) {
             if (batch.enemyCount >= EnemySpawnManager.prefixedSumResolution) {
@@ -1637,7 +1641,7 @@ public partial class Game {
         spawnLimiterForEnemyBatching.MakeCurrent();
     }
 
-    private void LayOutSpawnEvents(EnemySpawnManager sm, RaidSpawnPattern.Variant variant, List<(float time, EnemyData enemy)> spawnEvents, bool isBossTrash = false) {
+    static void LayOutSpawnEvents(EnemySpawnManager sm, RaidSpawnPattern.Variant variant, List<(float time, EnemyData enemy)> spawnEvents, bool isBossTrash = false) {
         float startTime = isBossTrash ? sm.timeInCurPhase : 0f;
         float totalWeight = 0f;
         for (int i = 0; i < EnemySpawnManager.prefixedSumResolution; i++) {
@@ -1671,7 +1675,7 @@ public partial class Game {
         spawnEvents.Sort(static (x, y) => x.time.CompareTo(y.time));
     }
 
-    private void SpawnDueEnemies(EnemySpawnManager sm) {
+    static void SpawnDueEnemies(EnemySpawnManager sm) {
         if (sm.CurPhase == null) return;
 
         const float batchTime = 1f;
@@ -1680,9 +1684,7 @@ public partial class Game {
         SpawnDueEvents(sm, sm.spawnEvents, ref sm.spawnTimeIndex, sm.timeInCurPhase, sm.CurSpawnCellRange, sm.OnBossWave);
     }
 
-    private void SpawnDueEvents(EnemySpawnManager sm, List<(float time, EnemyData enemy)> spawnEvents, ref int spawnTimeIndex,
-        float time, Vector2Int spawnCellRange, bool isBossTrash) 
-    {
+    static void SpawnDueEvents(EnemySpawnManager sm, List<(float time, EnemyData enemy)> spawnEvents, ref int spawnTimeIndex, float time, Vector2Int spawnCellRange, bool isBossTrash) {
         List<Vector2> enemyPositions = GatherEnemyPositions();
 
         while (spawnEvents.IndexInRange(spawnTimeIndex) && spawnEvents[spawnTimeIndex].time <= time) {
@@ -1699,9 +1701,9 @@ public partial class Game {
         }
     }
 
-    private readonly List<Vector2> _gatheredEnemyPositions = new();
+    static readonly List<Vector2> _gatheredEnemyPositions = new();
 
-    private List<Vector2> GatherEnemyPositions() {
+    static List<Vector2> GatherEnemyPositions() {
         _gatheredEnemyPositions.Clear();
         foreach (Enemy enemy in entities.enemies) {
             // Teleporting enemies are inactive and already in teleportingInPositions, dead ones have their collider disabled

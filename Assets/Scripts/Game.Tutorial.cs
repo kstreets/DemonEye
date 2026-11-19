@@ -4,18 +4,18 @@ using UnityEngine;
 using UnityEngine.UI;
 using static GameData;
 
-public partial class Game {
-
-    private bool InTutorial => tutorial.stateMachine != null && !tutorial.stateMachine.OnLastState;
-    private bool InTutorialFirstForge => InTutorial && tutorial.stateMachine.NotPassedThisState(tutorial.waitingToEnterSlaughterMap);
-    private bool InTutorialSlaughterMap => InTutorial && !InTutorialFirstForge && tutorial.stateMachine.NotPassedThisState(tutorial.diedInSlaughterMap);
-    private bool InTutorialFirstTraderMeeting => InTutorial && !InTutorialSlaughterMap && tutorial.stateMachine.NotPassedThisState(tutorial.firstTraderMeeting);
-    private bool InTutorialHideoutTour => InTutorial && !InTutorialFirstTraderMeeting && !tutorial.stateMachine.OnLastState;
+public static partial class Game {
+    
+    static bool InTutorial => tutorial.stateMachine != null && !tutorial.stateMachine.OnLastState;
+    static bool InTutorialFirstForge => InTutorial && tutorial.stateMachine.NotPassedThisState(tutorial.waitingToEnterSlaughterMap);
+    static bool InTutorialSlaughterMap => InTutorial && !InTutorialFirstForge && tutorial.stateMachine.NotPassedThisState(tutorial.diedInSlaughterMap);
+    static bool InTutorialFirstTraderMeeting => InTutorial && !InTutorialSlaughterMap && tutorial.stateMachine.NotPassedThisState(tutorial.firstTraderMeeting);
+    static bool InTutorialHideoutTour => InTutorial && !InTutorialFirstTraderMeeting && !tutorial.stateMachine.OnLastState;
 
     // Set from the Gameplay Testing window
     public const string skipTutorialEditorPrefKey = "DemonEye_SkipTutorial";
 
-    private void InitTutorial() {
+    static void InitTutorial() {
         // Nothing is saved until the tutorial is done, so an unfinished one always starts over from a new game
         if (persistentFlags.HasFlag(PersistentFlags.TutorialCompleted)) return;
 
@@ -229,26 +229,26 @@ public partial class Game {
     }
 
 #if UNITY_EDITOR
-    private void SkipTutorial() {
+    static void SkipTutorial() {
         GiveStarterStashItems();
         persistentFlags |= PersistentFlags.TutorialCompleted;
     }
 #endif
     
     // Only given before the tutorial is completed, so once per save
-    private void GiveStarterStashItems() {
+    static void GiveStarterStashItems() {
         player.state.coinCurrency = config.starterStashInventory.coinCurrency;
         foreach (ItemWithCount itemWithCount in config.starterStashInventory.itemsWithCounts) {
             TryAddItemToInventory(inventories.stash, itemWithCount.item, itemWithCount.count);
         }
     }
 
-    private void UpdateTutorial() {
+    static void UpdateTutorial() {
         if (!InTutorial) return;
         tutorial.stateMachine.Tick();
     }
-    
-    private void TutorialOnHideoutEnter() {
+
+    static void TutorialOnHideoutEnter() {
         if (!InTutorial) return;
         
         if (InTutorialHideoutTour) {

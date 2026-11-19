@@ -1,9 +1,9 @@
 using UnityEngine;
 using UnityEngine.Assertions;
 
-public partial class Game {
+public static partial class Game {
     
-    private void InitGame() {
+    static void InitGame() {
         SettingsState settingsState = LoadSettings();
         InitSettings(settingsState);
 
@@ -55,13 +55,13 @@ public partial class Game {
             ui.messagePopup.Show("Your save couldn't be loaded, so a new game was started.", "OK", null, null);
         }
     }
-    
-    private void InitEntities(GameState gameState) { 
+
+    static void InitEntities(GameState gameState) { 
         entities.player = MakePlayer();
         InitPlayerState(player, gameState);
     }
-    
-    private void InitEntityPools() {
+
+    static void InitEntityPools() {
         entityPools.itemDrop = CreateEntityPool<Entity>(prefabs.itemDrop, 20, null);
         entityPools.bloodDrop = CreateEntityPool<Entity>(prefabs.bloodDrop, 10, null);
         entityPools.projectile = CreateEntityPool<Projectile>(prefabs.baseProjectile, 20, OnSpawnProjectile);
@@ -100,7 +100,7 @@ public partial class Game {
         entityPools.shadow = CreateEntityPool<Entity>(prefabs.shadow, 40, null);
     }
 
-    private void InitGameStates() {
+    static void InitGameStates() {
         states.gameStateMachine = new();
         var gameStateMachine = states.gameStateMachine;
         
@@ -115,8 +115,8 @@ public partial class Game {
         
         states.raid.To(states.gameOver).When(() => player.health <= 0);
     }
-    
-    private void InitButtonCallbacks() {
+
+    static void InitButtonCallbacks() {
         mainMenu.playButton.AddListener(() => {
             if (InTutorialSlaughterMap) {
                 LoadMapAsync(config.tutorialSlaughterMap);
@@ -227,8 +227,8 @@ public partial class Game {
             LoadMapAsync(mapPanels.confirmationPanel.selectedMap);
         });
     }
-    
-    private void InitHotBar() {
+
+    static void InitHotBar() {
         hotBar.quickUseActions = new() {
             inputs.quickUse1, 
             inputs.quickUse2, 

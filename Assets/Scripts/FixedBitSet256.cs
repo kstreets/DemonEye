@@ -7,8 +7,8 @@ using Random = UnityEngine.Random;
 public class FixedBitSet256 {
     
     public const int bitCount = 256;
-    private const int blockCount = bitCount / 64;
-    [SerializeField] private ulong b0, b1, b2, b3;
+    const int blockCount = bitCount / 64;
+    [SerializeField] ulong b0, b1, b2, b3;
 
     public FixedBitSet256() { }
 

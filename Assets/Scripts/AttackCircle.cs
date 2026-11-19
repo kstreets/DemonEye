@@ -5,13 +5,12 @@ using UnityEngine.Assertions;
 public class AttackCircle : MonoBehaviour {
     
     public SpriteRenderer spriteRenderer;
-    private Tween tween;
-    
-    private const float defaultRadius = 0.5f;
-    private float defaultPixelDensity;
-    private float defaultBorder;
+    Tween tween;
+    const float defaultRadius = 0.5f;
+    float defaultPixelDensity;
+    float defaultBorder;
 
-    private void Awake() {
+    void Awake() {
         spriteRenderer.material = new(spriteRenderer.material);
         defaultPixelDensity = spriteRenderer.material.GetFloat(ShaderIds.pixelDensity);
         defaultBorder = spriteRenderer.material.GetFloat(ShaderIds.border);

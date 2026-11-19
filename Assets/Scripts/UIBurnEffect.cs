@@ -3,18 +3,16 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class UIBurnEffect {
-
-    private readonly Image burnEffectImage;
-    private readonly BurnEdgeEmberSpawner emberSpawner;
-    private readonly Image scortchedImage;
-    private readonly Mask burnMask;
-    private readonly float emberStopPoint;
-
-    private AnimationCurve edgeCurve;
-    private AnimationCurve particleCurve;
-    private Tween emberTween;
-    private Tween scortchedTween;
-    private Tween burningTween;
+    readonly Image burnEffectImage;
+    readonly BurnEdgeEmberSpawner emberSpawner;
+    readonly Image scortchedImage;
+    readonly Mask burnMask;
+    readonly float emberStopPoint;
+    AnimationCurve edgeCurve;
+    AnimationCurve particleCurve;
+    Tween emberTween;
+    Tween scortchedTween;
+    Tween burningTween;
 
     public UIBurnEffect(Image burnEffectImage, BurnEdgeEmberSpawner emberSpawner, Image scortchedImage = null, Mask burnMask = null, float emberStopPoint = 1f) {
         this.burnEffectImage = burnEffectImage;
@@ -73,7 +71,7 @@ public class UIBurnEffect {
         .OnComplete(this, static (burn) => burn.SetCompletion(0f));
     }
 
-    private void SetCompletion(float completion) {
+    void SetCompletion(float completion) {
         burnEffectImage.material.SetFloat(ShaderIds.completion, completion);
         if (scortchedImage != null) {
             scortchedImage.material.SetFloat(ShaderIds.completion, completion);
@@ -83,7 +81,7 @@ public class UIBurnEffect {
         }
     }
 
-    private void SetOffsetSize() {
+    void SetOffsetSize() {
         Vector4 offsetAndSize = burnEffectImage.OffsetAndSizeInTexture();
         burnEffectImage.material.SetVector(ShaderIds.offsetSize, offsetAndSize);
         burnMask.graphic.materialForRendering.SetVector(ShaderIds.offsetSize, offsetAndSize);

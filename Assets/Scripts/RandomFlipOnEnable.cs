@@ -5,14 +5,13 @@ public class RandomFlipOnEnable : MonoBehaviour {
 
     [Range(0f, 1f)] public float flipXChance = 0.5f;
     [Range(0f, 1f)] public float flipYChance;
+    SpriteRenderer spriteRenderer;
 
-    private SpriteRenderer spriteRenderer;
-
-    private void Awake() {
+    void Awake() {
         spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
-    private void OnEnable() {
+    void OnEnable() {
         spriteRenderer.flipX = Random.value < flipXChance;
         spriteRenderer.flipY = Random.value < flipYChance;
     }

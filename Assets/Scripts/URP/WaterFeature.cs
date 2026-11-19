@@ -9,7 +9,7 @@ public class WaterFeature : ScriptableRendererFeature {
     public ComputeShader computeShader;
     
     public static MapWaterSettings waterSettings;
-    private static WaterPass waterPass;
+    static WaterPass waterPass;
     
     public override void Create() {
         waterSettings ??= new();
@@ -21,8 +21,8 @@ public class WaterFeature : ScriptableRendererFeature {
     }
     
     public class WaterPass : ScriptableRenderPass {
-        private ComputeShader computeShader;
-        private int mainKernal;
+        ComputeShader computeShader;
+        int mainKernal;
         
         public class PassData {
             public ComputeShader computeShader;

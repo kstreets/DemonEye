@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   timeBeforeFirstPhase: 22
   timeBeforePortalSpawns: 12
-  minTimeBetweenRangedAttacks: 0.75
-  maxTimeBetweenRangedAttacks: 1.5
+  minTimeBetweenRangedAttacks: 1.5
+  maxTimeBetweenRangedAttacks: 2.5
   phasePools:
-  - name: Wave 0
+  - name: Wave 1
     musicIntensity: 0
     variants:
     - name: Variant 0
@@ -26,7 +26,7 @@ MonoBehaviour:
       startNextPhaseEarlyDelay: 10
       spawnCellRange: {x: 8, y: 10}
       repositionCellRange: {x: 8, y: 10}
-      reteleportCount: 2
+      reteleportCount: 3
       reteleportInterval: 1
       spawnRateCurve:
         serializedVersion: 2
@@ -53,9 +53,9 @@ MonoBehaviour:
         m_PostInfinity: 2
         m_RotationOrder: 0
       enemyBatches:
-      - enemyCount: 6
-        enemyData: {fileID: 11400000, guid: e317b66f7ab3f9a4eb9807435d01428e, type: 2}
-  - name: Wave 1
+      - enemyCount: 8
+        enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
+  - name: Wave 2
     musicIntensity: 0
     variants:
     - name: Variant 0
@@ -64,7 +64,118 @@ MonoBehaviour:
       startNextPhaseEarlyDelay: 10
       spawnCellRange: {x: 8, y: 10}
       repositionCellRange: {x: 7, y: 9}
-      reteleportCount: 2
+      reteleportCount: 4
+      reteleportInterval: 1
+      spawnRateCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 0
+      enemyBatches:
+      - enemyCount: 15
+        enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
+  - name: Wave 3
+    musicIntensity: 1
+    variants:
+    - name: Variant 0
+      maxDuration: 20
+      spawnDuration: 15
+      startNextPhaseEarlyDelay: 10
+      spawnCellRange: {x: 8, y: 11}
+      repositionCellRange: {x: 7, y: 9}
+      reteleportCount: 4
+      reteleportInterval: 1
+      spawnRateCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 0
+      enemyBatches:
+      - enemyCount: 12
+        enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
+    - name: Variant 1
+      maxDuration: 20
+      spawnDuration: 15
+      startNextPhaseEarlyDelay: 10
+      spawnCellRange: {x: 8, y: 11}
+      repositionCellRange: {x: 7, y: 9}
+      reteleportCount: 4
+      reteleportInterval: 1
+      spawnRateCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 0
+      enemyBatches:
+      - enemyCount: 8
+        enemyData: {fileID: 11400000, guid: e317b66f7ab3f9a4eb9807435d01428e, type: 2}
+  - name: Wave 4
+    musicIntensity: 1
+    variants:
+    - name: Variant 0
+      maxDuration: 30
+      spawnDuration: 17
+      startNextPhaseEarlyDelay: 10
+      spawnCellRange: {x: 10, y: 12}
+      repositionCellRange: {x: 10, y: 12}
+      reteleportCount: 5
       reteleportInterval: 1
       spawnRateCurve:
         serializedVersion: 2
@@ -93,54 +204,18 @@ MonoBehaviour:
       enemyBatches:
       - enemyCount: 20
         enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
-  - name: Wave 2
-    musicIntensity: 1
-    variants:
-    - name: Variant 0
-      maxDuration: 20
-      spawnDuration: 15
-      startNextPhaseEarlyDelay: 10
-      spawnCellRange: {x: 8, y: 11}
-      repositionCellRange: {x: 7, y: 9}
-      reteleportCount: 2
-      reteleportInterval: 1
-      spawnRateCurve:
-        serializedVersion: 2
-        m_Curve:
-        - serializedVersion: 3
-          time: 0
-          value: 1
-          inSlope: 0
-          outSlope: 0
-          tangentMode: 34
-          weightedMode: 0
-          inWeight: 0
-          outWeight: 0
-        - serializedVersion: 3
-          time: 1
-          value: 1
-          inSlope: 0
-          outSlope: 0
-          tangentMode: 34
-          weightedMode: 0
-          inWeight: 0
-          outWeight: 0
-        m_PreInfinity: 2
-        m_PostInfinity: 2
-        m_RotationOrder: 0
-      enemyBatches:
-      - enemyCount: 20
+      - enemyCount: 15
         enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
-  - name: Wave 3
-    musicIntensity: 1
+  - name: Wave 5
+    musicIntensity: 2
     variants:
     - name: Variant 0
-      maxDuration: 36
-      spawnDuration: 30
+      maxDuration: 32
+      spawnDuration: 18
       startNextPhaseEarlyDelay: 10
-      spawnCellRange: {x: 9, y: 11}
-      repositionCellRange: {x: 7, y: 8}
-      reteleportCount: 2
+      spawnCellRange: {x: 10, y: 12}
+      repositionCellRange: {x: 10, y: 12}
+      reteleportCount: 5
       reteleportInterval: 1
       spawnRateCurve:
         serializedVersion: 2
@@ -169,14 +244,11 @@ MonoBehaviour:
       enemyBatches:
       - enemyCount: 25
         enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
-      - enemyCount: 22
+      - enemyCount: 25
         enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
-  - name: Wave 4
-    musicIntensity: 2
-    variants:
-    - name: Variant 0
+    - name: Variant 1
       maxDuration: 35
-      spawnDuration: 25
+      spawnDuration: 18
       startNextPhaseEarlyDelay: 10
       spawnCellRange: {x: 10, y: 12}
       repositionCellRange: {x: 10, y: 12}
@@ -209,18 +281,18 @@ MonoBehaviour:
       enemyBatches:
       - enemyCount: 30
         enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
-      - enemyCount: 25
-        enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
-  - name: Wave 5
+      - enemyCount: 10
+        enemyData: {fileID: 11400000, guid: e317b66f7ab3f9a4eb9807435d01428e, type: 2}
+  - name: Wave 6
     musicIntensity: 2
     variants:
     - name: Variant 0
-      maxDuration: 30
-      spawnDuration: 30
+      maxDuration: 20
+      spawnDuration: 20
       startNextPhaseEarlyDelay: 10
       spawnCellRange: {x: 11, y: 13}
       repositionCellRange: {x: 11, y: 13}
-      reteleportCount: 2
+      reteleportCount: 5
       reteleportInterval: 1
       spawnRateCurve:
         serializedVersion: 2
@@ -247,10 +319,12 @@ MonoBehaviour:
         m_PostInfinity: 2
         m_RotationOrder: 0
       enemyBatches:
-      - enemyCount: 50
+      - enemyCount: 25
         enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
       - enemyCount: 35
         enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
+      - enemyCount: 5
+        enemyData: {fileID: 11400000, guid: e317b66f7ab3f9a4eb9807435d01428e, type: 2}
   bossPhase:
     name: Boss Wave
     musicIntensity: 0

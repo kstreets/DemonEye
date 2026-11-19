@@ -50,7 +50,7 @@ public class TransactionPanel : MonoBehaviour {
         bool canBarter = hasBarterRequirements;
         foreach (ItemWithCount barterReq in item.traderSpawning.barterRequirements) {
             Assert.IsNotNull(barterReq.item, $"Null barter item for {item.displayName}. Fix it or remove it.");
-            if (gameInstance.GetOwnedCountOfItem(barterReq.item) < barterReq.count) {
+            if (Game.GetOwnedCountOfItem(barterReq.item) < barterReq.count) {
                 canBarter = false;
                 break;
             }
@@ -75,13 +75,13 @@ public class TransactionPanel : MonoBehaviour {
         moneyPurchaseButton.text.text = $"Purchase for <sprite=0>{buyPriceString}";
     }
 
-    private void SetBarterOptionVisible(bool visible) {
+    void SetBarterOptionVisible(bool visible) {
         barterPurchaseButton.gameObject.SetActive(visible);
         orDivider.SetActive(visible);
     }
 
-    private int prevSellPrice = int.MinValue; // Makes sure to update initially
-    private Sequence sellPriceSequence;
+    int prevSellPrice = int.MinValue; // Makes sure to update initially
+    Sequence sellPriceSequence;
     
     public void UpdateSellPrice(int sellPrice) {
         sellParent.gameObject.SetActive(true);
@@ -99,14 +99,14 @@ public class TransactionPanel : MonoBehaviour {
                 transctionPanel.sellInfoText.text = "Place Items to Sell";
                 transctionPanel.coinCurrencyText.gameObject.SetActive(false);
             });
-            gameInstance.PlayAudioClip(gameInstance.audio.coinSplashClip);
+            Game.PlayAudioClip(Game.audio.coinSplashClip);
         }
         else {
             sellInfoText.text = "Sell for <sprite=0>";
             coinCurrencyText.gameObject.SetActive(true);
             sellPriceSequence.Complete();
             sellPriceSequence = AnimateCurrency(coinCurrencyText, prevSellPrice, sellPrice);
-            gameInstance.PlayAudioClip(gameInstance.audio.coinSplashClip);
+            Game.PlayAudioClip(Game.audio.coinSplashClip);
         }
         
         prevSellPrice = sellPrice;

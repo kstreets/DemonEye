@@ -21,7 +21,7 @@ public class BrittleBonesAugment : Augment {
         return $"{DisplayProbIncrease(GetProbability(stackCount))} chance to shatter a poisoned enemy's bone";
     }
 
-    private float GetProbability(int stackCount) {
+    float GetProbability(int stackCount) {
         return TaperFloat(probability, stackCount, 0.3f);
     }
 

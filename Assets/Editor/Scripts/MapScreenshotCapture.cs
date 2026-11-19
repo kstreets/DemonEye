@@ -35,7 +35,7 @@ public static class MapScreenshotCapture {
             return;
         }
         
-        Game.gameInstance.entities.player.gameObject.SetActive(false);
+        Game.entities.player.gameObject.SetActive(false);
         
         RenderTexture rt = new(imageWidth, imageHeight, 24, RenderTextureFormat.ARGB32);
         cam.targetTexture = rt;
@@ -69,7 +69,7 @@ public static class MapScreenshotCapture {
         cam.targetTexture = null;
         Object.DestroyImmediate(rt);
         Object.DestroyImmediate(result);
-        Game.gameInstance.entities.player.gameObject.SetActive(true);
+        Game.entities.player.gameObject.SetActive(true);
 
         AssetDatabase.Refresh();
         Debug.Log($"Screenshot captured: {path} ({imageWidth}x{imageHeight})");

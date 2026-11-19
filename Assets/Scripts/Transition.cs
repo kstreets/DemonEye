@@ -5,7 +5,7 @@ public class Transition {
     public State NextState { get; set; }
     public float Seconds { get; private set; }
     public float Delay { get; private set; }
-    private Func<bool> condition;
+    Func<bool> condition;
 
     public Transition(State nextState) {
         this.NextState = nextState;

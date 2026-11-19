@@ -6,7 +6,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 using static GameData;
 
-public partial class Game {
+public static partial class Game {
     
     // -1, or a resolution the screen doesn't have, means not saved, so the setting starts on its default
     [Serializable]
@@ -21,18 +21,17 @@ public partial class Game {
         public int musicVolumeIndex = -1;
         public int gameVolumeIndex = -1;
     }
-    
-    private string[] fullScreenNames = { "Exclusive Full Screen", "Full Screen Window", "Maximized", "Windowed" };
-    private int[] fpsLimits = { 60, 90, 120, 144, 165, -1 };
-    
-    private List<Vector2Int> allScreenResolutions = new();
-    private readonly List<DisplayInfo> displayLayout = new();
+
+    static string[] fullScreenNames = { "Exclusive Full Screen", "Full Screen Window", "Maximized", "Windowed" };
+    static int[] fpsLimits = { 60, 90, 120, 144, 165, -1 };
+    static List<Vector2Int> allScreenResolutions = new();
+    readonly static List<DisplayInfo> displayLayout = new();
     
     public static void OnAnySettingsChanged() {
-        gameInstance.UpdateApplySettingsButtonState();
+        UpdateApplySettingsButtonState();
     }
-    
-    private void InitSettings(SettingsState loadedSettings) {
+
+    static void InitSettings(SettingsState loadedSettings) {
         // Includes inactive ones because only the shown settings tab is active, and the others still need applying and tracking for changes
         settings.all = settings.settingsParent.GetComponentsInChildren<SingleSetting>(includeInactive: true);
         
@@ -151,8 +150,8 @@ public partial class Game {
         
         ApplySettings();
     }
-    
-    private void UpdateSettings() {
+
+    static void UpdateSettings() {
         UpdateUIHints();
         
         bool controlPageActive = settings.controlsParent.gameObject.activeInHierarchy;
@@ -169,8 +168,8 @@ public partial class Game {
             RefreshCell(slot);
         }
     }
-    
-    private void SettingsOnScreenSizeChanged() {
+
+    static void SettingsOnScreenSizeChanged() {
         Vector2Int settingResolution = allScreenResolutions[settings.resolution.curIndex];
         if (settingResolution != ScreenSize) {
             int index = FindSettingResolutionIndex(ScreenSize);
@@ -184,19 +183,19 @@ public partial class Game {
             settings.fullscreenMode.ForceChangeWithoutApplying(IndexFromScreenMode(Screen.fullScreenMode));
         }
     }
-    
-    private void ApplySettings() {
+
+    static void ApplySettings() {
         foreach (SingleSetting setting in settings.all) {
             setting.Apply();
         }
         UpdateApplySettingsButtonState();
     }
-    
-    private void UpdateApplySettingsButtonState() {
+
+    static void UpdateApplySettingsButtonState() {
         settings.applyChangesButton.SetClickableState(SettingsHaveChangesToApply());
     }
 
-    private bool SettingsHaveChangesToApply() {
+    static bool SettingsHaveChangesToApply() {
         foreach (SingleSetting setting in settings.all) {
             if (setting.HasChangesToApply()) return true;
         }
@@ -204,7 +203,7 @@ public partial class Game {
     }
 
     // Asks first when changes are waiting for apply, so they aren't left half changed
-    private void LeaveSettings(Action close) {
+    static void LeaveSettings(Action close) {
         if (!SettingsHaveChangesToApply()) {
             close();
             return;
@@ -219,7 +218,7 @@ public partial class Game {
         });
     }
 
-    private void DiscardUnappliedSettings() {
+    static void DiscardUnappliedSettings() {
         foreach (SingleSetting setting in settings.all) {
             if (setting.HasChangesToApply()) {
                 setting.ForceChangeWithoutApplying(setting.appliedIndex);
@@ -230,13 +229,13 @@ public partial class Game {
     
     // The screen mode and resolution are always set together in one call. Setting Screen.fullScreenMode and then calling
     // Screen.SetResolution in the same frame can drop the resolution, e.g. switching to windowed and a new size at once did nothing.
-    private void ApplyScreenModeAndResolution() {
+    static void ApplyScreenModeAndResolution() {
         Vector2Int screenSize = allScreenResolutions[settings.resolution.curIndex];
         FullScreenMode screenMode = GetScreenModeFromIndex(settings.fullscreenMode.curIndex);
         Screen.SetResolution(screenSize.x, screenSize.y, screenMode);
     }
 
-    private void MoveWindowToDisplay(DisplayInfo display) {
+    static void MoveWindowToDisplay(DisplayInfo display) {
         if (display.Equals(Screen.mainWindowDisplayInfo)) return;
 
         // Centered, which only matters when windowed
@@ -244,15 +243,15 @@ public partial class Game {
         Screen.MoveMainWindowTo(display, position);
     }
 
-    private FullScreenMode GetScreenModeFromIndex(int index) {
+    static FullScreenMode GetScreenModeFromIndex(int index) {
         return index == 0 ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed;
     }
-    
-    private int IndexFromScreenMode(FullScreenMode mode) {
+
+    static int IndexFromScreenMode(FullScreenMode mode) {
         return mode == FullScreenMode.FullScreenWindow ? 0 : 1;
     }
-    
-    private int FindSettingResolutionIndex(Vector2Int resolution) {
+
+    static int FindSettingResolutionIndex(Vector2Int resolution) {
         for (int i = 0; i < allScreenResolutions.Count; i++) {
             if (resolution == allScreenResolutions[i]) {
                 return i;
@@ -261,7 +260,7 @@ public partial class Game {
         return -1;
     }
 
-    private void ShowSettingsPage(RectTransform page) {
+    static void ShowSettingsPage(RectTransform page) {
         settings.curPage = page;
         settings.audioParent.gameObject.SetActive(page == settings.audioParent);
         settings.displayParent.gameObject.SetActive(page == settings.displayParent);
@@ -294,7 +293,7 @@ public partial class Game {
         }
     }
 
-    private void OnResetPagePressed() {
+    static void OnResetPagePressed() {
         RectTransform page = settings.curPage;
         if (!page) return;
 
@@ -332,9 +331,9 @@ public partial class Game {
         public bool IsRebindingControls => activeRebindOperation != null;
     }
 
-    private readonly ControlBindingsState controlBindings = new();
+    readonly static ControlBindingsState controlBindings = new();
 
-    private void InitSettingsControlsPage() {
+    static void InitSettingsControlsPage() {
         settings.steamInputBindingsButton.AddListener(OpenSteamBindingPanel);
 
         InputActionMap gameplay = InputSystem.actions.FindActionMap(Inputs.GameplayLayer, throwIfNotFound: true);
@@ -354,7 +353,7 @@ public partial class Game {
         settings.rebindableActions.Insert(Mathf.Min(3, settings.rebindableActions.Count), inputs.inventory);
 
         foreach (GameAction action in settings.rebindableActions) {
-            InputBindingRow row = Instantiate(settings.controlsRowPrefab, settings.controlsContent);
+            InputBindingRow row = UnityEngine.Object.Instantiate(settings.controlsRowPrefab, settings.controlsContent);
             row.label.text = action.label;
             settings.controlsRows.Add(row);
             AddSlot(row.keyboardMouseCellUI, action, BindingDevice.KeyboardMouse);
@@ -363,7 +362,7 @@ public partial class Game {
         RecalculateBindingConflicts();
     }
 
-    private static bool IsRebindable(GameAction action) {
+    static bool IsRebindable(GameAction action) {
         if (action.isAnalog) return false;
         foreach (InputBinding binding in action.unityInputAction.bindings) {
             if (binding.isComposite) return false;
@@ -371,11 +370,11 @@ public partial class Game {
         return true;
     }
 
-    private static string GetBindingGroup(BindingDevice device) {
+    static string GetBindingGroup(BindingDevice device) {
         return device == BindingDevice.KeyboardMouse ? "Keyboard&Mouse" : "Gamepad";
     }
 
-    private void AddSlot(InputBindingCellUI cellUI, GameAction action, BindingDevice device) {
+    static void AddSlot(InputBindingCellUI cellUI, GameAction action, BindingDevice device) {
         BindingSlot slot = new() {
             action = action,
             bindingIndex = action.unityInputAction.GetBindingIndex(InputBinding.MaskByGroup(GetBindingGroup(device))),
@@ -388,11 +387,11 @@ public partial class Game {
         controlBindings.bindingSlots.Add(slot);
     }
 
-    private bool IsSteamSlot(BindingSlot slot) {
+    static bool IsSteamSlot(BindingSlot slot) {
         return slot.device == BindingDevice.Controller && inputs.activelyUsingSteamInput;
     }
 
-    private void RefreshCell(BindingSlot slot) {
+    static void RefreshCell(BindingSlot slot) {
         InputBindingCellUI cellUI = slot.cellUI;
         bool steam = IsSteamSlot(slot);
         bool hasBinding = slot.bindingIndex >= 0;
@@ -435,7 +434,7 @@ public partial class Game {
         cellUI.Show(glyph, glyph ? null : displayString);
     }
 
-    private void StartRebind(BindingSlot slot) {
+    static void StartRebind(BindingSlot slot) {
         if (controlBindings.activeRebindOperation != null || slot.bindingIndex < 0 || IsSteamSlot(slot)) return;
 
         InputAction action = slot.action.unityInputAction;
@@ -519,7 +518,7 @@ public partial class Game {
         operation.Start();
     }
 
-    private static void AllowBindingPaths(InputActionRebindingExtensions.RebindingOperation operation, GameAction action) {
+    static void AllowBindingPaths(InputActionRebindingExtensions.RebindingOperation operation, GameAction action) {
         foreach (InputBinding binding in action.unityInputAction.bindings) {
             if (!string.IsNullOrEmpty(binding.effectivePath)) {
                 operation.WithControlsHavingToMatchPath(binding.effectivePath);
@@ -527,19 +526,19 @@ public partial class Game {
         }
     }
 
-    private static bool MatchesAnyBinding(GameAction action, InputControl control) {
+    static bool MatchesAnyBinding(GameAction action, InputControl control) {
         foreach (InputBinding binding in action.unityInputAction.bindings) {
             if (!string.IsNullOrEmpty(binding.effectivePath) && InputControlPath.Matches(binding.effectivePath, control)) return true;
         }
         return false;
     }
 
-    private static bool IsRebindableControl(InputControl control) {
+    static bool IsRebindableControl(InputControl control) {
         if (control is ButtonControl) return true;
         return control.parent is Vector2Control { name: "scroll" } && control.name is "up" or "down";
     }
 
-    private void EndRebind(InputAction action, bool wasEnabled) {
+    static void EndRebind(InputAction action, bool wasEnabled) {
         controlBindings.activeRebindOperation?.Dispose();
         controlBindings.activeRebindOperation = null;
         controlBindings.rebindingSlot = null;
@@ -548,7 +547,7 @@ public partial class Game {
         }
     }
 
-    private void OnSlotRebound(BindingSlot slot, string previousPath, string previousOverride) {
+    static void OnSlotRebound(BindingSlot slot, string previousPath, string previousOverride) {
         InputAction action = slot.action.unityInputAction;
         if (action.bindings[slot.bindingIndex].effectivePath == previousPath) return;
 
@@ -571,12 +570,12 @@ public partial class Game {
         });
     }
 
-    private void OnBindingsChanged() {
+    static void OnBindingsChanged() {
         UpdateUnityInputGlyphs();
         RecalculateBindingConflicts();
     }
 
-    private void ResetControlsToDefaults() {
+    static void ResetControlsToDefaults() {
         foreach (BindingSlot slot in controlBindings.bindingSlots) {
             if (slot.bindingIndex >= 0) {
                 slot.action.unityInputAction.RemoveBindingOverride(slot.bindingIndex);
@@ -586,11 +585,11 @@ public partial class Game {
         SaveBindingOverrides();
     }
 
-    private void OpenSteamBindingPanel() {
+    static void OpenSteamBindingPanel() {
         SteamInput.ShowBindingPanel(inputs.activeSteamController);
     }
 
-    private string GetSlotHint(BindingSlot slot) {
+    static string GetSlotHint(BindingSlot slot) {
         if (controlBindings.rebindingSlot == slot) {
             return null;
         }
@@ -600,7 +599,7 @@ public partial class Game {
         return DescribeConflicts(slot, conflicts);
     }
 
-    private static string DescribeConflicts(BindingSlot slot, List<GameAction> conflicts) {
+    static string DescribeConflicts(BindingSlot slot, List<GameAction> conflicts) {
         string binding = slot.action.unityInputAction.GetBindingDisplayString(slot.bindingIndex);
         System.Text.StringBuilder builder = new();
         foreach (GameAction other in conflicts) {
@@ -613,7 +612,7 @@ public partial class Game {
     }
 
     // Only the rebindable and conflict-only actions count as conflicts
-    private void RecalculateBindingConflicts() {
+    static void RecalculateBindingConflicts() {
         controlBindings.conflicts.Clear();
         foreach (BindingSlot slot in controlBindings.bindingSlots) {
             if (slot.bindingIndex < 0) continue;
@@ -626,7 +625,7 @@ public partial class Game {
         }
     }
 
-    private void AddBindingConflicts(BindingSlot slot, string path, InputBinding groupMask, List<GameAction> others) {
+    static void AddBindingConflicts(BindingSlot slot, string path, InputBinding groupMask, List<GameAction> others) {
         foreach (GameAction other in others) {
             if (other == slot.action) continue;
 
@@ -646,7 +645,7 @@ public partial class Game {
     }
 
     // Overlapping counts too, like the dpad and dpad up
-    private static bool BindingPathsOverlap(string a, string b) {
+    static bool BindingPathsOverlap(string a, string b) {
         if (string.IsNullOrEmpty(a) || string.IsNullOrEmpty(b)) return false;
         return a == b || a.StartsWith(b + "/", StringComparison.Ordinal) || b.StartsWith(a + "/", StringComparison.Ordinal);
     }

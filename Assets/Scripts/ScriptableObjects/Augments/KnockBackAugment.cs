@@ -18,7 +18,7 @@ public class KnockBackAugment : Augment {
     public override void AddInstanceToEnemy(Enemy enemy, int stackCount) {
         if (!RollProbability(Probability(stackCount))) return;
 
-        Player player = gameInstance.entities.player;
+        Player player = Game.entities.player;
         enemy.knockBack = new InstanceData {
             knockBackDist = knockBackDist,
             knockBackSpeed = knockBackSpeed,
@@ -29,8 +29,8 @@ public class KnockBackAugment : Augment {
     public override string GetDescription(int stackCount = 1) {
         return $"{DisplayProb(Probability(stackCount))} chance to knock an enemy back {DisplayDistance(knockBackDist)}";
     }
-    
-    private float Probability(int stackCount) {
+
+    float Probability(int stackCount) {
         return TaperFloat(probability, stackCount, 0.1f);
     }
     

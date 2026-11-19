@@ -15,7 +15,7 @@ public class OrthoRenderFeature : ScriptableRendererFeature {
     public LayerMask layerMask;
     public bool clearRenderTarget;
     public RenderManager.Texture texture;
-    private OrthoRenderObject orthoRender;
+    OrthoRenderObject orthoRender;
 
     public override void Create() {
         orthoRender = new(renderPassEvent, shaderTags, renderQueueType, layerMask.value, clearRenderTarget, texture);
@@ -34,13 +34,12 @@ public class OrthoRenderFeature : ScriptableRendererFeature {
         public readonly int overrideMaterialPassIndex;
         public readonly Shader overrideShader;
         public readonly int overrideShaderPassIndex;
-        
-        private RenderQueueType renderQueueType;
-        private FilteringSettings m_FilteringSettings;
-        private RenderManager.Texture texture;
-        private bool clearRenderTarget;
-        private List<ShaderTagId> m_ShaderTagIdList = new();
-        private RenderStateBlock m_RenderStateBlock;
+        RenderQueueType renderQueueType;
+        FilteringSettings m_FilteringSettings;
+        RenderManager.Texture texture;
+        bool clearRenderTarget;
+        List<ShaderTagId> m_ShaderTagIdList = new();
+        RenderStateBlock m_RenderStateBlock;
 
         public OrthoRenderObject(RenderPassEvent renderPassEvent, string[] shaderTags, RenderQueueType renderQueueType, int layerMask, 
             bool clearRenderTarget, RenderManager.Texture texture) 
@@ -69,7 +68,7 @@ public class OrthoRenderFeature : ScriptableRendererFeature {
             m_RenderStateBlock = new (RenderStateMask.Nothing);
         }
 
-        private class PassData {
+        class PassData {
             public bool clearRenderTarget;
             public TextureHandle color;
             public int viewportWidth;
@@ -80,7 +79,7 @@ public class OrthoRenderFeature : ScriptableRendererFeature {
             public RendererList rendererList;
         }
 
-        private void InitRendererLists(UniversalRenderingData renderingData, UniversalLightData lightData,
+        void InitRendererLists(UniversalRenderingData renderingData, UniversalLightData lightData,
             ref PassData passData, ScriptableRenderContext context, RenderGraph renderGraph, bool useRenderGraph)
         {
             SortingCriteria sortingCriteria = (renderQueueType == RenderQueueType.Transparent) ? SortingCriteria.CommonTransparent : passData.cameraData.defaultOpaqueSortFlags;
@@ -136,8 +135,8 @@ public class OrthoRenderFeature : ScriptableRendererFeature {
                 ExecutePass(data, rgContext.cmd, data.rendererListHdl, isYFlipped);
             });
         }
-        
-        private static void ExecutePass(PassData passData, RasterCommandBuffer cmd, RendererList rendererList, bool isYFlipped) {
+
+        static void ExecutePass(PassData passData, RasterCommandBuffer cmd, RendererList rendererList, bool isYFlipped) {
             bool isGameCamera = passData.cameraData.isGameCamera;
             Camera camera = passData.cameraData.camera;
             
@@ -174,8 +173,8 @@ public class OrthoRenderFeature : ScriptableRendererFeature {
             }
             RenderingUtils.SetViewAndProjectionMatrices(cmd, passData.cameraData.GetViewMatrix(), GL.GetGPUProjectionMatrix(passData.cameraData.GetProjectionMatrix(), isYFlipped), false);
         }
-        
-        private static void CreateRendererListWithRenderStateBlock(ScriptableRenderContext context, ref CullingResults cullResults, DrawingSettings ds, FilteringSettings fs, RenderStateBlock rsb, ref RendererList rl)
+
+        static void CreateRendererListWithRenderStateBlock(ScriptableRenderContext context, ref CullingResults cullResults, DrawingSettings ds, FilteringSettings fs, RenderStateBlock rsb, ref RendererList rl)
         {
             RendererListParams param = new RendererListParams();
             unsafe
@@ -219,7 +218,7 @@ public class OrthoRenderFeature : ScriptableRendererFeature {
         static ShaderTagId[]      s_ShaderTagValues   = new ShaderTagId[1];
         static RenderStateBlock[] s_RenderStateBlocks = new RenderStateBlock[1];
         // Create a RendererList using a RenderStateBlock override is quite common so we have this optimized utility function for it
-        private static void CreateRendererListWithRenderStateBlock(RenderGraph renderGraph, ref CullingResults cullResults, DrawingSettings ds, FilteringSettings fs, RenderStateBlock rsb, ref RendererListHandle rl) {
+        static void CreateRendererListWithRenderStateBlock(RenderGraph renderGraph, ref CullingResults cullResults, DrawingSettings ds, FilteringSettings fs, RenderStateBlock rsb, ref RendererListHandle rl) {
             s_ShaderTagValues[0] = ShaderTagId.none;
             s_RenderStateBlocks[0] = rsb;
             NativeArray<ShaderTagId> tagValues = new NativeArray<ShaderTagId>(s_ShaderTagValues, Allocator.Temp);

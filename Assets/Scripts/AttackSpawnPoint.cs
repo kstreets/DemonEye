@@ -8,7 +8,7 @@ public class AttackSpawnPoint : MonoBehaviour {
 
     public int StateHash { get; private set; }
 
-    private void Awake() {
+    void Awake() {
         StateHash = Animator.StringToHash(animationState);
     }
 
@@ -21,14 +21,14 @@ public class AttackSpawnPoint : MonoBehaviour {
         return transform.parent.TransformPoint(local);
     }
 
-    private void OnDrawGizmos() {
+    void OnDrawGizmos() {
         DrawGizmo(transform.position, new Color(0.2f, 0.9f, 1f));
         if (mirrorForLeft && transform.parent) {
             DrawGizmo(GetPosition(true), new Color(1f, 0.6f, 0.1f));
         }
     }
 
-    private static void DrawGizmo(Vector2 pos, Color color) {
+    static void DrawGizmo(Vector2 pos, Color color) {
         const float size = 0.04f;
         Gizmos.matrix = Matrix4x4.identity;
         Gizmos.color = color;

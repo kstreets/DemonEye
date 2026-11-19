@@ -73,6 +73,7 @@ public class GameData {
         public GameObject blast;
         public GameObject inventorySlot;
         public GameObject lootReveal;
+        public GameObject chest;
         public GameObject eyeForgeSlot;
         public GameObject damageNumber;
         public GameObject forgeExplosion;
@@ -700,7 +701,7 @@ public class GameData {
     
     public class Trinkets {
         public Trinket equiped;
-        public ref TrinketData data => ref gameInstance.curRaid.data.trinkets;
+        public ref TrinketData data => ref curRaid.data.trinkets;
     }
     
     public class CurrentGamingSession {

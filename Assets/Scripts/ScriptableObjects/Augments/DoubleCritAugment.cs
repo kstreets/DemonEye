@@ -22,12 +22,12 @@ public class DoubleCritAugment : Augment {
     public override string GetDescription(int stackCount = 1) {
         return $"{DisplayMultiplier(GetDamageMultiplier(stackCount))} damage for {DisplaySeconds(GetMultiplierDuration(stackCount))} after {DisplayNumber(2)} critical strikes in a row";
     }
-    
-    private float GetDamageMultiplier(int stackCount) {
+
+    float GetDamageMultiplier(int stackCount) {
         return TaperFloat(damageMulti, stackCount, 0.25f);
     }
-    
-    private float GetMultiplierDuration(int stackCount) {
+
+    float GetMultiplierDuration(int stackCount) {
         return TaperFloat(multiplierDuration, stackCount, 0.25f);
     }
     

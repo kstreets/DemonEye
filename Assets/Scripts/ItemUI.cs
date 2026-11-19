@@ -11,10 +11,9 @@ public class ItemUI : MonoBehaviour {
     public Image image;
     public TextMeshProUGUI countText;
     public ForgeEffect forgeEffect; // Only pentagram inventory slots will have this
-    
-    private Vector2 defaultCountTextPosition;
-    
-    private void Awake() {
+    Vector2 defaultCountTextPosition;
+
+    void Awake() {
         ClearItem();
         defaultCountTextPosition = countText.rectTransform.localPosition;
     }

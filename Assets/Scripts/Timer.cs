@@ -6,8 +6,7 @@ public struct Timer {
     public float CurTime { get; private set; }
     public Action EndAction;
     public Action UpdateAction;
-
-    private float startTime;
+    float startTime;
 
     public bool IsFinished => CurTime <= 0f;
 

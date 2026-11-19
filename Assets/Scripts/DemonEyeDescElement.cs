@@ -14,8 +14,7 @@ public class DemonEyeDescElement : MonoBehaviour  {
     public TextMeshProUGUI countText;
     public TextMeshProUGUI descText;
     public RectTransform bodyLayout;
-
-    private Sequence slideSequence;
+    Sequence slideSequence;
 
     public float CurSlideOffset => layoutGroup.padding.left;
 
@@ -29,7 +28,7 @@ public class DemonEyeDescElement : MonoBehaviour  {
         if (slideSequence.isAlive) slideSequence.Stop();
     }
 
-    private Tween punchTween;
+    Tween punchTween;
 
     // Quick scale pop as feedback that this element changed
     public void PunchScale() {

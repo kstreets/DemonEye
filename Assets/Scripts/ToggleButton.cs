@@ -10,8 +10,8 @@ public class ToggleButton : MonoBehaviour {
     public GameObject notifier;
     public TextMeshProUGUI text;
     public Action buttonListenerCallback;
-    
-    private void Awake() {
+
+    void Awake() {
         notifier.SetActive(false);
     }
     

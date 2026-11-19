@@ -5,9 +5,8 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using static GameData;
 
-public partial class Game {
-    
-    private const int gameStateSaveVersion = 1;
+public static partial class Game {
+    const int gameStateSaveVersion = 1;
 
     public class GameState {
         public int version;
@@ -26,23 +25,23 @@ public partial class Game {
         public List<Quest.State> questStates;
     }
     
-    public string GetSettingsSavePath() {
+    public static string GetSettingsSavePath() {
         return $"{Application.persistentDataPath}/settings.json";
     }
 
-    public string GetGameStateSavePath() {
+    public static string GetGameStateSavePath() {
         return $"{Application.persistentDataPath}/save";
     }
 
-    public string GetBindingsSavePath() {
+    public static string GetBindingsSavePath() {
         return $"{Application.persistentDataPath}/bindings.json";
     }
 
-    private void SaveBindingOverrides() {
+    static void SaveBindingOverrides() {
         File.WriteAllText(GetBindingsSavePath(), InputSystem.actions.SaveBindingOverridesAsJson());
     }
 
-    private void LoadBindingOverrides() {
+    static void LoadBindingOverrides() {
         string savePath = GetBindingsSavePath();
         if (!File.Exists(savePath)) return;
         string json = File.ReadAllText(savePath);
@@ -50,12 +49,12 @@ public partial class Game {
         InputSystem.actions.LoadBindingOverridesFromJson(json);
     }
     
-    public void SaveSettings() {
+    public static void SaveSettings() {
         File.WriteAllText(GetSettingsSavePath(), JsonUtility.ToJson(settings.curSettingsState, prettyPrint: true));
     }
 
     // Fields missing from the file keep their defaults
-    public SettingsState LoadSettings() {
+    public static SettingsState LoadSettings() {
         string savePath = GetSettingsSavePath();
         if (!File.Exists(savePath)) return null;
         SettingsState state = new();
@@ -63,13 +62,13 @@ public partial class Game {
         return state;
     }
     
-    public void SaveGameState() {
+    public static void SaveGameState() {
         // The tutorial starts over if it's quit partway, so nothing from it is saved until it's completed
         if (InTutorial) return;
         WriteBinaryFileSafely(GetGameStateSavePath(), WriteGameState);
     }
 
-    private void WriteGameState(BinaryWriter binWriter) {
+    static void WriteGameState(BinaryWriter binWriter) {
         SerializeInt(binWriter, gameStateSaveVersion);
         SerializeInt(binWriter, (int)persistentFlags);
         SerializeHideoutState(binWriter, hideoutState);
@@ -100,11 +99,11 @@ public partial class Game {
     }
 
     // failed is set when there was a save but it couldn't be loaded, so a new game starts
-    public GameState LoadGameState(out bool failed) {
+    public static GameState LoadGameState(out bool failed) {
         return ReadBinaryFileSafely(GetGameStateSavePath(), ReadGameState, out failed);
     }
 
-    private GameState ReadGameState(BinaryReader binReader) {
+    static GameState ReadGameState(BinaryReader binReader) {
         int version = DeserializeInt(binReader);
         return new() {
             version = version,
@@ -120,18 +119,18 @@ public partial class Game {
             questStates = DeserializeList(binReader, DeserializeQuestState),
         };
     }
-    
-    private void SerializeHideoutState(BinaryWriter binWriter, HideoutState hideoutState) {
+
+    static void SerializeHideoutState(BinaryWriter binWriter, HideoutState hideoutState) {
         binWriter.Write(hideoutState.pentagramLevelIndex);
     }
-    
-    private HideoutState DeserializeHideoutState(BinaryReader binReader) {
+
+    static HideoutState DeserializeHideoutState(BinaryReader binReader) {
         return new() {
             pentagramLevelIndex = binReader.ReadInt32(),
         };
     }
 
-    private void SerializePlayerState(BinaryWriter binWriter, Player player) {
+    static void SerializePlayerState(BinaryWriter binWriter, Player player) {
         binWriter.Write(player.health);
         binWriter.Write(player.state.soulCurrency);
         binWriter.Write(player.state.coinCurrency);
@@ -141,7 +140,7 @@ public partial class Game {
         binWriter.Write(player.state.strengthSkillLevel);
     }
 
-    private PlayerState DeserializePlayerState(BinaryReader binReader) {
+    static PlayerState DeserializePlayerState(BinaryReader binReader) {
         return new() {
             initHealth = binReader.ReadInt32(),
             soulCurrency = binReader.ReadInt32(),
@@ -153,19 +152,19 @@ public partial class Game {
         };
     }
 
-    private void SerializeTraderState(BinaryWriter binWriter, Trader.State traderState) {
+    static void SerializeTraderState(BinaryWriter binWriter, Trader.State traderState) {
         binWriter.Write(traderState.reputation);
         binWriter.Write(traderState.raidsUntilRestock);
     }
-    
-    private Trader.State DeserializeTraderState(BinaryReader binReader) {
+
+    static Trader.State DeserializeTraderState(BinaryReader binReader) {
         return new() {
             reputation = binReader.ReadInt32(),
             raidsUntilRestock = binReader.ReadInt32(),
         };
     }
-    
-    private void SerializeInventory(BinaryWriter writer, Inventory inventory) {
+
+    static void SerializeInventory(BinaryWriter writer, Inventory inventory) {
         using var _ = UnityEngine.Pool.ListPool<ItemInstance>.Get(out var items);
         foreach (InventorySlot slot in inventory.slots) {
             items.Add(slot.itemInstance);
@@ -173,18 +172,18 @@ public partial class Game {
         SerializeList(writer, items, SerializeItemInstance);
     }
 
-    private List<ItemInstance> DeserializeInventory(BinaryReader reader) {
+    static List<ItemInstance> DeserializeInventory(BinaryReader reader) {
         return DeserializeList(reader, DeserializeItemInstance);
     }
 
-    private void SerializeMapState(BinaryWriter binWriter, MapData.State mapState) {
+    static void SerializeMapState(BinaryWriter binWriter, MapData.State mapState) {
         binWriter.Write(mapState.mapUuid);
         binWriter.Write(mapState.isUnlocked);
         SerializeList(binWriter, mapState.bloodMushroomSpawns, SerializeVector2);
         binWriter.Write(mapState.unlockRevealPending);
     }
 
-    private MapData.State DeserializeMapState(BinaryReader binReader) {
+    static MapData.State DeserializeMapState(BinaryReader binReader) {
         MapData.State state = new() {
             mapUuid = binReader.ReadInt32(),
             isUnlocked = binReader.ReadBoolean(),
@@ -193,14 +192,14 @@ public partial class Game {
         };
         return state;
     }
-    
-    private void SerializeQuestState(BinaryWriter binWriter, Quest.State questState) {
+
+    static void SerializeQuestState(BinaryWriter binWriter, Quest.State questState) {
         binWriter.Write(questState.associatedQuestUuid);
         binWriter.Write(questState.submitted);
         SerializeList(binWriter, new List<KeyValuePair<int, int>>(questState.objectiveProgresses), SerializeIntPair);
     }
 
-    private Quest.State DeserializeQuestState(BinaryReader binReader) {
+    static Quest.State DeserializeQuestState(BinaryReader binReader) {
         Quest.State state = new() {
             associatedQuestUuid = binReader.ReadInt32(),
             submitted = binReader.ReadBoolean(),
@@ -212,25 +211,25 @@ public partial class Game {
         return state;
     }
 
-    private void SerializeIntPair(BinaryWriter binWriter, KeyValuePair<int, int> pair) {
+    static void SerializeIntPair(BinaryWriter binWriter, KeyValuePair<int, int> pair) {
         binWriter.Write(pair.Key);
         binWriter.Write(pair.Value);
     }
 
-    private KeyValuePair<int, int> DeserializeIntPair(BinaryReader binReader) {
+    static KeyValuePair<int, int> DeserializeIntPair(BinaryReader binReader) {
         int key = binReader.ReadInt32();
         return new(key, binReader.ReadInt32());
     }
-    
-    private void SerializeItemInstance(BinaryWriter binWriter, ItemInstance itemInstance) {
+
+    static void SerializeItemInstance(BinaryWriter binWriter, ItemInstance itemInstance) {
         binWriter.Write(itemInstance.itemOrInstanceUuid);
         SerializeList(binWriter, itemInstance.nestedUuids, SerializeInt);
         binWriter.Write(itemInstance.count);
         binWriter.Write(itemInstance.isDemonEye);
         SerializeString(binWriter, itemInstance.demonEyeName);
     }
-    
-    private ItemInstance DeserializeItemInstance(BinaryReader binReader) {
+
+    static ItemInstance DeserializeItemInstance(BinaryReader binReader) {
         return new() {
             itemOrInstanceUuid = binReader.ReadInt32(),
             nestedUuids = DeserializeList(binReader, DeserializeInt),
@@ -239,8 +238,8 @@ public partial class Game {
             demonEyeName = DeserializeString(binReader),
         };
     }
-    
-    private void SerializeList<T>(BinaryWriter writer, List<T> list, Action<BinaryWriter, T> serializeCallback) {
+
+    static void SerializeList<T>(BinaryWriter writer, List<T> list, Action<BinaryWriter, T> serializeCallback) {
         int count = list?.Count ?? 0; 
         writer.Write(count);
 
@@ -253,8 +252,8 @@ public partial class Game {
             serializeCallback(writer, elm);
         }
     }
-    
-    private List<T> DeserializeList<T>(BinaryReader reader, Func<BinaryReader, T> deserializeCallback) {
+
+    static List<T> DeserializeList<T>(BinaryReader reader, Func<BinaryReader, T> deserializeCallback) {
         int count = reader.ReadInt32();
         // Every element takes at least a byte, so a corrupt count fails here instead of allocating a huge list
         if (count < 0 || count > reader.BaseStream.Length - reader.BaseStream.Position) {
@@ -271,8 +270,8 @@ public partial class Game {
         }
         return list;
     }
-    
-    private void SerializeString(BinaryWriter writer, string str) {
+
+    static void SerializeString(BinaryWriter writer, string str) {
         if (string.IsNullOrEmpty(str)) {
             writer.Write(0);
             return;
@@ -280,32 +279,32 @@ public partial class Game {
         writer.Write(str.Length);
         writer.Write(str);
     }
-    
-    private string DeserializeString(BinaryReader reader) {
+
+    static string DeserializeString(BinaryReader reader) {
         int strLen = reader.ReadInt32();
         return strLen > 0 ? reader.ReadString() : string.Empty;
     }
 
-    private void SerializeVector2(BinaryWriter binWriter, Vector2 value) {
+    static void SerializeVector2(BinaryWriter binWriter, Vector2 value) {
         binWriter.Write(value.x);
         binWriter.Write(value.y);
     }
-    
-    private Vector2 DeserializeVector2(BinaryReader binReader) {
+
+    static Vector2 DeserializeVector2(BinaryReader binReader) {
         float x = binReader.ReadSingle();
         float y = binReader.ReadSingle();
         return new(x, y);
     }
-    
-    private void SerializeInt(BinaryWriter binWriter, int value) {
+
+    static void SerializeInt(BinaryWriter binWriter, int value) {
         binWriter.Write(value);
     }
-    
-    private int DeserializeInt(BinaryReader binReader) {
+
+    static int DeserializeInt(BinaryReader binReader) {
         return binReader.ReadInt32();
     }
 
-    private static void WriteBinaryFileSafely(string path, Action<BinaryWriter> write) {
+    static void WriteBinaryFileSafely(string path, Action<BinaryWriter> write) {
         WriteFileSafely(path, tempPath => {
             using FileStream stream = File.Open(tempPath, FileMode.Create);
             using BinaryWriter binWriter = new(stream);
@@ -313,7 +312,7 @@ public partial class Game {
         });
     }
 
-    private static T ReadBinaryFileSafely<T>(string path, Func<BinaryReader, T> read, out bool failed) where T : class {
+    static T ReadBinaryFileSafely<T>(string path, Func<BinaryReader, T> read, out bool failed) where T : class {
         return ReadFileSafely(path, filePath => {
             using FileStream stream = File.Open(filePath, FileMode.Open);
             using BinaryReader binReader = new(stream);
@@ -325,7 +324,7 @@ public partial class Game {
     }
 
     // Written to a temp file and swapped in, so a crash mid-save keeps the last good file. The one before it is kept as .bak
-    private static void WriteFileSafely(string path, Action<string> writeTo) {
+    static void WriteFileSafely(string path, Action<string> writeTo) {
         string tempPath = path + ".tmp";
         writeTo(tempPath);
         if (File.Exists(path)) {
@@ -338,7 +337,7 @@ public partial class Game {
 
     // Tries the file, then the .bak from the save before it. Returns null when there's nothing to load, or nothing loads.
     // failed is set when a file was there but couldn't be loaded, which is kept as .corrupt.
-    private static T ReadFileSafely<T>(string path, Func<string, T> readFrom, out bool failed) where T : class {
+    static T ReadFileSafely<T>(string path, Func<string, T> readFrom, out bool failed) where T : class {
         failed = false;
         foreach (string filePath in new[] { path, path + ".bak" }) {
             if (!File.Exists(filePath)) continue;

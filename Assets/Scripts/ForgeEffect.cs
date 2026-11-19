@@ -13,7 +13,7 @@ public class ForgeEffect : MonoBehaviour {
     public Texture upwardsFillMask;
     
 #if UNITY_EDITOR
-    private void Update() {
+    void Update() {
         if (Application.isPlaying) return;
         
         if (image == null || pixelFillMaterial == null) return;

@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Pool;
 
-public partial class Game {
+public static partial class Game {
     
     [Serializable]
     public class DropOrigin {
@@ -13,7 +13,7 @@ public partial class Game {
         public int maxStackCount;
     }
     
-    public void CreateDropPoolsForMap(MapData map) { 
+    public static void CreateDropPoolsForMap(MapData map) { 
         foreach (DropPool dropPool in res.mapSpecificDropPools) {
             dropPool.Reset();
         }
@@ -31,8 +31,8 @@ public partial class Game {
             }
         }
     }
-    
-    private void RegisterItemToDropPools(Item item, List<DropPool> dropPools) {
+
+    static void RegisterItemToDropPools(Item item, List<DropPool> dropPools) {
         foreach (DropPool dropPool in dropPools) {
             foreach (DropOrigin dropOrigin in item.dropOrigins) {
                 if (dropPool != dropOrigin.dropPool) continue;
@@ -40,10 +40,10 @@ public partial class Game {
             }
         }
     }
+
+    static Item GetItemFromDropPool(DropPool dropPool) => GetItemFromDropPool(dropPool, curRaid.map);
     
-    private Item GetItemFromDropPool(DropPool dropPool) => GetItemFromDropPool(dropPool, curRaid.map);
-    
-    public Item GetItemFromDropPool(DropPool dropPool, [CanBeNull] MapData map) {
+    public static Item GetItemFromDropPool(DropPool dropPool, [CanBeNull] MapData map) {
         Assert.IsNotNull(dropPool, "Droppool cannot be null");
         Assert.IsFalse(dropPool.itemRarityTable.Count == 0, $"No items in drop pool, use {nameof(DropPool.HasItems)} before calling");
         
@@ -60,10 +60,10 @@ public partial class Game {
         
         return null;
     }
-    
-    private void GetUniqueItemsFromDropPool(DropPool dropPool, int maxCount, ref List<Item> items) => GetUniqueItemsFromDropPool(dropPool, maxCount, ref items, curRaid.map);
 
-    public void GetUniqueItemsFromDropPool(DropPool dropPool, int maxCount, ref List<Item> items, [CanBeNull] MapData map) {
+    static void GetUniqueItemsFromDropPool(DropPool dropPool, int maxCount, ref List<Item> items) => GetUniqueItemsFromDropPool(dropPool, maxCount, ref items, curRaid.map);
+
+    public static void GetUniqueItemsFromDropPool(DropPool dropPool, int maxCount, ref List<Item> items, [CanBeNull] MapData map) {
         Assert.IsNotNull(dropPool, "Droppool cannot be null");
         Assert.IsFalse(dropPool.itemRarityTable.Count == 0, $"No items in drop pool, use {nameof(DropPool.HasItems)} before calling");
 
@@ -107,10 +107,10 @@ public partial class Game {
             ListPool<Item>.Release(remaining);
         }
     }
-    
-    private float GetDropChanceOfItem(Item item, [CanBeNull] MapData map) => GetDropChanceOfRarity(item.GetRarity(), map);
-    
-    private float GetDropChanceOfRarity(Item.Rarity rarity, [CanBeNull] MapData map) {
+
+    static float GetDropChanceOfItem(Item item, [CanBeNull] MapData map) => GetDropChanceOfRarity(item.GetRarity(), map);
+
+    static float GetDropChanceOfRarity(Item.Rarity rarity, [CanBeNull] MapData map) {
         float addChanceToSpawn = 0f;
         if (map != null) {
             addChanceToSpawn = rarity switch {
@@ -124,15 +124,15 @@ public partial class Game {
         }
         return Mathf.Clamp01(Item.RollValueOfRarity(rarity) + addChanceToSpawn);
     }
-    
-    private bool ItemCanSpawnOnMap(Item item, MapData map) {
+
+    static bool ItemCanSpawnOnMap(Item item, MapData map) {
         Assert.IsNotNull(map);
         if (item.mapSpawning.spawnsOnAll) return true;
         if (MapIsEqualOrGreater(map, item.mapSpawning.firstSpawnMap)) return true;
         return item.mapSpawning.spawnsOnMaps.Contains(map);
     }
-    
-    private bool MapIsEqualOrGreater(MapData left, MapData right) {
+
+    static bool MapIsEqualOrGreater(MapData left, MapData right) {
         if (left == null || right == null) return false;
         int leftIndex = config.maps.IndexOf(left);
         int rightIndex = config.maps.IndexOf(right);

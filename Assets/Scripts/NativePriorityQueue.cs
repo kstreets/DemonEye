@@ -42,14 +42,12 @@ namespace StagPoint.Collections
 
 		#region Private fields
 
-		private const int DEFAULT_SIZE = 32;
-		private const int GROWTH_FACTOR = 2;
+		const int DEFAULT_SIZE = 32;
+		const int GROWTH_FACTOR = 2;
+		Allocator m_AllocatorLabel;
+		NativeArray<T> m_Buffer;
 
-		private Allocator m_AllocatorLabel;
-		private NativeArray<T> m_Buffer;
-
-		[NativeDisableUnsafePtrRestriction]
-		private UnsafeListData* m_ListData;
+		[NativeDisableUnsafePtrRestriction] UnsafeListData* m_ListData;
 
 #if ENABLE_UNITY_COLLECTIONS_CHECKS
 		internal AtomicSafetyHandle m_Safety;
@@ -241,7 +239,7 @@ namespace StagPoint.Collections
 
 		#region Private utility methods
 
-		private int heapifyUp( int index, T item )
+		int heapifyUp( int index, T item )
 		{
 			var parent = ( index - 1 ) >> 1;
 
@@ -259,7 +257,7 @@ namespace StagPoint.Collections
 			return index;
 		}
 
-		private int heapifyDown( int parent, T item )
+		int heapifyDown( int parent, T item )
 		{
 			var index = 0;
 
@@ -312,10 +310,10 @@ namespace StagPoint.Collections
 		public int capacity;
 	}
 
-	internal sealed class NativePriorityQueueDebugView<T>
+	sealed class NativePriorityQueueDebugView<T>
 		where T : struct, IComparable<T>, IEquatable<T>
 	{
-		private NativePriorityQueue<T> list;
+		NativePriorityQueue<T> list;
 
 		/// <summary>
 		/// Create the view for a given list

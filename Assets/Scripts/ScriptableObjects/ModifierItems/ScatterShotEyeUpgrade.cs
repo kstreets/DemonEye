@@ -37,16 +37,16 @@ public class ScatterShotEyeUpgrade : EyeUpgrade {
     public override float GetRangePercentage(int stackCount) {
         return TaperFloat(rangePercentage, stackCount, 0.25f);
     }
-    
-    private float GetSplitDamageMultiplier(int stackCount) {
+
+    float GetSplitDamageMultiplier(int stackCount) {
         return TaperFloat(splitDamageMultiplier, stackCount, 0.3f);
     }
 
-    private float GetProbability(int stackCount) {
+    float GetProbability(int stackCount) {
         return Mathf.Clamp01(TaperFloat(probability, stackCount, 0.3f));
     }
 
-    private int GetExtraProjectileCount(int stackCount) {
+    int GetExtraProjectileCount(int stackCount) {
         return TaperInteger(extraProjectileCount, stackCount, 0.5f);
     }
 

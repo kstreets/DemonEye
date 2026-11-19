@@ -26,11 +26,11 @@ public class OverheatBlast : EyeUpgrade {
         return $"After {DisplayNumber(GetOverheatShotCount(stackCount))} consecutive shots release a blast causing {DisplayMultiplier(GetDamageMultiplier(stackCount))} damage";
     }
 
-    private int GetOverheatShotCount(int stackCount) {
+    int GetOverheatShotCount(int stackCount) {
         return TaperInteger(numShotsUntilOverheat, stackCount, 0.3f);
     }
 
-    private float GetDamageMultiplier(int stackCount) {
+    float GetDamageMultiplier(int stackCount) {
         return TaperFloat(damageMulti, stackCount, 0.25f);
     }
     

@@ -6,9 +6,8 @@ public class Minimap : MonoBehaviour {
     public float zoom;
     public RawImage mapImage;
     public RectTransform playerDot;
-
-    private Vector2 worldOrigin;
-    private Vector2 worldSize;
+    Vector2 worldOrigin;
+    Vector2 worldSize;
 
     public void Init(Texture texture, Vector2 worldOrigin, Vector2 worldSize) {
         this.worldOrigin = worldOrigin;

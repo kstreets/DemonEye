@@ -5,15 +5,14 @@ public class Shadow : MonoBehaviour {
 
     public SpriteRenderer spriteRenderer;
     [NonSerialized] public float currentRadius = 0.05f;
+    MaterialPropertyBlock propertyBlock;
 
-    private MaterialPropertyBlock propertyBlock;
-    
-    private void Awake() {
+    void Awake() {
         propertyBlock = new();
         SetRadius(0f);
     }
 
-    private void OnDisable() {
+    void OnDisable() {
         SetRadius(0f);
     }
 

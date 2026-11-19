@@ -50,12 +50,12 @@ public class DamageShape : MonoBehaviour {
         };
     }
 
-    private Vector2 LossyScale2D() {
+    Vector2 LossyScale2D() {
         Vector3 scale = transform.lossyScale;
         return new(Mathf.Abs(scale.x), Mathf.Abs(scale.y));
     }
 
-    private void OnDrawGizmosSelected() {
+    void OnDrawGizmosSelected() {
         DrawGizmo(transform.localToWorldMatrix, Color.red);
         if (mirrorForLeft && transform.parent) {
             Transform parent = transform.parent;
@@ -64,7 +64,7 @@ public class DamageShape : MonoBehaviour {
         }
     }
 
-    private void DrawGizmo(Matrix4x4 matrix, Color color) {
+    void DrawGizmo(Matrix4x4 matrix, Color color) {
         Vector2 center = offset;
         Gizmos.matrix = matrix;
         Gizmos.color = color;

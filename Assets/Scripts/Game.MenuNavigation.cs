@@ -7,12 +7,12 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using static GameData;
 
-public partial class Game {
+public static partial class Game {
 
     // Where the UI should treat the "cursor" as being. Follows the controller selection when using a controller.
-    private Vector2 PointerScreenPos => UsingControllerAsPointer ? controllNav.pointerPos : Mouse.current.position.ReadValue();
-    private bool MenuNavigationNeeded => !InRaid || PlayerInventoryIsOpen || LootInventoryIsOpen || pauseMenu.paused || ui.messagePopup.IsShowing;
-    private bool ShowCursorInMenus => !UsingControllerAsPointer;
+    static Vector2 PointerScreenPos => UsingControllerAsPointer ? controllNav.pointerPos : Mouse.current.position.ReadValue();
+    static bool MenuNavigationNeeded => !InRaid || PlayerInventoryIsOpen || LootInventoryIsOpen || pauseMenu.paused || ui.messagePopup.IsShowing;
+    static bool ShowCursorInMenus => !UsingControllerAsPointer;
     
     public class NavPanel {
         public RectTransform panel;
@@ -23,7 +23,7 @@ public partial class Game {
         public bool alwaysCallDefault;
     }
 
-    private void InitMenuNavigation() {
+    static void InitMenuNavigation() {
         controllNav.pointerEventData = new(EventSystem.current) { pointerId = ControllerNavigation.pointerEventId };
         
         // Popups and the dragged item follow the pointer, so they shouldn't count as covering up what's under them
@@ -69,7 +69,7 @@ public partial class Game {
         }
     }
 
-    private void AddNavPanel(RectTransform panel, int priority, Func<RectTransform> getDefaultSelection = null, bool alwaysCallDefault = false, Func<RectTransform> getEntrySelection = null) {
+    static void AddNavPanel(RectTransform panel, int priority, Func<RectTransform> getDefaultSelection = null, bool alwaysCallDefault = false, Func<RectTransform> getEntrySelection = null) {
         NavPanel navPanel = new() {
             panel = panel,
             priority = priority,
@@ -81,7 +81,7 @@ public partial class Game {
         InsertIntoRecentPanels(navPanel, false);
     }
 
-    private void OnBackPressed(bool fromKeyboard = false) {
+    static void OnBackPressed(bool fromKeyboard = false) {
         CancelItemDrag();
         ClearControllerSelection();
         
@@ -126,7 +126,7 @@ public partial class Game {
         }
     }
 
-    private void UpdateMenuNavigation() {
+    static void UpdateMenuNavigation() {
         if (!UsingControllerAsPointer) return;
         
         // We do gamepad navigation ourselves so we need to clear Unity's to avoid double presses
@@ -184,7 +184,7 @@ public partial class Game {
         UpdateToggleGroupSwitching();
     }
 
-    private void UpdateToggleGroupSwitching() {
+    static void UpdateToggleGroupSwitching() {
         // Tabs behind a message popup shouldn't change while it's waiting for an answer
         if (ui.messagePopup.IsShowing) return;
 
@@ -203,14 +203,14 @@ public partial class Game {
 
     // Whether the player moved the pointer this frame.
     // In order for this method to work reliably, the menu navigation must update before gamestate tick
-    private bool PlayerMovedPointerThisFrame() {
+    static bool PlayerMovedPointerThisFrame() {
         if (UsingControllerAsPointer) {
             return controllNav.lastTimePlayerMovedSelection == Time.unscaledTime;
         }
         return Mouse.current != null && Mouse.current.delta.ReadValue() != Vector2.zero;
     }
 
-    private void MenuNavigationOnInputDeviceChanged() {
+    static void MenuNavigationOnInputDeviceChanged() {
         if (!UsingControllerAsPointer) {
             if (controllNav.hasPointerPos) {
                 Mouse.current.WarpCursorPosition(controllNav.pointerPos);
@@ -223,7 +223,7 @@ public partial class Game {
         ClearAllHighlights();
     }
 
-    private void ClearAllHighlights() {
+    static void ClearAllHighlights() {
         foreach (Selectable selectable in Selectable.allSelectablesArray) {
             SendPointerExit(selectable.gameObject);
         }
@@ -240,19 +240,19 @@ public partial class Game {
         }
     }
 
-    private Vector2 ReadNavDirection() {
+    static Vector2 ReadNavDirection() {
         Vector2 stick = inputs.menuMove.ReadVector2();
         if (stick.magnitude < ControllerNavigation.stickDeadzone) return Vector2.zero;
         return Mathf.Abs(stick.x) > Mathf.Abs(stick.y) ? new(Mathf.Sign(stick.x), 0f) : new(0f, Mathf.Sign(stick.y));
     }
 
     // Ignores the stick until it's let go, for when it's already being held as a menu opens
-    private void IgnoreHeldNavigationInput() {
+    static void IgnoreHeldNavigationInput() {
         if (!UsingControllerAsPointer) return;
         controllNav.waitingForNavRelease = true;
     }
 
-    private bool CanMoveNavigation(Vector2 navDir) {
+    static bool CanMoveNavigation(Vector2 navDir) {
         if (controllNav.waitingForNavRelease) {
             if (navDir != Vector2.zero) return false;
             controllNav.waitingForNavRelease = false;
@@ -274,7 +274,7 @@ public partial class Game {
         return true;
     }
 
-    private void MoveControllerSelection(Vector2 dir) {
+    static void MoveControllerSelection(Vector2 dir) {
         GatherNavCandidates();
 
         Rect fromRect = GetScreenRect(controllNav.selected);
@@ -316,7 +316,7 @@ public partial class Game {
         }
     }
 
-    private void SelectDefaultNavTarget() {
+    static void SelectDefaultNavTarget() {
         if (TryGetPanelSelection(out RectTransform panelSelection)) {
             SetControllerSelection(panelSelection);
             return;
@@ -345,7 +345,7 @@ public partial class Game {
         }
     }
 
-    public void SetControllerSelection(RectTransform target) {
+    public static void SetControllerSelection(RectTransform target) {
         controllNav.pointerEventData.Reset();
         if (controllNav.selected) {
             ExecuteEvents.Execute(controllNav.selected.gameObject, controllNav.pointerEventData, ExecuteEvents.pointerExitHandler);
@@ -359,7 +359,7 @@ public partial class Game {
         ExecuteEvents.Execute(target.gameObject, controllNav.pointerEventData, ExecuteEvents.pointerEnterHandler);
     }
 
-    private void RememberSelection(RectTransform target) {
+    static void RememberSelection(RectTransform target) {
         NavPanel navPanel = FindNavPanel(target);
         if (navPanel == null) return;
         navPanel.rememberedSelection = target;
@@ -368,7 +368,7 @@ public partial class Game {
     }
 
     // Walks up so the closest panel wins if panels are nested
-    private NavPanel FindNavPanel(Transform target) {
+    static NavPanel FindNavPanel(Transform target) {
         for (Transform parent = target; parent; parent = parent.parent) {
             if (controllNav.navPanels.TryGetValue(parent, out NavPanel navPanel)) return navPanel;
         }
@@ -376,7 +376,7 @@ public partial class Game {
     }
 
     // Keeps the list sorted by priority, then goes either in front of or behind the panels with the same priority
-    private void InsertIntoRecentPanels(NavPanel navPanel, bool mostRecent) {
+    static void InsertIntoRecentPanels(NavPanel navPanel, bool mostRecent) {
         List<NavPanel> recentPanels = controllNav.recentPanels;
         int index = 0;
         while (index < recentPanels.Count) {
@@ -390,7 +390,7 @@ public partial class Game {
 
     // Goes to the highest priority panel that's showing, picking the most recently used one when priorities are tied.
     // Returns where we were in that panel, or its default if we haven't been there yet.
-    private bool TryGetPanelSelection(out RectTransform selection) {
+    static bool TryGetPanelSelection(out RectTransform selection) {
         foreach (NavPanel navPanel in controllNav.recentPanels) {
             if (!navPanel.panel || !navPanel.panel.gameObject.activeInHierarchy) continue;
             
@@ -410,14 +410,14 @@ public partial class Game {
         return false;
     }
 
-    private void ClearControllerSelection() {
+    static void ClearControllerSelection() {
         if (!controllNav.selected) return;
         ExecuteEvents.Execute(controllNav.selected.gameObject, controllNav.pointerEventData, ExecuteEvents.pointerExitHandler);
         controllNav.selected = null;
     }
 
     // Simulates a mouse click on buttons. Inventory slots don't need this since the inventory actions have gamepad bindings.
-    private void UpdateControllerSubmit() {
+    static void UpdateControllerSubmit() {
         if (inputs.select.WasReleasedThisFrame() && controllNav.submitPressedOn) {
             GameObject pressed = controllNav.submitPressedOn;
             controllNav.submitPressedOn = null;
@@ -438,7 +438,7 @@ public partial class Game {
         }
     }
 
-    private ToggleButtonGroup.NavigationMode CheckForToggleGroupSwitching() {
+    static ToggleButtonGroup.NavigationMode CheckForToggleGroupSwitching() {
         bool switchedPrimary = TrySwitchToggleGroup(ToggleButtonGroup.NavigationMode.Primary, inputs.menuTabLeft, inputs.menuTabRight);
         if (switchedPrimary) {
             return ToggleButtonGroup.NavigationMode.Primary;
@@ -450,7 +450,7 @@ public partial class Game {
         return ToggleButtonGroup.NavigationMode.None;
     }
 
-    private bool TrySwitchToggleGroup(ToggleButtonGroup.NavigationMode mode, GameAction left, GameAction right) {
+    static bool TrySwitchToggleGroup(ToggleButtonGroup.NavigationMode mode, GameAction left, GameAction right) {
         int step = (right.WasPressedThisFrame() ? 1 : 0) - (left.WasPressedThisFrame() ? 1 : 0);
         if (step == 0) return false;
 
@@ -462,7 +462,7 @@ public partial class Game {
     }
 
     // First group in the list thats on screen with this mode
-    private ToggleButtonGroup GetActiveNavToggleGroup(ToggleButtonGroup.NavigationMode mode) {
+    static ToggleButtonGroup GetActiveNavToggleGroup(ToggleButtonGroup.NavigationMode mode) {
         foreach (ToggleButtonGroup group in ui.navToggleGroups) {
             if (group && group.navigationMode == mode && group.gameObject.activeInHierarchy && group.TogglesUsable) {
                 return group;
@@ -471,7 +471,7 @@ public partial class Game {
         return null;
     }
 
-    private void GatherNavCandidates() {
+    static void GatherNavCandidates() {
         controllNav.possibleSelections.Clear();
 
         foreach (Selectable selectable in Selectable.allSelectablesArray) {
@@ -491,7 +491,7 @@ public partial class Game {
         }
     }
 
-    private bool IsValidNavTarget(RectTransform target) {
+    static bool IsValidNavTarget(RectTransform target) {
         if (!target || !target.gameObject.activeInHierarchy) return false;
 
         // A message popup needs answering first, so only its own buttons can be selected
@@ -519,7 +519,7 @@ public partial class Game {
         return true;
     }
 
-    private void ScrollIntoView(RectTransform target) {
+    static void ScrollIntoView(RectTransform target) {
         ScrollRect scrollRect = target.GetComponentInParent<ScrollRect>();
         if (!scrollRect || !scrollRect.content) return;
 
@@ -559,7 +559,7 @@ public partial class Game {
     }
 
     // Whether the target is the highest or lowest thing that can be navigated to in the scroll view
-    private bool TryGetScrollEnd(ScrollRect scrollRect, RectTransform target, out bool atTop) {
+    static bool TryGetScrollEnd(ScrollRect scrollRect, RectTransform target, out bool atTop) {
         float highest = float.MinValue;
         float lowest = float.MaxValue;
 
@@ -591,7 +591,7 @@ public partial class Game {
     }
 
     // A text-only sibling right before the target's row in the scroll content, like a section header
-    private static RectTransform FindHeaderAbove(RectTransform content, RectTransform target) {
+    static RectTransform FindHeaderAbove(RectTransform content, RectTransform target) {
         Transform row = target;
         while (row && row.parent != content) {
             row = row.parent;
@@ -607,14 +607,14 @@ public partial class Game {
         return null;
     }
 
-    private Rect GetScreenRect(RectTransform rectTransform) {
+    static Rect GetScreenRect(RectTransform rectTransform) {
         rectTransform.GetWorldCorners(controllNav.navCorners);
         Vector2 min = RectTransformUtility.WorldToScreenPoint(null, controllNav.navCorners[0]);
         Vector2 max = RectTransformUtility.WorldToScreenPoint(null, controllNav.navCorners[2]);
         return Rect.MinMaxRect(min.x, min.y, max.x, max.y);
     }
 
-    private static float IntervalGap(float aMin, float aMax, float bMin, float bMax) {
+    static float IntervalGap(float aMin, float aMax, float bMin, float bMax) {
         return Mathf.Max(0f, Mathf.Max(aMin, bMin) - Mathf.Min(aMax, bMax));
     }
 

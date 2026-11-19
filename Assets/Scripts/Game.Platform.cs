@@ -2,22 +2,22 @@ using System;
 using Steamworks;
 using UnityEngine;
 
-public partial class Game {
+public static partial class Game {
 
     public enum Platform {
         PC,        
         Steam,
         SteamDeck,
     }
-    private Platform platform;
 
-    private const uint steamAppId = 4101300;
-    private bool steamInitialized;
+    static Platform platform;
+    const uint steamAppId = 4101300;
+    static bool steamInitialized;
     
-    public bool OnSteam => steamInitialized;
-    public bool OnSteamDeck => platform == Platform.SteamDeck;
+    public static bool OnSteam => steamInitialized;
+    public static bool OnSteamDeck => platform == Platform.SteamDeck;
 
-    private void InitPlatform() {
+    static void InitPlatform() {
         try {
             Environment.SetEnvironmentVariable("SteamAppId", steamAppId.ToString());
             Environment.SetEnvironmentVariable("SteamGameId", steamAppId.ToString());
@@ -41,14 +41,14 @@ public partial class Game {
         }
     }
 
-    private void ShutdownPlatform() {
+    static void ShutdownPlatform() {
         if (steamInitialized) {
             SteamAPI.Shutdown();
             steamInitialized = false;
         }
     }
 
-    private void UpdatePlatform() {
+    static void UpdatePlatform() {
         if (steamInitialized) {
             SteamAPI.RunCallbacks();
         }

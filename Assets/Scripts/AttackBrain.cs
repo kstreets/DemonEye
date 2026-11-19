@@ -6,14 +6,12 @@ using Random = UnityEngine.Random;
 
 // Each level is a bag of marbles. Drawing removes a marble; the bag refills once empty.
 public class AttackBrain<T> where T : Enum {
-
-    private int[] marbleCounts;
-    private int[] marblesLeft;
-    private bool[] preventConsecutives;
-    private int lastChosenIndex = -1;
-
-    private List<int> startingLevelPointers = new();
-    private int curLevelLength;
+    int[] marbleCounts;
+    int[] marblesLeft;
+    bool[] preventConsecutives;
+    int lastChosenIndex = -1;
+    List<int> startingLevelPointers = new();
+    int curLevelLength;
 
     public AttackBrain(int attackCount) {
         marbleCounts = new int[attackCount];
@@ -78,7 +76,7 @@ public class AttackBrain<T> where T : Enum {
         return Unsafe.As<int, T>(ref chosenAttackIndex);
     }
 
-    private int CountDrawable(int start, int end, int blockedIndex) {
+    int CountDrawable(int start, int end, int blockedIndex) {
         int total = 0;
         for (int i = start; i < end; i++) {
             if (i == blockedIndex) continue;

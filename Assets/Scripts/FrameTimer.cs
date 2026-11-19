@@ -6,8 +6,7 @@ public struct FrameTimer {
     public int FramesLeft { get; private set; }
     public Action EndAction;
     public Action UpdateAction;
-
-    private int startFrameCount;
+    int startFrameCount;
 
     public bool IsFinished => FramesLeft <= 0; 
     

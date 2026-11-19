@@ -7,7 +7,7 @@ public class InputGlyphSheet : ScriptableObject {
 
     public Sprite[] sprites;
 
-    [NonSerialized] private Dictionary<string, Sprite> lookup;
+    [NonSerialized] Dictionary<string, Sprite> lookup;
 
     public Sprite Get(string controlPath) {
         if (string.IsNullOrEmpty(controlPath)) {
@@ -36,7 +36,7 @@ public class InputGlyphSheet : ScriptableObject {
     }
 
     // Controls that share one sprite
-    private static readonly Dictionary<string, string> aliases = new(StringComparer.OrdinalIgnoreCase) {
+    static readonly Dictionary<string, string> aliases = new(StringComparer.OrdinalIgnoreCase) {
         { "position", "delta" },
         { "scroll_y", "scroll" },
         { "numpadPeriod", "period" },
@@ -45,9 +45,9 @@ public class InputGlyphSheet : ScriptableObject {
         { "numpadEquals", "equals" },
     };
 
-    private static readonly string[] sidedModifiers = { "Shift", "Ctrl", "Alt", "Meta" };
+    static readonly string[] sidedModifiers = { "Shift", "Ctrl", "Alt", "Meta" };
 
-    private static string Fallback(string key) {
+    static string Fallback(string key) {
         if (aliases.TryGetValue(key, out string alias)) {
             return alias;
         }
@@ -67,7 +67,7 @@ public class InputGlyphSheet : ScriptableObject {
         return null;
     }
 
-    private void BuildLookup() {
+    void BuildLookup() {
         lookup = new(StringComparer.OrdinalIgnoreCase);
         foreach (Sprite sprite in sprites) {
             if (sprite != null) {
@@ -78,7 +78,7 @@ public class InputGlyphSheet : ScriptableObject {
 
 #if UNITY_EDITOR
     // Rebuild after the sprites are edited in the inspector
-    private void OnValidate() {
+    void OnValidate() {
         lookup = null;
     }
 #endif

@@ -52,8 +52,8 @@ public class SkillLevelUpRow : MonoBehaviour {
             levelProgressDots[i].sprite = filledLevelProgressDotSprite;
         }
     }
-    
-    private UIBurnEffect burnEffect;
+
+    UIBurnEffect burnEffect;
 
     public void Burn(float duration, AnimationCurve edgeCurve, AnimationCurve particlesCurve) {
         burnEffect.Burn(duration, edgeCurve, particlesCurve);

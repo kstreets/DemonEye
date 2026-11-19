@@ -2,13 +2,13 @@ using System.Collections.Generic;
 using UnityEngine.Assertions;
 using UnityEngine.Pool;
 
-public partial class Game {
+public static partial class Game {
     
     public struct EquipedUpgradeInstance {
         public int uuid;
         public int stackCount;
         
-        public EyeUpgrade EyeUpgrade => gameInstance.res.lookup[uuid] as EyeUpgrade;
+        public EyeUpgrade EyeUpgrade => res.lookup[uuid] as EyeUpgrade;
         public void ApplyToEnemy(Enemy enemy) => EyeUpgrade.AddInstanceToEnemy(enemy, stackCount);
         public void ApplyToEye(DemonEyeInstance eyeInstance) => EyeUpgrade.AddInstanceToEye(eyeInstance, stackCount);
     }
@@ -17,7 +17,7 @@ public partial class Game {
         public int uuid;
         public int stackCount;
         
-        public Augment Augment => gameInstance.res.lookup[uuid] as Augment;
+        public Augment Augment => res.lookup[uuid] as Augment;
         public void ApplyToEnemy(Enemy enemy) => Augment.AddInstanceToEnemy(enemy, stackCount);
         public void ApplyToEye(DemonEyeInstance eyeInstance) => Augment.AddInstanceToEye(eyeInstance, stackCount);
     }
@@ -54,20 +54,20 @@ public partial class Game {
             return new();
         }
     }
-    
-    private void InitDemonEye() {
+
+    static void InitDemonEye() {
         demonEye.equiped = demonEye.empty;
         demonEye.equipedItem = null;
     }
     
     // When starting a raid we want to re-apply the upgrade instances so any upgrade instance's tracking values get reset automatically
-    private void DemonEyeOnRaidEnter() {
+    static void DemonEyeOnRaidEnter() {
         if (demonEye.equiped != demonEye.empty) {
             AddDemonEyeUpgradesToInstance(demonEye.equiped);
         }
     }
-    
-    private void OnEquipDemonEye(DemonEyeInstance newDemonEye, ItemInstance newEyeItemInstance) {
+
+    static void OnEquipDemonEye(DemonEyeInstance newDemonEye, ItemInstance newEyeItemInstance) {
         demonEye.equiped = newDemonEye;
         demonEye.equipedItem = newEyeItemInstance;
         curRaid.data.damaging.Reset();
@@ -75,7 +75,7 @@ public partial class Game {
         AddDemonEyeUpgradesToInstance(newDemonEye);
     }
 
-    public ItemInstance CreateNewDemonEyeItemInstance(string demonEyeName, List<ItemInstance> eyeUpgradeItemInstances) {
+    public static ItemInstance CreateNewDemonEyeItemInstance(string demonEyeName, List<ItemInstance> eyeUpgradeItemInstances) {
         ItemInstance newDemonEyeItemInstance = new() {
             nestedUuids = new(),
             isDemonEye = true,
@@ -89,8 +89,8 @@ public partial class Game {
         BuildAndRegisterDemonEye(newDemonEyeItemInstance);
         return newDemonEyeItemInstance;
     }
-    
-    private void UpgradeDemonEye(ItemInstance demonEyeItem, List<ItemInstance> eyeUpgradeItemInstances) {
+
+    static void UpgradeDemonEye(ItemInstance demonEyeItem, List<ItemInstance> eyeUpgradeItemInstances) {
         foreach (ItemInstance upgradeInstance in eyeUpgradeItemInstances) {
             demonEyeItem.nestedUuids.Add(upgradeInstance.itemOrInstanceUuid);
         }
@@ -98,14 +98,14 @@ public partial class Game {
         DemonEyeInstance demonEyeInstance = CreateDemonEyeInstance(demonEyeItem);
         RegisterDemonEyeInstance(demonEyeItem, demonEyeInstance);
     }
-    
-    private void BuildAndRegisterDemonEye(ItemInstance itemInstance) {
+
+    static void BuildAndRegisterDemonEye(ItemInstance itemInstance) {
         itemInstance.itemOrInstanceUuid = GenerateNewItemUuid();
         DemonEyeInstance demonEyeInstance = CreateDemonEyeInstance(itemInstance);
         RegisterDemonEyeInstance(itemInstance, demonEyeInstance);
     }
-    
-    private DemonEyeInstance CreateDemonEyeInstance(ItemInstance demonEyeItem) {
+
+    static DemonEyeInstance CreateDemonEyeInstance(ItemInstance demonEyeItem) {
         List<EquipedUpgradeInstance> equipedUpgrades = new();
         List<EquipedAugmentInstance> equipedAugments = new();
         EyeUpgradeSet eyeUpgradeSet = EyeUpgradeSetFromIds(demonEyeItem.nestedUuids);
@@ -134,8 +134,8 @@ public partial class Game {
         
         return newDemonEye;
     }
-    
-    private void AddDemonEyeUpgradesToInstance(DemonEyeInstance demonEyeInstance) {
+
+    static void AddDemonEyeUpgradesToInstance(DemonEyeInstance demonEyeInstance) {
         foreach (EquipedUpgradeInstance upgradeInstance in demonEyeInstance.upgradeInstances) { 
             upgradeInstance.ApplyToEye(demonEyeInstance); 
         }
@@ -143,8 +143,8 @@ public partial class Game {
             augmentInstance.ApplyToEye(demonEyeInstance); 
         }
     }
-    
-    private void RegisterDemonEyeInstance(ItemInstance demonEyeItem, DemonEyeInstance demonEyeInstance) {
+
+    static void RegisterDemonEyeInstance(ItemInstance demonEyeItem, DemonEyeInstance demonEyeInstance) {
         bool demonEyeIsAlreadyRegistered = demonEye.instanceFromItemId.ContainsKey(demonEyeItem.itemOrInstanceUuid);
         if (demonEyeIsAlreadyRegistered) {
             demonEye.instanceFromItemId.Remove(demonEyeItem.itemOrInstanceUuid);
@@ -163,10 +163,10 @@ public partial class Game {
         
         public List<Element> elements = new();
     }
+
+    static EyeUpgradeSet _eyeUpgradeSet = new();
     
-    private EyeUpgradeSet _eyeUpgradeSet = new();
-    
-    public EyeUpgradeSet EyeUpgradeSetFromIds(List<int> uuids) {
+    public static EyeUpgradeSet EyeUpgradeSetFromIds(List<int> uuids) {
         foreach (EyeUpgradeSet.Element element in _eyeUpgradeSet.elements) { 
             ListPool<(Augment, int)>.Release(element.augmentsAndCount);
             GenericPool<EyeUpgradeSet.Element>.Release(element);
@@ -227,7 +227,7 @@ public partial class Game {
         return _eyeUpgradeSet;
     }
 
-    private void SortUpgradesFromDictionaryIntoList(Dictionary<EyeUpgrade, int> upgradesAndStackCount, List<(EyeUpgrade, int)> outputList) {
+    static void SortUpgradesFromDictionaryIntoList(Dictionary<EyeUpgrade, int> upgradesAndStackCount, List<(EyeUpgrade, int)> outputList) {
         foreach (KeyValuePair<EyeUpgrade, int> pair in upgradesAndStackCount) {
             outputList.Add(new(pair.Key, pair.Value));
         }
@@ -239,8 +239,8 @@ public partial class Game {
             return x.Item1.displayName.CompareTo(y.Item1.displayName);
         });
     }
-    
-    private bool ExtractUpgradeAndAugment(UuidScriptableObject uuidObject, out EyeUpgrade upgrade, out Augment aug) {
+
+    static bool ExtractUpgradeAndAugment(UuidScriptableObject uuidObject, out EyeUpgrade upgrade, out Augment aug) {
         if (uuidObject is Augment augment) {
             aug = augment;
             upgrade = augment.derivedFrom;
@@ -255,8 +255,8 @@ public partial class Game {
         upgrade = null;
         return false;
     }
-    
-    private void GetDemonEyeCoreUpgrades(ItemInstance demonEyeItemInstance, ref List<EyeUpgrade> upgrades) {
+
+    static void GetDemonEyeCoreUpgrades(ItemInstance demonEyeItemInstance, ref List<EyeUpgrade> upgrades) {
         for (int i = 0; i < GameData.Config.demonEyeCoreUpgradeCount; i++) {
             UuidScriptableObject uuidObject = res.lookup[demonEyeItemInstance.nestedUuids[i]];
             
@@ -272,8 +272,8 @@ public partial class Game {
             Assert.IsTrue(false, "Cannot get eyeupgrade because nested id is not any type of upgrade");
         }
     }
-    
-    private EyeUpgrade GetEyeUpgradeFromItemInstance(ItemInstance itemInstance) {
+
+    static EyeUpgrade GetEyeUpgradeFromItemInstance(ItemInstance itemInstance) {
         UuidScriptableObject uuidObject = res.lookup[itemInstance.itemOrInstanceUuid];
         if (uuidObject is Augment augment) {
             return augment.derivedFrom;
@@ -284,7 +284,7 @@ public partial class Game {
         return null;
     }
     
-    public int GetDemonEyeSellPrice(ItemInstance demonEyeItemInstance) {
+    public static int GetDemonEyeSellPrice(ItemInstance demonEyeItemInstance) {
         // We need to use the InventoryItem's ID because the Item's ID is the demon eye Scriptable Object
         DemonEyeInstance demonEyeInst = demonEye.instanceFromItemId[demonEyeItemInstance.itemOrInstanceUuid]; 
         

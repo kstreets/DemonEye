@@ -50,24 +50,23 @@ public class MapData : UuidScriptableObject {
     // -------------------------------------------------------------
 
 #if UNITY_EDITOR
-    
-    private static Func<RaidSpawnPattern> GetInjectedRaidSpawnPattern;
+    static Func<RaidSpawnPattern> GetInjectedRaidSpawnPattern;
     
     public void SetRaidSpawnPatternInjection(Func<RaidSpawnPattern> injectedFunc) {
         GetInjectedRaidSpawnPattern = injectedFunc;
     }
-    
-    private void OnEnable() {
+
+    void OnEnable() {
         EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
     }
-    
-    private void OnDisable() {
+
+    void OnDisable() {
         EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
     }
-    
-    private RaidSpawnPattern originalRaidSpawnPattern;
-    
-    private void OnPlayModeStateChanged(PlayModeStateChange stateChange) {
+
+    RaidSpawnPattern originalRaidSpawnPattern;
+
+    void OnPlayModeStateChanged(PlayModeStateChange stateChange) {
         switch (stateChange) {
             case PlayModeStateChange.EnteredPlayMode:
                 if (GetInjectedRaidSpawnPattern != null) {

@@ -1,13 +1,12 @@
 ﻿using UnityEngine;
 
-public partial class Game {
-    
-    private void InitResources() {
+public static partial class Game {
+    static void InitResources() {
         LoadAllItems(); 
         LoadAllDropPools();
     }
-    
-    private void LoadAllItems() {
+
+    static void LoadAllItems() {
         UuidScriptableObject[] resourceObjects = Resources.LoadAll<UuidScriptableObject>(string.Empty);
         
         foreach (UuidScriptableObject resObject in resourceObjects) {
@@ -22,8 +21,8 @@ public partial class Game {
             }
         }
     }
-    
-    private void LoadAllDropPools() {
+
+    static void LoadAllDropPools() {
         DropPool[] dropPoolSOs = Resources.LoadAll<DropPool>(string.Empty);
         
         foreach (DropPool dropPool in dropPoolSOs) {
@@ -45,8 +44,8 @@ public partial class Game {
             }
         }
     }
-    
-    private int GenerateNewItemUuid() {
+
+    static int GenerateNewItemUuid() {
         int newItemId = UuidScriptableObject.GetIntUuid();
         while (res.takenUuids.Contains(newItemId)) {
             newItemId = UuidScriptableObject.GetIntUuid();

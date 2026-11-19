@@ -3,7 +3,7 @@ using PrimeTween;
 using UnityEngine;
 using static GameData;
 
-public partial class Game {
+public static partial class Game {
 
     public class CameraLookahead {
         public const float maxDistance = 0.35f;
@@ -11,7 +11,7 @@ public partial class Game {
         public Tween fadeOutTween;
     }
 
-    private void UpdateAimLookAhead() {
+    static void UpdateAimLookAhead() {
         bool overridingSequenceOccuring = raidEnterSequence.isAlive || camera.lookAhead.fadeOutTween.isAlive || cutscene.playing;
         if (overridingSequenceOccuring && !MenuNavigationNeeded) return;
         
@@ -28,13 +28,13 @@ public partial class Game {
         Vector2 next = Vector2.MoveTowards(current, target, CameraLookahead.speed * Time.deltaTime);
         camera.aimOffset.offset = next;
     }
-    
-    private void FadeoutAimLookAhead() {
+
+    static void FadeoutAimLookAhead() {
         const float fadeOutTime = 0.25f;
         camera.lookAhead.fadeOutTween = Tween.Custom(camera.aimOffset.offset, Vector2.zero, fadeOutTime, val => camera.aimOffset.offset = val, Ease.OutQuad);
     }
 
-    private void ResetAimLookAhead() {
+    static void ResetAimLookAhead() {
         camera.aimOffset.offset = Vector2.zero;
     }
     
@@ -54,16 +54,16 @@ public partial class Game {
         public readonly List<Instance> active = new(5);
     }
 
-    public void ShakeCamera(float jitter, float magnitude, float duration) {
+    public static void ShakeCamera(float jitter, float magnitude, float duration) {
         AddCameraShake(jitter, magnitude, duration, 1f);
     }
 
-    public void ShakeCamera(float jitter, float magnitude, float duration, Vector2 sourcePosition, float falloffStartRange, float falloffDistance, CameraShake.Falloff falloff) {
+    public static void ShakeCamera(float jitter, float magnitude, float duration, Vector2 sourcePosition, float falloffStartRange, float falloffDistance, CameraShake.Falloff falloff) {
         float distance = Vector2.Distance(camera.main.transform.position, sourcePosition);
         AddCameraShake(jitter, magnitude, duration, CalculateShakeFalloffScale(distance, falloffStartRange, falloffDistance, falloff));
     }
 
-    private void AddCameraShake(float jitter, float magnitude, float duration, float falloffScale) {
+    static void AddCameraShake(float jitter, float magnitude, float duration, float falloffScale) {
         camera.shake.active.Add(new() {
             jitter = jitter,
             magnitude = magnitude,
@@ -75,7 +75,7 @@ public partial class Game {
 
     // The shake shifts the finished image in the final blit rather than moving the camera, so it moves
     // in whole screen pixels without re-rasterizing the pixel art, letting it go below one art pixel
-    private void UpdateCameraShake() {
+    static void UpdateCameraShake() {
         List<CameraShake.Instance> shakes = camera.shake.active;
         Vector2 combinedOffset = Vector2.zero;
 
@@ -100,7 +100,7 @@ public partial class Game {
         RenderManager.shakeOffset = combinedOffset;
     }
 
-    private static float CalculateShakeFalloffScale(float distance, float falloffStartRange, float falloffDistance, CameraShake.Falloff falloff) {
+    static float CalculateShakeFalloffScale(float distance, float falloffStartRange, float falloffDistance, CameraShake.Falloff falloff) {
         if (distance <= falloffStartRange) return 1f;
         if (distance >= falloffStartRange + falloffDistance) return 0f;
 
@@ -113,9 +113,9 @@ public partial class Game {
         };
     }
 
-    private Tween _cameraPunchZoomTween;
-    
-    private void CameraPunchZoom(float punch, float inDuration, float outDuration, Ease easeIn = Ease.OutQuad, Ease easeOut = Ease.InOutQuad) {
+    static Tween _cameraPunchZoomTween;
+
+    static void CameraPunchZoom(float punch, float inDuration, float outDuration, Ease easeIn = Ease.OutQuad, Ease easeOut = Ease.InOutQuad) {
         float zoomIn = 1f + (punch / 100f);
         _cameraPunchZoomTween.Complete();
         _cameraPunchZoomTween = Tween.Custom(1f, zoomIn, inDuration, val => RenderManager.punchZoom = val, easeIn);

@@ -5,9 +5,8 @@ using VInspector;
 
 public class ScreenScalingMaintainer : MonoBehaviour {
     
-    [SerializeField] [ReadOnly] 
-    private Vector2 defaultAnchorPos;
-    private RectTransform rectTransform => transform as RectTransform;
+    [SerializeField] [ReadOnly] Vector2 defaultAnchorPos;
+    RectTransform rectTransform => transform as RectTransform;
     
     public void OnScreenSizeChanged(float canvasScaleFactor) {
         float scaler = (Screen.height / 1080f) / canvasScaleFactor;
@@ -16,7 +15,7 @@ public class ScreenScalingMaintainer : MonoBehaviour {
     
 #if UNITY_EDITOR
 
-    private void OnValidate() {
+    void OnValidate() {
         CanvasScaler canvasScaler = GetComponentInParent<CanvasScaler>();
         if (canvasScaler == null || canvasScaler.scaleFactor != 1f) return;
         defaultAnchorPos = rectTransform.anchoredPosition;

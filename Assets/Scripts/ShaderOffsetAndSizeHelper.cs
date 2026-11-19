@@ -9,7 +9,7 @@ public class ShaderOffsetAndSizeHelper : MonoBehaviour {
     public SpriteRenderer spriteRenderer;
     
     [Button]
-    private void SetShaderOffsetAndSize() {
+    void SetShaderOffsetAndSize() {
         Vector4 offsetAndSize = sourceImage != null ? sourceImage.OffsetAndSizeInTexture() : spriteRenderer.sprite.OffsetAndSizeInTexture();
         if (targetMaterial != null) {
             targetMaterial.SetVector("_Offset_Size", offsetAndSize);

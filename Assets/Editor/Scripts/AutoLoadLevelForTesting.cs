@@ -30,15 +30,10 @@ public static class AutoLoadLevelForTesting {
         
         void OnSceneLoaded(Scene scene, LoadSceneMode mode) {
             SceneManager.sceneLoaded -= OnSceneLoaded;
-            GameObject[] roots = SceneManager.GetActiveScene().GetRootGameObjects();
-            foreach (GameObject root in roots) {
-                if (root.TryGetComponent(out Game game)) {
-                    MapData map = game.config.maps.First(m => m.sceneReference == startingSceneName);
-                    if (map != null) {
-                        game.LoadMapAsync(map);
-                        break;
-                    }
-                }
+            // GameRunner's Awake has already copied its references into Game by now
+            MapData map = Game.config.maps.First(m => m.sceneReference == startingSceneName);
+            if (map != null) {
+                Game.LoadMapAsync(map);
             }
         }
     }

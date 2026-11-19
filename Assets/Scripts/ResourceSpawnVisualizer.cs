@@ -5,8 +5,8 @@ using UnityEngine;
 public class ResourceSpawnVisualizer : MonoBehaviour {
 
     public bool drawGizmos = true;
-    
-    private void OnDrawGizmos() {
+
+    void OnDrawGizmos() {
         if (!drawGizmos) return;
     }
     

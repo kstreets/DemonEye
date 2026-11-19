@@ -1,9 +1,8 @@
 using UnityEngine;
 
 public struct Duration {
-    
-    private float startTime;
-    private float duration;
+    float startTime;
+    float duration;
     
     public void Add(float time) {
         if (IsAlive()) {

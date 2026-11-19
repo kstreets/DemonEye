@@ -8,8 +8,9 @@ using UnityEngine.Pool;
 using UnityEngine.UI;
 using EffectsIndicies = Game.Entity.EffectsIndicies;
 using Random = UnityEngine.Random;
+using static UnityEngine.Object;
 
-public partial class Game {
+public static partial class Game {
     
     public interface IEntityPooler { 
         public void ReleaseEntity(Entity entity);
@@ -26,15 +27,15 @@ public partial class Game {
             standbyList.Add((T)entity);
         }
     }
-    
-    private EntityPool<T> CreateEntityPool<T>(GameObject gameObj, int initialSize, Action<T> onSpawnCallback) where T : Entity, new() {
+
+    static EntityPool<T> CreateEntityPool<T>(GameObject gameObj, int initialSize, Action<T> onSpawnCallback) where T : Entity, new() {
         EntityPool<T> pool = new() {
             onSpawnCallback = onSpawnCallback,
             prefab = gameObj,
         };
         
         for (int i = 0; i < initialSize; i++) {
-            GameObject obj = Instantiate(gameObj, Vector3.zero, Quaternion.identity, transform);
+            GameObject obj = UnityEngine.Object.Instantiate(gameObj, Vector3.zero, Quaternion.identity, runner.transform);
             T entity = InitializeEntity<T>(obj, EntityLifetime.Level);
             entity.entityPool = pool;
             entity.gameObject.SetActive(false);
@@ -105,34 +106,34 @@ public partial class Game {
         public void SetEffect(EffectsIndicies effectIndex, Tween tween) => tweenEffects[(int)effectIndex] = tween;
     }
 
-    private bool EntityIsValid(Entity entity) {
+    static bool EntityIsValid(Entity entity) {
         return entity.trans && entities.lookup.ContainsKey(entity.gameObject);
     }
-    
-    private Entity SpawnItemAsEntity(Item item, int count, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level) {
+
+    static Entity SpawnItemAsEntity(Item item, int count, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level) {
         Entity entity = SpawnEntity(entityPools.itemDrop, position, rotation, parent, lifetime);
         ItemInstance itemInstance = new(item, count);
         entity.gameObject.GetComponent<ItemDrop>().Init(itemInstance);
         return entity;
     }
-    
-    private T SpawnEntityOneShot<T>(EntityPool<T> pool, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level) where T : Entity, new() {
+
+    static T SpawnEntityOneShot<T>(EntityPool<T> pool, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level) where T : Entity, new() {
         T entity = SpawnEntity(pool, position, rotation, parent, lifetime);
         Assert.IsNotNull(entity.animator, "Cannot spawn entity with one shot because there is no animator");
-        DestroyEntity(entity, CurrentClipLength(entity.animator));
+        DestroyEntity(entity, entity.animator.CurrentClipLength());
         return entity;
     }
-    
-    private T SpawnEntityOneShot<T>(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level) where T : Entity, new() {
+
+    static T SpawnEntityOneShot<T>(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level) where T : Entity, new() {
         T entity = SpawnEntity<T>(prefab, position, rotation, parent, lifetime);
         Assert.IsNotNull(entity.animator, "Cannot spawn entity with one shot because there is no animator");
-        DestroyEntity(entity, CurrentClipLength(entity.animator));
+        DestroyEntity(entity, entity.animator.CurrentClipLength());
         return entity;
     }
-    
-    private readonly Dictionary<GameObject, EntityPool<Entity>> _bubblePools = new();
 
-    public void SpawnBubble(BubbleSpawner spawner, Transform point) {
+    readonly static Dictionary<GameObject, EntityPool<Entity>> _bubblePools = new();
+
+    public static void SpawnBubble(BubbleSpawner spawner, Transform point) {
         if (!_bubblePools.TryGetValue(spawner.bubblePrefab, out EntityPool<Entity> pool)) {
             pool = CreateEntityPool<Entity>(spawner.bubblePrefab, 0, null);
             _bubblePools.Add(spawner.bubblePrefab, pool);
@@ -144,15 +145,15 @@ public partial class Game {
         }
     }
 
-    private void RegisterOnSpawnCallback<T>(Action<T, object> callback) where T : Entity {
+    static void RegisterOnSpawnCallback<T>(Action<T, object> callback) where T : Entity {
         entities.onSpawnCallbacks[typeof(T)] = (entity, data) => callback((T)entity, data);
     }
 
-    private void RegisterOnSpawnCallback<T>(Action<T> callback) where T : Entity {
+    static void RegisterOnSpawnCallback<T>(Action<T> callback) where T : Entity {
         entities.onSpawnCallbacks[typeof(T)] = (entity, _) => callback((T)entity);
     }
 
-    private void InvokeOnSpawnCallbacks(Entity entity, Type type, object data) {
+    static void InvokeOnSpawnCallbacks(Entity entity, Type type, object data) {
         if (type != typeof(Entity)) { // Invoke spawn callbacks starting from base and ending at subclass type
             InvokeOnSpawnCallbacks(entity, type.BaseType, data);
         }
@@ -161,13 +162,13 @@ public partial class Game {
         }
     }
 
-    private T SpawnEntity<T>(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level, object data = null) where T : Entity, new() {
+    static T SpawnEntity<T>(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level, object data = null) where T : Entity, new() {
         T entity = InstantiateEntity<T>(prefab, position, rotation, parent, lifetime);
         InvokeOnSpawnCallbacks(entity, typeof(T), data);
         return entity;
     }
 
-    private T SpawnEntity<T>(EntityPool<T> pool, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level, object data = null) where T : Entity, new() {
+    static T SpawnEntity<T>(EntityPool<T> pool, Vector3 position, Quaternion rotation, Transform parent = null, EntityLifetime lifetime = EntityLifetime.Level, object data = null) where T : Entity, new() {
         T entity;
         if (pool.standbyList.Count > 0) {
             entity = pool.standbyList.PopLast();
@@ -189,7 +190,7 @@ public partial class Game {
         return entity;
     }
 
-    private T InstantiateEntity<T>(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent, EntityLifetime lifetime) where T : Entity, new() {
+    static T InstantiateEntity<T>(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent, EntityLifetime lifetime) where T : Entity, new() {
         GameObject obj = Instantiate(prefab, position, rotation, parent);
         T entity = InitializeEntity<T>(obj, lifetime);
         ApplySpawnOffset(entity, position, rotation);
@@ -197,13 +198,13 @@ public partial class Game {
         RegisterEntity(entity);
         return entity;
     }
-    
-    private void ApplySpawnOffset(Entity entity, Vector3 position, Quaternion rotation) {
+
+    static void ApplySpawnOffset(Entity entity, Vector3 position, Quaternion rotation) {
         if (!entity.spawnOffset) return;
         entity.position = entity.spawnOffset.Apply(position, rotation);
     }
-    
-    private T InitializeEntity<T>(GameObject objInstance, EntityLifetime lifetime) where T : Entity, new() {
+
+    static T InitializeEntity<T>(GameObject objInstance, EntityLifetime lifetime) where T : Entity, new() {
         T newEntity = new() {
             trans = objInstance.transform,
             collider = objInstance.TryGetComponent(out Collider2D col) ? col : null,
@@ -222,7 +223,7 @@ public partial class Game {
         return newEntity;
     }
 
-    private void ResetEntity<T>(T entity) where T : Entity {
+    static void ResetEntity<T>(T entity) where T : Entity {
         entity.health = 100;
         entity.trans.localScale = Vector3.one;
         if (entity.animator) {
@@ -234,20 +235,20 @@ public partial class Game {
         }
     }
 
-    private void RegisterEntity<T>(T entity) where T : Entity {
+    static void RegisterEntity<T>(T entity) where T : Entity {
         entities.all.Add(entity);
         entities.lookup.Add(entity.gameObject, entity);
     }
-    
-    private void DestroyEntities(EntityLifetime lifetime) {
+
+    static void DestroyEntities(EntityLifetime lifetime) {
         for (int i = entities.all.Count - 1; i >= 0; i--) {
             if (entities.all[i].lifetime == lifetime) {
                 DestroyEntity(entities.all[i]);
             }
         }
     }
-    
-    private void DestroyEntity(Entity rootEntity) {
+
+    static void DestroyEntity(Entity rootEntity) {
         using var autoRelease = ListPool<Entity>.Get(out List<Entity> entityHierarchy); 
         GetEntityHierarchy(rootEntity.trans, entityHierarchy);
 
@@ -264,7 +265,7 @@ public partial class Game {
         }
     }
 
-    private void GetEntityHierarchy(Transform root, List<Entity> entityHierarchy) {
+    static void GetEntityHierarchy(Transform root, List<Entity> entityHierarchy) {
         if (entities.lookup.TryGetValue(root.gameObject, out Entity associatedEntity)) {
             entityHierarchy.Add(associatedEntity);
         }
@@ -273,31 +274,31 @@ public partial class Game {
         }
     }
 
-    private void DestroyOrReleaseEntitysGameObject(Entity entity) {
+    static void DestroyOrReleaseEntitysGameObject(Entity entity) {
         if (entity.entityPool == null) {
-            Destroy(entity.gameObject);
+            UnityEngine.Object.Destroy(entity.gameObject);
             return;
         }
-        entity.gameObject.transform.SetParent(transform, true);
+        entity.gameObject.transform.SetParent(runner.transform, true);
         entity.entityPool.ReleaseEntity(entity);
     }
 
-    private void DestroyEntity(Entity entity, float delay) {
+    static void DestroyEntity(Entity entity, float delay) {
         if (delay == 0f) {
             DestroyEntity(entity);
             return;
         }
-        Delay(entity, delay, static entity => gameInstance.DestroyEntity(entity));
+        Delay(entity, delay, static entity => DestroyEntity(entity));
     }
-    
-    private void AddFlashHitEffect(Entity entity) {
+
+    static void AddFlashHitEffect(Entity entity) {
         float duration = curves.hitFlash.keys[^1].time;
         
         entity.GetEffect(EffectsIndicies.HitFlash).Stop();
         
         Tween tween = Tween.Custom(entity, 0f, 1f, duration, ease: Ease.Linear, onValueChange: static (entity, val) => {
             entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
-            entity.matPropertyBlock.SetFloat(ShaderIds.damageFlashTint, gameInstance.curves.hitFlash.Evaluate(val));
+            entity.matPropertyBlock.SetFloat(ShaderIds.damageFlashTint, curves.hitFlash.Evaluate(val));
             entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
         })
         .OnComplete(entity, static entity => {
@@ -313,7 +314,7 @@ public partial class Game {
         public Entity poisonDebuffEntity;
     }
     
-    public void AddPoisonedEffect(Entity entity) {
+    public static void AddPoisonedEffect(Entity entity) {
         if (!entity.GetEffect(EffectsIndicies.Poisoned).isAlive) {
             Entity poisonDebuff = SpawnEntity(entityPools.poisonDebuff, OffsetY(entity.position, -0.01f), Quaternion.identity, entity.trans);
             entity.poisonedEffect = new() {
@@ -325,15 +326,15 @@ public partial class Game {
         
         SetHSVColorEffect(entity, config.enemyColors.poisonHSV);
         Tween tween = Delay(entity, int.MaxValue, static entity => {
-            gameInstance.ClearHSVColorEffect(entity);
-            gameInstance.DestroyEntity(entity.poisonedEffect.poisonDebuffEntity);
+            ClearHSVColorEffect(entity);
+            DestroyEntity(entity.poisonedEffect.poisonDebuffEntity);
         });
         
         entity.SetEffect(EffectsIndicies.Poisoned, tween);
     }
 
     // Cleans up directly instead of completing the tween, since the tween can already be stopped (e.g. Tween.StopAll on death)
-    public void RemovePoisonedEffect(Entity entity) {
+    public static void RemovePoisonedEffect(Entity entity) {
         Entity poisonDebuff = entity.poisonedEffect.poisonDebuffEntity;
         if (poisonDebuff == null) return;
 
@@ -345,17 +346,17 @@ public partial class Game {
         entity.poisonedEffect = default;
     }
     
-    public void AddPetrifyEffect(Entity entity, float duration) {
+    public static void AddPetrifyEffect(Entity entity, float duration) {
         SetHSVColorEffect(entity, config.enemyColors.petrifiedHSV);
-        Tween tween = Delay(entity, duration, static entity => gameInstance.ClearHSVColorEffect(entity));
+        Tween tween = Delay(entity, duration, static entity => ClearHSVColorEffect(entity));
         entity.SetEffect(EffectsIndicies.Petrify, tween);
     }
-    
-    private void ClearHSVColorEffect(Entity entity) {
+
+    static void ClearHSVColorEffect(Entity entity) {
         SetHSVColorEffect(entity, Vector3.zero);
     }
-    
-    private void SetHSVColorEffect(Entity entity, Vector3 hsvColor) {
+
+    static void SetHSVColorEffect(Entity entity, Vector3 hsvColor) {
         Vector3 channelMask = hsvColor;
         channelMask.x = hsvColor.x > Mathf.Epsilon ? 1 : 0;
         channelMask.y = hsvColor.y > Mathf.Epsilon ? 1 : 0;
@@ -372,14 +373,14 @@ public partial class Game {
         public Vector2 initialPos;
     }
 
-    private void AddBounceEffect(Entity entity, Vector3 pos, float duration) {
+    static void AddBounceEffect(Entity entity, Vector3 pos, float duration) {
         entity.bounceEffect = new() {
             targetPos = pos,
             initialPos = entity.position,
         };
         
         Tween.Custom(entity, 0f, 1f, duration, ease: Ease.Linear, onValueChange: static (entity, val) => {
-            float yPos = gameInstance.curves.bounce.Evaluate(val);
+            float yPos = curves.bounce.Evaluate(val);
             Vector2 newPos = Vector2.Lerp(entity.bounceEffect.initialPos, entity.bounceEffect.targetPos, val);
             entity.position = new(newPos.x, newPos.y + yPos, entity.position.z);
         });
@@ -390,14 +391,14 @@ public partial class Game {
         public Vector2 localOffset;
     }
 
-    private void AddParentEffect(Entity entity, Entity parent, float duration) {
+    static void AddParentEffect(Entity entity, Entity parent, float duration) {
         entity.parentEffect = new() {
             parentEntity = parent,
             localOffset = parent.position - entity.position,
         };
 
         Tween tween = Tween.Custom(entity, 0f, 0f, duration, static (entity, _) => {
-            if (!gameInstance.EntityIsValid(entity.parentEffect.parentEntity)) { 
+            if (!EntityIsValid(entity.parentEffect.parentEntity)) { 
                 entity.GetEffect(EffectsIndicies.Parent).Stop();
                 return;
             }
@@ -416,7 +417,7 @@ public partial class Game {
         public float noisePos;
     }
 
-    private void AddShakeEffect(Entity entity, float jitter, float magnitude, float time, AnimationCurve animCurve) {
+    static void AddShakeEffect(Entity entity, float jitter, float magnitude, float time, AnimationCurve animCurve) {
         entity.shakeEffect = new() {
             jitter = jitter,
             magnitude = magnitude,
@@ -441,9 +442,8 @@ public partial class Game {
         
         entity.SetEffect(EffectsIndicies.Shake, tween);
     }
-    
-    
-    private void DissolveAndDestroy(Entity entity, float duration, Color insideColor) {
+
+    static void DissolveAndDestroy(Entity entity, float duration, Color insideColor) {
         if (entity.GetEffect(EffectsIndicies.Dissolve).isAlive) return;
         
         entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
@@ -460,17 +460,17 @@ public partial class Game {
             entity.spriteRenderer.GetPropertyBlock(entity.matPropertyBlock);
             entity.matPropertyBlock.SetFloat(ShaderIds.dissolve, 0);
             entity.spriteRenderer.SetPropertyBlock(entity.matPropertyBlock);
-            gameInstance.DestroyEntity(entity);
+            DestroyEntity(entity);
         });
         entity.SetEffect(EffectsIndicies.Dissolve, tween);
     }
 
-    private static Tween Delay<T>(T entity, float delay, Action<T> callback) where T: Entity {
+    static Tween Delay<T>(T entity, float delay, Action<T> callback) where T: Entity {
         if (delay <= 0f) {
             callback?.Invoke(entity);
             return default;
         }
-        return Tween.Delay(entity, delay, onComplete: callback, onValidate: gameInstance.EntityIsValid);
+        return Tween.Delay(entity, delay, onComplete: callback, onValidate: EntityIsValid);
     }
     
 }

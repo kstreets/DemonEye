@@ -24,11 +24,10 @@ public class GameAction {
     public InputAnalogActionHandle_t steamAnalogHandle;
     
     // Two slots so a modifier composite can show both parts: [modifier, binding], or [binding, null] when there's no modifier
-    private readonly Sprite[] gamepadGlyphs = new Sprite[2];
-    private readonly Sprite[] keyboardMouseGlyphs = new Sprite[2];
-    private readonly Sprite[] steamGlyphs = new Sprite[2];
-    
-    private static readonly Dictionary<EInputActionOrigin, Sprite> steamGlyphSprites = new();
+    readonly Sprite[] gamepadGlyphs = new Sprite[2];
+    readonly Sprite[] keyboardMouseGlyphs = new Sprite[2];
+    readonly Sprite[] steamGlyphs = new Sprite[2];
+    static readonly Dictionary<EInputActionOrigin, Sprite> steamGlyphSprites = new();
 
     public readonly string label;
     public bool isActive = true;
@@ -38,11 +37,10 @@ public class GameAction {
     public enum BindingSource { KeyboardMouse, Gamepad, Steam }
 
     // One key per binding, composites joined into a single key so Shift+LMB doesn't count as the same binding as LMB
-    private readonly List<string> keyboardMouseBindingKeys = new();
-    private readonly List<string> gamepadBindingKeys = new();
-
-    private readonly EInputActionOrigin[] steamOrigins = new EInputActionOrigin[Constants.STEAM_INPUT_MAX_ORIGINS];
-    private int steamOriginCount;
+    readonly List<string> keyboardMouseBindingKeys = new();
+    readonly List<string> gamepadBindingKeys = new();
+    readonly EInputActionOrigin[] steamOrigins = new EInputActionOrigin[Constants.STEAM_INPUT_MAX_ORIGINS];
+    int steamOriginCount;
 
     public GameAction(string name) {
         this.name = name;
@@ -75,7 +73,7 @@ public class GameAction {
         CollectBindingKeys("Gamepad", gamepadBindingKeys);
     }
 
-    private void CollectBindingKeys(string bindingGroup, List<string> keys) {
+    void CollectBindingKeys(string bindingGroup, List<string> keys) {
         keys.Clear();
         InputBinding groupMask = InputBinding.MaskByGroup(bindingGroup);
         ReadOnlyArray<InputBinding> bindings = unityInputAction.bindings;
@@ -157,7 +155,7 @@ public class GameAction {
         ResolveUnityGlyphs(curGamepadSheet, "Gamepad", gamepadGlyphs);
     }
 
-    private void ResolveUnityGlyphs(InputGlyphSheet sheet, string bindingGroup, Sprite[] glyphs) {
+    void ResolveUnityGlyphs(InputGlyphSheet sheet, string bindingGroup, Sprite[] glyphs) {
         glyphs[0] = null;
         glyphs[1] = null;
         if (sheet == null) return;
@@ -222,7 +220,7 @@ public class GameAction {
     }
     
     public Sprite[] GetCurrentDisplayGlyphs() {
-        Inputs inputs = Game.gameInstance.inputs;
+        Inputs inputs = Game.inputs;
         if (inputs.device == Inputs.Device.KeyboardMouse) {
             return keyboardMouseGlyphs;
         }
@@ -231,7 +229,7 @@ public class GameAction {
 
     // Controller glyphs even while using keyboard and mouse
     public Sprite[] GetControllerDisplayGlyphs() {
-        return Game.gameInstance.inputs.activelyUsingSteamInput ? steamGlyphs : gamepadGlyphs;
+        return Game.inputs.activelyUsingSteamInput ? steamGlyphs : gamepadGlyphs;
     }
 
     public void ResetSteamState() {
@@ -286,8 +284,8 @@ public class GameAction {
         Vector2 unityValue = unityInputAction.ReadValue<Vector2>();
         return steamValue.sqrMagnitude > unityValue.sqrMagnitude ? steamValue : unityValue;
     }
-    
-    private static Sprite LoadSteamGlyph(EInputActionOrigin origin) {
+
+    static Sprite LoadSteamGlyph(EInputActionOrigin origin) {
         if (origin == EInputActionOrigin.k_EInputActionOrigin_None) {
             return null;
         }

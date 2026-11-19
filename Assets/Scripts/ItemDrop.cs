@@ -6,9 +6,9 @@ public class ItemDrop : MonoBehaviour {
 
     public CircleCollider2D circleCollider;
     public SpriteRenderer spriteRenderer;
-    [SerializeField] private Item item;
+    [SerializeField] Item item;
     
-    [NonSerialized] private ItemInstance itemInstance;
+    [NonSerialized] ItemInstance itemInstance;
     // Set when summoned from an altar, so the altar can be told when the item is taken
     [NonSerialized] public Altar summoningAltar;
     

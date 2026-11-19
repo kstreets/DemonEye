@@ -25,7 +25,7 @@ public class SlowEyeUpgrade : EyeUpgrade {
         return $"{DisplayProb(GetSpeedReduction(stackCount))} enemy speed reduction for {DisplaySeconds(slowDuration)}";
     }
 
-    private float GetSpeedReduction(int stackCount) {
+    float GetSpeedReduction(int stackCount) {
         return TaperFloat(speedReductionPercent, stackCount, 0.3f);
     }
     

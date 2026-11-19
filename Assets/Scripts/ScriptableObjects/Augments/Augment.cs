@@ -48,12 +48,12 @@ public class Augment : UuidScriptableObject, IEyeUpgrade {
 #if UNITY_EDITOR
     
     [Button]
-    private void AddToStash() {
+    void AddToStash() {
         if (!Application.isPlaying) {
             Debug.Log("Can only add to stash inventory when game is playing");
             return;
         }
-        gameInstance.TryAddItemToInventory(gameInstance.inventories.stash, new(this));
+        Game.TryAddItemToInventory(Game.inventories.stash, new(this));
     }
     
 #endif

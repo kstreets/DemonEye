@@ -24,9 +24,8 @@ public class Portal : MonoBehaviour {
     [Header("SFX")]
     public DynamicClip crystalHitClip;
     public DynamicClip portalSummoningClip;
-
-    private Sequence openCloseSequence;
-    private float particleStartSpeed;
+    Sequence openCloseSequence;
+    float particleStartSpeed;
 
     public void Init() {
         summonedPortal.Init();
@@ -53,10 +52,10 @@ public class Portal : MonoBehaviour {
         summoningParticles.gameObject.SetActive(true);
 
         Tween.PunchScale(crystalTrans, new(0.2f, 0.2f, 0f), 0.2f, 12f);
-        Game.gameInstance.PlayAudioClip(crystalHitClip, crystalTrans.position);
+        Game.PlayAudioClip(crystalHitClip, crystalTrans.position);
 
         // Summoning
-        Game.gameInstance.PlayAudioClip(portalSummoningClip, crystalTrans.position, cannotInterrupt: true);
+        Game.PlayAudioClip(portalSummoningClip, crystalTrans.position, cannotInterrupt: true);
 
         const float particleRampUpPercentage = 0.8f;
         TweenSettings particleSettings = new() { duration = openDelay * particleRampUpPercentage, ease = Ease.InSine };
@@ -86,9 +85,9 @@ public class Portal : MonoBehaviour {
 
             portal.summonedPortal.gameObject.SetActive(true);
             portal.summonedPortal.Open();
-            Game.gameInstance.PlayerOnExitPortalSummoned(portal);
+            Game.PlayerOnExitPortalSummoned(portal);
 
-            Game.gameInstance.ShakeCamera(5f, 0.1f, 0.5f, portal.transform.position, falloffStartRange: 0.7f, falloffDistance: 2f, Game.CameraShake.Falloff.Linear);
+            Game.ShakeCamera(5f, 0.1f, 0.5f, portal.transform.position, falloffStartRange: 0.7f, falloffDistance: 2f, Game.CameraShake.Falloff.Linear);
 
             foreach (Transform fragTrans in portal.crystalFragments) {
                 fragTrans.gameObject.SetActive(true);
@@ -117,10 +116,10 @@ public class Portal : MonoBehaviour {
         summonedPortal.Close(activeStateOnComplete: false);
     }
 
-    private static void AddBounceEffect(Transform trans, Vector3 pos, float minDuration, float maxDuration) {
+    static void AddBounceEffect(Transform trans, Vector3 pos, float minDuration, float maxDuration) {
         Vector3 initialPos = trans.position;
         Tween.Custom(trans, 0f, 1f, Random.Range(minDuration, maxDuration), ease: Ease.Linear, onValueChange: (trans, val) => {
-            float yPos = Game.gameInstance.curves.bounce.Evaluate(val);
+            float yPos = Game.curves.bounce.Evaluate(val);
             Vector2 newPos = Vector2.Lerp(initialPos, pos, val);
             trans.position = new(newPos.x, newPos.y + yPos, trans.position.z);
         });

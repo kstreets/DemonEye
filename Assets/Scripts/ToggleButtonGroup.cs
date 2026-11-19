@@ -18,14 +18,13 @@ public class ToggleButtonGroup : MonoBehaviour {
     public Sprite nonSelectedSprite;
     public List<ToggleButton> toggles = new();
     public DynamicClip pressedClip;
-    
-    private Dictionary<ToggleButton, UnityAction> callbacks = new();
-    private bool isLocked;
-    private bool isHidden;
+    Dictionary<ToggleButton, UnityAction> callbacks = new();
+    bool isLocked;
+    bool isHidden;
 
     public bool TogglesUsable => !isHidden && !isLocked;
 
-    private void Awake() {
+    void Awake() {
         if (toggles.Count <= 0) return;
         
         foreach (ToggleButton toggle in toggles) {
@@ -99,7 +98,7 @@ public class ToggleButtonGroup : MonoBehaviour {
         }
     }
 
-    private void InitializeToggle(ToggleButton toggle) {
+    void InitializeToggle(ToggleButton toggle) {
         // Toggles added before Awake (e.g. quest toggles created while the panel is inactive) are already set up,
         // and adding the onClick listener again would make each click play the sound and select twice
         if (callbacks.ContainsKey(toggle)) return;
@@ -107,14 +106,14 @@ public class ToggleButtonGroup : MonoBehaviour {
         UnityAction callback = () => {
             // Place sound here because we only want it to play when we actually click on it.
             // OnButtonClicked can be manually called without the player pressing the button.
-            Game.gameInstance.PlayAudioClip(pressedClip);
+            Game.PlayAudioClip(pressedClip);
             OnButtonClicked(toggle);
         };
         callbacks.Add(toggle, callback);
         toggle.button.onClick.AddListener(callback);
     }
 
-    private void OnButtonClicked(ToggleButton clickedToggle, bool invokeCallbacks = true) {
+    void OnButtonClicked(ToggleButton clickedToggle, bool invokeCallbacks = true) {
         foreach (ToggleButton toggle in toggles) {
             bool selected = toggle == clickedToggle;
             toggle.image.sprite = selected ? selectedSprite : nonSelectedSprite;

@@ -5,7 +5,7 @@ using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 using Random = UnityEngine.Random;
 
-public partial class Game {
+public static partial class Game {
 
     public struct BloodStamp {
         public Vector2 position;
@@ -14,7 +14,7 @@ public partial class Game {
         public bool flipX;
     }
 
-    private void InitBlood() {
+    static void InitBlood() {
         blood.cmd = new() { name = "Blood Mask" };
         blood.materialProperyBlock = new();
         blood.stampQuad = new() {
@@ -30,7 +30,7 @@ public partial class Game {
         blood.overlay.gameObject.SetActive(false);
     }
 
-    private void InitRaidBlood() {
+    static void InitRaidBlood() {
         Bounds mapBounds = curRaid.mapInstance.mainTilemapRenderer.bounds;
         Vector2 min = new(Mathf.Floor(mapBounds.min.x), Mathf.Floor(mapBounds.min.y));
         Vector2 max = new(Mathf.Ceil(mapBounds.max.x), Mathf.Ceil(mapBounds.max.y));
@@ -43,7 +43,7 @@ public partial class Game {
         if (needsNewMask) {
             if (blood.mask != null) {
                 blood.mask.Release();
-                Destroy(blood.mask);
+                UnityEngine.Object.Destroy(blood.mask);
             }
             blood.mask = new(width, height, GraphicsFormat.R8_UNorm, GraphicsFormat.None) {
                 name = "Blood Mask",
@@ -69,14 +69,14 @@ public partial class Game {
         Graphics.ExecuteCommandBuffer(cmd);
     }
 
-    private void DeinitRaidBlood() {
+    static void DeinitRaidBlood() {
         blood.pendingStamps.Clear();
         blood.overlay.gameObject.SetActive(false);
     }
-    
-    private enum BloodSize { Small, Medium, Large }
 
-    private void StampBlood(Vector2 position, BloodSize size, float delay = 0f) {
+    enum BloodSize { Small, Medium, Large }
+
+    static void StampBlood(Vector2 position, BloodSize size, float delay = 0f) {
         Assert.IsTrue(blood.smallSplatterMasks.Length > 0, "We have 0 small blood masks defined");
         Assert.IsTrue(blood.mediumSplatterMasks.Length > 0, "We have 0 medium blood masks defined");
         Assert.IsTrue(blood.largeSplatterMasks.Length > 0, "We have 0 large blood masks defined");
@@ -96,7 +96,7 @@ public partial class Game {
         });
     }
 
-    private void FlushBloodStamps() {
+    static void FlushBloodStamps() {
         if (blood.pendingStamps.Count == 0) return;
 
         CommandBuffer cmd = blood.cmd;

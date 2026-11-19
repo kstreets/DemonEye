@@ -18,23 +18,18 @@ MonoBehaviour:
   animatorOverride: {fileID: 0}
   dropPool: {fileID: 11400000, guid: a50fac0e0c375294296c54b1d6d4450d, type: 2}
   chanceToDropItem: 0.06
+  dropsChest: 1
+  chestItemCount: {x: 3, y: 5}
   usesFlowField: 1
   separationRadius: 0.16
   separationLayer: 0
   excludeCollisionLayers:
     serializedVersion: 2
     m_Bits: 0
-  attackDistance: 0.25
-  attackDamageDelay: 0.4
-  attackRadius: 0.15
-  projectileSpeed: 0
-  projectileLifetime: 0
-  projectileCooldownTime: 0
+  attack: {fileID: 0}
   speed: 0.5
   health: 1600
-  damage: 10
   collisionDamage: 8
-  changeToCauseBleed: 0.15
   soulWorthPerKill: 100
   xpWorthPerKill: 20
   defaultMass: 1

@@ -7,74 +7,72 @@ using Random = UnityEngine.Random;
 using Vector3 = UnityEngine.Vector3;
 using EffectsIndicies = Game.Entity.EffectsIndicies;
 
-public partial class Game : MonoBehaviour {
+public static partial class Game {
 
-    public static Game gameInstance;
+    public static GameRunner runner;
     
-    public Config config;
-    public DropPools dropPools;
-    public Prefabs prefabs;
-    public ItemTypes itemTypes;
-    public Quests quests;
-    public ItemRefs itemRefs;
-    public SkillUpgradePaths skillUpgradePaths;
-    public GameData.Camera camera;
-    public Blood blood;
-    public Curves curves;
-    public UI ui;
-    public InputPrompts inputPrompts;
-    public PlayerInfo playerInfo;
-    public RaidInfo raidInfo;
-    public BossBar bossBar;
-    public MainMenu mainMenu;
-    public PauseMenu pauseMenu;
-    public HideoutTabs hideoutTabs;
-    public PlayerPanel playerPanel;
-    public StashPanel stashPanel;
-    public EyeForgePanel eyeForgePanel;
-    public EyeForgeDetailsPanel eyeForgeDetailsPanel;
-    public TraderPanel traderPanel;
-    public GameData.TransactionPanel transactionPanel;
-    public MapPanels mapPanels;
-    public QuestsPanel questsPanel;
-    public GameData.SkillsPanel skillsPanel;
-    public Audio audio;
-    public Music music;
-    public Settings settings;
+    public static Config config;
+    public static DropPools dropPools;
+    public static Prefabs prefabs;
+    public static ItemTypes itemTypes;
+    public static Quests quests;
+    public static ItemRefs itemRefs;
+    public static SkillUpgradePaths skillUpgradePaths;
+    public static GameData.Camera camera;
+    public static Blood blood;
+    public static Curves curves;
+    public static UI ui;
+    public static InputPrompts inputPrompts;
+    public static PlayerInfo playerInfo;
+    public static RaidInfo raidInfo;
+    public static BossBar bossBar;
+    public static MainMenu mainMenu;
+    public static PauseMenu pauseMenu;
+    public static HideoutTabs hideoutTabs;
+    public static PlayerPanel playerPanel;
+    public static StashPanel stashPanel;
+    public static EyeForgePanel eyeForgePanel;
+    public static EyeForgeDetailsPanel eyeForgeDetailsPanel;
+    public static TraderPanel traderPanel;
+    public static GameData.TransactionPanel transactionPanel;
+    public static MapPanels mapPanels;
+    public static QuestsPanel questsPanel;
+    public static GameData.SkillsPanel skillsPanel;
+    public static Audio audio;
+    public static Music music;
+    public static Settings settings;
     
-    [NonSerialized] public readonly Inputs inputs = new();
-    [NonSerialized] public readonly EntityPools entityPools = new();
-    [NonSerialized] public readonly States states = new();
-    [NonSerialized] public readonly Entities entities = new();
-    [NonSerialized] public readonly GameData.Resources res = new();
-    [NonSerialized] public readonly DemonEye demonEye = new();
-    [NonSerialized] public readonly Trinkets trinkets = new();
-    [NonSerialized] public readonly CurrentGamingSession curSession = new();
-    [NonSerialized] public readonly CurrentRaid curRaid = new();
-    [NonSerialized] public readonly Inventories inventories = new();
-    [NonSerialized] public readonly HotBar hotBar = new();
-    [NonSerialized] public readonly PerFrameData thisFrame = new();
-    [NonSerialized] public readonly ControllerNavigation controllNav = new();
-    [NonSerialized] public readonly Tutorial tutorial = new();
-    [NonSerialized] public readonly Cutscene cutscene = new();
+    public static readonly Inputs inputs = new();
+    public static readonly EntityPools entityPools = new();
+    public static readonly States states = new();
+    public static readonly Entities entities = new();
+    public static readonly GameData.Resources res = new();
+    public static readonly DemonEye demonEye = new();
+    public static readonly Trinkets trinkets = new();
+    public static readonly CurrentGamingSession curSession = new();
+    public static readonly CurrentRaid curRaid = new();
+    public static readonly Inventories inventories = new();
+    public static readonly HotBar hotBar = new();
+    public static readonly PerFrameData thisFrame = new();
+    public static readonly ControllerNavigation controllNav = new();
+    public static readonly Tutorial tutorial = new();
+    public static readonly Cutscene cutscene = new();
 
-    
-    [NonSerialized] public HideoutState hideoutState;
-    [NonSerialized] public PersistentFlags persistentFlags;
+    public static HideoutState hideoutState;
+    public static PersistentFlags persistentFlags;
 
-    private void Start() {
-        gameInstance = this;
-        InitGame();
-    }
-
-    private void OnApplicationQuit() {
+    public static void OnApplicationQuit() {
         SetDeathWipe(0f, 0f);
         ClearDamageVignette();
         ShutdownInput(); // Before the platform, since Steam Input has to shut down before Steam
         ShutdownPlatform();
     }
+    
+    public static void Start() {
+        InitGame();
+    }
 
-    private void Update() {
+    public static void Update() {
         UpdatePlatform();
         UpdateInput();
         UpdateMenuNavigation(); // !
@@ -115,35 +113,35 @@ public partial class Game : MonoBehaviour {
 #endif
     }
     
-    private void FixedUpdate() {
+    public static void FixedUpdate() {
         states.gameStateMachine.Tick(StateMachine.UpdateMode.FixedUpdate);
     }
 
-    private void LateUpdate() {
+    public static void LateUpdate() {
         states.gameStateMachine.Tick(StateMachine.UpdateMode.LateUpdate);
     }
-    
-    private void UpdateTimers() {
+
+    static void UpdateTimers() {
         curRaid.data.interactions.discoverItemTimer.Tick();
     }
-    
-    private void ClearPerFrameData() {
+
+    static void ClearPerFrameData() {
         thisFrame.flags = FrameFlags.None;
         thisFrame.enemyKillCount.Clear();
         thisFrame.data.Reset();
     }
 
-    private void OnMainMenuStateEnter() {
+    static void OnMainMenuStateEnter() {
         Cursor.visible = ShowCursorInMenus;
         ShowMainMenuUI();
         OnMenuMusicEnter();
     }
 
-    private void OnMainMenuStateExit() {
+    static void OnMainMenuStateExit() {
         CloseMainMenuUI();
     }
-    
-    private void OnHideoutStateEnter() {
+
+    static void OnHideoutStateEnter() {
         ShowHideoutUI();
         SuppressInventoryPopup();
         RefreshSkillsPanel();
@@ -153,12 +151,12 @@ public partial class Game : MonoBehaviour {
         TutorialOnHideoutEnter();
     }
 
-    private void OnHideoutStateExit() {
+    static void OnHideoutStateExit() {
         CloseHideoutUI();
         SaveGameState();
     }
-    
-    private void OnHideoutStateUpdate() {
+
+    static void OnHideoutStateUpdate() {
         UpdateHideoutNotifiers();
         UpdateInventory();
         UpdateUIHints();
@@ -170,41 +168,41 @@ public partial class Game : MonoBehaviour {
         UpdateForgePanel();
     }
 
-    private void OnHideoutStateLateUpdate() {
+    static void OnHideoutStateLateUpdate() {
         UpdatePlayerPanelUI();
         UpdateDragAndDropItemToCursor();
         UpdateCurrencyNumbers();
     }
 
-    private void OnMapSelectionEnter() {
+    static void OnMapSelectionEnter() {
         ShowMapSelectionUI();
         SuppressInventoryPopup();
         PlayPendingMapUnlockBurns();
     }
 
-    private void OnMapSelectionExit() {
+    static void OnMapSelectionExit() {
         CloseMapSelectionUI();
     }
 
-    private void OnMapSelectionUpdate() {
+    static void OnMapSelectionUpdate() {
         CheckForHotBarInteractions();
         UpdateInventory();
         RefreshAllInventoryDisplays();
     }
 
-    private void OnMapSelectionLateUpdate() {
+    static void OnMapSelectionLateUpdate() {
         UpdatePlayerPanelUI();
         UpdateDragAndDropItemToCursor();
     }
 
-    private void OnRaidStateEnter() {
+    static void OnRaidStateEnter() {
         InitRaid();
         DemonEyeOnRaidEnter();
         OnMenuMusicExit();
         StopMusic(MusicOption.Smooth);
     }
 
-    private void OnRaidStateExit() {
+    static void OnRaidStateExit() {
         ResumeRaid();
         DeinitPlayer();
         ClosePlayerInventory();
@@ -219,7 +217,7 @@ public partial class Game : MonoBehaviour {
         DestroyAllHazards();
     }
 
-    private void OnRaidStateUpdate() {
+    static void OnRaidStateUpdate() {
         UpdateRaidState();
         UpdateMapGrid();
         UpdateTimers();
@@ -237,11 +235,11 @@ public partial class Game : MonoBehaviour {
         CheckForExitPortalCutscene();
     }
 
-    private void OnRaidStateFixedUpdate() {
+    static void OnRaidStateFixedUpdate() {
         FixedUpdateEnemies();
     }
 
-    private void OnRaidStateLateUpdate() {
+    static void OnRaidStateLateUpdate() {
         FlushBloodStamps();
         UpdateInRaidUI();
         UpdatePlayerPanelUI();
@@ -250,7 +248,7 @@ public partial class Game : MonoBehaviour {
         UpdateCurrencyNumbers();
     }
 
-    private void OnEarlyExitEnter() {
+    static void OnEarlyExitEnter() {
         if (curRaid.data.raidCutscene.tutorialExitCutscenePlayed) {
             persistentFlags |= PersistentFlags.DidTutorialExtraction;
         }
@@ -259,18 +257,18 @@ public partial class Game : MonoBehaviour {
         AnimateEarlyExitSequence(() => states.gameStateMachine.SetStateIfNotCurrent(states.mainMenu));
         StopMusic(MusicOption.Fast); // Needs to be after animation sequence because it stops all tweens
     }
-    
-    private void FlagStashTransferButtonIfPocketsHaveItems() {
+
+    static void FlagStashTransferButtonIfPocketsHaveItems() {
         if (GetInventoryItemCountInRange(inventories.player, playerStorageRange) > 0) {
             persistentFlags |= PersistentFlags.ShowStashTransferButton;
         }
     }
 
-    private void OnEarlyExitExit() {
+    static void OnEarlyExitExit() {
         DeinitRaid();
     }
-    
-    private void OnWinExitEnter() {
+
+    static void OnWinExitEnter() {
         var maps = config.maps;
         int nextMapIndex = maps.IndexOf(curRaid.map) + 1;
         bool unlockNextMap = maps.IndexInRange(nextMapIndex) && !maps[nextMapIndex].state.isUnlocked;
@@ -285,19 +283,19 @@ public partial class Game : MonoBehaviour {
         AnimateGameWinSequence(() => states.gameStateMachine.SetStateIfNotCurrent(states.mainMenu));
     }
 
-    private void OnWinExitExit() {
+    static void OnWinExitExit() {
         DeinitRaid();
     }
 
-    private void OnGameOverEnter() {
+    static void OnGameOverEnter() {
         ClearInventory(inventories.player);
         SaveGameState();
         AnimateGameOverSequence(() => states.gameStateMachine.SetStateIfNotCurrent(states.mainMenu)); 
         StopMusic(MusicOption.Fast); // Needs to be after animation sequence because it stops all tweens
         PlayAudioClip(audio.deathStingerClip);
     }
-    
-    private void OnGameOverExit() {
+
+    static void OnGameOverExit() {
         // Pooled entities would otherwise come back without physics
         foreach (Entity entity in entities.all) {
             if (entity.rigidbody) {
@@ -310,8 +308,8 @@ public partial class Game : MonoBehaviour {
     }
     
     public enum RaidState { None, InitialWaves, FinalWave, PostFinalWave }
-    
-    private void InitRaid() {
+
+    static void InitRaid() {
         curRaid.state = RaidState.None;
         curRaid.data.Reset();
         curRaid.teleportingInPositions.Clear();
@@ -347,8 +345,8 @@ public partial class Game : MonoBehaviour {
         
         thisFrame.flags |= FrameFlags.PostInitRaid;
     }
-    
-    private void UpdateRaidState() {
+
+    static void UpdateRaidState() {
         if (curRaid.mapInstance.isBossMap) return;
         
         RaidState prevState = curRaid.state;
@@ -374,16 +372,16 @@ public partial class Game : MonoBehaviour {
 
         if (curRaid.stateSwitchedThisFrame && curRaid.state == RaidState.PostFinalWave) {
             Tween.Delay(0.25f, static () => {
-                gameInstance.AnimateLargeRaidText(ColorText("Map Cleared!", gameInstance.config.styles.increaseDescColor), 1.8f);
-                bool spawnedOk = gameInstance.SpawnFinalExitPortal();
+                AnimateLargeRaidText(ColorText("Map Cleared!", config.styles.increaseDescColor), 1.8f);
+                bool spawnedOk = SpawnFinalExitPortal();
                 if (!spawnedOk) { // This is a fail safe incase we couldn't spawn the final portal
-                    gameInstance.states.gameStateMachine.SetState(gameInstance.states.winExit);
+                    states.gameStateMachine.SetState(states.winExit);
                 }
             });
         }
     }
-    
-    private void DeinitRaid() {
+
+    static void DeinitRaid() {
         entities.enemies.Clear();
         ClearRangedAttackManager();
         entities.boss = null;
@@ -400,11 +398,10 @@ public partial class Game : MonoBehaviour {
     // Animation Sequences
     // *******************************
     
-    private int ZoomedInCameraPPU => Mathf.RoundToInt(camera.defaultPPU * 1.6f);
+    static int ZoomedInCameraPPU => Mathf.RoundToInt(camera.defaultPPU * 1.6f);
+    static Sequence raidEnterSequence;
 
-    private Sequence raidEnterSequence;
-    
-    private void AnimateRaidEnterSequence() {
+    static void AnimateRaidEnterSequence() {
         camera.pixelPerfect.assetsPPU = ZoomedInCameraPPU;
             
         raidEnterSequence = Sequence.Create();
@@ -415,8 +412,7 @@ public partial class Game : MonoBehaviour {
         raidEnterSequence.ChainDelay(0.25f);
 
         raidEnterSequence.ChainCallback(() => {
-            Entity inTeleportEntity = SpawnEntity(entityPools.teleportIn, OffsetY(player.position, -0.05f), Quaternion.identity);
-            DestroyEntity(inTeleportEntity, CurrentClipLength(inTeleportEntity.animator));
+            Entity inTeleportEntity = SpawnEntityOneShot(entityPools.teleportIn, OffsetY(player.position, -0.05f), Quaternion.identity);
             PlayAudioClip(audio.teleportInClip, inTeleportEntity.position);
         });
             
@@ -433,7 +429,7 @@ public partial class Game : MonoBehaviour {
         }));
     }
 
-    private void AnimateGameOverSequence(Action onCompleteCallback) {
+    static void AnimateGameOverSequence(Action onCompleteCallback) {
         Tween.StopAll();
         DemonEyeTween.StopAll();
         DismissNotificationsAfterTweensStopped();
@@ -480,7 +476,7 @@ public partial class Game : MonoBehaviour {
             camera.pixelPerfect.assetsPPU = (int)val;
         }, Ease.InOutQuad));
 
-        sequence.Group(Tween.Delay(0.25f, () => AnimateLargeRaidText(ColorText("YOU DIED", gameInstance.config.styles.decreaseDescColor), 1f)));
+        sequence.Group(Tween.Delay(0.25f, () => AnimateLargeRaidText(ColorText("YOU DIED", config.styles.decreaseDescColor), 1f)));
         
         sequence.ChainDelay(1f);
         
@@ -498,10 +494,9 @@ public partial class Game : MonoBehaviour {
             onCompleteCallback?.Invoke();
         });
     }
-    
-    private void AnimateGameWinSequence(Action onCompleteCallback) {
-        Entity outTeleportFxEntity = SpawnEntity(entityPools.teleportOut, player.position, Quaternion.identity);
-        DestroyEntity(outTeleportFxEntity, CurrentClipLength(outTeleportFxEntity.animator));
+
+    static void AnimateGameWinSequence(Action onCompleteCallback) {
+        Entity outTeleportFxEntity = SpawnEntityOneShot(entityPools.teleportOut, player.position, Quaternion.identity);
         PlayAudioClip(audio.teleportOutClip, outTeleportFxEntity.position);
         player.gameObject.SetActive(false);
         
@@ -528,10 +523,9 @@ public partial class Game : MonoBehaviour {
             onCompleteCallback?.Invoke();
         });
     }
-    
-    private void AnimateEarlyExitSequence(Action onCompleteCallback) {
-        Entity outTeleportFxEntity = SpawnEntity(entityPools.teleportOut, player.position, Quaternion.identity);
-        DestroyEntity(outTeleportFxEntity, CurrentClipLength(outTeleportFxEntity.animator));
+
+    static void AnimateEarlyExitSequence(Action onCompleteCallback) {
+        Entity outTeleportFxEntity = SpawnEntityOneShot(entityPools.teleportOut, player.position, Quaternion.identity);
         PlayAudioClip(audio.teleportOutClip, outTeleportFxEntity.position);
         player.gameObject.SetActive(false);
         
@@ -549,7 +543,7 @@ public partial class Game : MonoBehaviour {
         SetDeathWipe(1f, 0f);
         sequence.Chain(TweenDeathWipeAlpha(0f, 1f, 0.75f, Ease.InOutQuad));
 
-        sequence.Group(Tween.Delay(0.35f, () => AnimateLargeRaidText(ColorText("SUCCESSFUL EXTRACT", gameInstance.config.styles.increaseDescColor), 3.8f)));
+        sequence.Group(Tween.Delay(0.35f, () => AnimateLargeRaidText(ColorText("SUCCESSFUL EXTRACT", config.styles.increaseDescColor), 3.8f)));
         
         ui.animatedBgImage.gameObject.SetActive(true);
         ui.animatedBgImage.color = new(1f, 1f, 1f, 0f);
@@ -562,10 +556,10 @@ public partial class Game : MonoBehaviour {
             onCompleteCallback?.Invoke();
         });
     }
-    
-    private Vector2Int lastScreenSize;
-    
-    private void CheckForScreenSizeChange() {
+
+    static Vector2Int lastScreenSize;
+
+    static void CheckForScreenSizeChange() {
         if (lastScreenSize == ScreenSize) return;
         SettingsOnScreenSizeChanged();
         UIOnScreenSizeChanged();

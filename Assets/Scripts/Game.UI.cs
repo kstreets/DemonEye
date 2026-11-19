@@ -10,20 +10,17 @@ using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
-public partial class Game {
-    
-    private bool OnCharacterTab => hideoutTabs.toggleGroup.IsSelected(hideoutTabs.characterButton);
-    private bool OnEyeForgeTab => hideoutTabs.toggleGroup.IsSelected(hideoutTabs.eyeForgeButton);
-    private bool OnTradingTab => hideoutTabs.toggleGroup.IsSelected(hideoutTabs.traderButton);
-    private bool OnQuestsTab => hideoutTabs.toggleGroup.IsSelected(hideoutTabs.questsButton);
-    
-    private bool ShowingMainMenu => mainMenu.parent.gameObject.activeInHierarchy;
-    private bool ShowingPlayerPanel => playerPanel.panel.gameObject.activeInHierarchy;
-    private bool ShowingForgeDetailsPanel => eyeForgeDetailsPanel.panel.gameObject.activeInHierarchy;
-    
-    private Texture2D shownCursorTexture;
+public static partial class Game {
+    static bool OnCharacterTab => hideoutTabs.toggleGroup.IsSelected(hideoutTabs.characterButton);
+    static bool OnEyeForgeTab => hideoutTabs.toggleGroup.IsSelected(hideoutTabs.eyeForgeButton);
+    static bool OnTradingTab => hideoutTabs.toggleGroup.IsSelected(hideoutTabs.traderButton);
+    static bool OnQuestsTab => hideoutTabs.toggleGroup.IsSelected(hideoutTabs.questsButton);
+    static bool ShowingMainMenu => mainMenu.parent.gameObject.activeInHierarchy;
+    static bool ShowingPlayerPanel => playerPanel.panel.gameObject.activeInHierarchy;
+    static bool ShowingForgeDetailsPanel => eyeForgeDetailsPanel.panel.gameObject.activeInHierarchy;
+    static Texture2D shownCursorTexture;
 
-    private void InitUI() {
+    static void InitUI() {
         Cursor.visible = ShowCursorInMenus;
         SetCursorTexture(config.styles.cursorTexture);
 
@@ -47,7 +44,7 @@ public partial class Game {
         ui.damageNumberFontSize = prefabs.damageNumber.GetComponent<TextMeshProUGUI>().fontSize;
     }
 
-    private void UpdateCursorStyle() {
+    static void UpdateCursorStyle() {
         bool inRaidGameplay = InRaid && !MenuNavigationNeeded;
         
         bool showClosedEyeCrosshair = Time.time - player.lastShotTime <= 0.035f;
@@ -73,7 +70,7 @@ public partial class Game {
         }
     }
 
-    private void SetCursorTexture(Texture2D texture) {
+    static void SetCursorTexture(Texture2D texture) {
         if (texture == shownCursorTexture) return;
         shownCursorTexture = texture;
         // The normal cursor points from its top left corner, the crosshair from its center
@@ -81,9 +78,9 @@ public partial class Game {
         Cursor.SetCursor(texture, hotspot, CursorMode.Auto);
     }
 
-    private Sequence mainMenuSequence;
-    
-    private void AnimateInMainMenu() {
+    static Sequence mainMenuSequence;
+
+    static void AnimateInMainMenu() {
         if (mainMenuSequence.isAlive) return;
         
         float halfScreenHeight = Screen.height / 2f;
@@ -108,7 +105,7 @@ public partial class Game {
         exitButton.rectTransform.anchoredPosition = new(exitButton.rectTransform.anchoredPosition.x, -halfScreenHeight);
     }
 
-    private void ShowMainMenuUI() {
+    static void ShowMainMenuUI() {
         ui.hideoutParent.gameObject.SetActive(true);
         ui.animatedBgImage.gameObject.SetActive(true);
         mainMenu.parent.gameObject.SetActive(true);
@@ -116,26 +113,26 @@ public partial class Game {
         AnimateInMainMenu();
     }
 
-    private void CloseMainMenuUI() {
+    static void CloseMainMenuUI() {
         ui.animatedBgImage.gameObject.SetActive(false);
         mainMenu.parent.gameObject.SetActive(false);
         mainMenu.hideoutNotifier.SetActive(false);
     }
     
     // The settings panel has its own back button, so the menu back button stays hidden
-    private void ShowSettingsMenuUI() {
+    static void ShowSettingsMenuUI() {
         ui.settingsParent.gameObject.SetActive(true);
         ui.animatedBgImage.gameObject.SetActive(true);
         settings.toggleGroup.ManualyToggle(settings.audioToggle);
     }
 
-    private void CloseSettingsMenuUI() {
+    static void CloseSettingsMenuUI() {
         ui.settingsParent.gameObject.SetActive(false);
         ui.animatedBgImage.gameObject.SetActive(false);
         SaveSettings();
     }
 
-    private void ShowMapSelectionUI() {
+    static void ShowMapSelectionUI() {
         ShowHideoutUI();
         hideoutTabs.parent.gameObject.SetActive(false);
         playerInfo.parent.gameObject.SetActive(false);
@@ -145,23 +142,23 @@ public partial class Game {
         mapPanels.mapSelectionPanel.UpdateSelectorStates(config.maps);
         ui.teleportingIntoRaidHeader.gameObject.SetActive(true);
     }
-    
-    private void ReturnToMapSelection() {
+
+    static void ReturnToMapSelection() {
         ToggleHideoutPanels(playerPanel.panel, mapPanels.mapSelectionPanel.rectTransform);
         mapPanels.mapSelectionPanel.UpdateSelectorStates(config.maps);
     }
-    
-    private void ShowMapConfirmationUI(MapData map) {
+
+    static void ShowMapConfirmationUI(MapData map) {
         mapPanels.mapSelectionPanel.gameObject.SetActive(false);
         mapPanels.confirmationPanel.gameObject.SetActive(true);
         mapPanels.confirmationPanel.Display(map);
     }
 
-    private void CloseMapSelectionUI() {
+    static void CloseMapSelectionUI() {
         CloseHideoutUI();
     }
-    
-    private void ShowHideoutUI() {
+
+    static void ShowHideoutUI() {
         CheckToMoveCurrencyDisplays();
         hideoutTabs.toggleGroup.ManualyToggle(hideoutTabs.characterButton);
         ui.menuBackButton.gameObject.SetActive(true);
@@ -177,8 +174,8 @@ public partial class Game {
             playerPanel.transferToStashButton.gameObject.SetActive(true);
         }
     }
-    
-    private void CloseHideoutUI() {
+
+    static void CloseHideoutUI() {
         CheckToMoveCurrencyDisplays();
         ToggleHideoutPanels();
         HideInventoryItemPopup(); 
@@ -193,7 +190,7 @@ public partial class Game {
         playerPanel.transferToStashButton.gameObject.SetActive(false);
     }
 
-    private void ShowRaidUI() {
+    static void ShowRaidUI() {
         CheckToMoveCurrencyDisplays();
         UpdateRaidInventoryPanelHeights();
         playerInfo.healthBarParent.gameObject.SetActive(true);
@@ -221,7 +218,7 @@ public partial class Game {
         }
     }
 
-    private void CloseRaidUI() {
+    static void CloseRaidUI() {
         UpdateRaidInventoryPanelHeights();
         HideInventoryItemPopup(); 
         HideHint();
@@ -236,7 +233,7 @@ public partial class Game {
         inputPrompts.inRaidParent.SetActive(false);
     }
 
-    private void ToggleHideoutPanels(params RectTransform[] panels) {
+    static void ToggleHideoutPanels(params RectTransform[] panels) {
         // Panels that stay showing aren't turned off and back on, otherwise their slots and buttons lose their hover highlight
         SetHideoutPanelActive(playerPanel.panel, panels);
         SetHideoutPanelActive(stashPanel.panel, panels);
@@ -256,7 +253,7 @@ public partial class Game {
         }
     }
 
-    private Sequence FadeOutAndCollapsePanel(RectTransform panel, float fadeTime = 0.2f, float collapseTime = 0.35f) {
+    static Sequence FadeOutAndCollapsePanel(RectTransform panel, float fadeTime = 0.2f, float collapseTime = 0.35f) {
         HorizontalLayoutGroup layout = panel.parent.GetComponentInParent<HorizontalLayoutGroup>();
         CanvasGroup canvasGroup = panel.GetComponent<CanvasGroup>();
         LayoutElement layoutElement = panel.GetComponent<LayoutElement>();
@@ -291,7 +288,7 @@ public partial class Game {
     }
 
     // Hides the item and hint popups if they belong to something inside the panel
-    private void HidePopupsFromPanel(RectTransform panel) {
+    static void HidePopupsFromPanel(RectTransform panel) {
         InventoryHoverInfo invHover = lastInventoryHoverInfo;
         if (invHover.inventory != null && invHover.slotIndex >= 0 && invHover.slotIndex < invHover.inventory.slots.Length) {
             if (invHover.inventory.slots[invHover.slotIndex].ui.rectTransform.IsChildOf(panel)) {
@@ -308,7 +305,7 @@ public partial class Game {
 
     // Panels turn off their CanvasGroup's raycasts while fading, so anything inside one shouldn't count as hovered.
     // Otherwise popups that were just hidden would show again before the panel finishes fading.
-    private static bool InNonInteractableCanvasGroup(Transform trans) {
+    static bool InNonInteractableCanvasGroup(Transform trans) {
         for (Transform cur = trans; cur != null; cur = cur.parent) {
             if (!cur.TryGetComponent(out CanvasGroup group)) continue;
             if (!group.blocksRaycasts) return true;
@@ -317,7 +314,7 @@ public partial class Game {
         return false;
     }
 
-    private Sequence FadeInAndExpandPanel(RectTransform panel, float expandTime = 0.35f, float fadeTime = 0.2f) {
+    static Sequence FadeInAndExpandPanel(RectTransform panel, float expandTime = 0.35f, float fadeTime = 0.2f) {
         HorizontalLayoutGroup layout = panel.parent.GetComponentInParent<HorizontalLayoutGroup>();
         CanvasGroup canvasGroup = panel.GetComponent<CanvasGroup>();
         LayoutElement layoutElement = panel.GetComponent<LayoutElement>();
@@ -351,9 +348,9 @@ public partial class Game {
             });
     }
 
-    private Sequence hideoutFadeSequence;
+    static Sequence hideoutFadeSequence;
 
-    private Sequence FadeInHideout(float riseDistance = 60f, float time = 1.4f, float startingAlpha = 0f) {
+    static Sequence FadeInHideout(float riseDistance = 60f, float time = 1.4f, float startingAlpha = 0f) {
         if (hideoutFadeSequence.isAlive) {
             // A quick tab switch fade shouldn't cut short a longer one that's still playing, like the tutorial's
             float remainingTime = hideoutFadeSequence.durationTotal - hideoutFadeSequence.elapsedTimeTotal;
@@ -410,11 +407,11 @@ public partial class Game {
     }
 
     // Its better just to have these as constants because the canvas layout recalculates in LateUpdate
-    private const float playerPanelWidth = 600f;
-    private const float slimPlayerPanelWidth = 440f;
-    private bool PlayerInventoryIsSlim => !playerPanel.inventoryParent.gameObject.activeSelf;
+    const float playerPanelWidth = 600f;
+    const float slimPlayerPanelWidth = 440f;
+    static bool PlayerInventoryIsSlim => !playerPanel.inventoryParent.gameObject.activeSelf;
 
-    private void ToggleSlimPlayerPanel(bool toggle) {
+    static void ToggleSlimPlayerPanel(bool toggle) {
         Vector2 defaultPlayerHalfAnchorPos = new(0f, playerPanel.playerHalfParent.anchoredPosition.y);
         if (toggle) {
             playerPanel.inventoryParent.gameObject.SetActive(false);
@@ -427,20 +424,20 @@ public partial class Game {
         playerPanel.panelLayoutElement.preferredWidth = playerPanelWidth;
         playerPanel.playerHalfParent.anchoredPosition = defaultPlayerHalfAnchorPos;
     }
-    
-    private int prevSoulCurrency = int.MinValue;
-    private int prevCoinCurrency = int.MinValue;
-    private Sequence soulCurrencySequence;
-    private Sequence coinCurrencySequence;
-    
-    private void InitCurrencyNumbers() {
+
+    static int prevSoulCurrency = int.MinValue;
+    static int prevCoinCurrency = int.MinValue;
+    static Sequence soulCurrencySequence;
+    static Sequence coinCurrencySequence;
+
+    static void InitCurrencyNumbers() {
         playerInfo.soulsCurrencyText.text = player.state.soulCurrency.ToString("N0");
         playerInfo.coinCurrencyText.text = player.state.coinCurrency.ToString("N0");
         prevSoulCurrency = player.state.soulCurrency;
         prevCoinCurrency = player.state.coinCurrency;
     }
-    
-    private void UpdateCurrencyNumbers() {
+
+    static void UpdateCurrencyNumbers() {
         if (prevSoulCurrency != player.state.soulCurrency) {
             soulCurrencySequence.Complete();
             soulCurrencySequence = AnimateCurrency(playerInfo.soulsCurrencyText, prevSoulCurrency, player.state.soulCurrency);
@@ -462,13 +459,13 @@ public partial class Game {
         seq.Group(Tween.PunchScale(textMesh.transform, Vector3.one * 0.22f, duration * 0.75f));
         return seq;
     }
-    
-    private int displayedWaveNumber;
-    private int displayedSwarmSeconds = -1;
-    private Sequence waveTextSequence;
-    private string WaveCountText() => $"Wave {spawnManager.CurWaveNumber}/{spawnManager.TotalWaveCount}";
-    
-    private void UpdateInRaidUI() {
+
+    static int displayedWaveNumber;
+    static int displayedSwarmSeconds = -1;
+    static Sequence waveTextSequence;
+    static string WaveCountText() => $"Wave {spawnManager.CurWaveNumber}/{spawnManager.TotalWaveCount}";
+
+    static void UpdateInRaidUI() {
         ui.minimap.UpdateMinimap(player.position);
         
         playerInfo.healthBar.fillImage.fillAmount = CurPlayerHealthPercentage();
@@ -549,7 +546,7 @@ public partial class Game {
     }
 
     // Grows the wave text, swaps the text at its largest, then shrinks it back down
-    private void AnimateWaveTextChange(string newText) {
+    static void AnimateWaveTextChange(string newText) {
         waveTextSequence.Complete();
         TextMeshProUGUI waveText = raidInfo.waveText;
         waveTextSequence = Sequence.Create()
@@ -557,10 +554,10 @@ public partial class Game {
             .ChainCallback(() => waveText.text = newText)
             .Chain(Tween.Scale(waveText.transform, 1f, 0.3f, Ease.OutBack));
     }
-    
-    private Sequence bossBarFillSequence;
 
-    private void AnimateInBossHealthBar() {
+    static Sequence bossBarFillSequence;
+
+    static void AnimateInBossHealthBar() {
         Enemy boss = entities.boss;
         if (boss == null) return;
         bossBar.parent.SetActive(true);
@@ -569,8 +566,8 @@ public partial class Game {
         bossBarFillSequence.Chain(Tween.UIFillAmount(bossBar.fillImage, startValue: 0f, endValue: 1f, duration: 1.2f, ease: Ease.OutCubic));
         bossBarFillSequence.Group(Tween.Alpha(bossBar.backgroundImage, 0f, 1f, duration: 0.4f, Ease.OutCubic));
     }
-    
-    private void UpdatePlayerPanelUI() {
+
+    static void UpdatePlayerPanelUI() {
         if (!PlayerInventoryIsOpen) return;
             
         playerPanel.healthText.text = $"<color=#5CF25B>{player.health}</color><size=22>/{FullPlayerHealth()}";
@@ -616,8 +613,8 @@ public partial class Game {
         
         bool Boosted(PlayerStat stat) => GetEquipmentStatAdjustment(stat) > 0f; 
     }
-    
-    private void UpdateHotBarUI() {
+
+    static void UpdateHotBarUI() {
         if (!ui.hotBarParent.gameObject.activeInHierarchy) return;
         UpdateHotBarPrompts();
 
@@ -636,7 +633,7 @@ public partial class Game {
     }
 
     // With a selection only the selected slot and the move prompts show, otherwise each slot shows its own key
-    private void UpdateHotBarPrompts() {
+    static void UpdateHotBarPrompts() {
         bool useSelection = HotBarUsesSelection;
         for (int i = 0; i < playerQuickUseSize; i++) {
             List<GameAction> actions = inputPrompts.hotBarPrompts[i].boundActions;
@@ -659,7 +656,7 @@ public partial class Game {
         }
     }
 
-    private void AnimateLargeRaidText(string text, float typewriterSpeed) {
+    static void AnimateLargeRaidText(string text, float typewriterSpeed) {
         ui.largeRaidText.gameObject.SetActive(true);
         ui.largeRaidText.characterSpacing = 0;
         
@@ -670,14 +667,14 @@ public partial class Game {
         void OnTypewriterFinish() {
             Sequence sequence = Sequence.Create();
             sequence.Chain(Tween.Custom(0, 30, 0.5f, startDelay: 0.3f, ease: Ease.OutBack, onValueChange: static (val) => {
-                gameInstance.ui.largeRaidText.characterSpacing = val;
+                ui.largeRaidText.characterSpacing = val;
             }));
             sequence.ChainDelay(0.35f);
-            sequence.ChainCallback(static () => gameInstance.ui.largeRaidTextTypewriter.StartDisappearingText());
+            sequence.ChainCallback(static () => ui.largeRaidTextTypewriter.StartDisappearingText());
         }
     }
 
-    private void AnimateSmallRaidText(string text) {
+    static void AnimateSmallRaidText(string text) {
         ui.smallRaidText.gameObject.SetActive(true);
         ui.smallRaidTextTypewriter.ShowText($"{{incr}}{{fade}}{{smallwave}}{{#fade}}{{#smallwave}}{text}");
         ui.smallRaidTextTypewriter.onTextShowed.AddListener(OnTypewriterFinish);
@@ -685,17 +682,17 @@ public partial class Game {
         void OnTypewriterFinish() {
             Sequence sequence = Sequence.Create();
             sequence.ChainDelay(0.8f);
-            sequence.ChainCallback(static () => gameInstance.ui.smallRaidTextTypewriter.StartDisappearingText());
+            sequence.ChainCallback(static () => ui.smallRaidTextTypewriter.StartDisappearingText());
         }
     }
     
     // *******************************
     // Gameplay Text Pop Ups
     // *******************************
-    
-    private enum DamageColor { Normal, Crit, Blood, Hemorrhage, Poison }
 
-    private void SpawnPlayerDamageNumber(int damage) {
+    enum DamageColor { Normal, Crit, Blood, Hemorrhage, Poison }
+
+    static void SpawnPlayerDamageNumber(int damage) {
         var healthBar = playerInfo.healthBar.fillImage;
         var healthBarRect = healthBar.rectTransform;
         Vector3 spawnPosAlongHealthBar = healthBarRect.position.Offset(x: healthBarRect.rect.width * healthBar.fillAmount);
@@ -726,7 +723,7 @@ public partial class Game {
         DestroyEntity(damageNumber, moveDuration + popOutDuration);
     }
 
-    private void SpawnDamageNumber(Vector3 spawnPos, int damage, DamageColor damageColor) {
+    static void SpawnDamageNumber(Vector3 spawnPos, int damage, DamageColor damageColor) {
         Vector3 startSize = Vector3.one * 0.8f;
         Vector3 endSize = Vector3.one * damageColor switch {
             DamageColor.Normal     => 1.0f,
@@ -795,15 +792,15 @@ public partial class Game {
         DestroyEntity(damageNumber, moveDuration + popOutDuration);
     }
 
-    private Vector3 EnemyDamageNumberSpawnPos(Entity entity) {
+    static Vector3 EnemyDamageNumberSpawnPos(Entity entity) {
         return OffsetY(entity.position, 0.28f);
     }
-    
-    private void SpawnTrinketActivationText(string text, Color? color = null) {
+
+    static void SpawnTrinketActivationText(string text, Color? color = null) {
         SpawnTextPopIn(OffsetY(player.position, -0.1f), text);
     }
-    
-    private void SpawnTextPopIn(Vector3 spawnPos, string text, Vector3? endPos = default, Color? color = null) {
+
+    static void SpawnTextPopIn(Vector3 spawnPos, string text, Vector3? endPos = default, Color? color = null) {
         Entity textEntity = SpawnEntity(entityPools.damageNumber, spawnPos, Quaternion.identity, ui.damageNumbersParent);
         textEntity.textMesh.text = text; 
         textEntity.textMesh.fontSize = ui.damageNumberFontSize;
@@ -826,7 +823,7 @@ public partial class Game {
     // Pop Ups 
     // *******************************
     
-    public void PushNotification(string text) {
+    public static void PushNotification(string text) {
         Entity notification = SpawnEntity(entityPools.notification, Vector3.zero, Quaternion.identity, ui.notificationParent, EntityLifetime.Global);
         notification.gameObject.GetComponent<NotificationUI>().text.text = text;
         PlayAudioClip(audio.notificationClip);
@@ -849,7 +846,7 @@ public partial class Game {
             .Chain(AnimateNotificationOut(notification, endWidth));
     }
 
-    private Sequence AnimateNotificationOut(Entity notification, float fromWidth) {
+    static Sequence AnimateNotificationOut(Entity notification, float fromWidth) {
         TweenSettings outSettings = new() {
             duration = 0.25f,
             ease = Ease.Linear,
@@ -861,11 +858,11 @@ public partial class Game {
                     notification.gameObject.GetComponent<NotificationUI>().backgroundParent.ResizeWidth(width);
                 })
             )
-            .ChainCallback(notification, static (notification) => gameInstance.DestroyEntity(notification));
+            .ChainCallback(notification, static (notification) => DestroyEntity(notification));
     }
 
     // Stopping all tweens (like on death) freezes notifications partway through, so they'd never go away on their own
-    private void DismissNotificationsAfterTweensStopped() {
+    static void DismissNotificationsAfterTweensStopped() {
         foreach (Transform child in ui.notificationParent) {
             if (!child.gameObject.activeSelf) continue;
             if (!entities.lookup.TryGetValue(child.gameObject, out Entity notification)) continue;
@@ -908,7 +905,7 @@ public partial class Game {
     }
     
     // Maps unlocked since the last visit burn away their locked look to reveal themselves
-    private void PlayPendingMapUnlockBurns() {
+    static void PlayPendingMapUnlockBurns() {
         MapSelection[] selectors = mapPanels.mapSelectionPanel.selectors;
         for (int i = 0; i < selectors.Length && i < config.maps.Count; i++) {
             MapData map = config.maps[i];
@@ -940,9 +937,10 @@ public partial class Game {
         public readonly Dictionary<RectTransform, Func<string>> descriptionCallbackLookup = new();
         public HintHoverInfo lastHintHoverInfo;
     }
-    private UIHints uiHints = new();
-    
-    private void InitUIHints() {
+
+    static UIHints uiHints = new();
+
+    static void InitUIHints() {
         AddHint(inventories.player.slots[0], "Demon Eye Slot");
         AddHint(inventories.player.slots[1], "Backpack Slot");
         AddHint(inventories.player.slots[2], "Trinket Slot");
@@ -955,7 +953,7 @@ public partial class Game {
         AddHint(ui.quickUseHeaderText, quickUseDesc);
         
         AddHintWithCallback(inventories.eyeForge.slots[0], static () => {
-            if (gameInstance.InTutorialFirstForge) {
+            if (InTutorialFirstForge) {
                 return "Place an Eyeball here to craft a Demon Eye";
             }
             return "Place an Eyeball or Demon Eye here to craft or level up a Demon Eye";
@@ -968,7 +966,7 @@ public partial class Game {
         AddHintWithCallback(inventories.eyeForge.slots[5],  GetForgeSlotHint);
         
         static string GetForgeSlotHint() {
-            if (gameInstance.forgeMode is ForgeMode.UpgradingDemonEye) {
+            if (forgeMode is ForgeMode.UpgradingDemonEye) {
                 return "Blood Rune required for Demon Eye upgrade. Autofills on upgrade.";
             }
             return $"Place {DisplayNumber(1)} of {DisplayNumber(5)} Blood Runes here to craft a Demon Eye";
@@ -977,13 +975,13 @@ public partial class Game {
         AddHint(ui.stashPanelHeaderText, "A place to keep all your items safe. Stashed items remain even after dying.");
         
         AddHintWithCallback(eyeForgePanel.forgeButton.rectTransform, static () => {
-            if (gameInstance.PlayingForgeAnimation) {
+            if (PlayingForgeAnimation) {
                 return string.Empty;
             }
             
-            ForgeMode forgeMode = gameInstance.forgeMode;
-            ForgeError forgeError = gameInstance.forgeError;
-            Inventory eyeForgeInventory = gameInstance.inventories.eyeForge;
+            ForgeMode forgeMode = Game.forgeMode;
+            ForgeError forgeError = Game.forgeError;
+            Inventory eyeForgeInventory = inventories.eyeForge;
             
             if (forgeMode == ForgeMode.Empty) {
                 return "Place an eyeball in the center to start the Demon Eye crafting process";
@@ -992,7 +990,7 @@ public partial class Game {
                 return $"Requires {DisplayNumber(5)} Blood Runes to craft a Demon Eye";
             }
             if (forgeError == ForgeError.ForgingButMissingUpgrades) {
-                int curEyeUpgradeCount = gameInstance.GetInventoryItemCount(eyeForgeInventory) - 1;
+                int curEyeUpgradeCount = GetInventoryItemCount(eyeForgeInventory) - 1;
                 int eyeUpgradesStillNeeded = GameData.Config.demonEyeCoreUpgradeCount - curEyeUpgradeCount;
                 if (eyeUpgradesStillNeeded == 1) {
                     return $"Requires {DisplayNumber(1)} more Blood Rune to craft a Demon Eye";
@@ -1018,36 +1016,36 @@ public partial class Game {
             return "Craft Demon Eye";
         });
     }
-    
-    private void AddHint(InventorySlot slot, string description) {
+
+    static void AddHint(InventorySlot slot, string description) {
         RectTransform rectTransform = slot.ui.rectTransform;
         Assert.IsFalse(uiHints.descriptionLookup.ContainsKey(rectTransform), "Hint RectTransform has already been added");
         uiHints.hoverableInventorySlots.Add(slot);
         uiHints.descriptionLookup.Add(rectTransform, description);
     }
-        
-    private void AddHint(RectTransform rectTransform, string description) {
+
+    static void AddHint(RectTransform rectTransform, string description) {
         Assert.IsFalse(uiHints.descriptionLookup.ContainsKey(rectTransform), "Hint RectTransform has already been added");
         uiHints.hoverableRectTransforms.Add(rectTransform);
         uiHints.descriptionLookup.Add(rectTransform, description);
     }
-    
-    private void AddHintWithCallback(InventorySlot slot, Func<string> getDescriptionCallback) {
+
+    static void AddHintWithCallback(InventorySlot slot, Func<string> getDescriptionCallback) {
         RectTransform rectTransform = slot.ui.rectTransform;
         Assert.IsFalse(uiHints.descriptionLookup.ContainsKey(rectTransform), "Hint RectTransform has already been added");
         Assert.IsFalse(getDescriptionCallback == null, "Description callback should not be null");
         uiHints.hoverableInventorySlots.Add(slot);
         uiHints.descriptionCallbackLookup.Add(rectTransform, getDescriptionCallback);
     }
-    
-    private void AddHintWithCallback(RectTransform rectTransform, Func<string> getDescriptionCallback) {
+
+    static void AddHintWithCallback(RectTransform rectTransform, Func<string> getDescriptionCallback) {
         Assert.IsFalse(uiHints.descriptionLookup.ContainsKey(rectTransform), "Hint RectTransform has already been added");
         Assert.IsFalse(getDescriptionCallback == null, "Description callback should not be null");
         uiHints.hoverableRectTransforms.Add(rectTransform);
         uiHints.descriptionCallbackLookup.Add(rectTransform, getDescriptionCallback);
     }
-    
-    private void UpdateUIHints() {
+
+    static void UpdateUIHints() {
         HintHoverInfo hoverInfo = UpdateHintHover();
         
         if (!hoverInfo.hoveringTransform) {
@@ -1066,7 +1064,7 @@ public partial class Game {
         }
     }
 
-    private void ShowHint(HintHoverInfo hoverInfo) {
+    static void ShowHint(HintHoverInfo hoverInfo) {
         if (ui.hintPopup.gameObject.activeInHierarchy) {
             // This makes sure that hints that can change during runtime are always up to date when already showing
             if (uiHints.descriptionCallbackLookup.TryGetValue(hoverInfo.hoveringTransform, out Func<string> callback)) {
@@ -1093,7 +1091,7 @@ public partial class Game {
         }
     }
 
-    private void HideHint() {
+    static void HideHint() {
         ui.hintPopup.Hide();
     }
     
@@ -1101,8 +1099,8 @@ public partial class Game {
         public RectTransform hoveringTransform;
         public float timeSpentHovering;
     }
-    
-    private HintHoverInfo UpdateHintHover() {
+
+    static HintHoverInfo UpdateHintHover() {
         HintHoverInfo info = new();
         Vector2 mousePos = PointerScreenPos;
         
@@ -1118,8 +1116,8 @@ public partial class Game {
         uiHints.lastHintHoverInfo = info;
         return info;
     }
-    
-    private bool UpdateHintHoverInfoForRectTransform(RectTransform element, Vector2 mousePos, ref HintHoverInfo info) {
+
+    static bool UpdateHintHoverInfoForRectTransform(RectTransform element, Vector2 mousePos, ref HintHoverInfo info) {
         if (!element.gameObject.activeInHierarchy) return false;
         if (InNonInteractableCanvasGroup(element)) return false;
 
@@ -1139,8 +1137,8 @@ public partial class Game {
         
         return true;
     }
-    
-    private void InitInputPrompts() {
+
+    static void InitInputPrompts() {
         List<InputPrompt> activePromptList = inputPrompts.hideoutPrompts;
         
         BindPromptToActiveList(0, inputs.select, inputs.sellSingleItem, inputs.place);
@@ -1197,7 +1195,7 @@ public partial class Game {
         }
     }
 
-    private void UpdateInputPrompts() {
+    static void UpdateInputPrompts() {
         foreach (InputPrompt prompt in inputPrompts.allBoundPrompts) {
             // Hidden while a higher layer has taken the action's binding, so only the winning action's prompt shows
             GameAction action = prompt.GetWinningAction();
@@ -1212,7 +1210,7 @@ public partial class Game {
     }
 
     // Not in the bound prompt list, since that would overwrite the label with the action name every frame
-    private void EnableInteractionPrompt(Vector3 position, string interactionText) {
+    static void EnableInteractionPrompt(Vector3 position, string interactionText) {
         InputPrompt prompt = ui.interactionPrompt;
         prompt.gameObject.SetActive(true);
         prompt.Set(inputs.interact.GetCurrentDisplayGlyphs());
@@ -1220,15 +1218,15 @@ public partial class Game {
         prompt.transform.position = camera.main.WorldToScreenPoint(position);
     }
 
-    private void DisableInteractionPrompt() {
+    static void DisableInteractionPrompt() {
         ui.interactionPrompt.gameObject.SetActive(false);
     }
     
     // Multiply canvas units (sizes and offsets authored at 1080p) by this to get screen pixels
-    public float CanvasScale => ui.mainCanvasRectTransform.lossyScale.x;
-    public bool ScreenIsSmall => Screen.height <= 1000;
+    public static float CanvasScale => ui.mainCanvasRectTransform.lossyScale.x;
+    public static bool ScreenIsSmall => Screen.height <= 1000;
 
-    private void UIOnScreenSizeChanged() {
+    static void UIOnScreenSizeChanged() {
         ui.mainCanvasScaler.scaleFactor = Screen.height switch {
             >= 2160 => 1.4f,
             >= 1440 => 1.2f,
@@ -1286,7 +1284,7 @@ public partial class Game {
         Canvas.ForceUpdateCanvases();
     }
 
-    private void CheckToMoveCurrencyDisplays() {
+    static void CheckToMoveCurrencyDisplays() {
         Transform coins = playerInfo.coinsCurrencyParent.transform;
         Transform souls = playerInfo.soulsCurrencyParent.transform;
 
@@ -1305,11 +1303,11 @@ public partial class Game {
             souls.SetSiblingIndex(3);
         }
     }
-    
-    private float? _restoreInventoryPanelHeight;
+
+    static float? _restoreInventoryPanelHeight;
     
     // We need to shorten the player and loot inventories for steamdeck, otherwise they overlap with the hotbar
-    private void UpdateRaidInventoryPanelHeights() {
+    static void UpdateRaidInventoryPanelHeights() {
         _restoreInventoryPanelHeight ??= playerPanel.panelLayoutElement.preferredHeight;
         if (InRaid && ScreenIsSmall) {
             playerPanel.panelLayoutElement.preferredHeight = 625;
@@ -1320,7 +1318,7 @@ public partial class Game {
         ui.lootInventoryLayoutElement.preferredHeight = _restoreInventoryPanelHeight.Value;
     }
     
-    public void PlayTypewritterCharacterShowSound() {
+    public static void PlayTypewritterCharacterShowSound() {
         PlayAudioClip(audio.textCharAppearClip);
     }
 

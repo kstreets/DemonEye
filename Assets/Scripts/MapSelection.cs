@@ -16,11 +16,10 @@ public class MapSelection : MonoBehaviour {
     public Image burnEffectImage;
     public Image scortchedImage;
     public BurnEdgeEmberSpawner emberSpawner;
+    bool initialized;
+    string unlockedSubName; // The locked state overwrites the sub name, so this is what gets put back once unlocked
 
-    private bool initialized;
-    private string unlockedSubName; // The locked state overwrites the sub name, so this is what gets put back once unlocked
-
-    private void Init() {
+    void Init() {
         if (initialized) return;
         initialized = true;
 
@@ -53,10 +52,10 @@ public class MapSelection : MonoBehaviour {
         }
     }
 
-    private Sequence contentsFade;
+    Sequence contentsFade;
 
     // Fades in everything but the background, so the burn effects on top don't fade along with it
-    private void FadeInContents() {
+    void FadeInContents() {
         const float fadeTime = 0.5f;
         contentsFade.Complete();
         contentsFade = Sequence.Create()
@@ -66,14 +65,14 @@ public class MapSelection : MonoBehaviour {
             .Group(FadeInObject(selectionButton.gameObject, fadeTime));
     }
 
-    private static Tween FadeInObject(GameObject target, float time) {
+    static Tween FadeInObject(GameObject target, float time) {
         if (!target.TryGetComponent(out CanvasGroup canvasGroup)) {
             canvasGroup = target.AddComponent<CanvasGroup>();
         }
         return Tween.Alpha(canvasGroup, 0f, 1f, time, Ease.OutQuad);
     }
 
-    private UIBurnEffect burnEffect;
+    UIBurnEffect burnEffect;
 
     // Same burn as leveling up a skill
     public void Burn(float duration, AnimationCurve edgeCurve, AnimationCurve particlesCurve) {

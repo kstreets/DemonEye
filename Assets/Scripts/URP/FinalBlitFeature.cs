@@ -8,8 +8,7 @@ public class FinalBlitFeature : ScriptableRendererFeature  {
     
     public RenderPassEvent renderPassEvent;
     public ComputeShader pixelPerfectBlitShader;
-    
-    private static BlitPass blitPass;
+    static BlitPass blitPass;
 
     public override void Create() {
         blitPass = new(pixelPerfectBlitShader) { renderPassEvent = renderPassEvent };
@@ -18,14 +17,13 @@ public class FinalBlitFeature : ScriptableRendererFeature  {
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData) {
         renderer.EnqueuePass(blitPass);
     }
-    
-    private class BlitPass : ScriptableRenderPass {
-        
-        private ComputeShader blitShader;
-        private int kernal;
-        private static readonly int[] sampleOffset = new int[2];
 
-        private class PassData {
+    class BlitPass : ScriptableRenderPass {
+        ComputeShader blitShader;
+        int kernal;
+        static readonly int[] sampleOffset = new int[2];
+
+        class PassData {
             public ComputeShader computeShader;
             public int kernal;
             public TextureHandle inputTextureHandle;

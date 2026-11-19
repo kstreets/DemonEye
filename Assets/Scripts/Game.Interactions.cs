@@ -4,7 +4,7 @@ using PrimeTween;
 using UnityEngine;
 using UnityEngine.Pool;
 
-public partial class Game {
+public static partial class Game {
     
     public struct InteractionData {
         public Sequence discoverSlotsSequence;
@@ -14,8 +14,8 @@ public partial class Game {
         public LootInventoryOrigin curLootOrigin;
         public AudioClipHandle activeSearchingLoopClip;
     }
-    
-    private void CheckForInteractions() { 
+
+    static void CheckForInteractions() { 
         HideInteractionPopup();
         
         Vector2 checkCenter = player.position + new Vector3(0f, 0.05f, 0f);
@@ -112,7 +112,7 @@ public partial class Game {
         }
     }
 
-    private Collider2D ClosestInteractable(List<Collider2D> cols, Vector2 checkCenter) {
+    static Collider2D ClosestInteractable(List<Collider2D> cols, Vector2 checkCenter) {
         Collider2D closest = null;
         float closestSqrDist = float.MaxValue;
         foreach (Collider2D col in cols) {
@@ -126,7 +126,7 @@ public partial class Game {
     }
     
     // Things in reach that have nothing to do right now shouldn't block whatever is behind them
-    private bool IsInteractable(Collider2D col, List<Collider2D> cols) {
+    static bool IsInteractable(Collider2D col, List<Collider2D> cols) {
         if (col.CompareTag(Tags.Pickup) || col.CompareTag(Tags.DeadBody) || col.CompareTag(Tags.Bush) || 
             col.CompareTag(Tags.Chest) || col.CompareTag(Tags.ExpressExitPortal)) {
             return true;
@@ -143,8 +143,8 @@ public partial class Game {
         }
         return false;
     }
-    
-    private void CheckForItemDropInteraction(ItemDrop itemDrop) {
+
+    static void CheckForItemDropInteraction(ItemDrop itemDrop) {
         ui.itemDescPopupPickup.Show(itemDrop.ItemInstance);
         
         Item dropItemRef = itemDrop.ItemInstance.ItemRef;
@@ -177,13 +177,13 @@ public partial class Game {
             itemDrop.ItemInstance.count -= result.addedCount;
         }
     }
-    
-    private void HideInteractionPopup() {
+
+    static void HideInteractionPopup() {
         ui.itemDescPopupPickup.Hide();
         DisableInteractionPrompt();
     }
 
-    private void PickupDroppedItem(Entity droppedEntity) {
+    static void PickupDroppedItem(Entity droppedEntity) {
         Vector3 playerPickupTarget = new(0f, 0.07f, 0f);
         
         droppedEntity.GetEffect(Entity.EffectsIndicies.Bounce).Stop();
@@ -217,12 +217,12 @@ public partial class Game {
     }
     
     // Looting speed goes up as it improves, so it divides the time instead of multiplying it
-    private float DiscoverSlotTime => config.gameplay.discoverSlotTime / GetAbsoluteStat(PlayerStat.LootingSpeed);
-    private float DiscoverItemTime => config.gameplay.discoverItemTime / GetAbsoluteStat(PlayerStat.LootingSpeed);
+    static float DiscoverSlotTime => config.gameplay.discoverSlotTime / GetAbsoluteStat(PlayerStat.LootingSpeed);
+    static float DiscoverItemTime => config.gameplay.discoverItemTime / GetAbsoluteStat(PlayerStat.LootingSpeed);
     
     public enum LootInventoryOrigin { Nothing, Body, Bush, Chest }
-    
-    private void OpenLootInventory(LootInventoryOrigin origin) {
+
+    static void OpenLootInventory(LootInventoryOrigin origin) {
         if (LootInventoryIsOpen) return;
         
         thisFrame.flags |= GameData.FrameFlags.InventoryOpened;
@@ -280,11 +280,11 @@ public partial class Game {
             
             if (inventories.lootPtr.slots[i].itemInstance.notDiscovered) {
                 float curveComp = (i + 1) / (float)lootCount;
-                float delay = gameInstance.curves.discoverSlotTimingCurve.Evaluate(curveComp) * DiscoverSlotTime;
+                float delay = curves.discoverSlotTimingCurve.Evaluate(curveComp) * DiscoverSlotTime;
                 discoverSlotsSequence.Chain(Tween.PunchScale(slotUI.rectTransform, Vector3.one * 2f, 0.1f, 2f, startDelay: delay));
                 discoverSlotsSequence.ChainCallback(slotUI, static (target) => {
                     target.MakeSlotInactive();
-                    gameInstance.PlayAudioClip(gameInstance.audio.slotRevealClip, player.position);
+                    PlayAudioClip(audio.slotRevealClip, player.position);
                 });
             }
         }
@@ -292,50 +292,50 @@ public partial class Game {
         // Add a small delay before revealing items
         discoverSlotsSequence.ChainDelay(0.05f);
 
-        discoverSlotsSequence.ChainCallback(target: this, static (target) => {
-            ref int discoverItemIndex = ref target.curRaid.data.interactions.discoverItemIndex;
-            ref Timer discoverItemTimer = ref target.curRaid.data.interactions.discoverItemTimer;
+        discoverSlotsSequence.ChainCallback(static () => {
+            ref int discoverItemIndex = ref curRaid.data.interactions.discoverItemIndex;
+            ref Timer discoverItemTimer = ref curRaid.data.interactions.discoverItemTimer;
 
-            InventorySlot slot = target.inventories.lootPtr.slots[discoverItemIndex];
+            InventorySlot slot = inventories.lootPtr.slots[discoverItemIndex];
             if (slot.itemInstance != null) {
-                target.AnimateSlotSearch(slot.ui);
-                discoverItemTimer.SetTime(target.DiscoverItemTime);
+                AnimateSlotSearch(slot.ui);
+                discoverItemTimer.SetTime(DiscoverItemTime);
             }
         });
         
         discoverItemTimer.EndAction ??= static () => {
-            Inventory lootInventoryPtr = gameInstance.inventories.lootPtr;
-            ref Timer discoverItemTimer = ref gameInstance.curRaid.data.interactions.discoverItemTimer;
-            ref int discoverItemIndex = ref gameInstance.curRaid.data.interactions.discoverItemIndex;
+            Inventory lootInventoryPtr = inventories.lootPtr;
+            ref Timer discoverItemTimer = ref curRaid.data.interactions.discoverItemTimer;
+            ref int discoverItemIndex = ref curRaid.data.interactions.discoverItemIndex;
 
             ItemInstance itemInstance = lootInventoryPtr.slots[discoverItemIndex].itemInstance;
             Item itemRef = itemInstance.ItemRef;
             itemInstance.notDiscovered = false;
             
-            gameInstance.thisFrame.data.foundSearchItem = itemInstance;
+            thisFrame.data.foundSearchItem = itemInstance;
             
             InventorySlotUI slotUI = lootInventoryPtr.slots[discoverItemIndex].ui;
             slotUI.MakeSlotActive();
             slotUI.StopSlotSearching();
             slotUI.SetItem(itemInstance);
-            gameInstance.PlayItemReveal(slotUI, itemInstance, player.position);
+            PlayItemReveal(slotUI, itemInstance, player.position);
 
             discoverItemIndex++;
             
             if (discoverItemIndex < lootInventoryPtr.slots.Length && lootInventoryPtr.slots[discoverItemIndex].itemInstance != null) {
                 slotUI = lootInventoryPtr.slots[discoverItemIndex].ui;
-                gameInstance.AnimateSlotSearch(slotUI);
-                discoverItemTimer.SetTime(gameInstance.DiscoverItemTime);
+                AnimateSlotSearch(slotUI);
+                discoverItemTimer.SetTime(DiscoverItemTime);
             }
             else {
-                gameInstance.ui.lootSearchingText.SetActive(false);
-                gameInstance.StopSearchingSoundLoop();
+                ui.lootSearchingText.SetActive(false);
+                StopSearchingSoundLoop();
             }
         };
     }
 
     // The pop, rarity colored flash and sounds for an item being revealed in a slot
-    private void PlayItemReveal(InventorySlotUI slotUI, ItemInstance itemInstance, Vector2 soundPosition) {
+    static void PlayItemReveal(InventorySlotUI slotUI, ItemInstance itemInstance, Vector2 soundPosition) {
         Tween.Scale(slotUI.itemUI.image.rectTransform, Vector3.one * 3.5f, Vector3.one, new TweenSettings(0.2f, Ease.OutBack));
 
         Item.Rarity itemRarity = itemInstance.GetRarity();
@@ -348,12 +348,12 @@ public partial class Game {
         PlayAudioClip(audio.lootRevealClip, soundPosition);
     }
 
-    private void AnimateSlotSearch(InventorySlotUI slotUI) {
+    static void AnimateSlotSearch(InventorySlotUI slotUI) {
         slotUI.MakeSlotSearching();
         curRaid.data.interactions.searchCirclePopInTween = Tween.Scale(slotUI.searchingCircle.transform, Vector3.one * 0.2f, Vector3.one * 1f, 0.25f, Ease.OutElastic); 
     }
 
-    private void CloseLootInventory() {
+    static void CloseLootInventory() {
         ui.lootSearchingText.SetActive(false);
         ui.lootInventoryPanel.gameObject.SetActive(false);
         curRaid.data.interactions.discoverItemTimer.Stop();
@@ -368,8 +368,8 @@ public partial class Game {
         
         StopSearchingSoundLoop();
     }
-    
-    private void StartSearchingSoundLoop() {
+
+    static void StartSearchingSoundLoop() {
         LootInventoryOrigin origin = curRaid.data.interactions.curLootOrigin;
         DynamicClip searchingLoop = origin switch {
             LootInventoryOrigin.Nothing => null,
@@ -382,12 +382,12 @@ public partial class Game {
             curRaid.data.interactions.activeSearchingLoopClip = PlayAudioClip(searchingLoop, player.position, loop: true);
         }
     }
-    
-    private void StopSearchingSoundLoop() {
+
+    static void StopSearchingSoundLoop() {
         StopAudioClip(curRaid.data.interactions.activeSearchingLoopClip);
     }
-    
-    private void SummonEyeUpgradeFromAltar(Collider2D altarCol) {
+
+    static void SummonEyeUpgradeFromAltar(Collider2D altarCol) {
         Altar altar = altarCol.GetComponent<Altar>();
         
         SpawnEntityOneShot(entityPools.altarSoulSwirl, altar.soulSwirlSpawnPoint.position, Quaternion.identity);
@@ -401,11 +401,11 @@ public partial class Game {
         
         Tween.Delay(altar, curBubbleSpawnTime, static (altar) => {
             altar.bloodExplosionParticles.Play();
-            gameInstance.PlayAudioClip(gameInstance.audio.altarBloodExplosionClip, altar.bloodExplosionParticles.transform.position);
-            gameInstance.ShakeCamera(15f, 0.1f, 0.5f, altar.transform.position, falloffStartRange: 0.5f, falloffDistance: 1.5f, CameraShake.Falloff.Linear);
+            PlayAudioClip(audio.altarBloodExplosionClip, altar.bloodExplosionParticles.transform.position);
+            ShakeCamera(15f, 0.1f, 0.5f, altar.transform.position, falloffStartRange: 0.5f, falloffDistance: 1.5f, CameraShake.Falloff.Linear);
             
-            altar.summoningItem = gameInstance.GetItemFromDropPool(gameInstance.dropPools.eyeUpgrades);
-            Entity item = gameInstance.SpawnItemAsEntity(altar.summoningItem, 1, altar.transform.position, Quaternion.identity);
+            altar.summoningItem = GetItemFromDropPool(dropPools.eyeUpgrades);
+            Entity item = SpawnItemAsEntity(altar.summoningItem, 1, altar.transform.position, Quaternion.identity);
             item.spriteRenderer.sortingOrder = 1;
             
             ItemDrop itemDrop = item.gameObject.GetComponent<ItemDrop>();
@@ -417,16 +417,16 @@ public partial class Game {
             Tween.Scale(item.trans, 0f, 1f, 0.16f, Ease.OutBack);
             
             Tween.Delay(altar, 0.12f, static (altar) => {
-                Entity reveal = gameInstance.SpawnEntityOneShot(gameInstance.entityPools.eyeUpgradeReveal, altar.transform.position.Offset(y: 0.25f), Quaternion.identity);
-                reveal.spriteRenderer.color = gameInstance.config.styles.GetColorForRarity(altar.summoningItem.GetRarity());
+                Entity reveal = SpawnEntityOneShot(entityPools.eyeUpgradeReveal, altar.transform.position.Offset(y: 0.25f), Quaternion.identity);
+                reveal.spriteRenderer.color = config.styles.GetColorForRarity(altar.summoningItem.GetRarity());
                 GetRarityVolumeAndPitch(altar.summoningItem.GetRarity(), out float rarityVolume, out float rarityPitch);
-                gameInstance.PlayAudioClip(gameInstance.audio.rarityRevealClip, player.position, rarityVolume, rarityPitch);
+                PlayAudioClip(audio.rarityRevealClip, player.position, rarityVolume, rarityPitch);
             });
         });
         
     }
-    
-    private void CheckForHotBarInteractions() {
+
+    static void CheckForHotBarInteractions() {
         int quickUseIndex = -1;
         for (int i = 0; i < hotBar.quickUseActions.Count; i++) {
             if (hotBar.quickUseActions[i].WasPressedThisFrame()) {
@@ -453,13 +453,13 @@ public partial class Game {
     }
 
     // Wraps around, so going left from the first slot goes to the last
-    private void MoveHotBarSelection(int direction) {
+    static void MoveHotBarSelection(int direction) {
         int slotCount = hotBar.quickUseActions.Count;
         hotBar.selectedIndex = (hotBar.selectedIndex + direction + slotCount) % slotCount;
     }
 
     // Keyboard and mouse work like the controller once using the selected slot and moving the selection are bound
-    private bool HotBarUsesSelection {
+    static bool HotBarUsesSelection {
         get {
             if (UsingController) return true;
             const GameAction.BindingSource kbm = GameAction.BindingSource.KeyboardMouse;

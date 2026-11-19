@@ -28,8 +28,7 @@ public class TilemapEdgeColliderGenerator : MonoBehaviour {
     public List<GameObject> additionalObjects = new();
 
 #if UNITY_EDITOR
-
-    private const string generatedObjectName = "GeneratedEdgeColliders";
+    const string generatedObjectName = "GeneratedEdgeColliders";
 
     [VInspector.Button("Generate")]
     public void Generate() {
@@ -106,14 +105,14 @@ public class TilemapEdgeColliderGenerator : MonoBehaviour {
     }
 
     // A sprite to trace into the mask, from a tile or a sprite renderer
-    private struct MaskSprite {
+    struct MaskSprite {
         public Sprite sprite;
         public Matrix4x4 spriteToLocal; // Sprite space (units, pivot at origin) to tilemap local space
         public float alpha;
         public Object context;
     }
 
-    private List<MaskSprite> GatherMaskSprites(Tilemap tilemap, BoundsInt cellBounds) {
+    List<MaskSprite> GatherMaskSprites(Tilemap tilemap, BoundsInt cellBounds) {
         List<MaskSprite> maskSprites = new();
 
         foreach (Vector3Int cell in cellBounds.allPositionsWithin) {
@@ -150,7 +149,7 @@ public class TilemapEdgeColliderGenerator : MonoBehaviour {
         return maskSprites;
     }
 
-    private static float GetPixelsPerUnit(List<MaskSprite> maskSprites) {
+    static float GetPixelsPerUnit(List<MaskSprite> maskSprites) {
         float pixelsPerUnit = maskSprites[0].sprite.pixelsPerUnit;
         foreach (MaskSprite maskSprite in maskSprites) {
             if (Mathf.Approximately(pixelsPerUnit, maskSprite.sprite.pixelsPerUnit)) continue;
@@ -160,7 +159,7 @@ public class TilemapEdgeColliderGenerator : MonoBehaviour {
         return pixelsPerUnit;
     }
 
-    private static void GetSpriteLocalBounds(MaskSprite maskSprite, out Vector2 localMin, out Vector2 localMax) {
+    static void GetSpriteLocalBounds(MaskSprite maskSprite, out Vector2 localMin, out Vector2 localMax) {
         Sprite sprite = maskSprite.sprite;
         Vector2 spriteMin = -sprite.pivot / sprite.pixelsPerUnit;
         Vector2 spriteMax = (sprite.rect.size - sprite.pivot) / sprite.pixelsPerUnit;
@@ -175,7 +174,7 @@ public class TilemapEdgeColliderGenerator : MonoBehaviour {
     }
 
     // The range of cells the mask covers, so every sprite fits with padding around it
-    private static void GetMaskCellRange(Tilemap tilemap, List<MaskSprite> maskSprites, int paddingCells, out Vector2Int maskCellMin, out Vector2Int maskCellSize) {
+    static void GetMaskCellRange(Tilemap tilemap, List<MaskSprite> maskSprites, int paddingCells, out Vector2Int maskCellMin, out Vector2Int maskCellSize) {
         Vector2Int min = new(int.MaxValue, int.MaxValue);
         Vector2Int max = new(int.MinValue, int.MinValue);
         foreach (MaskSprite maskSprite in maskSprites) {
@@ -189,7 +188,7 @@ public class TilemapEdgeColliderGenerator : MonoBehaviour {
 
     // Rasterizes every sprite's alpha into a grid-aligned solid mask by inverse-mapping each mask pixel
     // into sprite space, so flips/rotations/scales are respected
-    private bool[] BuildMask(List<MaskSprite> maskSprites, Vector2 maskOrigin, Vector2 pixelSize, int maskWidth, int maskHeight) {
+    bool[] BuildMask(List<MaskSprite> maskSprites, Vector2 maskOrigin, Vector2 pixelSize, int maskWidth, int maskHeight) {
         bool[] mask = new bool[maskWidth * maskHeight];
         Dictionary<Texture2D, Color32[]> texturePixelCache = new();
         byte alphaThresholdByte = (byte)Mathf.Clamp(Mathf.CeilToInt(alphaThreshold * 255f), 1, 255);
@@ -240,7 +239,7 @@ public class TilemapEdgeColliderGenerator : MonoBehaviour {
 
     // For tiles with nothing below them, removes the bottommost solid pixels of each pixel column so the outline sits higher up.
     // Cliff face art can hang below the tile's cell, so the column's bottom is searched for below the cell too.
-    private void InsetOpenBottomEdges(Tilemap tilemap, BoundsInt cellBounds, bool[] mask, int maskWidth, int pixelsPerCellX, int pixelsPerCellY, Vector2Int maskCellMin) {
+    void InsetOpenBottomEdges(Tilemap tilemap, BoundsInt cellBounds, bool[] mask, int maskWidth, int pixelsPerCellX, int pixelsPerCellY, Vector2Int maskCellMin) {
         int inset = Mathf.Max(0, bottomEdgeInsetPixels);
         if (inset == 0) return;
 
@@ -278,7 +277,7 @@ public class TilemapEdgeColliderGenerator : MonoBehaviour {
 
     // For tiles with nothing above/left/right of them, extends the outermost solid pixel of each pixel lane toward the open side
     // so the outline sits further out. Bottom edges are handled by InsetOpenBottomEdges instead, since their cliff face art keeps the outline far enough out.
-    private void OutsetOpenEdges(Tilemap tilemap, BoundsInt cellBounds, bool[] mask, int maskWidth, int maskHeight, int pixelsPerCellX, int pixelsPerCellY, Vector2Int maskCellMin) {
+    void OutsetOpenEdges(Tilemap tilemap, BoundsInt cellBounds, bool[] mask, int maskWidth, int maskHeight, int pixelsPerCellX, int pixelsPerCellY, Vector2Int maskCellMin) {
         (Vector3Int dir, int outset)[] openSides = {
             (Vector3Int.up, Mathf.Clamp(topEdgeOutsetPixels, 0, pixelsPerCellY)),
             (Vector3Int.left, Mathf.Clamp(sideEdgeOutsetPixels, 0, pixelsPerCellX)),
@@ -329,7 +328,7 @@ public class TilemapEdgeColliderGenerator : MonoBehaviour {
     }
 
     // Copies texture pixels through a RenderTexture so textures without Read/Write enabled still work
-    private static Color32[] ReadTexturePixels(Texture2D texture) {
+    static Color32[] ReadTexturePixels(Texture2D texture) {
         if (texture.isReadable) {
             return texture.GetPixels32();
         }
@@ -349,11 +348,11 @@ public class TilemapEdgeColliderGenerator : MonoBehaviour {
         return pixels;
     }
 
-    private static readonly Vector2Int[] directionSteps = { new(1, 0), new(0, 1), new(-1, 0), new(0, -1) };
+    static readonly Vector2Int[] directionSteps = { new(1, 0), new(0, 1), new(-1, 0), new(0, -1) };
 
     // Walks the boundary between solid and empty mask pixels, returning closed loops of lattice corners.
     // Edges are directed with solid on the left; at saddle points we turn left so diagonal-only neighbors stay separate loops.
-    private static List<List<Vector2Int>> TraceOutlines(bool[] mask, int width, int height) {
+    static List<List<Vector2Int>> TraceOutlines(bool[] mask, int width, int height) {
         int latticeWidth = width + 1;
         int vertexCount = latticeWidth * (height + 1);
         // Each lattice vertex has at most two outgoing boundary edges (two only at saddle points); bit per direction
@@ -404,7 +403,7 @@ public class TilemapEdgeColliderGenerator : MonoBehaviour {
         return loops;
     }
 
-    private static int PickDirection(byte options, int prevDir) {
+    static int PickDirection(byte options, int prevDir) {
         if (prevDir < 0) {
             for (int dir = 0; dir < 4; dir++) {
                 if ((options & (1 << dir)) != 0) return dir;
@@ -416,7 +415,7 @@ public class TilemapEdgeColliderGenerator : MonoBehaviour {
         return (prevDir + 3) & 3;
     }
 
-    private static float SignedArea(List<Vector2Int> loop) {
+    static float SignedArea(List<Vector2Int> loop) {
         long doubleArea = 0;
         for (int i = 0; i < loop.Count; i++) {
             Vector2Int a = loop[i];
@@ -427,7 +426,7 @@ public class TilemapEdgeColliderGenerator : MonoBehaviour {
     }
 
     // Douglas-Peucker on a closed loop: split at the vertex farthest from the first, then simplify each half
-    private static void SimplifyClosedLoop(List<Vector2Int> loop, float tolerance, List<Vector2> result) {
+    static void SimplifyClosedLoop(List<Vector2Int> loop, float tolerance, List<Vector2> result) {
         result.Clear();
         int count = loop.Count;
         if (count < 3) return;
@@ -477,7 +476,7 @@ public class TilemapEdgeColliderGenerator : MonoBehaviour {
         }
     }
 
-    private static float DistanceToSegment(Vector2 point, Vector2 a, Vector2 b) {
+    static float DistanceToSegment(Vector2 point, Vector2 a, Vector2 b) {
         Vector2 ab = b - a;
         float sqrLength = ab.sqrMagnitude;
         if (sqrLength == 0f) return Vector2.Distance(point, a);

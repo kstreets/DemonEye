@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   timeBeforeFirstPhase: 30
   timeBeforePortalSpawns: 12
+  minTimeBetweenRangedAttacks: 1.5
+  maxTimeBetweenRangedAttacks: 3
   phasePools:
   - name: Wave 0
     musicIntensity: 0
@@ -448,15 +450,52 @@ MonoBehaviour:
         m_PostInfinity: 2
         m_RotationOrder: 0
       enemyBatches:
-      - enemyCount: 10
+      - enemyCount: 12
         enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
+      - enemyCount: 8
+        enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
     trashRefillAtPercentage: 0.552
     minTrashRefillDelay: 15
     raidBoss: {fileID: 11400000, guid: eb8efa5281fc3a5449138b200351962b, type: 2}
   swarm:
-    chance: 0
-    waveRange: {x: 1, y: 1}
+    chance: 0.15
+    waveRange: {x: 4, y: 7}
     pool:
       name: Swarm
       musicIntensity: 0
-      variants: []
+      variants:
+      - name: Variant 0
+        maxDuration: 0
+        spawnDuration: 0
+        startNextPhaseEarlyDelay: 0
+        spawnCellRange: {x: 12, y: 20}
+        repositionCellRange: {x: 0, y: 0}
+        reteleportCount: 0
+        reteleportInterval: 0
+        spawnRateCurve:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 34
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 1
+            value: 1
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 34
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 0
+        enemyBatches:
+        - enemyCount: 60
+          enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}

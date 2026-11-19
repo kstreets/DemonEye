@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-public partial class Game {
+public static partial class Game {
     
     public struct DynamicClipRecord {
         public float timePlayed;
@@ -29,20 +29,20 @@ public partial class Game {
         public float endTime;
     }
 
-    private void InitAudio() {
+    static void InitAudio() {
         const int numberOfSources = 25;
         audio.reservedSources = new(numberOfSources);
         for (int i = 0; i < numberOfSources; i++) {
-            GameObject audioGo = Instantiate(prefabs.audioSource, transform);
+            GameObject audioGo = UnityEngine.Object.Instantiate(prefabs.audioSource, runner.transform);
             AudioSource source = audioGo.GetComponent<AudioSource>();
             audio.reservedSources.Enqueue(source);
             audio.generationLookup.Add(source, 0);
         }
     }
     
-    public AudioClipHandle PlayAudioClip(DynamicClip dynamicClip) => PlayAudioClip(dynamicClip, Vector2.zero);
+    public static AudioClipHandle PlayAudioClip(DynamicClip dynamicClip) => PlayAudioClip(dynamicClip, Vector2.zero);
     
-    public AudioClipHandle PlayAudioClip(DynamicClip dynamicClip, Vector2 position, float volumeScaler = 1f, float pitch = 0f, bool loop = false, bool cannotInterrupt = false) {
+    public static AudioClipHandle PlayAudioClip(DynamicClip dynamicClip, Vector2 position, float volumeScaler = 1f, float pitch = 0f, bool loop = false, bool cannotInterrupt = false) {
         if (ClipShouldNotBePlayed(dynamicClip, position)) {
             return new();
         }
@@ -95,13 +95,13 @@ public partial class Game {
         return handle;
     }
 
-    private float GetDistanceVolume(Vector2 position, float maxDistance, float volumeScaler) {
+    static float GetDistanceVolume(Vector2 position, float maxDistance, float volumeScaler) {
         float distFromPlayer = Vector2.Distance(player.position, position);
         float volumeLerp = distFromPlayer / maxDistance;
         return Mathf.Lerp(1f, 0f, volumeLerp) * volumeScaler;
     }
 
-    private void UpdatePositionalVolumes() {
+    static void UpdatePositionalVolumes() {
         // Paused sources aren't playing but haven't finished either
         if (pauseMenu.paused) return;
 
@@ -119,8 +119,8 @@ public partial class Game {
             source.volume = GetDistanceVolume(positional.position, positional.maxDistance, positional.volumeScaler);
         }
     }
-    
-    private void StopAudioClip(AudioClipHandle handle) {
+
+    static void StopAudioClip(AudioClipHandle handle) {
         if (handle.audioSource == null) return;
         
         int curAudioSourceGen = audio.generationLookup[handle.audioSource];
@@ -138,8 +138,8 @@ public partial class Game {
         audio.loopingSources.Remove(handle);
         audio.uninterruptibleSources.Remove(handle.audioSource);
     }
-    
-    private void StopAllAudioClips() {
+
+    static void StopAllAudioClips() {
         foreach (AudioSource reservedSource in audio.reservedSources) {
             reservedSource.Stop();
         }
@@ -155,7 +155,7 @@ public partial class Game {
     }
     
     // Puts sources back into the queue once their uninterruptible clip has finished
-    private void ReclaimFinishedUninterruptibleSources() {
+    static void ReclaimFinishedUninterruptibleSources() {
         // Paused sources aren't playing but haven't finished either
         if (pauseMenu.paused) return;
         
@@ -168,7 +168,7 @@ public partial class Game {
     }
     
     // Uses unscaled time so UI sounds still throttle correctly while the game is paused
-    private bool ClipShouldNotBePlayed(DynamicClip clip, Vector2 clipPos) {
+    static bool ClipShouldNotBePlayed(DynamicClip clip, Vector2 clipPos) {
         var clipRecords = audio.records;
         bool recordsExits = clipRecords.TryGetValue(clip.GetInstanceID(), out List<DynamicClipRecord> records);
         
@@ -231,8 +231,8 @@ public partial class Game {
 
         return false;
     }
-    
-    private static void GetRarityVolumeAndPitch(Item.Rarity rarity, out float volume, out float pitch) {
+
+    static void GetRarityVolumeAndPitch(Item.Rarity rarity, out float volume, out float pitch) {
         switch (rarity) {
             case Item.Rarity.Common:
                 volume = 0.25f; pitch = 1.5f;

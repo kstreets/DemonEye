@@ -3,8 +3,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 
 public static class Physics {
-    
-    private static List<Collider2D> _overlapResults = new(100);
+    static List<Collider2D> _overlapResults = new(100);
     
     public static List<Collider2D> OverlapCircle(Vector2 center, float radius, LayerMask mask) {
         _overlapResults.Clear();
