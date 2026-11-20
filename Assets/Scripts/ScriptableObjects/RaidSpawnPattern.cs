@@ -58,6 +58,11 @@ public class RaidSpawnPattern : ScriptableObject {
 
     public float timeBeforeFirstPhase;
     public float enemySeparationMultiplier = 1f;
+    
+    [Header("Timing")]
+    public float maxAccrueTime;
+    public float accrueTimePerEnemy;
+    public float maxTimeFromActions;
 
     [Header("Ranged Attacks")]
     public float minTimeBetweenRangedAttacks = 1.5f;

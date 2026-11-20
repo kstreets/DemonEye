@@ -111,6 +111,10 @@ public static partial class Game {
             spawnManager.startNextWaveDelay = 0f;
         }
 #endif
+        
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        UpdateDebugOverlayToggle();
+#endif
     }
     
     public static void FixedUpdate() {

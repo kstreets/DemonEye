@@ -20,6 +20,9 @@ public class Portal : MonoBehaviour {
     public AnimationCurve crystalShakeMagnitudeCurve;
     public AnimationCurve crystalShakeJitterCurve;
     public Transform[] crystalFragments;
+    public float crystalKnockbackDistance = 0.08f;
+    public float crystalKnockbackOutDuration = 0.06f;
+    public float crystalKnockbackReturnDuration = 0.3f;
 
     [Header("SFX")]
     public DynamicClip crystalHitClip;
@@ -45,13 +48,13 @@ public class Portal : MonoBehaviour {
         }
     }
 
-    public void StartOpenCloseSequence(float openDelay, float openDuration) {
+    public void StartOpenCloseSequence(float openDelay, float openDuration, Vector2 hitFrom) {
         state = State.BeingSummoned;
 
         crystalTrans.DoTweenShake(15f, 0.015f, openDelay, crystalShakeMagnitudeCurve, crystalShakeJitterCurve);
         summoningParticles.gameObject.SetActive(true);
 
-        Tween.PunchScale(crystalTrans, new(0.2f, 0.2f, 0f), 0.2f, 12f);
+        KnockCrystalAwayFrom(hitFrom);
         Game.PlayAudioClip(crystalHitClip, crystalTrans.position);
 
         // Summoning
@@ -109,6 +112,24 @@ public class Portal : MonoBehaviour {
             portal.state = State.Closed;
             portal.summonedPortal.Close(activeStateOnComplete: false);
         });
+    }
+
+    // Applied as an offset so it stacks with the shake, which also moves the crystal
+    void KnockCrystalAwayFrom(Vector2 hitFrom) {
+        Vector2 dir = (Vector2)crystalTrans.position - hitFrom;
+        dir = dir.sqrMagnitude > 0.0001f ? dir.normalized : Vector2.up;
+        Vector2 knockback = dir * crystalKnockbackDistance;
+
+        Vector2 appliedOffset = Vector2.zero;
+        void ApplyOffset(float val) {
+            Vector2 offset = knockback * val;
+            crystalTrans.position += (Vector3)(offset - appliedOffset);
+            appliedOffset = offset;
+        }
+
+        Sequence.Create()
+            .Chain(Tween.Custom(0f, 1f, crystalKnockbackOutDuration, ApplyOffset, Ease.OutQuad))
+            .Chain(Tween.Custom(1f, 0f, crystalKnockbackReturnDuration, ApplyOffset, Ease.InOutQuad));
     }
 
     public void OnPlayerTook() {

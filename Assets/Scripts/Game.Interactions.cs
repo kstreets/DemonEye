@@ -86,7 +86,7 @@ public static partial class Game {
             if (portal.state == Portal.State.Inactive) {
                 EnableInteractionPrompt(OffsetY(col.transform.position, 0.15f), "Summon Portal");
                 if (inputs.interact.IsPressed()) {
-                    portal.StartOpenCloseSequence(config.gameplay.portalPostSummonDelay, config.gameplay.portalActiveDuration);
+                    portal.StartOpenCloseSequence(config.gameplay.portalPostSummonDelay, config.gameplay.portalActiveDuration, player.position);
                 }
             }
             

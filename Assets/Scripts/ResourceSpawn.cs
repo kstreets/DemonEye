@@ -89,7 +89,7 @@ public class ResourceSpawn : MonoBehaviour {
 
     [ContextMenu("Link Closest Exit Portal")]
     void LinkClosestExitPortal() {
-        MapInstance mapInstance = GetComponentInParent<MapInstance>();
+        MapInstance mapInstance = FindAnyObjectByType<MapInstance>();
         if (mapInstance == null || mapInstance.exitPortalsParent == null) return;
 
         float closestDistSqr = float.MaxValue;

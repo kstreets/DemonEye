@@ -1313,9 +1313,12 @@ public static partial class Game {
         public float timeAddedThroughActions;
         public int prevEnemyCount;
         public int curPhaseIndex;
-        public bool spawnedThisFrame;
         public bool waveStartedThisFrame;
+        public bool struggledLastWave;
         public RaidSpawnPattern spawnPattern;
+        
+        public float timeAccruedDuringWave;
+        public Limiter accruedTimeLimitter;
         
         public readonly List<int> chosenVarientIndices = new();
         
@@ -1375,13 +1378,14 @@ public static partial class Game {
         if (curRaid.mapInstance.isBossMap) return;
 
         spawnManager.spawnEvents.Clear();
-        spawnManager.spawnedThisFrame = false;
         spawnManager.spawnPattern = pattern;
         spawnManager.curPhaseIndex = -1;
         spawnManager.timeInCurPhase = 0f;
         spawnManager.nextTrashRefillTime = 0f;
         spawnManager.startNextWaveDelay = 0f;
         spawnManager.timeAddedThroughActions = 0f;
+        spawnManager.struggledLastWave = false;
+        spawnManager.timeAccruedDuringWave = 0f;
 
         // The first couple of raids on the first map give new players more time per wave
         spawnManager.extraMaxDuration = 0f;
@@ -1435,7 +1439,6 @@ public static partial class Game {
         if (curRaid.mapInstance.isBossMap) return;
 
         EnemySpawnManager sm = spawnManager;
-        sm.spawnedThisFrame = false;
         sm.waveStartedThisFrame = false;
 
         float prevTimeInCurPhase = sm.timeInCurPhase;
@@ -1483,7 +1486,7 @@ public static partial class Game {
                 sm.timeInSwarm += Time.deltaTime;
                 const float batchTime = 1f;
                 if (swarmSpawnLimiter.TimeHasPassed(batchTime)) {
-                    SpawnDueEvents(sm, sm.swarmSpawnEvents, ref sm.swarmSpawnTimeIndex, sm.timeInSwarm, sm.spawnPattern.swarm.pool.spawnCellRange, false);
+                    SpawnDueEvents(sm.swarmSpawnEvents, ref sm.swarmSpawnTimeIndex, sm.timeInSwarm, sm.spawnPattern.swarm.pool.spawnCellRange, false);
                 }
                 if (!sm.swarmSpawnEvents.IndexInRange(sm.swarmSpawnTimeIndex)) {
                     sm.swarmState = SwarmState.None;
@@ -1502,7 +1505,7 @@ public static partial class Game {
         bool waveCleared = afterFirstWave && sm.FinishedSpawningThisWave && curEnemyCount <= 0;
 
         if (afterFirstWave) {
-            AddTimeToNextWaveDelay(sm, justHitTimeLimit, curEnemyCount);
+            AddTimeToNextWaveDelay(sm, timeLimitExceeded, justHitTimeLimit, curEnemyCount);
             if (waveCleared || timeLimitExceeded) {
                 sm.startNextWaveDelay -= Time.deltaTime;
             }
@@ -1519,49 +1522,66 @@ public static partial class Game {
                     SpawnRaidBoss(bossPhase);
                     break;
                 case RaidSpawnPattern.PhasePool phasePool:
-                    sm.startNextWaveDelay = sm.CurEarlyDelay;
+                    // sm.startNextWaveDelay = sm.CurEarlyDelay;
+                    sm.startNextWaveDelay = 0f;
+                    sm.timeAddedThroughActions = 0f;
                     BeginSpawningVariant(sm, phasePool, sm.CurVariant);
                     break;
             }
         }
     }
 
-    static void AddTimeToNextWaveDelay(EnemySpawnManager sm, bool justHitTimeLimit, int curEnemyCount) {
+    static void AddTimeToNextWaveDelay(EnemySpawnManager sm, bool timeLimitExceeded, bool justHitTimeLimit, int curEnemyCount) {
         // Hitting the time limit with enemies still alive gives a buffer before the next wave, scaled by how much of the wave is left
-        if (justHitTimeLimit && curEnemyCount > 0) {
-            int totalEnemiesThisWave = 0;
-            foreach (RaidSpawnPattern.EnemyBatch batch in sm.CurVariant.enemyBatches) {
-                totalEnemiesThisWave += batch.enemyCount;
+        // if (justHitTimeLimit && curEnemyCount > 0) {
+        //     int totalEnemiesThisWave = 0;
+        //     foreach (RaidSpawnPattern.EnemyBatch batch in sm.CurVariant.enemyBatches) {
+        //         totalEnemiesThisWave += batch.enemyCount;
+        //     }
+        //     const float totalEnemyPercentageForFullDelay = 0.5f;
+        //     float struggleComp = Mathf.Clamp01(curEnemyCount / (totalEnemiesThisWave * totalEnemyPercentageForFullDelay));
+        //     float addedTime = Mathf.Lerp(1f, 15f, struggleComp);
+        //     sm.startNextWaveDelay = addedTime; // Override delay because we did not finish the raid early
+        // }
+        
+        // if (justKilledLastEnemiesInWave) {
+        //     // If a wave's max duration is about the same time as the spawn duration, we can't assume the player struggled
+        //     // because they would of had none or very little time to kill the last spawned enemies
+        //     const float struggleEligiblePercentage = 1.2f;
+        //     bool waveIsStruggleEligible = sm.CurMaxDuration >= (sm.CurPhasePool.spawnDuration * struggleEligiblePercentage);
+        //     if (waveIsStruggleEligible) {
+        //         const float struggleThresholdPercentage = 0.8f;
+        //         float stuggleThreshold = sm.CurMaxDuration * struggleThresholdPercentage;
+        //         if (sm.timeInCurPhase >= stuggleThreshold) {
+        //             float exceededTime = sm.timeInCurPhase - stuggleThreshold;
+        //             float maxPossibleExceededTime = sm.CurMaxDuration * (1f - struggleThresholdPercentage);
+        //             float addedTime = Mathf.Lerp(1f, 6f, exceededTime / maxPossibleExceededTime);
+        //             sm.startNextWaveDelay += addedTime;
+        //             sm.struggledLastWave = true;
+        //         }
+        //     }
+        // }
+        
+        if (!timeLimitExceeded && curEnemyCount > 0) {
+            const int maxAccruedChecksPerWave = 10;
+            float accruedCheckDelay = sm.CurMaxDuration / maxAccruedChecksPerWave;
+            bool addAccruedTime = sm.accruedTimeLimitter.TimeHasPassed(accruedCheckDelay);
+            if (addAccruedTime) {
+                sm.timeAccruedDuringWave += curEnemyCount * sm.spawnPattern.accrueTimePerEnemy;
+                sm.timeAccruedDuringWave = Mathf.Clamp(sm.timeAccruedDuringWave, 0f, sm.spawnPattern.maxAccrueTime);
             }
-            float remainingOfTotalPercentage = curEnemyCount / (float)totalEnemiesThisWave;
-            float addedTime = Mathf.Lerp(1f, 4f, remainingOfTotalPercentage);
-            // The early delay is only for clearing the wave, which didn't happen, so the buffer replaces it
-            sm.startNextWaveDelay += addedTime - sm.CurEarlyDelay;
         }
-
+        
         bool justKilledLastEnemiesInWave = sm.FinishedSpawningThisWave && sm.prevEnemyCount > 0 && curEnemyCount <= 0;
         sm.prevEnemyCount = curEnemyCount;
         
-        if (justKilledLastEnemiesInWave) {
-            // If a wave's max duration is about the same time as the spawn duration, we can't assume the player struggled
-            // because they would of had none or very little time to kill the last spawned enemies
-            const float struggleEligiblePercentage = 1.2f;
-            bool waveIsStruggleEligible = sm.CurMaxDuration >= (sm.CurPhasePool.spawnDuration * struggleEligiblePercentage);
-            if (waveIsStruggleEligible) {
-                const float struggleThresholdPercentage = 0.8f;
-                float stuggleThreshold = sm.CurMaxDuration * struggleThresholdPercentage;
-                if (sm.timeInCurPhase >= stuggleThreshold) {
-                    float exceededTime = sm.timeInCurPhase - stuggleThreshold;
-                    float maxPossibleExceededTime = sm.CurMaxDuration * (1f - struggleThresholdPercentage);
-                    float addedTime = Mathf.Lerp(1f, 6f, exceededTime / maxPossibleExceededTime);
-                    sm.startNextWaveDelay += addedTime;
-                }
-            }
+        if (justHitTimeLimit || justKilledLastEnemiesInWave) {
+            sm.startNextWaveDelay += sm.timeAccruedDuringWave;
+            sm.timeAccruedDuringWave = 0f;
         }
 
         bool notFinishedWithWave = !sm.FinishedSpawningThisWave;
-        const float maxTimeCanAddThroughActions = 13f;
-        bool alreadyAddedTheMaxAmountOfTime = sm.timeAddedThroughActions >= maxTimeCanAddThroughActions;
+        bool alreadyAddedTheMaxAmountOfTime = sm.timeAddedThroughActions >= sm.spawnPattern.maxTimeFromActions;
         if (notFinishedWithWave || alreadyAddedTheMaxAmountOfTime) return;
         
         float prevTime = sm.timeAddedThroughActions;
@@ -1595,7 +1615,7 @@ public static partial class Game {
             sm.timeAddedThroughActions += Time.deltaTime + Mathf.Epsilon;
         }
 
-        sm.timeAddedThroughActions = Mathf.Clamp(sm.timeAddedThroughActions, 0f, maxTimeCanAddThroughActions);
+        sm.timeAddedThroughActions = Mathf.Clamp(sm.timeAddedThroughActions, 0f, sm.spawnPattern.maxTimeFromActions);
         float timeAdded = sm.timeAddedThroughActions - prevTime;
         sm.startNextWaveDelay += timeAdded;
     }
@@ -1701,10 +1721,10 @@ public static partial class Game {
         const float batchTime = 1f;
         if (!spawnLimiterForEnemyBatching.TimeHasPassed(batchTime) || sm.spawnEvents.Count <= 0) return;
 
-        SpawnDueEvents(sm, sm.spawnEvents, ref sm.spawnTimeIndex, sm.timeInCurPhase, sm.CurPhasePool.spawnCellRange, sm.OnBossWave);
+        SpawnDueEvents(sm.spawnEvents, ref sm.spawnTimeIndex, sm.timeInCurPhase, sm.CurPhasePool.spawnCellRange, sm.OnBossWave);
     }
 
-    static void SpawnDueEvents(EnemySpawnManager sm, List<(float time, EnemyData enemy)> spawnEvents, ref int spawnTimeIndex, float time, Vector2Int spawnCellRange, bool isBossTrash) {
+    static void SpawnDueEvents(List<(float time, EnemyData enemy)> spawnEvents, ref int spawnTimeIndex, float time, Vector2Int spawnCellRange, bool isBossTrash) {
         List<Vector2> enemyPositions = GatherEnemyPositions();
 
         while (spawnEvents.IndexInRange(spawnTimeIndex) && spawnEvents[spawnTimeIndex].time <= time) {
@@ -1717,7 +1737,6 @@ public static partial class Game {
 
             TeleportEnemy(enemy, randomSpawnPos, TeleportType.Spawn);
             spawnTimeIndex++;
-            sm.spawnedThisFrame = true;
         }
     }
 

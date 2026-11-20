@@ -72,6 +72,9 @@ public class GameRunner : MonoBehaviour {
     void Update() => Game.Update();
     void FixedUpdate() => Game.FixedUpdate();
     void LateUpdate() => Game.LateUpdate();
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    void OnGUI() => Game.OnGUI();
+#endif
     void OnApplicationQuit() => Game.OnApplicationQuit();
 
 }

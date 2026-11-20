@@ -14,6 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   timeBeforeFirstPhase: 22
   enemySeparationMultiplier: 1.25
+  maxAccrueTime: 20
+  accrueTimePerEnemy: 0.1
+  maxTimeFromActions: 8
   minTimeBetweenRangedAttacks: 1.5
   maxTimeBetweenRangedAttacks: 2.5
   phasePools:
@@ -23,7 +26,6 @@ MonoBehaviour:
     spawnDuration: 10
     startNextPhaseEarlyDelay: 10
     spawnCellRange: {x: 13, y: 17}
-    repositionCellRange: {x: 13, y: 17}
     reteleportCount: 2
     reteleportInterval: 1
     spawnRateCurve:
@@ -61,7 +63,6 @@ MonoBehaviour:
     spawnDuration: 10
     startNextPhaseEarlyDelay: 10
     spawnCellRange: {x: 8, y: 10}
-    repositionCellRange: {x: 7, y: 9}
     reteleportCount: 2
     reteleportInterval: 1
     spawnRateCurve:
@@ -99,7 +100,6 @@ MonoBehaviour:
     spawnDuration: 15
     startNextPhaseEarlyDelay: 10
     spawnCellRange: {x: 11, y: 17}
-    repositionCellRange: {x: 11, y: 17}
     reteleportCount: 2
     reteleportInterval: 1
     spawnRateCurve:
@@ -141,7 +141,6 @@ MonoBehaviour:
     spawnDuration: 20
     startNextPhaseEarlyDelay: 10
     spawnCellRange: {x: 14, y: 26}
-    repositionCellRange: {x: 14, y: 26}
     reteleportCount: 2
     reteleportInterval: 1.5
     spawnRateCurve:
@@ -181,7 +180,6 @@ MonoBehaviour:
     spawnDuration: 20
     startNextPhaseEarlyDelay: 10
     spawnCellRange: {x: 14, y: 25}
-    repositionCellRange: {x: 14, y: 25}
     reteleportCount: 3
     reteleportInterval: 1.5
     spawnRateCurve:
@@ -227,7 +225,6 @@ MonoBehaviour:
     spawnDuration: 22
     startNextPhaseEarlyDelay: 10
     spawnCellRange: {x: 15, y: 26}
-    repositionCellRange: {x: 15, y: 26}
     reteleportCount: 3
     reteleportInterval: 1.5
     spawnRateCurve:
@@ -270,7 +267,6 @@ MonoBehaviour:
     spawnDuration: 0
     startNextPhaseEarlyDelay: 0
     spawnCellRange: {x: 0, y: 0}
-    repositionCellRange: {x: 0, y: 0}
     reteleportCount: 2
     reteleportInterval: 1
     spawnRateCurve:
@@ -293,7 +289,6 @@ MonoBehaviour:
       spawnDuration: 0
       startNextPhaseEarlyDelay: 0
       spawnCellRange: {x: 0, y: 0}
-      repositionCellRange: {x: 0, y: 0}
       reteleportCount: 2
       reteleportInterval: 1
       spawnRateCurve:

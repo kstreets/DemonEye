@@ -14,7 +14,7 @@ public class TilemapEdgeColliderGenerator : MonoBehaviour {
     [Tooltip("Sprite pixels with alpha at or above this count as solid")]
     [Range(0.01f, 1f)] public float alphaThreshold = 0.5f;
     [Tooltip("Max distance (in sprite pixels) the simplified outline may deviate from the traced pixel staircase")]
-    public float simplifyTolerancePixels = 0.75f;
+    public float simplifyTolerancePixels = 11f;
     [Tooltip("Outlines enclosing fewer pixels than this are discarded (specks, tiny holes in tile art)")]
     public int minLoopAreaPixels = 16;
     [Tooltip("Pushes the outline upward (in sprite pixels) on tiles with no tile above them, since those visual edges are too tight to walk against")]
