@@ -23,12 +23,12 @@ MonoBehaviour:
   previewImage: {fileID: 2800000, guid: fdd2e515498bf1d418612c0076e59ef3, type: 3}
   difficultyText: Easy
   unlockRequirement: 
-  altarSoulPrice: 25
+  altarSoulPrice: 50
   exitPortalsCount: 2
   minExtractionDist: 0
   playerCantBleed: 1
-  eyeUpgradeOnBodyChance: 0.35
-  consecutiveEyeUpgradeChanceReductionOnBody: 0.05
+  eyeUpgradeOnBodyChance: 0.15
+  consecutiveEyeUpgradeChanceReductionOnBody: 0.08
   commonLootRarityIncrease: 0
   uncommonLootRarityIncrease: 0
   rareLootRarityIncrease: 0

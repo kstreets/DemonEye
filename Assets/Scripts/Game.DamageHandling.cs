@@ -261,7 +261,7 @@ public static partial class Game {
             AddFlashHitEffect(entity);
             AddShakeEffect(entity, 8f, 0.038f, 0.35f, curves.shake);
             Tween.PunchScale(entity.trans, Vector3.one * 0.12f, 0.1f, 15f);
-            ShakeCamera(5f, 0.02f, 0.3f, entity.position, 0.1f, 0.8f, CameraShake.Falloff.Sine);
+            ShakeCamera(5f, 0.015f, 0.3f, entity.position, 0.1f, 0.8f, CameraShake.Falloff.Sine);
             return;
         }
                 
@@ -272,7 +272,7 @@ public static partial class Game {
         entity.particleBatch.Play();
         SpawnEntityOneShot<Entity>(prefabs.rockSmokePrefab, entity.position, Quaternion.identity);
         PlayAudioClip(audio.stoneBreakClip, entity.position);
-        ShakeCamera(5f, 0.05f, 0.3f, entity.position, 0.1f, 0.8f, CameraShake.Falloff.Sine);
+        ShakeCamera(5f, 0.04f, 0.3f, entity.position, 0.1f, 0.8f, CameraShake.Falloff.Sine);
         DestroyEntity(entity);
             
         int dropCount = entity.gameObject.CompareTag(Tags.SmallRock) ? 1 : 2;

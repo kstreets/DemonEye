@@ -17,16 +17,6 @@ public class RaidSpawnPattern : ScriptableObject {
     public class Variant {
         [HideInInspector] 
         public string name;
-        public float maxDuration;
-        public float spawnDuration;
-        public float startNextPhaseEarlyDelay;
-        [MinMaxSlider(0, 40)]
-        public Vector2Int spawnCellRange; 
-        [MinMaxSlider(0, 40)]
-        public Vector2Int repositionCellRange;
-        public int reteleportCount = 2;
-        public float reteleportInterval = 1f;
-        public AnimationCurve spawnRateCurve;
         public List<EnemyBatch> enemyBatches;
     }
     
@@ -38,6 +28,14 @@ public class RaidSpawnPattern : ScriptableObject {
     
     [Serializable]
     public class PhasePool : Phase {
+        public float maxDuration;
+        public float spawnDuration;
+        public float startNextPhaseEarlyDelay;
+        [MinMaxSlider(0, 40)]
+        public Vector2Int spawnCellRange;
+        public int reteleportCount = 2;
+        public float reteleportInterval = 1f;
+        public AnimationCurve spawnRateCurve;
         public List<Variant> variants = new();
     }
     
@@ -59,8 +57,8 @@ public class RaidSpawnPattern : ScriptableObject {
     }
 
     public float timeBeforeFirstPhase;
-    public float timeBeforePortalSpawns;
-    
+    public float enemySeparationMultiplier = 1f;
+
     [Header("Ranged Attacks")]
     public float minTimeBetweenRangedAttacks = 1.5f;
     public float maxTimeBetweenRangedAttacks = 3f;
@@ -102,9 +100,7 @@ public class RaidSpawnPattern : ScriptableObject {
 
         // Nothing comes after the final wave so its max duration is unused
         if (bossPhase.raidBoss == null) {
-            foreach (Variant variant in phasePools[^1].variants) {
-                variant.maxDuration = variant.spawnDuration;
-            }
+            phasePools[^1].maxDuration = phasePools[^1].spawnDuration;
         }
     }
 

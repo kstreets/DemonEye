@@ -14,43 +14,46 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   timeBeforeFirstPhase: 5
   timeBeforePortalSpawns: 15
+  separationMultiplier: 1
+  minTimeBetweenRangedAttacks: 1.5
+  maxTimeBetweenRangedAttacks: 3
   phasePools: []
   bossPhase:
     name: Boss Wave
     musicIntensity: 0
+    maxDuration: 0
+    spawnDuration: 15
+    startNextPhaseEarlyDelay: 0
+    spawnCellRange: {x: 14, y: 17}
+    repositionCellRange: {x: 14, y: 17}
+    reteleportCount: 3
+    reteleportInterval: 4
+    spawnRateCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
     variants:
     - name: Variant 0
-      maxDuration: 0
-      spawnDuration: 15
-      startNextPhaseEarlyDelay: 0
-      spawnCellRange: {x: 14, y: 17}
-      repositionCellRange: {x: 14, y: 17}
-      reteleportCount: 3
-      reteleportInterval: 4
-      spawnRateCurve:
-        serializedVersion: 2
-        m_Curve:
-        - serializedVersion: 3
-          time: 0
-          value: 1
-          inSlope: 0
-          outSlope: 0
-          tangentMode: 0
-          weightedMode: 0
-          inWeight: 0
-          outWeight: 0
-        - serializedVersion: 3
-          time: 1
-          value: 1
-          inSlope: 0
-          outSlope: 0
-          tangentMode: 0
-          weightedMode: 0
-          inWeight: 0
-          outWeight: 0
-        m_PreInfinity: 2
-        m_PostInfinity: 2
-        m_RotationOrder: 4
       enemyBatches:
       - enemyCount: 0
         enemyData: {fileID: 11400000, guid: 53c3cf128195d3c44872f0d25801891a, type: 2}
@@ -65,4 +68,17 @@ MonoBehaviour:
     pool:
       name: Swarm
       musicIntensity: 0
+      maxDuration: 0
+      spawnDuration: 0
+      startNextPhaseEarlyDelay: 0
+      spawnCellRange: {x: 0, y: 0}
+      repositionCellRange: {x: 0, y: 0}
+      reteleportCount: 2
+      reteleportInterval: 1
+      spawnRateCurve:
+        serializedVersion: 2
+        m_Curve: []
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
       variants: []

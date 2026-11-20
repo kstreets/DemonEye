@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: 
   type: 3
+  isBoss: 0
   enemyPrefab: {fileID: 7814119993517076521, guid: 2cf698d61875ef147b2f262d4b2b73ca, type: 3}
   animatorOverride: {fileID: 22100000, guid: c9959f5d8ae2e8a4b969b6516e0f67e2, type: 2}
   dropPool: {fileID: 11400000, guid: a3f73304b268c4a4f84184336a236942, type: 2}
@@ -25,11 +26,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   attack: {fileID: 11400000, guid: 97b76f1f01b67da42831a9b8f6130d10, type: 2}
-  attackDistance: 0.21
-  damage: 20
-  speed: 0.45
-  health: 60
+  speed: 0.44
+  health: 50
   collisionDamage: 8
   soulWorthPerKill: 3
   xpWorthPerKill: 15
-  defaultMass: 4.960002
+  defaultMass: 14.310003

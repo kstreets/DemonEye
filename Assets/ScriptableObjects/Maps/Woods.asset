@@ -27,8 +27,8 @@ MonoBehaviour:
   exitPortalsCount: 2
   minExtractionDist: 7.5
   playerCantBleed: 0
-  eyeUpgradeOnBodyChance: 0.15
-  consecutiveEyeUpgradeChanceReductionOnBody: 0.08
+  eyeUpgradeOnBodyChance: 0.12
+  consecutiveEyeUpgradeChanceReductionOnBody: 0.09
   commonLootRarityIncrease: 0
   uncommonLootRarityIncrease: 0.05
   rareLootRarityIncrease: 0

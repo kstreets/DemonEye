@@ -5346,7 +5346,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BubbleSpawner
   bubblePrefab: {fileID: 3572148981998031263, guid: 610f7a2b979281646bded7f3104b3933, type: 3}
   bubbleClip: {fileID: 11400000, guid: a2e971548a9c443478fee1284bc5c6b9, type: 2}
-  tint: {r: 0.64779866, g: 0.19293049, b: 0.17315361, a: 1}
+  tint: {r: 0.7106918, g: 0.2681855, b: 0.24807158, a: 1}
   spawnPoints:
   - {fileID: 6998017759306375730}
   - {fileID: 5286438383042123473}

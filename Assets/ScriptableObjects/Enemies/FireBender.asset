@@ -14,19 +14,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: Fire Bender
   type: 5
+  isBoss: 0
   enemyPrefab: {fileID: 7814119993517076521, guid: 11b75244595701148a2d26a092449123, type: 3}
   animatorOverride: {fileID: 22100000, guid: 985968625fac499f8ff760f6aa00e5ea, type: 2}
   dropPool: {fileID: 11400000, guid: 9eeed80dc208fd04986551102c8859ff, type: 2}
   chanceToDropItem: 0.07
   usesFlowField: 1
-  separationRadius: 0.08
+  separationRadius: 0.22
   separationLayer: 0
   excludeCollisionLayers:
     serializedVersion: 2
     m_Bits: 0
   attack: {fileID: 11400000, guid: 63f72a82a85ca5f4da87de0e3462888a, type: 2}
-  attackDistance: 1
-  damage: 10
   speed: 0.4
   health: 15
   collisionDamage: 2

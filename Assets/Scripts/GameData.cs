@@ -485,12 +485,12 @@ public class GameData {
         public ToggleButtonGroup toggleGroup;
         public ToggleButton audioToggle;
         public ToggleButton displayToggle;
-        // public ToggleButton gameToggle;
+        public ToggleButton gameToggle;
         public ToggleButton controlsToggle;
 
         public RectTransform audioParent;
         public RectTransform displayParent;
-        // public RectTransform gameParent;
+        public RectTransform gameParent;
         public RectTransform controlsParent;
         [NonSerialized] public RectTransform curPage;
 
@@ -516,6 +516,7 @@ public class GameData {
         public SingleSetting musicVolume;
         public SingleSetting gameVolume;
         
+        public SingleSetting autoShoot;
         public SingleSetting cameraShake;
         public SingleSetting cameraDistance;
         public SingleSetting showHoverHints;

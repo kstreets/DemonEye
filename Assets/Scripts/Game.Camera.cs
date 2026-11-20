@@ -7,30 +7,41 @@ public static partial class Game {
 
     public class CameraLookahead {
         public const float maxDistance = 0.35f;
-        public const float speed = 0.15f;
+        public const float speed = 0.3f;
+        public const float rampBackUpDuration = 0.6f;
         public Tween fadeOutTween;
+        public float curRampBackUpSpeed;
     }
 
     static void UpdateAimLookAhead() {
+        return;
         bool overridingSequenceOccuring = raidEnterSequence.isAlive || camera.lookAhead.fadeOutTween.isAlive || cutscene.playing;
-        if (overridingSequenceOccuring && !MenuNavigationNeeded) return;
+        if (overridingSequenceOccuring && !MenuNavigationNeeded) {
+            camera.lookAhead.curRampBackUpSpeed = 0f;
+            return;
+        }
+        
+        camera.lookAhead.curRampBackUpSpeed += CameraLookahead.rampBackUpDuration * Time.deltaTime;
+        camera.lookAhead.curRampBackUpSpeed = Mathf.Clamp01(camera.lookAhead.curRampBackUpSpeed);
         
         bool inventoryOpen = PlayerInventoryIsOpen || LootInventoryIsOpen;
         Vector2 target = Vector2.zero;
         if (!inventoryOpen && TryGetAimVector(out Vector2 aim)) {
             Vector2 mouseDistance = aim - camera.aimOffset.offset;
-            float mouseRange = (Screen.height / 2f) / 100f;
+            float mouseRange = (Screen.height / 4f) / 100f;
             float strength = UsingController ? Mathf.InverseLerp(ControllerNavigation.stickDeadzone, 1f, aim.magnitude) : Mathf.Clamp01(mouseDistance.magnitude / mouseRange);
             target = aim.normalized * (strength * CameraLookahead.maxDistance);
         }
         
         Vector2 current = camera.aimOffset.offset;
-        Vector2 next = Vector2.MoveTowards(current, target, CameraLookahead.speed * Time.deltaTime);
+        float lookSpeed = CameraLookahead.speed * camera.lookAhead.curRampBackUpSpeed * Time.deltaTime;
+        Vector2 next = Vector2.MoveTowards(current, target, lookSpeed);
         camera.aimOffset.offset = next;
     }
 
     static void FadeoutAimLookAhead() {
-        const float fadeOutTime = 0.25f;
+        return;
+        const float fadeOutTime = 0.35f;
         camera.lookAhead.fadeOutTween = Tween.Custom(camera.aimOffset.offset, Vector2.zero, fadeOutTime, val => camera.aimOffset.offset = val, Ease.OutQuad);
     }
 

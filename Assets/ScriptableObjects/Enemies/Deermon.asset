@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: Deermon
   type: 0
+  isBoss: 0
   enemyPrefab: {fileID: 7814119993517076521, guid: a1bab1fc17c25654da48b89cc286a314, type: 3}
   animatorOverride: {fileID: 22100000, guid: ea0fb2008e7bcf345a30632e2c74be9a, type: 2}
   dropPool: {fileID: 11400000, guid: 45c3922936307894b8cc14c73fb4f59a, type: 2}
@@ -25,10 +26,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   attack: {fileID: 11400000, guid: 6a3481dce92f1e44894bcea2143b58f2, type: 2}
-  attackDistance: 0.2
-  damage: 20
-  speed: 0.5
-  health: 45
+  speed: 0.55
+  health: 35
   collisionDamage: 10
   soulWorthPerKill: 4
   xpWorthPerKill: 20

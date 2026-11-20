@@ -162,6 +162,13 @@ public static partial class Game {
                 AddInputLayer(Inputs.BuyingLayer);
             }
         }
+        else if (InMapSelection) {
+            AddInputLayer(Inputs.SelectionLayer);
+            AddInputLayer(Inputs.MenuLayer);
+            if (!IsDraggingItem) {
+                AddInputLayer(Inputs.InventoryLayer);
+            }
+        }
         else {
             AddInputLayer(Inputs.SelectionLayer);
             AddInputLayer(Inputs.MenuLayer);

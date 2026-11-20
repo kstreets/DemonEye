@@ -44,6 +44,7 @@ public static partial class Game {
         public List<AttackSpawnPoint> attackSpawnPoints;
         
         public float flowFieldAcc;
+        public float lane; // -1 to 1, which side of the flow field direction this enemy walks
         public float lastTeleportTime;
         public float curDistFromPlayer;
         public float hitStopEndTime;
@@ -119,6 +120,7 @@ public static partial class Game {
         enemy.separationVel = Vector2.zero;
         
         enemy.flowFieldAcc = Random.Range(2.5f, 3.5f);
+        enemy.lane = Random.Range(-1f, 1f);
         enemy.rigidbody.mass = data.defaultMass;
         enemy.collider.enabled = true;
         enemy.attackDelay = data.attack ? Tween.Delay(data.attack.cooldown) : default;
@@ -186,9 +188,9 @@ public static partial class Game {
         List<Enemy> enemies = entities.enemies;
         if (enemies.Count <= 0) return;
         
-        RaidSpawnPattern.Variant reteleportVariant = spawnManager.CurVariant;
-        if (reteleportVariant != null && reteleportVariant.reteleportCount > 0 && curRaid.data.reteleportLimitter.TimeHasPassed(reteleportVariant.reteleportInterval)) {
-            ReteleportEnemies(reteleportVariant);
+        RaidSpawnPattern.PhasePool reteleportPhase = spawnManager.CurPhasePool;
+        if (reteleportPhase != null && reteleportPhase.reteleportCount > 0 && curRaid.data.reteleportLimitter.TimeHasPassed(reteleportPhase.reteleportInterval)) {
+            ReteleportEnemies(reteleportPhase);
         }
         
         for (int i = enemies.Count - 1; i >= 0; i--) {
@@ -909,6 +911,17 @@ public static partial class Game {
     static SeparationAgent[] separationAgents = new SeparationAgent[500];
     static readonly Dictionary<long, int> firstAgentIndexInSeparationCell = new();
 
+    // Bends the direction to the enemy's lane side, less the closer it is to the player, and not at all when that would walk into a wall
+    static Vector3 ApplyEnemyLane(Enemy enemy, CoolerGrid grid, Vector3 dir) {
+        GameplayConfig gameplay = config.gameplay;
+        float strength = Mathf.Clamp01(enemy.curDistFromPlayer / gameplay.laneFullStrengthDistance);
+        Vector3 bentDir = Quaternion.AngleAxis(enemy.lane * gameplay.laneMaxAngle * strength, Vector3.forward) * dir;
+        if (!grid.IsWalkable((Vector2)enemy.position + (Vector2)bentDir * gameplay.laneWallCheckDistance)) {
+            return dir;
+        }
+        return bentDir;
+    }
+
     static void UpdateEnemySeparation(List<Enemy> enemies) {
         GameplayConfig gameplay = config.gameplay;
 
@@ -916,12 +929,15 @@ public static partial class Game {
             separationAgents = new SeparationAgent[Mathf.NextPowerOfTwo(enemies.Count)];
         }
 
+        RaidSpawnPattern spawnPattern = curRaid.map.spawning;
+        float radiusScale = gameplay.separationRadiusScale * (spawnPattern != null ? spawnPattern.enemySeparationMultiplier : 1f);
+
         int agentCount = 0;
         float maxRadius = 0f;
         foreach (Enemy enemy in enemies) {
             if (!enemy.gameObject.activeInHierarchy || !enemy.collider.enabled) continue;
 
-            float radius = enemy.data.separationRadius * gameplay.separationRadiusScale;
+            float radius = enemy.data.separationRadius * radiusScale;
             maxRadius = Mathf.Max(maxRadius, radius);
 
             separationAgents[agentCount++] = new() {
@@ -1057,13 +1073,21 @@ public static partial class Game {
 
         Vector3 targetDir = Vector3.zero;
         if (enemy.data.usesFlowField) {
-            targetDir = curRaid.mapInstance.grid.GetFlowFieldDirection(enemy.position);
-            
+            CoolerGrid grid = curRaid.mapInstance.grid;
+            targetDir = grid.GetFlowFieldDirection(enemy.position);
+
             // Since flow field is using predicted player position, close enemies might move away from the player.
-            // If thats the case then we just make them move directly to the player.
+            // If thats the case then we just make them move directly to the player, unless a rock or something is in the way
             Vector2 dirToPlayer = (player.position - enemy.position).normalized;
             if (Vector2.Dot(targetDir, dirToPlayer) < 0f) {
-                targetDir = dirToPlayer;
+                bool straightPathIsBlocked = grid.LineCast(enemy.position, player.position, enemy.worldCollider.radius);
+                if (!straightPathIsBlocked) {
+                    targetDir = dirToPlayer;
+                }
+            }
+
+            if (targetDir != Vector3.zero) {
+                targetDir = ApplyEnemyLane(enemy, grid, targetDir);
             }
         }
         if (targetDir == Vector3.zero) {
@@ -1127,15 +1151,14 @@ public static partial class Game {
         }
     }
 
-    static void ReteleportEnemies(RaidSpawnPattern.Variant variant) {
+    static void ReteleportEnemies(RaidSpawnPattern.PhasePool phase) {
         List<Enemy> enemies = entities.enemies;
         using var _ = ListPool<(Enemy, float)>.Get(out var reteleportCandidates);
 
         foreach (Enemy enemy in enemies) {
             if (!enemy.gameObject.activeInHierarchy || enemy == entities.boss) continue;
             
-            const float enemyTeleportCooldown = 2f;
-            if (Time.time - enemy.lastTeleportTime < enemyTeleportCooldown) continue;
+            if (Time.time - enemy.lastTeleportTime < phase.reteleportInterval) continue;
 
             if (EnemyIsOffscreen(enemy)) {
                 float distFromPlayer = Vector2.Distance(player.Center, enemy.Center);
@@ -1152,15 +1175,15 @@ public static partial class Game {
             return enemyA.lastTeleportTime.CompareTo(enemyB.lastTeleportTime);
         });
 
-        int teleportCount = Mathf.Min(reteleportCandidates.Count, variant.reteleportCount);
+        int teleportCount = Mathf.Min(reteleportCandidates.Count, phase.reteleportCount);
 
         for (int i = 0; i < teleportCount; i++) {
             (Enemy enemy, float distFromPlayer) = reteleportCandidates[i];
-            Vector2Int repositionCellRange = variant.repositionCellRange;
+            Vector2Int repositionCellRange = phase.spawnCellRange;
             Vector2 spawnPos = curRaid.mapInstance.grid.GetSpawnPosition(
                 player.position, repositionCellRange.x, repositionCellRange.y, predictPlayerPos: true, GatherEnemyPositions()
             );
-            
+
             if (Vector2.Distance(spawnPos, player.position) < distFromPlayer) {
                 TeleportEnemy(enemy, spawnPos, TeleportType.Reposition);
             }
@@ -1323,8 +1346,8 @@ public static partial class Game {
 
         public float extraMaxDuration;
         public float extraEarlyDelay;
-        public float CurMaxDuration => CurVariant.maxDuration + extraMaxDuration;
-        public float CurEarlyDelay => CurVariant.startNextPhaseEarlyDelay + extraEarlyDelay;
+        public float CurMaxDuration => CurPhasePool.maxDuration + extraMaxDuration;
+        public float CurEarlyDelay => CurPhasePool.startNextPhaseEarlyDelay + extraEarlyDelay;
 
         public int CurWaveNumber => Mathf.Clamp(curPhaseIndex + 1, 0, phases.Count);
         public int TotalWaveCount => phases.Count;
@@ -1339,8 +1362,6 @@ public static partial class Game {
         public RaidSpawnPattern.Phase CurPhase => phases.SafeIndex(curPhaseIndex);
         public RaidSpawnPattern.PhasePool CurPhasePool => CurPhase as RaidSpawnPattern.PhasePool;
         public RaidSpawnPattern.Variant CurVariant => CurPhasePool?.variants.SafeIndex(CurVarientIndex);
-
-        public Vector2Int CurSpawnCellRange => CurVariant.spawnCellRange;
     }
 
     public enum SwarmState { None, Scheduled, Warning, Spawning }
@@ -1403,8 +1424,7 @@ public static partial class Game {
         int maxWave = Mathf.Clamp(swarm.waveRange.y, minWave, waveCount);
         sm.swarmWaveIndex = Random.Range(minWave, maxWave + 1) - 1;
 
-        RaidSpawnPattern.Variant waveVariant = pattern.phasePools[sm.swarmWaveIndex].variants[sm.chosenVarientIndices[sm.swarmWaveIndex]];
-        sm.swarmWarnAtTimeInWave = Random.Range(0f, waveVariant.spawnDuration);
+        sm.swarmWarnAtTimeInWave = Random.Range(0f, pattern.phasePools[sm.swarmWaveIndex].spawnDuration);
         sm.swarmVariant = swarm.pool.variants[Random.Range(0, swarm.pool.variants.Count)];
         sm.swarmState = SwarmState.Scheduled;
     }
@@ -1450,7 +1470,7 @@ public static partial class Game {
             case SwarmState.Warning: {
                 sm.swarmCountdown -= Time.deltaTime;
                 if (sm.swarmCountdown <= 0f) {
-                    LayOutSpawnEvents(sm, sm.swarmVariant, sm.swarmSpawnEvents);
+                    LayOutSpawnEvents(sm, sm.spawnPattern.swarm.pool, sm.swarmVariant, sm.swarmSpawnEvents);
                     sm.swarmSpawnTimeIndex = 0;
                     sm.timeInSwarm = 0f;
                     swarmSpawnLimiter.MakeCurrent();
@@ -1463,7 +1483,7 @@ public static partial class Game {
                 sm.timeInSwarm += Time.deltaTime;
                 const float batchTime = 1f;
                 if (swarmSpawnLimiter.TimeHasPassed(batchTime)) {
-                    SpawnDueEvents(sm, sm.swarmSpawnEvents, ref sm.swarmSpawnTimeIndex, sm.timeInSwarm, sm.swarmVariant.spawnCellRange, false);
+                    SpawnDueEvents(sm, sm.swarmSpawnEvents, ref sm.swarmSpawnTimeIndex, sm.timeInSwarm, sm.spawnPattern.swarm.pool.spawnCellRange, false);
                 }
                 if (!sm.swarmSpawnEvents.IndexInRange(sm.swarmSpawnTimeIndex)) {
                     sm.swarmState = SwarmState.None;
@@ -1496,11 +1516,11 @@ public static partial class Game {
                 case RaidSpawnPattern.BossPhase bossPhase:
                     sm.timeInCurPhase = 0f;
                     QueueBossTrashRefill(sm, bossPhase);
-                    SpawnRaidBoss(bossPhase, sm.CurVariant);
+                    SpawnRaidBoss(bossPhase);
                     break;
-                case RaidSpawnPattern.PhasePool:
+                case RaidSpawnPattern.PhasePool phasePool:
                     sm.startNextWaveDelay = sm.CurEarlyDelay;
-                    BeginSpawningVariant(sm, sm.CurVariant);
+                    BeginSpawningVariant(sm, phasePool, sm.CurVariant);
                     break;
             }
         }
@@ -1526,7 +1546,7 @@ public static partial class Game {
             // If a wave's max duration is about the same time as the spawn duration, we can't assume the player struggled
             // because they would of had none or very little time to kill the last spawned enemies
             const float struggleEligiblePercentage = 1.2f;
-            bool waveIsStruggleEligible = sm.CurMaxDuration >= (sm.CurVariant.spawnDuration * struggleEligiblePercentage);
+            bool waveIsStruggleEligible = sm.CurMaxDuration >= (sm.CurPhasePool.spawnDuration * struggleEligiblePercentage);
             if (waveIsStruggleEligible) {
                 const float struggleThresholdPercentage = 0.8f;
                 float stuggleThreshold = sm.CurMaxDuration * struggleThresholdPercentage;
@@ -1598,7 +1618,7 @@ public static partial class Game {
     static void QueueBossTrashRefill(EnemySpawnManager sm, RaidSpawnPattern.BossPhase bossPhase) {
         sm.nextTrashRefillTime = sm.timeInCurPhase + bossPhase.minTrashRefillDelay;
         sm.spawnTimeIndex = 0;
-        LayOutSpawnEvents(sm, sm.CurVariant, sm.spawnEvents, isBossTrash: true);
+        LayOutSpawnEvents(sm, bossPhase, sm.CurVariant, sm.spawnEvents, isBossTrash: true);
         spawnLimiterForEnemyBatching.MakeCurrent();
     }
 
@@ -1612,8 +1632,8 @@ public static partial class Game {
         return count;
     }
 
-    static void SpawnRaidBoss(RaidSpawnPattern.BossPhase bossPhase, RaidSpawnPattern.Variant variant) {
-        Vector2Int spawnCellRange = variant.spawnCellRange;
+    static void SpawnRaidBoss(RaidSpawnPattern.BossPhase bossPhase) {
+        Vector2Int spawnCellRange = bossPhase.spawnCellRange;
         Vector2 randomSpawnPos = curRaid.mapInstance.grid.GetSpawnPosition(player.position, spawnCellRange.x, spawnCellRange.y, false, GatherEnemyPositions());
 
         EnemyData bossEnemy = bossPhase.raidBoss;
@@ -1625,8 +1645,8 @@ public static partial class Game {
         entities.boss = enemy;
     }
 
-    // Lays out when each of the variant's enemies spawn across its spawn duration, following its spawn rate curve
-    static void BeginSpawningVariant(EnemySpawnManager sm, RaidSpawnPattern.Variant variant) {
+    // Lays out when each of the variant's enemies spawn across the phase's spawn duration, following its spawn rate curve
+    static void BeginSpawningVariant(EnemySpawnManager sm, RaidSpawnPattern.PhasePool phase, RaidSpawnPattern.Variant variant) {
 #if UNITY_EDITOR
         foreach (RaidSpawnPattern.EnemyBatch batch in variant.enemyBatches) {
             if (batch.enemyCount >= EnemySpawnManager.prefixedSumResolution) {
@@ -1637,16 +1657,16 @@ public static partial class Game {
 
         sm.timeInCurPhase = 0f;
         sm.spawnTimeIndex = 0;
-        LayOutSpawnEvents(sm, variant, sm.spawnEvents);
+        LayOutSpawnEvents(sm, phase, variant, sm.spawnEvents);
         spawnLimiterForEnemyBatching.MakeCurrent();
     }
 
-    static void LayOutSpawnEvents(EnemySpawnManager sm, RaidSpawnPattern.Variant variant, List<(float time, EnemyData enemy)> spawnEvents, bool isBossTrash = false) {
+    static void LayOutSpawnEvents(EnemySpawnManager sm, RaidSpawnPattern.PhasePool phase, RaidSpawnPattern.Variant variant, List<(float time, EnemyData enemy)> spawnEvents, bool isBossTrash = false) {
         float startTime = isBossTrash ? sm.timeInCurPhase : 0f;
         float totalWeight = 0f;
         for (int i = 0; i < EnemySpawnManager.prefixedSumResolution; i++) {
             float sliceIndex = i / (float)(EnemySpawnManager.prefixedSumResolution - 1);
-            float weight = Mathf.Clamp01(variant.spawnRateCurve.Evaluate(sliceIndex));
+            float weight = Mathf.Clamp01(phase.spawnRateCurve.Evaluate(sliceIndex));
             totalWeight += weight;
             sm.prefixedSums[i] = totalWeight;
         }
@@ -1667,7 +1687,7 @@ public static partial class Game {
                 }
 
                 float normalizedTime = weightIndex / (float)(EnemySpawnManager.prefixedSumResolution - 1);
-                spawnEvents.Add((startTime + normalizedTime * variant.spawnDuration, batch.enemyData));
+                spawnEvents.Add((startTime + normalizedTime * phase.spawnDuration, batch.enemyData));
             }
         }
 
@@ -1681,7 +1701,7 @@ public static partial class Game {
         const float batchTime = 1f;
         if (!spawnLimiterForEnemyBatching.TimeHasPassed(batchTime) || sm.spawnEvents.Count <= 0) return;
 
-        SpawnDueEvents(sm, sm.spawnEvents, ref sm.spawnTimeIndex, sm.timeInCurPhase, sm.CurSpawnCellRange, sm.OnBossWave);
+        SpawnDueEvents(sm, sm.spawnEvents, ref sm.spawnTimeIndex, sm.timeInCurPhase, sm.CurPhasePool.spawnCellRange, sm.OnBossWave);
     }
 
     static void SpawnDueEvents(EnemySpawnManager sm, List<(float time, EnemyData enemy)> spawnEvents, ref int spawnTimeIndex, float time, Vector2Int spawnCellRange, bool isBossTrash) {

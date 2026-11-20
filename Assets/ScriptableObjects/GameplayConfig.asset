@@ -21,7 +21,7 @@ MonoBehaviour:
   aimAssistBias: 0.3
   defaultCritChance: 0.05
   defaultCritMulti: 1.5
-  baseSpeed: 0.52
+  baseSpeed: 0.55
   repeatCollisionDamageDelay: 1
   teleportDistance: 0.5
   teleportGraceRadius: 0.28

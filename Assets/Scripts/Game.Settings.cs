@@ -20,6 +20,8 @@ public static partial class Game {
         public int masterVolumeIndex = -1;
         public int musicVolumeIndex = -1;
         public int gameVolumeIndex = -1;
+
+        public int autoShootIndex = -1;
     }
 
     static string[] fullScreenNames = { "Exclusive Full Screen", "Full Screen Window", "Maximized", "Windowed" };
@@ -141,6 +143,12 @@ public static partial class Game {
 
         // Game Settings
         {
+            settings.autoShoot.Init(2, loadedSettings?.autoShootIndex)
+            .OnDefault(() => 1)
+            .OnChange(i => {
+                settings.autoShoot.Display(i == 0 ? "Off" : "On");
+                settings.curSettingsState.autoShootIndex = i;
+            });
             // settings.cameraShake.Init(2).OnDefault(() => 1).OnChange(i => settings.cameraShake.Display(i == 0 ? "Off" : "On"));
             // settings.cameraDistance.Init(3).OnDefault(() => 0).OnChange(i => settings.cameraDistance.Display("Normal"));
             // settings.showHoverHints.Init(2).OnDefault(() => 1).OnChange(i => settings.showHoverHints.Display(i == 0 ? "Off" : "On"));
@@ -264,7 +272,7 @@ public static partial class Game {
         settings.curPage = page;
         settings.audioParent.gameObject.SetActive(page == settings.audioParent);
         settings.displayParent.gameObject.SetActive(page == settings.displayParent);
-        // settings.gameParent.gameObject.SetActive(page == settings.gameParent);
+        settings.gameParent.gameObject.SetActive(page == settings.gameParent);
         settings.controlsParent.gameObject.SetActive(page == settings.controlsParent);
         
         bool openedControlsPage = page == settings.controlsContent; 

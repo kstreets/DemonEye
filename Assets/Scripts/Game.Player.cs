@@ -334,7 +334,7 @@ public static partial class Game {
         }
         
         bool hasAimDir = TryGetAimDirection(out Vector2 aimDir);
-        bool wantsToShoot = UsingController ? hasAimDir : hasAimDir && inputs.attack.IsPressed();
+        bool wantsToShoot = UsingController ? hasAimDir : hasAimDir && (inputs.attack.IsPressed() || ShouldAutoShoot(aimDir));
         
         bool setNextIdleToFaceAimingDirection = !hasVelocity;
         if (setNextIdleToFaceAimingDirection) {
@@ -504,6 +504,13 @@ public static partial class Game {
         }
 
         return (Vector2)player.position + dir * distance;
+    }
+
+    // Mouse and keyboard only, when an enemy or rock is along the aim within projectile range
+    static bool ShouldAutoShoot(Vector2 aimDir) {
+        if (settings.autoShoot.curIndex == 0) return false;
+        float range = config.gameplay.projectileSpeed * GetProjectileRangeInSeconds();
+        return Physics2D.CircleCast(GetPlayerEyePos(), defaultProjectileRadius, aimDir, range, Masks.TargetableMask);
     }
 
     static bool TryGetAimDirection(out Vector2 aim) {

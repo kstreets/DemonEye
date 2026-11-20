@@ -46,6 +46,14 @@ public class GameplayConfig : ScriptableObject {
     // How fast the separation velocity catches up to its target, lower is smoother but lets enemies overlap longer
     public float separationSmoothing = 12f;
 
+    [Header("Enemy Lanes")]
+    // Each enemy bends its flow field direction by up to this many degrees to one side, so groups spread out instead of following one line
+    public float laneMaxAngle = 25f;
+    // The bend fades out as enemies get closer than this to the player, so they still reach them
+    public float laneFullStrengthDistance = 2f;
+    // How far ahead the bent direction is checked for walls, if it's blocked the enemy goes back to the flow field direction
+    public float laneWallCheckDistance = 0.3f;
+
     [Header("Portal")]
     public float portalSummonTime;
     public float portalPostSummonDelay;

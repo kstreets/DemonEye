@@ -8,28 +8,27 @@ using Object = UnityEngine.Object;
 
 public class GameplayTestingWindow : EditorWindow {
     
-    [SerializeField] private VisualTreeAsset visualTreeAsset;
-    [SerializeField] private MapData currentMap;
-    [SerializeField] private bool hideInactive;
-    [SerializeField] private bool overrideWaves;
-    [SerializeField] private int startWaveIndex;
+    [SerializeField] VisualTreeAsset visualTreeAsset;
+    [SerializeField] MapData currentMap;
+    [SerializeField] bool hideInactive;
+    [SerializeField] bool overrideWaves;
+    [SerializeField] int startWaveIndex;
     
-    private VisualElement root => rootVisualElement;
-    private ObjectField MapField => root.Q<ObjectField>("MapField");
-    private Toggle HideInactiveToggle => root.Q<Toggle>("HideInactive");
-    private VisualElement ItemPoolContainer => root.Q<VisualElement>("ItemPool");
-    private Button RefreshButton => root.Q<Button>("RefreshBttn");
-    private Button CreateEyeButton => root.Q<Button>("CreateEyeBttn");
-    private ObjectField TestingInventoryField => root.Q<ObjectField>("TestingInventoryField");
-    private Button EquipTestingInventoryButton => root.Q<Button>("EquipTestingInventoryBttn");
-    private Button PlayerDamageButton => root.Q<Button>("PlayerDamageBttn");
-    private Button PlayerBleedButton => root.Q<Button>("PlayerBleedBttn");
-    private Button MoneyButton => root.Q<Button>("MoneyBttn");
-    private Button SoulsButton => root.Q<Button>("SoulsBttn");
-    private SliderInt TraderLevelSlider => root.Q<SliderInt>("TraderLevelSlider");
-    private Toggle SkipTutorialToggle => root.Q<Toggle>("SkipTutorial");
-    
-    private List<MapData> Maps => FindFirstObjectByType<GameRunner>().config.maps;
+    VisualElement root => rootVisualElement;
+    ObjectField MapField => root.Q<ObjectField>("MapField");
+    Toggle HideInactiveToggle => root.Q<Toggle>("HideInactive");
+    VisualElement ItemPoolContainer => root.Q<VisualElement>("ItemPool");
+    Button RefreshButton => root.Q<Button>("RefreshBttn");
+    Button CreateEyeButton => root.Q<Button>("CreateEyeBttn");
+    ObjectField TestingInventoryField => root.Q<ObjectField>("TestingInventoryField");
+    Button EquipTestingInventoryButton => root.Q<Button>("EquipTestingInventoryBttn");
+    Button PlayerDamageButton => root.Q<Button>("PlayerDamageBttn");
+    Button PlayerBleedButton => root.Q<Button>("PlayerBleedBttn");
+    Button MoneyButton => root.Q<Button>("MoneyBttn");
+    Button SoulsButton => root.Q<Button>("SoulsBttn");
+    SliderInt TraderLevelSlider => root.Q<SliderInt>("TraderLevelSlider");
+    Toggle SkipTutorialToggle => root.Q<Toggle>("SkipTutorial");
+    List<MapData> Maps => FindFirstObjectByType<GameRunner>().config.maps;
 
     [MenuItem("Window/UI Toolkit/Gameplay Testing")]
     public static void ShowExample() {
@@ -64,34 +63,34 @@ public class GameplayTestingWindow : EditorWindow {
         HideInactiveToggle.value = hideInactive;
     }
 
-    private void OnEnable() {
+    void OnEnable() {
         EditorApplication.playModeStateChanged += OnPlaymodeStateChanged;
     }
-    
-    private void OnDisable() {
+
+    void OnDisable() {
         EditorApplication.playModeStateChanged -= OnPlaymodeStateChanged;
     }
 
     // Disable being able to change things because we can only inject a custom spawn pattern when entering playmode
-    private void OnPlaymodeStateChanged(PlayModeStateChange changeEvent) {
+    void OnPlaymodeStateChanged(PlayModeStateChange changeEvent) {
         bool enabled = changeEvent is PlayModeStateChange.EnteredEditMode or PlayModeStateChange.ExitingPlayMode;
         MapField?.SetEnabled(enabled);
     }
-    
-    private void OnSelectionChange() { 
+
+    void OnSelectionChange() { 
         RefreshImageBackgrounds();
     }
-    
-    private void OnHideInactiveToggled(ChangeEvent<bool> changeEvent) {
+
+    void OnHideInactiveToggled(ChangeEvent<bool> changeEvent) {
         hideInactive = changeEvent.newValue;
         ListItemPoolForMap();
     }
-    
-    private void OnRefreshClicked(ClickEvent e) {
+
+    void OnRefreshClicked(ClickEvent e) {
         ListItemPoolForMap();
     }
-    
-    private void OnCreateEyeClicked(ClickEvent e) {
+
+    void OnCreateEyeClicked(ClickEvent e) {
         if (!Application.isPlaying || currentMap == null) return;
         
         Game.CreateDropPoolsForMap(currentMap); 
@@ -104,8 +103,8 @@ public class GameplayTestingWindow : EditorWindow {
         Game.ItemInstance demonEye = Game.CreateNewDemonEyeItemInstance(Game.randomDemonEyeNames.GetRandom(), itemInstances);
         Game.TryAddItemToInventory(Game.inventories.stash, demonEye);
     }
-    
-    private void OnMapDataChanged(ChangeEvent<Object> changeEvent) {
+
+    void OnMapDataChanged(ChangeEvent<Object> changeEvent) {
         MapData prevMap = changeEvent.previousValue as MapData;
         prevMap?.SetRaidSpawnPatternInjection(null);
         
@@ -114,8 +113,8 @@ public class GameplayTestingWindow : EditorWindow {
         
         ListItemPoolForMap();
     }
-    
-    private void ListItemPoolForMap() {
+
+    void ListItemPoolForMap() {
         ItemPoolContainer.Clear();
         if (currentMap == null) return;
         
@@ -138,8 +137,8 @@ public class GameplayTestingWindow : EditorWindow {
             ItemPoolContainer.Add(image);
         } 
     }
-    
-    private bool ItemIsApartOfCurrentDropPool(IEyeUpgrade itemInterface) {
+
+    bool ItemIsApartOfCurrentDropPool(IEyeUpgrade itemInterface) {
         MapData curSelectedMap = MapField.value as MapData;
         if (itemInterface.MapSpawning.spawnsOnAll) return true;
         if (PassedFirstMapSpawn(itemInterface.MapSpawning.firstSpawnMap)) return true;
@@ -150,13 +149,13 @@ public class GameplayTestingWindow : EditorWindow {
             return Maps.IndexOf(curSelectedMap) >= Maps.IndexOf(firstMapItemSpawn);
         }
     }
-    
-    private int CompareItemsSpawnMaps(IEyeUpgrade x, IEyeUpgrade y) {
+
+    int CompareItemsSpawnMaps(IEyeUpgrade x, IEyeUpgrade y) {
         return GetMapIndex(x).CompareTo(GetMapIndex(y));
     }
     
     // Returns -1 if spawns on all maps and int.MaxValue if not assigned to any map 
-    private int GetMapIndex(IEyeUpgrade eyeUpgrade) {
+    int GetMapIndex(IEyeUpgrade eyeUpgrade) {
         if (eyeUpgrade.MapSpawning.spawnsOnAll) {
             return -1;
         } 
@@ -166,8 +165,8 @@ public class GameplayTestingWindow : EditorWindow {
         }
         return int.MaxValue;
     }
-    
-    private List<IEyeUpgrade> LoadAllEyeUpgrades() {
+
+    List<IEyeUpgrade> LoadAllEyeUpgrades() {
         List<IEyeUpgrade> eyeUpgrades = new();
         UuidScriptableObject[] resourceObjects = Resources.LoadAll<UuidScriptableObject>(string.Empty);
         foreach (UuidScriptableObject res in resourceObjects) {
@@ -180,8 +179,8 @@ public class GameplayTestingWindow : EditorWindow {
         }
         return eyeUpgrades;
     }
-    
-    private Color GetBackgroundColor(IEyeUpgrade eyeUpgrade) {
+
+    Color GetBackgroundColor(IEyeUpgrade eyeUpgrade) {
         int curMapIndex = Maps.IndexOf(currentMap);
         int firstMapItemIndex = GetMapIndex(eyeUpgrade);
         
@@ -208,20 +207,20 @@ public class GameplayTestingWindow : EditorWindow {
         ColorUtility.TryParseHtmlString(colorString, out Color color);
         return color;
     }
-    
-    private void OnImageClicked(IEyeUpgrade eyeUpgrade) {
+
+    void OnImageClicked(IEyeUpgrade eyeUpgrade) {
         if (Selection.activeObject == eyeUpgrade.UuidObject) {
             Selection.activeObject = null;
             return;
         }
         Selection.activeObject = eyeUpgrade.UuidObject;
     }
-    
-    private void RefreshImageBackgrounds() {
+
+    void RefreshImageBackgrounds() {
         ItemPoolContainer.Query<Image>().ForEach(img => img.style.backgroundColor = GetBackgroundColor(img.userData as IEyeUpgrade));
     }
-    
-    private RaidSpawnPattern InjectRaidSpawnPattern() {
+
+    RaidSpawnPattern InjectRaidSpawnPattern() {
         if (startWaveIndex <= 0) {
             return currentMap.spawning;
         }
@@ -231,17 +230,17 @@ public class GameplayTestingWindow : EditorWindow {
         clonedWaves.phasePools.RemoveRange(0, startWaveIndex);
         return clonedWaves;
     }
-    
-    private TestingInventory SelectedTestingInventory => TestingInventoryField.value as TestingInventory;
+
+    TestingInventory SelectedTestingInventory => TestingInventoryField.value as TestingInventory;
     
     // Kept in EditorPrefs instead of on the window so the game can read it when it starts
-    private static TestingInventory LoadTestingInventoryFromEditorPrefs() {
+    static TestingInventory LoadTestingInventoryFromEditorPrefs() {
         string guid = EditorPrefs.GetString(Game.testingInventoryEditorPrefKey);
         if (string.IsNullOrEmpty(guid)) return null;
         return AssetDatabase.LoadAssetAtPath<TestingInventory>(AssetDatabase.GUIDToAssetPath(guid));
     }
 
-    private void OnTestingInventoryChanged(ChangeEvent<Object> changeEvent) {
+    void OnTestingInventoryChanged(ChangeEvent<Object> changeEvent) {
         if (SelectedTestingInventory == null) {
             EditorPrefs.DeleteKey(Game.testingInventoryEditorPrefKey);
         }
@@ -255,33 +254,33 @@ public class GameplayTestingWindow : EditorWindow {
             Game.LoadTestingInventoryOntoPlayer(SelectedTestingInventory);
         }
     }
-    
-    private void OnEquipTestingInventory(ClickEvent e) {
+
+    void OnEquipTestingInventory(ClickEvent e) {
         if (!Application.isPlaying || SelectedTestingInventory == null) return;
         Game.LoadTestingInventoryOntoPlayer(SelectedTestingInventory);
     }
-    
-    private void OnDamagePlayer(ClickEvent e) {
+
+    void OnDamagePlayer(ClickEvent e) {
         if (!Application.isPlaying) return;
         Game.DamagePlayer(10, Game.PlayerDamageType.Normal, null);
     }
-    
-    private void OnMakePlayerBleed(ClickEvent e) {
+
+    void OnMakePlayerBleed(ClickEvent e) {
         if (!Application.isPlaying) return;
         Game.player.bleeding = true;
     }
-    
-    private void OnGiveMoney(ClickEvent e) {
+
+    void OnGiveMoney(ClickEvent e) {
         if (!Application.isPlaying) return;
         Game.player.state.coinCurrency += 5000;
     }
-    
-    private void OnGiveSouls(ClickEvent e) {
+
+    void OnGiveSouls(ClickEvent e) {
         if (!Application.isPlaying) return;
         Game.player.state.soulCurrency += 500;
     }
-    
-    private void OnTraderLevelChanged(ChangeEvent<int> changeEvent) {
+
+    void OnTraderLevelChanged(ChangeEvent<int> changeEvent) {
         if (!Application.isPlaying) return;
         
         int traderLevelIndex = changeEvent.newValue - 1; 

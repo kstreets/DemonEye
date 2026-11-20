@@ -208,6 +208,7 @@ public class CoolerGrid : MonoBehaviour {
         };
 
         FlowFieldJob flowFieldJob = new() {
+            sourceIndex = sourceIndex,
             distances = write.distances,
             traversables = nativeTraversables,
             positions = nativePositions,
@@ -270,6 +271,41 @@ public class CoolerGrid : MonoBehaviour {
         
         GridCell cell = gridCells[index];
         return cell.traversable && !cell.isObstacleObstructed;
+    }
+    
+    // Returns true if the line, thickened by radius on each side, touches an unwalkable cell
+    public bool LineCast(Vector2 start, Vector2 end, float radius) {
+        bool foundStart = TryGetCellAtPosition(start, out _, out _);
+        bool foundEnd = TryGetCellAtPosition(end, out _, out _);
+        if (!foundStart || !foundEnd) {
+            return true;
+        }
+
+        float length = Vector2.Distance(start, end);
+        if (length < 1e-5f) {
+            return !IsWalkable(start);
+        }
+
+        // Sample every half cell, both along the line and across its width, so no cell gets skipped
+        float spacing = cellSize * 0.5f;
+        int steps = Mathf.CeilToInt(length / spacing);
+        int sideSteps = Mathf.CeilToInt(radius / spacing);
+
+        Vector2 dir = (end - start) / length;
+        Vector2 side = new(-dir.y, dir.x);
+
+        for (int i = 0; i <= steps; i++) {
+            Vector2 point = Vector2.Lerp(start, end, i / (float)steps);
+
+            for (int s = -sideSteps; s <= sideSteps; s++) {
+                float sideOffset = sideSteps == 0 ? 0f : radius * s / sideSteps;
+                if (!IsWalkable(point + side * sideOffset)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     bool TryGetCellAtPosition(Vector2 position, out GridCell cell, out int index) {
@@ -497,8 +533,8 @@ public class CoolerGrid : MonoBehaviour {
 
                 for (int i = 0; i < 9; i++) {
                     int neighborIndex = GetNeighborIndex(gridWidth, gridHeight, curCell.indexIntoArrays, i);
-                    if (neighborIndex == -1 || !traversable[neighborIndex]) continue;
-                    
+                    if (neighborIndex == -1 || !CanStepToNeighbor(traversable, gridWidth, curCell.indexIntoArrays, neighborIndex, i)) continue;
+
                     bool neighborIsDiagonal = i == 0 || i == 2 || i == 6 || i == 8;
                     int dist = neighborIsDiagonal ? dijkstraDiagonalDist : dijkstraOrthogonalDist;
                         
@@ -534,10 +570,23 @@ public class CoolerGrid : MonoBehaviour {
         [ReadOnly] public NativeArray<bool> traversables;
         [ReadOnly] public NativeArray<Vector2> positions;
         [WriteOnly] public NativeArray<Vector2> results;
+        
         public int gridWidth;
         public int gridHeight;
+        public int sourceIndex;
 
         public void Execute(int index) {
+            if (index == sourceIndex) {
+                results[index] = Vector2.zero;
+                return;
+            }
+
+            // Nothing in the way, so head straight there instead of following the 8 neighbor directions
+            if (traversables[index] && HasLineOfSight(traversables, gridWidth, gridHeight, index, sourceIndex)) {
+                results[index] = (positions[sourceIndex] - positions[index]).normalized;
+                return;
+            }
+
             int smallestDist = int.MaxValue;
             int closestCellIndex = -1;
             
@@ -545,8 +594,8 @@ public class CoolerGrid : MonoBehaviour {
                 if (i == 4) continue;
                 if (!traversables[index] && (i == 0 || i == 2 || i == 6 || i == 8)) continue;
                 int neighborIndex = GetNeighborIndex(gridWidth, gridHeight, index, i);
-                
-                if (neighborIndex == -1 || !traversables[neighborIndex]) continue;
+
+                if (neighborIndex == -1 || !CanStepToNeighbor(traversables, gridWidth, index, neighborIndex, i)) continue;
 
                 if (closestCellIndex == -1) {
                     smallestDist = distances[neighborIndex];
@@ -576,7 +625,7 @@ public class CoolerGrid : MonoBehaviour {
                 if (i == 4) continue;
                 int neighborIndex = GetNeighborIndex(gridWidth, gridHeight, index, i);
 
-                if (neighborIndex == -1 || !traversables[neighborIndex]) continue;
+                if (neighborIndex == -1 || !CanStepToNeighbor(traversables, gridWidth, index, neighborIndex, i)) continue;
                 if (distances[neighborIndex] == smallestDist) {
                     averagePosition += positions[neighborIndex];
                     averageCount += 1;
@@ -593,6 +642,62 @@ public class CoolerGrid : MonoBehaviour {
                 results[index] = finalDir;
             }
         }
+    }
+
+    // Steps along the line in half cells, in cell coordinates
+    [BurstCompile]
+    static bool HasLineOfSight(NativeArray<bool> traversable, int width, int height, int fromIndex, int toIndex) {
+        Vector2 from = new(fromIndex % width, fromIndex / width);
+        Vector2 to = new(toIndex % width, toIndex / width);
+        float length = Vector2.Distance(from, to);
+        
+        // Only checked near the source to keep the job cheap, farther cells follow the flow field    
+        const int maxSightCells = 50;
+        if (length > maxSightCells) {
+            return false;
+        }
+        
+        const float sightHalfWidthCells = 1f;
+        Vector2 dir = (to - from) / length;
+        Vector2 side = new Vector2(-dir.y, dir.x) * sightHalfWidthCells;
+        int steps = Mathf.CeilToInt(length * 2f);
+        
+        for (int i = 1; i <= steps; i++) {
+            Vector2 point = Vector2.Lerp(from, to, i / (float)steps);
+            if (!IsTraversableAt(traversable, width, height, point) ||
+                !IsTraversableAt(traversable, width, height, point + side) ||
+                !IsTraversableAt(traversable, width, height, point - side)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    [BurstCompile]
+    static bool IsTraversableAt(NativeArray<bool> traversable, int width, int height, Vector2 cellPoint) {
+        int x = Mathf.RoundToInt(cellPoint.x);
+        int y = Mathf.RoundToInt(cellPoint.y);
+        if (x < 0 || x >= width || y < 0 || y >= height) {
+            return false;
+        }
+        return traversable[y * width + x];
+    }
+
+    // Diagonal steps can't squeeze between two cells where either side is blocked
+    [BurstCompile]
+    static bool CanStepToNeighbor(NativeArray<bool> traversable, int gridWidth, int fromIndex, int toIndex, int neighborId) {
+        if (!traversable[toIndex]) {
+            return false;
+        }
+        
+        bool isDiagonal = neighborId == 0 || neighborId == 2 || neighborId == 6 || neighborId == 8;
+        if (!isDiagonal) {
+            return true;
+        }
+
+        int fromX = fromIndex % gridWidth;
+        int toX = toIndex % gridWidth;
+        return traversable[fromIndex - fromX + toX] && traversable[toIndex - toX + fromX];
     }
 
     [BurstCompile]
