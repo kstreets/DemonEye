@@ -46,7 +46,7 @@ MonoBehaviour:
   maxStackCount: 0
   weight: 0
   description: 
-  placeholderSprite: {fileID: 0}
+  placeholderSprite: {fileID: -834443595, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   styles: {fileID: 11400000, guid: f4b4ae74a1e122340bf1d9d4fa5ab586, type: 2}
   volleyCount: 8
   soulsNeededPerVolley: 15

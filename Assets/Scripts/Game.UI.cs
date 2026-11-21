@@ -33,6 +33,8 @@ public static partial class Game {
         InitInputPrompts();
 
         ui.levelUpNotification.Init();
+        // Its own copy so it doesn't fight the level up notification over the shared burn material
+        raidInfo.foundExitPortalStreak.material = new Material(raidInfo.foundExitPortalStreak.material);
         ui.menuBackButton.gameObject.SetActive(false);
         ui.messagePopup.Hide();
         ui.largeRaidTextTypewriter.gameObject.SetActive(false);
@@ -200,6 +202,7 @@ public static partial class Game {
         playerInfo.parent.gameObject.SetActive(true);
         raidInfo.parent.SetActive(true);
         raidInfo.swarmText.gameObject.SetActive(false);
+        raidInfo.foundExitPortalText.gameObject.SetActive(false);
         bossBar.parent.SetActive(false);
         ui.hotBarParent.gameObject.SetActive(true);
         
@@ -227,7 +230,8 @@ public static partial class Game {
         raidInfo.parent.SetActive(false);
         raidInfo.swarmText.gameObject.SetActive(false);
         bossBar.parent.SetActive(false);
-        ui.portalArrow.gameObject.SetActive(false);
+        foundExitPortalSequence.Stop();
+        raidInfo.foundExitPortalText.gameObject.SetActive(false);
         ui.hotBarParent.gameObject.SetActive(false);
         ui.minimap.gameObject.SetActive(false);
         inputPrompts.inRaidParent.SetActive(false);
@@ -467,7 +471,8 @@ public static partial class Game {
 
     static void UpdateInRaidUI() {
         ui.minimap.UpdateMinimap(player.position);
-        
+        UpdateFoundExitPortals();
+
         playerInfo.healthBar.fillImage.fillAmount = CurPlayerHealthPercentage();
         playerInfo.healthBar.bgFillImage.gameObject.SetActive(player.isHealingOverTime);
         if (player.isHealingOverTime) playerInfo.healthBar.bgFillImage.fillAmount = HealingToHealthPercentage();
@@ -543,6 +548,48 @@ public static partial class Game {
         if (spawnManager.swarmStartedThisFrame) {
             AnimateSmallRaidText(ColorText("Swarm!", config.styles.inRaidRedColor));
         }
+    }
+
+    static readonly List<Vector2> foundExitPortalPositions = new();
+    static Sequence foundExitPortalSequence;
+
+    // Exit portals show up on the minimap once the player has had them on screen
+    static void UpdateFoundExitPortals() {
+        foundExitPortalPositions.Clear();
+        foreach (Portal portal in curRaid.activeExitPortals) {
+            if (portal.state == Portal.State.Closed) continue;
+            if (!portal.found && IsOnScreen(portal.transform.position)) {
+                portal.found = true;
+                AnimateFoundExitPortalText();
+            }
+            if (portal.found) {
+                foundExitPortalPositions.Add(portal.transform.position);
+            }
+        }
+        ui.minimap.UpdatePortalMarkers(foundExitPortalPositions);
+    }
+
+    static bool IsOnScreen(Vector2 worldPos) {
+        Vector3 viewportPos = camera.main.WorldToViewportPoint(worldPos);
+        return viewportPos.x is >= 0f and <= 1f && viewportPos.y is >= 0f and <= 1f;
+    }
+
+    // Same streak as the level up notification, then the text fades out 2 seconds after it's fully in
+    static void AnimateFoundExitPortalText() {
+        foundExitPortalSequence.Stop();
+        TextMeshProUGUI text = raidInfo.foundExitPortalText;
+        Image streak = raidInfo.foundExitPortalStreak;
+
+        streak.material.SetFloat(ShaderIds.completion, 0f);
+        text.gameObject.SetActive(true);
+
+        const float fadeInDuration = 1f;
+        const float holdDuration = 2f;
+        foundExitPortalSequence = Sequence.Create()
+            .Group(Tween.Custom(streak, 0f, 1f, 2.6f, static (streak, comp) => streak.material.SetFloat(ShaderIds.completion, comp)))
+            .Group(Tween.Alpha(text, 0f, 1f, fadeInDuration))
+            .Group(Tween.Alpha(text, 1f, 0f, 0.4f, startDelay: fadeInDuration + holdDuration))
+            .OnComplete(text, static text => text.gameObject.SetActive(false));
     }
 
     // Grows the wave text, swaps the text at its largest, then shrinks it back down

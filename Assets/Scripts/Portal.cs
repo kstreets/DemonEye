@@ -8,6 +8,7 @@ public class Portal : MonoBehaviour {
 
     public enum State { Inactive, BeingSummoned, Open, Closed }
     [NonSerialized] public State state = State.Inactive;
+    [NonSerialized] public bool found; // Seen on screen by the player this raid
 
     public ParticleSystem summoningParticles;
     public GameObject crystalExplosion;
@@ -31,6 +32,7 @@ public class Portal : MonoBehaviour {
     float particleStartSpeed;
 
     public void Init() {
+        found = false;
         summonedPortal.Init();
         summonedPortal.gameObject.SetActive(false);
 

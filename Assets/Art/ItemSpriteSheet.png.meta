@@ -4082,6 +4082,72 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: ItemSpriteSheet_174
+      rect:
+        serializedVersion: 2
+        x: 240
+        y: 480
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6c2a517cd7e920d409616556c9cd66a3
+      internalID: -834443595
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemSpriteSheet_176
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 496
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1e104ef307bea3642baa9247480767bf
+      internalID: 1362052427
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ItemSpriteSheet_177
+      rect:
+        serializedVersion: 2
+        x: 224
+        y: 480
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c234466684a908f4e95c5d2a9425c2ee
+      internalID: -170722181
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -4184,6 +4250,8 @@ TextureImporter:
       ItemSpriteSheet_173: 979849412
       ItemSpriteSheet_174: -834443595
       ItemSpriteSheet_175: -1746537170
+      ItemSpriteSheet_176: 1362052427
+      ItemSpriteSheet_177: -170722181
       ItemSpriteSheet_18: -761439653
       ItemSpriteSheet_19: 1876801147
       ItemSpriteSheet_2: -1219428220

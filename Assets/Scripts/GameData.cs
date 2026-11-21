@@ -202,7 +202,6 @@ public class GameData {
         public LayoutElement lootInventoryLayoutElement;
         public RectTransform lootInventoryParent;
         public GameObject lootSearchingText;
-        public RectTransform portalArrow;
         public RectTransform damageNumbersParent;
         public RectTransform currencyForSmallScreensParent;
         
@@ -251,6 +250,8 @@ public class GameData {
         public GameObject parent;
         public TextMeshProUGUI waveText;
         public TextMeshProUGUI swarmText;
+        public TextMeshProUGUI foundExitPortalText;
+        public Image foundExitPortalStreak;
     }
     
     [Serializable]

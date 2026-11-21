@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScatterShotEyeUpgrade
   uuid: -1405608507
   displayName: Scatter Shot
-  inventorySprite: {fileID: 1981012568, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
+  inventorySprite: {fileID: 1362052427, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   dropSprite: {fileID: 0}
   pickupRadius: 0.07
   type: {fileID: 11400000, guid: b1be8a9bd268773419e138c7a7f7df67, type: 2}
@@ -46,7 +46,7 @@ MonoBehaviour:
   maxStackCount: 0
   weight: 0
   description: 
-  placeholderSprite: {fileID: 0}
+  placeholderSprite: {fileID: -170722181, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   probability: 0.25
   extraProjectileCount: 2
   spreadAngle: 30

@@ -50,7 +50,7 @@ MonoBehaviour:
   maxStackCount: 0
   weight: 0
   description: 
-  placeholderSprite: {fileID: 0}
+  placeholderSprite: {fileID: 391737851, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   probability: 0.2
   shardsCount: 6
   perShardDamageMulti: 0.35

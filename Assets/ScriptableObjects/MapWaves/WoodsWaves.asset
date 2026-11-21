@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   timeBeforeFirstPhase: 30
   enemySeparationMultiplier: 1
-  maxAccrueTime: 30
+  maxAccrueTime: 20
   accrueTimePerEnemy: 0.08
   maxTimeFromActions: 10
   minTimeBetweenRangedAttacks: 1.5
@@ -139,9 +139,9 @@ MonoBehaviour:
     variants:
     - name: Variant 0
       enemyBatches:
-      - enemyCount: 45
+      - enemyCount: 40
         enemyData: {fileID: 11400000, guid: 8a749b46a2a7d944892efbf025fbe2a1, type: 2}
-      - enemyCount: 75
+      - enemyCount: 60
         enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
   - name: Wave 4
     musicIntensity: 1
@@ -180,8 +180,10 @@ MonoBehaviour:
       enemyBatches:
       - enemyCount: 40
         enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
-      - enemyCount: 80
+      - enemyCount: 65
         enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
+      - enemyCount: 15
+        enemyData: {fileID: 11400000, guid: e317b66f7ab3f9a4eb9807435d01428e, type: 2}
   - name: Wave 5
     musicIntensity: 1
     maxDuration: 48
@@ -219,9 +221,9 @@ MonoBehaviour:
       enemyBatches:
       - enemyCount: 80
         enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
-      - enemyCount: 60
-        enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
       - enemyCount: 50
+        enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
+      - enemyCount: 40
         enemyData: {fileID: 11400000, guid: 8a749b46a2a7d944892efbf025fbe2a1, type: 2}
   - name: Wave 6
     musicIntensity: 1
@@ -258,9 +260,9 @@ MonoBehaviour:
     variants:
     - name: Variant 0
       enemyBatches:
-      - enemyCount: 70
+      - enemyCount: 60
         enemyData: {fileID: 11400000, guid: 8a749b46a2a7d944892efbf025fbe2a1, type: 2}
-      - enemyCount: 100
+      - enemyCount: 70
         enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
       - enemyCount: 40
         enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
@@ -299,13 +301,13 @@ MonoBehaviour:
     variants:
     - name: Variant 0
       enemyBatches:
-      - enemyCount: 50
+      - enemyCount: 55
         enemyData: {fileID: 11400000, guid: 8a749b46a2a7d944892efbf025fbe2a1, type: 2}
       - enemyCount: 70
         enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
-      - enemyCount: 30
+      - enemyCount: 35
         enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
-      - enemyCount: 50
+      - enemyCount: 80
         enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
   bossPhase:
     name: Boss Wave
@@ -351,13 +353,13 @@ MonoBehaviour:
     minTrashRefillDelay: 15
     raidBoss: {fileID: 11400000, guid: eb8efa5281fc3a5449138b200351962b, type: 2}
   swarm:
-    chance: 0.15
-    waveRange: {x: 4, y: 6}
+    chance: 0.25
+    waveRange: {x: 3, y: 5}
     pool:
       name: Swarm
       musicIntensity: 0
       maxDuration: 0
-      spawnDuration: 25
+      spawnDuration: 15
       startNextPhaseEarlyDelay: 0
       spawnCellRange: {x: 18, y: 26}
       reteleportCount: 0

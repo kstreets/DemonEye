@@ -50,7 +50,7 @@ MonoBehaviour:
   maxStackCount: 0
   weight: 0
   description: 
-  placeholderSprite: {fileID: 0}
+  placeholderSprite: {fileID: -1883763980, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   probability: 0.2
   damageMulti: 1.2
   radius: 0.29

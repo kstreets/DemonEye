@@ -26,9 +26,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   attack: {fileID: 11400000, guid: 97b76f1f01b67da42831a9b8f6130d10, type: 2}
-  speed: 0.44
-  health: 50
+  speed: 0.47
+  health: 45
   collisionDamage: 8
   soulWorthPerKill: 3
   xpWorthPerKill: 15
-  defaultMass: 14.310003
+  defaultMass: 8.040003

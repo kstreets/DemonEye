@@ -50,7 +50,7 @@ MonoBehaviour:
   maxStackCount: 0
   weight: 0
   description: 
-  placeholderSprite: {fileID: 0}
+  placeholderSprite: {fileID: -1301603175, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   numShotsUntilOverheat: 12
   damageMulti: 1.2
   radius: 0.73
