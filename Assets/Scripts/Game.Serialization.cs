@@ -23,6 +23,7 @@ public static partial class Game {
         
         public List<MapData.State> mapStates;
         public List<Quest.State> questStates;
+        public List<KeyValuePair<string, List<int>>> dropPoolPityCounts;
     }
     
     public static string GetSettingsSavePath() {
@@ -96,6 +97,16 @@ public static partial class Game {
             }
             SerializeList(binWriter, questStates, SerializeQuestState);
         }
+        // Drop pool pity, keyed by pool name
+        {
+            List<KeyValuePair<string, List<int>>> pityCounts = new();
+            foreach (DropPool dropPool in res.dropPools) {
+                if (dropPool.UsesPity) {
+                    pityCounts.Add(new(dropPool.name, new List<int>(dropPool.pityCounts)));
+                }
+            }
+            SerializeList(binWriter, pityCounts, SerializeDropPoolPity);
+        }
     }
 
     // failed is set when there was a save but it couldn't be loaded, so a new game starts
@@ -117,6 +128,7 @@ public static partial class Game {
             forgeInventoryItems = DeserializeInventory(binReader),
             mapStates = DeserializeList(binReader, DeserializeMapState),
             questStates = DeserializeList(binReader, DeserializeQuestState),
+            dropPoolPityCounts = DeserializeList(binReader, DeserializeDropPoolPity),
         };
     }
 
@@ -132,7 +144,6 @@ public static partial class Game {
 
     static void SerializePlayerState(BinaryWriter binWriter, Player player) {
         binWriter.Write(player.health);
-        binWriter.Write(player.state.soulCurrency);
         binWriter.Write(player.state.coinCurrency);
         binWriter.Write(player.state.hasteSkillLevel);
         binWriter.Write(player.state.intellectSkillLevel);
@@ -143,7 +154,6 @@ public static partial class Game {
     static PlayerState DeserializePlayerState(BinaryReader binReader) {
         return new() {
             initHealth = binReader.ReadInt32(),
-            soulCurrency = binReader.ReadInt32(),
             coinCurrency = binReader.ReadInt32(),
             hasteSkillLevel = binReader.ReadInt32(),
             intellectSkillLevel = binReader.ReadInt32(),
@@ -219,6 +229,16 @@ public static partial class Game {
     static KeyValuePair<int, int> DeserializeIntPair(BinaryReader binReader) {
         int key = binReader.ReadInt32();
         return new(key, binReader.ReadInt32());
+    }
+
+    static void SerializeDropPoolPity(BinaryWriter binWriter, KeyValuePair<string, List<int>> pity) {
+        SerializeString(binWriter, pity.Key);
+        SerializeList(binWriter, pity.Value, SerializeInt);
+    }
+
+    static KeyValuePair<string, List<int>> DeserializeDropPoolPity(BinaryReader binReader) {
+        string poolName = DeserializeString(binReader);
+        return new(poolName, DeserializeList(binReader, DeserializeInt));
     }
 
     static void SerializeItemInstance(BinaryWriter binWriter, ItemInstance itemInstance) {

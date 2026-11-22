@@ -9016,8 +9016,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4288652205
-  m_fontColor: {r: 0.6784314, g: 0.6392157, b: 0.62352943, a: 1}
+    rgba: 4287801791
+  m_fontColor: {r: 0.7490196, g: 0.6627451, b: 0.57254905, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -9543,11 +9543,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1046082098823623568, guid: af2ef8ac54f84444690409fe91088fcf, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 25
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 1046082098823623568, guid: af2ef8ac54f84444690409fe91088fcf, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 20.3125
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 1046082098823623568, guid: af2ef8ac54f84444690409fe91088fcf, type: 3}
       propertyPath: m_LocalPosition.x
@@ -29899,8 +29899,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4282955638
-  m_fontColor: {r: 0.4627451, g: 0.7176471, b: 0.28235295, a: 1}
+    rgba: 4287801791
+  m_fontColor: {r: 0.7490196, g: 0.6627451, b: 0.57254905, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -37898,7 +37898,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 2100000, guid: 946d47807a16f7d4fb9b2eeaef978f66, type: 2}
+  m_Material: {fileID: 2100000, guid: 07c3aaa4bbe2b12448a00ad15d4069de, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}

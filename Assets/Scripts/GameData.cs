@@ -735,7 +735,7 @@ public class GameData {
             public TrinketData trinkets;
             public RaidCutsceneData raidCutscene;
             public Limiter reteleportLimitter;
-            public int soulsGained;
+            public int souls;
         }
         public Data data;
     } 

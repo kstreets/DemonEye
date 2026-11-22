@@ -44,7 +44,7 @@ MonoBehaviour:
   rangePercentage: 0
   itemGroupProps: {fileID: 0}
   maxStackCount: 15
-  weight: 6
+  weight: 5
   description: 'Known for its protection against negative energies, allegedly.
 
 '

@@ -55,7 +55,6 @@ public static partial class Game {
     
     public class PlayerState {
         public int initHealth;
-        public int soulCurrency;
         public int coinCurrency;
         public int hasteSkillLevel;
         public int intellectSkillLevel;
@@ -102,8 +101,7 @@ public static partial class Game {
     }
 
     static void InitPlayerState(Player instancedPlayer, GameState gameState) {
-        // No save means this is a fresh game, so give the player some starting souls
-        instancedPlayer.state = gameState?.playerState ?? new() { soulCurrency = startingSoulCurrency };
+        instancedPlayer.state = gameState?.playerState ?? new();
         // We want to make sure that the player health is never <= zero
         int startingHealth = instancedPlayer.state.initHealth;
         instancedPlayer.health = startingHealth <= 0f ? FullPlayerHealth() : startingHealth;
@@ -161,8 +159,7 @@ public static partial class Game {
         if (trinkets.equiped is SoulSuckerTrinket soulSucker) {
             souls = Mathf.RoundToInt(souls * soulSucker.soulsPerKillMultiplier);
         }
-        player.state.soulCurrency += souls;
-        curRaid.data.soulsGained += souls;
+        curRaid.data.souls += souls;
         
         if (demonEye.equiped.soulVolley.HasValue) {
             ref var soulVolley = ref demonEye.equiped.soulVolley.GetValue();

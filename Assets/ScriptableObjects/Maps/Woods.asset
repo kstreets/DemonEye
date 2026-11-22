@@ -23,14 +23,15 @@ MonoBehaviour:
   previewImage: {fileID: 2800000, guid: 2721ae5008caad74fb4afe62b8858ad5, type: 3}
   difficultyText: Medium
   unlockRequirement: Complete Outskirts to unlock
-  altarSoulPrice: 50
+  altarSoulPrice: 75
+  exitPortalSoulPrice: 350
   exitPortalsCount: 1
   minExtractionDist: 7.5
   playerCantBleed: 0
   eyeUpgradeOnBodyChance: 0.12
   consecutiveEyeUpgradeChanceReductionOnBody: 0.09
   commonLootRarityIncrease: 0
-  uncommonLootRarityIncrease: 0.1
+  uncommonLootRarityIncrease: 0.08
   rareLootRarityIncrease: 0
   epicLootRarityIncrease: 0
   legendaryLootRarityIncrease: 0

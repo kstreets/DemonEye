@@ -11,7 +11,8 @@ public static partial class Game {
     [Flags] 
     public enum ProjectileTypeFlags {
         None                        = 1 << 0, 
-        ReflectedShot               = 1 << 1, 
+        ReflectedShot               = 1 << 1,
+        BoneShard                   = 1 << 2,
     }
     
     public class Projectile : Entity {
@@ -32,6 +33,7 @@ public static partial class Game {
         public Entity sourceEntity;
         public Entity targetEntity;
         public List<Entity> ignoreEntities;
+        public int reflectCount;
         public float detonateNearPlayerRadius;
         public Action<Vector2> onDetonate;
         public Entity shadowEntity;
@@ -61,6 +63,7 @@ public static partial class Game {
             ListPool<Entity>.Release(projectile.ignoreEntities);
         }
         projectile.ignoreEntities = default;
+        projectile.reflectCount = default;
         projectile.detonateNearPlayerRadius = default;
         projectile.onDetonate = default;
         projectile.shadowEntity = default;
@@ -226,12 +229,15 @@ public static partial class Game {
                 PlayAudioClip(audio.projectileImpact, proj.position);
                 
                 if (proj.typeFlags.HasFlag(ProjectileTypeFlags.ReflectedShot)) {
-                    int reflectedCount = proj.ignoreEntities?.Count ?? 0;
-                    if (reflectedCount == 0) {
+                    int maxReflections = proj.eyeInstanceSpawnedFrom.reflectingShot?.maxReflections ?? 0;
+                    if (proj.reflectCount < maxReflections) {
+                        proj.ignoreEntities?.Clear(); // Only ignore last reflected off enemy
+                        ProjectileMarkEntityToIgnore(proj, entity);
                         Vector2 reflectedVelocity = Quaternion.AngleAxis(Random.Range(-45, 45), Vector3.forward) * -proj.velocity;
                         proj.velocity = reflectedVelocity;
                         proj.rotation = LookRotation(reflectedVelocity);
                         proj.curTimeAlive = 0f;
+                        proj.reflectCount++;
                         PlayAudioClip(audio.reflectedShotClip, proj.position);
                         continue;
                     } 
@@ -281,20 +287,24 @@ public static partial class Game {
         }
         
         if (proj.typeFlags.HasFlag(ProjectileTypeFlags.ReflectedShot)) {
-            int previouslyReflectedCount = proj.ignoreEntities?.Count ?? 0;
-            ProjectileMarkEntityToIgnore(proj, entity);
-            return previouslyReflectedCount <= 0;
+            return false;
+        }
+        
+        int goThroughCount = 0;
+
+        DemonEyeInstance eye = proj.eyeInstanceSpawnedFrom;
+        bool isBoneShard = proj.typeFlags.HasFlag(ProjectileTypeFlags.BoneShard);
+        if (isBoneShard && eye.piercingShardsAugment.TryGetValue(out var piercingShards)) {
+            goThroughCount += piercingShards.goThroughCount;
         }
 
-        // if (proj.typeFlags.HasFlag(ProjectileTypeFlags.ReflectedShot) && proj.eyeInstanceSpawnedFrom.backwardsPiercingAugment.HasValue) {
-        //     ProjectileMarkEntityToIgnore(proj, entity);
-        //     return true;
-        // }
-
-        if (proj.eyeInstanceSpawnedFrom.penetration.TryGetValue(out var penetration)) {
+        if (goThroughCount > 0) {
             ProjectileMarkEntityToIgnore(proj, entity);
             int alreadyPenetratedCount = proj.ignoreEntities?.Count ?? 0;
-            return alreadyPenetratedCount <= penetration.goThroughCount;
+            if (isBoneShard) {
+                alreadyPenetratedCount--; // The shattered enemy is ignored from the start
+            }
+            return alreadyPenetratedCount <= goThroughCount;
         }
 
         return false;

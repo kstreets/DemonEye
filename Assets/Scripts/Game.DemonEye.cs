@@ -30,6 +30,7 @@ public static partial class Game {
         public ReflectingShotEyeUpgrade.InstanceData? reflectingShot;
         public ExplosionEyeUpgrade.InstanceData? explosion;
         public OverheatBlast.InstanceData? blast;
+        public CannonShot.InstanceData? cannonShot;
         public BoneShatterEyeUpgrade.InstanceData? boneShatter;
         public PoisonEyeUpgrade.InstanceData? poison;
         public OptionalRef<SoulVolleyEyeUpgrade.InstanceData> soulVolley;
@@ -43,6 +44,8 @@ public static partial class Game {
         public MultiProjectileCritAugment.InstanceData? multiProjectileCritAugment;
         public OverheatProcAugment.InstanceData? overheatProcAugment;
         public BrittleBonesAugment.InstanceData? brittleBonesAugment;
+        public PiercingShardsAugment.InstanceData? piercingShardsAugment;
+        public ReflectingDamageAugment.InstanceData? reflectingDamageAugment;
         
         public EquipedUpgradeInstance GetUpgradeInstance<T>() where T : EyeUpgrade {
             foreach (EquipedUpgradeInstance upgradeInstance in upgradeInstances) {

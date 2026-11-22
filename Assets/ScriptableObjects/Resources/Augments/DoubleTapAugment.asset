@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DoubleTapAugment
   uuid: -1505730100
   derivedFrom: {fileID: 11400000, guid: 5208da11a0273eb40938911e8a5feefc, type: 2}
-  rarity: 0
-  additionalBuyPricePercentage: 0
+  rarity: 1
+  additionalBuyPricePercentage: 2.05
   mapSpawning:
     spawnsOnAll: 0
     firstSpawnMap: {fileID: 11400000, guid: d7b529e6df27011469e20f807c6050c8, type: 2}

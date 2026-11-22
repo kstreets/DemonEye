@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HemorrhageAugment
   uuid: 987972151
   derivedFrom: {fileID: 11400000, guid: 879589b7002a56d4791affd28d5fb199, type: 2}
-  percentChanceOfDerivedToSpawn: 0.813
-  rarity: 0
+  rarity: 1
+  additionalBuyPricePercentage: 1.01
   mapSpawning:
     spawnsOnAll: 0
     firstSpawnMap: {fileID: 11400000, guid: d7b529e6df27011469e20f807c6050c8, type: 2}
@@ -24,5 +24,5 @@ MonoBehaviour:
     levelRequired: 2
     stockRange: {x: 1, y: 1}
     barterRequirements: []
-  bleedDamageMulti: 3.5
+  bleedDamageMulti: 5
   maxGraceTime: 0.08

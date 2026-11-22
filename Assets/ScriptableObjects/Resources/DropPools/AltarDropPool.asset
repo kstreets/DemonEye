@@ -14,3 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DropPool
   reduceDuplicates: 1
   isMapSpecific: 1
+  usesMapRarityIncrease: 1
+  pityBonusPerMiss:
+  - 0
+  - 0.1
+  - 0.05
+  - 0.025
+  - 0.015

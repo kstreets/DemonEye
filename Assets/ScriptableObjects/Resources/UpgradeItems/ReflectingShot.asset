@@ -48,3 +48,4 @@ MonoBehaviour:
   description: 
   placeholderSprite: {fileID: 681249215, guid: c779c766dc706cf4c907cb9abc0c8c51, type: 3}
   probability: 0.22
+  maxReflections: 6

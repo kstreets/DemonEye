@@ -32,6 +32,17 @@ public static partial class Game {
         }
     }
 
+    static void InitDropPoolPity(GameState gameState) {
+        if (gameState == null) return;
+        foreach ((string poolName, List<int> pityCounts) in gameState.dropPoolPityCounts) {
+            DropPool dropPool = res.dropPools.Find(x => x.name == poolName);
+            if (dropPool == null || !dropPool.UsesPity) continue;
+            for (int i = 0; i < pityCounts.Count && i < dropPool.pityCounts.Length; i++) {
+                dropPool.pityCounts[i] = pityCounts[i];
+            }
+        }
+    }
+
     static void RegisterItemToDropPools(Item item, List<DropPool> dropPools) {
         foreach (DropPool dropPool in dropPools) {
             foreach (DropOrigin dropOrigin in item.dropOrigins) {
@@ -50,13 +61,15 @@ public static partial class Game {
         // Start rolling from highest rarity down to lowest
         for (int i = Item.rarityCount - 1; i >= 0; i--) {
             Item.Rarity curRarity = (Item.Rarity)i;
-            float rarityRoll = GetDropChanceOfRarity(curRarity, map); 
+            float rarityRoll = GetDropChanceOfRarity(curRarity, map, dropPool.usesMapRarityIncrease);
+            rarityRoll = Mathf.Clamp01(rarityRoll * dropPool.GetPityMultiplier(curRarity));
             if (RollProbability(rarityRoll)) {
                 if (dropPool.TryGetItemOfRarity(curRarity, out Item item)) {
+                    dropPool.UpdatePity(curRarity);
                     return item;
                 }
             }
-        } 
+        }
         
         return null;
     }
@@ -87,7 +100,7 @@ public static partial class Game {
                 if (remainingByRarity[i].Count == 0) continue;
                 
                 chosenRarity = i;
-                float rarityRoll = GetDropChanceOfRarity((Item.Rarity)i, map);
+                float rarityRoll = GetDropChanceOfRarity((Item.Rarity)i, map, dropPool.usesMapRarityIncrease);
                 if (RollProbability(rarityRoll)) break;
             }
 
@@ -108,11 +121,13 @@ public static partial class Game {
         }
     }
 
-    static float GetDropChanceOfItem(Item item, [CanBeNull] MapData map) => GetDropChanceOfRarity(item.GetRarity(), map);
+    static float GetDropChanceOfItem(Item item, [CanBeNull] MapData map, bool applyMapRarityIncrease) {
+        return GetDropChanceOfRarity(item.GetRarity(), map, applyMapRarityIncrease); 
+    }  
 
-    static float GetDropChanceOfRarity(Item.Rarity rarity, [CanBeNull] MapData map) {
+    static float GetDropChanceOfRarity(Item.Rarity rarity, [CanBeNull] MapData map, bool applyMapRarityIncrease) {
         float addChanceToSpawn = 0f;
-        if (map != null) {
+        if (map != null && applyMapRarityIncrease) {
             addChanceToSpawn = rarity switch {
                 Item.Rarity.Common    => map.commonLootRarityIncrease,
                 Item.Rarity.Uncommon  => map.uncommonLootRarityIncrease,

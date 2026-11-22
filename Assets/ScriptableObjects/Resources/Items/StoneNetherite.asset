@@ -44,5 +44,5 @@ MonoBehaviour:
   rangePercentage: 0
   itemGroupProps: {fileID: 0}
   maxStackCount: 15
-  weight: 6
+  weight: 5
   description: A base material for uncommon blood runes. Cracks under anything stronger.

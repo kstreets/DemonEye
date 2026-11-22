@@ -21,6 +21,7 @@ public class MapData : UuidScriptableObject {
 
     [Header("Variables")]
     public int altarSoulPrice;
+    public int exitPortalSoulPrice;
     public int exitPortalsCount;
     public float minExtractionDist;
     public bool playerCantBleed;

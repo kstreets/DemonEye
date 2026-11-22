@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DropPool
   reduceDuplicates: 1
   isMapSpecific: 1
+  usesMapRarityIncrease: 0

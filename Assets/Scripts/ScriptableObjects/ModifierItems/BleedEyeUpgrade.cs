@@ -36,7 +36,7 @@ public class BleedEyeUpgrade : EyeUpgrade {
     }
 
     float GetBleedDamageMultiplier(int stackCount) {
-        return TaperFloat(damageMulti, stackCount, 0.6f);
+        return TaperFloat(damageMulti, stackCount, 0.8f);
     }
     
 }

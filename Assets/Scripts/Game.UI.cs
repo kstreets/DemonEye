@@ -435,22 +435,22 @@ public static partial class Game {
     static Sequence coinCurrencySequence;
 
     static void InitCurrencyNumbers() {
-        playerInfo.soulsCurrencyText.text = player.state.soulCurrency.ToString("N0");
+        playerInfo.soulsCurrencyText.text = curRaid.data.souls.ToString("N0");
         playerInfo.coinCurrencyText.text = player.state.coinCurrency.ToString("N0");
-        prevSoulCurrency = player.state.soulCurrency;
+        prevSoulCurrency = curRaid.data.souls;
         prevCoinCurrency = player.state.coinCurrency;
     }
 
     static void UpdateCurrencyNumbers() {
-        if (prevSoulCurrency != player.state.soulCurrency) {
+        if (prevSoulCurrency != curRaid.data.souls) {
             soulCurrencySequence.Complete();
-            soulCurrencySequence = AnimateCurrency(playerInfo.soulsCurrencyText, prevSoulCurrency, player.state.soulCurrency);
+            soulCurrencySequence = AnimateCurrency(playerInfo.soulsCurrencyText, prevSoulCurrency, curRaid.data.souls);
         }
         if (prevCoinCurrency != player.state.coinCurrency) {
             coinCurrencySequence.Complete();
             coinCurrencySequence = AnimateCurrency(playerInfo.coinCurrencyText, prevCoinCurrency, player.state.coinCurrency);
         }
-        prevSoulCurrency = player.state.soulCurrency;
+        prevSoulCurrency = curRaid.data.souls;
         prevCoinCurrency = player.state.coinCurrency;
     }
     
@@ -1256,8 +1256,13 @@ public static partial class Game {
         }
     }
 
-    // Not in the bound prompt list, since that would overwrite the label with the action name every frame
-    static void EnableInteractionPrompt(Vector3 position, string interactionText) {
+    static void EnableInteractionPrompt(Vector3 position, string interactionText, int soulsPrice = 0) {
+        if (soulsPrice > 0) {
+            Color soulsTextColor = curRaid.data.souls >= soulsPrice ? config.styles.soulCurrencyColor : config.styles.outOfStockCountColor;
+            string soulCostString = $"<sprite=1>{ColorText(soulsPrice.ToString("N0"), soulsTextColor)}";
+            interactionText += soulCostString;
+        }
+        
         InputPrompt prompt = ui.interactionPrompt;
         prompt.gameObject.SetActive(true);
         prompt.Set(inputs.interact.GetCurrentDisplayGlyphs());

@@ -277,7 +277,7 @@ public class GameplayTestingWindow : EditorWindow {
 
     void OnGiveSouls(ClickEvent e) {
         if (!Application.isPlaying) return;
-        Game.player.state.soulCurrency += 500;
+        Game.curRaid.data.souls += 500;
     }
 
     void OnTraderLevelChanged(ChangeEvent<int> changeEvent) {

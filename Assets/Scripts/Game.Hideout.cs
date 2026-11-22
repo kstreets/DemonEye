@@ -1069,8 +1069,6 @@ public static partial class Game {
         const float delayBeforeUpgradeHappens = burnAnimationTime * 0.23f;
         Tween.Delay(delayBeforeUpgradeHappens, () => 
         {
-            player.state.soulCurrency -= upgradePath.soulsNeededPerLevel[playerStatLevel];
-            
             if (upgradePath == skillUpgradePaths.haste) {
                 player.state.hasteSkillLevel++;
             }
@@ -1139,9 +1137,10 @@ public static partial class Game {
         if (!upgradePath.soulsNeededPerLevel.IndexInRange(playerSkillLevel)) {
             return UpgradeStatResult.AtMaxLevel;
         }
-        if (player.state.soulCurrency >= upgradePath.soulsNeededPerLevel[playerSkillLevel]) {
+        // Note: We don't have skill points or anything like that setup yet
+        // if (player.state.soulCurrency >= upgradePath.soulsNeededPerLevel[playerSkillLevel]) {
             return UpgradeStatResult.Affordable;    
-        }
+        // }
         return UpgradeStatResult.CantAfford;
     }
     

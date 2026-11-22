@@ -243,7 +243,8 @@ public static partial class Game {
                     int boneDamage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(enemy) * boneShatter.perShardDamageMulti);
                     Projectile boneShatterProj = SpawnProjectile(
                         entityPools.boneShatterProjectile, enemy.position, boneShatterVelocity, boneShatter.lifeTime, player,
-                        rotation: RandomRotation(), spawnDelay: randomDelay, flatDamage: boneDamage
+                        rotation: RandomRotation(), spawnDelay: randomDelay, flatDamage: boneDamage,
+                        typeFlags: ProjectileTypeFlags.BoneShard
                     );
                     ProjectileMarkEntityToIgnore(boneShatterProj, enemy);
                 }
@@ -340,6 +341,10 @@ public static partial class Game {
                 if (penetrationCountBeforeDamagingThisEnemy > 0) {
                     damageMultiplier += penetrationCountBeforeDamagingThisEnemy * penetrationDamage.damageMultiplierPerPenetration;
                 }
+            }
+
+            if (demonEye.equiped.reflectingDamageAugment.TryGetValue(out var reflectingDamage)) {
+                damageMultiplier += proj.reflectCount * reflectingDamage.damageMultiplierPerReflection;
             }
         }
 

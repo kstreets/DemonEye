@@ -33,7 +33,7 @@ MonoBehaviour:
   rarity: 0
   dropOrigins:
   - dropPool: {fileID: 11400000, guid: 3c4ecb30986cb144bb8b92852af68d07, type: 2}
-    maxStackCount: 6
+    maxStackCount: 2
   - dropPool: {fileID: 11400000, guid: a50fac0e0c375294296c54b1d6d4450d, type: 2}
     maxStackCount: 1
   modifiesStats: 0

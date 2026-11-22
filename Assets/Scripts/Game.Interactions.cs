@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using PrimeTween;
 using UnityEngine;
-using UnityEngine.Pool;
 
 public static partial class Game {
     
@@ -59,14 +58,11 @@ public static partial class Game {
             }
             
             int soulsPrice = curRaid.map.altarSoulPrice;
-            Color soulsTextColor = player.state.soulCurrency >= soulsPrice ? config.styles.soulCurrencyColor : config.styles.outOfStockCountColor;
-            string soulCostString = $"<sprite=1>{ColorText(soulsPrice.ToString("N0"), soulsTextColor)}";
-            string interactionText = "Summon " + soulCostString;
-            EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), interactionText);
-            if (inputs.interact.WasPressedThisFrame() && player.state.soulCurrency >= soulsPrice) {
+            EnableInteractionPrompt(OffsetY(col.transform.position, 0.1f), "Summon", soulsPrice);
+            if (inputs.interact.WasPressedThisFrame() && curRaid.data.souls >= soulsPrice) {
                 thisFrame.flags |= GameData.FrameFlags.SummonedUpgrade;
                 SummonEyeUpgradeFromAltar(col);
-                player.state.soulCurrency -= soulsPrice;
+                curRaid.data.souls -= soulsPrice;
                 altar.used = true;
             }
         }
@@ -84,9 +80,13 @@ public static partial class Game {
             Portal portal = GetExitPortalFromTransform(col.transform);
             
             if (portal.state == Portal.State.Inactive) {
-                EnableInteractionPrompt(OffsetY(col.transform.position, 0.15f), "Summon Portal");
-                if (inputs.interact.IsPressed()) {
+                int portalSoulsPrice = curRaid.map.exitPortalSoulPrice;
+                EnableInteractionPrompt(OffsetY(col.transform.position, 0.15f), "Summon Portal", portalSoulsPrice);
+                if (inputs.interact.IsPressed() && curRaid.data.souls >= portalSoulsPrice) {
                     portal.StartOpenCloseSequence(config.gameplay.portalPostSummonDelay, config.gameplay.portalActiveDuration, player.position);
+                    SpawnEntityOneShot(entityPools.altarSoulSwirl, portal.crystalTrans.position, Quaternion.identity);
+                    PlayAudioClip(audio.altarSoulsClip, portal.crystalTrans.position);
+                    curRaid.data.souls -= portalSoulsPrice;
                 }
             }
             
@@ -309,7 +309,6 @@ public static partial class Game {
             ref int discoverItemIndex = ref curRaid.data.interactions.discoverItemIndex;
 
             ItemInstance itemInstance = lootInventoryPtr.slots[discoverItemIndex].itemInstance;
-            Item itemRef = itemInstance.ItemRef;
             itemInstance.notDiscovered = false;
             
             thisFrame.data.foundSearchItem = itemInstance;

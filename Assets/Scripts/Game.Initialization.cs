@@ -21,6 +21,7 @@ public static partial class Game {
         InitInput();
         InitSettingsControlsPage();
         InitResources();
+        InitDropPoolPity(gameState);
         InitAudio();
         InitMusic();
         DemonEyeTween.Init();

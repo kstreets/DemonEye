@@ -1330,7 +1330,7 @@ public static partial class Game {
         public float nextTrashRefillTime; // In time in the boss phase
 
         // The swarm spawns on its own track so the waves keep running underneath it
-        public const float swarmWarningTime = 30f;
+        public const float swarmWarningTime = 45f;
         public SwarmState swarmState;
         public int swarmWaveIndex;
         public float swarmWarnAtTimeInWave;
@@ -1587,26 +1587,26 @@ public static partial class Game {
         float prevTime = sm.timeAddedThroughActions;
 
         if (thisFrame.flags.HasFlag(FrameFlags.SearchingBody)) {
-            sm.timeAddedThroughActions += 2f;
+            sm.timeAddedThroughActions += 4f;
         }
         if (thisFrame.flags.HasFlag(FrameFlags.SearchingBush)) {
-            sm.timeAddedThroughActions += 1f;
+            sm.timeAddedThroughActions += 2f;
         }
         if (thisFrame.flags.HasFlag(FrameFlags.SummonedUpgrade)) {
-            sm.timeAddedThroughActions += 1f;
+            sm.timeAddedThroughActions += 2f;
         }
         if (thisFrame.flags.HasFlag(FrameFlags.TookConsumable)) {
-            float timeToAdd = Mathf.Lerp(1f, 2f, 1f - CurPlayerHealthPercentage());
+            float timeToAdd = Mathf.Lerp(1f, 3f, 1f - CurPlayerHealthPercentage());
             sm.timeAddedThroughActions += timeToAdd;
         }
         if (thisFrame.flags.HasFlag(FrameFlags.ShotRock)) {
-            sm.timeAddedThroughActions += 0.2f;
+            sm.timeAddedThroughActions += 0.35f;
         }
 
         if (thisFrame.flags.HasFlag(FrameFlags.PickedUpLoot)) {
             int nearbyItems = Physics.OverlapCircle(player.Center, 0.5f, Masks.ItemMask).Count;
             if (nearbyItems >= 2) {
-                sm.timeAddedThroughActions += 1f;
+                sm.timeAddedThroughActions += 1.5f;
             }
         }
 

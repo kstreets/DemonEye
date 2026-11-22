@@ -44,6 +44,6 @@ MonoBehaviour:
   rangePercentage: 0
   itemGroupProps: {fileID: 0}
   maxStackCount: 15
-  weight: 6
+  weight: 5
   description: A base material for common blood runes. Too brittle to hold anything
     more powerful.
