@@ -215,9 +215,9 @@ MonoBehaviour:
         enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
     - name: Variant 1
       enemyBatches:
-      - enemyCount: 60
-        enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
       - enemyCount: 20
+        enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
+      - enemyCount: 22
         enemyData: {fileID: 11400000, guid: e317b66f7ab3f9a4eb9807435d01428e, type: 2}
   - name: Wave 6
     musicIntensity: 2
@@ -258,8 +258,12 @@ MonoBehaviour:
         enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
       - enemyCount: 60
         enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
-      - enemyCount: 15
+    - name: Variant 1
+      enemyBatches:
+      - enemyCount: 30
         enemyData: {fileID: 11400000, guid: e317b66f7ab3f9a4eb9807435d01428e, type: 2}
+      - enemyCount: 25
+        enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
   bossPhase:
     name: Boss Wave
     musicIntensity: 0

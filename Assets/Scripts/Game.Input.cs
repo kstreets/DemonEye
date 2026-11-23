@@ -56,7 +56,7 @@ public static partial class Game {
         inputs.quickUseSelected = AddAction("QuickUseSelected");
         inputs.quickUsePrevious = AddAction("QuickUsePrevious");
         inputs.quickUseNext = AddAction("QuickUseNext");
-        inputs.teleport = AddAction("Teleport");
+        inputs.dash = AddAction("Dash");
         inputs.menuMove = AddAction("MenuMove");
         inputs.menuTabLeft = AddAction("MenuTabLeft");
         inputs.menuTabRight = AddAction("MenuTabRight");

@@ -235,7 +235,7 @@ public static partial class Game {
         Vector2 moveInput = inputs.move.ReadVector2();
         Vector2 prevPos = player.position;
 
-        if (inputs.teleport.WasPressedThisFrame() && player.teleportCooldown.TryUse()) {
+        if (inputs.dash.WasPressedThisFrame() && player.teleportCooldown.TryUse()) {
             StartTeleport(moveInput);
             return;
         }
@@ -767,9 +767,9 @@ public static partial class Game {
 
     static void HealPlayer(int healing, float duration = 0f) {
         if (duration <= 0f) {
-            int clampedHealing = Mathf.Clamp(player.health + healing, 0, FullPlayerHealth());
-            player.health = clampedHealing;
-            thisFrame.data.healing += clampedHealing;
+            int healthBefore = player.health;
+            player.health = Mathf.Clamp(player.health + healing, 0, FullPlayerHealth());
+            thisFrame.data.healing += player.health - healthBefore; // What was actually restored, healing past full doesn't count
             return;
         }
         

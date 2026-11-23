@@ -242,6 +242,7 @@ public static partial class Game {
         raidInfo.foundExitPortalText.gameObject.SetActive(false);
         ui.hotBarParent.gameObject.SetActive(false);
         ui.minimap.gameObject.SetActive(false);
+        ui.bleedingNotifier.gameObject.SetActive(false);
         inputPrompts.inRaidParent.SetActive(false);
     }
 

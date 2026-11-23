@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5d4d20277d10e0489f4a0bf8ac49946, type: 3}
+  m_Name: Firefighter
+  m_EditorClassIdentifier: Assembly-CSharp::Quest
+  uuid: -298922143
+  title: Firefighter
+  description: There's a sorcerer at the end of the Woods setting everything on fire,
+    and it's terrible for business. Somebody has to put it out, and I'm certainly
+    not doing it.
+  traderReputationReward: 250
+  objectives:
+  - id: 1
+    type: 0
+    description: 
+    targetValue: 1
+    targetEnemy: {fileID: 11400000, guid: eb8efa5281fc3a5449138b200351962b, type: 2}
+    targetItem: {fileID: 0}
+    targetItemType: {fileID: 0}
+    targetMap: {fileID: 0}
+    keepFetchedItems: 0
+    requiredCount: 0

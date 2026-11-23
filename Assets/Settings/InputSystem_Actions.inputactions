@@ -124,7 +124,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Teleport",
+                    "name": "Dash",
                     "type": "Button",
                     "id": "e56dd90a-d653-43c2-9046-46cabf7d542a",
                     "expectedControlType": "",
@@ -356,7 +356,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "Teleport",
+                    "action": "Dash",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -367,7 +367,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Gamepad",
-                    "action": "Teleport",
+                    "action": "Dash",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

@@ -24,7 +24,7 @@ MonoBehaviour:
   difficultyText: Medium
   unlockRequirement: Complete Outskirts to unlock
   altarSoulPrice: 75
-  exitPortalSoulPrice: 350
+  exitPortalSoulPrice: 200
   exitPortalsCount: 1
   minExtractionDist: 7.5
   playerCantBleed: 0

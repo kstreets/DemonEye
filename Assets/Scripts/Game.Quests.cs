@@ -23,6 +23,11 @@ public static partial class Game {
         MedicalBushes          = 110,
         EquipADemonEye         = 120,
         BloodDropsForMushrooms = 130,
+        SoulsBanked            = 140,
+        ExtractAfterWave       = 150,
+        MultiKill              = 160,
+        CraftEyeWithStacks     = 170,
+        CraftEyeWithUpgrades   = 180,
     }
     
     [Serializable]
@@ -36,11 +41,19 @@ public static partial class Game {
         public ItemType targetItemType;
         public MapData targetMap;
         public bool keepFetchedItems;
+        [Tooltip("Multi kill: kills at once. Extract after wave: the wave to reach. Craft eye: stacks of one upgrade, or different upgrades")]
+        public int requiredCount;
     }
     
     public static string GetObjectiveDescription(ObjectiveData obj) {
         return obj.type switch {
+            QuestObjectiveTypes.Kill when obj.targetValue == 1 && obj.targetEnemy.isBoss => $"Kill the {obj.targetEnemy.displayName}",
             QuestObjectiveTypes.Kill        => $"Kill {obj.targetValue} {obj.targetEnemy.displayName}s",
+            QuestObjectiveTypes.SoulsBanked => $"Bank {obj.targetValue} souls from one extraction{OnMap()}",
+            QuestObjectiveTypes.ExtractAfterWave => $"Reach wave {obj.requiredCount}{OnMap()} and extract",
+            QuestObjectiveTypes.MultiKill   => $"Kill {obj.requiredCount} enemies at once" + (obj.targetValue > 1 ? $", {obj.targetValue} times" : ""),
+            QuestObjectiveTypes.CraftEyeWithStacks   => $"Craft a Demon Eye with {obj.requiredCount} of the same upgrade",
+            QuestObjectiveTypes.CraftEyeWithUpgrades => $"Craft a Demon Eye with {obj.requiredCount} different upgrades",
             QuestObjectiveTypes.FetchByItem => GetFetchDesc(),
             QuestObjectiveTypes.FetchByType => GetFetchDesc(),
             QuestObjectiveTypes.Teleport    => $"Teleport to {obj.targetMap?.displayName}",
@@ -48,6 +61,8 @@ public static partial class Game {
             _                               => obj.description,
         };
         
+        string OnMap() => obj.targetMap != null ? $" on {obj.targetMap.displayName}" : "";
+
         string GetFetchDesc() {
             string displayName = obj.type == QuestObjectiveTypes.FetchByItem ? obj.targetItem.displayName : obj.targetItemType.displayName;
             if (obj.targetValue == 1) {
@@ -107,6 +122,7 @@ public static partial class Game {
 
     static void UpdateQuests() {
         if (InTutorial) return;
+        UpdateRecentKills();
         
         foreach (QuestPackage questsActivePkg in quests.activePkgs) {
             Quest quest = questsActivePkg.questNode.curQuest;
@@ -203,9 +219,66 @@ public static partial class Game {
                 IncreaseProgressValue(quest, obj, thisFrame.data.enemyBloodDropped);
                 break;
             }
+            case QuestObjectiveTypes.SoulsBanked: {
+                // Progress is the most souls banked from a single extraction
+                if (JustExtracted() && OnTargetMap(obj)) {
+                    SetProgressValue(quest, obj, Mathf.Max(GetObjectiveProgress(quest, obj), curRaid.data.souls));
+                }
+                break;
+            }
+            case QuestObjectiveTypes.ExtractAfterWave: {
+                if (JustExtracted() && OnTargetMap(obj) && spawnManager.CurWaveNumber >= obj.requiredCount) {
+                    IncreaseProgressValue(quest, obj, 1);
+                }
+                break;
+            }
+            case QuestObjectiveTypes.MultiKill: {
+                if (recentKillTimes.Count >= obj.requiredCount) {
+                    recentKillTimes.Clear(); // One burst of kills only counts once
+                    IncreaseProgressValue(quest, obj, 1);
+                }
+                break;
+            }
+            case QuestObjectiveTypes.CraftEyeWithStacks:
+            case QuestObjectiveTypes.CraftEyeWithUpgrades: {
+                ItemInstance forgedEye = thisFrame.data.forgedDemonEye;
+                if (forgedEye == null) break;
+                EyeUpgradeSet upgradeSet = EyeUpgradeSetFromIds(forgedEye.nestedUuids);
+                int value = upgradeSet.elements.Count;
+                if (obj.type == QuestObjectiveTypes.CraftEyeWithStacks) {
+                    value = 0;
+                    foreach (EyeUpgradeSet.Element element in upgradeSet.elements) {
+                        value = Mathf.Max(value, element.upgradeCount);
+                    }
+                }
+                if (value >= obj.requiredCount) {
+                    IncreaseProgressValue(quest, obj, 1);
+                }
+                break;
+            }
             default:
                 throw new ArgumentOutOfRangeException();
         }
+    }
+
+    static bool JustExtracted() => thisFrame.flags.HasAnyFlag(FrameFlags.ExitTaken | FrameFlags.EarlyExitTaken);
+    static bool OnTargetMap(ObjectiveData obj) => obj.targetMap == null || curRaid.map == obj.targetMap;
+
+    // Kills spread over a few frames, like an explosion's, still count as at once
+    const float multiKillWindow = 0.25f;
+    static readonly List<float> recentKillTimes = new();
+
+    static void UpdateRecentKills() {
+        if (!InRaid) {
+            recentKillTimes.Clear();
+            return;
+        }
+        foreach (int kills in thisFrame.enemyKillCount.Values) {
+            for (int i = 0; i < kills; i++) {
+                recentKillTimes.Add(Time.time);
+            }
+        }
+        recentKillTimes.RemoveAll(static time => Time.time - time > multiKillWindow);
     }
 
     static void IncreaseObjectiveFromFlags(Quest quest, ObjectiveData obj, FrameFlags flag) {
@@ -215,31 +288,25 @@ public static partial class Game {
     }
 
     static void UpdateObjectiveFetchItem(Quest quest, ObjectiveData obj) {
-        int itemCount = obj.keepFetchedItems ? GetItemCountInInventory(inventories.player, obj.targetItem) : GetOwnedCountOfItem(obj.targetItem);
-        UpdateObjectiveFetch(quest, obj, itemCount);
+        UpdateObjectiveFetch(quest, obj, GetOwnedCountOfItem(obj.targetItem));
     }
 
     static void UpdateObjectiveFetchType(Quest quest, ObjectiveData obj) {
-        int itemCount = obj.keepFetchedItems ? GetItemCountInInventory(inventories.player, obj.targetItemType) : GetOwnedCountOfItem(obj.targetItemType);
-        UpdateObjectiveFetch(quest, obj, itemCount);
+        UpdateObjectiveFetch(quest, obj, GetOwnedCountOfItem(obj.targetItemType));
     }
 
-    static void UpdateObjectiveFetch(Quest quest, ObjectiveData obj, int itemCount) {
-        // If we keep the fetched items we only care about if the player returns with them, not if they have it in their stash.
-        // Item count should be the number of items currently in the player's inventory when keepFetchedItems is true.
+    // Items only count as owned outside of a raid, once they're in the inventory or stash
+    static void UpdateObjectiveFetch(Quest quest, ObjectiveData obj, int ownedCount) {
+        if (InRaid) return;
+        
+        // Kept items are the player's to use, so the progress never drops. Brought back, bought or crafted away later, they still count
         if (obj.keepFetchedItems) {
-            bool justExitedRaid = thisFrame.flags.HasAnyFlag(FrameFlags.ExitTaken | FrameFlags.EarlyExitTaken);
-            if (justExitedRaid) {
-                IncreaseProgressValue(quest, obj, itemCount);
-            }
+            SetProgressValue(quest, obj, Mathf.Max(GetObjectiveProgress(quest, obj), ownedCount));
             return;
         }
         
-        // If we don't keep the fetched items, we need to own all of them at the time of quest completion.
-        // We don't own the item unless we are outside of the raid.
-        if (!InRaid) {
-            SetProgressValue(quest, obj, itemCount);
-        }
+        // The trader takes these on completion, so they all need to be owned at once
+        SetProgressValue(quest, obj, ownedCount);
     }
 
     static void SetProgressValue(Quest quest, ObjectiveData obj, int value) {

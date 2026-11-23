@@ -14,12 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DynamicClip
   clips:
   - {fileID: 8300000, guid: c76fcc63dca70884a852c0d4c036b8e3, type: 3}
-  mixerGroup: {fileID: -4766202765403218368, guid: 5d1188e598dcb514aa82b03e86c0c627, type: 2}
+  mixerGroup: {fileID: 2440143469194923705, guid: 5d1188e598dcb514aa82b03e86c0c627, type: 2}
   rolloffMode: 1
   minDistance: 99999
   maxDistance: 99999
   minPitch: 1
   maxPitch: 1
   maxSimultaneous: 0
+  directionality: 0
   localAreaCooldownTime: 0
   localAreaDistance: 0

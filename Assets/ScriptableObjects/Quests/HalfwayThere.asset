@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5d4d20277d10e0489f4a0bf8ac49946, type: 3}
+  m_Name: HalfwayThere
+  m_EditorClassIdentifier: Assembly-CSharp::Quest
+  uuid: -705427770
+  title: Halfway There
+  description: Congrats, you made it to Woods. I'd give you a trophy but I don't
+    actually care. Some advice though, call it quits around wave 5 and take the extraction
+    portal back here. That way you'll keep all your loot.
+  traderReputationReward: 250
+  objectives:
+  - id: 1
+    type: 150
+    description: 
+    targetValue: 1
+    targetEnemy: {fileID: 0}
+    targetItem: {fileID: 0}
+    targetItemType: {fileID: 0}
+    targetMap: {fileID: 11400000, guid: d7b529e6df27011469e20f807c6050c8, type: 2}
+    keepFetchedItems: 0
+    requiredCount: 5

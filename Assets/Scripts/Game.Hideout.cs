@@ -693,6 +693,7 @@ public static partial class Game {
             ItemInstance newDemonEye = CreateNewDemonEyeItemInstance(demonEyeName, eyeUpgradeItemInstances);
             eyeSlot.itemInstance = newDemonEye;
         }
+        thisFrame.data.forgedDemonEye = eyeSlot.itemInstance;
 
         // Shown right away so the reveal pops in the finished eye instead of whatever was there before the next refresh
         eyeSlot.ui.SetItem(eyeSlot.itemInstance);

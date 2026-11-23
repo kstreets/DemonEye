@@ -576,7 +576,7 @@ public class GameData {
         public GameAction quickUseSelected;
         public GameAction quickUsePrevious;
         public GameAction quickUseNext;
-        public GameAction teleport;
+        public GameAction dash;
         public GameAction menuMove;
         public GameAction menuTabLeft;
         public GameAction menuTabRight;
@@ -796,6 +796,7 @@ public class GameData {
             public int healing;
             public int enemyBloodDropped;
             public ItemInstance foundSearchItem;
+            public ItemInstance forgedDemonEye; // Crafted or upgraded at the forge this frame
         }
         public Data data;
     }
