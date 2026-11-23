@@ -362,6 +362,10 @@ public static partial class Game {
         SpawnEntityOneShot(entityPools.muzzleFlash, GetPlayerEyePos(), LookRotation(aimDir), player.trans);
         EmitBarrelSmoke(GetPlayerEyePos(), aimDir);
 
+        if (demonEye.equiped.cannonShot.TryGetValue(out var cannonShot)) {
+            TriggerCannonShockwave(GetPlayerEyePos(), cannonShot);
+        }
+
         if (trinkets.equiped is CauterizingWoundsTrinket cauterizingWounds) {
             if (player.bleeding && RollProbability(cauterizingWounds.chancePerShotToStopBleeding)) {
                 player.bleeding = false;
@@ -377,7 +381,7 @@ public static partial class Game {
             ShootProjectile(aimDir, isMainProjectile: false, spawnDelay: doubleTap.delayBetweenShots);
         }
 
-        float consecutiveShotDelay = config.gameplay.attackDelay * 1.5f;
+        float consecutiveShotDelay = GetFirerateDelay() * 1.5f;
         if (Time.time - player.lastShotTime <= consecutiveShotDelay) {
             player.consecutiveShotCount++;
         }
@@ -614,11 +618,12 @@ public static partial class Game {
             }
         }
         
+        EntityPool<Projectile> pool = demonEye.equiped.cannonShot.HasValue ? entityPools.cannonProjectile : entityPools.projectile;
         if (demonEye.equiped.reflectingShot.TryGetValue(out var reflecting) && RollProbability(reflecting.probability)) {
-            _SpawnProjectile(GetPlayerEyePos(), velocity, entityPools.projectile, ProjectileTypeFlags.ReflectedShot);
+            _SpawnProjectile(GetPlayerEyePos(), velocity, pool, ProjectileTypeFlags.ReflectedShot);
         }
         else {
-            _SpawnProjectile(GetPlayerEyePos(), velocity, entityPools.projectile);
+            _SpawnProjectile(GetPlayerEyePos(), velocity, pool);
         }
         
         // Helper method just to forward the passed in parameters
@@ -647,8 +652,22 @@ public static partial class Game {
         List<Collider2D> cols = Physics.OverlapCircle(player.position, blast.radius, Masks.EnemyMask);
         foreach (Collider2D col in cols) {
             Enemy enemy = entities.lookup[col.gameObject] as Enemy;
-            int damage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(enemy) * blast.damageMulti);
+            int damage = Mathf.RoundToInt(GetBaseDamage() * blast.damageMulti);
             DamageEnemyAfterDelay(enemy, damage, false, 0.15f);
+        }
+    }
+    
+    static void TriggerCannonShockwave(Vector2 pos, CannonShot.InstanceData cannonShot) {
+        const float shockwaveDuration = 0.45f;
+        Entity shockwave = SpawnEntity(entityPools.shockwave, pos, Quaternion.identity, player.trans);
+        shockwave.shockwave.Animate(cannonShot.blastRadius, shockwaveDuration);
+        DestroyEntity(shockwave, shockwaveDuration);
+
+        List<Collider2D> cols = Physics.OverlapCircle(pos, cannonShot.blastRadius, Masks.EnemyMask);
+        foreach (Collider2D col in cols) {
+            if (entities.lookup[col.gameObject] is not Enemy enemy) continue;
+            int damage = Mathf.RoundToInt(GetBaseDamage() * cannonShot.blastDamageMulti);
+            DamageEnemy(enemy, damage, isCriticalStrike: false); // DamageEnemy applies the enemy damage multiplier
         }
     }
     
@@ -929,13 +948,13 @@ public static partial class Game {
         };
     }
 
+    // Note: Dont use EyeUpgrade.modifiesStats as a filter in this method because upgrades like cannonshot modify the damage multi but override
+    // the virtual GetDamageMultiplier method because it applies its own taper values to the damage multi, which is not yet supported on the base item
     static float GetEquipmentStatAdjustment(PlayerStat stat) {
         float statSum = 0f;
         foreach (EquipedUpgradeInstance mod in demonEye.equiped.upgradeInstances) {
             EyeUpgrade eyeUpgrade = mod.EyeUpgrade;
             int stackCount = mod.stackCount;
-            if (!eyeUpgrade.modifiesStats) continue;
-
             switch (stat) {
                 case PlayerStat.CritChance:
                     statSum += eyeUpgrade.GetCritChance(stackCount); 
@@ -987,7 +1006,7 @@ public static partial class Game {
         }
 
         float attackDelay = config.gameplay.attackDelay / GetAbsoluteStat(PlayerStat.FireratePercentage);
-        return Mathf.Clamp(attackDelay, config.gameplay.cappedMinAttackDelay, config.gameplay.attackDelay);
+        return Mathf.Max(attackDelay, config.gameplay.cappedMinAttackDelay);
     }
 
     static float GetProjectileRangeInSeconds() {

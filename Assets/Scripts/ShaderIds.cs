@@ -23,6 +23,7 @@ public static class ShaderIds {
     public static readonly int pixelDensity = Shader.PropertyToID("_PixelDensity");
     public static readonly int border = Shader.PropertyToID("_Border");
     public static readonly int radius = Shader.PropertyToID("_Radius");
+    public static readonly int thickness = Shader.PropertyToID("_Thickness");
 
     // Globals
     public static readonly int bloodMask = Shader.PropertyToID("_BloodMask");
@@ -34,6 +35,8 @@ public static class ShaderIds {
     public static readonly int waterMap = Shader.PropertyToID("_WaterMap");
     public static readonly int waterOcclusionMap = Shader.PropertyToID("_WaterOcclusionMap");
     public static readonly int waterUVScaler = Shader.PropertyToID("_WaterUVScaler");
+    public static readonly int sceneCopyTexture = Shader.PropertyToID("_SceneCopyTexture");
+    public static readonly int sceneTexelSize = Shader.PropertyToID("_SceneTexelSize");
 
     // Compute shader params
     public static readonly int width = Shader.PropertyToID("_width");

@@ -34,6 +34,7 @@ public static class RenderManager {
     static RTHandle tilemapRT;
     static RTHandle waterOcclusionRT;
     static RTHandle sceneRT;
+    static RTHandle sceneCopyRT;
     static RTHandle waterRT;
     static RTHandle finalOutputRT;
     static ScriptableRendererData renderer;
@@ -48,7 +49,7 @@ public static class RenderManager {
     }
 #endif
 
-    public enum Texture { Tilemap, WaterOcclusion, Scene, Water, Final, UrpColorTexture, }
+    public enum Texture { Tilemap, WaterOcclusion, Scene, Water, Final, UrpColorTexture, SceneCopy, }
     
     public static RTHandle GetRenderTexture(Texture type) {
         return type switch {
@@ -57,6 +58,7 @@ public static class RenderManager {
             Texture.Scene          => EnsureRenderTexture(ref sceneRT),
             Texture.Water          => EnsureRenderTexture(ref waterRT),
             Texture.Final          => EnsureRenderTexture(ref finalOutputRT),
+            Texture.SceneCopy      => EnsureRenderTexture(ref sceneCopyRT),
             _                      => throw new ArgumentOutOfRangeException(nameof(type), type, null),
         };
     }
@@ -148,16 +150,22 @@ public static class RenderManager {
         if (resizeRenderTextures) {
             AllocRenderTexture(ref tilemapRT, offScreenWidth, offScreenHeight);
             AllocRenderTexture(ref sceneRT, offScreenWidth, offScreenHeight);
+            AllocRenderTexture(ref sceneCopyRT, offScreenWidth, offScreenHeight);
             AllocRenderTexture(ref waterRT, offScreenWidth, offScreenHeight);
             AllocRenderTexture(ref waterOcclusionRT, offScreenWidth, offScreenHeight);
             AllocRenderTexture(ref finalOutputRT, curScreenSize.x, curScreenSize.y);
 
             Shader.SetGlobalTexture(ShaderIds.waterMap, waterRT);
             Shader.SetGlobalTexture(ShaderIds.waterOcclusionMap, waterOcclusionRT);
+            Shader.SetGlobalTexture(ShaderIds.sceneCopyTexture, sceneCopyRT);
 
             // The water shader's screen position is render target pixels / screen size, this remaps it to the render texture's uv
             Vector4 uvShaderScaler = new(curScreenSize.x / (float)offScreenWidth, curScreenSize.y / (float)offScreenHeight, 1f, 1f);
             Shader.SetGlobalVector(ShaderIds.waterUVScaler, uvShaderScaler);
+
+            // One pixel art texel in uv, used to snap distortion offsets to whole texels
+            Vector4 texelSize = new(pixelsPerTexel / (float)offScreenWidth, pixelsPerTexel / (float)offScreenHeight, 0f, 0f);
+            Shader.SetGlobalVector(ShaderIds.sceneTexelSize, texelSize);
         }
 
         offScreenRenderingSize = new(offScreenWidth, offScreenHeight);

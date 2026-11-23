@@ -56,6 +56,7 @@ public static partial class Game {
         public Animator animator;
         public TextMeshProUGUI textMesh;
         public AttackCircle attackCircle;
+        public Shockwave shockwave;
         public Shadow shadow;
         public ParticleBatch particleBatch;
         public DamageShape damageShape;
@@ -214,6 +215,7 @@ public static partial class Game {
             animator = objInstance.TryGetComponent(out Animator anim) ? anim : null,
             textMesh = objInstance.TryGetComponent(out TextMeshProUGUI text) ? text : null,
             attackCircle = objInstance.TryGetComponent(out AttackCircle attackCircle) ? attackCircle : null,
+            shockwave = objInstance.TryGetComponent(out Shockwave shockwave) ? shockwave : null,
             shadow = objInstance.TryGetComponent(out Shadow shadow) ? shadow : null,
             particleBatch = objInstance.TryGetComponent(out ParticleBatch particleBatch) ? particleBatch : null,
             damageShape = objInstance.TryGetComponent(out DamageShape damageShape) ? damageShape : null,

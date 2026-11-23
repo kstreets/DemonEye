@@ -162,6 +162,20 @@ AudioMixerGroupController:
   m_Mute: 0
   m_Solo: 0
   m_BypassEffects: 0
+--- !u!244 &-4658854736900020208
+AudioMixerEffectController:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_EffectID: 5d30ce91c8fa2f24e8b1e8b1b45e3b2b
+  m_EffectName: Attenuation
+  m_MixLevel: dec77a1950dcfb045aedf2c695ec9e1a
+  m_Parameters: []
+  m_SendTarget: {fileID: 0}
+  m_EnableWetMix: 0
+  m_Bypass: 0
 --- !u!244 &-4373947839909423685
 AudioMixerEffectController:
   m_ObjectHideFlags: 3
@@ -210,6 +224,25 @@ AudioMixerGroupController:
   m_Send: 00000000000000000000000000000000
   m_Effects:
   - {fileID: -1909474297729253130}
+  m_UserColorIndex: 0
+  m_Mute: 0
+  m_Solo: 0
+  m_BypassEffects: 0
+--- !u!243 &-4225251578567539509
+AudioMixerGroupController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Meteor
+  m_AudioMixer: {fileID: 24100000}
+  m_GroupID: da0fe18c9139b664492dc194ebf9113f
+  m_Children: []
+  m_Volume: 4de62b34c3553b345bc079fa17e58b59
+  m_Pitch: a471792136d7741498d27ece2c4c82b7
+  m_Send: 00000000000000000000000000000000
+  m_Effects:
+  - {fileID: -4658854736900020208}
   m_UserColorIndex: 0
   m_Mute: 0
   m_Solo: 0
@@ -498,6 +531,8 @@ AudioMixerGroupController:
   - {fileID: 4814149502756322866}
   - {fileID: 517733882614555616}
   - {fileID: -4766202765403218368}
+  - {fileID: -4225251578567539509}
+  - {fileID: 5422565460298430148}
   m_Volume: d10d9d4ba7d244a48822caebf42b1411
   m_Pitch: 15ea4921cd3561447932c0d887a83291
   m_Send: 00000000000000000000000000000000
@@ -595,6 +630,20 @@ AudioMixerGroupController:
   m_Mute: 0
   m_Solo: 0
   m_BypassEffects: 0
+--- !u!244 &989694129619278043
+AudioMixerEffectController:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_EffectID: 264173d0e12874a4d8a07982d6d708a3
+  m_EffectName: Attenuation
+  m_MixLevel: a0c5fd9d6761aee49930c2e5f472af85
+  m_Parameters: []
+  m_SendTarget: {fileID: 0}
+  m_EnableWetMix: 0
+  m_Bypass: 0
 --- !u!243 &1165519755062911566
 AudioMixerGroupController:
   m_ObjectHideFlags: 0
@@ -764,6 +813,25 @@ AudioMixerEffectController:
   m_SendTarget: {fileID: 0}
   m_EnableWetMix: 0
   m_Bypass: 0
+--- !u!243 &5422565460298430148
+AudioMixerGroupController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: MeteorImpact
+  m_AudioMixer: {fileID: 24100000}
+  m_GroupID: 030bb7c06a67f01488a198b508748255
+  m_Children: []
+  m_Volume: 1e6fce676ebe2db4f9fae2692405c674
+  m_Pitch: bcc6b0a7f02a5dc44acb5f901e5b930a
+  m_Send: 00000000000000000000000000000000
+  m_Effects:
+  - {fileID: 989694129619278043}
+  m_UserColorIndex: 0
+  m_Mute: 0
+  m_Solo: 0
+  m_BypassEffects: 0
 --- !u!243 &5673033518310510371
 AudioMixerGroupController:
   m_ObjectHideFlags: 0

@@ -211,7 +211,7 @@ public static partial class Game {
             List<Collider2D> cols = Physics.OverlapCircle(expSpawnPos, explosion.radius, Masks.EnemyMask);
             foreach (Collider2D col in cols) {
                 if (entityLookup[col.gameObject] is Enemy explosionEnemy) {
-                    int explosionDamage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(explosionEnemy) * explosion.damageMulti);
+                    int explosionDamage = Mathf.RoundToInt(GetBaseDamage() * explosion.damageMulti);
                     DamageEnemyAfterDelay(explosionEnemy, explosionDamage, false, 0.1f);
                 }
             }
@@ -240,7 +240,7 @@ public static partial class Game {
                     float randomDelay = Random.Range(0f, 0.06f);
                     float randomSpeedScaler = Random.Range(0.4f, 0.6f);
                     Vector2 boneShatterVelocity = RandomizeVectorAngle(projectile.velocity * randomSpeedScaler, 65f);
-                    int boneDamage = Mathf.RoundToInt(GetBaseDamage() * GetDamageMultiplierOnEnemy(enemy) * boneShatter.perShardDamageMulti);
+                    int boneDamage = Mathf.RoundToInt(GetBaseDamage() * boneShatter.perShardDamageMulti);
                     Projectile boneShatterProj = SpawnProjectile(
                         entityPools.boneShatterProjectile, enemy.position, boneShatterVelocity, boneShatter.lifeTime, player,
                         rotation: RandomRotation(), spawnDelay: randomDelay, flatDamage: boneDamage,

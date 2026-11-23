@@ -14,12 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: Fire Boss
   type: 4
+  isBoss: 1
   enemyPrefab: {fileID: 7814119993517076521, guid: a360b6a79ed97f848825a536c18ff02b, type: 3}
   animatorOverride: {fileID: 0}
   dropPool: {fileID: 11400000, guid: a50fac0e0c375294296c54b1d6d4450d, type: 2}
   chanceToDropItem: 0.06
-  dropsChest: 1
-  chestItemCount: {x: 3, y: 5}
   usesFlowField: 1
   separationRadius: 0.16
   separationLayer: 0
@@ -32,4 +31,4 @@ MonoBehaviour:
   collisionDamage: 8
   soulWorthPerKill: 100
   xpWorthPerKill: 20
-  defaultMass: 4.960002
+  defaultMass: 12.000006

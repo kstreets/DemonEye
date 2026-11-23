@@ -62,6 +62,7 @@ public class GameData {
         public GameObject poisonCloud;
         public GameObject smallFireballProjectile;
         public GameObject piercingProjectile;
+        public GameObject cannonProjectile;
         public GameObject projectileImpact;
         public GameObject teleportIn;
         public GameObject teleportOut;
@@ -87,6 +88,7 @@ public class GameData {
         public GameObject attackCircle;
         public GameObject meteorExplosion;
         public GameObject muzzleFlash;
+        public GameObject shockwave;
         public BarrelSmoke barrelSmoke;
         public GameObject shadow;
     }
@@ -433,6 +435,8 @@ public class GameData {
         public DynamicClip drinkClip;
         public DynamicClip bandageClip;
         public DynamicClip notificationClip;
+        public DynamicClip meteorFallClip;
+        public DynamicClip meteorImpactClip;
 
         public Dictionary<int, List<DynamicClipRecord>> records = new(50);
         public Dictionary<AudioSource, int> generationLookup = new();
@@ -622,6 +626,7 @@ public class GameData {
         public EntityPool<Projectile> fireBossProjectile;
         public EntityPool<Projectile> fireEmberProjectile;
         public EntityPool<Projectile> piercingShotProjectile;
+        public EntityPool<Projectile> cannonProjectile;
         public EntityPool<Projectile> soulProjectile;
         public EntityPool<Entity> meteor;
         public EntityPool<Entity> poisonDebuff;
@@ -647,6 +652,7 @@ public class GameData {
         public EntityPool<Entity> attackCircle;
         public EntityPool<Entity> meteorExplosion;
         public EntityPool<Entity> muzzleFlash;
+        public EntityPool<Entity> shockwave;
         public EntityPool<Entity> shadow;
     }
     

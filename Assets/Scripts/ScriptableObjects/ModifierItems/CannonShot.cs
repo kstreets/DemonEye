@@ -6,7 +6,6 @@ using static Game;
 public class CannonShot : EyeUpgrade {
     
     public struct InstanceData {
-        public float damageMulti;
         public float blastDamageMulti;
         public float blastRadius;
     }
@@ -18,14 +17,16 @@ public class CannonShot : EyeUpgrade {
     
     public override void AddInstanceToEye(DemonEyeInstance eyeInstance, int stackCount) {
         eyeInstance.cannonShot = new() {
-            damageMulti = GetDamageMultiplier(stackCount),
             blastDamageMulti = GetBlastDamageMultiplier(stackCount),
             blastRadius = blastRadius,
         };
     }
 
     protected override string GetUpgradeDescription(int stackCount) {
-        return $"Every shot releases a shockwave that deals {DisplayMultiplier(GetBlastDamageMultiplier(stackCount))} damage within a {DisplayDistance(blastRadius)} radius";
+        string firerateStr = $"{DisplayProbIncDec(GetFireratePercentage(stackCount))} Rate of Fire";
+        string damageStr = $"\n{DisplayMultiplierIncDec(GetDamageMultiplier(stackCount))} Damage";
+        string blastStr = $"\nEvery shot releases a shockwave that deals {DisplayMultiplier(GetBlastDamageMultiplier(stackCount))} damage within a {DisplayDistance(blastRadius)} radius";
+        return firerateStr + damageStr + blastStr;
     }
 
     public override float GetDamageMultiplier(int stackCount) {

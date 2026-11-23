@@ -62,6 +62,22 @@ MonoBehaviour:
   passIndex: 0
   bindDepthStencilAttachment: 0
   m_Version: 1
+--- !u!114 &-4908005836088944563
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8cde63585d318794eb77758b3d38b89f, type: 3}
+  m_Name: Scene Copy Pass
+  m_EditorClassIdentifier: Assembly-CSharp::TextureCopyFeature
+  m_Active: 1
+  renderPassEvent: 450
+  source: 2
+  destination: 6
 --- !u!114 &-4738983429996795854
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -199,13 +215,15 @@ MonoBehaviour:
   - {fileID: 7261136505038537400}
   - {fileID: -1077250143126679424}
   - {fileID: -8688184042810852600}
+  - {fileID: -4908005836088944563}
+  - {fileID: 4291245053104224090}
   - {fileID: -4075944505059195486}
   - {fileID: -6886932707976143003}
   - {fileID: -4682016400478799217}
   - {fileID: 4120660535431540174}
   - {fileID: -4533305390848633526}
   - {fileID: 2744203516463684404}
-  m_RendererFeatureMap: 38cb56a4faaaaff2bb989c044ea23882b88271202ebdc4648010b2ccb3d60cf108bb0a21a55e6d87a2c5bd6311566fc7651f10cd30b36ca08f7ae8e0e32206bfce2d5ebeec862f394a951af8c37616c1341b320e8f5e1526
+  m_RendererFeatureMap: 38cb56a4faaaaff2bb989c044ea23882b88271202ebdc4648010b2ccb3d60cf108bb0a21a55e6d874dd85f20b242e3bb5af76dcaa3908d3ba2c5bd6311566fc7651f10cd30b36ca08f7ae8e0e32206bfce2d5ebeec862f394a951af8c37616c1341b320e8f5e1526
   m_UseNativeRenderPass: 0
   m_LayerMask:
     serializedVersion: 2
@@ -299,6 +317,27 @@ MonoBehaviour:
       restoreCamera: 1
       offset: {x: 0, y: 0, z: 0, w: 0}
       cameraFieldOfView: 60
+--- !u!114 &4291245053104224090
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 312d735f16edfc44fbfb5b2edfdaa7e3, type: 3}
+  m_Name: Distortion Pass
+  m_EditorClassIdentifier: Assembly-CSharp::OrthoRenderFeature
+  m_Active: 1
+  renderPassEvent: 450
+  shaderTags: []
+  renderQueueType: 1
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 131072
+  clearRenderTarget: 0
+  texture: 2
 --- !u!114 &7261136505038537400
 MonoBehaviour:
   m_ObjectHideFlags: 0

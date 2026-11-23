@@ -33,7 +33,7 @@ TagManager:
   - EnemyNonTarget
   - DeathWipe
   - PlayerProjectileHurtBox
-  - 
+  - Distortion
   - 
   - Tilemap
   - WaterOccluder

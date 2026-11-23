@@ -35179,6 +35179,7 @@ MonoBehaviour:
     poisonCloud: {fileID: 916336544734860028, guid: 5e4f4accde9c5374cba586437964bf43, type: 3}
     smallFireballProjectile: {fileID: 342736813109231849, guid: de82d8062b77d644796ae49fa92cb96d, type: 3}
     piercingProjectile: {fileID: 2758590605051147821, guid: 6f116d426ad964547bee23e2facdf618, type: 3}
+    cannonProjectile: {fileID: 2758590605051147821, guid: da2f63b662a11bb4da54683dba93ea6f, type: 3}
     projectileImpact: {fileID: 1029373551851069770, guid: 4e9a043ef50fe0146ac2f805702ce90f, type: 3}
     teleportIn: {fileID: 3234620779380181516, guid: c3ff9460cbebf9d488affacfb6e9f421, type: 3}
     teleportOut: {fileID: 6668224194367103619, guid: f2492c473fe22234f8435f7a2fe2718d, type: 3}
@@ -35204,6 +35205,7 @@ MonoBehaviour:
     attackCircle: {fileID: 72175377791882661, guid: e325eefd871c83b49ac41dca8b374953, type: 3}
     meteorExplosion: {fileID: 6612703808539729084, guid: 7a60a42df23f2c246aaf1c1c4f58f13c, type: 3}
     muzzleFlash: {fileID: 439921760027597798, guid: 78958039f750de2428ee5a1aa8568a4a, type: 3}
+    shockwave: {fileID: 1614901759960308958, guid: 9bd00da96adb8024bb12489aa5d776d5, type: 3}
     barrelSmoke: {fileID: 7365474619680228354, guid: c5b1f25a955d3a34b8ac8da3c6f7d724, type: 3}
     shadow: {fileID: 906588307839869144, guid: 763116d0dd7589747b5e9ad6424dce92, type: 3}
   itemTypes:
@@ -35795,6 +35797,8 @@ MonoBehaviour:
     drinkClip: {fileID: 11400000, guid: a006ef24e3a8d644daa68e1f6ae11113, type: 2}
     bandageClip: {fileID: 11400000, guid: 59839616109138d44851c1ee2d0daaac, type: 2}
     notificationClip: {fileID: 11400000, guid: 24cf256d449380041bab2c2ca2446189, type: 2}
+    meteorFallClip: {fileID: 11400000, guid: 3cc343745e2061b4ca6bea8d308e37a0, type: 2}
+    meteorImpactClip: {fileID: 11400000, guid: 51cba59805cb47c45b2b302c409d73cb, type: 2}
     uninterruptibleSources: []
   music:
     masterGroup: {fileID: 24300002, guid: 045edcbc93f71d548a0426204df6ca60, type: 2}

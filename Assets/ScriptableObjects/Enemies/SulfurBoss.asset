@@ -14,12 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: Gorgon
   type: 6
+  isBoss: 1
   enemyPrefab: {fileID: 7814119993517076521, guid: 33bcad0d1db489e4ba928f15a58df168, type: 3}
   animatorOverride: {fileID: 0}
   dropPool: {fileID: 11400000, guid: a50fac0e0c375294296c54b1d6d4450d, type: 2}
   chanceToDropItem: 0.06
-  dropsChest: 1
-  chestItemCount: {x: 3, y: 5}
   usesFlowField: 1
   separationRadius: 0.16
   separationLayer: 0
@@ -32,4 +31,4 @@ MonoBehaviour:
   collisionDamage: 8
   soulWorthPerKill: 100
   xpWorthPerKill: 20
-  defaultMass: 1
+  defaultMass: 3.7500014

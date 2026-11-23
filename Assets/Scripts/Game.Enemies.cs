@@ -707,12 +707,14 @@ public static partial class Game {
             attackCircleEntity.attackCircle.Animate(FireBoss.meteorRadius, FireBoss.meteorWarningTime);
 
             Entity meteorEntity = SpawnEntity(entityPools.meteor, meteorSpawnPos, Quaternion.identity);
+            PlayAudioClip(audio.meteorFallClip, targetPos);
             Tween.Custom(0f, 1f, FireBoss.meteorTravelTime, ease: Ease.InQuad, onValueChange: (comp) => {
                 meteorEntity.position = Vector2.Lerp(meteorSpawnPos, targetPos, comp);
             })
             .OnComplete(() => {
                 Entity explosion = SpawnEntityOneShot(entityPools.meteorExplosion, targetPos, Quaternion.identity);
                 DealShapeDamage(explosion, FireBoss.meteorDamage, Masks.PlayerMeleeHurtMask);
+                PlayAudioClip(audio.meteorImpactClip, targetPos);
                 DestroyEntity(attackCircleEntity);
                 DestroyEntity(meteorEntity);
             });
