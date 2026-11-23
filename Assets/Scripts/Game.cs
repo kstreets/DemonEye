@@ -257,6 +257,7 @@ public static partial class Game {
             persistentFlags |= PersistentFlags.DidTutorialExtraction;
         }
         FlagStashTransferButtonIfPocketsHaveItems();
+        player.state.bankedSouls += curRaid.data.souls;
         SaveGameState();
         AnimateEarlyExitSequence(() => states.gameStateMachine.SetStateIfNotCurrent(states.mainMenu));
         StopMusic(MusicOption.Fast); // Needs to be after animation sequence because it stops all tweens
@@ -283,6 +284,7 @@ public static partial class Game {
         
         persistentFlags |= PersistentFlags.DidTutorialExtraction;
         FlagStashTransferButtonIfPocketsHaveItems();
+        player.state.bankedSouls += curRaid.data.souls;
         SaveGameState();
         AnimateGameWinSequence(() => states.gameStateMachine.SetStateIfNotCurrent(states.mainMenu));
     }
@@ -293,6 +295,7 @@ public static partial class Game {
 
     static void OnGameOverEnter() {
         ClearInventory(inventories.player);
+        persistentFlags &= ~PersistentFlags.ShowStashTransferButton; // Nothing left to transfer
         SaveGameState();
         AnimateGameOverSequence(() => states.gameStateMachine.SetStateIfNotCurrent(states.mainMenu)); 
         StopMusic(MusicOption.Fast); // Needs to be after animation sequence because it stops all tweens
@@ -334,6 +337,9 @@ public static partial class Game {
         
         Vector3 cameraWarpTarget = new(player.position.x, player.position.y, camera.cinemachine.transform.position.z);
         camera.cinemachine.ForceCameraPosition(cameraWarpTarget, Quaternion.identity);
+        // Cinemachine only moves the main camera in its LateUpdate, until then on screen checks would use where it was before the raid
+        Transform mainCameraTrans = camera.main.transform;
+        mainCameraTrans.position = new(player.position.x, player.position.y, mainCameraTrans.position.z);
         camera.cinemachine.Follow = player.trans;
         ResetAimLookAhead();
         
@@ -461,6 +467,12 @@ public static partial class Game {
         SetDeathWipe(0f, 1f);
 
         Sequence sequence = Sequence.Create();
+        // The carried souls are lost, so the counter drains before the wipe covers it
+        if (curRaid.data.souls > 0) {
+            sequence.Chain(Tween.Custom(playerInfo.soulsCurrencyText, curRaid.data.souls, 0f, 0.6f, ease: Ease.OutQuad, onValueChange: static (text, val) => {
+                text.text = Mathf.RoundToInt(val).ToString("N0");
+            }));
+        }
         sequence.ChainDelay(0.25f);
         sequence.Chain(TweenDeathWipeFill(0f, 1f, 1f, Ease.InOutQuad));
         sequence.ChainCallback(() => {
@@ -519,9 +531,13 @@ public static partial class Game {
         ui.animatedBgImage.gameObject.SetActive(true);
         ui.animatedBgImage.color = new(1f, 1f, 1f, 0f);
         sequence.Group(Tween.Alpha(ui.animatedBgImage, 0f, 1f, 1f, Ease.InCubic, startDelay: 0.1f));
-        sequence.ChainDelay(0.15f);
+        const float timeBeforeHold = 0.5f + 0.15f + 0.75f; // Zoom, delay and wipe above
+        float bankedSoulsTime = AnimateBankedSoulsText(curRaid.data.souls, startDelay: 1.8f);
+        float holdTime = bankedSoulsTime > 0f ? bankedSoulsTime + bankedSoulsReadTime - timeBeforeHold : 0.15f;
+        sequence.ChainDelay(holdTime);
 
         sequence.OnComplete(() => {
+            ui.bankedSoulsText.gameObject.SetActive(false);
             player.gameObject.SetActive(true);
             camera.pixelPerfect.assetsPPU = initialPPU;
             onCompleteCallback?.Invoke();
@@ -552,9 +568,13 @@ public static partial class Game {
         ui.animatedBgImage.gameObject.SetActive(true);
         ui.animatedBgImage.color = new(1f, 1f, 1f, 0f);
         sequence.Group(Tween.Alpha(ui.animatedBgImage, 0f, 1f, 1f, Ease.InCubic, startDelay: 0.1f));
-        sequence.ChainDelay(1.6f);
+        const float timeBeforeHold = 0.5f + 0.25f + 0.75f; // Zoom, delay and wipe above
+        float bankedSoulsTime = AnimateBankedSoulsText(curRaid.data.souls, startDelay: 2.4f);
+        float holdTime = bankedSoulsTime > 0f ? bankedSoulsTime + bankedSoulsReadTime - timeBeforeHold : 1.6f;
+        sequence.ChainDelay(holdTime);
 
         sequence.OnComplete(() => {
+            ui.bankedSoulsText.gameObject.SetActive(false);
             player.gameObject.SetActive(true);
             camera.pixelPerfect.assetsPPU = initialPPU;
             onCompleteCallback?.Invoke();

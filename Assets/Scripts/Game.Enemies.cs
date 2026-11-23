@@ -422,6 +422,9 @@ public static partial class Game {
 
         AttackAnimTracking animTracking = attack.trackTargetUntilRelease ? AttackAnimTracking.AttackAnims : AttackAnimTracking.None;
         StartEnemyAttack(enemy, AttackAnimationFromDir(dir), static (enemy, spawnPos) => ReleaseEnemyAttack(enemy, enemy.data.attack, spawnPos), animTracking, leadSpeed);
+        if (attack.startClip) {
+            PlayAudioClip(attack.startClip, enemy.position, owner: enemy);
+        }
         enemy.attackDelay = Tween.Delay(attack.cooldown);
         return true;
     }
@@ -628,6 +631,7 @@ public static partial class Game {
         fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.MutliMeteor, level: 1, marbles: 2);
         fireBoss.attackBrain.AddAttack(FireBoss.AttackTypes.DoubleEmberScatter, level: 1, marbles: 1, preventConsecutive: true);
         fireBoss.animator.Play(EnemyAnimations.spawn);
+        PlayAudioClip(audio.fireBossSpawnClip, fireBoss.position);
     }
 
     static void FireBossLogic(Enemy enemy) {
@@ -666,10 +670,12 @@ public static partial class Game {
 
         void CastFireballs(int count) {
             fireBoss.attackCount = count;
+            PlayAudioClip(audio.fireBossConjureClip, fireBoss.position, owner: fireBoss);
             StartEnemyAttack(fireBoss, shootAnim, animTracking: AttackAnimTracking.ShootAnims, leadSpeed: FireBoss.fireballSpeed, onRelease: static (boss, spawnPos) => {
                 for (int i = 0; i < boss.attackCount; i++) {
                     Delay(boss, i * FireBoss.delayBetweenFireballs, (_) => {
                         SpawnAimedProjectile(entityPools.fireBossProjectile, boss, spawnPos, FireBoss.fireballSpeed, FireBoss.fireballLifetime, FireBoss.fireballDamage, Masks.PlayerProjectileHurtMask);
+                        PlayAudioClip(audio.fireballClip, spawnPos);
                     });
                 }
             });
@@ -678,6 +684,7 @@ public static partial class Game {
         void SummonMeteors(int meteorCount) {
             fireBoss.attackCount = meteorCount;
             StartEnemyAttack(fireBoss, EnemyAnimations.summon, static (boss, _) => RainMeteors(boss, boss.attackCount));
+            PlayAudioClip(audio.fireBossSummonClip, fireBoss.position, owner: fireBoss);
         }
 
         static void RainMeteors(Enemy fireBoss, int meteorCount) {
@@ -722,6 +729,7 @@ public static partial class Game {
         
         void CastEmberScatter(int count) {
             fireBoss.attackCount = count;
+            PlayAudioClip(audio.fireBossConjureClip, fireBoss.position, owner: fireBoss);
             StartEnemyAttack(fireBoss, shootAnim, animTracking: AttackAnimTracking.ShootAnims, leadSpeed: FireBoss.emberSpeed, onRelease: static (boss, spawnPos) => {
 
                 Vector2 aimDir = (EnemyAimPoint(spawnPos, FireBoss.emberSpeed) - spawnPos).normalized;
@@ -731,6 +739,7 @@ public static partial class Game {
                 foreach (Vector2 shootDir in shootDirections) {
                     SpawnProjectile(entityPools.fireEmberProjectile, spawnPos, shootDir * FireBoss.emberSpeed, FireBoss.emberLifetime, boss, flatDamage: FireBoss.emberDamage, layermask: Masks.PlayerProjectileHurtMask);
                 }
+                PlayAudioClip(audio.fireBossEmberClip, spawnPos);
 
                 boss.attackCount--;
                 if (boss.attackCount > 0) {

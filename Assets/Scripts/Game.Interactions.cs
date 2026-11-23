@@ -84,7 +84,7 @@ public static partial class Game {
                 EnableInteractionPrompt(OffsetY(col.transform.position, 0.15f), "Summon Portal", portalSoulsPrice);
                 if (inputs.interact.IsPressed() && curRaid.data.souls >= portalSoulsPrice) {
                     portal.StartOpenCloseSequence(config.gameplay.portalPostSummonDelay, config.gameplay.portalActiveDuration, player.position);
-                    SpawnEntityOneShot(entityPools.altarSoulSwirl, portal.crystalTrans.position, Quaternion.identity);
+                    SpawnEntityOneShot(entityPools.altarSoulSwirl, portal.crystalSpriteRenderer.bounds.center, Quaternion.identity);
                     PlayAudioClip(audio.altarSoulsClip, portal.crystalTrans.position);
                     curRaid.data.souls -= portalSoulsPrice;
                 }

@@ -16,6 +16,7 @@ MonoBehaviour:
   range: 0
   cooldown: 0.35
   requireFacingPlayer: 0
+  startClip: {fileID: 11400000, guid: 73d58f3483b6f7143a50de71b51df7d9, type: 2}
   snapFaceTargetOnStart: 1
   trackTargetUntilRelease: 1
   damage: 10

@@ -21,6 +21,8 @@ public static partial class Game {
     static Texture2D shownCursorTexture;
 
     static void InitUI() {
+        ui.bleedingNotifier.gameObject.SetActive(false);
+        ui.bankedSoulsText.gameObject.SetActive(false);
         Cursor.visible = ShowCursorInMenus;
         SetCursorTexture(config.styles.cursorTexture);
 
@@ -161,20 +163,25 @@ public static partial class Game {
     }
 
     static void ShowHideoutUI() {
+        SetBleedingNotifierVisible(false);
         CheckToMoveCurrencyDisplays();
         hideoutTabs.toggleGroup.ManualyToggle(hideoutTabs.characterButton);
         ui.menuBackButton.gameObject.SetActive(true);
         inputPrompts.hideoutParent.gameObject.SetActive(!InMapSelection);
         playerInfo.coinsCurrencyParent.gameObject.SetActive(true);
-        playerInfo.soulsCurrencyParent.gameObject.SetActive(true);
+        playerInfo.soulsCurrencyParent.gameObject.SetActive(true); // Shows the banked souls
+        SnapSoulsDisplay();
         playerInfo.healthBarParent.gameObject.SetActive(false);
         playerInfo.weightBarParent.gameObject.SetActive(false);
         playerInfo.parent.gameObject.SetActive(true);
         ui.animatedBgImage.gameObject.SetActive(true);
         hideoutTabs.parent.gameObject.SetActive(true);
-        if (persistentFlags.HasFlag(GameData.PersistentFlags.ShowStashTransferButton)) {
-            playerPanel.transferToStashButton.gameObject.SetActive(true);
+        // The flag can outlive the items, so the pockets are checked too
+        bool pocketsHaveItems = GetInventoryItemCountInRange(inventories.player, playerStorageRange) > 0;
+        if (!pocketsHaveItems) {
+            persistentFlags &= ~GameData.PersistentFlags.ShowStashTransferButton;
         }
+        playerPanel.transferToStashButton.gameObject.SetActive(persistentFlags.HasFlag(GameData.PersistentFlags.ShowStashTransferButton));
     }
 
     static void CloseHideoutUI() {
@@ -199,6 +206,7 @@ public static partial class Game {
         playerInfo.weightBarParent.gameObject.SetActive(true);
         playerInfo.coinsCurrencyParent.gameObject.SetActive(false);
         playerInfo.soulsCurrencyParent.gameObject.SetActive(true);
+        SnapSoulsDisplay();
         playerInfo.parent.gameObject.SetActive(true);
         raidInfo.parent.SetActive(true);
         raidInfo.swarmText.gameObject.SetActive(false);
@@ -434,23 +442,32 @@ public static partial class Game {
     static Sequence soulCurrencySequence;
     static Sequence coinCurrencySequence;
 
+    // The hideout shows the banked souls, a raid shows the souls carried in it
+    static int DisplayedSouls => InHideout ? player.state.bankedSouls : curRaid.data.souls;
+
     static void InitCurrencyNumbers() {
-        playerInfo.soulsCurrencyText.text = curRaid.data.souls.ToString("N0");
+        SnapSoulsDisplay();
         playerInfo.coinCurrencyText.text = player.state.coinCurrency.ToString("N0");
-        prevSoulCurrency = curRaid.data.souls;
         prevCoinCurrency = player.state.coinCurrency;
     }
 
+    // Used when switching between the hideout and a raid, so it doesn't count between two unrelated totals
+    static void SnapSoulsDisplay() {
+        soulCurrencySequence.Stop();
+        playerInfo.soulsCurrencyText.text = DisplayedSouls.ToString("N0");
+        prevSoulCurrency = DisplayedSouls;
+    }
+
     static void UpdateCurrencyNumbers() {
-        if (prevSoulCurrency != curRaid.data.souls) {
+        if (prevSoulCurrency != DisplayedSouls) {
             soulCurrencySequence.Complete();
-            soulCurrencySequence = AnimateCurrency(playerInfo.soulsCurrencyText, prevSoulCurrency, curRaid.data.souls);
+            soulCurrencySequence = AnimateCurrency(playerInfo.soulsCurrencyText, prevSoulCurrency, DisplayedSouls);
         }
         if (prevCoinCurrency != player.state.coinCurrency) {
             coinCurrencySequence.Complete();
             coinCurrencySequence = AnimateCurrency(playerInfo.coinCurrencyText, prevCoinCurrency, player.state.coinCurrency);
         }
-        prevSoulCurrency = curRaid.data.souls;
+        prevSoulCurrency = DisplayedSouls;
         prevCoinCurrency = player.state.coinCurrency;
     }
     
@@ -469,6 +486,22 @@ public static partial class Game {
     static Sequence waveTextSequence;
     static string WaveCountText() => $"Wave {spawnManager.CurWaveNumber}/{spawnManager.TotalWaveCount}";
 
+    static Tween bleedingNotifierTween;
+
+    static void SetBleedingNotifierVisible(bool visible) {
+        CanvasGroup notifier = ui.bleedingNotifier;
+        if (notifier.gameObject.activeSelf == visible) return;
+
+        notifier.gameObject.SetActive(visible);
+        bleedingNotifierTween.Stop();
+        if (visible) {
+            // Pulses between fully visible and faded, never fully transparent
+            const float minAlpha = 0.35f;
+            const float halfPulseDuration = 1.2f;
+            bleedingNotifierTween = Tween.Alpha(notifier, 1f, minAlpha, halfPulseDuration, Ease.InOutSine, cycles: -1, cycleMode: CycleMode.Yoyo);
+        }
+    }
+
     static void UpdateInRaidUI() {
         ui.minimap.UpdateMinimap(player.position);
         UpdateFoundExitPortals();
@@ -477,6 +510,7 @@ public static partial class Game {
         playerInfo.healthBar.bgFillImage.gameObject.SetActive(player.isHealingOverTime);
         if (player.isHealingOverTime) playerInfo.healthBar.bgFillImage.fillAmount = HealingToHealthPercentage();
         playerInfo.bleedDebuffIcon.gameObject.SetActive(player.bleeding);
+        SetBleedingNotifierVisible(player.bleeding);
         
         Enemy boss = entities.boss;
         if (boss != null && bossBar.parent.gameObject.activeInHierarchy && !bossBarFillSequence.isAlive) {
@@ -555,12 +589,18 @@ public static partial class Game {
 
     // Exit portals show up on the minimap once the player has had them on screen
     static void UpdateFoundExitPortals() {
+        // The camera is still settling on the player during the teleport in, so nothing can be found yet
+        bool canFindPortals = !raidEnterSequence.isAlive;
+
         foundExitPortalPositions.Clear();
         foreach (Portal portal in curRaid.activeExitPortals) {
             if (portal.state == Portal.State.Closed) continue;
-            if (!portal.found && IsOnScreen(portal.transform.position)) {
+            if (canFindPortals && !portal.found && IsOnScreen(portal.transform.position)) {
                 portal.found = true;
                 AnimateFoundExitPortalText();
+                // TEMP: tracking down portals being found on spawn in the Outskirts
+                Debug.Log($"[PortalFound] frame={Time.frameCount} time={Time.time:0.00} " +
+                          $"cam={camera.main.transform.position} ortho={camera.main.orthographicSize:0.00} player={player.position} portal={portal.transform.position}");
             }
             if (portal.found) {
                 foundExitPortalPositions.Add(portal.transform.position);
@@ -701,6 +741,33 @@ public static partial class Game {
                 prompt.boundActions.Add(action);
             }
         }
+    }
+
+    // Time to read the banked souls text once it's finished, before leaving the raid
+    const float bankedSoulsReadTime = 0.65f;
+
+    // Returns how long until the text has finished animating, 0 when there are no souls to show
+    static float AnimateBankedSoulsText(int souls, float startDelay) {
+        if (souls <= 0) {
+            return 0f;
+        }
+
+        TextMeshProUGUI text = ui.bankedSoulsText;
+        text.gameObject.SetActive(true);
+        text.text = "+0 Souls";
+        text.alpha = 0f;
+
+        const float countDuration = 0.8f;
+        const float pauseBeforeBanked = 0.2f;
+        const float punchDuration = 0.3f;
+        Sequence.Create()
+            .Group(Tween.Alpha(text, 0f, 1f, 0.25f, startDelay: startDelay))
+            .Group(Tween.Custom(text, 0f, souls, countDuration, ease: Ease.OutQuad, startDelay: startDelay, onValueChange: static (text, val) => {
+                text.text = $"+{Mathf.RoundToInt(val):N0} Souls";
+            }))
+            .ChainDelay(pauseBeforeBanked)
+            .Chain(Tween.PunchScale(text.transform, Vector3.one * 0.15f, punchDuration));
+        return startDelay + countDuration + pauseBeforeBanked + punchDuration;
     }
 
     static void AnimateLargeRaidText(string text, float typewriterSpeed) {

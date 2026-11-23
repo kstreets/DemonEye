@@ -6,6 +6,24 @@ public class CrystalFragmentCreator : MonoBehaviour {
     public float currentPixelsPerUnit;
     public Sprite[] allSpriteFragments;
 
+    // Lines the fragment's pivot up with where it sits in the texture, relative to the full crystal's pivot
+    Vector2 FragmentLocalPosition(Sprite fullCrystal, Sprite fragment) {
+        Vector2 mainPivotInTexture = fullCrystal.rect.position + fullCrystal.pivot;
+        Vector2 fragPivotInTexture = fragment.rect.position + fragment.pivot;
+        return (fragPivotInTexture - mainPivotInTexture) / currentPixelsPerUnit;
+    }
+
+    // Moves the existing fragments, for when a pivot changed after they were created
+    [Button]
+    void Reposition() {
+        Sprite fullCystalSprite = GetComponent<SpriteRenderer>().sprite;
+        foreach (Transform child in transform) {
+            if (!child.TryGetComponent(out SpriteRenderer fragmentRenderer)) continue;
+            if (System.Array.IndexOf(allSpriteFragments, fragmentRenderer.sprite) < 0) continue;
+            child.localPosition = FragmentLocalPosition(fullCystalSprite, fragmentRenderer.sprite);
+        }
+    }
+
     [Button]
     void Create() {
         Sprite fullCystalSprite = GetComponent<SpriteRenderer>().sprite;
@@ -15,14 +33,7 @@ public class CrystalFragmentCreator : MonoBehaviour {
             fragment.transform.SetParent(transform);
             fragment.AddComponent<SpriteRenderer>().sprite = sprite;
 
-            Vector4 mainOffsetSize = fullCystalSprite.OffsetAndSizeInTexture();
-            Vector4 fragOffsetSize = sprite.OffsetAndSizeInTexture();
-
-            Vector2 mainCenter = new(mainOffsetSize.x + (mainOffsetSize.z * 0.5f), mainOffsetSize.y + (mainOffsetSize.w * 0.5f));
-            Vector2 fragCenter = new(fragOffsetSize.x + (fragOffsetSize.z * 0.5f),  fragOffsetSize.y + (fragOffsetSize.w * 0.5f));
-
-            Vector4 localOffset = fragCenter - mainCenter;
-            fragment.transform.localPosition = new Vector2(localOffset.x * sprite.texture.width, localOffset.y * sprite.texture.height) * (1f / currentPixelsPerUnit);
+            fragment.transform.localPosition = FragmentLocalPosition(fullCystalSprite, sprite);
         }
     }
 

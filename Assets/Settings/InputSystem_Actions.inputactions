@@ -624,7 +624,7 @@
                 {
                     "name": "",
                     "id": "c43e5805-5e83-415c-8bd9-bcf6890e58c3",
-                    "path": "<Mouse>/middleButton",
+                    "path": "<Mouse>/rightButton",
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
@@ -644,15 +644,37 @@
                     "isPartOfComposite": false
                 },
                 {
-                    "name": "",
-                    "id": "689478a6-51c1-404c-947c-cbf9148c9d47",
-                    "path": "<Mouse>/rightButton",
+                    "name": "One Modifier",
+                    "id": "afe19abb-e36a-46ab-a5a3-153af9c2a8ed",
+                    "path": "OneModifier",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SplitStack",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "modifier",
+                    "id": "a15a3d25-178a-404c-b955-19fe32ba8b21",
+                    "path": "<Keyboard>/alt",
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
                     "action": "SplitStack",
                     "isComposite": false,
-                    "isPartOfComposite": false
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "binding",
+                    "id": "de1df444-064d-4cbc-a733-8c5d2d7e41e8",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "SplitStack",
+                    "isComposite": false,
+                    "isPartOfComposite": true
                 },
                 {
                     "name": "",

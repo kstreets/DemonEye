@@ -182,6 +182,7 @@ public class GameData {
         public MechanicDescPopup mechanicDescPopup;
         public UIHintPopUp hintPopup;
         public LevelUpNotification levelUpNotification;
+        public CanvasGroup bleedingNotifier;
         public RectTransform hideoutParent;
         public RectTransform settingsParent;
         public RectTransform hideoutPanelsParent;
@@ -196,6 +197,7 @@ public class GameData {
         public TypewriterComponent smallRaidTextTypewriter;
         public TextMeshProUGUI largeRaidText;
         public TypewriterComponent largeRaidTextTypewriter;
+        public TextMeshProUGUI bankedSoulsText;
         public TypewriterComponent openingDialogueTypewriter;
         public TypewriterComponent traderTutorialTypewriter;
         public CanvasGroup traderTutorialDialogueCanvasGroup;
@@ -437,6 +439,11 @@ public class GameData {
         public DynamicClip notificationClip;
         public DynamicClip meteorFallClip;
         public DynamicClip meteorImpactClip;
+        public DynamicClip fireballClip;
+        public DynamicClip fireBossSummonClip;
+        public DynamicClip fireBossConjureClip;
+        public DynamicClip fireBossSpawnClip;
+        public DynamicClip fireBossEmberClip;
 
         public Dictionary<int, List<DynamicClipRecord>> records = new(50);
         public Dictionary<AudioSource, int> generationLookup = new();

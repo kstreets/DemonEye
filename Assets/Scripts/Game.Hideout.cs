@@ -1057,6 +1057,7 @@ public static partial class Game {
         if (result == UpgradeStatResult.CantAfford || result == UpgradeStatResult.AtMaxLevel) return;
         
         thisFrame.flags |= FrameFlags.SkillUpgraded;
+        player.state.bankedSouls -= upgradePath.soulsNeededPerLevel[playerStatLevel];
         
         skillRow.levelUpButton.KeepPressed();
         string restoreText = skillRow.levelUpButton.text.text;
@@ -1137,10 +1138,9 @@ public static partial class Game {
         if (!upgradePath.soulsNeededPerLevel.IndexInRange(playerSkillLevel)) {
             return UpgradeStatResult.AtMaxLevel;
         }
-        // Note: We don't have skill points or anything like that setup yet
-        // if (player.state.soulCurrency >= upgradePath.soulsNeededPerLevel[playerSkillLevel]) {
+        if (player.state.bankedSouls >= upgradePath.soulsNeededPerLevel[playerSkillLevel]) {
             return UpgradeStatResult.Affordable;    
-        // }
+        }
         return UpgradeStatResult.CantAfford;
     }
     

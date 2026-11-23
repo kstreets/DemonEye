@@ -149,6 +149,7 @@ public static partial class Game {
         binWriter.Write(player.state.intellectSkillLevel);
         binWriter.Write(player.state.lifeBloodSkillLevel);
         binWriter.Write(player.state.strengthSkillLevel);
+        binWriter.Write(player.state.bankedSouls);
     }
 
     static PlayerState DeserializePlayerState(BinaryReader binReader) {
@@ -159,6 +160,7 @@ public static partial class Game {
             intellectSkillLevel = binReader.ReadInt32(),
             lifeBloodSkillLevel = binReader.ReadInt32(),
             strengthSkillLevel = binReader.ReadInt32(),
+            bankedSouls = binReader.ReadInt32(),
         };
     }
 

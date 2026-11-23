@@ -21,5 +21,6 @@ MonoBehaviour:
   minPitch: 0.9
   maxPitch: 1.1
   maxSimultaneous: 0
+  directionality: 0.5
   localAreaCooldownTime: 0
   localAreaDistance: 0

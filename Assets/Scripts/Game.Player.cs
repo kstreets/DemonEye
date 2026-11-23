@@ -60,6 +60,7 @@ public static partial class Game {
         public int intellectSkillLevel;
         public int lifeBloodSkillLevel;
         public int strengthSkillLevel;
+        public int bankedSouls; // Souls carried out of raids, spent on skills
     }
     
     public enum PlayerStat {

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using PrimeTween;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -24,6 +25,8 @@ public static partial class Game {
         public Vector2 position;
         public float maxDistance;
         public float volumeScaler;
+        public float directionality;
+        public Entity owner; // Optional, the clip fades out once it dies or is despawned
         // Unscaled time the clip should be done by. isPlaying alone can't tell when it's finished, since
         // it's false while a non-preloaded clip is still loading
         public float endTime;
@@ -42,7 +45,7 @@ public static partial class Game {
     
     public static AudioClipHandle PlayAudioClip(DynamicClip dynamicClip) => PlayAudioClip(dynamicClip, Vector2.zero);
     
-    public static AudioClipHandle PlayAudioClip(DynamicClip dynamicClip, Vector2 position, float volumeScaler = 1f, float pitch = 0f, bool loop = false, bool cannotInterrupt = false) {
+    public static AudioClipHandle PlayAudioClip(DynamicClip dynamicClip, Vector2 position, float volumeScaler = 1f, float pitch = 0f, bool loop = false, bool cannotInterrupt = false, Entity owner = null) {
         if (ClipShouldNotBePlayed(dynamicClip, position)) {
             return new();
         }
@@ -76,6 +79,7 @@ public static partial class Game {
         source.clip = dynamicClip.clips[Random.Range(0, dynamicClip.clips.Length)];
         source.outputAudioMixerGroup = dynamicClip.mixerGroup;
         source.volume = GetDistanceVolume(position, dynamicClip.maxDistance, volumeScaler);
+        source.panStereo = GetDistancePan(position, dynamicClip.maxDistance, dynamicClip.directionality);
         source.pitch = pitch == 0f ? Random.Range(dynamicClip.minPitch, dynamicClip.maxPitch) : pitch;
         source.minDistance = dynamicClip.minDistance;
         source.maxDistance = dynamicClip.maxDistance;
@@ -89,6 +93,8 @@ public static partial class Game {
             position = position,
             maxDistance = dynamicClip.maxDistance,
             volumeScaler = volumeScaler,
+            directionality = dynamicClip.directionality,
+            owner = owner,
             endTime = loop ? float.PositiveInfinity : Time.unscaledTime + playbackDuration,
         });
 
@@ -99,6 +105,12 @@ public static partial class Game {
         float distFromPlayer = Vector2.Distance(player.position, position);
         float volumeLerp = distFromPlayer / maxDistance;
         return Mathf.Lerp(1f, 0f, volumeLerp) * volumeScaler;
+    }
+
+    // Only the horizontal offset pans, stereo has no way to place a sound above or below the player
+    static float GetDistancePan(Vector2 position, float maxDistance, float directionality) {
+        float horizontalOffset = position.x - player.position.x;
+        return Mathf.Clamp(horizontalOffset / maxDistance, -1f, 1f) * directionality;
     }
 
     static void UpdatePositionalVolumes() {
@@ -116,8 +128,27 @@ public static partial class Game {
                 continue;
             }
 
+            Entity owner = positional.owner;
+            if (owner != null && (owner.health <= 0 || !EntityIsValid(owner))) {
+                audio.positionalVolumes.RemoveAt(i);
+                FadeOutAudioClip(positional.handle);
+                continue;
+            }
+
             source.volume = GetDistanceVolume(positional.position, positional.maxDistance, positional.volumeScaler);
+            source.panStereo = GetDistancePan(positional.position, positional.maxDistance, positional.directionality);
         }
+    }
+
+    // A short fade, stopping a clip mid playback clicks
+    static void FadeOutAudioClip(AudioClipHandle handle) {
+        const float fadeDuration = 0.08f;
+        AudioSource source = handle.audioSource;
+        Tween.Custom(source.volume, 0f, fadeDuration, onValueChange: volume => {
+            if (audio.generationLookup[source] == handle.generation) {
+                source.volume = volume;
+            }
+        }).OnComplete(() => StopAudioClip(handle));
     }
 
     static void StopAudioClip(AudioClipHandle handle) {

@@ -102,12 +102,12 @@ MonoBehaviour:
       enemyBatches:
       - enemyCount: 38
         enemyData: {fileID: 11400000, guid: 8a749b46a2a7d944892efbf025fbe2a1, type: 2}
-      - enemyCount: 15
-        enemyData: {fileID: 11400000, guid: e317b66f7ab3f9a4eb9807435d01428e, type: 2}
+      - enemyCount: 50
+        enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
   - name: Wave 3
     musicIntensity: 1
-    maxDuration: 55
-    spawnDuration: 25
+    maxDuration: 65
+    spawnDuration: 32
     startNextPhaseEarlyDelay: 12
     spawnCellRange: {x: 17, y: 28}
     reteleportCount: 6
@@ -146,7 +146,7 @@ MonoBehaviour:
   - name: Wave 4
     musicIntensity: 1
     maxDuration: 50
-    spawnDuration: 25
+    spawnDuration: 30
     startNextPhaseEarlyDelay: 12
     spawnCellRange: {x: 18, y: 28}
     reteleportCount: 6
@@ -178,16 +178,14 @@ MonoBehaviour:
     variants:
     - name: Variant 0
       enemyBatches:
-      - enemyCount: 32
+      - enemyCount: 35
         enemyData: {fileID: 11400000, guid: 4bf7df75d72a7a342b2e6394675ef429, type: 2}
       - enemyCount: 55
         enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
-      - enemyCount: 12
-        enemyData: {fileID: 11400000, guid: e317b66f7ab3f9a4eb9807435d01428e, type: 2}
   - name: Wave 5
     musicIntensity: 1
-    maxDuration: 48
-    spawnDuration: 25
+    maxDuration: 50
+    spawnDuration: 28
     startNextPhaseEarlyDelay: 12
     spawnCellRange: {x: 18, y: 28}
     reteleportCount: 6
@@ -345,15 +343,13 @@ MonoBehaviour:
     variants:
     - name: Variant 0
       enemyBatches:
-      - enemyCount: 12
-        enemyData: {fileID: 11400000, guid: e32ee0b877cc34d4d9f2ca1a37203cd1, type: 2}
-      - enemyCount: 8
-        enemyData: {fileID: 11400000, guid: ac3ba6285750c9f41a1362d2e90b0133, type: 2}
+      - enemyCount: 15
+        enemyData: {fileID: 11400000, guid: 8a749b46a2a7d944892efbf025fbe2a1, type: 2}
     trashRefillAtPercentage: 0.552
-    minTrashRefillDelay: 15
+    minTrashRefillDelay: 20
     raidBoss: {fileID: 11400000, guid: eb8efa5281fc3a5449138b200351962b, type: 2}
   swarm:
-    chance: 0.25
+    chance: 0
     waveRange: {x: 3, y: 5}
     pool:
       name: Swarm

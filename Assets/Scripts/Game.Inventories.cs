@@ -1160,7 +1160,10 @@ public static partial class Game {
         CancelItemDrag();
 
         int itemCount = GetInventoryItemCountInRange(inventories.player, playerStorageRange);
-        if (itemCount == 0) return;
+        if (itemCount == 0) {
+            onComplete?.Invoke();
+            return;
+        }
 
         const float firstItemGap = 0.1f;
         const float lastItemGap = 0.03f;

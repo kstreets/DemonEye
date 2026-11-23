@@ -14,6 +14,7 @@ public class EnemyAttack : ScriptableObject {
     public float range;
     public float cooldown;
     public bool requireFacingPlayer;
+    public DynamicClip startClip;
 
     [Header("Facing")]
     public bool snapFaceTargetOnStart;
